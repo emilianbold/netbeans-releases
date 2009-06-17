@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
@@ -47,4 +48,5 @@ import org.netbeans.modules.kenai.api.KenaiProject;
  */
 public abstract class KenaiSupport {
     public abstract Repository createRepository(KenaiProject project);
+    public abstract void setFilter(Query query, Filter filter);
 }

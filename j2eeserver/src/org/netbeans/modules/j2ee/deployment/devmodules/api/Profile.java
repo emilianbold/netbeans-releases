@@ -56,10 +56,13 @@ public final class Profile implements Comparable<Profile> {
         }
     };
 
+    @SuppressWarnings("deprecation")
     public static final Profile J2EE_13  = new Profile(1, J2eeModule.J2EE_13, "J2EE13.displayName");
 
+    @SuppressWarnings("deprecation")
     public static final Profile J2EE_14  = new Profile(2, J2eeModule.J2EE_14, "J2EE14.displayName");
 
+    @SuppressWarnings("deprecation")
     public static final Profile JAVA_EE_5  = new Profile(3, J2eeModule.JAVA_EE_5, "JavaEE5.displayName");
 
     public static final Profile JAVA_EE_6_FULL  = new Profile(4, "EE_6_FULL", "JavaEE6Full.displayName");

@@ -92,6 +92,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     
     private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile"; //NOI18N
+    private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
     private static final String WSDL_LOCATION = "wsdlLocation"; //NOI18N
     
     Project project;
@@ -207,6 +208,12 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                     if (isXnocompile(project)) {
                         wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(XNOCOMPILE_OPTION);
+                        wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                        wsimportOptions.addWsimportOption(wsimportOption);
+                    }
+                    if (isXendorsed(project)) {
+                        wsimportOption = wsimportOptions.newWsimportOption();
+                        wsimportOption.setWsimportOptionName(XENDORSED_OPTION);
                         wsimportOption.setWsimportOptionValue("true"); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
@@ -450,6 +457,18 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         }
         // Defaultly return true
         return true;
+    }
+
+    private static boolean isXendorsed(Project project){
+        JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
+        if (jvp != null) {
+            String version = jvp.getJAXWSVersion();
+            if (version != null) {
+                return isVersionSatisfied(version, "2.1.1"); //NOI18N
+            }
+        }
+        // Defaultly return false
+        return false;
     }
     
     private static boolean isVersionSatisfied(String version, String requiredVersion) {

@@ -85,22 +85,8 @@ public class SecurityRoles extends PersistentObject implements Refreshable {
         return true;
     }
 
-    /**
-     * @return URL patterns of the servlet
-     */
     public List<String> getRoles() {
         return roles;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder();
-        res.append("[SecurityRoles: ");
-        for (String s : roles) {
-            res.append('"').append(s).append("\" ");
-        }
-        res.append("]");
-        return res.toString();
     }
 
 }

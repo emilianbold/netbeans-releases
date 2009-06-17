@@ -46,10 +46,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
@@ -108,10 +113,40 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         return doMerging(MergeEngines.securityRolesEngine());
     }
 
+    public List<ResourceRef> getResourceRefs() {
+        return doMerging(MergeEngines.resourceRefsEngine());
+    }
+
+    public List<ResourceEnvRef> getResourceEnvRefs() {
+        return doMerging(MergeEngines.resourceEnvRefsEngine());
+    }
+
+    public List<EnvEntry> getEnvEntries() {
+        return doMerging(MergeEngines.resourceEnvEntriesEngine());
+    }
+
+    public List<MessageDestinationRef> getMessageDestinationRefs() {
+        return doMerging(MergeEngines.resourceMsgDestsEngine());
+    }
+
+    public List<ServiceRef> getServiceRefs() {
+        return doMerging(MergeEngines.resourceServicesEngine());
+    }
+
+    public List<EjbLocalRef> getEjbLocalRefs() {
+        return doMerging(MergeEngines.ejbLocalRefsEngine());
+    }
+
+    public List<EjbRef> getEjbRefs() {
+        return doMerging(MergeEngines.ejbRefsEngine());
+    }
+
     // -------------------------------------------------------------------------
     // HELPER METHODS
     // -------------------------------------------------------------------------
     private <T> List<T> doMerging(MergeEngine<T> eng) {
+        eng.clean();
+
         // from web.xml
         refreshWebXml();
         if (webXml != null) {
@@ -206,31 +241,6 @@ public class WebAppMetadataImpl implements WebAppMetadata {
             annoHelpers = new AnnotationHelpers(modelImpl.getHelper());
         }
         return annoHelpers;
-    }
-
-    // -------------------------------------------------------------------------
-    private void addServlets(List<ServletInfo> res, WebApp webXml) {
-        Servlet[] servlets = webXml.getServlet();
-        if (servlets != null) {
-            for (Servlet s : servlets) {
-                String name = s.getServletName();
-                String clazz = s.getServletClass();
-                List<String> urlMappings = findUrlMappingsForServlet(webXml, name);
-                res.add(ServletInfoAccessor.getDefault().createServletInfo(name, clazz, urlMappings));
-            }
-        }
-    }
-
-    private List<String> findUrlMappingsForServlet(WebApp webXml, String servletName) {
-        List<String> res = new ArrayList<String>();
-        ServletMapping[] mappings = webXml.getServletMapping();
-        if (mappings != null) {
-            for (ServletMapping sm : mappings) {
-                if (sm.getServletName().equals(servletName) && sm.getUrlPattern() != null)
-                    res.add(sm.getUrlPattern());
-            }
-        }
-        return res;
     }
 
     // -------------------------------------------------------------------------

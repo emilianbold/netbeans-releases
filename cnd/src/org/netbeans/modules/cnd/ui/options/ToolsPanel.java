@@ -196,7 +196,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         if (selectedRec != null) {
             cbDevHost.setSelectedItem(selectedRec);
         } else {
-            cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
+            cbDevHost.setSelectedItem(cacheManager.getDefaultHostRecord());
         }
 
         cbDevHost.setRenderer(new MyDevHostListCellRenderer());
@@ -305,7 +305,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 }
                 cacheManager.setHosts(nulist);
             }
-            cacheManager.setDefaultIndex(cbDevHost.getSelectedIndex());
+            cacheManager.setDefaultRecord((ServerRecord) cbDevHost.getSelectedItem());
             execEnv = getSelectedRecord().getExecutionEnvironment();
             model.setSelectedDevelopmentHost(execEnv);
             update(true);
@@ -681,7 +681,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 model.setSelectedCompilerSetName(cs.getName());
             }
             currentCompilerSet = cs;
-            cacheManager.applyChanges(cbDevHost.getSelectedIndex());
+            cacheManager.applyChanges((ServerRecord) cbDevHost.getSelectedItem());
         }
 
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
@@ -1044,8 +1044,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 cbDevHost.addItem(rec);
             }
             log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
-            log.fine("TP.editDevHosts: getDefaultIndex returns " + cacheManager.getDefaultHostIndex());
-            cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
+            log.fine("TP.editDevHosts: getDefaultHostRecord returns " + cacheManager.getDefaultHostRecord());
+            cbDevHost.setSelectedItem(cacheManager.getDefaultHostRecord());
             cacheManager.ensureHostSetup(getSelectedRecord().getExecutionEnvironment());
             cbDevHost.addItemListener(this);
             onNewDevHostSelected();
@@ -1883,7 +1883,7 @@ private boolean selectTool(JTextField tf) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             ServerRecord rec = (ServerRecord) value;
             label.setText(rec.getDisplayName());
-            if (index == cacheManager.getDefaultHostIndex()) {
+            if (value != null && value.equals(cacheManager.getDefaultHostRecord())) {
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
             return label;

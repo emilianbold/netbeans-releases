@@ -62,9 +62,9 @@ import org.openide.util.NbBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.ConfigBean;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.NetbeansDeployment;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
@@ -265,9 +265,9 @@ public class Server implements Node.Cookie {
         return vs;
     }
 
-    public boolean canVerify(Object moduleType) {
+    public boolean canVerify(J2eeModule.Type moduleType) {
         VerifierSupport vs = getVerifierSupport();
-        return  vs != null && vs.supportsModuleType(moduleType);
+        return  vs != null && vs.supportsModuleType(J2eeModuleAccessor.getDefault().getJsrModuleType(moduleType));
     }
 
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
@@ -310,12 +310,12 @@ public class Server implements Node.Cookie {
         return getShortName ();
     }
 
-    public boolean supportsModuleType(ModuleType type) {
-        if (J2eeModule.WAR.equals(type)) {
+    public boolean supportsModuleType(J2eeModule.Type type) {
+        if (J2eeModule.Type.WAR.equals(type)) {
             return this.canDeployWars();
-        } else if (J2eeModule.EJB.equals(type)) {
+        } else if (J2eeModule.Type.EJB.equals(type)) {
             return this.canDeployEjbJars();
-        } else if (J2eeModule.EAR.equals(type)) {
+        } else if (J2eeModule.Type.EAR.equals(type)) {
             return this.canDeployEars();
         } else {
             // PENDING, precise answer for other module types, for now assume true
@@ -350,7 +350,8 @@ public class Server implements Node.Cookie {
         }
     }
 
-    public String[] getDeploymentPlanFiles(Object type) {
-        return (String[]) deployConfigDescriptorMap.get(type.toString().toUpperCase());
+    public String[] getDeploymentPlanFiles(J2eeModule.Type type) {
+        Object jsrModuleType = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
+        return (String[]) deployConfigDescriptorMap.get(jsrModuleType.toString().toUpperCase());
     }
 }

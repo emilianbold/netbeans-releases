@@ -64,6 +64,10 @@ public class AnnotationHelpers {
     }
 
     // -------------------------------------------------------------------------
+    public AnnotationModelHelper getHelper() {
+        return helper;
+    }
+
     public PersistentObjectManager<WebServlet> getWebServletPOM() {
         if (webServletsPOM == null)
             webServletsPOM = helper.createPersistentObjectManager(new AnnotationProvider("javax.servlet.annotation.WebServlet") {
