@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
@@ -75,7 +76,8 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
              TransportTestCase.class,
              RemoteUtilTestCase.class,
              ServerListTestCase.class,
-             ScpSyncWorkerTestCase.class);
+             ScpSyncWorkerTestCase.class,
+             HostSetupTestCase.class);
     }
 
 
