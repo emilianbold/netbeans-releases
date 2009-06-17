@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.test;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -52,6 +53,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
  *
@@ -79,6 +81,33 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      */
     public NativeExecutionBaseTestSuite(String name) {
         super(name);
+    }
+
+    /**
+     * Constructs TestSuite that takes platforms (mspecs) from the given section,
+     * and performs tests specified by classes parameters for each of them
+     * @param name suite name
+     * @param mspecSection section of the .cndtestrc that contains platforms as keys
+     * @param testClasses test classes
+     */
+    public NativeExecutionBaseTestSuite(String name, String mspecSection, Class... testClasses) {
+        super(name);
+        try {
+            for (Class testClass : testClasses) {
+                try {
+                    RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+                    for (String platform : rcFile.getKeys(mspecSection)) {
+                        addTest(testClass, platform);
+                    }
+                } catch (FileNotFoundException ex) {
+                    // rcfile does not exists - no tests to run
+                }
+            }
+        } catch (IOException ex) {
+            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
+        } catch (FormatException ex) {
+            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
+        }
     }
 
     /**

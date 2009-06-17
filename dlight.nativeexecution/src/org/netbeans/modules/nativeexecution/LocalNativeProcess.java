@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -143,6 +144,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         UnbufferSupport.initUnbuffer(info, env);
 
         pb.command(info.getCommand());
+        LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
 
 
         String val = null;
@@ -152,6 +154,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 val = env.get(var);
                 if (val != null) {
                     pb.environment().put(var, val);
+                    LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[] {var, val});
                 }
             }
         }
@@ -161,6 +164,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             File wd = new File(wdir);
             if (wd.exists()) {
                 pb.directory(wd);
+                LOG.log(Level.FINEST, "Working directory: {0}", wdir);
             }
         }
 
