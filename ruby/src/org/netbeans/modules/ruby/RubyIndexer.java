@@ -1406,9 +1406,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 if (signature == null) {
                     return;
                 }
-            }
-
-            if (child.getType().isKnown()) {
+            } else if (child.getType().isKnown()) {
                 signature += ";;" + child.getType().asIndexedString() + ";"; // NOI18N
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
