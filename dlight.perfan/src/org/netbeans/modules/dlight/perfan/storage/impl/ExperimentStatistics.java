@@ -90,9 +90,7 @@ public final class ExperimentStatistics {
                 if (id.startsWith("User Lock")) { // NOI18N
                     StringTokenizer t = tokenize(s.substring(scidx + 1));
                     _t_usrLock = parseDouble(t.nextToken());
-                    String str_t_usrLock_p = t.nextToken();
-                    str_t_usrLock_p = str_t_usrLock_p.trim().endsWith("%")  ? str_t_usrLock_p.substring(0, str_t_usrLock_p.length() -1) : str_t_usrLock_p;
-                    _t_usrLock_p = parseDouble(str_t_usrLock_p);
+                    _t_usrLock_p = parseDouble(t.nextToken());
                 } else if (id.startsWith("Total Thread Time") || id.startsWith("Total LWP Time")) { // NOI18N
                     _totalThreadTime = parseDouble(s.substring(scidx + 1));
                 } else if (id.startsWith("Duration")) { // NOI18N
@@ -137,7 +135,7 @@ public final class ExperimentStatistics {
     }
 
     private static StringTokenizer tokenize(String line) {
-        return new StringTokenizer(line, " ()#"); // NOI18N
+        return new StringTokenizer(line, " ()%"); // NOI18N
     }
 
     /**
@@ -149,6 +147,6 @@ public final class ExperimentStatistics {
      * @throws NumberFormatException
      */
     private static double parseDouble(String val) {
-        return Double.valueOf(val.replace(',', '.'));
+        return Double.parseDouble(val.replace(',', '.'));
     }
 }
