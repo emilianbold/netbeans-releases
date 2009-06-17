@@ -1,1 +1,2 @@
 org.netbeans.core.NbMainExplorer$MainTab=
+org.netbeans.core.actions.ViewRuntimeTabAction=org.netbeans.core.ide.ServicesTabAction
