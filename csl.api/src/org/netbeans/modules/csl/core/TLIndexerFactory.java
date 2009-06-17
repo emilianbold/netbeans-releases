@@ -154,29 +154,31 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             try {
                 ParserResult gsfParserResult = (ParserResult) parserResult;
                 Snapshot snapshot = parserResult.getSnapshot ();
-                String mimeType = parserResult.getSnapshot ().getMimeType ();
-                final LanguageRegistry registry = LanguageRegistry.getInstance ();
-                Language language = registry.getLanguageByMimeType (mimeType);
+//                String mimeType = parserResult.getSnapshot ().getMimeType ();
+//                final LanguageRegistry registry = LanguageRegistry.getInstance ();
+//                Language language = registry.getLanguageByMimeType (mimeType);
                 IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
-                HintsProvider provider = language.getHintsProvider ();
-                if (provider == null) {
-                    saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
-                } else {
-                    GsfHintsManager gsfHintsManager = language.getHintsManager ();
-                    if (gsfHintsManager == null) {
-                        return;
-                    }
-                    RuleContext ruleContext = gsfHintsManager.createRuleContext (gsfParserResult, language, -1, -1, -1);
-                    if (ruleContext == null) {
-                        saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
-                    } else {
-                        final List<Hint> hints = new ArrayList<Hint> ();
-                        List<Error> errors = new ArrayList<Error> ();
-                        provider.computeErrors (gsfHintsManager, ruleContext, hints, errors);
-                        saveErrors (errors, snapshot, indexingSupport, indexable);
-                        saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
-                    }
-                }
+                saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
+//                HintsProvider provider = language.getHintsProvider ();
+//                if (provider == null) {
+//                    saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
+//                } else {
+//                    GsfHintsManager gsfHintsManager = language.getHintsManager ();
+//                    if (gsfHintsManager == null) {
+//                        return;
+//                    }
+//                    RuleContext ruleContext = gsfHintsManager.createRuleContext (gsfParserResult, language, -1, -1, -1);
+//                    if (ruleContext == null) {
+//                        saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
+//                    } else {
+//                        final List<Hint> hints = new ArrayList<Hint> ();
+//                        List<Error> errors = new ArrayList<Error> ();
+//                        provider.computeErrors (gsfHintsManager, ruleContext, hints, errors);
+//                        provider.computeErrors (gsfHintsManager, ruleContext, hints, errors);
+//                        saveErrors (errors, snapshot, indexingSupport, indexable);
+//                        saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
+//                    }
+//                }
                 FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
                 if (!karelPr.contains (fileObject)) {
                     karelPr.add (fileObject);
