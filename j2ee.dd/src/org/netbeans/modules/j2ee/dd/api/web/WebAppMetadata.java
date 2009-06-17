@@ -42,6 +42,13 @@
 package org.netbeans.modules.j2ee.dd.api.web;
 
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 
 /**
@@ -73,5 +80,19 @@ public interface WebAppMetadata {
      * @return list of all defined security roles
      */
     List<String> getSecurityRoles();
+
+    List<ResourceRef> getResourceRefs();
+
+    List<ResourceEnvRef> getResourceEnvRefs();
+
+    List<EnvEntry> getEnvEntries();
+
+    List<MessageDestinationRef> getMessageDestinationRefs();
+
+    List<ServiceRef> getServiceRefs();
+
+    List<EjbLocalRef> getEjbLocalRefs();
+
+    List<EjbRef> getEjbRefs();
 
 }
