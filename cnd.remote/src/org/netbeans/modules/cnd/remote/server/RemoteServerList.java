@@ -154,17 +154,23 @@ public class RemoteServerList implements ServerListImplementation {
         return items.get(defaultIndex);
     }
 
-    @Override
-    public synchronized int getDefaultIndex() {
-        return defaultIndex;
-    }
-
-    @Override
-    public synchronized void setDefaultIndex(int defaultIndex) {
+    private synchronized void setDefaultIndexImpl(int defaultIndex) {
         this.defaultIndex = defaultIndex;
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
-    
+
+    @Override
+    public void setDefaultRecord(ServerRecord record) {
+        assert record != null;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).equals(record)) {
+                setDefaultIndexImpl(i);
+                return;
+            }            
+        }
+        CndUtils.assertTrue(false, "Can not set nonexistent record as default");
+    }
+
     @Override
     public synchronized  List<ExecutionEnvironment> getEnvironments() {
         List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
@@ -260,14 +266,14 @@ public class RemoteServerList implements ServerListImplementation {
     }
     
     @Override
-    public synchronized void set(List<ServerRecord> records, int defaultIndex) {
+    public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         log.finest("ServerList: set " + records);
         Collection<ExecutionEnvironment> removed = clear();
         for (ServerRecord rec : records) {
             addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
             removed.remove(rec.getExecutionEnvironment());
         }
-        setDefaultIndex(defaultIndex);
+        setDefaultRecord(defaultRecord);
         SystemIncludesUtils.cancel(removed);
     }
 

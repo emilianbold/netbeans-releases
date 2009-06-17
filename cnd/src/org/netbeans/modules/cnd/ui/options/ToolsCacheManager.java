@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -76,13 +77,11 @@ public final class ToolsCacheManager {
         }
     }
 
-    public int getDefaultHostIndex() {
+    public ServerRecord getDefaultHostRecord() {
         if (serverUpdateCache != null) {
-            return serverUpdateCache.getDefaultIndex();
-        } else if (isRemoteAvailable()) {
-            return ServerList.getDefaultIndex();
+            return serverUpdateCache.getDefaultRecord();
         } else {
-            return 0;
+            return ServerList.getDefaultRecord();
         }
     }
 
@@ -93,8 +92,8 @@ public final class ToolsCacheManager {
         serverUpdateCache.setHosts(list);
     }
 
-    public void setDefaultIndex(int index) {
-        serverUpdateCache.setDefaultIndex(index);
+    public void setDefaultRecord(ServerRecord defaultRecord) {
+        serverUpdateCache.setDefaultRecord(defaultRecord);
     }
 
     public boolean hasCache() {
@@ -113,21 +112,21 @@ public final class ToolsCacheManager {
     }
 
     public void applyChanges() {
-        applyChanges(0);
+        applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
     }
     
-    public void applyChanges(int selectedIndex) {
+    public void applyChanges(ServerRecord selectedRecord) {
         List<ExecutionEnvironment> liveServers = null;
         if (isRemoteAvailable()) {
             if (serverUpdateCache != null) {
                 liveServers = new ArrayList<ExecutionEnvironment>();
-                ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultIndex());
+                ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultRecord());
                 for (ServerRecord rec : serverUpdateCache.getHosts()) {
                     liveServers.add(rec.getExecutionEnvironment());
                 }
                 serverUpdateCache = null;
             } else {
-                ServerList.setDefaultIndex(selectedIndex);
+                ServerList.setDefaultRecord(selectedRecord);
             }
         }
 
