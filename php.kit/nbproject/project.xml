@@ -32,7 +32,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
-                        <specification-version>2.13</specification-version>
+                        <specification-version>2.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -45,6 +45,12 @@
                     <code-name-base>org.netbeans.modules.php.samples</code-name-base>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.php.symfony</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
