@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
@@ -63,7 +67,11 @@ public class ServerList {
             ServerListImplementation result = DEFAULT;
             if (result == null) {
                 result = Lookup.getDefault().lookup(ServerListImplementation.class);
-                assert result != null;
+                if (result == null) {
+                    result = new DummyServerListImplementation();
+                } else {
+                    DEFAULT = result;
+                }
             }
             return result;
         }
@@ -99,5 +107,95 @@ public class ServerList {
 
     public static boolean isValidExecutable(ExecutionEnvironment env, String path) {
         return getDefault().isValidExecutable(env, path);
+    }
+
+
+    private static class DummyServerRecord implements ServerRecord {
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(ServerList.class, "DUMMY_HOST_NAME");
+        }
+
+        public ExecutionEnvironment getExecutionEnvironment() {
+            return ExecutionEnvironmentFactory.getLocal();
+        }
+
+        public String getServerDisplayName() {
+            return getDisplayName();
+        }
+
+        public String getServerName() {
+            return getDisplayName();
+        }
+
+        public RemoteSyncFactory getSyncFactory() {
+            return RemoteSyncFactory.getDefault();
+        }
+
+        public String getUserName() {
+            return "";
+        }
+
+        public boolean isDeleted() {
+            return true;
+        }
+
+        public boolean isOffline() {
+            return false;
+        }
+
+        public boolean isOnline() {
+            return true;
+        }
+
+        public boolean isRemote() {
+            return false;
+        }
+
+        public boolean isSetUp() {
+            return true;
+        }
+
+        public boolean setUp() {
+            return true;
+        }
+
+        public void validate(boolean force) {
+        }
+    }
+
+    private static class DummyServerListImplementation implements ServerListImplementation {
+
+        private ServerRecord record = new DummyServerRecord();
+
+        public ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
+            return record;
+        }
+
+        public ServerRecord get(ExecutionEnvironment env) {
+            return record;
+        }
+
+        public ServerRecord getDefaultRecord() {
+            return record;
+        }
+
+        public List<ExecutionEnvironment> getEnvironments() {
+            return Arrays.asList(record.getExecutionEnvironment());
+        }
+
+        public Collection<? extends ServerRecord> getRecords() {
+            return Arrays.asList(record);
+        }
+
+        public boolean isValidExecutable(ExecutionEnvironment env, String path) {
+            return new File(path).exists();
+        }
+
+        public void set(List<ServerRecord> records, ServerRecord defaultRecord) {
+        }
+
+        public void setDefaultRecord(ServerRecord record) {
+        }
     }
 }
