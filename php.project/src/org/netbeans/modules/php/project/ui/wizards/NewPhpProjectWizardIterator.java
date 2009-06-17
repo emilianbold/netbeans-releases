@@ -41,15 +41,18 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -76,6 +79,8 @@ import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
+ * Minor note to frameworks - the 1st framework "wins", it means that e.g. web root sets
+ * the 1st framework from the list, other frameworks are ignored.
  * @author Tomas Mysik
  */
 public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -133,11 +138,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        PhpFrameworkProvider frameworkProvider = null;
-//        for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
-//            frameworkProvider = provider;
-//            break;
-//        }
+        List<PhpFrameworkProvider> frameworkProviders = getFrameworkProviders();
 
         PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
                 getProjectDirectory(),
@@ -146,7 +147,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
                 (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
                 getUrl(),
-                wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkProvider),
+                wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkProviders),
                 descriptor,
                 isCopyFiles(),
                 getCopySrcTarget(),
@@ -158,7 +159,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         switch (wizardType) {
             case NEW:
             case EXISTING:
-                monitor = new LocalProgressMonitor(handle);
+                monitor = new LocalProgressMonitor(handle, frameworkProviders);
                 break;
             case REMOTE:
                 monitor = new RemoteProgressMonitor(handle);
@@ -179,15 +180,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // post process
         switch (wizardType) {
             case NEW:
-                if (frameworkProvider != null) {
-                    try {
-                        Set<FileObject> newFiles = frameworkProvider.createPhpModuleExtender(phpModule).extend(phpModule);
-                        assert frameworkProvider.isInPhpModule(phpModule);
-                        resultSet.addAll(newFiles);
-                    } catch (Exception exception) {
-                        Exceptions.printStackTrace(exception);
-                    }
-                }
+                extendPhpModule(phpModule, frameworkProviders, monitor, resultSet);
                 break;
             case REMOTE:
                 downloadRemoteFiles(createProperties, monitor);
@@ -197,10 +190,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // update project properties
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        PhpModuleProperties phpModuleProperties = null;
-        if (frameworkProvider != null) {
-            phpModuleProperties = frameworkProvider.getPhpModuleProperties(phpModule);
-        }
+        List<PhpModuleProperties> phpModuleProperties = getPhpModuleProperties(phpModule, frameworkProviders);
 
         FileObject indexFile = setIndexFile(createProperties, projectProperties, privateProperties, phpModuleProperties);
         if (indexFile != null && indexFile.isValid()) {
@@ -275,8 +265,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
         String step2 = null;
+        String step3 = null;
         switch (wizardType) {
             case NEW:
+                step2 = "LBL_RunConfiguration"; // NOI18N
+                step3 = "LBL_Frameworks"; // NOI18N
+                break;
             case EXISTING:
                 step2 = "LBL_RunConfiguration"; // NOI18N
                 break;
@@ -286,19 +280,36 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             default:
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
+        List<String> steps = new ArrayList<String>(3);
+        steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"));
+        steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2));
+        if (step3 != null) {
+            steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step3));
+        }
+        String[] stepsArray = steps.toArray(new String[steps.size()]);
 
-        String[] steps = new String[] {
-            NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"),
-            NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2),
-        };
+        WizardDescriptor.Panel<WizardDescriptor> panel3 = null;
+        switch (wizardType) {
+            case NEW:
+                panel3 = new PhpFrameworksPanel(stepsArray);
+                break;
+            case EXISTING:
+            case REMOTE:
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+        }
+        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(stepsArray, wizardType);
 
-        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps, wizardType);
+        List<WizardDescriptor.Panel<WizardDescriptor>> pnls = new ArrayList<Panel<WizardDescriptor>>(3);
+        pnls.add(configureProjectPanel);
+        pnls.add(new RunConfigurationPanel(stepsArray, configureProjectPanel, wizardType));
+        if (panel3 != null) {
+            pnls.add(panel3);
+        }
         @SuppressWarnings("unchecked")
-        WizardDescriptor.Panel<WizardDescriptor>[] pnls = new WizardDescriptor.Panel[] {
-            configureProjectPanel,
-            new RunConfigurationPanel(steps, configureProjectPanel, wizardType),
-        };
-        return pnls;
+        WizardDescriptor.Panel<WizardDescriptor>[] pnlsArray = (WizardDescriptor.Panel<WizardDescriptor>[]) Array.newInstance(WizardDescriptor.Panel.class, pnls.size());
+        return pnls.toArray(pnlsArray);
     }
 
     // prevent incorrect default values (empty project => back => existing project)
@@ -345,8 +356,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return url;
     }
 
-    private String getIndexFile(PhpFrameworkProvider frameworkProvider) {
-        if (frameworkProvider != null) {
+    private String getIndexFile(List<PhpFrameworkProvider> frameworkProviders) {
+        if (frameworkProviders != null && frameworkProviders.size() > 0) {
             // no index for php framework
             return null;
         }
@@ -389,6 +400,30 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
+    private void extendPhpModule(PhpModule phpModule, List<PhpFrameworkProvider> frameworkProviders,
+            PhpProjectGenerator.Monitor monitor, Set<FileObject> filesToOpen) {
+        assert wizardType == WizardType.NEW : "Extending not allowed for: " + wizardType;
+        assert monitor instanceof LocalProgressMonitor;
+
+        LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
+        if (!frameworkProviders.isEmpty()) {
+            localMonitor.startingExtending();
+
+            for (PhpFrameworkProvider frameworkProvider : frameworkProviders) {
+                localMonitor.extending(frameworkProvider.getName());
+                try {
+                    Set<FileObject> newFiles = frameworkProvider.createPhpModuleExtender(phpModule).extend(phpModule);
+                    assert frameworkProvider.isInPhpModule(phpModule);
+                    filesToOpen.addAll(newFiles);
+                } catch (Exception exception) {
+                    Exceptions.printStackTrace(exception);
+                }
+            }
+        }
+
+        localMonitor.finishingExtending();
+    }
+
     private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
         assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
         assert monitor instanceof RemoteProgressMonitor;
@@ -409,17 +444,39 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         remoteMonitor.finishingDownload();
     }
 
+    private List<PhpFrameworkProvider> getFrameworkProviders() {
+        @SuppressWarnings("unchecked")
+        List<PhpFrameworkProvider> frameworkProviders = (List<PhpFrameworkProvider>) descriptor.getProperty(PhpFrameworksPanel.FRAMEWORKS);
+        if (frameworkProviders == null) {
+            frameworkProviders = Collections.emptyList();
+        }
+        return frameworkProviders;
+    }
+
+    private List<PhpModuleProperties> getPhpModuleProperties(PhpModule phpModule, List<PhpFrameworkProvider> frameworkProviders) {
+        if (frameworkProviders.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<PhpModuleProperties> phpModuleProperties = new ArrayList<PhpModuleProperties>(frameworkProviders.size());
+        for (PhpFrameworkProvider frameworkProvider : frameworkProviders) {
+            phpModuleProperties.add(frameworkProvider.getPhpModuleProperties(phpModule));
+        }
+        return phpModuleProperties;
+    }
+
     private FileObject setIndexFile(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
-            EditableProperties privateProperties, PhpModuleProperties phpModuleProperties) {
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
         String indexFile = createProperties.getIndexFile();
         switch (wizardType) {
             case NEW:
-                if (indexFile == null
-                        && phpModuleProperties != null) {
-                    FileObject frameworkIndex = phpModuleProperties.getIndexFile();
-                    if (frameworkIndex != null) {
-                        indexFile = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(frameworkIndex));
-                        assert !indexFile.startsWith("../");
+                if (indexFile == null) {
+                    for (PhpModuleProperties properties : phpModuleProperties) {
+                        FileObject frameworkIndex = properties.getIndexFile();
+                        if (frameworkIndex != null) {
+                            indexFile = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(frameworkIndex));
+                            assert !indexFile.startsWith("../");
+                            break; // 1st wins
+                        }
                     }
                 }
                 break;
@@ -438,52 +495,61 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private void setWebRoot(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
-            EditableProperties privateProperties, PhpModuleProperties phpModuleProperties) {
-        if (phpModuleProperties == null) {
-            return;
-        }
-        FileObject webRoot = phpModuleProperties.getWebRoot();
-        if (webRoot != null) {
-            String relPath = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(webRoot));
-            assert relPath != null && !relPath.startsWith("../") : "WebRoot must be underneath Sources";
-            projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, relPath);
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
+        for (PhpModuleProperties properties : phpModuleProperties) {
+            FileObject webRoot = properties.getWebRoot();
+            if (webRoot != null) {
+                String relPath = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(webRoot));
+                assert relPath != null && !relPath.startsWith("../") : "WebRoot must be underneath Sources";
+                projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, relPath);
+                break; // 1st wins
+            }
         }
     }
 
     private void setTests(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
-            EditableProperties privateProperties, PhpModuleProperties phpModuleProperties) {
-        if (phpModuleProperties == null) {
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
+        if (phpModuleProperties.isEmpty()) {
             return;
         }
-        FileObject tests = phpModuleProperties.getTests();
-        if (tests != null) {
-            File projectDir = createProperties.getProjectDirectory();
-            if (projectDir == null) {
-                projectDir = createProperties.getSourcesDirectory();
-            }
-            assert projectDir != null;
 
-            File testDir = FileUtil.toFile(tests);
-            // relativize path
-            String testPath = PropertyUtils.relativizeFile(projectDir, testDir);
-            if (testPath == null) {
-                // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
-                testPath = testDir.getAbsolutePath();
+        File projectDir = createProperties.getProjectDirectory();
+        if (projectDir == null) {
+            projectDir = createProperties.getSourcesDirectory();
+        }
+        assert projectDir != null;
+
+        for (PhpModuleProperties properties : phpModuleProperties) {
+            FileObject tests = properties.getTests();
+            if (tests != null) {
+                File testDir = FileUtil.toFile(tests);
+                // relativize path
+                String testPath = PropertyUtils.relativizeFile(projectDir, testDir);
+                if (testPath == null) {
+                    // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+                    testPath = testDir.getAbsolutePath();
+                }
+                projectProperties.setProperty(PhpProjectProperties.TEST_SRC_DIR, testPath);
+                break; // 1st wins
             }
-            projectProperties.setProperty(PhpProjectProperties.TEST_SRC_DIR, testPath);
         }
     }
 
     private static final class LocalProgressMonitor implements PhpProjectGenerator.Monitor {
         private final ProgressHandle handle;
+        private final int units;
+        private int unit = 0;
 
-        public LocalProgressMonitor(ProgressHandle handle) {
+        private LocalProgressMonitor(ProgressHandle handle, List<PhpFrameworkProvider> frameworkProviders) {
             assert handle != null;
+            assert frameworkProviders != null;
+
             this.handle = handle;
+            units = 5 + 2 * frameworkProviders.size();
         }
 
         public void starting() {
-            handle.start(5);
+            handle.start(units);
 
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingProject");
@@ -497,9 +563,26 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         public void finishing() {
+        }
+
+        public void startingExtending() {
+            unit = 5;
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_StartingExtending");
+            handle.progress(msg, unit);
+        }
+
+        public void extending(String framework) {
+            unit += 2;
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_Extending", framework);
+            handle.progress(msg, unit);
+        }
+
+        public void finishingExtending() {
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_PreparingToOpen");
-            handle.progress(msg, 5);
+            handle.progress(msg, units);
         }
     }
 
