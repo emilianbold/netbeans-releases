@@ -87,7 +87,7 @@ public class SearchEngine {
 
     private SearchEngine() {
         try {        
-            zembly = Zembly.getInstance();
+            zembly = Zembly.getInstance("org/netbeans/modules/wag/manager/resources/zcl.properties");
         } catch (Exception ex) {
             ex.printStackTrace();
             // ignore
