@@ -91,4 +91,16 @@ public class CndBaseTestSuite extends NativeExecutionBaseTestSuite {
     public CndBaseTestSuite(String name) {
         super(name);
     }
+
+    /**
+     * Constructs TestSuite that takes platforms (mspecs) from the given section,
+     * and performs tests specified by classes parameters for each of them
+     * @param name suite name
+     * @param mspecSection section of the .cndtestrc that contains platforms as keys
+     * @param testClasses test classes
+     */
+    public CndBaseTestSuite(String name, String mspecSection, Class... testClasses) {
+        super(name, mspecSection, testClasses);
+    }
+
 }

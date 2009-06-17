@@ -114,9 +114,13 @@ public final class Capabilities {
 
     private J2eePlatform getPlatform() {
         try {
-            return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
+            String instance = provider.getServerInstanceID();
+            if (instance != null) {
+                return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
+            }
         } catch (InstanceRemovedException ex) {
-            return null;
+            // will return null
         }
+        return null;
     }
 }

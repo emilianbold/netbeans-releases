@@ -2021,7 +2021,10 @@ out:            for (String mimeType : order) {
                                         ctx.oldBinaries.remove(binaryRoot);
                                     }
 
-                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot);
+                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot) :
+                                        "binaryRoot=" + binaryRoot + //NOI18N
+                                        ", rootURL=" + rootURL + //NOI18N
+                                        ", cycleDetector.contains(" + binaryRoot + ")=" + ctx.cycleDetector.contains(binaryRoot); //NOI18N
                                     deps.add(binaryRoot);
                                 }
                             }
