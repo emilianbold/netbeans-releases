@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.dd.api.web;
 
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
@@ -88,5 +90,9 @@ public interface WebAppMetadata {
     List<MessageDestinationRef> getMessageDestinationRefs();
 
     List<ServiceRef> getServiceRefs();
+
+    List<EjbLocalRef> getEjbLocalRefs();
+
+    List<EjbRef> getEjbRefs();
 
 }

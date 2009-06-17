@@ -41,6 +41,8 @@ package org.netbeans.modules.j2ee.dd.impl.web.metadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
@@ -53,6 +55,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.SecurityRoles;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.WebServlet;
@@ -69,6 +72,8 @@ public class MergeEngines {
     private static ResourceEnvEntriesEngine resourceEnvEntriesEngine = new ResourceEnvEntriesEngine();
     private static ResourceMsgDestsEngine resourceMsgDestsEngine = new ResourceMsgDestsEngine();
     private static ResourceServicesEngine resourceServicesEngine = new ResourceServicesEngine();
+    private static EjbLocalRefsEngine ejbLocalRefsEngine = new EjbLocalRefsEngine();
+    private static EjbRefsEngine ejbRefsEngine = new EjbRefsEngine();
 
     private MergeEngines() {
     }
@@ -100,6 +105,14 @@ public class MergeEngines {
 
     static MergeEngine<ServiceRef> resourceServicesEngine() {
         return resourceServicesEngine;
+    }
+
+    static MergeEngine<EjbLocalRef> ejbLocalRefsEngine() {
+        return ejbLocalRefsEngine;
+    }
+
+    static MergeEngine<EjbRef> ejbRefsEngine() {
+        return ejbRefsEngine;
     }
 
     // -------------------------------------------------------------------------
@@ -272,6 +285,46 @@ public class MergeEngines {
             for (ServiceRef r : refs) {
                 res.add(r);
             }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    private static class EjbLocalRefsEngine extends MergeEngine<EjbLocalRef> {
+        @Override
+        void addItems(WebApp webXml) {
+            // TODO PetrS implement this
+        }
+
+        @Override
+        void addItems(WebFragment webFragment) {
+            // TODO PetrS implement this
+        }
+
+        @Override
+        void addAnnotations(AnnotationHelpers annotationHelpers) {
+            List<EjbLocalRef> l = new ArrayList<EjbLocalRef>();
+            EjbRefHelper.setEjbRefs(annotationHelpers.getHelper(), null, l);
+            res.addAll(l);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    private static class EjbRefsEngine extends MergeEngine<EjbRef> {
+        @Override
+        void addItems(WebApp webXml) {
+            // TODO PetrS implement this
+        }
+
+        @Override
+        void addItems(WebFragment webFragment) {
+            // TODO PetrS implement this
+        }
+
+        @Override
+        void addAnnotations(AnnotationHelpers annotationHelpers) {
+            List<EjbRef> l = new ArrayList<EjbRef>();
+            EjbRefHelper.setEjbRefs(annotationHelpers.getHelper(), l, null);
+            res.addAll(l);
         }
     }
 

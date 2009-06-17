@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
@@ -129,6 +131,14 @@ public class WebAppMetadataImpl implements WebAppMetadata {
 
     public List<ServiceRef> getServiceRefs() {
         return doMerging(MergeEngines.resourceServicesEngine());
+    }
+
+    public List<EjbLocalRef> getEjbLocalRefs() {
+        return doMerging(MergeEngines.ejbLocalRefsEngine());
+    }
+
+    public List<EjbRef> getEjbRefs() {
+        return doMerging(MergeEngines.ejbRefsEngine());
     }
 
     // -------------------------------------------------------------------------
