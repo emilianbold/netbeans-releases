@@ -246,12 +246,13 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             public void run() {
                 DownloadState state = AddServerLocationVisualPanel.this.downloadState;
                 boolean licenseAccepted = agreeCheckBox.isSelected();
+                boolean writableLoc = AddServerLocationPanel.canCreate(new File(hk2HomeTextField.getText()));
                 String buttonTextKey = 
                         state == DownloadState.DOWNLOADING ? "LBL_CancelDownload" : 
                         state == DownloadState.COMPLETED ? "LBL_DownloadComplete" : "LBL_DownloadNow";
                 String buttonText = NbBundle.getMessage(AddServerLocationVisualPanel.class, buttonTextKey);
                 downloadButton.setText(buttonText);
-                downloadButton.setEnabled(state != DownloadState.COMPLETED && licenseAccepted);
+                downloadButton.setEnabled(state != DownloadState.COMPLETED && licenseAccepted && writableLoc);
             }
         });
     }
@@ -420,7 +421,8 @@ private void agreeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         if(state == DownloadState.COMPLETED) {
             setDownloadState(DownloadState.AVAILABLE);
         } else {
-            downloadButton.setEnabled(agreeCheckBox.isSelected());
+            boolean writableLoc = AddServerLocationPanel.canCreate(new File(hk2HomeTextField.getText()));
+            downloadButton.setEnabled(agreeCheckBox.isSelected() && writableLoc);
         }
 }//GEN-LAST:event_agreeCheckBoxActionPerformed
     

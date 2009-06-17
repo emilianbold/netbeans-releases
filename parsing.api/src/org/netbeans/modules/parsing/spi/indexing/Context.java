@@ -68,6 +68,7 @@ public final class Context {
     private final boolean followUpJob;
     private final boolean checkForEditorModifications;
     private final boolean allFilesJob;
+    private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
     
     private FileObject root;
@@ -81,6 +82,7 @@ public final class Context {
              final IndexFactoryImpl factory, boolean followUpJob,
              final boolean checkForEditorModifications,
              final boolean allFilesJob,
+             final boolean sourceForBinaryRoot,
              final CancelRequest cancelRequest
     ) throws IOException {
         assert indexBaseFolder != null;
@@ -96,6 +98,7 @@ public final class Context {
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
         this.checkForEditorModifications = checkForEditorModifications;
         this.allFilesJob = allFilesJob;
+        this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
     }
 
@@ -181,6 +184,19 @@ public final class Context {
      */
     public boolean isAllFilesIndexing() {
         return allFilesJob;
+    }
+
+    /**
+     * Indicates whether sources of some binary library are being indexed. Some
+     * indexers are interested in knowing this information in order to optimize their
+     * indexing.
+     *
+     * @return <code>true</code> if indexing sources for binary root.
+     *
+     * @since 1.6
+     */
+    public boolean isSourceForBinaryRootIndexing() {
+        return sourceForBinaryRoot;
     }
 
     /**

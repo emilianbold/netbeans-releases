@@ -209,11 +209,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             String docBase = dir.getAbsolutePath ();
             String ctxPath = ctx.getAttributeValue ("path");
             this.tmId = new TomcatModule (t, ctxPath, docBase); //NOI18N
-            File tmpContextXml = createTempContextXml(docBase, ctx);
+            String tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat50()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+                command = "deploy?config=" + tmpContextXml + "&war=" + docBaseURI; // NOI18N
             } else {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N   
+                command = "deploy?config=" + tmpContextXml + "&path=" + encodePath(tmId.getPath()); // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
             String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeploymentInProgress");
@@ -251,7 +251,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);        
     }
-    
+
     /**
      * Remove context with the specified path from the Server tree.
      * Look for the first appearance of the service and host element.
@@ -318,11 +318,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             File contextXml = new File (docBase + "/META-INF/context.xml"); // NO18N
             FileInputStream in = new FileInputStream (contextXml);
             Context ctx = Context.createGraph (in);
-            File tmpContextXml = createTempContextXml(docBase, ctx);
+            String tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat50()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
+                command = "deploy?config=" + tmpContextXml + "&war=" + docBaseURI; // NOI18N
             } else {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N
+                command = "deploy?config=" + tmpContextXml + "&path=" + encodePath(tmId.getPath()); // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
             String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployInProgress");
@@ -359,8 +359,10 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     /**
      * Create a temporary copy of context.xml and set a docBase attribute 
      * in it. This does not modify the existing context.xml.
+     *
+     * @return properly escaped URL (<code>application/x-www-form-urlencoded</code>) in string form
      */
-    private File createTempContextXml(String docBase, Context ctx) throws IOException {
+    private String createTempContextXml(String docBase, Context ctx) throws IOException {
         File tmpContextXml = File.createTempFile("context", ".xml"); // NOI18N
         tmpContextXml.deleteOnExit();
         if (!docBase.equals (ctx.getAttributeValue ("docBase"))) { //NOI18N
@@ -369,7 +371,10 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             ctx.write (fos);
             fos.close ();
         }
-        return tmpContextXml;
+        // http://www.netbeans.org/issues/show_bug.cgi?id=167139
+        URL url = tmpContextXml.toURI().toURL();
+        String ret = URLEncoder.encode(url.toString(), "UTF-8"); // NOI18N
+        return ret;
     }
     
     /** Lists web modules.

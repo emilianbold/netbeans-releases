@@ -66,7 +66,7 @@ public class APTTraceUtils {
             if (parentFile == null) {
                 return file.getName();
             }
-            return parentFile.getName() + File.separator + file.getName();
+            return parentFile.getName() + "/" + file.getName(); // NOI18N
         }
     }
     

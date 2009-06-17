@@ -135,7 +135,7 @@ public final class ExperimentStatistics {
     }
 
     private static StringTokenizer tokenize(String line) {
-        return new StringTokenizer(line, " ()#"); // NOI18N
+        return new StringTokenizer(line, " ()%"); // NOI18N
     }
 
     /**
@@ -147,6 +147,6 @@ public final class ExperimentStatistics {
      * @throws NumberFormatException
      */
     private static double parseDouble(String val) {
-        return Double.valueOf(val.replace(',', '.'));
+        return Double.parseDouble(val.replace(',', '.'));
     }
 }

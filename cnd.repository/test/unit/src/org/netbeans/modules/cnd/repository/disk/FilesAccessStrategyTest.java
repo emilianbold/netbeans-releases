@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
  */
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     private static final Random rnd = new Random();
 
     static {

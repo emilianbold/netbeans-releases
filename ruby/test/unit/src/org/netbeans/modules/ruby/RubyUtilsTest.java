@@ -269,4 +269,26 @@ public class RubyUtilsTest extends TestCase {
         assertEquals("one, two, three", RubyUtils.join(new String[]{"one", "two", "three"}, ", "));
         assertEquals("", RubyUtils.join(Collections.<String>emptySet(), ", "));
     }
+
+    public void testIsRails23OrHigher() {
+        String actionmailer210 = "/usr/lib/ruby/gems/1.8/gems/actionmailer-2.1.0/something";
+        String actionmailer222 = "/usr/lib/ruby/gems/1.8/gems/actionmailer-2.2.2/something";
+        String actionmailer232 = "/usr/lib/ruby/gems/1.8/gems/actionmailer-2.3.2/something";
+        String activesupport21 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.1/something";
+        String activesupport222 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.2.2/something";
+        String activesupport232 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.3.2/something";
+        String activesupport24 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.4/something";
+        String notRails = "/usr/lib/ruby/gems/1.8/gems/gemmy-2.3.2/something";
+
+        assertFalse(RubyUtils.isRails23OrHigher(actionmailer210));
+        assertFalse(RubyUtils.isRails23OrHigher(actionmailer222));
+        assertTrue(RubyUtils.isRails23OrHigher(actionmailer232));
+
+        assertFalse(RubyUtils.isRails23OrHigher(activesupport21));
+        assertFalse(RubyUtils.isRails23OrHigher(activesupport222));
+        assertTrue(RubyUtils.isRails23OrHigher(activesupport232));
+        assertTrue(RubyUtils.isRails23OrHigher(activesupport24));
+
+        assertFalse(RubyUtils.isRails23OrHigher(notRails));
+    }
 }

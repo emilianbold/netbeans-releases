@@ -110,7 +110,6 @@ public class JiraIssueTest extends NbTestCase {
             throw ex;
         }
         BugtrackingManager.getInstance();
-        BugtrackingRuntime.getInstance().init();
         // need this to initialize cache -> server defined status values & co
         getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
         JiraTestUtil.cleanProject(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()));

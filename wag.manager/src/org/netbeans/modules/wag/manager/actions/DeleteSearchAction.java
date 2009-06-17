@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.wag.manager.model.WagSearchResult;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
-import org.netbeans.modules.wag.manager.wizards.AddSearchDlg;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -71,7 +70,7 @@ public class DeleteSearchAction extends NodeAction {
     }
     
     protected void performAction(final Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
+        if (nodes == null) {
             return;
         }
 
