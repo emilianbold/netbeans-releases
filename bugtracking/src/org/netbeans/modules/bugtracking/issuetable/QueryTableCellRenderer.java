@@ -54,13 +54,13 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
         if(!query.isSaved()) {
-            IssueStyle style = getDefaultIssueStyle(table, isSelected, row);
+            TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
             JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setRowColors(style, l);
             return l;
         }
         
-        IssueStyle style = null;
+        TableCellStyle style = null;
         JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         if(value instanceof IssueNode.SeenProperty) {
             IssueNode.SeenProperty ps = (IssueNode.SeenProperty) value;
@@ -71,7 +71,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         }
 
         if(value instanceof IssueNode.IssueProperty) {
-            style = getIssueStyle(table, query, (IssueProperty)value, isSelected, row);
+            style = getCellStyle(table, query, (IssueProperty)value, isSelected, row);
         }
 
         if(renderer instanceof JComponent && style != null) {
@@ -127,13 +127,13 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return text;
     }
 
-    public static class IssueStyle {
+    public static class TableCellStyle {
         private MessageFormat format;
         private Color background;
         private Color foreground;
         private String tooltip;
 
-        public IssueStyle(MessageFormat format, Color background, Color foreground, String tooltip) {
+        public TableCellStyle(MessageFormat format, Color background, Color foreground, String tooltip) {
             this.background = background;
             this.foreground = foreground;
             this.tooltip = tooltip;
@@ -168,8 +168,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         }
     }
 
-    public static IssueStyle getIssueStyle(JTable table, Query query, IssueProperty p, boolean isSelected, int row) {
-        IssueStyle style = getDefaultIssueStyle(table, isSelected, row);
+    public static TableCellStyle getCellStyle(JTable table, Query query, IssueProperty p, boolean isSelected, int row) {
+        TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
             Issue issue = p.getIssue();
@@ -202,9 +202,9 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return style;
     }
 
-    public static IssueStyle getDefaultIssueStyle(JTable table, boolean isSelected, int row) {
+    public static TableCellStyle getDefaultCellStyle(JTable table, boolean isSelected, int row) {
         // set default values
-        return new IssueStyle(
+        return new TableCellStyle(
             null,                                                                       // format
             isSelected ? table.getSelectionBackground() : getUnselectedBackground(row), // background
             isSelected ? Color.WHITE : table.getForeground(),                           // foreground
@@ -216,7 +216,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return row % 2 != 0 ? unevenLineColor : Color.WHITE;
     }
 
-    public static void setRowColors(IssueStyle style, JComponent l) {
+    public static void setRowColors(TableCellStyle style, JComponent l) {
         if(style == null) {
             assert false;
             return; // prefer to do nothing instead of breaking the rendering with an NPE

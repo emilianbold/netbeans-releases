@@ -20,7 +20,7 @@ import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.IssueStyle;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -58,14 +58,14 @@ public class QueryCellRenderer implements TableCellRenderer {
         IssueProperty issueProperty = (IssueProperty) value;
         NbJiraIssue issue = (NbJiraIssue) issueProperty.getIssue();
 
-        IssueStyle style = null;
+        TableCellStyle style = null;
         if(issue.hasSubtasks()) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
             
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getIssueStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
             } else {
-                style = QueryTableCellRenderer.getDefaultIssueStyle(table, isSelected, row);
+                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
 
             panel.north.setText(value.toString()); // XXX toString ???
@@ -91,9 +91,9 @@ public class QueryCellRenderer implements TableCellRenderer {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
 
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getIssueStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
             } else {
-                style = QueryTableCellRenderer.getDefaultIssueStyle(table, isSelected, row);
+                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
             
             panel.north.setText(issue.getParentKey());
@@ -131,7 +131,7 @@ public class QueryCellRenderer implements TableCellRenderer {
         return twoLabelPanel;
     }
 
-    private void setRowColors(IssueStyle style, TwoLabelPanel panel) {
+    private void setRowColors(TableCellStyle style, TwoLabelPanel panel) {
         QueryTableCellRenderer.setRowColors(style, panel.north);
         QueryTableCellRenderer.setRowColors(style, panel.south);
         QueryTableCellRenderer.setRowColors(style, panel);
