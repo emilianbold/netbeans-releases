@@ -173,7 +173,6 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                         final List<Hint> hints = new ArrayList<Hint> ();
                         List<Error> errors = new ArrayList<Error> ();
                         provider.computeErrors (gsfHintsManager, ruleContext, hints, errors);
-                        provider.computeHints (gsfHintsManager, ruleContext, hints);
                         saveErrors (errors, snapshot, indexingSupport, indexable);
                         saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
                     }
