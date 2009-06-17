@@ -104,6 +104,7 @@ import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -587,15 +588,23 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node instanceof DefnNode) {
-                String name = AstUtilities.getName(node);
-                DefnNode defNode = (DefnNode) node;
-                Set<Node> exits = new LinkedHashSet<Node>();
-                AstUtilities.findExitPoints(defNode, exits);
+            if (node instanceof DefnNode || node instanceof DefsNode) {
                 RubyType type = new RubyType();
-                for (Node exitPoint : exits) {
-                    if (exitPoint.getNodeType() != NodeType.FCALLNODE) {
-                        type.append(typeInferencer.inferType(exitPoint));
+                MethodDefNode defNode = (MethodDefNode) node;
+                String name = AstUtilities.getName(defNode);
+                // first check the def node itself
+                RubyType fastType = RubyMethodTypeInferencer.fastCheckType(name);
+                if (fastType != null) {
+                    type.append(fastType);
+                }
+                // check exit points only if the type couldn't be resolved from the def node
+                if (!type.isKnown()) {
+                    Set<Node> exits = new LinkedHashSet<Node>();
+                    AstUtilities.findExitPoints(defNode, exits);
+                    for (Node exitPoint : exits) {
+                        if (exitPoint.getNodeType() != NodeType.FCALLNODE) {
+                            type.append(typeInferencer.inferType(exitPoint));
+                        }
                     }
                 }
                 co.setType(type);
