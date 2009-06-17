@@ -44,11 +44,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -58,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -65,16 +72,17 @@ import org.openide.filesystems.FileUtil;
  * @author mkleint - copied and adjusted from netbeans.org web project until it gets rewritten there to
  *  be generic.
  */
-public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListener {
+public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListener, AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
     private FileObject docBase = null;
     private Project project;
     private WebModuleProviderImpl provider;
     boolean active = false;
     private NbMavenProject mavenproject;
+    private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
 
     /** Creates a new instance of CopyOnSaveSupport */
-    public CopyOnSave(Project prj, WebModuleProviderImpl prov) {
+    CopyOnSave(Project prj, WebModuleProviderImpl prov) {
         project = prj;
         provider = prov;
         mavenproject = project.getLookup().lookup(NbMavenProject.class);
@@ -118,25 +126,29 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     }
 
     public void initialize() throws FileStateInvalidException {
-        smallinitialize();
-        NbMavenProject.addPropertyChangeListener(project, this);
-        active = true;
+        if (!active) {
+            smallinitialize();
+            NbMavenProject.addPropertyChangeListener(project, this);
+            active = true;
+        }
     }
 
     public void cleanup() throws FileStateInvalidException {
-        smallcleanup();
-        NbMavenProject.removePropertyChangeListener(project, this);
-        active = false;
+        if (active) {
+            smallcleanup();
+            NbMavenProject.removePropertyChangeListener(project, this);
+            active = false;
+        }
     }
 
-    public void smallinitialize() throws FileStateInvalidException {
+    private void smallinitialize() throws FileStateInvalidException {
         docBase = getWebModule().getDocumentBase();
         if (docBase != null) {
             docBase.getFileSystem().addFileChangeListener(this);
         }
     }
 
-    public void smallcleanup() throws FileStateInvalidException {
+    private void smallcleanup() throws FileStateInvalidException {
         if (docBase != null) {
             docBase.getFileSystem().removeFileChangeListener(this);
         }
@@ -189,7 +201,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
             }
 
             FileObject fo = fe.getFile();
-            FileObject base = findAppropriateResourceRoots(fo);
+            FileObject base = findWebDocRoot(fo);
             if (base != null) {
                 handleCopyFileToDestDir(fo);
                 FileObject parent = fo.getParent();
@@ -237,7 +249,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     }
 
     private void handleDeleteFileInDestDir(FileObject fo, String path) throws IOException {
-        FileObject root = findAppropriateResourceRoots(fo);
+        FileObject root = findWebDocRoot(fo);
         if (root != null) {
             // inside docbase
             path = path != null ? path : FileUtil.getRelativePath(root, fo);
@@ -248,12 +260,11 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
             FileObject webBuildBase = getJ2eeModule().getContentDirectory();
             if (webBuildBase != null) {
                 // project was built
-                FileObject webInfClasses = comesFromWebappRoot(fo) ? webBuildBase : webBuildBase.getFileObject("WEB-INF/classes");
-                if (webInfClasses != null) {
-                    FileObject toDelete = webInfClasses.getFileObject(path);
-                    if (toDelete != null) {
-                        toDelete.delete();
-                    }
+                FileObject toDelete = webBuildBase.getFileObject(path);
+                if (toDelete != null) {
+                    File fil = FileUtil.toFile(toDelete);
+                    toDelete.delete();
+                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
                 }
             }
         }
@@ -264,7 +275,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
      */
     private void handleCopyFileToDestDir(FileObject fo) throws IOException {
         if (!fo.isVirtual()) {
-            FileObject documentBase = findAppropriateResourceRoots(fo);
+            FileObject documentBase = findWebDocRoot(fo);
             if (documentBase != null) {
                 // inside docbase
                 String path = FileUtil.getRelativePath(documentBase, fo);
@@ -279,31 +290,19 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
                         //cannot copy into self
                         return;
                     }
-                    FileObject destinationFolder = comesFromWebappRoot(fo) ? webBuildBase : webBuildBase.getFileObject("WEB-INF/classes");
-                    FileObject destFile = ensureDestinationFileExists(destinationFolder, path, fo.isFolder());
+                    FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
+                    File fil = FileUtil.toFile(destFile);
                     copySrcToDest(fo, destFile);
+                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
                 }
             }
         }
     }
 
-    private boolean comesFromWebappRoot(FileObject child) {
-        FileObject documentBase = getWebModule().getDocumentBase();
-        return documentBase != null && FileUtil.isParentOf(documentBase, child);
-    }
-
-    //#106522 make sure we also copy src/main/resource.. TODO for now ignore resource filtering or repackaging..
-    private FileObject findAppropriateResourceRoots(FileObject child) {
+    private FileObject findWebDocRoot(FileObject child) {
         FileObject documentBase = getWebModule().getDocumentBase();
         if (documentBase != null && FileUtil.isParentOf(documentBase, child)) {
             return documentBase;
-        }
-        URI[] uris = mavenproject.getResources(false);
-        for (URI uri : uris) {
-            FileObject fo = FileUtil.toFileObject(new File(uri));
-            if (fo != null && FileUtil.isParentOf(fo, child)) {
-                return fo;
-            }
         }
         return null;
     }
@@ -328,5 +327,89 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
             current = newCurrent;
         }
         return current;
+    }
+
+    /**
+     * AdditionalDestination
+     */
+    public void copy(FileObject fo, String path) {
+        try {
+            FileObject webBuildBase = getJ2eeModule().getContentDirectory();
+            if (webBuildBase != null) {
+                // project was built
+                FileObject destinationFolder = webBuildBase.getFileObject("WEB-INF/classes"); //NOI18N
+                FileObject destFile = ensureDestinationFileExists(destinationFolder, path, fo.isFolder());
+                File fil = FileUtil.toFile(destFile);
+                copySrcToDest(fo, destFile);
+                fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * AdditionalDestination
+     */
+    public void delete(FileObject fo, String path) {
+        try {
+            FileObject webBuildBase = getJ2eeModule().getContentDirectory();
+            if (webBuildBase != null) {
+                // project was built
+                FileObject webInfClasses = webBuildBase.getFileObject("WEB-INF/classes"); //NOI18N
+                if (webInfClasses != null) {
+                    FileObject toDelete = webInfClasses.getFileObject(path);
+                    if (toDelete != null) {
+                        File fil = FileUtil.toFile(toDelete);
+                        toDelete.delete();
+                        fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * J2eeModuleProvider.DeployOnSaveSupport
+     * @param listener
+     */
+    public void addArtifactListener(ArtifactListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    /**
+     * J2eeModuleProvider.DeployOnSaveSupport
+     * @param listener
+     */
+    public void removeArtifactListener(ArtifactListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    private void fireArtifactChange(Iterable<ArtifactListener.Artifact> artifacts) {
+        synchronized (listeners) {
+            for (ArtifactListener listener : listeners) {
+                listener.artifactsUpdated(artifacts);
+            }
+        }
+    }
+
+
+    private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+    public boolean containsIdeArtifacts() {
+        MavenProject mav = mavenproject.getMavenProject();
+        //now figure the destination output folder
+        if (mav.getBuild() != null) {
+            File fil = new File(mav.getBuild().getOutputDirectory());
+            fil = FileUtil.normalizeFile(fil);
+            File stamp = new File(fil, NB_COS);
+            return stamp.exists();
+        }
+        return false;
     }
 }

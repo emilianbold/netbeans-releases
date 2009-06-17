@@ -42,6 +42,8 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -58,51 +60,96 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
-
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.filesystems.FileObject;
-
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.netbeans.modules.db.util.DriverListUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 
 public class AddDriverDialog extends javax.swing.JPanel {
     
     private DefaultListModel dlm;
-    private List<URL> drvs;
-    private boolean customizer;
+    private List<URL> drvs = new LinkedList<URL>();
+    private boolean customizer = false;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
+    private DialogDescriptor descriptor;
     
     private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
 
-    /** Creates new form AddDriverDialog1 */
-    public AddDriverDialog() {
-        customizer = false;
+    /** Creates new AddDriverDialog.
+     * @param driverNode driver node to be customized or null to create a new one
+     */
+    private AddDriverDialog(DriverNode driverNode) {
         initComponents();
         // hack to force the progressContainerPanel honor its preferred height
         // without it, the preferred height is sometimes ignored during resize
         // progressContainerPanel.add(Box.createVerticalStrut(progressContainerPanel.getPreferredSize().height), BorderLayout.EAST);
         initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
-        drvs = new LinkedList<URL> ();
+
+        if (driverNode != null) {
+            setDriver(driverNode.getDatabaseDriver().getJDBCDriver());
+        }
+
+        DocumentListener documentListener = new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                updateState();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateState();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                updateState();
+            }
+        };
+        nameTextField.getDocument().addDocumentListener(documentListener);
+        drvList.getModel().addListDataListener(new ListDataListener() {
+
+            public void intervalAdded(ListDataEvent evt) {
+                updateState();
+            }
+
+            public void intervalRemoved(ListDataEvent evt) {
+                updateState();
+            }
+
+            public void contentsChanged(ListDataEvent evt) {
+                updateState();
+            }
+        });
+        Component editorComponent = drvClassComboBox.getEditor().getEditorComponent();
+        if (editorComponent instanceof JTextComponent) {
+            ((JTextComponent) editorComponent).getDocument().addDocumentListener(documentListener);
+        }
     }
     
-    public AddDriverDialog(JDBCDriver drv) {
-        this();
+    /** Fills this dialog by parameters of given driver. */
+    private void setDriver(JDBCDriver drv) {
         customizer = true;
         
         String fileName = null;
@@ -142,40 +189,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         drvClassComboBox.addItem(drv.getClassName());
         drvClassComboBox.setSelectedItem(drv.getClassName());
         nameTextField.setText(drv.getDisplayName());
-        
-        drvList.getModel().addListDataListener(
-            new ListDataListener()
-            {
-                public void intervalAdded(ListDataEvent evt) {
-                    updateFindButtonState();
-                }
-
-                public void intervalRemoved(ListDataEvent evt) {
-                    updateFindButtonState();
-                }
-
-                public void contentsChanged(ListDataEvent evt) {
-                    updateFindButtonState();
-                }
-            }
-        );
-        
-        updateRemoveButtonState();
-        updateFindButtonState();
     }
     
-    private void updateRemoveButtonState()
-    {
-        boolean canRemove = drvList.getSelectedIndices().length > 0;
-        removeButton.setEnabled(canRemove);
-    }
-    
-    private void updateFindButtonState()
-    {
-        boolean canFind = drvList.getModel().getSize() > 0;
-        findButton.setEnabled(canFind);
-    }
-
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDialogA11yDesc")); //NOI18N
         drvListLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddDriverDialog.class, "ACS_AddDriverDriverFileA11yDesc")); //NOI18N
@@ -271,7 +286,6 @@ public class AddDriverDialog extends javax.swing.JPanel {
         add(drvClassLabel, gridBagConstraints);
 
         drvClassComboBox.setEditable(true);
-        drvClassComboBox.addItemListener(formListener);
         drvClassComboBox.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -330,7 +344,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
     // Code for dispatching events from components to event handlers.
 
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.ItemListener, javax.swing.event.ListSelectionListener {
+    private class FormListener implements java.awt.event.ActionListener, javax.swing.event.ListSelectionListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == browseButton) {
@@ -344,12 +358,6 @@ public class AddDriverDialog extends javax.swing.JPanel {
             }
             else if (evt.getSource() == findButton) {
                 AddDriverDialog.this.findButtonActionPerformed(evt);
-            }
-        }
-
-        public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            if (evt.getSource() == drvClassComboBox) {
-                AddDriverDialog.this.drvClassComboBoxItemStateChanged(evt);
             }
         }
 
@@ -429,11 +437,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void drvListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_drvListValueChanged
-        updateRemoveButtonState();
+        updateState();
     }//GEN-LAST:event_drvListValueChanged
-
-    private void drvClassComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_drvClassComboBoxItemStateChanged
-    }//GEN-LAST:event_drvClassComboBoxItemStateChanged
             
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -594,5 +599,78 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    private void setDescriptor(DialogDescriptor descriptor) {
+        this.descriptor = descriptor;
+        updateState();
+    }
+
+    /** Updates state of UI controls. */
+    private void updateState() {
+        // update Remove button state
+        removeButton.setEnabled(drvList.getSelectedIndices().length > 0);
+        // update Find button state
+        findButton.setEnabled(drvList.getModel().getSize() > 0);
+        // update status line and OK button
+        if (drvList.getModel().getSize() == 0) {
+            String message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
+            descriptor.getNotificationLineSupport().setInformationMessage(message);
+            descriptor.setValid(false);
+        } else if (drvClassComboBox.getEditor().getItem().toString().length() == 0) {
+            String message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
+            descriptor.getNotificationLineSupport().setInformationMessage(message);
+            descriptor.setValid(false);
+        } else if (nameTextField.getText().length() == 0) {
+            String message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingName");
+            descriptor.getNotificationLineSupport().setInformationMessage(message);
+            descriptor.setValid(false);
+        } else {
+            descriptor.getNotificationLineSupport().clearMessages();
+            descriptor.setValid(true);
+        }
+    }
+
+    /** Shows New JDBC Driver dialog and returns driver instance if user
+     * clicks OK. Otherwise it returns null.
+     * @param driverNode existing driver node to be customized or null to create new one
+     * @return driver instance if user clicks OK, null otherwise
+     */
+    public static JDBCDriver showDialog(DriverNode driverNode) {
+        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode);
+
+        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialogTitle")); //NOI18N
+        descriptor.createNotificationLineSupport();
+        dlgPanel.setDescriptor(descriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.setVisible(true);
+
+        JDBCDriver driver = null;
+        if (DialogDescriptor.OK_OPTION == descriptor.getValue()) {
+            List<URL> drvLoc = dlgPanel.getDriverLocation();
+            String drvClass = dlgPanel.getDriverClass();
+            String displayName = dlgPanel.getDisplayName();
+            String name = displayName;
+            try {
+                if (driverNode != null) {
+                    // keep old name
+                    name = driverNode.getDatabaseDriver().getJDBCDriver().getName();
+                    driverNode.destroy();
+                }
+                driver = JDBCDriver.create(name, displayName, drvClass, drvLoc.toArray(new URL[0]));
+                JDBCDriverManager.getDefault().addDriver(driver);
+            } catch (DatabaseException exc) {
+                Exceptions.printStackTrace(exc);
+            }
+        }
+        return driver;
+    }
+
+    /** Shows New JDBC Driver dialog and returns driver instance if user
+     * clicks OK. Otherwise it returns null.
+     * @return driver instance if user clicks OK, null otherwise
+     */
+    public static JDBCDriver showDialog() {
+        return showDialog(null);
     }
 }

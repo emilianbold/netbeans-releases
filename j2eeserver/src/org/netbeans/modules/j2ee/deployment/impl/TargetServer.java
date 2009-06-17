@@ -69,6 +69,7 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -151,7 +152,7 @@ public class TargetServer {
         }
 
         J2eeModuleProvider.ConfigSupport configSupport = dtarget.getConfigSupport();
-        if (J2eeModule.WAR.equals(dtarget.getModule().getModuleType())) {
+        if (J2eeModule.Type.WAR.equals(dtarget.getModule().getType())) {
             try {
                 contextRoot = configSupport.getWebContextRoot();
             } catch (ConfigurationException e) {
@@ -269,7 +270,7 @@ public class TargetServer {
     // return list of TargetModule to redeploy
     private TargetModule[] checkUndeployForChangedReferences(Set toRedeploy) {
         // PENDING: what are changed references for ejbmod, j2eeapp???
-        if (dtarget.getModule().getModuleType() == J2eeModule.WAR) {
+        if (J2eeModule.Type.WAR.equals(dtarget.getModule().getType())) {
             for (Iterator j=toRedeploy.iterator(); j.hasNext();) {
                 TargetModule deployed = (TargetModule) j.next();
                 File lastContentDir = (deployed.getContentDirectory() == null) ? null : new File(deployed.getContentDirectory());
@@ -389,7 +390,7 @@ public class TargetServer {
         DeploymentManager dm = instance.getDeploymentManager();
         availablesMap = new HashMap<String, TargetModuleID>();
         try {
-            ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
+            ModuleType type = J2eeModuleAccessor.getDefault().getJsrModuleType(dtarget.getModule().getType());
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
             if (ids == null) {
                 return availablesMap;
@@ -556,7 +557,7 @@ public class TargetServer {
         init(ui, true, true);
 
         boolean missingModule = false;
-        if (ModuleType.EAR.equals(dtarget.getModule().getModuleType())
+        if (J2eeModule.Type.EAR.equals(dtarget.getModule().getType())
                 && dtarget.getModule() instanceof J2eeApplication
                 && redeployTargetModules != null
                 && redeployTargetModules.length == 1) {

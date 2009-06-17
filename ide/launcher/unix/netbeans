@@ -154,7 +154,7 @@ fi
 
 launchNbexec() {
     nbexec=`grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
-        if [ -f $X/lib/nbexec ]; then
+        if expr "$X" : "/.*" >/dev/null; then
            echo $X/lib/nbexec
         elif [ -f "$progdir"/../$X/lib/nbexec ]; then
             echo "$progdir"/../$X/lib/nbexec

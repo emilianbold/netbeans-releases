@@ -54,7 +54,7 @@ import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 final class RubyMethodTypeInferencer {
 
 
-    private static final String[] COMPARISON_OPERATORS = {"==", "==="}; //NOI18N
+    private static final String[] COMPARISON_OPERATORS = {"==", "===", "!=", }; //NOI18N
     /**
      * Names of the methods that whose return type is (typically) the same as the receiver.
      */

@@ -741,7 +741,7 @@ public abstract class J2eeModuleProvider {
         if (serverId != null) {
             Server server = ServerRegistry.getInstance().getServer(serverId);
             if (server != null) {
-                return server.canVerify(getJ2eeModule().getModuleType());
+                return server.canVerify(getJ2eeModule().getType());
             }
         }
         return false;
@@ -757,9 +757,9 @@ public abstract class J2eeModuleProvider {
         if (verifier == null) {
             throw new ValidationException ("Verification not supported by the selected server");
         }
-        Object type = getJ2eeModule().getModuleType();
-        if (!verifier.supportsModuleType(type)) {
-            throw new ValidationException ("Verification not supported for module type " + type);
+        Object jsrType = J2eeModuleAccessor.getDefault().getJsrModuleType(getJ2eeModule().getType());
+        if (!verifier.supportsModuleType(jsrType)) {
+            throw new ValidationException ("Verification not supported for module type " + jsrType);
         }
         ServerRegistry.getInstance().getServer(getServerID()).getVerifierSupport().verify(target, logger);
     }
@@ -793,7 +793,7 @@ public abstract class J2eeModuleProvider {
         // corresponds to switching from one server to another, both existing
         if (oldServer != null && newServer != null && !newServer.equals(oldServer)) {
 
-            if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
+            if (J2eeModule.Type.WAR.equals(getJ2eeModule().getType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
                 ConfigSupportImpl oldConSupp;
                 synchronized (this) {
