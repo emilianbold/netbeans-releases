@@ -19,8 +19,10 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.IssueStyle;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -32,7 +34,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  *
  */
-public class QueryCellRenderer implements TableCellRenderer {
+public class JiraQueryCellRenderer implements TableCellRenderer {
     private static final MessageFormat subtasksFormat = getFormat("subtasksFormat");  // NOI18N
     private static final MessageFormat parentFormat = getFormat("parentFormat");      // NOI18N
 
@@ -42,14 +44,18 @@ public class QueryCellRenderer implements TableCellRenderer {
     private static Icon hookIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/hook.png"));    // NOI18N
 
     private RowAdjuster rowAdjuster = new RowAdjuster();
+    private final IssueTable issueTable;
 
-    public QueryCellRenderer(JiraQuery query, QueryTableCellRenderer defaultIssueRenderer) {
+    public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.query = query;
         this.defaultIssueRenderer = defaultIssueRenderer;
+        this.issueTable = issueTable;
     }
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+        issueTable.removeCellActions(row, column);
 
         if(!(value instanceof JiraIssueNode.SummaryProperty)) {
             return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -58,14 +64,14 @@ public class QueryCellRenderer implements TableCellRenderer {
         IssueProperty issueProperty = (IssueProperty) value;
         NbJiraIssue issue = (NbJiraIssue) issueProperty.getIssue();
 
-        IssueStyle style = null;
+        TableCellStyle style = null;
         if(issue.hasSubtasks()) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
             
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getIssueStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
             } else {
-                style = QueryTableCellRenderer.getDefaultIssueStyle(table, isSelected, row);
+                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
 
             panel.north.setText(value.toString()); // XXX toString ???
@@ -80,7 +86,7 @@ public class QueryCellRenderer implements TableCellRenderer {
             }
 
             panel.south.setText(keysBuffer.toString()); 
-            panel.south.putClientProperty("format", isSelected ? null : parentFormat); // NOI18N
+            panel.south.putClientProperty("format", isSelected ? null : subtasksFormat); // NOI18N
 
             panel.setToolTipText(value.toString());  // XXX toString ???
             setRowColors(style, panel);
@@ -91,21 +97,23 @@ public class QueryCellRenderer implements TableCellRenderer {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
 
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getIssueStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
             } else {
-                style = QueryTableCellRenderer.getDefaultIssueStyle(table, isSelected, row);
+                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
             
             panel.north.setText(issue.getParentKey());
-            panel.north.putClientProperty("format", style != null ? style.getFormat() : null); // NOI18N
+            panel.north.putClientProperty("format", isSelected ? null : parentFormat); // NOI18N
 
             panel.south.setText(value.toString()); // XXX toString ???
-            panel.south.putClientProperty("format", isSelected ? null : subtasksFormat); // NOI18N
+            panel.south.putClientProperty("format", style != null ? style.getFormat() : null); // NOI18N
 
             panel.setToolTipText(value.toString());  // XXX toString ???
             setRowColors(style, panel);
             adjustRowSize(panel, table, row);
-            
+
+            addParentAction(row, column, panel.north, issue);
+
             return panel;
         }
 
@@ -121,7 +129,7 @@ public class QueryCellRenderer implements TableCellRenderer {
     }
 
     private static MessageFormat getFormat(String key) {
-        return new MessageFormat(NbBundle.getMessage(QueryCellRenderer.class, key));
+        return new MessageFormat(NbBundle.getMessage(JiraQueryCellRenderer.class, key));
     }    
 
     private TwoLabelPanel getTwoLabelPanel(Font font) {
@@ -131,10 +139,24 @@ public class QueryCellRenderer implements TableCellRenderer {
         return twoLabelPanel;
     }
 
-    private void setRowColors(IssueStyle style, TwoLabelPanel panel) {
+    private void setRowColors(TableCellStyle style, TwoLabelPanel panel) {
         QueryTableCellRenderer.setRowColors(style, panel.north);
         QueryTableCellRenderer.setRowColors(style, panel.south);
         QueryTableCellRenderer.setRowColors(style, panel);
+    }
+
+    private void addParentAction(int row, int column, JLabel label, final NbJiraIssue issue) {
+        issueTable.addCellAction(row, column, label.getBounds(), new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String id = issue.getParentID();
+                NbJiraIssue parent = (NbJiraIssue) issue.getRepository().getIssueCache().getIssue(id);
+                if(parent != null) {
+                    parent.open();
+                } else {
+                    Issue.open(issue.getRepository(), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
+                }
+            }
+        });
     }
 
     private class TwoLabelPanel extends JPanel {
