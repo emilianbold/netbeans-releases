@@ -62,7 +62,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 import org.openide.util.ImageUtilities;
 
@@ -1487,8 +1487,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private static class FilterCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Query.Filter) {
-                value = ((Query.Filter)value).getDisplayName();
+            if(value instanceof Filter) {
+                value = ((Filter)value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

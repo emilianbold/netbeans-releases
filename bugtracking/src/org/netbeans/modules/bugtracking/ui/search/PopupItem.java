@@ -71,24 +71,27 @@ abstract class PopupItem {
             if(text == null || text.trim().equals("")) return displayText;      // NOI18N
             StringBuffer sb = new StringBuffer();
 
-            int idx = displayText.indexOf(text);
+            String displayTextLower = displayText.toLowerCase();
+            String textLower = text.toLowerCase();
+            int idx = displayTextLower.indexOf(textLower);
             if(idx < 0) {
-                return displayText;
+                return displayTextLower;
             }
             int lastIdx = 0;
             sb.append("<html>");                                                // NOI18N
             while(idx > -1) {
                 sb.append(displayText.substring(lastIdx, idx));
+                lastIdx = idx + textLower.length();
                 if(idx > -1) {
                     sb.append("<b>");                                           // NOI18N
-                    sb.append(text);
+                    sb.append(displayText.substring(idx, lastIdx));
                     sb.append("</b>");                                          // NOI18N
                 }
-                lastIdx = idx + text.length();
-                idx = displayText.indexOf(displayText, lastIdx);
+                lastIdx = idx + textLower.length();
+                idx = displayTextLower.indexOf(displayTextLower, lastIdx);
             }
-            if(lastIdx < displayText.length()) {                
-                sb.append(displayText.substring(lastIdx, displayText.length()));
+            if(lastIdx < displayTextLower.length()) {
+                sb.append(displayTextLower.substring(lastIdx, displayTextLower.length()));
             } 
             sb.append("</html>");                                               // NOI18N
             return sb.toString();

@@ -66,6 +66,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
@@ -87,8 +88,10 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -123,6 +126,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private QueryTask refreshTask;
     private final boolean modifiable;
     private final JiraFilter jiraFilter;
+    private final IssueTable issueTable;
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -134,8 +138,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        panel = new QueryPanel(query.getTableComponent(), this);
-
+        issueTable = new IssueTable(query, query.getColumnDescriptors());
+        setupRenderer(issueTable);
+        panel = new QueryPanel(issueTable.getComponent(), this);
         panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
@@ -164,7 +169,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reporterTextField.addActionListener(this);
         panel.idTextField.getDocument().addDocumentListener(this);
 
-        panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
                     
         if(query.isSaved()) {
             setAsSaved();
@@ -175,6 +180,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             postPopulate((FilterDefinition) jiraFilter, false);
         }
+    }
+
+
+    private void setupRenderer(IssueTable issueTable) {
+//        TableCellRenderer renderer = issueTable.getRenderer();
+        issueTable.setRenderer(new QueryCellRenderer(query, new QueryTableCellRenderer(query)));
     }
 
     protected JiraFilter getJiraFilter() {
@@ -497,7 +508,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
-            onFilterChange((Query.Filter)e.getItem());
+            onFilterChange((Filter)e.getItem());
         }
     }
 
@@ -582,7 +593,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private void onFilterChange(Query.Filter filter) {
+    private void onFilterChange(Filter filter) {
         query.setFilter(filter);
     }
 
@@ -657,6 +668,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(filter != null) {
             panel.filterComboBox.setSelectedItem(filter);
         }
+        issueTable.setFilter(filter);
     }
 
     /**
