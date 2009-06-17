@@ -65,6 +65,8 @@ public class SearchEngine {
     private static final String GET_ITEM_INFO_URI = "platform/repository/GetItemInfo;exec";
 
     private static final String SEARCH_STRING_PARAM = "searchString";
+    private static final String SEARCH_FOR = "searchFor";
+    private static final String START_INDEX = "startIndex";
     private static final String MAX_RESULTS_PARAM = "maxResults";
     private static final String ITEM_URI_PARAM = "itemURI";
     private static final String VERSION_PARAM = "version";
@@ -96,11 +98,13 @@ public class SearchEngine {
         return instance;
     }
 
-    public List<WagService> search(String query, int maxResults) {
+    public List<WagService> search(String query, int maxResults, int startIndex) {
         try {
             List<Parameter> params = new ArrayList<Parameter>();
             params.add(Parameter.create(SEARCH_STRING_PARAM, query));
             params.add(Parameter.create(MAX_RESULTS_PARAM, Integer.toString(maxResults)));
+            params.add(Parameter.create(SEARCH_FOR, "SERVICE"));
+            params.add(Parameter.create(START_INDEX, Integer.toString(startIndex)));
             String result = zembly.callService(SEARCH_ITEM_URI, params);
 
             return parse(result);
