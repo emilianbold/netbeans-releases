@@ -81,7 +81,7 @@ public class ServerListTestCase extends RemoteTestBase {
     @AfterClass
     public void cleanup() {
         ServerRecord local = ServerList.get(ExecutionEnvironmentFactory.getLocal());
-        ServerList.set(Arrays.asList(local), 0);
+        ServerList.set(Arrays.asList(local), local);
     }
 
     public void testGetEnvironments() throws Exception {
@@ -105,7 +105,7 @@ public class ServerListTestCase extends RemoteTestBase {
         ServerRecord[] records = tcoll.toArray(new ServerRecord[tcoll.size()]);
         for (int i = 0; i < records.length; i++) {
             ServerRecord rec = records[i];
-            ServerList.setDefaultIndex(i);
+            ServerList.setDefaultRecord(rec);
             assertTrue(ServerList.getDefaultRecord().equals(rec));
             assertTrue(ServerList.getDefaultRecord().getExecutionEnvironment().equals(rec.getExecutionEnvironment()));
         }

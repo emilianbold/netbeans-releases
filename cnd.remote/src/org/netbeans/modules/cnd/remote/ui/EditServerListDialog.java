@@ -81,7 +81,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
     private DefaultListModel model;
     private DialogDescriptor desc;
-    private int defaultIndex;
+    private ServerRecord defaultRecord;
     private ProgressHandle phandle;
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
@@ -118,15 +118,15 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             for (ServerRecord rec : ServerList.getRecords()) {
                 model.addElement(rec);
             }
-            defaultIndex = ServerList.getDefaultIndex();
+            defaultRecord = ServerList.getDefaultRecord();
         } else {
             for (ServerRecord rec : cache.getHosts()) {
                 model.addElement(rec);
             }
-            defaultIndex = cache.getDefaultIndex();
+            defaultRecord = cache.getDefaultRecord();
         }
         lstDevHosts.setModel(model);
-        lstDevHosts.setSelectedIndex(defaultIndex);
+        lstDevHosts.setSelectedValue(defaultRecord, false);
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
@@ -183,7 +183,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             ServerRecord rec = (ServerRecord) value;
             out.setText(rec.getDisplayName());
-            if (index == getDefaultIndex()) {
+            if (value != null && value.equals(getDefaultRecord())) {
                 out.setFont(out.getFont().deriveFont(Font.BOLD));
             }
             return out;
@@ -202,8 +202,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         return result;
     }
 
-    public int getDefaultIndex() {
-        return defaultIndex;
+    public ServerRecord getDefaultRecord() {
+        return defaultRecord;
     }
 
     private void showPathMapper() {
@@ -235,12 +235,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
     /** Enable/disable the Remove and Set As Default buttons */
     public void valueChanged(ListSelectionEvent evt) {
-        int idx = lstDevHosts.getSelectedIndex();
-        if (idx >= 0) {
-            RemoteServerRecord record = getSelectedRecord();
+        RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
+        if (record != null) {
             tfStatus.setText(record.getStateAsText());
-            btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
-            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
+            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);
+            btSetAsDefault.setEnabled( ! record.equals(defaultRecord) && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
             btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote());
             if (!record.isOnline()) {
@@ -280,17 +279,19 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                     }
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N
+                ServerRecord rec2delete = (ServerRecord) lstDevHosts.getSelectedValue();
                 int idx = lstDevHosts.getSelectedIndex();
-                if (idx > 0) {
-                    model.remove(idx);
+                if (rec2delete != null) {
+                    model.removeElement(rec2delete);
                     lstDevHosts.setSelectedIndex(model.size() > idx ? idx : idx - 1);
-                    if (defaultIndex >= idx) {
-                        defaultIndex--;
+                    if (defaultRecord.equals(rec2delete)) {
+                        defaultRecord = (ServerRecord) lstDevHosts.getSelectedValue();
                     }
                 }
                 lstDevHosts.repaint();
+
             } else if (b.getActionCommand().equals("SetAsDefault")) { // NOI18N
-                defaultIndex = lstDevHosts.getSelectedIndex();
+                defaultRecord = (ServerRecord) lstDevHosts.getSelectedValue();
                 b.setEnabled(false);
                 lstDevHosts.repaint();
             } else if (b.getActionCommand().equals("PathMapper")) { // NOI18N

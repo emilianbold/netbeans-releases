@@ -69,20 +69,14 @@ public class ServerList {
         }
     };
 
-    /** The index of the default development server */
-    public static int getDefaultIndex() {
-        return getDefault().getDefaultIndex();
-    }
-
     public static Collection<? extends ServerRecord> getRecords() {
         return getDefault().getRecords();
     }
     
-    /** Set the index of the default development server */
-    public static void setDefaultIndex(int defaultIndex) {
-        getDefault().setDefaultIndex(defaultIndex);
+    public static void setDefaultRecord(ServerRecord defaultRecord) {
+        getDefault().setDefaultRecord(defaultRecord);
     }
-    
+
     public static List<ExecutionEnvironment> getEnvironments() {
         return getDefault().getEnvironments();
     };
@@ -95,8 +89,8 @@ public class ServerList {
         return getDefault().getDefaultRecord();
     }
     
-    public static void set(List<ServerRecord> records, int defaultIndex) {
-        getDefault().set(records, defaultIndex);
+    public static void set(List<ServerRecord> records, ServerRecord defaultRecord) {
+        getDefault().set(records, defaultRecord);
     }
 
     public static ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
