@@ -32,7 +32,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  *
  */
-public class QueryCellRenderer implements TableCellRenderer {
+public class JiraQueryCellRenderer implements TableCellRenderer {
     private static final MessageFormat subtasksFormat = getFormat("subtasksFormat");  // NOI18N
     private static final MessageFormat parentFormat = getFormat("parentFormat");      // NOI18N
 
@@ -43,7 +43,7 @@ public class QueryCellRenderer implements TableCellRenderer {
 
     private RowAdjuster rowAdjuster = new RowAdjuster();
 
-    public QueryCellRenderer(JiraQuery query, QueryTableCellRenderer defaultIssueRenderer) {
+    public JiraQueryCellRenderer(JiraQuery query, QueryTableCellRenderer defaultIssueRenderer) {
         this.query = query;
         this.defaultIssueRenderer = defaultIssueRenderer;
     }
@@ -121,7 +121,7 @@ public class QueryCellRenderer implements TableCellRenderer {
     }
 
     private static MessageFormat getFormat(String key) {
-        return new MessageFormat(NbBundle.getMessage(QueryCellRenderer.class, key));
+        return new MessageFormat(NbBundle.getMessage(JiraQueryCellRenderer.class, key));
     }    
 
     private TwoLabelPanel getTwoLabelPanel(Font font) {
