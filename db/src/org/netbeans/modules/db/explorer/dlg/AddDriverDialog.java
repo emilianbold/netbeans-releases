@@ -627,7 +627,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
         } else if (nameTextField.getText().length() == 0) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingName");
-        } else if (nameTextField.getText().length() > 0) {
+        } else if (!customizer && nameTextField.getText().length() > 0) {
             String newDisplayName = nameTextField.getText();
             for (JDBCDriver driver : JDBCDriverManager.getDefault().getDrivers()) {
                 if (driver.getDisplayName().equalsIgnoreCase(newDisplayName)) {
