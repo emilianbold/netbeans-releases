@@ -312,6 +312,7 @@ public class DependencyNode extends AbstractNode {
         }
         if (isTransitive()) {
             acts.add(new ExcludeTransitiveAction());
+            acts.add(new SetInCurrentAction());
         } else {
             acts.add(new RemoveDependencyAction());
         }
@@ -688,6 +689,58 @@ public class DependencyNode extends AbstractNode {
             org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
         }
     }
+
+    private class SetInCurrentAction extends AbstractAction {
+
+        public SetInCurrentAction() {
+            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Set_Dependency"));
+        }
+
+        public void actionPerformed(ActionEvent event) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                        public void performOperation(POMModel model) {
+                            org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                            if (dep == null) {
+                                // now check the active profiles for the dependency..
+                                List<String> profileNames = new ArrayList<String>();
+                                Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
+                                while (it.hasNext()) {
+                                    Profile prof = (Profile) it.next();
+                                    profileNames.add(prof.getId());
+                                }
+                                for (String profileId : profileNames) {
+                                    org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
+                                    if (modProf != null) {
+                                        dep = modProf.findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                                        if (dep != null) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (dep == null) {
+                                dep = model.getFactory().createDependency();
+                                dep.setArtifactId(art.getArtifactId());
+                                dep.setGroupId(art.getGroupId());
+                                dep.setType(art.getType());
+                                dep.setVersion(art.getVersion());
+                                if (art.getClassifier() != null) {
+                                    dep.setClassifier(art.getClassifier());
+                                }
+                                model.getProject().addDependency(dep);
+                            }
+                        }
+                    };
+                    FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+
+                    org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+                }
+            });
+        }
+    }
+
 
     private class InstallLocalArtifactAction extends AbstractAction {
 
