@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.swing.JTextField;
 import org.netbeans.modules.wag.manager.search.SearchEngine;
 import org.openide.util.Exceptions;
 
@@ -62,6 +61,7 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
     public static final String PROP_NAME = "searchResult";
     private String query;
     private int maxResults;
+    private int currentIndex;
     private SortedSet<WagService> services;
     private PropertyChangeSupport pps;
 
@@ -134,6 +134,19 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
 
+    public void next() {
+        currentIndex += maxResults;
+        refresh();
+    }
+
+    public void previous() {
+        currentIndex -= maxResults;
+
+        if (currentIndex < 0) currentIndex = 0;
+        
+        refresh();
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pps.addPropertyChangeListener(l);
     }
@@ -148,7 +161,8 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
     }
 
     private Collection<WagService> getSearchResult() {
-        return SearchEngine.getInstance().search(query, maxResults);
+        //System.out.println("searching: query = " + query + " maxResults = " + maxResults + " currentIndex = " + currentIndex);
+        return SearchEngine.getInstance().search(query, maxResults, currentIndex);
     }
 
     @Override
