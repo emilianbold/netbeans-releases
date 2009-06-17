@@ -83,6 +83,10 @@ public class GroovyLexerIncTest extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence<?> ts = hi.tokenSequence();
+        // contains \n
+        assertTrue(ts.moveNext());
+        assertEquals(GroovyTokenId.NLS, ts.token().id());
+
         assertFalse(ts.moveNext());
 
         // Insert text into document
@@ -108,6 +112,10 @@ public class GroovyLexerIncTest extends NbTestCase {
         next(ts, GroovyTokenId.IDENTIFIER, "name", 16);
         next(ts, GroovyTokenId.STRING_LITERAL, "\"", 20);
 
+        // contains \n
+        assertTrue(ts.moveNext());
+        assertEquals(GroovyTokenId.NLS, ts.token().id());
+        
         assertFalse(ts.moveNext());
 
         LexerTestUtilities.incCheck(doc, false);
@@ -116,7 +124,9 @@ public class GroovyLexerIncTest extends NbTestCase {
 
         // Check TokenSequence.move()
         int relOffset = ts.move(50); // past the end of all tokens
-        assertEquals(relOffset, 50 - (offset + 1));
+        assertEquals(relOffset, 50 - (offset + 2));
+        assertTrue(ts.movePrevious());
+        LexerTestUtilities.assertTokenEquals(ts, GroovyTokenId.NLS, "\n", offset + 1);
         assertTrue(ts.movePrevious());
         LexerTestUtilities.assertTokenEquals(ts, GroovyTokenId.STRING_LITERAL, "\"", offset);
 
@@ -182,6 +192,8 @@ public class GroovyLexerIncTest extends NbTestCase {
         next(ts, GroovyTokenId.IDENTIFIER, "name", 16);
 
         next(ts, GroovyTokenId.STRING_LITERAL, " \"", 20);
+        assertTrue(ts.moveNext());
+        assertEquals(GroovyTokenId.NLS, ts.token().id());
         assertFalse(ts.moveNext());
         LexerTestUtilities.incCheck(doc, false);
     }
