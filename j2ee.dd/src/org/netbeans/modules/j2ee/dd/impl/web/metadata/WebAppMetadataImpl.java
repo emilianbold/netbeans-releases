@@ -112,6 +112,8 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     // HELPER METHODS
     // -------------------------------------------------------------------------
     private <T> List<T> doMerging(MergeEngine<T> eng) {
+        eng.clean();
+
         // from web.xml
         refreshWebXml();
         if (webXml != null) {

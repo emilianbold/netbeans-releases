@@ -45,11 +45,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -57,15 +63,27 @@ import org.openide.filesystems.FileUtil;
  */
 public class StrutsEditorUtilitiesTest extends NbTestCase {
 
-    File testDir;
-    FileObject testDirFO;
+    private File testDir;
+
+    private FileObject testDirFO;
 
     public StrutsEditorUtilitiesTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances(new MimeDataProvider() {
+
+            public Lookup getLookup(MimePath mimePath) {
+                if ("text/xml".equals(mimePath.getPath())) {
+                    return Lookups.fixed(new XMLKit());
+                }
+                return null;
+            }
+        });
+
         testDir = new File (this.getDataDir().getPath());
         assertTrue("have a dir " + testDir, testDir.isDirectory());
         testDirFO = FileUtil.toFileObject(testDir);
@@ -167,7 +185,7 @@ public class StrutsEditorUtilitiesTest extends NbTestCase {
     }
     
     private BaseDocument createBaseDocument(File file){
-        BaseDocument doc = new BaseDocument(XMLKit.class, false);
+        BaseDocument doc = new BaseDocument(false, "text/xml");
         File strutsConfig = new File(testDir, "struts-config.xml");
         StringBuffer buffer = new StringBuffer();
         try {
