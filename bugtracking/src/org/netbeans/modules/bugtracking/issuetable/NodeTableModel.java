@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
@@ -74,7 +74,7 @@ import org.openide.awt.Mnemonics;
 * @author Jan Rojcek
 * @since 1.7
 */
-public class NodeTableModel extends AbstractTableModel {
+class NodeTableModel extends AbstractTableModel {
     private static final String ATTR_INVISIBLE = "InvisibleInTreeTableView"; // NOI18N
     static final String ATTR_COMPARABLE_COLUMN = "ComparableColumnTTV"; // NOI18N
     static final String ATTR_SORTING_COLUMN = "SortingColumnTTV"; // NOI18N

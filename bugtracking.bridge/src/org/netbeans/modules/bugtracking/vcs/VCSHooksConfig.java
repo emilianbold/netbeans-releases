@@ -102,16 +102,16 @@ public class VCSHooksConfig {
         return getFormat(getPreferences().get(SVN_HOOK_ISSUE_FORMAT, null), getDefaultIssueFormat());
     }
 
-    void setHgPushAction(String changeset, PushAction pushAction) {
+    void setHgPushAction(String changeset, PushOperation pushAction) {
         getPreferences().put(HG_HOOK_PUSH_ + changeset,  pushAction.toString());
     }
 
-    PushAction popHGPushAction(String changeset) {
+    PushOperation popHGPushAction(String changeset) {
         String value = getPreferences().get(HG_HOOK_PUSH_ + changeset, null);
         if(value == null) return null;
         String values[] = value.split(DELIMITER);
         getPreferences().remove(HG_HOOK_PUSH_ + changeset);
-        return new PushAction(values[0], values[1], values[2].equals("1") ? true : false); // NOI18N
+        return new PushOperation(values[0], values[1], values[2].equals("1") ? true : false); // NOI18N
     }
 
     static Format getDefaultHgFormat() {
@@ -171,11 +171,11 @@ public class VCSHooksConfig {
         return ret.toString();
     }
 
-    static class PushAction {
+    static class PushOperation {
         private final String issueID;
         private final String msg;
         private final boolean close;
-        public PushAction(String issueID, String msg, boolean close) {
+        public PushOperation(String issueID, String msg, boolean close) {
             this.issueID = issueID;
             this.msg = msg;
             this.close = close;
