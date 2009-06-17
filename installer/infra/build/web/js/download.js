@@ -489,7 +489,7 @@ function update() {
         }
 
         if(product_uids[i] == "nb-javafx") {
-             product_messages[i] = NOTE_JAVAFX.replace('{0}', "http://www.netbeans.org/downloads");
+             product_messages[i] = NOTE_JAVAFX.replace('{0}', "http://www.netbeans.org/downloads/6.5.1");
         }
 		
         for(var k=0;k<BUNDLE_IDS.length;k++) {
