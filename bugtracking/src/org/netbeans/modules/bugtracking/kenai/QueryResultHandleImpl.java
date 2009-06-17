@@ -85,8 +85,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
             KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
             support.setFilter(query, filter);
         }
-//        query.setFilter(filter); XXX need the kenaisupport to do this
-        QueryAction.openKenaiQuery(query, null);
+        QueryAction.openQuery(query, null, true);
     }
 
     static QueryResultHandleImpl forStatus(Query query, int status) {

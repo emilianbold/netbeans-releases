@@ -183,7 +183,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             public void actionPerformed(ActionEvent e) {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
-                        QueryAction.openKenaiQuery(null, repo);
+                        QueryAction.openQuery(null, repo, true);
                     }
                 });          
             }

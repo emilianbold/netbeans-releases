@@ -125,21 +125,19 @@ final class QueryTopComponent extends TopComponent
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
     }
 
-    public static QueryTopComponent forKenai(Query query, Repository toSelect) {
-        QueryTopComponent tc = new QueryTopComponent();
-        tc.init(query, toSelect);
-        tc.repositoryComboBox.setEnabled(false);
-        tc.newButton.setEnabled(false);
-        return tc;
-    }
-
     private Query getQuery() {
         return query;
     }
 
-    public void init(Query query, Repository toSelect) {
+    void init(Query query, Repository toSelect, boolean suggestedSelectionOnly) {
         this.query = query;
         setNameAndTooltip();
+
+        if(suggestedSelectionOnly) {
+            repositoryComboBox.setEnabled(false);
+            newButton.setEnabled(false);
+        }
+
         if (query != null) {
             setSaved();
             BugtrackingController c = query.getController();
