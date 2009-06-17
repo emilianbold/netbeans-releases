@@ -48,9 +48,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -146,6 +149,13 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 // refresh their taskdata with the relevant username/password
                 kr.setCredentials(user, psswd);
             }
+        }
+    }
+
+    @Override
+    public void setFilter(Query query, Filter filter) {
+        if(query instanceof JiraQuery) {
+            ((JiraQuery)query).setFilter(filter);
         }
     }
 }

@@ -105,8 +105,9 @@ public final class CsmProjectContentResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-    private CsmProject project;
-    private Collection<CsmProject> libs;
+    private final CsmProject project;
+    private final CsmFile startFile;
+    private final Collection<CsmProject> libs;
 
     public CsmProjectContentResolver() {
         this(false);
@@ -124,18 +125,26 @@ public final class CsmProjectContentResolver {
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
         this.sort = needSort;
+        this.libs = null;
+        this.project = null;
+        this.startFile = null;
     }
 
     /**
      * Creates a new instance of CsmProjectContentResolver
      * could be used for getting info only from project
      */
-    public CsmProjectContentResolver(CsmProject project, boolean caseSensitive, boolean needSort, boolean naturalSort, Collection<CsmProject> libs) {
+    public CsmProjectContentResolver(CsmFile startFile, CsmProject project, boolean caseSensitive, boolean needSort, boolean naturalSort, Collection<CsmProject> libs) {
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
         this.sort = needSort;
         this.project = project;
         this.libs = libs;
+        this.startFile = startFile;
+    }
+
+    public CsmFile getStartFile() {
+        return startFile;
     }
 
     private List<CsmEnumerator> getEnumeratorsFromEnumsEnumeratorsAndTypedefs(List enumsEnumeratorsAndTypedefs, boolean match, String strPrefix, boolean sort) {
@@ -321,7 +330,7 @@ public final class CsmProjectContentResolver {
         for (CsmProject lib : libs) {
             if (!handledLibs.contains(lib)) {
                 handledLibs.add(lib);
-                CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort(), Collections.<CsmProject>emptyList());
+                CsmProjectContentResolver libResolver = new CsmProjectContentResolver(this.startFile, lib, isCaseSensitive(), isSortNeeded(), isNaturalSort(), Collections.<CsmProject>emptyList());
                 // TODO: now only direct lib is handled and not libraries of libraries of ...
                 Collection<? extends CsmObject> results = filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested);
                 if (match) {

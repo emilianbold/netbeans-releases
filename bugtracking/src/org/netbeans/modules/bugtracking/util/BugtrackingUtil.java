@@ -178,10 +178,11 @@ public class BugtrackingUtil {
         if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
+        criteria = criteria.toLowerCase();
         List<Issue> ret = new ArrayList<Issue>();
         for (Issue issue : issues) {            
-            if(criteria.equals(issue.getID()) ||
-               issue.getSummary().indexOf(criteria) > -1)
+            if(criteria.equals(issue.getID().toLowerCase()) ||
+               issue.getSummary().toLowerCase().indexOf(criteria) > -1)
             {
                 ret.add(issue);
             }  
@@ -483,6 +484,21 @@ public class BugtrackingUtil {
     public static int getColumnWidthInPixels(String str, JComponent comp) {
         FontMetrics fm = comp.getFontMetrics(comp.getFont());
         return fm.stringWidth(str);
+    }
+
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        String[] valuesArray = values.toArray(new String[values.size()]);
+        return getLongestWordWidth(header, valuesArray, comp);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
+        }
+        return getColumnWidthInPixels(size, comp);
     }
 
     /**
