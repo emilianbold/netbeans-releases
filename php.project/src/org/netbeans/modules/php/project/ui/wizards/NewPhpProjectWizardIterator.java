@@ -320,6 +320,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
         settings.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
         settings.putProperty(ConfigureProjectPanel.ENCODING, null);
+        settings.putProperty(RunConfigurationPanel.VALID, null);
         settings.putProperty(RunConfigurationPanel.RUN_AS, null);
         settings.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
         settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
@@ -329,6 +330,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
+        settings.putProperty(PhpFrameworksPanel.VALID, null);
+        settings.putProperty(PhpFrameworksPanel.FRAMEWORKS, null);
     }
 
     private File getProjectDirectory() {
