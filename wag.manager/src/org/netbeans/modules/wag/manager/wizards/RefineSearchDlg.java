@@ -66,17 +66,19 @@ import org.openide.util.RequestProcessor;
  * or in some uddiRegistry (UDDI)
  * @author Winston Prakash, cao
  */
-public class AddSearchDlg extends JPanel implements ActionListener {
+public class RefineSearchDlg extends JPanel implements ActionListener {
 
     private DialogDescriptor dlg = null;
     private Dialog dialog;
     private String defaultMsg;
     private WagSearchResults searchResults;
+    private WagSearchResult searchResult;
 
-    public AddSearchDlg(WagSearchResults results) {
-        initComponents();
-        myInitComponents();
+    public RefineSearchDlg(WagSearchResults results, WagSearchResult result) {
         this.searchResults = results;
+        this.searchResult = result;
+        initComponents();
+        myInitComponents();        
     }
 
     private void setErrorMessage(String msg) {
@@ -105,7 +107,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
     }
 
     private void myInitComponents() {
-
+        searchQueryTF.setText(searchResult.getQuery());
         searchQueryTF.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
@@ -121,6 +123,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
             }
         });
 
+        maxResultsTF.setText(Integer.toString(searchResult.getMaxResults()));
         maxResultsTF.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
@@ -139,7 +142,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
 
     public void displayDialog() {
 
-        dlg = new DialogDescriptor(this, NbBundle.getMessage(AddSearchDlg.class, "LBL_RefineSearch"),
+        dlg = new DialogDescriptor(this, NbBundle.getMessage(RefineSearchDlg.class, "LBL_AddSearch"),
                 true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
 
@@ -151,16 +154,17 @@ public class AddSearchDlg extends JPanel implements ActionListener {
         if (dlg.getValue() == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    addSearchResult();
+                    refineSearchResult();
                 }
             });
         }
     }
 
-    private void addSearchResult() {
+    private void refineSearchResult() {
+        searchResults.removeResults(Arrays.asList(searchResult));
+
         String query = searchQueryTF.getText().trim();
         int maxResults = Integer.parseInt(maxResultsTF.getText().trim());
-
         searchResults.addResults(Arrays.asList(new WagSearchResult(query, maxResults)));
     }
 
@@ -199,7 +203,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
         });
 
         queryLabel.setLabelFor(searchQueryTF);
-        org.openide.awt.Mnemonics.setLocalizedText(queryLabel, org.openide.util.NbBundle.getMessage(AddSearchDlg.class, "LBL_SearchQuery")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(queryLabel, org.openide.util.NbBundle.getMessage(RefineSearchDlg.class, "LBL_SearchQuery")); // NOI18N
 
         searchQueryTF.setColumns(20);
         searchQueryTF.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -211,7 +215,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
         errorLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         maxResultsLabel.setLabelFor(maxResultsTF);
-        org.openide.awt.Mnemonics.setLocalizedText(maxResultsLabel, org.openide.util.NbBundle.getMessage(AddSearchDlg.class, "LBL_MaxResults")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(maxResultsLabel, org.openide.util.NbBundle.getMessage(RefineSearchDlg.class, "LBL_MaxResults")); // NOI18N
 
         maxResultsTF.setText("25");
         maxResultsTF.addActionListener(new java.awt.event.ActionListener() {
