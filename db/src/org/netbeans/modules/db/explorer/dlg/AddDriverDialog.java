@@ -84,6 +84,7 @@ import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.netbeans.modules.db.util.DriverListUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 
@@ -421,6 +422,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
         if (selectedFiles != null) {
             for (File file : selectedFiles) {
                 if (file.isFile()) {
+                    if (dlm.contains(file.toString())) {
+                        // file already added
+                        NotifyDescriptor msgDesc = new NotifyDescriptor.Message(NbBundle.getMessage(AddDriverDialog.class, "AddDriverDuplicateFile", file.toString()));
+                        DialogDisplayer.getDefault().notify(msgDesc);
+                        continue;
+                    }
                     dlm.addElement(file.toString());
                     try {
                         drvs.add(file.toURI().toURL());
@@ -613,16 +620,23 @@ public class AddDriverDialog extends javax.swing.JPanel {
         // update Find button state
         findButton.setEnabled(drvList.getModel().getSize() > 0);
         // update status line and OK button
+        String message = null;
         if (drvList.getModel().getSize() == 0) {
-            String message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
-            descriptor.getNotificationLineSupport().setInformationMessage(message);
-            descriptor.setValid(false);
+            message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
         } else if (drvClassComboBox.getEditor().getItem().toString().length() == 0) {
-            String message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
-            descriptor.getNotificationLineSupport().setInformationMessage(message);
-            descriptor.setValid(false);
+            message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
         } else if (nameTextField.getText().length() == 0) {
-            String message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingName");
+            message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingName");
+        } else if (nameTextField.getText().length() > 0) {
+            String newDisplayName = nameTextField.getText();
+            for (JDBCDriver driver : JDBCDriverManager.getDefault().getDrivers()) {
+                if (driver.getDisplayName().equalsIgnoreCase(newDisplayName)) {
+                    message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDuplicateName");
+                    break;
+                }
+            }
+        }
+        if (message != null) {
             descriptor.getNotificationLineSupport().setInformationMessage(message);
             descriptor.setValid(false);
         } else {
