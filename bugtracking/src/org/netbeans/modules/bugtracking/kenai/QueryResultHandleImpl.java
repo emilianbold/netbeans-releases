@@ -45,7 +45,7 @@ import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -82,7 +82,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
         // XXX this is a hack for now - filter should be set only for the one relevant support
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (BugtrackingConnector c : connectors) {
-            KenaiSupport support = c.getKenaiSupport();
+            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
             support.setFilter(query, filter);
         }
 //        query.setFilter(filter); XXX need the kenaisupport to do this

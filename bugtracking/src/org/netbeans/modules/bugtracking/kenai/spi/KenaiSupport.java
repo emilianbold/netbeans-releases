@@ -37,16 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
- *
+ * 
+ * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
+ * To use register your implementation in the {@link BugtrackingController}-s lookup.
+ * 
  * @author Tomas Stupka
  */
 public abstract class KenaiSupport {
+
+    /**
+     * Creates a {@link Repository} for the given {@link KenaiProject}
+     *
+     * @param project
+     * @return
+     */
     public abstract Repository createRepository(KenaiProject project);
+
+    /**
+     * // XXX what is this!
+     * @param query
+     * @param filter
+     */
     public abstract void setFilter(Query query, Filter filter);
 }
