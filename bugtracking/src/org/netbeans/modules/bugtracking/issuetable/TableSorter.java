@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Component;
 import java.awt.Font;
@@ -120,7 +120,7 @@ import org.openide.util.ImageUtilities;
  */
 
 // XXX ujetaken from versioning util
-public final class TableSorter extends AbstractTableModel {
+final class TableSorter extends AbstractTableModel {
     protected TableModel tableModel;
 
     public static final int DESCENDING = -1;

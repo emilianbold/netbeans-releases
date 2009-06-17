@@ -39,13 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.ui.issuetable;
+package org.netbeans.modules.bugtracking.issuetable;
 
-import java.awt.Component;
 import java.io.IOException;
+import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.openide.util.NbBundle;
 
 import javax.swing.event.AncestorListener;
@@ -55,10 +54,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.event.KeyListener;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -67,26 +63,20 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 
 /**
  * @author Tomas Stupka
@@ -102,21 +92,28 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     private int seenColumnIdx = -1;
     private int recentChangesColumnIdx = -1;
     private Query query;
+    private final ColumnDescriptor[] descriptors;
 
-    private Filter filter;
-
-    private static final MessageFormat issueNewFormat = getFormat("issueNewFormat");     // NOI18N
-    private static final MessageFormat issueObsoleteFormat = getFormat("issueObsoleteFormat"); // NOI18N
-    private static final MessageFormat issueModifiedFormat = getFormat("issueModifiedFormat"); // NOI18N
-    private static final Color unevenLineColor = new Color(0xf3f6fd);
-    private static final Color newHighlightColor = new Color(0x00b400);
-    private static final Color modifiedHighlightColor = new Color(0x0000ff);
-    private static final Color obsoleteHighlightColor = new Color(0x999999);
-    private static final Color defaultForegroundColor = new JLabel().getForeground();
-
-    private static Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
-    private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
+    private Filter filter;        
+    private Filter[] filters;
     private Set<Issue> issues = new HashSet<Issue>();
+
+    /**
+     * Returns the issue table filters
+     * @return
+     */
+    public Filter[] getDefinedFilters() {
+        if(filters == null) {
+            filters = new Filter[] {
+                Filter.getAllFilter(query),
+                Filter.getNewFilter(query),
+                Filter.getNotSeenFilter(),
+                Filter.getObsoleteDateFilter(query),
+                 Filter.getAllButObsoleteDateFilter(query)
+            };
+        }
+        return filters;
+    }
 
     private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
         public int compare(IssueProperty p1, IssueProperty p2) {
@@ -134,9 +131,15 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
             }
         }
     };
+
     
-    public IssueTable(Query query) {
-        this.query = query; 
+    public IssueTable(Query query, ColumnDescriptor[] descriptors) {
+        assert query != null;
+        assert descriptors != null;
+        assert descriptors.length > 0;
+        
+        this.query = query;
+        this.descriptors = descriptors;
         query.addNotifyListener(new NotifyListener());
 
         tableModel = new NodeTableModel();
@@ -153,8 +156,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.addKeyListener(this);
-        table.setDefaultRenderer(Node.Property.class, new CellRenderer());
-        table.getTableHeader().setDefaultRenderer(new HeaderRenderer(table.getTableHeader().getDefaultRenderer()));
+        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query));
+        table.getTableHeader().setDefaultRenderer(new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query));
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IssueTable.class, "ACSN_IssueTable")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IssueTable.class, "ACSD_IssueTable")); // NOI18N
@@ -162,6 +165,18 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
         BugtrackingUtil.fixFocusTraversalKeys(table);
+    }
+
+    int getSeenColumnIdx() {
+        return seenColumnIdx;
+    }    
+
+    public void setRenderer(TableCellRenderer renderer) {
+        table.setDefaultRenderer(Node.Property.class, renderer);
+    }
+
+    public TableCellRenderer getRenderer() {
+        return table.getDefaultRenderer(Node.Property.class);
     }
 
     public void setFilter(Filter filter) {
@@ -178,9 +193,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ColumnDescriptor[] descs = query.getColumnDescriptors();
-                for (int i = 0; i < descs.length; i++) {
-                    ColumnDescriptor desc = descs[i];
+                for (int i = 0; i < descriptors.length; i++) {
+                    ColumnDescriptor desc = descriptors[i];
                     int w = desc.getWidth();
                     if(w > 0) {                        
                         table.getColumnModel().getColumn(i).setMinWidth(10);
@@ -222,9 +236,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
      */ 
     public final void initColumns() {
-        setModelProperties(query);
-        ColumnDescriptor[] descs = query.getColumnDescriptors();
-        for (int i = 0; i < descs.length; i++) {
+        setModelProperties(query);        
+        for (int i = 0; i < descriptors.length; i++) {
             sorter.setColumnComparator(i, null);
             sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
 //            if (IssueNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
@@ -235,12 +248,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         setDefaultColumnSizes();        
     }
 
-    private void setModelProperties(Query query) {
-        ColumnDescriptor[] descs = query.getColumnDescriptors();
-        List<Node.Property> properties = new ArrayList<Node.Property>(descs.length + (query.isSaved() ? 2 : 0));
+    private void setModelProperties(Query query) {        
+        List<Node.Property> properties = new ArrayList<Node.Property>(descriptors.length + (query.isSaved() ? 2 : 0));
         int i = 0;
-        for (; i < descs.length; i++) {
-            ColumnDescriptor desc = descs[i];
+        for (; i < descriptors.length; i++) {
+            ColumnDescriptor desc = descriptors[i];
             properties.add(desc);
         }
         if(query.isSaved()) {
@@ -304,11 +316,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         }
     }
 
-    private static MessageFormat getFormat(String key) {
-        String format = NbBundle.getMessage(IssueTable.class, key);
-        return new MessageFormat(format);
-    }
-
     public void keyTyped(KeyEvent e) {
         if (e.getKeyChar() == '\n') {
             int row = table.getSelectedRow();
@@ -332,157 +339,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     }
 
     public void keyReleased(KeyEvent e) {
-    }
-    
-    private class CellRenderer extends DefaultTableCellRenderer {
-        private JLabel seenCell = new JLabel();
-        private static final int VISIBLE_START_CHARS = 0;
-                
-        private String computeFitText(String text) {
-            if (text == null || text.length() <= VISIBLE_START_CHARS + 3) return text;
-
-            FontMetrics fm = getFontMetrics(getFont());
-            int width = getSize().width;
-
-            String sufix = "..."; // NOI18N
-            int sufixLength = fm.stringWidth(sufix);
-            int desired = width - sufixLength - 10;
-            if (desired <= 0) return text;
-
-            for (int i = 0; i <= text.length() - 1; i++) {
-                String prefix = text.substring(0, i);
-                int swidth = fm.stringWidth(prefix);
-                if (swidth >= desired) {
-                    return prefix.length() > 0 ? prefix + sufix: text;
-                }
-            }
-            return text;
-        }
-
-        public CellRenderer() {
-            seenCell.setBackground(Color.RED);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            MessageFormat format = null;
-            Color background = null;
-            Color foreground = null;
-            Component renderer = null;
-            String tooltip = null;
-            if(value instanceof IssueNode.SeenProperty) {
-                IssueNode.SeenProperty ps = (IssueNode.SeenProperty) value;
-                seenCell.setIcon(!ps.getValue() ? seenValueIcon : null);
-                renderer = seenCell;
-            }
-            Issue issue = null;
-            if(query.isSaved() && value instanceof IssueNode.IssueProperty) {
-                IssueProperty p = (IssueNode.IssueProperty) value;
-                try {
-                    issue = p.getIssue();
-                    if(!query.contains(issue)) {
-                        format = issueObsoleteFormat;
-                        if(isSelected) {
-                            background = obsoleteHighlightColor;
-                            foreground = Color.WHITE;
-                        } else {
-                            background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
-                        }
-                    } else {
-                        int status = query.getIssueStatus(issue);
-                        if(!issue.wasSeen()) {
-                            switch(status) {
-                                case Issue.ISSUE_STATUS_NEW :
-                                    format = issueNewFormat;
-                                    background = newHighlightColor;
-                                    foreground = Color.WHITE;
-                                    break;
-                                case Issue.ISSUE_STATUS_MODIFIED :
-                                    format = issueModifiedFormat;
-                                    background = modifiedHighlightColor;
-                                    foreground = Color.WHITE;
-                                    break;
-                            }
-                        }
-                    }
-                    Object o = p.getValue();
-                    if(o instanceof String) {
-                        tooltip = (String) o;
-                    }
-                } catch (Exception ex) {
-                    BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-                }
-            }
-            if(renderer == null) {
-                renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-
-            if(isSelected) {
-                format = null; // XXX first it was set and now it's removed. simplify logic!
-//                if(issue != null && issue.wasSeen()) {
-//                    foreground = Color.WHITE;
-//                }
-            } else {
-                background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
-                foreground = defaultForegroundColor;
-            }
-            if(renderer instanceof JComponent) {
-                JComponent l = (JComponent) renderer;
-                l.putClientProperty("format", format);                          // NOI18N
-                ((JComponent) renderer).setToolTipText(tooltip);
-                if(background != null) {
-                    l.setBackground(background);
-                }
-                if(foreground != null) {
-                    l.setForeground(foreground);
-                } 
-            }
-            return renderer;
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            MessageFormat format = (MessageFormat) getClientProperty("format"); // NOI18N
-            String s = computeFitText(getText());
-            if(format != null) {
-                StringBuffer sb = new StringBuffer();
-                sb.append("<html>"); // NOI18N
-                format.format(new Object[] {s}, sb, null);
-                sb.append("</html>"); // NOI18N
-                s = sb.toString();
-            }
-            setText(s);
-            super.paintComponent(g);
-        }
-    }
-
-    private class HeaderRenderer extends DefaultTableCellRenderer {
-        private JLabel seenCell = new JLabel();
-        private TableCellRenderer delegate;
-
-        public HeaderRenderer(TableCellRenderer delegate) {
-            this.delegate = delegate;
-            seenCell.setIcon(seenHeaderIcon);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if(query.isSaved() && column == seenColumnIdx) {
-
-                Component c = delegate.getTableCellRendererComponent (table, value,
-                                                       isSelected,
-                                                       hasFocus,
-                                                       row, column);
-
-                seenCell.setFont (c.getFont ());
-                seenCell.setForeground (c.getForeground ());
-                seenCell.setBorder (((JComponent) c).getBorder ());
-
-                return seenCell;
-            } else {
-                return delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-        }
     }
 
     private class NotifyListener implements QueryNotifyListener {

@@ -51,6 +51,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -155,9 +156,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     cmd);
 
             ProcessBuilder pb = new ProcessBuilder(command);
+            LOG.log(Level.FINEST, "Command: {0}", command);
 
             if ((isWindows || isMacOS) && wDir != null) {
                 pb.directory(new File(wDir));
+                LOG.log(Level.FINEST, "Working directory: {0}", wDir);
             }
 
             final MacroMap env = info.getEnvVariables();
@@ -201,6 +204,12 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 EnvWriter ew = new EnvWriter(fos);
                 ew.write(env);
                 fos.close();
+
+                if (LOG.isLoggable(Level.FINEST)) {
+                    for (String var : env.keySet()) {
+                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{var, env.get(var)});
+                    }
+                }
             }
 
             processError = new ByteArrayInputStream(new byte[0]);
