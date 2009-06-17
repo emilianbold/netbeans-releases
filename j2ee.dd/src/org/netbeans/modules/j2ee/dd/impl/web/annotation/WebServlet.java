@@ -99,36 +99,16 @@ public class WebServlet extends PersistentObject implements Refreshable {
         return true;
     }
 
-    /**
-     * @return name of the servlet
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @return URL patterns of the servlet
-     */
     public List<String> getUrlPatterns() {
         return urlPatterns;
     }
 
-    /**
-     * @return name of class that implements the servlet
-     */
     public String getServletClass() {
         return clazz;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder();
-        res.append("[WebServlet name=").append(name).append(", class=").append(clazz).append(", urlPatterns={ ");
-        for (String s : urlPatterns) {
-            res.append('"').append(s).append("\" ");
-        }
-        res.append("}]");
-        return res.toString();
     }
 
 }

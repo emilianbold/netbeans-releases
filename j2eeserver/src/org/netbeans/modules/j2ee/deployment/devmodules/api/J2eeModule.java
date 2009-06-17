@@ -365,6 +365,7 @@ public class J2eeModule {
             return jsrType;
         }
 
+        @SuppressWarnings("deprecation")
         public static Type fromJsrType(Object type) {
             // be defensive
             if (type instanceof Type) {

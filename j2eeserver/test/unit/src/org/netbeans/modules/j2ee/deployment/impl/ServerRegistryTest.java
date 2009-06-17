@@ -41,12 +41,10 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.*;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -112,19 +110,19 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
             fail("Could not get testPlugin: "+testPlugin);
         }
         
-        String[] names = testPlugin.getDeploymentPlanFiles(ModuleType.WAR);
+        String[] names = testPlugin.getDeploymentPlanFiles(J2eeModule.Type.WAR);
         assertEquals(1, names.length);
         assertEquals("WEB-INF/test-web.xml", names[0]);
 
-        names = testPlugin.getDeploymentPlanFiles(ModuleType.EAR);
+        names = testPlugin.getDeploymentPlanFiles(J2eeModule.Type.EAR);
         assertEquals(1, names.length);
         assertEquals("META-INF/test-app.xml", names[0]);
 
-        names = testPlugin.getDeploymentPlanFiles(ModuleType.CAR);
+        names = testPlugin.getDeploymentPlanFiles(J2eeModule.Type.CAR);
         assertEquals(1, names.length);
         assertEquals("META-INF/test-client.xml", names[0]);
 
-        names = testPlugin.getDeploymentPlanFiles(ModuleType.EJB);
+        names = testPlugin.getDeploymentPlanFiles(J2eeModule.Type.EJB);
         assertEquals(1, names.length);
         assertEquals("META-INF/test-ejb.xml", names[0]);
     }
