@@ -540,7 +540,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 //Task to upload metrics data
                 class Auto implements Runnable {
                     public void run() {
-                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS);
+                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS, null);
                     }
                 }
                 //Must be performed out of lock because it calls getLogsMetrics
@@ -908,7 +908,7 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
 
-    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType) {
+    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType, SlownessData slownData) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
@@ -923,7 +923,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
 
-            v = doDisplaySummary(msg, auto, connectDialog, dataType);
+            Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType) : new SubmitInteractive(msg, connectDialog, dataType, slownData);
+            submit.doShow(dataType);
+            v = submit.okToExit;
         } finally {
             DISPLAYING.set(null);
         }
@@ -931,7 +933,11 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     public static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog) {
-        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE);
+        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null);
+    }
+
+    public static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, SlownessData slownessData) {
+        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, slownessData);
     }
 
     static Throwable getThrown() {
@@ -992,13 +998,6 @@ public class Installer extends ModuleInstall implements Runnable {
     protected static void setSelectedExcParams(Object[] params){
         selectedExcParams = params;
     }
-
-    private static boolean doDisplaySummary(String msg, boolean auto, boolean connectDialog, DataType dataType) {
-        Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType) : new SubmitInteractive(msg, connectDialog, dataType);
-        submit.doShow(dataType);
-        return submit.okToExit;
-    }
-
 
     /** Tries to parse a list of buttons provided by given page.
      * @param u the url to read the page from
@@ -1061,14 +1060,14 @@ public class Installer extends ModuleInstall implements Runnable {
         return res instanceof String ? (String)res : null;
     }
 
-    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport) throws IOException {
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport, SlownessData slownData) throws IOException {
         ProgressHandle h = null;
         //Do not show progress UI for metrics upload
         if (dataType != DataType.DATA_METRICS) {
             h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
         }
         try {
-            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport);
+            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport, slownData);
         } finally {
             if (h != null) {
                 h.finish();
@@ -1077,11 +1076,11 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, boolean isErrorReport) throws IOException {
-        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport);
+        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport, null);
     }
 
     private static URL uLogs
-    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport) throws IOException {
+    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport, SlownessData slownData) throws IOException {
         if (dataType != DataType.DATA_METRICS) {
             h.start(100 + recs.size());
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
@@ -1138,6 +1137,17 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Type: x-application/log");
             os.println();
             uploadMessagesLog(os);
+            os.println();
+            os.println("\n----------konec<>bloku");
+        }
+
+        if (slownData != null){
+            os.println("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\"");
+            os.println("Content-Type: x-application/nps");
+            os.println();
+            GZIPOutputStream gzip = new GZIPOutputStream(os);
+            gzip.write(slownData.getNpsContent());
+            gzip.finish();
             os.println();
             os.println("\n----------konec<>bloku");
         }
@@ -1316,7 +1326,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
         final protected List<LogRecord> recs;
-
+        
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
         }
@@ -1345,7 +1355,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void assignInternalURL(URL u);
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL, boolean inIDE);
-
+        protected abstract SlownessData getSlownessData();
 
         public void doShow(DataType dataType) {
             if (dataType == DataType.DATA_UIGESTURE) {
@@ -1559,6 +1569,10 @@ public class Installer extends ModuleInstall implements Runnable {
                             recs.add(TimeToFailure.logFailure());
                             recs.add(BuildInfo.logBuildInfoRec());
                             recs.add(userData);
+                            SlownessData sd = getSlownessData();
+                            if (sd != null){
+                                recs.add(sd.getLogRec());
+                            }
                             if ((report) && (!reportPanel.asAGuest())) {
                                 if (!checkUserName(reportPanel)) {
                                     EventQueue.invokeLater(new Runnable(){
@@ -1578,7 +1592,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         final List<LogRecord> recsFinal = recs;
                         RP_SUBMIT.post(new Runnable() {
                             public void run() {
-                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
+                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType, getSlownessData());
                             }
                         });
                         okToExit = false;
@@ -1673,7 +1687,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return checkingResult;
         }
 
-        private void uploadAndPost(List<LogRecord> recs, URL u, DataType dataType) {
+        private void uploadAndPost(List<LogRecord> recs, URL u, DataType dataType, SlownessData slownData) {
             URL nextURL = null;
 
             if(preferencesWritable) {
@@ -1684,7 +1698,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType == DataType.DATA_METRICS) {
                     logMetricsUploadFailed = false;
                 }
-                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType, report);
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType, report, slownData);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
                 if (dataType == DataType.DATA_METRICS) {
@@ -1791,14 +1805,20 @@ public class Installer extends ModuleInstall implements Runnable {
         private SubmitPanel panel;
         private JEditorPane browser;
         private boolean urlAssigned;
+        private SlownessData slownData = null;
         
-        public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
-            super(msg,dataType);
-            this.connectDialog = connectDialog;
+        public SubmitInteractive(String msg, boolean connectDialog) {
+            this(msg, connectDialog, DataType.DATA_UIGESTURE);
         }
 
-        public SubmitInteractive(String msg, boolean connectDialog) {
-            this(msg,connectDialog,DataType.DATA_UIGESTURE);
+        public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
+            this(msg, connectDialog, dataType, null);
+        }
+
+        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType, SlownessData slownData) {
+            super(msg, dataType);
+            this.connectDialog = connectDialog;
+            this.slownData = slownData;
         }
 
         protected void createDialog() {
@@ -2009,6 +2029,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
         }
+
+        protected SlownessData getSlownessData() {
+            return slownData;
+        }
     } // end SubmitInteractive
 
     private static final class SubmitAutomatic extends Submit {
@@ -2067,8 +2091,11 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         protected void alterMessage(DialogDescriptor dd) {
         }
-    } // end SubmitAutomatic
 
+        protected SlownessData getSlownessData() {
+            return null;
+        }
+    } // end SubmitAutomatic
     private static final class PrefChangeListener implements PreferenceChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
