@@ -84,6 +84,7 @@ import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.netbeans.modules.db.util.DriverListUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 
@@ -421,6 +422,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
         if (selectedFiles != null) {
             for (File file : selectedFiles) {
                 if (file.isFile()) {
+                    if (dlm.contains(file.toString())) {
+                        // file already added
+                        NotifyDescriptor msgDesc = new NotifyDescriptor.Message(NbBundle.getMessage(AddDriverDialog.class, "AddDriverDuplicateFile", file.toString()));
+                        DialogDisplayer.getDefault().notify(msgDesc);
+                        continue;
+                    }
                     dlm.addElement(file.toString());
                     try {
                         drvs.add(file.toURI().toURL());
