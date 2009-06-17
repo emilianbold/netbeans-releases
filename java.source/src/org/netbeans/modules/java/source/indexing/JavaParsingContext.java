@@ -78,7 +78,7 @@ class JavaParsingContext {
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !context.checkForEditorModifications(), false, !virtualSources.isEmpty());
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !context.checkForEditorModifications(), context.isSourceForBinaryRootIndexing(), !virtualSources.isEmpty());
         registerVirtualSources(cpInfo, virtualSources);
         sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
         filter = JavaFileFilterQuery.getFilter(context.getRoot());
