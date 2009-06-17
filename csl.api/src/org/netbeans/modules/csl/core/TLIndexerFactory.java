@@ -154,6 +154,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             try {
                 ParserResult gsfParserResult = (ParserResult) parserResult;
                 Snapshot snapshot = parserResult.getSnapshot ();
+// workarround for #166982
 //                String mimeType = parserResult.getSnapshot ().getMimeType ();
 //                final LanguageRegistry registry = LanguageRegistry.getInstance ();
 //                Language language = registry.getLanguageByMimeType (mimeType);
@@ -179,6 +180,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 //                        saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
 //                    }
 //                }
+// end of workarround for #166982
                 FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
                 if (!karelPr.contains (fileObject)) {
                     karelPr.add (fileObject);
