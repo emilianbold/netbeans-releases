@@ -42,7 +42,6 @@
 package org.netbeans.modules.bugtracking.issuetable;
 
 import java.io.IOException;
-import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.openide.util.NbBundle;
@@ -54,11 +53,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
@@ -190,6 +193,104 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
     }
 
+    private class CellAction implements ActionListener {
+        private final Rectangle bounds;
+        private final ActionListener listener;
+        public CellAction(Rectangle bounds, ActionListener listener) {
+            this.bounds = bounds;
+            this.listener = listener;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CellAction other = (CellAction) obj;
+            if (this.bounds != other.bounds && (this.bounds == null || !this.bounds.equals(other.bounds))) {
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("[");
+            sb.append("bounds=");
+            sb.append(bounds);
+            sb.append("]");
+            return sb.toString();
+        }
+        public void actionPerformed(ActionEvent e) {
+            listener.actionPerformed(e);
+        }
+    }
+    private class Cell {
+        private final int row;
+        private final int column;
+        public Cell(int row, int column) {
+            this.row = row;
+            this.column = column;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Cell other = (Cell) obj;
+            if (this.row != other.row) {
+                return false;
+            }
+            if (this.column != other.column) {
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("[");
+            sb.append("row=");
+            sb.append(row);
+            sb.append(",column=");
+            sb.append(column);
+            sb.append("]");
+            return sb.toString();
+        }
+    }
+    private final Map<Cell, Set<CellAction>> cellActions = new HashMap<Cell, Set<CellAction>>();
+    public void addCellAction(int row, int column, Rectangle bounds, ActionListener l) {
+        synchronized(cellActions) {
+            Cell cell = new Cell(row, column);
+            Set<CellAction> actions = cellActions.get(cell);
+            if(actions == null) {
+                actions = new HashSet<CellAction>(1);
+                cellActions.put(cell, actions);
+            }
+            actions.add(new CellAction(bounds, l));
+        }
+    }
+
+    public void removeCellActions(int row, int column) {
+        Cell cell = new Cell(row, column);
+        synchronized(cellActions) {
+            cellActions.remove(cell);
+        }
+    }
+
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -289,8 +390,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
     }
 
     public void mouseClicked(MouseEvent e) {
+        int row = table.rowAtPoint(e.getPoint());
+        int column = table.columnAtPoint(e.getPoint());
+        Rectangle rect;
         if (SwingUtilities.isLeftMouseButton(e)) {
-            int row = table.rowAtPoint(e.getPoint());
             if (row == -1) return;
             row = sorter.modelIndex(row);
             if(MouseUtils.isDoubleClick(e)) {
@@ -299,19 +402,33 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
                     action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
                 }
             } else {
-                int column = table.columnAtPoint(e.getPoint());
-                if(column != seenColumnIdx) return;
-                IssueNode in = (IssueNode) tableModel.getNodes()[row];
-                final Issue issue = in.getLookup().lookup(Issue.class);
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        try {
-                            issue.setSeen(!issue.wasSeen());
-                        } catch (IOException ex) {
-                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+
+                // seen column
+                if(column == seenColumnIdx) {
+                    IssueNode in = (IssueNode) tableModel.getNodes()[row];
+                    final Issue issue = in.getLookup().lookup(Issue.class);
+                    BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                        public void run() {
+                            try {
+                                issue.setSeen(!issue.wasSeen());
+                            } catch (IOException ex) {
+                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                            }
                         }
+                    });
+                }
+                // check for action
+                CellAction[] actions = null;
+                synchronized(cellActions) {
+                    Cell cell = new Cell(row, column);
+                    Set<CellAction> set = cellActions.get(cell);
+                    actions = set != null ? set.toArray(new CellAction[set.size()]) : null;
+                }
+                if(actions != null) {
+                    for (CellAction cellAction : actions) {
+                        cellAction.actionPerformed(null);
                     }
-                });
+                }
             }
         }
     }
