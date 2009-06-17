@@ -80,7 +80,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     }
 
     public void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
-        if (configuration instanceof Configuration) {
+        if (configuration instanceof Configuration && projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().getConfs().setActive((Configuration) configuration);
         }
     }
@@ -100,7 +100,12 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     }
 
     public boolean hasCustomizer() {
-        return true;
+        if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public void customize() {
