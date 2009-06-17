@@ -74,8 +74,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -130,6 +131,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask refreshTask;
+    private final IssueTable issueTable;
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
         this(repository, query, urlParameters, false);
@@ -139,7 +141,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.repository = repository;
         this.query = query;
 
-        panel = new QueryPanel(query.getTableComponent(), this);
+
+        issueTable = new IssueTable(query, query.getColumnDescriptors());
+        panel = new QueryPanel(issueTable.getComponent(), this);
 
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -205,7 +209,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
-        panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
         if(query.isSaved()) {
             setAsSaved();
@@ -405,7 +409,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
-            onFilterChange((Query.Filter)e.getItem());
+            onFilterChange((Filter)e.getItem());
         }
     }
 
@@ -505,7 +509,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private void onFilterChange(Query.Filter filter) {
+    private void onFilterChange(Filter filter) {
         query.setFilter(filter);
     }
 
@@ -597,6 +601,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             setIssueCount(c);
         }
+        issueTable.setFilter(filter);
     }
 
     private void setAsSaved() {
