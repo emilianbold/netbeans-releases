@@ -169,8 +169,8 @@ public final class Indexable {
         public Context createContext(FileObject indexFolder, URL rootURL, 
                 String indexerName, int indexerVersion, IndexFactoryImpl factory,
                 boolean followUpJob, boolean checkForEditorModifications, boolean allFilesJob,
-                CancelRequest cancelRequest) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, allFilesJob, cancelRequest);
+                boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException {
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications, allFilesJob, sourceForBinaryRoot, cancelRequest);
         }
 
         @Override
