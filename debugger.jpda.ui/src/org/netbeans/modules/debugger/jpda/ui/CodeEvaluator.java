@@ -56,6 +56,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -72,7 +73,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -107,8 +107,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private static final String ID = "evaluator"; //NOI18N
     private static final String PROP_RESULT_CHANGED = "resultChanged"; // NOI18N
 
-    private static CodeEvaluator defaultInstance = null;
-    private static PropertyChangeSupport pcs = new PropertyChangeSupport(new Integer(0)); // TODO
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private static WeakReference<CodeEvaluator> instanceRef;
 
     private JEditorPane codePane;
     private HistoryPanel historyPanel;
@@ -153,7 +153,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 dbgManagerListener
         );
         checkDebuggerState();
-        defaultInstance = this;
     }
 
     public void pasteExpression(String expr) {
@@ -262,31 +261,64 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return instance;
     }
 
+    private static CodeEvaluator getDefaultInstance() {
+        CodeEvaluator evaluator = instanceRef != null ? instanceRef.get() : null;
+        if (evaluator != null) {
+            return evaluator;
+        }
+        final CodeEvaluator result[] = new CodeEvaluator[1];
+        if (SwingUtilities.isEventDispatchThread()) {
+            result[0] = getInstance();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        result[0] = getInstance();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        instanceRef = new WeakReference(result[0]);
+        return result[0];
+    }
+
     public static ArrayList<Item> getHistory() {
+        CodeEvaluator defaultInstance = getDefaultInstance();
         return defaultInstance != null ? defaultInstance.historyPanel.getHistoryItems() : new ArrayList<Item>();
     }
 
     public static Variable getResult() {
+        CodeEvaluator defaultInstance = getDefaultInstance();
         return defaultInstance != null ? defaultInstance.result : null;
     }
 
     public static String getExpressionText() {
+        CodeEvaluator defaultInstance = getDefaultInstance();
         return defaultInstance != null ? defaultInstance.getExpression() : ""; // NOI18N
     }
 
     public static synchronized void addResultListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
+        CodeEvaluator defaultInstance = getDefaultInstance();
+        defaultInstance.pcs.addPropertyChangeListener(listener);
     }
 
     public static synchronized void removeResultListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
+        CodeEvaluator defaultInstance = getDefaultInstance();
+        defaultInstance.pcs.removePropertyChangeListener(listener);
     }
 
     private static void fireResultChange() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 synchronized(CodeEvaluator.class) {
-                    pcs.firePropertyChange(PROP_RESULT_CHANGED, null, null);
+                    CodeEvaluator defaultInstance = getDefaultInstance();
+                    if (defaultInstance != null) {
+                        defaultInstance.pcs.firePropertyChange(PROP_RESULT_CHANGED, null, null);
+                    }
                 }
             }
         });
