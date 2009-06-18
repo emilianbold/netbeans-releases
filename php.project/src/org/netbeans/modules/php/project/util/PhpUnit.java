@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -191,7 +192,7 @@ public final class PhpUnit extends PhpProgram {
 
         static int[] match(String text) {
             assert text != null;
-            if (PhpProjectUtils.hasText(text)) {
+            if (StringUtils.hasText(text)) {
                 Matcher matcher = PHPUNIT_VERSION.matcher(text);
                 if (matcher.find()) {
                     int major = Integer.parseInt(matcher.group(1));

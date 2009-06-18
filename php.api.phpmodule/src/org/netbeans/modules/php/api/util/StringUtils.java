@@ -37,34 +37,71 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.api.util;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import static org.junit.Assert.*;
+import java.util.regex.Pattern;
 
-public class PhpProjectUtilsTest extends NbTestCase {
+/**
+ * Miscellaneous string utilities.
+ * @author Tomas Mysik
+ */
+public final class StringUtils {
 
-    public PhpProjectUtilsTest(String name) {
-        super(name);
+    private StringUtils() {
     }
 
-    public void testImplode() {
-        final List<String> items = Arrays.asList("one", "two");
-        assertEquals("one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two", StringUtils.implode(items, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
+    /**
+     * Return <code>true</code> if the String is not <code>null</code>
+     * and has any character after trimming.
+     * @param input input String.
+     * @return <code>true</code> if the String is not <code>null</code>
+     *         and has any character after trimming.
+     */
+    public static boolean hasText(String input) {
+        return input != null && input.trim().length() > 0;
     }
 
-    public void testExplode() {
-        final String[] items = {"one", "two"};
-        String string = "one*two";
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(items, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    /**
+     * Implode list of strings to one string using delimiter.
+     * @param items string to be imploded
+     * @param delimiter delimiter to be used
+     * @return one string of imploded strings using delimiter
+     * @see #explode(String, String)
+     */
+    public static String implode(List<String> items, String delimiter) {
+        assert items != null;
+        assert delimiter != null;
 
-        // test for empty string (relative path ".")
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+        if (items.isEmpty()) {
+            return ""; // NOI18N
+        }
+
+        StringBuilder buffer = new StringBuilder(200);
+        boolean first = true;
+        for (String s : items) {
+            if (!first) {
+                buffer.append(delimiter);
+            }
+            buffer.append(s);
+            first = false;
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Explode the string using the delimiter.
+     * @param string string to be exploded
+     * @param delimiter delimiter to be used
+     * @return list of exploded strings using delimiter
+     * @see #implode(List, String)
+     */
+    public static List<String> explode(String string, String delimiter) {
+        if (!hasText(string)) {
+            return Collections.<String>emptyList();
+        }
+        return Arrays.asList(string.split(Pattern.quote(delimiter)));
     }
 }

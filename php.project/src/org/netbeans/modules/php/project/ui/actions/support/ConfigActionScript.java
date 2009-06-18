@@ -54,8 +54,8 @@ import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -172,7 +172,7 @@ class ConfigActionScript extends ConfigAction {
             }
             builder = builder.addArgument(startFile.getName());
             String argProperty = ProjectPropertiesSupport.getArguments(project);
-            if (PhpProjectUtils.hasText(argProperty)) {
+            if (StringUtils.hasText(argProperty)) {
                 for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
                     builder = builder.addArgument(argument);
                 }

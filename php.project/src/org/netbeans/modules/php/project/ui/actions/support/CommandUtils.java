@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -55,7 +56,6 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
@@ -441,12 +441,12 @@ public final class CommandUtils {
     }
 
     private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
-        assert PhpProjectUtils.hasText(queryWithoutQMark);
+        assert StringUtils.hasText(queryWithoutQMark);
         assert !queryWithoutQMark.startsWith("&");
         assert !queryWithoutQMark.startsWith("?");
 
         String urlExternalForm = originalURL.toExternalForm();
-        if (PhpProjectUtils.hasText(originalURL.getQuery())) {
+        if (StringUtils.hasText(originalURL.getQuery())) {
             urlExternalForm += "&" + queryWithoutQMark; // NOI18N
         } else {
             urlExternalForm += "?" + queryWithoutQMark; // NOI18N

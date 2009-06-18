@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -292,16 +293,16 @@ public final class ProjectPropertiesSupport {
      *         as well as invalid local paths
      */
     public static List<Pair<String, String>> getDebugPathMapping(PhpProject project) {
-        List<String> remotes = PhpProjectUtils.explode(
+        List<String> remotes = StringUtils.explode(
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
-        List<String> locals = PhpProjectUtils.explode(
+        List<String> locals = StringUtils.explode(
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         int remotesSize = remotes.size();
         int localsSize = locals.size();
         List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
         for (int i = 0; i < remotesSize; ++i) {
             String remotePath = remotes.get(i);
-            if (PhpProjectUtils.hasText(remotePath)) {
+            if (StringUtils.hasText(remotePath)) {
                 // if user has only 1 path and local == sources => property is not stored at all!
                 String l = ""; // NOI18N
                 if (i < localsSize) {
@@ -338,7 +339,7 @@ public final class ProjectPropertiesSupport {
      */
     public static Pair<String, Integer> getDebugProxy(PhpProject project) {
         String host = getString(project, PhpProjectProperties.DEBUG_PROXY_HOST, null);
-        if (!PhpProjectUtils.hasText(host)) {
+        if (!StringUtils.hasText(host)) {
             return null;
         }
         return Pair.of(host, getInt(project, PhpProjectProperties.DEBUG_PROXY_PORT, PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT));
