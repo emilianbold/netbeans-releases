@@ -131,6 +131,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbac
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -1447,6 +1448,29 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         "junit",                // NOI18N
         "simple-files"          // NOI18N
     };
+
+    /**
+     * Supported template categories for Java EE 6 projects (full?).
+     */
+    private static final String[] JAVAEE6_TYPES = new String[] {
+        "java-classes",         // NOI18N
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "web-services",         // NOI18N
+        "web-service-clients",  // NOI18N
+        "wsdl",                 // NOI18N
+        "j2ee-types",           // NOI18N
+        "java-beans",           // NOI18N
+        "java-main-class",      // NOI18N
+        "persistence",          // NOI18N
+        "oasis-XML-catalogs",   // NOI18N
+        "XML",                  // NOI18N
+        "ant-script",           // NOI18N
+        "ant-task",             // NOI18N
+        "junit",                // NOI18N
+        "simple-files"          // NOI18N
+    };
     
     /**
      * Supported template categories for archive projects.
@@ -1478,6 +1502,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         "Templates/WebServices/WebService.java", // NOI18N
         "Templates/WebServices/WebServiceClient"   // NOI18N      
     };
+
+    private static final String[] PRIVILEGED_NAMES_EE6 = PRIVILEGED_NAMES_EE5;
     
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
         "Templates/J2EE/ejbJarXml", // NOI18N
@@ -1485,6 +1511,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         transient private boolean isEE5 = false;
+        transient private boolean isEE6 = false;//if project support ee6 full version
         transient private boolean checked = false;
         transient private boolean isArchive = false;
         transient private UpdateHelper helper = null;
@@ -1500,6 +1527,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 retVal = ARCHIVE_TYPES; 
             } else if (isEE5) {
                 retVal = JAVAEE5_TYPES;
+            } else if (isEE6) {
+                retVal = JAVAEE6_TYPES;
             } else {
                 retVal = TYPES;
             }
@@ -1513,6 +1542,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else if (isEE5) {
                 retVal = PRIVILEGED_NAMES_EE5;
+            } else if(isEE6) {
+                retVal = PRIVILEGED_NAMES_EE6;
             } else {
                 retVal = PRIVILEGED_NAMES;
             } 
@@ -1521,7 +1552,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         
         private void checkEnvironment(){
             if (!checked){
-                isEE5 = J2eeModule.JAVA_EE_5.equals(getEjbModule().getJ2eePlatformVersion());
+                Profile version=Profile.fromPropertiesString(evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
+                isEE5 = Profile.JAVA_EE_5==version;
+                isEE6 = Profile.JAVA_EE_6_FULL==version;
                 final Object srcType = helper.getAntProjectHelper().
                         getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
                 if ("false".equals(srcType)) {
