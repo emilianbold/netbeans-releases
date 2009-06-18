@@ -48,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -96,9 +97,9 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             for (Class testClass : testClasses) {
                 try {
                     RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-                    for (String platform : rcFile.getKeys(mspecSection)) {
-                        addTest(testClass, platform);
-                    }
+                    Collection<String> t = rcFile.getKeys(mspecSection);
+                    String[] mspecs = t.toArray(new String[t.size()]);
+                    addTest(testClass, mspecs);
                 } catch (FileNotFoundException ex) {
                     // rcfile does not exists - no tests to run
                 }
@@ -121,18 +122,27 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * @param environments execution environments to test against
      */
     public void addTest(Class<? extends NativeExecutionBaseTestCase> testClass, ExecutionEnvironment... environments) {
-        Constructor<?> ctor = findConstructor(testClass);
-        if (ctor == null) {
-            return;
-        }
-        String[] testMethodNames = findTestMethods(testClass);
-        if (testMethodNames.length == 0) {
+        TestMethodData testData = findTestData(testClass);
+        if (testData.ordinaryMethodNames.isEmpty() && testData.forEachEnvironmentMethodNames.isEmpty()) {
             addTest(warning("Class " + testClass.getName() + " has no runnable test metods"));
         }
 
+        for (String methodName : testData.ordinaryMethodNames) {
+            if (testData.ordinaryConstructor == null) {
+                addTest(warning("Class " + testClass.getName() +
+                        " does not have a constructor with 1 parameter of String type"));
+                break;
+            }
+            addTest(createTest(testData.ordinaryConstructor, methodName));
+        }
         for (ExecutionEnvironment env : environments) {
-            for (String methodName : testMethodNames) {
-                addTest(createTest(ctor, methodName, env));
+            if (testData.forAllEnvConstructor == null) {
+                addTest(warning("Class " + testClass.getName() +
+                        " does not have a constructor with 2 parameters: String and ExecutionEnvironment"));
+                break;
+            }
+            for (String methodName : testData.forEachEnvironmentMethodNames) {
+                addTest(createTest(testData.forAllEnvConstructor, methodName, env));
             }
         }
     }
@@ -148,31 +158,44 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * @param mspecs Strings that represent configurations
      */
     public void addTest(Class<? extends NativeExecutionBaseTestCase> testClass, String... mspecs) throws IOException {
-        Constructor<?> ctor = findConstructor(testClass);
-        if (ctor == null) {
-            return;
-        }
-        String[] testMethodNames = findTestMethods(testClass);
-        if (testMethodNames.length == 0) {
+
+        TestMethodData testData = findTestData(testClass);
+        if (testData.ordinaryMethodNames.isEmpty() && testData.forEachEnvironmentMethodNames.isEmpty()) {
             addTest(warning("Class " + testClass.getName() + " has no runnable test metods"));
         }
 
+        for (String methodName : testData.ordinaryMethodNames) {
+            if (testData.ordinaryConstructor == null) {
+                addTest(warning("Class " + testClass.getName() +
+                        " does not have a constructor with 1 parameter of String type"));
+                break;
+            }
+            addTest(createTest(testData.ordinaryConstructor, methodName));
+        }
+
         for (String mspec : mspecs) {
+            if (testData.forAllEnvConstructor == null) {
+                addTest(warning("Class " + testClass.getName() +
+                        " does not have a constructor with 2 parameters: String and ExecutionEnvironment"));
+                break;
+            }
             ExecutionEnvironment execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
             if (execEnv != null) {
-                for (String methodName : testMethodNames) {
-                    addTest(createTest(ctor, methodName, execEnv));
+                for (String methodName : testData.forEachEnvironmentMethodNames) {
+                    addTest(createTest(testData.forAllEnvConstructor, methodName, execEnv));
                 }
             } else {
-                for (String methodName : testMethodNames) {
+                for (String methodName : testData.forEachEnvironmentMethodNames) {
                     addTest(warning(methodName + " [" + mspec + "]", "Got null execution environment for " + mspec));
                 }
             }
         }
     }
 
-    private Test createTest(Constructor<?> ctor, String name, ExecutionEnvironment execEnv) {
-        Object[] parameters = new Object[] { name, execEnv };
+    private Test createTest(Constructor<?> ctor, Object... parameters) {
+        assert parameters != null;
+        assert parameters.length > 0;
+        String name = (String) parameters[0];
         try {
             return (Test) ctor.newInstance(parameters);
         } catch (InstantiationException e) {
@@ -191,8 +214,27 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
 		return stringWriter.toString();
 	}
 
+    private static class TestMethodData {
+
+        // making collections public would be unsafe if this class wasn't private static :-)
+        public final List<String> ordinaryMethodNames;
+        public final List<String> forEachEnvironmentMethodNames;
+
+        public final Constructor<?> ordinaryConstructor;
+        public final Constructor<?> forAllEnvConstructor;
+
+        public TestMethodData(List<String> ordinaryMethodNames, List<String> forEachEnvironmentMethodNames, Constructor<?> ordinaryConstructor, Constructor<?> forAllEnvConstructor) {
+            this.ordinaryMethodNames = ordinaryMethodNames;
+            this.forEachEnvironmentMethodNames = forEachEnvironmentMethodNames;
+            this.ordinaryConstructor = ordinaryConstructor;
+            this.forAllEnvConstructor = forAllEnvConstructor;
+        }
+    }
+
     /**
-     * Searches for test methods.
+     * Searches for 
+     * - test methods
+     * - constructors
      *
      * Test method is one that either is annotated with @Test
      * or its name starts with "test"
@@ -203,15 +245,24 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * @param testClass class to search methods in
      * @return an array of method names
      */
-    private String[] findTestMethods(Class testClass) {
-        List<String> testMethodNames = new ArrayList<String>();
+    private TestMethodData findTestData(Class testClass) {
+
+        List<String> ordinaryMethodNames = new ArrayList<String>();
+        List<String> forEachEnvironmentMethodNames = new ArrayList<String>();
+
+        Constructor<?> ordinaryConstructor = null;
+        Constructor<?> forAllEnvConstructor = null;
+
         for(Class<?> superClass = testClass; Test.class.isAssignableFrom(superClass);
         superClass = superClass.getSuperclass()) {
             for (Method method : superClass.getDeclaredMethods()) {
-                if (!testMethodNames.contains(method.getName())) {
+                if (!ordinaryMethodNames.contains(method.getName())
+                && !forEachEnvironmentMethodNames.contains(method.getName())) {
                     //Class<?> returnType = m.getReturnType();
                     //returnType.equals(Void.TYPE)
-                    if (method.getName().startsWith("test") || method.getAnnotation(org.junit.Test.class) != null) {
+                    if (method.getName().startsWith("test") 
+                            || method.getAnnotation(org.junit.Test.class) != null
+                            || method.getAnnotation(ForAllEnvironments.class) != null) {
                         if (!Modifier.isPublic(method.getModifiers())) {
                             addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should be public"));
                         } else if (! method.getReturnType().equals(Void.TYPE)) {
@@ -221,33 +272,32 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         } else {
                             // OK! The last thing to check is @ignore
                             if (method.getAnnotation(org.junit.Ignore.class) == null) {
-                                testMethodNames.add(method.getName());
+                                if (method.getAnnotation(ForAllEnvironments.class) != null) {
+                                    forEachEnvironmentMethodNames.add(method.getName());
+                                } else {
+                                    ordinaryMethodNames.add(method.getName());
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        return testMethodNames.toArray(new String[testMethodNames.size()]);
-    }
 
-    /**
-     * Searches for a constructor that takes two parameters:
-     * String and ExecutionEnvironment
-     * If no such constructor exists, a warning is added to tests result
-     */
-    private Constructor<?> findConstructor(Class testClass) {
         for (Constructor<?> ctor : testClass.getConstructors()) {
             Class<?>[] parameters = ctor.getParameterTypes();
-            if (parameters.length == 2) {
-                if (parameters[0].equals(String.class) && parameters[1].equals(ExecutionEnvironment.class)) {
-                    return ctor;
-                }
+            if (parameters.length == 1 && parameters[0].equals(String.class)) {
+                ordinaryConstructor = ctor;
+            }
+            if (parameters.length == 2
+                    && parameters[0].equals(String.class)
+                    && parameters[1].equals(ExecutionEnvironment.class)) {
+                forAllEnvConstructor = ctor;
             }
         }
-        addTest(warning("Class " + testClass.getName() +
-                " does not have a constructor with 2 parameters: String and ExecutionEnvironment"));
-        return null;
+
+        return new TestMethodData(ordinaryMethodNames, forEachEnvironmentMethodNames,
+                ordinaryConstructor, forAllEnvConstructor);
     }
 
 	protected static Test warning(String testName, final String message) {
@@ -258,5 +308,4 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
 			}
 		};
 	}
-
 }
