@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
@@ -21,7 +22,6 @@ import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.jira.issue.JiraIssueNode;
@@ -166,7 +166,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             north.setFont(defaultIssueRenderer.getFont());
             south.setFont(defaultIssueRenderer.getFont());
             south.setIcon(hookIcon);
-        }        
+        }
     }
 
     private class AdjustableJLabel extends JLabel {
@@ -175,6 +175,18 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             QueryTableCellRenderer.fitText(this);
             super.paint(g);
         }
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void invalidate() {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void validate() {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void revalidate() {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void repaint(long tm, int x, int y, int width, int height) {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void repaint(Rectangle r) { }
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void repaint() {}
     }
 
     private class RowAdjuster implements ActionListener {
