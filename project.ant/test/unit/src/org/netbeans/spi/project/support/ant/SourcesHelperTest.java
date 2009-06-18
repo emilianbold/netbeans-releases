@@ -41,6 +41,8 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.io.IOException;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -49,6 +51,8 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
+import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockChangeListener;
@@ -614,7 +618,58 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("Packages #1", g1.getDisplayName());
         assertEquals(project, FileOwnerQuery.getOwner(src1dir));
     }
-    
+
+    public void testSourceGroupModifierImplementation() throws Exception {
+        scratch = TestUtil.makeScratchDir(this); // have our own setup
+        projdir = scratch.createFolder("proj-dir");
+        src1dir = projdir.createFolder("src1"); 
+        src4dir = FileUtil.createFolder(projdir, "test/src2");
+        FileUtil.createData(src1dir, "org/test/Main.java");
+
+        h = ProjectGenerator.createProject(projdir, "test");
+        project = ProjectManager.getDefault().findProject(projdir);
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "src1");
+        p.setProperty("src2.dir", "src2");  
+        p.setProperty("test1.dir", "test/src1");
+        p.setProperty("test2.dir", "test/src2");  // without a hint
+
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+
+        sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
+        SourceRootConfig root = sh.sourceRoot("${src1.dir}").hint("main");  // existing with a hint
+        root.displayName("Sources #1").add();
+        root.displayName("Packages #1").type("java").add();
+        sh.addPrincipalSourceRoot("${src2.dir}", null, null, "Sources #2", null, null); // non-existent, without a hint
+        sh.addTypedSourceRoot("${src2.dir}", null, null, "java", "Packages #2", null, null);
+        root = sh.sourceRoot("${test1.dir}").hint("test");  // non-existent, should be created
+        root.displayName("Test Sources #1").add();
+        root.displayName("Test Packages #1").type("java").add();
+        sh.addPrincipalSourceRoot("${test2.dir}", null, null, "Test Sources #2", null, null);   // existing without a hint
+        sh.addTypedSourceRoot("${test2.dir}", null, null, "java", "Test Packages #2", null, null);
+        sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, true);
+        Sources s = sh.createSources();
+        SourceGroup[] groups = s.getSourceGroups("java");
+        assertEquals("Only source groups for existing folders should be returned", 2, groups.length);
+        assertEquals("Packages #1", groups[0].getDisplayName());
+        assertEquals("Test Packages #2", groups[1].getDisplayName());
+
+        SourceGroupModifierImplementation sgmi = sh.createSourceGroupModifierImplementation();
+        assertTrue(sgmi.canCreateSourceGroup("java", "main"));
+        SourceGroup g1 = sgmi.createSourceGroup("java", "main");
+        assertEquals("Should return source group equal to existing one.", groups[0].toString(), g1.toString());
+        
+        assertTrue("Should create group for known type/hint", sgmi.canCreateSourceGroup("java", "test"));
+        SourceGroup g2 = sgmi.createSourceGroup("java", "test");
+        assertNotNull(g2.getRootFolder());  // folder physically created
+        PropertyEvaluator e = h.getStandardPropertyEvaluator();
+        assertEquals(h.resolveFileObject(e.getProperty("test1.dir")), g2.getRootFolder());
+
+        assertFalse("Should not create group for unknown hint", sgmi.canCreateSourceGroup("java", "unknown"));
+        assertNull(sgmi.createSourceGroup("java", "unknown"));
+    }
+
     private static void assertIncluded(String message, SourceGroup g, String resource) {
         FileObject f = g.getRootFolder().getFileObject(resource);
         assertNotNull(resource, f);
