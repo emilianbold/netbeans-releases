@@ -55,8 +55,6 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-        issueTable.removeCellActions(row, column);
-
         if(!(value instanceof JiraIssueNode.SummaryProperty)) {
             return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
@@ -111,8 +109,6 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             panel.setToolTipText(value.toString());  // XXX toString ???
             setRowColors(style, panel);
             adjustRowSize(panel, table, row);
-
-            addParentAction(row, column, panel.north, issue);
 
             return panel;
         }
