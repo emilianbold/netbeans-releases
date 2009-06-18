@@ -92,7 +92,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     }
 
     public void actionPerformed(ActionEvent e) {
-        QueryAction.openKenaiQuery(query, null);
+        QueryAction.openQuery(query, null, true);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
