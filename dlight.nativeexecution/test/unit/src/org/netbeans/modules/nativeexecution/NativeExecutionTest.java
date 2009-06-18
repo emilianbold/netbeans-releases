@@ -36,39 +36,22 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution;
 
-import org.junit.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import static org.junit.Assert.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
- *
- * @author ak119685
+ * @author Alexey Vladykin
  */
-public class TerminalConfigurationProviderTest extends NativeExecutionBaseTestCase {
+public class NativeExecutionTest extends NativeExecutionBaseTestSuite {
 
-    public TerminalConfigurationProviderTest(String name) {
-        super(name);
+    public NativeExecutionTest() {
+        super("Native Execution");
+        addTest(HostInfoTestCase.class);
     }
 
-    @Test
-    public void testProvider() throws Exception {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
-        HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
-        String terminal;
-        if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-            terminal = "cmd.exe";
-        } else {
-            terminal = "xterm";
-        }
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal(execEnv, terminal);
-        assertNotNull(term);
+    public static Test suite() {
+        return new NativeExecutionTest();
     }
 }
