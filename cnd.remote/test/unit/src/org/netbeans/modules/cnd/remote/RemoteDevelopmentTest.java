@@ -84,26 +84,4 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
         TestSuite suite = new RemoteDevelopmentTest();
         return suite;
     }
-
-//    private ExecutionEnvironment[] getTestExecutionEnvironments() throws IOException, RcFile.FormatException {
-//        ExecutionEnvironment[] testEnvironments;
-//        List<ExecutionEnvironment> envs = new ArrayList<ExecutionEnvironment>();
-//        try {
-//            for (String platform : NativeExecutionTestSupport.getRcFile().getKeys("remote.platforms")) {
-//                ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(platform);
-//                envs.add(env);
-//            }
-//        } catch (FileNotFoundException e) {
-//            // rcfile just does not exist: use old-style
-//        }
-//        testEnvironments = envs.toArray(new ExecutionEnvironment[envs.size()]);
-//        // backup to the old-style
-//        if (testEnvironments.length == 0) {
-//            ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
-//            if (execEnv != null) {
-//                testEnvironments = new ExecutionEnvironment[] { execEnv };
-//            }
-//        }
-//        return testEnvironments;
-//    }
 }
