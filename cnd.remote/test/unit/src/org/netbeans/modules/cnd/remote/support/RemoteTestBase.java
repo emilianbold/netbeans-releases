@@ -60,12 +60,12 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
  */
 public abstract class RemoteTestBase extends CndBaseTestCase {
 
-// Absence of this constructor prevents errors
-//    protected RemoteTestBase(String testName) {
-//        super(testName);
-//    }
-
     protected final Logger log = Logger.getLogger("cnd.remote.logger");
+
+    // we need this for tests which should run NOT for all environments
+    public RemoteTestBase(String testName) {
+        super(testName);
+    }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
