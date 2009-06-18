@@ -180,9 +180,9 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
 
     public static class FileStateImpl extends StateImpl {
-        public final APTMacroMap sysMacroMap;
-        private int crc1 = 0;
-        private int crc2 = 0;
+        private final APTMacroMap sysMacroMap;
+        private final int crc1;
+        private final int crc2;
 
         private FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap, int crc1, int crc2) {
             super(snap);
@@ -194,6 +194,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         private FileStateImpl(FileStateImpl state, boolean cleanedState) {
             super(state, cleanedState);
             this.sysMacroMap = state.sysMacroMap;
+            this.crc1 = state.crc1;
+            this.crc2 = state.crc2;
         }
 
         StateKey getStateKey() {
@@ -217,14 +219,16 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         @Override
         public void write(DataOutput output) throws IOException {
             super.write(output);
+            output.writeInt(crc1);
+            output.writeInt(crc2);
             APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
         }
 
         public FileStateImpl(final DataInput input) throws IOException {
             super(input);
-
+            this.crc1 = input.readInt();
+            this.crc2 = input.readInt();
             APTMacroMap systemMap = APTSerializeUtils.readSystemMacroMap(input);
-
             if (systemMap == null) {
                 this.sysMacroMap = APTBaseMacroMap.EMPTY;
             } else {
@@ -235,10 +239,6 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         @Override
         public StateImpl copyCleaned() {
             return new FileStateImpl(this, true);
-        }
-
-        boolean isEmptyActiveMacroMap() {
-            return super.snap == null || super.snap.isEmtpy();
         }
     }
     ////////////////////////////////////////////////////////////////////////////
