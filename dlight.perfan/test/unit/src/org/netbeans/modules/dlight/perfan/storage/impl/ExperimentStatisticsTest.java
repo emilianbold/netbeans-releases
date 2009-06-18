@@ -144,4 +144,12 @@ public class ExperimentStatisticsTest {
         assertNull(statistics.getDuration());
         assertNull(statistics.getULock());
     }
+
+    @Test
+    public void testZeroDotZero() {
+        ExperimentStatistics statistics = new ExperimentStatistics(new String[] {
+        "                                         User Lock: 0,0   (  0,0%)"});
+        assertEquals(Double.valueOf(0), statistics.getULock());
+        assertEquals(Double.valueOf(0), statistics.getULock_p());
+    }
 }
