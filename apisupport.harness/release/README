@@ -843,6 +843,14 @@ test.unit.folder - output directory for tests of module.
 test.unit.out.folder - this property can be overriden when you want to change 
 test.unit.folder property.
 
+continue.after.failing.tests - controls behavior of running tests on all modules
+in suite. Default value is "true", which causes suite.test target to continue 
+with another module even if tests in previous module failed. Set to "false" 
+in your suite's project.properties to force test target to stop after tests
+in one module failed. In module project this controls whether test target
+fails when tests fail (when set to "false" or unset) or succeeds even if 
+test failed (when set to anything else).
+
 extra.test.libs.dir - directory with extra libraries needed for test run. 
 
 tools.jar [since 5.0u1] - set to location of tools.jar in active JDK. Useful in

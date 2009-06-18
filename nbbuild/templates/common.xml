@@ -603,7 +603,19 @@ made subject to such option by the copyright holder.
                 <formatter type="brief" usefile="false"/>
                 <formatter type="xml"/>
             </junit>
-            <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+            <fail message="Some tests failed; see details above.">
+                <condition>
+                    <and>
+                        <isset property="tests.failed"/>
+                        <or>
+                            <not>
+                                <isset property="continue.after.failing.tests"/>
+                            </not>
+                            <equals arg1="${continue.after.failing.tests}" arg2="false" casesensitive="false" trim="true"/>
+                        </or>
+                    </and>
+                </condition>
+            </fail>
         </sequential>
     </macrodef>
     <target name="test-unit" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
