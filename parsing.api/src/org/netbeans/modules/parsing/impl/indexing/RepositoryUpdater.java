@@ -1829,8 +1829,9 @@ out:            for (String mimeType : order) {
                 try {
                     depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
-                    LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
-                    return true;
+                    LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
+                    @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
+                    depCtx.newRootsToScan.addAll(partialSort);
                 }
                 Collections.reverse(depCtx.newRootsToScan);
 
@@ -2031,7 +2032,15 @@ out:            for (String mimeType : order) {
                                         "binaryRoot=" + binaryRoot + //NOI18N
                                         ", rootURL=" + rootURL + //NOI18N
                                         ", cycleDetector.contains(" + binaryRoot + ")=" + ctx.cycleDetector.contains(binaryRoot); //NOI18N
-                                    deps.add(binaryRoot);
+                                    
+                                    Set<String> sourceIds = PathRegistry.getDefault().getSourceIdsFor(binaryRoot);
+                                    if (sourceIds == null || sourceIds.isEmpty()) {
+                                        deps.add(binaryRoot);
+                                    } else {
+                                        LOGGER.log(Level.INFO, "The root {0} is registsred for both {1} and {2}", new Object[] { //NOI18N
+                                            binaryRoot, id, sourceIds
+                                        });
+                                    }
                                 }
                             }
                         }
