@@ -141,7 +141,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
                         System.out.println("File "+container.getAbsolutePath()); // NOI18N
                         ProjectImpl impl = (ProjectImpl) prj;
                         boolean find = false;
-                        for(CsmFile top : impl.getGraph().getTopParentFiles(container)){
+                        for(CsmFile top : impl.getGraph().getTopParentFiles(container).getCompilationUnits()){
                             if (container != top) {
                                 System.out.println("  icluded from "+top.getAbsolutePath()); //NOI18N
                                 find = true;
