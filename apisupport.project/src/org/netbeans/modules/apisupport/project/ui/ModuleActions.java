@@ -154,10 +154,14 @@ public final class ModuleActions implements ActionProvider {
     
     private final NbModuleProject project;
     private final Map<String,String[]> globalCommands = new HashMap<String,String[]>();
-    private final String[] supportedActions;
+    private String[] supportedActions = null;
     
     public ModuleActions(NbModuleProject project) {
         this.project = project;
+        refresh();
+    }
+
+    public void refresh() {
         Set<String> supportedActionsSet = new HashSet<String>();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N

@@ -59,6 +59,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -118,10 +119,16 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
         });
     }
 
+    SourceGroupModifierImplementation sgmi;
+
+    SourceGroupModifierImplementation getSourceGroupModifierImplementation() {
+        return sgmi;
+    }
+
     private Sources initSources() {
         SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
-        register(sourcesHelper, sourceRoots);
-        register(sourcesHelper, testRoots);
+        register(sourcesHelper, sourceRoots, JavaProjectConstants.SOURCES_HINT_MAIN);
+        register(sourcesHelper, testRoots, JavaProjectConstants.SOURCES_HINT_TEST);
         
         //Web Pages
         String webModuleLabel = org.openide.util.NbBundle.getMessage(WebSources.class, "LBL_Node_WebModule"); //NOI18N
@@ -129,20 +136,23 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
         String webInfLabel = org.openide.util.NbBundle.getMessage(WebSources.class, "LBL_Node_WebInf"); //NOI18N
         String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
         String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-        sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
-        sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", includes, excludes, webPagesLabel, /*XXX*/null, null); //NOI18N
-        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", includes, excludes, WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, null, null); //NOI18N
+        sourcesHelper.sourceRoot("${"+ WebProjectProperties.SOURCE_ROOT+"}").displayName(webModuleLabel).add(); //NOI18N
+        sourcesHelper.sourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}").includes(includes).excludes(excludes)
+                .displayName(webPagesLabel).add()   // principal root
+                .type(WebProjectConstants.TYPE_DOC_ROOT).add(); // typed root
 //        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null); //NOI18N
-        sourcesHelper.addTypedSourceRoot("${" + WebProjectProperties.WEBINF_DIR + "}", WebProjectConstants.TYPE_WEB_INF, webInfLabel, /*XXX*/null, null); //NOI18N
+        sourcesHelper.sourceRoot("${" + WebProjectProperties.WEBINF_DIR + "}").type(WebProjectConstants.TYPE_WEB_INF)// NOI18N
+                .displayName(webInfLabel).add();
         
         sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
         sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        sgmi = sourcesHelper.createSourceGroupModifierImplementation();
         return sourcesHelper.createSources();
     }
 
-    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots, String hint) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -151,8 +161,9 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
             String loc = "${" + prop + "}"; // NOI18N
             String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
             String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-            sourcesHelper.addPrincipalSourceRoot(loc, includes, excludes, displayName, null, null); // NOI18N
-            sourcesHelper.addTypedSourceRoot(loc, includes, excludes, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null); // NOI18N
+            sourcesHelper.sourceRoot(loc).includes(includes).excludes(excludes).hint(hint).displayName(displayName)
+                    .add() // principal root
+                    .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // typed root
         }
      }
     
@@ -173,7 +184,11 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
 
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
-        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) || WebProjectProperties.BUILD_DIR.equals(propName) || WebProjectProperties.DIST_DIR.equals(propName))
+        // was listening to PROP_ROOT_PROPERTIES, changed to PROP_ROOTS in #143633 as changes
+        // from SourceGroupModifierImplementation need refresh too
+        if (SourceRoots.PROP_ROOTS.equals(propName)  
+                || WebProjectProperties.BUILD_DIR.equals(propName)
+                || WebProjectProperties.DIST_DIR.equals(propName))
             this.fireChange();
     }
 

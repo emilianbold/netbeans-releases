@@ -399,6 +399,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING);
+        EjbJarSources sources = new EjbJarSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
                 buildExtender,
@@ -423,7 +424,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                 QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
                 QuerySupport.createSourceLevelQuery(evaluator()),
-                new EjbJarSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                sources,
+                sources.getSourceGroupModifierImplementation(),
                 QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                         EjbJarProjectProperties.META_INF),
                 QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
