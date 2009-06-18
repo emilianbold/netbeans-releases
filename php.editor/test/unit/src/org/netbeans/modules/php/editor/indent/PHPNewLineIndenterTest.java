@@ -108,6 +108,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/control_stmt_without_bracket3.php");
     }
 
+    public void testIndentAfterMultilineStmt1() throws Exception{
+        testIndentInFile("testfiles/indent/indent_after_multiline_stmt1.php");
+    }
+
     public void testArrays1() throws Exception{
         testIndentInFile("testfiles/indent/arrays1.php");
     }
