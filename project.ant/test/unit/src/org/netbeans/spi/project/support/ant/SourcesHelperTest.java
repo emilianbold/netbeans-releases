@@ -655,7 +655,7 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("Packages #1", groups[0].getDisplayName());
         assertEquals("Test Packages #2", groups[1].getDisplayName());
 
-        SourceGroupModifierImplementation sgmi = sh.createSourceGroupModifierImplementation(s);
+        SourceGroupModifierImplementation sgmi = sh.createSourceGroupModifierImplementation();
         assertTrue(sgmi.canCreateSourceGroup("java", "main"));
         SourceGroup g1 = sgmi.createSourceGroup("java", "main");
         assertEquals("Should return source group equal to existing one.", groups[0].toString(), g1.toString());
@@ -668,32 +668,6 @@ public final class SourcesHelperTest extends NbTestCase {
 
         assertFalse("Should not create group for unknown hint", sgmi.canCreateSourceGroup("java", "unknown"));
         assertNull(sgmi.createSourceGroup("java", "unknown"));
-    }
-
-    public void testSGMIMustHaveCorrectSources() throws IOException {
-        // there is a constraint: Sources passed to SourcesHelper.createSourceGroupModifierImplementation must
-        // be previously created by SourcesHelper.createSources()
-        try {
-            scratch = TestUtil.makeScratchDir(this); // have our own setup
-            projdir = scratch.createFolder("proj-dir");
-            h = ProjectGenerator.createProject(projdir, "test");
-            project = ProjectManager.getDefault().findProject(projdir);
-            ProjectManager.getDefault().saveProject(project);
-            sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
-            Sources bogusSources = new Sources() {
-                public SourceGroup[] getSourceGroups(String type) {
-                    return null;
-                }
-                public void addChangeListener(ChangeListener listener) {
-                }
-                public void removeChangeListener(ChangeListener listener) {
-                }
-            };
-            sh.createSourceGroupModifierImplementation(bogusSources);
-        } catch (IllegalArgumentException ex) {
-            return; // ok
-        }
-        fail("IllegalArgumentException should have been thrown.");
     }
 
     private static void assertIncluded(String message, SourceGroup g, String resource) {
