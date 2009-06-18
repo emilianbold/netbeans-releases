@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.test;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
-import junit.framework.TestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
- * IMPORTANT NOTE:
- * If This class is not compiled with the notification about not resolved
- * BaseTestSuite class => cnd/core tests are not compiled
  * 
- * To solve this problem compile or run tests for cnd/core
+ * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
+ * To use register your implementation in the {@link BugtrackingController}-s lookup.
+ * 
+ * @author Tomas Stupka
  */
-
-/**
- * base class for modelimpl module tests suite
- * @author Vladimir Voskresensky
- */
-public class ModelImplBaseTestSuite extends CndBaseTestSuite {
-    
-    /**
-     * Constructs an empty TestSuite.
-     */
-    public ModelImplBaseTestSuite() {
-        super();
-    }
+public abstract class KenaiSupport {
 
     /**
-     * Constructs an empty TestSuite.
+     * Creates a {@link Repository} for the given {@link KenaiProject}
+     *
+     * @param project
+     * @return
      */
-    public ModelImplBaseTestSuite(String name) {
-        super(name);
-    }
+    public abstract Repository createRepository(KenaiProject project);
+
+    /**
+     * // XXX what is this!
+     * @param query
+     * @param filter
+     */
+    public abstract void setFilter(Query query, Filter filter);
 }
