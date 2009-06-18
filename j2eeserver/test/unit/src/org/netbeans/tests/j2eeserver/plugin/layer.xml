@@ -134,7 +134,8 @@ made subject to such option by the copyright holder.
         <file name="FooServerUrl">
             <attr name="url" stringvalue="fooservice"/>
             <attr name="username" stringvalue="Adminuser"/>
-            <attr name="password" stringvalue="Adminpasswd"/> <!-- PENDING encrypt this? -->
+            <attr name="password" stringvalue="Adminpasswd"/>
+            <attr name="displayName" stringvalue="foo"/>
         </file>
     </folder>
     
