@@ -40,8 +40,11 @@
 package org.netbeans.modules.php.spi.phpmodule;
 
 import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 
 /**
  * Provides support for extending a PHP module with a PHP framework, that is,
@@ -52,12 +55,58 @@ import org.openide.filesystems.FileObject;
 public abstract class PhpModuleExtender {
 
     /**
+     * Attaches a change listener that is to be notified of changes
+     * in the extender (e.g., the result of the {@link #isValid} method
+     * has changed.
+     *
+     * @param  listener a listener.
+     */
+    public abstract void addChangeListener(ChangeListener listener);
+
+    /**
+     * Removes a change listener.
+     *
+     * @param  listener a listener.
+     */
+    public abstract void removeChangeListener(ChangeListener listener);
+
+    /**
+     * Returns a UI component used to allow the user to customize this extender.
+     *
+     * @return a component or <code>null</code> if this extender does not provide a configuration UI.
+     *         This method might be called more than once and it is expected to always
+     *         return the same instance.
+     */
+    public abstract JComponent getComponent();
+
+    /**
+     * Returns a help context for {@link #getComponent}.
+     *
+     * @return a help context; can be <code>null</code>.
+     */
+    public abstract HelpCtx getHelp();
+
+    /**
+     * Checks if this extender is valid (e.g., if the configuration set
+     * using the UI component returned by {@link #getComponent} is valid).
+     *
+     * @return <code>true</code> if the configuration is valid, <code>false</code> otherwise.
+     */
+    public abstract boolean isValid();
+
+    /**
+     * Get error message or <code>null</code> if the {@link #getComponent component} is valid.
+     * @return error message or <code>null</code> if the {@link #getComponent component} is valid
+     */
+    public abstract String getErrorMessage();
+
+    /**
      * Called to extend the given PHP module with the PHP framework
-     * corresponding to this extender.
+     * corresponding to this extender. Can fail if {@link #isValid()} is <code>false</code>.
      *
      * @param  phpModule the PHP module to be extended; never <code>null</code>
      * @return the set of newly created files in the web module, can be empty but never <code>null</code>
-     * @throws Exception if any error occurs
+     * @see #isValid()
      */
-    public abstract Set<FileObject> extend(PhpModule phpModule) throws Exception;
+    public abstract Set<FileObject> extend(PhpModule phpModule);
 }
