@@ -38,65 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
-
-import java.io.File;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 
 /**
+ * This class gives methods to annotation access. 
  * @author ads
  *
  */
-public class ModelUnit {
-    
-    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, File mainFacesConfig)
-    {
-        return new ModelUnit(bootPath, compilePath, sourcePath, mainFacesConfig);
-    }
-    
-    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath)
-    {
-        return new ModelUnit(bootPath, compilePath, sourcePath, null/* TODO : set here main faces config via default path to it*/);
-    }
-
-    private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, File mainFacesConfig) 
-    {
-        myBootPath= bootPath;
-        myCompilePath = compilePath;
-        mySourcePath = sourcePath;
-        myMainFacesConfig =mainFacesConfig ;
-    }
-    
-    
-    public ClassPath getBootPath() {
-        return myBootPath;
-    }
-
-    public ClassPath getCompilePath() {
-        return myCompilePath;
-    }
-
-    public ClassPath getSourcePath() {
-        return mySourcePath;
-    }
-    
-    public FileObject getMainFacesConfig(){
-        return myMainFacesConfig != null ? FileUtil.toFileObject(
-                FileUtil.normalizeFile(myMainFacesConfig)) : null;
-    }
-    
-    private final ClassPath myBootPath;
-    private final ClassPath myCompilePath;
-    private final ClassPath mySourcePath;
-    private final File myMainFacesConfig;
-    
+public abstract class AbstractJsfModel {
 
 }
