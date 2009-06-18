@@ -44,6 +44,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -72,12 +74,43 @@ public class ManagerTest extends NbTestCase {
     public void testGetRepositories() {
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         assertNotNull(connectors);
-        assertTrue(connectors.length == 1);
+        assertTrue(connectors.length > 1);
         Set<String> repos = new HashSet<String>();
         for (BugtrackingConnector c : connectors) {
             repos.add(c.getDisplayName());
         }
-//        assertTrue(repos.contains("Jira"));
-        assertTrue(repos.contains("Bugzilla"));
+        assertTrue(repos.contains("ManagerTestConector"));
     }
+
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+    public static class MyConnector extends BugtrackingConnector {
+        public MyConnector() {
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "ManagerTestConector";
+        }
+
+        @Override
+        public String getTooltip() {
+            return "ManagerTestConector";
+        }
+
+        @Override
+        public Repository createRepository() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Repository[] getRepositories() {
+            return new Repository[0];
+        }
+
+        public Lookup getLookup() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+
 }
