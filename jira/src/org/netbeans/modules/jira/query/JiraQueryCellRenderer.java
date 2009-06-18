@@ -74,14 +74,14 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             }
 
             panel.north.setText(summary);
-            panel.north.putClientProperty("format", style != null ? style.getFormat() : null);                        // NOI18N
+            panel.north.putClientProperty("format", style != null ? style.getFormat() : null);// NOI18N
 
             List<String> keys = issue.getSubtaskKeys();
             StringBuffer keysBuffer = new StringBuffer();
             Iterator<String> it = keys.iterator();
             while(it.hasNext()) {
                 keysBuffer.append(it.next());
-                if(it.hasNext()) keysBuffer.append(", ");
+                if(it.hasNext()) keysBuffer.append(", "); // NOI18N
             }
 
             panel.south.setText(keysBuffer.toString()); 
@@ -89,7 +89,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
             panel.setToolTipText(summary);
             setRowColors(style, panel);
-            adjustRowSize(panel, table, row);
+            adjustRowHeight(panel, table, row);
             
             return panel;
         } else if(issue.isSubtask() ) {
@@ -109,7 +109,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
             panel.setToolTipText(summary);
             setRowColors(style, panel);
-            adjustRowSize(panel, table, row);
+            adjustRowHeight(panel, table, row);
 
             return panel;
         }
@@ -117,7 +117,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
 
-    private void adjustRowSize(JPanel panel, JTable table, int row) {
+    private void adjustRowHeight(JPanel panel, JTable table, int row) {
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
         if (table.getRowHeight(row) != h) {
@@ -157,8 +157,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     }
 
     private class TwoLabelPanel extends JPanel {
-        AdjustableJLabel north = new AdjustableJLabel();
-        AdjustableJLabel south = new AdjustableJLabel();
+        RendererLabel north = new RendererLabel();
+        RendererLabel south = new RendererLabel();
         public TwoLabelPanel(Font font) {
             setLayout(new BorderLayout());
             add(north, BorderLayout.NORTH);
@@ -169,7 +169,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         }
     }
 
-    private class AdjustableJLabel extends JLabel {
+    private class RendererLabel extends JLabel {
         @Override
         public void paint(Graphics g) {
             QueryTableCellRenderer.fitText(this);
