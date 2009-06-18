@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,56 +34,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.openide.util.Lookup;
+import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
- * Represents a bugtracking connector.
+ * 
+ * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
+ * To use register your implementation in the {@link BugtrackingController}-s lookup.
  * 
  * @author Tomas Stupka
  */
-public abstract class BugtrackingConnector implements Lookup.Provider {
-    
+public abstract class KenaiSupport {
+
     /**
-     * Returns the display name for this connector
+     * Creates a {@link Repository} for the given {@link KenaiProject}
      *
-     * @return the display name for this connector
+     * @param project
+     * @return
      */
-    public abstract String getDisplayName();
+    public abstract Repository createRepository(KenaiProject project);
 
     /**
-     * Returns tooltip for this connector
-     * 
-     * @return tooltip for this connector
+     * // XXX what is this!
+     * @param query
+     * @param filter
      */
-    public abstract String getTooltip();
-
-    /**
-     * Creates a repository
-     * @return the created repository
-     */
-    public abstract Repository createRepository();
-
-    /**
-     * Returns all known repositories for this connector
-     * @return known repositories
-     */
-    public abstract Repository[] getRepositories();
-
-    /**
-     * Returns an {@code IssueFinder} for the connector, or {@code null}
-     * if no {@code IssueFinder} is available.
-     * The default implementation returns {@code null}.
-     *
-     * @return  an instance of {@code IssueFinder} corresponding to this
-     *          type of bugtracker, or {@code null}
-     */
-    public IssueFinder getIssueFinder() {
-        return null;
-    }
-
+    public abstract void setFilter(Query query, Filter filter);
 }
