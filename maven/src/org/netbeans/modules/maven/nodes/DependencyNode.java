@@ -63,9 +63,7 @@ import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.embedder.MavenEmbedder;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Profile;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -314,7 +312,7 @@ public class DependencyNode extends AbstractNode {
         }
         if (isTransitive()) {
             acts.add(new ExcludeTransitiveAction());
-            acts.add(new SetInCurrentAction());
+            acts.add(SETINCURRENTINSTANCE);
         } else {
             acts.add(REMOVEDEPINSTANCE);
         }
@@ -595,10 +593,10 @@ public class DependencyNode extends AbstractNode {
                 return;
             }
 
-            NbMavenProjectImpl project = prjs.iterator().next();
+            final NbMavenProjectImpl project = prjs.iterator().next();
             final List<Artifact> unremoved = new ArrayList<Artifact>();
 
-            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                 public void performOperation(POMModel model) {
                     for (Artifact art : artifacts) {
                         org.netbeans.modules.maven.model.pom.Dependency dep =
@@ -611,11 +609,15 @@ public class DependencyNode extends AbstractNode {
                     }
                 }
             };
-            FileObject fo = FileUtil.toFileObject(project.getPOMFile());
-            Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
-            if (unremoved.size() > 0) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "MSG_Located_In_Parent", unremoved.size()), Integer.MAX_VALUE);
-            }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+                    Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+                    if (unremoved.size() > 0) {
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "MSG_Located_In_Parent", unremoved.size()), Integer.MAX_VALUE);
+                    }
+                }
+            });
         }
     }
 
@@ -698,55 +700,83 @@ public class DependencyNode extends AbstractNode {
         }
     }
 
-    private class SetInCurrentAction extends AbstractAction {
+    //why oh why do we have to suffer through this??
+    private static SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
 
-        public SetInCurrentAction() {
+    private static class SetInCurrentAction extends AbstractAction  implements ContextAwareAction {
+        private Lookup lkp;
+
+        SetInCurrentAction(Lookup lookup) {
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Set_Dependency"));
+            lkp = lookup;
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
+            if (prjs.size() != 1) {
+                setEnabled(false);
+            }
+        }
+        
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new SetInCurrentAction(actionContext);
         }
 
+
         public void actionPerformed(ActionEvent event) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-                        public void performOperation(POMModel model) {
-                            org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
-                            if (dep == null) {
-                                // now check the active profiles for the dependency..
-                                List<String> profileNames = new ArrayList<String>();
-                                Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
-                                while (it.hasNext()) {
-                                    Profile prof = (Profile) it.next();
-                                    profileNames.add(prof.getId());
-                                }
-                                for (String profileId : profileNames) {
-                                    org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
-                                    if (modProf != null) {
-                                        dep = modProf.findDependencyById(art.getGroupId(), art.getArtifactId(), null);
-                                        if (dep != null) {
-                                            break;
-                                        }
+            final Collection<? extends Artifact> artifacts = lkp.lookupAll(Artifact.class);
+            if (artifacts.size() == 0) {
+                return;
+            }
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
+            if (prjs.size() != 1) {
+                return;
+            }
+            final NbMavenProjectImpl project = prjs.iterator().next();
+
+            final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    for (Artifact art : artifacts) {
+                        org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                        if (dep == null) {
+                            // now check the active profiles for the dependency..
+                            List<String> profileNames = new ArrayList<String>();
+                            Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
+                            while (it.hasNext()) {
+                                Profile prof = (Profile) it.next();
+                                profileNames.add(prof.getId());
+                            }
+                            for (String profileId : profileNames) {
+                                org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
+                                if (modProf != null) {
+                                    dep = modProf.findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                                    if (dep != null) {
+                                        break;
                                     }
                                 }
                             }
-                            if (dep == null) {
-                                dep = model.getFactory().createDependency();
-                                dep.setArtifactId(art.getArtifactId());
-                                dep.setGroupId(art.getGroupId());
-                                dep.setType(art.getType());
-                                dep.setVersion(art.getVersion());
-                                if (art.getClassifier() != null) {
-                                    dep.setClassifier(art.getClassifier());
-                                }
-                                model.getProject().addDependency(dep);
-                            }
                         }
-                    };
+                        if (dep == null) {
+                            dep = model.getFactory().createDependency();
+                            dep.setArtifactId(art.getArtifactId());
+                            dep.setGroupId(art.getGroupId());
+                            dep.setType(art.getType());
+                            dep.setVersion(art.getVersion());
+                            if (art.getClassifier() != null) {
+                                dep.setClassifier(art.getClassifier());
+                            }
+                            model.getProject().addDependency(dep);
+                        }
+                    }
+                }
+            };
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
                     FileObject fo = FileUtil.toFileObject(project.getPOMFile());
-
                     org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
                 }
             });
         }
+
     }
 
 
