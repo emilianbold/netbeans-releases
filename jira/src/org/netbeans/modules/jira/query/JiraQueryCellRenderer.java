@@ -22,9 +22,10 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode;
+import org.netbeans.modules.jira.issue.JiraIssueNode.SummaryProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -43,7 +44,6 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private TwoLabelPanel twoLabelPanel;
     private static Icon hookIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/hook.png"));    // NOI18N
 
-    private RowAdjuster rowAdjuster = new RowAdjuster();
     private final IssueTable issueTable;
 
     public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
@@ -59,20 +59,21 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
 
-        IssueProperty issueProperty = (IssueProperty) value;
-        NbJiraIssue issue = (NbJiraIssue) issueProperty.getIssue();
+        SummaryProperty summaryProperty = (SummaryProperty) value;
+        NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssue();
+        String summary = summaryProperty.getValue();
 
         TableCellStyle style = null;
         if(issue.hasSubtasks()) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
             
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
             } else {
                 style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
 
-            panel.north.setText(value.toString()); // XXX toString ???
+            panel.north.setText(summary);
             panel.north.putClientProperty("format", style != null ? style.getFormat() : null);                        // NOI18N
 
             List<String> keys = issue.getSubtaskKeys();
@@ -86,7 +87,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             panel.south.setText(keysBuffer.toString()); 
             panel.south.putClientProperty("format", isSelected ? null : subtasksFormat); // NOI18N
 
-            panel.setToolTipText(value.toString());  // XXX toString ???
+            panel.setToolTipText(summary);
             setRowColors(style, panel);
             adjustRowSize(panel, table, row);
             
@@ -95,7 +96,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
 
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
             } else {
                 style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
@@ -103,10 +104,10 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             panel.north.setText(issue.getParentKey());
             panel.north.putClientProperty("format", isSelected ? null : parentFormat); // NOI18N
 
-            panel.south.setText(value.toString()); // XXX toString ???
+            panel.south.setText(summary); 
             panel.south.putClientProperty("format", style != null ? style.getFormat() : null); // NOI18N
 
-            panel.setToolTipText(value.toString());  // XXX toString ???
+            panel.setToolTipText(summary);
             setRowColors(style, panel);
             adjustRowSize(panel, table, row);
 
@@ -159,7 +160,6 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         AdjustableJLabel north = new AdjustableJLabel();
         AdjustableJLabel south = new AdjustableJLabel();
         public TwoLabelPanel(Font font) {
-//            setOpaque(false);
             setLayout(new BorderLayout());
             add(north, BorderLayout.NORTH);
             add(south, BorderLayout.SOUTH);
