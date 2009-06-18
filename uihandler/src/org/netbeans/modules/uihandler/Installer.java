@@ -1959,15 +1959,13 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
-            if ((reportPanel != null)&&(report)){
+            if ((reportPanel != null) && (report)){
                 params.add(reportPanel.getSummary());
                 params.add(reportPanel.getComment());
                 try {
-                    if (openPasswd) {
-                        String passwd = reportPanel.getPasswd();
-                        if ((passwd.length() != 0) && (!reportPanel.asAGuest())){
-                            passwd = PasswdEncryption.encrypt(passwd);
-                        }
+                    String passwd = reportPanel.getPasswd();
+                    if ((openPasswd) && (passwd.length() != 0) && (!reportPanel.asAGuest())){
+                        passwd = PasswdEncryption.encrypt(passwd);
                         params.add(passwd);
                     } else {
                         params.add("*********");// NOI18N
