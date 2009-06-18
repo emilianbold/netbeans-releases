@@ -45,6 +45,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private static Icon hookIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/hook.png"));    // NOI18N
 
     private final IssueTable issueTable;
+    private boolean resetRowHeight;
 
     public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.query = query;
@@ -54,6 +55,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+        fixRowHeightIfNeeded(table, row);
 
         if(!(value instanceof JiraIssueNode.SummaryProperty)) {
             return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -89,7 +92,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
             panel.setToolTipText(summary);
             setRowColors(style, panel);
-            adjustRowHeight(panel, table, row);
+            adjustRowHeightIfNeeded(panel, table, row);
             
             return panel;
         } else if(issue.isSubtask() ) {
@@ -109,7 +112,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
             panel.setToolTipText(summary);
             setRowColors(style, panel);
-            adjustRowHeight(panel, table, row);
+            adjustRowHeightIfNeeded(panel, table, row);
 
             return panel;
         }
@@ -117,17 +120,34 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
 
-    private void adjustRowHeight(JPanel panel, JTable table, int row) {
+    private int defaultRowHeight = -1;
+    public void resetDefaultRowHeight() {
+        resetRowHeight = true;
+    }
+    
+    private void adjustRowHeightIfNeeded(JPanel panel, JTable table, int row) {
+
+        if(defaultRowHeight == -1) {
+            defaultRowHeight = table.getRowHeight();
+        }
+
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
         if (table.getRowHeight(row) != h) {
             table.setRowHeight(h);
-        }
+        } 
     }
 
     private static MessageFormat getFormat(String key) {
         return new MessageFormat(NbBundle.getMessage(JiraQueryCellRenderer.class, key));
-    }    
+    }
+
+    private void fixRowHeightIfNeeded(JTable table, int row) {
+        if (resetRowHeight && table.getRowHeight(row) != defaultRowHeight) {
+            table.setRowHeight(defaultRowHeight);
+            resetRowHeight = false;
+        }
+    }
 
     private TwoLabelPanel getTwoLabelPanel(Font font) {
         if(twoLabelPanel == null) {

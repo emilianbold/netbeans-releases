@@ -126,6 +126,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final boolean modifiable;
     private final JiraFilter jiraFilter;
     private final IssueTable issueTable;
+    private JiraQueryCellRenderer renderer;
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -181,10 +182,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-
     private void setupRenderer(IssueTable issueTable) {
-//        TableCellRenderer renderer = issueTable.getRenderer();
-        issueTable.setRenderer(new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query)));
+        renderer = new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query));
+        issueTable.setRenderer(renderer);
     }
 
     protected JiraFilter getJiraFilter() {
@@ -877,6 +877,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     this);
             panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
             handle.start();
+            QueryController.this.renderer.resetDefaultRowHeight();
         }
 
         private void finnishQuery() {
