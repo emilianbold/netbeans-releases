@@ -48,6 +48,7 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -66,6 +67,7 @@ public class TransportTestCase extends RemoteTestBase {
         super(testName, execEnv);
     }
 
+    @ForAllEnvironments
     public void testRun() throws Exception {
         final String randomString = "i am just a random string, it does not matter that I mean";
         RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
@@ -88,11 +90,13 @@ public class TransportTestCase extends RemoteTestBase {
 //        assert support.toString().indexOf("envTestKey=envTestValue") > -1;
 //    }
 
+    @ForAllEnvironments
     public void testFileExistst() throws Exception {
         assert HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd");
         assert !HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd/noway");
     }
 
+    @ForAllEnvironments
     public void testGetEnv() throws Exception {
         Map<String, String> env = HostInfoProvider.getEnv(getTestExecutionEnvironment());
         System.err.println("Environment: " + env);
@@ -100,6 +104,7 @@ public class TransportTestCase extends RemoteTestBase {
         assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
     }
 
+    @ForAllEnvironments
     public void testCopyTo() throws Exception {
         File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
         FileWriter fstream = new FileWriter(localFile);

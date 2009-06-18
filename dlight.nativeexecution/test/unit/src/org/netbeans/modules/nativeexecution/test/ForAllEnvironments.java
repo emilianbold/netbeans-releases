@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.test;
+package org.netbeans.modules.nativeexecution.test;
 
-import junit.framework.TestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * IMPORTANT NOTE:
- * If This class is not compiled with the notification about not resolved
- * BaseTestSuite class => cnd/core tests are not compiled
+ * Annotate a test method with this annotation in the case you want it to be invoked
+ * for each execution environment specified in .cndtestrc
+ *
+ * To put it more precise:  
  * 
- * To solve this problem compile or run tests for cnd/core
+ * In the case your method is annotated with this annotation,
+ * NativeExecutionBaseTestSuite.addTest will create an instance of your class
+ * for each such method and for each execution environment
+ * (gotten from .cndtestrc/.testuserinfo). The constructor with (String, ExecutionEnvironment)
+ * signature will be invoked in this case.
+ *
+ * (Note that such test method should be public, have void return type and no parameters)
+ *
+ * In the case test method it is not annotated, 
+ * constructor with a single String parameter (test name) will be used,
+ * only one instance of the class per test method will be created.
+ *
+ * All the above is true in the case you use NativeExecutionBaseTestSuite
+ * and NativeExecutionBaseTestCase descendants for suite and tests.
+ * Otherwise the annotation is just ignored.
+ *
+ * @author Vladimir Kvashin
  */
-
-/**
- * base class for modelimpl module tests suite
- * @author Vladimir Voskresensky
- */
-public class ModelImplBaseTestSuite extends CndBaseTestSuite {
-    
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface ForAllEnvironments {
     /**
-     * Constructs an empty TestSuite.
+     * In the case section is empty,
+     * default is set via suite constructor
      */
-    public ModelImplBaseTestSuite() {
-        super();
-    }
-
-    /**
-     * Constructs an empty TestSuite.
-     */
-    public ModelImplBaseTestSuite(String name) {
-        super(name);
-    }
+    String section() default "";
 }
