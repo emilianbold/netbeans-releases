@@ -358,8 +358,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
     @Override
     public GizmoOptionsImpl clone(Configuration c) {
-        GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
-
+        init(c);
+        GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), pcs);
+        clone.init(c);
         clone.setProfileOnRun(getProfileOnRun().clone());
         Set<String> keys = toolConfigurations.keySet();
         for (String key : keys) {
