@@ -102,6 +102,23 @@ public final class JavaAntLoggerTest extends NbTestCase {
         props = new Properties();
         props.setProperty("libs.junit.classpath", junitJar.getAbsolutePath()); // #50261
     }
+
+    private void assertHyperlinkPattern(String resourceAndLineNumber, String line) {
+        assertEquals(resourceAndLineNumber, String.valueOf(JavaAntLogger.parseStackTraceLine(line)));
+    }
+
+    public void testHyperlinkPattern() throws Exception {
+        assertHyperlinkPattern("simpleapp/Clazz.java:4", "\tat simpleapp.Clazz.run(Clazz.java:4)");
+        assertHyperlinkPattern("simpleapp/Clazz.java:4", "\tat simpleapp.Clazz.<clinit>(Clazz.java:4)");
+        assertHyperlinkPattern("Main.java:4", "\tat Main.run(Main.java:4)");
+        assertHyperlinkPattern("simpleapp/Clazz.java:4", "simpleapp.Clazz.run(Clazz.java:4)"); // # 153057
+        assertHyperlinkPattern("org/openide/filesystems/MultiFileObject.java:1",
+                "\tat org.openide.filesystems.MultiFileObject.fileFolderCreated(Unknown Source)"); // #17734
+        assertHyperlinkPattern("org/openide/filesystems/MultiFileObject.java:1",
+                "\tat org.openide.filesystems.MultiFileObject$Inner$1.fileFolderCreated(Unknown Source)"); // #17734
+        assertHyperlinkPattern("some/pkg/PublicOuterClass.java:123", "\tat some.pkg.PrivateOuterClass.meth(PublicOuterClass.java:123)");
+        assertHyperlinkPattern("používá/Háček.java:4", "\tat používá.Háček.run(Háček.java:4)");
+    }
     
     public void testHyperlinkRun() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
