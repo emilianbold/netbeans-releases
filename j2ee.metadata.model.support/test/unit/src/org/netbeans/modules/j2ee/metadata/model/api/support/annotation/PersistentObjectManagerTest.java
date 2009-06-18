@@ -83,6 +83,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         super(testName);
     }
 
+    @Override
     protected void tearDown() {
         manager = null;
     }
@@ -129,6 +130,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean employeeChanged = new AtomicBoolean();
         final CountDownLatch typesLatch = new CountDownLatch(4);
         ClassIndexListener listener = new ClassIndexAdapter() {
+            @Override
             public void typesAdded(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Department".equals(type.getQualifiedName())) {
@@ -138,6 +140,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 }
                 assertTrue("Should not have got an empty added event ", event.getTypes().iterator().hasNext());
             }
+            @Override
             public void typesChanged(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Employee".equals(type.getQualifiedName())) {
@@ -147,6 +150,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 }
                 assertTrue("Should not have got an empty changed event ", event.getTypes().iterator().hasNext());
             }
+            @Override
             public void typesRemoved(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Address".equals(type.getQualifiedName())) {
@@ -206,6 +210,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean rootAdded = new AtomicBoolean();
         final CountDownLatch rootAddedLatch = new CountDownLatch(1);
         listener = new ClassIndexAdapter() {
+            @Override
             public void rootsAdded(RootsEvent event) {
                 URL src2URL = URLMapper.findURL(src2FO, URLMapper.INTERNAL);
                 for (URL url : event.getRoots()) {
@@ -243,6 +248,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean rootRemoved = new AtomicBoolean();
         final CountDownLatch rootRemovedLatch = new CountDownLatch(1);
         listener = new ClassIndexAdapter() {
+            @Override
             public void rootsRemoved(RootsEvent event) {
                 URL src2URL = URLMapper.findURL(src2FO, URLMapper.INTERNAL);
                 for (URL url : event.getRoots()) {
@@ -293,6 +299,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean departmentAdded = new AtomicBoolean();
         final CountDownLatch addedLatch = new CountDownLatch(1);
         ClassIndexListener listener = new ClassIndexAdapter() {
+            @Override
             public void typesAdded(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Department".equals(type.getQualifiedName())) {
@@ -321,6 +328,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean departmentChanged = new AtomicBoolean();
         final CountDownLatch changedLatch = new CountDownLatch(1);
         listener = new ClassIndexAdapter() {
+            @Override
             public void typesChanged(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Department".equals(type.getQualifiedName())) {
@@ -349,6 +357,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean departmentChanged2 = new AtomicBoolean();
         final CountDownLatch changedLatch2 = new CountDownLatch(1);
         listener = new ClassIndexAdapter() {
+            @Override
             public void typesChanged(TypesEvent event) {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Department".equals(type.getQualifiedName())) {
@@ -422,7 +431,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
 
         private boolean refresh(TypeElement typeElement) {
             AnnotationParser parser = AnnotationParser.create(getHelper());
-            parser.expectString("name", parser.defaultValue(typeElement.getSimpleName()));
+            parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName()));
             List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
             if (annotations.size() == 0) {
                 return false;

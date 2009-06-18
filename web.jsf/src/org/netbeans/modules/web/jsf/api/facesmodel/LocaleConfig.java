@@ -50,7 +50,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  *
  * @author Petr Pisl
  */
-public interface LocaleConfig extends JSFConfigComponent {
+public interface LocaleConfig extends ApplicationElement, IdentifiableElement {
 
     /**
      * Property name of &lt;default-locale&gt; element.
@@ -110,4 +110,6 @@ public interface LocaleConfig extends JSFConfigComponent {
      * @param locale the supported locale
      */
     void addSupportedLocales(int index, SupportedLocale locale);
+    
+    void removeSupportedLocale(SupportedLocale locale);
 }
