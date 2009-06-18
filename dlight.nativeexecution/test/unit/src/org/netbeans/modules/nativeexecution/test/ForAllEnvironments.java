@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote;
+package org.netbeans.modules.nativeexecution.test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
-import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
-import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
-import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Annotate a test method with this annotation in the case you want it to be invoked
+ * for each execution environment specified in .cndtestrc
  *
- * @author Sergey Grinev
+ * To put it more precise:  
+ * 
+ * In the case your method is annotated with this annotation,
+ * NativeExecutionBaseTestSuite.addTest will create an instance of your class
+ * for each such method and for each execution environment
+ * (gotten from .cndtestrc/.testuserinfo). The constructor with (String, ExecutionEnvironment)
+ * signature will be invoked in this case.
+ *
+ * (Note that such test method should be public, have void return type and no parameters)
+ *
+ * In the case test method it is not annotated, 
+ * constructor with a single String parameter (test name) will be used,
+ * only one instance of the class per test method will be created.
+ *
+ * All the above is true in the case you use NativeExecutionBaseTestSuite
+ * and NativeExecutionBaseTestCase descendants for suite and tests.
+ * Otherwise the annotation is just ignored.
+ *
+ * @author Vladimir Kvashin
  */
-public class RemoteDevelopmentTest extends CndBaseTestSuite {
-
-//    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-//    }
-
-    public RemoteDevelopmentTest(Class testClass) {
-        this(testClass.getName(), testClass);
-    }
-
-    public RemoteDevelopmentTest() {
-        this("Remote Development", // NOI18N
-             MappingsTestCase.class,
-             TransportTestCase.class,
-             RemoteUtilTestCase.class,
-             ServerListTestCase.class,
-             ScpSyncWorkerTestCase.class,
-             HostSetupTestCase.class);
-    }
-
-
-    private RemoteDevelopmentTest(String name, Class... testClasses) {
-        super(name, "remote.platforms", testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest();
-        return suite;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface ForAllEnvironments {
+    /**
+     * In the case section is empty,
+     * default is set via suite constructor
+     */
+    String section() default "";
 }

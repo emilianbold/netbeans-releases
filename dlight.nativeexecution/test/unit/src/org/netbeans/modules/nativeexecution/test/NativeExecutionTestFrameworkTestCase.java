@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,67 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote;
+package org.netbeans.modules.nativeexecution.test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
-import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
-import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
-import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
- * @author Sergey Grinev
+ * This class test test framework as such -
+ * NativeExecutionBaseTestSuite, NativeExecutionBaseTestCase classes,
+ * ForAllEnvironments annotation, etc
+ * @author Vladimir Kvashin
  */
-public class RemoteDevelopmentTest extends CndBaseTestSuite {
+public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTestCase {
 
-//    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-//    }
-
-    public RemoteDevelopmentTest(Class testClass) {
-        this(testClass.getName(), testClass);
+    public NativeExecutionTestFrameworkTestCase(String name) {
+        super(name);
     }
 
-    public RemoteDevelopmentTest() {
-        this("Remote Development", // NOI18N
-             MappingsTestCase.class,
-             TransportTestCase.class,
-             RemoteUtilTestCase.class,
-             ServerListTestCase.class,
-             ScpSyncWorkerTestCase.class,
-             HostSetupTestCase.class);
+    public NativeExecutionTestFrameworkTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
+        super(name, testExecutionEnvironment);
     }
 
-
-    private RemoteDevelopmentTest(String name, Class... testClasses) {
-        super(name, "remote.platforms", testClasses);
+    public void testNamedSingle() {
     }
 
-    public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest();
-        return suite;
+    @org.junit.Test
+    public void annotatedSingle() {
     }
+
+    @org.junit.Test
+    @ForAllEnvironments(section="remote.platforms")
+    public void annotatedForAllRemotePlatforms() {
+    }
+
+    @ForAllEnvironments(section="remote.platforms")
+    public void testForAllRemotePlatforms() {
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments
+    public void annotatedForAllDefault() {
+    }
+
+    @ForAllEnvironments
+    public void testForAllDefault() {
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments(section="test.framework.test.platforms")
+    public void annotatedForAllTestPlatforms() {
+    }
+
+    @ForAllEnvironments(section="test.framework.test.platforms")
+    public void testForAllTestPlatforms() {
+    }
+
+    public static junit.framework.Test suite() {
+        Class testClass = NativeExecutionTestFrameworkTestCase.class;
+        return new NativeExecutionBaseTestSuite(
+                testClass.getSimpleName(),
+                "test.framework.test.default.platforms", testClass);
+    }    
 }

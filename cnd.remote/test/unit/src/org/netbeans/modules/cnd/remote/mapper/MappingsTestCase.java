@@ -45,6 +45,7 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  *
@@ -60,7 +61,8 @@ public class MappingsTestCase extends RemoteTestBase {
 //        Map<String, String> mappings = new HostMappingProviderSamba().findMappings("tester@eaglet-sr", "");
 //        assert mappings != null && "/export/pub".equals(mappings.get("pub"));
 //    }
-    
+
+    @ForAllEnvironments
     public void testAnalyzer() throws Exception {
         HostMappingsAnalyzer ham = new HostMappingsAnalyzer(getTestExecutionEnvironment()); //sg155630@elif
         final Map<String, String> mappings = ham.getMappings();
@@ -133,6 +135,11 @@ public class MappingsTestCase extends RemoteTestBase {
 //            RemotePathMap.validateMapping(getHKey(), rpath, "/net/endif/export");
 //        }
 //    }
+
+    // we need this since some methods are without @ForAllEnvironments
+    public MappingsTestCase(String testName) {
+        super(testName);
+    }
 
     public MappingsTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
