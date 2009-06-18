@@ -193,7 +193,6 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-client-javascript-debugger-http-ui-HttpMonitorAction.instance"/>
                     <attr name="position" intvalue="1500"/>
                 </file>
-                <file name="Separator12.instance_hidden"/>
             </folder>
         </folder>
     </folder>

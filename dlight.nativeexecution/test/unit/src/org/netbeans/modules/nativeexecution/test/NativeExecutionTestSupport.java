@@ -121,7 +121,7 @@ public class NativeExecutionTestSupport {
         return defaultTestExecutionEnvironment;
     }
 
-    public static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException, CancellationException {
+    public static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException {
         ExecutionEnvironment result = null;
 
         if (mspec == null) {

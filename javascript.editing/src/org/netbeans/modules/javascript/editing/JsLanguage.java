@@ -71,7 +71,12 @@ public class JsLanguage extends DefaultLanguageConfig {
     private static boolean jsClassPathRegistered = false;
 
     public JsLanguage() {
-        registerJsClassPathIfNeeded();
+        if (!Boolean.getBoolean("CslJar")) { //NOI18N
+            // We only want this called when running from the IDE and not
+            // when CslJar task instantiates this class to learn what
+            // it needs to learn in order to enhance the module layer.
+            registerJsClassPathIfNeeded();
+        }
     }
 
     /*
@@ -89,7 +94,10 @@ public class JsLanguage extends DefaultLanguageConfig {
             jsClassPathRegistered = true;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[]{JsClassPathProvider.getBootClassPath()});
+                    ClassPath cp = JsClassPathProvider.getBootClassPath();
+                    if (cp != null) {
+                        GlobalPathRegistry.getDefault().register(JsClassPathProvider.BOOT_CP, new ClassPath[]{cp});
+                    }
                 }
             });
         }

@@ -631,6 +631,7 @@ public class LayerUtilsTest extends LayerTestBase {
             contents.put("platform/module/Bundle.properties", "folder/file=English");
             contents.put("platform/module/layer.xml", "<filesystem><folder name=\"folder\"><file name=\"file\"><attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"platform.module.Bundle\"/></file></folder></filesystem>");
             TestBase.createJar(new File(platformDir, "cluster/modules/platform-module.jar".replace('/', File.separatorChar)), contents, mf);
+            assertTrue("cluster/config/Modules folder in platform, so that cluster is considered valid.", (new File(platformDir, "cluster/config/Modules")).mkdirs());
             mf = new Manifest();
             contents = new HashMap<String,String>();
             contents.put("platform/module/Bundle_ja.properties", "folder/file=Japanese");
@@ -651,6 +652,15 @@ public class LayerUtilsTest extends LayerTestBase {
             NbModuleProject module = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
             FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module);
             assertDisplayName(fs, "#64779: localized platform filename", "folder/file", "Japanese");
+        } finally {
+            Locale.setDefault(orig);
+        }
+    }
+
+    public void testLocalizedXMLFS() throws Exception {
+        Locale orig = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.JAPAN);
         } finally {
             Locale.setDefault(orig);
         }

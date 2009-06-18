@@ -48,7 +48,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;

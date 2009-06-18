@@ -505,8 +505,10 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     
     <target name="test" depends="build" description="Runs tests for all modules in the suite.">
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.test.sorted" sorttests="true"/>
+        <property name="continue.after.failing.tests" value="true"/> <!-- fallback -->
         <subant target="test" buildpath="${modules.test.sorted}" inheritrefs="false" inheritall="false">
             <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
+            <property name="continue.after.failing.tests" value="${continue.after.failing.tests}"/>
         </subant>
     </target>
 

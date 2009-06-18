@@ -50,12 +50,16 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * NavigationHandler implementation to make decisions on
  * what view should be displayed next, based on the
  * view id being processed.
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public interface NavigationRule extends JSFConfigComponent, DescriptionGroup{
+public interface NavigationRule extends FacesConfigElement, DescriptionGroup,
+    IdentifiableElement
+{
     
-    public static final String FROM_VIEW_ID = JSFConfigQNames.FROM_VIEW_ID.getLocalName();
-    public static final String NAVIGATION_CASE = JSFConfigQNames.NAVIGATION_CASE.getLocalName();
+    String FROM_VIEW_ID = JSFConfigQNames.FROM_VIEW_ID.getLocalName();
+    String NAVIGATION_CASE = JSFConfigQNames.NAVIGATION_CASE.getLocalName();
+    String NAVIGATION_RULE_EXTENSION = JSFConfigQNames.NAVIGATION_RULE_EXTENSION.getLocalName();
+    
     
     List<NavigationCase> getNavigationCases();
     void addNavigationCase(NavigationCase navigationCase);
@@ -64,5 +68,10 @@ public interface NavigationRule extends JSFConfigComponent, DescriptionGroup{
     
     String getFromViewId();
     void setFromViewId(String fromView);
+    
+    List<NavigationRuleExtension> getNavigationRuleExtensions();
+    void addNavigationRuleExtension( NavigationRuleExtension extension );
+    void removeNavigationRuleExtension( NavigationRuleExtension extension);
+    void addNavigationRuleExtension( int index , NavigationRuleExtension extension);
     
 }
