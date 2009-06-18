@@ -75,7 +75,7 @@ public class SearchEngine {
     private static final String ITEMS_ATTR = "items";
     private static final String PATH_ATTR = "path";
     private static final String NAME_ATTR = "name";
-    private static final String UUID_ATTR = "uuid";
+    private static final String URL_ATTR = "url";
     private static final String PARAMETERS_ATTR = "parameters";
     private static final String TYPE_ATTR = "type";
 
@@ -135,7 +135,6 @@ public class SearchEngine {
                 WagService svc = new WagService();
                 services.add(svc);
                 svc.setName(item.getString(NAME_ATTR));
-                //svc.setUuid(item.getString(UUID_ATTR));
                 String uri = item.getString(PATH_ATTR);
                 svc.setPath(uri);
 
@@ -153,6 +152,7 @@ public class SearchEngine {
                 parser = new JSONTokener(result);
 
                 JSONObject info = (JSONObject) parser.nextValue();
+                svc.setUrl(info.getString(URL_ATTR));
                 JSONArray svcParams = info.getJSONArray(PARAMETERS_ATTR);
                 List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
                 svc.setParameters(wagParams);
