@@ -39,16 +39,24 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -59,23 +67,30 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 
 /**
  * List of frameworks is "copied" from web project.
  * @author Tomas Mysik
  */
-public class PhpFrameworksPanelVisual extends JPanel implements TableModelListener, ListSelectionListener {
+public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider, TableModelListener, ListSelectionListener, ChangeListener {
     private static final int STEP_INDEX = 2;
     private static final long serialVersionUID = 158602680330133653L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final FrameworksTableModel model;
+    private final Map<PhpFrameworkProvider, PhpModuleExtender> extenders;
 
-    public PhpFrameworksPanelVisual(PhpFrameworksPanel wizardPanel) {
+    private PhpModuleExtender actualExtender;
+
+    public PhpFrameworksPanelVisual(PhpFrameworksPanel wizardPanel, Map<PhpFrameworkProvider, PhpModuleExtender> extenders) {
+        assert extenders != null;
+        this.extenders = extenders;
+
         // Provide a name in the title bar.
         setName(wizardPanel.getSteps()[STEP_INDEX]);
         putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, STEP_INDEX);
@@ -89,13 +104,13 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
         frameworksTable.setModel(model);
         createFrameworksList();
 
-        FrameworksTableCellRenderer renderer = new FrameworksTableCellRenderer();
+        FrameworksTableCellRenderer renderer = new FrameworksTableCellRenderer(model);
         renderer.setBooleanRenderer(frameworksTable.getDefaultRenderer(Boolean.class));
         frameworksTable.setDefaultRenderer(PhpFrameworkProvider.class, renderer);
         frameworksTable.setDefaultRenderer(Boolean.class, renderer);
         initTableVisualProperties();
 
-        changeDescription();
+        changeDescriptionAndPanel();
     }
 
     public void addPhpFrameworksListener(ChangeListener listener) {
@@ -106,26 +121,63 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
         changeSupport.removeChangeListener(listener);
     }
 
-    public List<PhpFrameworkProvider> getSelectedFrameworks() {
-        List<PhpFrameworkProvider> frameworks = new LinkedList<PhpFrameworkProvider>();
+    public Map<PhpFrameworkProvider, PhpModuleExtender> getSelectedExtenders() {
+        Map<PhpFrameworkProvider, PhpModuleExtender> selectedExtenders = new IdentityHashMap<PhpFrameworkProvider, PhpModuleExtender>();
         for (int i = 0; i < model.getRowCount(); ++i) {
             FrameworkModelItem item = model.getItem(i);
             if (item.isSelected()) {
                 PhpFrameworkProvider framework = item.getFramework();
                 assert framework != null;
-                frameworks.add(framework);
+                PhpModuleExtender extender = extenders.get(framework);
+                selectedExtenders.put(framework, extender);
             }
         }
 
-        return frameworks;
+        return selectedExtenders;
+    }
+
+    public PhpModuleExtender getSelectedVisibleExtender() {
+        int selectedRow = frameworksTable.getSelectedRow();
+        if (selectedRow == -1) {
+            return null;
+        }
+        FrameworkModelItem item = model.getItem(selectedRow);
+        assert item != null;
+        if (item.isSelected()) {
+            return extenders.get(item.getFramework());
+        }
+        return null;
+    }
+
+    public void markInvalidFrameworks(Set<PhpFrameworkProvider> invalidFrameworks) {
+        for (int i = 0; i < model.getRowCount(); ++i) {
+            FrameworkModelItem item = model.getItem(i);
+            item.setValid(!invalidFrameworks.contains(item.getFramework()));
+        }
+    }
+
+    public HelpCtx getHelpCtx() {
+        for (Component component : configPanel.getComponents()) {
+            if (component instanceof HelpCtx.Provider) {
+                HelpCtx helpCtx = ((HelpCtx.Provider) component).getHelpCtx();
+                if (helpCtx != null) {
+                    return helpCtx;
+                }
+            }
+        }
+        return null;
     }
 
     public void tableChanged(TableModelEvent e) {
-        changeDescription();
+        changeDescriptionAndPanel();
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        changeDescription();
+        changeDescriptionAndPanel();
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        fireChange();
     }
 
     void fireChange() {
@@ -133,7 +185,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
     }
 
     private void createFrameworksList() {
-        for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
+        for (PhpFrameworkProvider provider : extenders.keySet()) {
             model.addItem(new FrameworkModelItem(provider));
         }
     }
@@ -149,15 +201,44 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
         frameworksTable.getColumnModel().getColumn(0).setMaxWidth(30);
     }
 
-    private void changeDescription() {
+    private void changeDescriptionAndPanel() {
+        if (actualExtender != null) {
+            actualExtender.removeChangeListener(this);
+        }
         if (frameworksTable.getSelectedRow() == -1) {
             descriptionLabel.setText(" "); // NOI18N
+            configPanel.removeAll();
+            configPanel.repaint();
+            configPanel.revalidate();
         } else {
             FrameworkModelItem item = model.getItem(frameworksTable.getSelectedRow());
             descriptionLabel.setText(item.getFramework().getDescription());
+            descriptionLabel.setEnabled(item.isSelected());
+
+            configPanel.removeAll();
+            actualExtender = item.getFramework().createPhpModuleExtender(null);
+            actualExtender.addChangeListener(this);
+            JComponent component = actualExtender.getComponent();
+            if (component != null) {
+                configPanel.add(component, BorderLayout.NORTH);
+                enableComponents(component, item.isSelected());
+            }
+            configPanel.revalidate();
+            configPanel.repaint();
         }
+        fireChange();
     }
 
+    private void enableComponents(Container root, boolean enabled) {
+        root.setEnabled(enabled);
+        for (Component child : root.getComponents()) {
+            if (child instanceof Container) {
+                enableComponents((Container) child, enabled);
+            } else {
+                child.setEnabled(enabled);
+            }
+        }
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -171,6 +252,8 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
         frameworksScrollPane = new JScrollPane();
         frameworksTable = new JTable();
         descriptionLabel = new JLabel();
+        separator = new JSeparator();
+        configPanel = new JPanel();
 
         frameworksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         frameworksTable.setShowHorizontalLines(false);
@@ -180,42 +263,65 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
 
         descriptionLabel.setText("DUMMY"); // NOI18N
 
+        configPanel.setLayout(new BorderLayout());
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
-            .add(frameworksScrollPane, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(descriptionLabel)
                 .addContainerGap())
+            .add(configPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(frameworksScrollPane, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 145, GroupLayout.PREFERRED_SIZE)
+                .add(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 116, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(separator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(descriptionLabel)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(configPanel, GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JPanel configPanel;
     private JLabel descriptionLabel;
     private JScrollPane frameworksScrollPane;
     private JTable frameworksTable;
+    private JSeparator separator;
     // End of variables declaration//GEN-END:variables
 
     private static final class FrameworksTableCellRenderer extends DefaultTableCellRenderer {
         private static final long serialVersionUID = 22495101047716943L;
+        private static final Color ERROR_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
+        private static final Color NORMAL_COLOR = new JLabel().getForeground();
+
+        private final FrameworksTableModel model;
 
         private TableCellRenderer booleanRenderer;
+
+        private FrameworksTableCellRenderer(FrameworksTableModel model) {
+            this.model = model;
+        }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (value instanceof PhpFrameworkProvider) {
-                PhpFrameworkProvider item = (PhpFrameworkProvider) value;
-                return super.getTableCellRendererComponent(table, item.getName(), isSelected, false, row, column);
+                FrameworkModelItem item = model.getItem(row);
+                if (item.isValid()) {
+                    setForeground(NORMAL_COLOR);
+                } else {
+                    setForeground(ERROR_COLOR);
+                }
+
+                return super.getTableCellRendererComponent(table, item.getFramework().getName(), isSelected, false, row, column);
             } else if (value instanceof Boolean && booleanRenderer != null) {
                 return booleanRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             }
@@ -306,6 +412,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
     private static final class FrameworkModelItem {
         private PhpFrameworkProvider framework;
         private Boolean selected;
+        private boolean valid = true;
 
         public FrameworkModelItem(PhpFrameworkProvider framework) {
             setFramework(framework);
@@ -326,6 +433,14 @@ public class PhpFrameworksPanelVisual extends JPanel implements TableModelListen
 
         public void setSelected(Boolean selected) {
             this.selected = selected;
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public void setValid(boolean valid) {
+            this.valid = valid;
         }
     }
 }

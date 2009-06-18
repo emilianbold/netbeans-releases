@@ -40,11 +40,20 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -53,7 +62,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     static final String VALID = "PhpFrameworksPanel.valid"; // NOI18N // used in the previous steps while validating
-    static final String FRAMEWORKS = "frameworks";
+    static final String EXTENDERS = "frameworks";
 
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -71,7 +80,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
 
     public Component getComponent() {
         if (frameworksPanel == null) {
-            frameworksPanel = new PhpFrameworksPanelVisual(this);
+            frameworksPanel = new PhpFrameworksPanelVisual(this, createExtenders());
         }
         return frameworksPanel;
     }
@@ -91,15 +100,39 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         getComponent();
         frameworksPanel.removePhpFrameworksListener(this);
 
-        descriptor.putProperty(FRAMEWORKS, frameworksPanel.getSelectedFrameworks());
+        descriptor.putProperty(EXTENDERS, frameworksPanel.getSelectedExtenders());
     }
 
     public boolean isValid() {
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
 
-        // validate frameworks?
-        //descriptor.putProperty(VALID, false);
+        // validate frameworks
+        String error = null;
+        PhpModuleExtender visibleExtender = frameworksPanel.getSelectedVisibleExtender();
+        if (visibleExtender != null
+                && !visibleExtender.isValid()) {
+            error = visibleExtender.getErrorMessage();
+        }
+        Set<PhpFrameworkProvider> invalidFrameworks = new HashSet<PhpFrameworkProvider>();
+        for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworksPanel.getSelectedExtenders().entrySet()) {
+            PhpModuleExtender extender = entry.getValue();
+            if (extender != null
+                    && !extender.isValid()) {
+                PhpFrameworkProvider frameworkProvider = entry.getKey();
+                if (error == null) {
+                    error = NbBundle.getMessage(PhpFrameworksPanel.class, "MSG_InvalidFramework", frameworkProvider.getName());
+                }
+                invalidFrameworks.add(frameworkProvider);
+            }
+        }
+        frameworksPanel.markInvalidFrameworks(invalidFrameworks);
+
+        if (error != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
+            descriptor.putProperty(VALID, false);
+            return false;
+        }
 
         descriptor.putProperty(VALID, true);
         return true;
@@ -123,5 +156,13 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
 
     final void fireChangeEvent() {
         changeSupport.fireChange();
+    }
+
+    private Map<PhpFrameworkProvider, PhpModuleExtender> createExtenders() {
+        Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new IdentityHashMap<PhpFrameworkProvider, PhpModuleExtender>();
+        for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
+            extenders.put(provider, provider.createPhpModuleExtender(null));
+        }
+        return extenders;
     }
 }
