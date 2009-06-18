@@ -150,8 +150,7 @@ public class AddToIndexAction extends BaseAction {
                         SystemAction.get(RefreshAction.class).performAction(new Node[] { refreshNode } );
                     } catch (Exception exc) {
                         LOGGER.log(Level.INFO, exc.getMessage(), exc);
-                        String message = NbBundle.getMessage(AddToIndexAction.class, "ERR_UnableToAddColumn", exc.getMessage());
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DbUtilities.reportError(NbBundle.getMessage (AddToIndexAction.class, "ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
                     }
                 }
             });
