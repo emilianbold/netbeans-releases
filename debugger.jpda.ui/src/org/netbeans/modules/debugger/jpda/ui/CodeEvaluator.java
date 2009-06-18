@@ -314,8 +314,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private static void fireResultChange() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+                CodeEvaluator defaultInstance = getDefaultInstance();
                 synchronized(CodeEvaluator.class) {
-                    CodeEvaluator defaultInstance = getDefaultInstance();
                     if (defaultInstance != null) {
                         defaultInstance.pcs.firePropertyChange(PROP_RESULT_CHANGED, null, null);
                     }
