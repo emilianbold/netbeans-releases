@@ -219,7 +219,6 @@ public final class JavaAntLogger extends AntLogger {
             // Check to see if the class is listed in our per-task sourcepath.
             // XXX could also look for -Xbootclasspath etc., but probably less important
             for (FileObject root : getCurrentSourceRootsForClasspath(data)) {
-                // XXX this is apparently pretty expensive; try to use java.io.File instead
                 FileObject source = root.getFileObject(resource);
                 if (source != null) {
                     // Got it!
@@ -236,7 +235,7 @@ public final class JavaAntLogger extends AntLogger {
                 FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
                 if (source != null) {
                     hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
-                } else if (messageLevel <= sessionLevel && !event.isConsumed() && "java".equals(event.getTaskName())) {
+                } else if (messageLevel <= sessionLevel && "java".equals(event.getTaskName())) {
                     event.consume();
                     session.println(line, event.getLogLevel() <= AntEvent.LOG_WARN, null);
                 }
