@@ -41,6 +41,7 @@
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -59,8 +60,10 @@ import org.netbeans.api.java.source.ClasspathInfo;
 public class JsfModelImplementation implements MetadataModelImplementation<JsfModel> {
     
     private JsfModelImplementation ( ModelUnit unit ){
-        ClasspathInfo classpathInfo = null;//ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
+        ClasspathInfo classpathInfo = ClasspathInfo.create(unit.getBootPath(), 
+                unit.getBootPath(), unit.getBootPath());
         myHelper = AnnotationModelHelper.create(classpathInfo);
+        myModel = new JsfModelImpl( unit );
     }
 
     
@@ -73,31 +76,45 @@ public class JsfModelImplementation implements MetadataModelImplementation<JsfMo
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#isReady()
      */
     public boolean isReady() {
-        // TODO Auto-generated method stub
-        return false;
+        return !getHelper().isJavaScanInProgress();
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#runReadAction(org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction)
      */
-    public <R> R runReadAction( MetadataModelAction<JsfModel, R> action )
+    public <R> R runReadAction(final  MetadataModelAction<JsfModel, R> action )
             throws MetadataModelException, IOException
     {
-        // TODO Auto-generated method stub
-        return null;
+        return getHelper().runJavaSourceTask(new Callable<R>() {
+            public R call() throws Exception {
+                return action.run(getModel());
+            }
+        });
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation#runReadActionWhenReady(org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction)
      */
     public <R> Future<R> runReadActionWhenReady(
-            MetadataModelAction<JsfModel, R> action )
+            final MetadataModelAction<JsfModel, R> action )
             throws MetadataModelException, IOException
     {
-        // TODO Auto-generated method stub
-        return null;
+        return getHelper().runJavaSourceTaskWhenScanFinished(new Callable<R>() {
+            public R call() throws Exception {
+                return action.run(getModel());
+            }
+        });
     }
     
+    AnnotationModelHelper getHelper(){
+        return myHelper;
+    }
+    
+    private JsfModelImpl getModel(){
+        return myModel;
+    }
+    
+    private JsfModelImpl myModel;
     private final AnnotationModelHelper myHelper;
 
 }
