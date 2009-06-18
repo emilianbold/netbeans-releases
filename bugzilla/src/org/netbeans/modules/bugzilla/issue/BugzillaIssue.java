@@ -196,6 +196,11 @@ public class BugzillaIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public boolean isNew() {
+        return data == null || data.isNew();
+    }
+
     void opened() {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
         if(!data.isNew()) {
