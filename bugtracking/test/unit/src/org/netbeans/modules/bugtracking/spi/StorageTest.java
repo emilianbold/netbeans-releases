@@ -314,5 +314,10 @@ public class StorageTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public boolean isNew() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }
