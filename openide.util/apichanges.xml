@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="enableStackTraces">
+        <api name="util"/>
+        <summary>Added constructor <code>RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces)</code></summary>
+        <version major="7" minor="24"/>
+        <date day="8" month="6" year="2009"/>
+        <author login="rmichalsky"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Newly added constructor allows to disable (slow) filling stack traces before posting each task. 
+            </p>
+        </description>
+        <class package="org.openide.util" name="RequestProcessor"/>
+        <issue number="165862"/>
+    </change>
     <change id="ImageUtilities.loadImageIcon">
         <api name="util"/>
         <summary>Added <code>loadImageIcon(String resource, boolean localized)</code></summary>

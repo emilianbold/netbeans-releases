@@ -240,7 +240,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         List<CsmUID<CsmOffsetableDeclaration>> uids;
         synchronized (this) {
             decls = getDeclarations();
-            uids = declarations;
+            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations);
             declarations.clear();
             //declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
         }

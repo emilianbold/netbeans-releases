@@ -517,6 +517,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Map</* path */String,Map</* attr name */String,Map</* module name */String,/* attr value */Object>>> folderAttributes =
                 new TreeMap<String,Map<String,Map<String,Object>>>();
         StringBuffer sb = new StringBuffer();
+        Map<String,URL> hiddenFiles = new HashMap<String, URL>();
+        Set<String> allFiles = new HashSet<String>();
+        final String suffix = "_hidden";
+
         
         boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
@@ -540,11 +544,18 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             java.net.URLConnection connect = layerURL.openConnection ();
             connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
-            
+
             Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
                 FileObject fo = all.nextElement ();
                 String path = fo.getPath();
+
+                if (path.endsWith(suffix)) {
+                    hiddenFiles.put(path, layerURL);
+                } else {
+                    allFiles.add(path);
+                }
+
                 Map<String,Object> attributes = getAttributes(fo, base);
 
                 /* XXX too many failures to enable yet:
@@ -675,6 +686,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
         if (sb.length () > 0) {
             fail ("Some modules override their files and do not depend on each other\n" + sb);
+        }
+
+
+        for (Map.Entry<String, URL> e : hiddenFiles.entrySet()) {
+            String p = e.getKey().substring(0, e.getKey().length() - suffix.length());
+            if (allFiles.contains(p)) {
+                continue;
+            }
+            sb.append("file " + e.getKey() + " from " + e.getValue() + " does not hide any other file\n");
+        }
+
+        if (sb.length () > 0) {
+            fail ("There are some useless hidden files\n" + sb);
         }
     }
     

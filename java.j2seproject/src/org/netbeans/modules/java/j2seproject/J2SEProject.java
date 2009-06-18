@@ -294,6 +294,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
             cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
+        J2SESources srcs = new J2SESources(this, helper, eval, getSourceRoots(), getTestSourceRoots());
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             new Info(),
@@ -313,7 +314,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            new J2SESources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            srcs,
+            srcs.getSourceGroupModifierImplementation(),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
@@ -338,7 +340,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
     }
-    
+
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
@@ -381,7 +383,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         }
         return this.testRoots;
     }
-    
+
     File getTestClassesDirectory() {
         String testClassesDir = evaluator().getProperty(ProjectProperties.BUILD_TEST_CLASSES_DIR);
         if (testClassesDir == null) {
