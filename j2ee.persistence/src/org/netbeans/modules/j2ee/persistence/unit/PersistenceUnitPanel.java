@@ -86,8 +86,8 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private boolean jpa20=false;
 
     //jpa2.0 specific
-    private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};
-    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE"};
+    private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
+    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE"};//NOI18N
     
     public PersistenceUnitPanel(SectionView view, final PUDataObject dObj,  final PersistenceUnit persistenceUnit) {
         super(view);
@@ -277,7 +277,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         includeAllEntities.setEnabled(!javaSE);
         includeAllEntities.setSelected(!javaSE && !persistenceUnit.isExcludeUnlistedClasses());
         includeAllEntities.setText(NbBundle.getMessage(PersistenceUnitPanel.class,
-                "LBL_IncludeAllEntities",
+                "LBL_IncludeAllEntities",//NOI18N
                 new Object[]{ProjectUtils.getInformation(project).getDisplayName()}));
     }
     
@@ -371,7 +371,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                     }
                 }
                 if (url == null) {
-                    url = NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_CustomConnection");
+                    url = NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_CustomConnection");//NOI18N
                 }
                 jdbcComboBox.addItem(url);
                 jdbcComboBox.setSelectedItem(url);
@@ -588,7 +588,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     
     public javax.swing.JComponent getErrorComponent(String errorId) {
-        if ("name".equals(errorId)) {
+        if ("name".equals(errorId)) {//NOI18N
             return nameTextField;
         }
         return null;
