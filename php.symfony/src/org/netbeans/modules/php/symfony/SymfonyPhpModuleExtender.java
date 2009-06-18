@@ -41,9 +41,13 @@ package org.netbeans.modules.php.symfony;
 
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 
 /**
  * @author Tomas Mysik
@@ -51,10 +55,11 @@ import org.openide.filesystems.FileObject;
 public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
-    public Set<FileObject> extend(PhpModule phpModule) throws Exception {
+    public Set<FileObject> extend(PhpModule phpModule) {
         // init project
         SymfonyScript symfonyScript = SymfonyScript.getDefault();
         assert symfonyScript != null : "Symfony script has to be known already!";
+        assert symfonyScript.isValid() : "Symfony script has to be valid!";
         symfonyScript.initProject(phpModule);
 
         // return files
@@ -63,5 +68,33 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         assert databases != null;
         files.add(databases);
         return files;
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return null;
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return null;
+    }
+
+    @Override
+    public boolean isValid() {
+        return getErrorMessage() == null;
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return SymfonyScript.validate(SymfonyOptions.getInstance().getSymfony());
     }
 }

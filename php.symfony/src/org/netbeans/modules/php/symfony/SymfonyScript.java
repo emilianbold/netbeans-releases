@@ -42,21 +42,40 @@ package org.netbeans.modules.php.symfony;
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
  */
 public class SymfonyScript extends PhpProgram {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
+    public static final String PARAM_VERSION = "--version"; // NOI18N
+
+    // unknown version
+    static final int[] UNKNOWN_VERSION = new int[0];
+    /**
+     * volatile is enough because:
+     *  - never mind if the version is detected 2x
+     *  - we don't change array values but only the array itself (local variable created and then assigned to 'version')
+     */
+    static volatile int[] version = null;
 
     private static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
 
@@ -76,9 +95,18 @@ public class SymfonyScript extends PhpProgram {
         return null;
     }
 
+    public static void resetVersion() {
+        version = null;
+    }
+
+    @Override
+    public boolean isValid() {
+        return validate(getFullCommand()) == null;
+    }
+
     public static String validate(String command) {
         SymfonyScript symfonyScript = new SymfonyScript(command);
-        if (!symfonyScript.isValid()) {
+        if (!StringUtils.hasText(symfonyScript.getProgram())) {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_NoSymfony");
         }
 
@@ -92,10 +120,13 @@ public class SymfonyScript extends PhpProgram {
         if (!file.canRead()) {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
         }
+        if (symfonyScript.getVersion() == UNKNOWN_VERSION) {
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyUnknownVersion");
+        }
         return null;
     }
 
-    public void initProject(PhpModule phpModule) throws InterruptedException {
+    public void initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getProgram())
                 .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
@@ -113,8 +144,85 @@ public class SymfonyScript extends PhpProgram {
         final Future<Integer> result = service.run();
         try {
             result.get();
-        } catch (ExecutionException exc) {
-            UiUtils.processExecutionException(exc);
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * Currently, just trying to detect "any" symfony version
+     * (if not detected, probably not symfony script?).
+     * @return <code>true</code> if Symfony script was detected
+     */
+    public boolean supportedVersionFound() {
+        if (!super.isValid()) {
+            return false;
+        }
+        getVersion();
+        return version != null
+                && version != UNKNOWN_VERSION;
+    }
+
+    private int[] getVersion() {
+        if (!super.isValid()) {
+            return UNKNOWN_VERSION;
+        }
+        if (version != null) {
+            return version;
+        }
+
+        version = UNKNOWN_VERSION;
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
+                .addArgument(PARAM_VERSION);
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new OutputProcessorFactory());
+        ExecutionService service = ExecutionService.newService(externalProcessBuilder, executionDescriptor, null);
+        Future<Integer> result = service.run();
+        try {
+            result.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            // ignored
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return version;
+    }
+
+    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+        //                                                              symfony version 1.2.7 (/usr/share/php/symfony)
+        private static final Pattern SYMFONY_VERSION = Pattern.compile("symfony\\s+version\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
+
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+                public void processLine(String line) {
+                    int[] match = match(line);
+                    if (match != null) {
+                        version = match;
+                    }
+                }
+                public void reset() {
+                }
+                public void close() {
+                }
+            });
+        }
+
+        static int[] match(String text) {
+            assert text != null;
+            if (StringUtils.hasText(text)) {
+                Matcher matcher = SYMFONY_VERSION.matcher(text);
+                if (matcher.find()) {
+                    int major = Integer.parseInt(matcher.group(1));
+                    int minor = Integer.parseInt(matcher.group(2));
+                    int release = Integer.parseInt(matcher.group(3));
+                    return new int[] {major, minor, release};
+                }
+            }
+            return null;
         }
     }
 }

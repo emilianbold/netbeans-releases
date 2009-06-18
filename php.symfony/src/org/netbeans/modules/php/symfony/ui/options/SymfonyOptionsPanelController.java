@@ -79,6 +79,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
     @Override
     public boolean isValid() {
         // warnings
+        SymfonyScript.resetVersion();
         String warning = SymfonyScript.validate(symfonyOptionsPanel.getSymfony());
         if (warning != null) {
             symfonyOptionsPanel.setWarning(warning);
