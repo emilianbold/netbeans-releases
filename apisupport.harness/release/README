@@ -593,11 +593,14 @@ its <package-root> element.
 extra.module.files - list of special files you build alongside your module JAR
 which you want to register for update tracking and include in your NBM.
 *Everything* you put into your cluster should be enumerated. Paths are relative
-to the cluster directory. Example:
+to the cluster directory. Ant-style patternsets (most simply a trailing slash)
+are permitted if you can be sure no other modules' files would also match.
+Example:
 
     extra.module.files=\
         ext/foolib.jar,\
-        docs/FooAPI.zip
+        docs/FooAPI.zip,\
+        SpecialThirdPartyTool1.0/
 
 (You do *not* need to include: the module JAR itself; your JavaHelp JAR if you
 build one; your module declaration file; any module-auto-deps.xml; an
@@ -743,7 +746,11 @@ project.license [since 6.0] - license to use for newly created files in the proj
 
 release.dir - "${basedir}/release"; location of a directory full of files to
 copy unmodified to the output cluster. Since 6.0 beta2 also applies to module
-suite projects.
+suite projects. DO NOT ATTEMPT to create files in this directory during the
+build; it is ONLY for static content (versioned files present in a clean source
+project). Dynamically generated cluster content should be placed directly in
+${cluster} as part of a netbeans-extra target, and be sure to mention such files
+in ${extra.module.files}.
 
 run.app.exe - "bin\netbeans.exe"; name of Windows launcher to start (inside
 ${netbeans.dest.dir}) if trying to run the application for interactive testing.
