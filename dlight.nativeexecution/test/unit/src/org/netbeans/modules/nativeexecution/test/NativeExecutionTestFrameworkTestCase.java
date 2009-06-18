@@ -65,18 +65,36 @@ public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTes
     }
 
     @org.junit.Test
+    @ForAllEnvironments(section="remote.platforms")
+    public void annotatedForAllRemotePlatforms() {
+    }
+
+    @ForAllEnvironments(section="remote.platforms")
+    public void testForAllRemotePlatforms() {
+    }
+
+    @org.junit.Test
     @ForAllEnvironments
-    public void annotatedForAll() {
+    public void annotatedForAllDefault() {
     }
 
     @ForAllEnvironments
-    public void testForAll() {
+    public void testForAllDefault() {
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments(section="test.framework.test.platforms")
+    public void annotatedForAllTestPlatforms() {
+    }
+
+    @ForAllEnvironments(section="test.framework.test.platforms")
+    public void testForAllTestPlatforms() {
     }
 
     public static junit.framework.Test suite() {
         Class testClass = NativeExecutionTestFrameworkTestCase.class;
         return new NativeExecutionBaseTestSuite(
                 testClass.getSimpleName(),
-                "remote.platforms", testClass);
+                "test.framework.test.default.platforms", testClass);
     }    
 }

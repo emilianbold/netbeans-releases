@@ -71,4 +71,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ForAllEnvironments {
+    /**
+     * In the case section is empty,
+     * default is set via suite constructor
+     */
+    String section() default "";
 }
