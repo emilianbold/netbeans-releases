@@ -41,22 +41,90 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.*;
+import org.netbeans.modules.web.jsf.api.facesmodel.AbsoluteOrdering;
+import org.netbeans.modules.web.jsf.api.facesmodel.ActionListener;
+import org.netbeans.modules.web.jsf.api.facesmodel.After;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.ApplicationFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.AttributeContainer;
+import org.netbeans.modules.web.jsf.api.facesmodel.Before;
+import org.netbeans.modules.web.jsf.api.facesmodel.ConfigAttribute;
+import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
+import org.netbeans.modules.web.jsf.api.facesmodel.DefaultLocale;
+import org.netbeans.modules.web.jsf.api.facesmodel.DefaultRenderKitId;
+import org.netbeans.modules.web.jsf.api.facesmodel.DefaultValidators;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
+import org.netbeans.modules.web.jsf.api.facesmodel.DescriptionGroup;
+import org.netbeans.modules.web.jsf.api.facesmodel.DisplayName;
+import org.netbeans.modules.web.jsf.api.facesmodel.ElResolver;
+import org.netbeans.modules.web.jsf.api.facesmodel.ExceptionHandlerFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ExternalContextFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesBehavior;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesClientBehaviorRenderer;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesComponent;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesContextFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesManagedProperty;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesRenderer;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesSystemEventListener;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidator;
+import org.netbeans.modules.web.jsf.api.facesmodel.Facet;
+import org.netbeans.modules.web.jsf.api.facesmodel.Factory;
+import org.netbeans.modules.web.jsf.api.facesmodel.Icon;
+import org.netbeans.modules.web.jsf.api.facesmodel.If;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
+import org.netbeans.modules.web.jsf.api.facesmodel.Lifecycle;
+import org.netbeans.modules.web.jsf.api.facesmodel.LifecycleFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ListEntries;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.MapEntries;
+import org.netbeans.modules.web.jsf.api.facesmodel.MessageBundle;
+import org.netbeans.modules.web.jsf.api.facesmodel.Name;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationHandler;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.Ordering;
+import org.netbeans.modules.web.jsf.api.facesmodel.OrderingElement;
+import org.netbeans.modules.web.jsf.api.facesmodel.Others;
+import org.netbeans.modules.web.jsf.api.facesmodel.PartialTraversal;
+import org.netbeans.modules.web.jsf.api.facesmodel.PartialViewContextFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.PhaseListener;
+import org.netbeans.modules.web.jsf.api.facesmodel.Property;
+import org.netbeans.modules.web.jsf.api.facesmodel.PropertyContainer;
+import org.netbeans.modules.web.jsf.api.facesmodel.PropertyResolver;
+import org.netbeans.modules.web.jsf.api.facesmodel.Redirect;
+import org.netbeans.modules.web.jsf.api.facesmodel.ReferencedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.RenderKit;
+import org.netbeans.modules.web.jsf.api.facesmodel.RenderKitFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceHandler;
+import org.netbeans.modules.web.jsf.api.facesmodel.StateManager;
+import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
+import org.netbeans.modules.web.jsf.api.facesmodel.TagHandlerDelegateFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.VariableResolver;
+import org.netbeans.modules.web.jsf.api.facesmodel.ViewDeclarationLanguageFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
+import org.netbeans.modules.web.jsf.api.facesmodel.ViewParam;
+import org.netbeans.modules.web.jsf.api.facesmodel.VisitContextFactory;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
-import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements ComponentUpdater<JSFConfigComponent>{
+class SyncUpdateVisitor extends JSFConfigVisitor.Default 
+    implements ComponentUpdater<JSFConfigComponent>
+{
     
     private JSFConfigComponent target;
     private Operation operation;
     private int index;
     
     /** Creates a new instance of SyncUpdateVisitor */
-    public SyncUpdateVisitor() {
+    SyncUpdateVisitor() {
     }
     
 
@@ -64,7 +132,9 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
         update(target, child, -1 , operation);
     }
 
-    public void update(JSFConfigComponent target, JSFConfigComponent child, int index, Operation operation) {
+    public void update(JSFConfigComponent target, JSFConfigComponent child, 
+            int index, Operation operation) 
+    {
         assert target != null;
         assert child != null;
         this.target = target;
@@ -187,6 +257,568 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
                 insert(Application.RESOURCE_BUNDLE, component);
             } else {
                 remove(Application.RESOURCE_BUNDLE, component);
+            }
+        }
+    }
+    
+    @Override
+    public void visit(ActionListener component) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.ACTION_LISTENER, component);
+            } else {
+                remove(Application.ACTION_LISTENER, component);
+            }
+        }
+    }
+    
+    @Override
+    public void visit( DefaultRenderKitId id ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.DEFAULT_RENDER_KIT_ID, id);
+            } else {
+                remove(Application.DEFAULT_RENDER_KIT_ID, id);
+            }
+        }
+    }
+    
+    @Override
+    public void visit( MessageBundle bundle ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.MESSAGE_BUNDLE, bundle);
+            } else {
+                remove(Application.MESSAGE_BUNDLE, bundle);
+            }
+        }
+    }
+    
+    @Override
+    public void visit( NavigationHandler handler ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.NAVIGATION_HANDLER, handler);
+            } else {
+                remove(Application.NAVIGATION_HANDLER, handler);
+            }
+        }
+    }
+    
+    @Override
+    public void visit( PartialTraversal traversal ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.PARTIAL_TRAVERSAL, traversal);
+            } else {
+                remove(Application.PARTIAL_TRAVERSAL, traversal);
+            }
+        }
+    }
+    
+    @Override
+    public void visit( StateManager manager ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.STATE_MANAGER, manager);
+            } else {
+                remove(Application.STATE_MANAGER, manager);
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ElResolver resolver ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.EL_RESOLVER, resolver);
+            } else {
+                remove(Application.EL_RESOLVER , resolver );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( PropertyResolver resolver ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.PROPERTY_RESOLVER, resolver);
+            } else {
+                remove(Application.PROPERTY_RESOLVER , resolver );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( VariableResolver resolver ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.VARIABLE_RESOLVER, resolver);
+            } else {
+                remove(Application.VARIABLE_RESOLVER , resolver );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ResourceHandler handler ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.RESOURCE_HANDLER, handler);
+            } else {
+                remove(Application.RESOURCE_HANDLER , handler );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( FacesSystemEventListener listener ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.SYSTEM_EVENT_LISTENER, listener);
+            } else {
+                remove(Application.SYSTEM_EVENT_LISTENER , listener );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( DefaultValidators validators ) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.DEFAULT_VALIDATORS, validators);
+            } else {
+                remove(Application.DEFAULT_VALIDATORS , validators );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Ordering ordering ) {
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.ORDERING, ordering);
+            } else {
+                remove(FacesConfig.ORDERING , ordering );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( After after ) {
+        if (target instanceof Ordering) {
+            if (operation == Operation.ADD) {
+                insert(Ordering.AFTER, after);
+            } else {
+                remove(Ordering.AFTER , after );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Before before ) {
+        if (target instanceof Ordering) {
+            if (operation == Operation.ADD) {
+                insert(Ordering.BEFORE, before);
+            } else {
+                remove(Ordering.BEFORE , before );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Name name ) {
+        if (target instanceof OrderingElement || target instanceof FacesConfig 
+                || target instanceof AbsoluteOrdering ) {
+            if (operation == Operation.ADD) {
+                insert( OrderingElement.NAME, name);
+            } else {
+                remove(OrderingElement.NAME, name );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Others others ) {
+        if (target instanceof OrderingElement || target instanceof AbsoluteOrdering ) {
+            if (operation == Operation.ADD) {
+                insert( OrderingElement.OTHERS, others);
+            } else {
+                remove( OrderingElement.OTHERS, others );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( AbsoluteOrdering ordering ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.ABSOLUTE_ORDERING, ordering);
+            } else {
+                remove( FacesConfig.ABSOLUTE_ORDERING, ordering );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ValidatorId id ) {
+        if (target instanceof DefaultValidators  ) {
+            if (operation == Operation.ADD) {
+                insert( DefaultValidators.VALIDATOR_ID, id);
+            } else {
+                remove( DefaultValidators.VALIDATOR_ID, id );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Factory factory ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.FACTORY, factory);
+            } else {
+                remove( FacesConfig.FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ApplicationFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.APPLICATION_FACTORY, factory);
+            } else {
+                remove( Factory.APPLICATION_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ExceptionHandlerFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.EXCEPTION_HANDLER_FACTORY, factory);
+            } else {
+                remove( Factory.EXCEPTION_HANDLER_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ExternalContextFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.EXTERNAL_CONTEXT_FACTORY, factory);
+            } else {
+                remove( Factory.EXTERNAL_CONTEXT_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( FacesContextFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.FACES_CONTEXT_FACTORY, factory);
+            } else {
+                remove( Factory.FACES_CONTEXT_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( PartialViewContextFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.PARTIAL_VIEW_CONTEXT_FACTORY, factory);
+            } else {
+                remove( Factory.PARTIAL_VIEW_CONTEXT_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( LifecycleFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.LIFECYCLE_FACTORY, factory);
+            } else {
+                remove( Factory.LIFECYCLE_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ViewDeclarationLanguageFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.VIEW_DECLARATION_LANGUAGE_FACTORY, factory);
+            } else {
+                remove( Factory.VIEW_DECLARATION_LANGUAGE_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( TagHandlerDelegateFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.TAG_HANDLER_DELEGATE_FACTORY, factory);
+            } else {
+                remove( Factory.TAG_HANDLER_DELEGATE_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( RenderKitFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.RENDER_KIT_FACTORY, factory);
+            } else {
+                remove( Factory.RENDER_KIT_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( VisitContextFactory factory ) {
+        if (target instanceof Factory  ) {
+            if (operation == Operation.ADD) {
+                insert( Factory.VISIT_CONTEXT_FACTORY, factory);
+            } else {
+                remove( Factory.VISIT_CONTEXT_FACTORY, factory );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( FacesComponent component ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.COMPONENT, component);
+            } else {
+                remove( FacesConfig.COMPONENT, component );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Facet facet ) {
+        if (target instanceof FacesComponent  || target instanceof FacesRenderer) {
+            if (operation == Operation.ADD) {
+                insert( FacesComponent.FACET, facet);
+            } else {
+                remove( FacesComponent.FACET, facet );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Property property ) {
+        if (target instanceof PropertyContainer  ) {
+            if (operation == Operation.ADD) {
+                insert( PropertyContainer.PROPERTY, property);
+            } else {
+                remove( PropertyContainer.PROPERTY, property );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( ConfigAttribute attribute ) {
+        if (target instanceof AttributeContainer  ) {
+            if (operation == Operation.ADD) {
+                insert( AttributeContainer.ATTRIBUTE, attribute);
+            } else {
+                remove( AttributeContainer.ATTRIBUTE, attribute );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Description description ) {
+        if (target instanceof DescriptionGroup  ) {
+            if (operation == Operation.ADD) {
+                insert( DescriptionGroup.DESCRIPTION, description);
+            } else {
+                remove( DescriptionGroup.DESCRIPTION, description );
+            }
+        }
+    }
+    
+    @Override
+    public void visit( Icon icon ) {
+        if (target instanceof DescriptionGroup  ) {
+            if (operation == Operation.ADD) {
+                insert( DescriptionGroup.ICON, icon);
+            } else {
+                remove( DescriptionGroup.ICON, icon );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  DisplayName name ) {
+        if (target instanceof DescriptionGroup  ) {
+            if (operation == Operation.ADD) {
+                insert( DescriptionGroup.DISPLAY_NAME, name);
+            } else {
+                remove( DescriptionGroup.DISPLAY_NAME, name );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  FacesManagedProperty property ) {
+        if (target instanceof ManagedBean  ) {
+            if (operation == Operation.ADD) {
+                insert( ManagedBean.MANAGED_PROPERTY, property);
+            } else {
+                remove( ManagedBean.MANAGED_PROPERTY, property );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  ListEntries entries ) {
+        if (target instanceof ManagedBean  ) {
+            if (operation == Operation.ADD) {
+                insert( ManagedBean.LIST_ENTRIES, entries);
+            } else {
+                remove( ManagedBean.LIST_ENTRIES, entries );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  MapEntries entries ) {
+        if (target instanceof ManagedBean  ) {
+            if (operation == Operation.ADD) {
+                insert( ManagedBean.MAP_ENTRIES, entries);
+            } else {
+                remove( ManagedBean.MAP_ENTRIES, entries );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  If iff ) {
+        if (target instanceof NavigationCase  ) {
+            if (operation == Operation.ADD) {
+                insert( NavigationCase.IF, iff);
+            } else {
+                remove( NavigationCase.IF, iff );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  Redirect redirect ) {
+        if (target instanceof NavigationCase  ) {
+            if (operation == Operation.ADD) {
+                insert( NavigationCase.REDIRECT, redirect);
+            } else {
+                remove( NavigationCase.REDIRECT, redirect );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  ViewParam viewParam ) {
+        if (target instanceof Redirect  ) {
+            if (operation == Operation.ADD) {
+                insert( Redirect.VIEW_PARAM, viewParam);
+            } else {
+                remove( Redirect.VIEW_PARAM, viewParam );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  ReferencedBean referencedBean ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.REFERENCED_BEAN, referencedBean);
+            } else {
+                remove( FacesConfig.REFERENCED_BEAN, referencedBean );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  RenderKit renderKit ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.RENDER_KIT, renderKit);
+            } else {
+                remove( FacesConfig.RENDER_KIT, renderKit );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  FacesRenderer renderer ) {
+        if (target instanceof RenderKit  ) {
+            if (operation == Operation.ADD) {
+                insert( RenderKit.RENDERER, renderer);
+            } else {
+                remove( RenderKit.RENDERER, renderer );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  FacesClientBehaviorRenderer renderer ) {
+        if (target instanceof RenderKit  ) {
+            if (operation == Operation.ADD) {
+                insert( RenderKit.CLIENT_BEHAVIOR_RENDERER, renderer);
+            } else {
+                remove( RenderKit.CLIENT_BEHAVIOR_RENDERER, renderer );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  Lifecycle lifecycle ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.LIFECYCLE, lifecycle);
+            } else {
+                remove( FacesConfig.LIFECYCLE, lifecycle );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  PhaseListener listener ) {
+        if (target instanceof Lifecycle  ) {
+            if (operation == Operation.ADD) {
+                insert( Lifecycle.PHASE_LISTENER, listener);
+            } else {
+                remove( Lifecycle.PHASE_LISTENER, listener );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  FacesValidator validator ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.VALIDATOR, validator);
+            } else {
+                remove( FacesConfig.VALIDATOR, validator );
+            }
+        }
+    }
+    
+    @Override
+    public void visit(  FacesBehavior behavior ) {
+        if (target instanceof FacesConfig  ) {
+            if (operation == Operation.ADD) {
+                insert( FacesConfig.BEHAVIOR, behavior);
+            } else {
+                remove( FacesConfig.BEHAVIOR, behavior );
             }
         }
     }
