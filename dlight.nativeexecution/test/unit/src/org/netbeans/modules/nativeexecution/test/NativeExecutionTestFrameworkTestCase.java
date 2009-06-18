@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,70 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.test;
+package org.netbeans.modules.nativeexecution.test;
 
-import junit.framework.TestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * IMPORTANT NOTE:
- * If This class is not compiled with the notification about not resolved
- * BaseTestSuite class => cnd/core tests are not compiled
- * 
- * To solve this problem compile or run tests for cnd/core
+ * This class test test framework as such -
+ * NativeExecutionBaseTestSuite, NativeExecutionBaseTestCase classes,
+ * ForAllEnvironments annotation, etc
+ * @author Vladimir Kvashin
  */
+public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTestCase {
 
-/**
- * base class for modelimpl module tests suite
- * @author Vladimir Voskresensky
- */
-public class ModelImplBaseTestSuite extends CndBaseTestSuite {
-    
-    /**
-     * Constructs an empty TestSuite.
-     */
-    public ModelImplBaseTestSuite() {
-        super();
-    }
-
-    /**
-     * Constructs an empty TestSuite.
-     */
-    public ModelImplBaseTestSuite(String name) {
+    public NativeExecutionTestFrameworkTestCase(String name) {
         super(name);
     }
+
+    public NativeExecutionTestFrameworkTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
+        super(name, testExecutionEnvironment);
+    }
+
+    public void testNamedSingle() {
+    }
+
+    @org.junit.Test
+    public void annotatedSingle() {
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments(section="remote.platforms")
+    public void annotatedForAllRemotePlatforms() {
+    }
+
+    @ForAllEnvironments(section="remote.platforms")
+    public void testForAllRemotePlatforms() {
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments
+    public void annotatedForAllDefault() {
+    }
+
+    @ForAllEnvironments
+    public void testForAllDefault() {
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments(section="test.framework.test.platforms")
+    public void annotatedForAllTestPlatforms() {
+    }
+
+    @ForAllEnvironments(section="test.framework.test.platforms")
+    public void testForAllTestPlatforms() {
+    }
+
+    public static junit.framework.Test suite() {
+        Class testClass = NativeExecutionTestFrameworkTestCase.class;
+        return new NativeExecutionBaseTestSuite(
+                testClass.getSimpleName(),
+                "test.framework.test.default.platforms", testClass);
+    }    
 }

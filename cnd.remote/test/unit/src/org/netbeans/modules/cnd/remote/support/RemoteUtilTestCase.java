@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -60,6 +61,7 @@ public class RemoteUtilTestCase extends RemoteTestBase {
         super(testName, execEnv);
     }
 
+    @ForAllEnvironments
     public void testGetHomeDirectory() throws Exception {
         System.out.printf("Testng getHomeDirectory\n");
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
@@ -72,6 +74,7 @@ public class RemoteUtilTestCase extends RemoteTestBase {
         assertTrue(exists);
     }
 
+    @ForAllEnvironments
     public void testGetHomeDirectoryCachingNotNull() throws Exception {
         System.out.printf("Testng getHomeDirectory caching: returning not null\n");
         ExecutionEnvironment goodEnv = getTestExecutionEnvironment();
@@ -89,6 +92,7 @@ public class RemoteUtilTestCase extends RemoteTestBase {
         }
     }
 
+    @ForAllEnvironments
     public void testGetHomeDirectoryCachingNull() throws Exception {
         System.out.printf("Testng getHomeDirectory caching: returning null\n");
         ExecutionEnvironment badEnv = ExecutionEnvironmentFactory.createNew("inexistent/user", "inexistent/host");

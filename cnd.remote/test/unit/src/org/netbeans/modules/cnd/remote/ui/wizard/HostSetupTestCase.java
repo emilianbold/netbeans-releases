@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 
@@ -62,6 +63,7 @@ public class HostSetupTestCase extends RemoteTestBase {
         super(testName, execEnv);
     }
 
+    @ForAllEnvironments
     public void testHostSetup() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ToolsCacheManager tcm = new ToolsCacheManager();
