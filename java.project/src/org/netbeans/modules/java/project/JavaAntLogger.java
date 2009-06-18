@@ -73,23 +73,43 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=AntLogger.class, position=50)
 public final class JavaAntLogger extends AntLogger {
     
-    // XXX handle Unicode elements as well
-    // XXX handle unknown source too (#17734)? or don't bother?
-    
-    /**
-     * Regexp matching one line (not the first) of a stack trace.
-     * Captured groups:
-     * <ol>
-     * <li>package
-     * <li>filename
-     * <li>line number
-     * </ol>
-     */
+    static final class StackTraceParse {
+        final String resource;
+        final int lineNumber;
+        StackTraceParse(String resource, int lineNumber) {
+            this.resource = resource;
+            this.lineNumber = lineNumber;
+        }
+        public @Override String toString() {
+            return resource + ":" + lineNumber;
+        }
+    }
+    /** Java identifier */
+    private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
     // should be consistent with o.apache.tools.ant.module.STACK_TRACE
-    // also org.netbeans.modules.hudson.impl.JavaHudsonLogger.STACK_TRACE
+    // would be nice to match org.netbeans.modules.hudson.impl.JavaHudsonLogger.STACK_TRACE, but would need to copy more
     private static final Pattern STACK_TRACE = Pattern.compile(
-    "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
-    
+            "((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+            "[(](?:(" + JIDENT + "[.]java):([0-9]+)|Unknown Source)[)]"); // NOI18N
+    static StackTraceParse/*|null*/ parseStackTraceLine(String line) {
+        Matcher m = STACK_TRACE.matcher(line);
+        if (m.find()) {
+            // We have a stack trace.
+            String pkg = m.group(1);
+            String filename = m.group(3);
+            int lineNumber;
+            if (filename == null) {
+                filename = m.group(2).replaceFirst("[$].+", "") + ".java"; // NOI18N
+                lineNumber = 1;
+            } else {
+                lineNumber = Integer.parseInt(m.group(4));
+            }
+            return new StackTraceParse(pkg.replace('.', '/') + filename, lineNumber);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Regexp matching the first line of a stack trace, with the exception message.
      * Captured groups:
@@ -99,7 +119,7 @@ public final class JavaAntLogger extends AntLogger {
      */
     private static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
     // #42894: JRockit uses "Main Thread" not "main"
-    "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)"); // NOI18N
+    "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:" + JIDENT + "\\.)+)(" + JIDENT + "(?:: .+)?)"); // NOI18N
     
     /**
      * Regexp matching part of a Java task's invocation debug message
@@ -199,7 +219,7 @@ public final class JavaAntLogger extends AntLogger {
         }
         return data;
     }
-    
+
     @Override
     public void messageLogged(AntEvent event) {
         AntSession session = event.getSession();
@@ -209,20 +229,15 @@ public final class JavaAntLogger extends AntLogger {
         String line = event.getMessage();
         assert line != null;
 
-        Matcher m = STACK_TRACE.matcher(line);
-        if (m.matches()) {
-            // We have a stack trace.
-            String pkg = m.group(1);
-            String filename = m.group(2);
-            String resource = pkg.replace('.', '/') + filename;
-            int lineNumber = Integer.parseInt(m.group(3));
+        StackTraceParse parse = parseStackTraceLine(line);
+        if (parse != null) {
             // Check to see if the class is listed in our per-task sourcepath.
             // XXX could also look for -Xbootclasspath etc., but probably less important
             for (FileObject root : getCurrentSourceRootsForClasspath(data)) {
-                FileObject source = root.getFileObject(resource);
+                FileObject source = root.getFileObject(parse.resource);
                 if (source != null) {
                     // Got it!
-                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
+                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, parse.lineNumber);
                     break;
                 }
             }
@@ -232,9 +247,9 @@ public final class JavaAntLogger extends AntLogger {
             // In this case we can't be sure that this source file really matches
             // the .class used in the stack trace, but it is a good guess.
             if (!event.isConsumed()) {
-                FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
+                FileObject source = GlobalPathRegistry.getDefault().findResource(parse.resource);
                 if (source != null) {
-                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, lineNumber);
+                    hyperlink(line, session, event, source, messageLevel, sessionLevel, data, parse.lineNumber);
                 } else if (messageLevel <= sessionLevel && "java".equals(event.getTaskName())) {
                     event.consume();
                     session.println(line, event.getLogLevel() <= AntEvent.LOG_WARN, null);
@@ -278,7 +293,8 @@ public final class JavaAntLogger extends AntLogger {
         return null;
     }
     
-    private static void hyperlink(String line, AntSession session, AntEvent event, FileObject source, int messageLevel, int sessionLevel, SessionData data, int lineNumber) {
+    private static void hyperlink(String line, AntSession session, AntEvent event, FileObject source,
+            int messageLevel, int sessionLevel, SessionData data, int lineNumber) {
         if (messageLevel <= sessionLevel && !event.isConsumed()) {
             event.consume();
             try {
