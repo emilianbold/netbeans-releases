@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -87,6 +88,9 @@ public class APTIncludeUtils {
     }    
     
     public static ResolvedPath resolveFilePath(Iterator<IncludeDirEntry> searchPaths, String includedFile, int dirOffset) {
+        if (Utilities.isWindows()){
+            includedFile = includedFile.replace('/', File.separatorChar);
+        }
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
             if (dirPrefix.isExistingDirectory()) {

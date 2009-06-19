@@ -87,6 +87,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.earproject.EarProject;
@@ -304,8 +305,8 @@ public final class EarProjectProperties {
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
-                projectProperties.getProperty(J2EE_PLATFORM),
-                J2eeModule.EAR);
+                Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM)),
+                J2eeModule.Type.EAR);
         MAIN_CLASS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_MAIN_CLASS);
         ARUGMENTS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_ARGS);
         VM_OPTIONS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_JVM_OPTIONS);

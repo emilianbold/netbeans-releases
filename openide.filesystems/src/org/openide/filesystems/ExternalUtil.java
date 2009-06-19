@@ -149,16 +149,18 @@ final class ExternalUtil extends Object {
     
     /** Initializes the context and errManager
      */
-    private static synchronized void initialize() {
+    private static void initialize() {
+        Lookup lkp = Lookup.getDefault();
+        
         Repository r;
         synchronized (ExternalUtil.class) {
             r = repository;
         }
-        
+
         if (r == null) {
             assert ADD_FS == null;
             ADD_FS = new AtomicReference<FileSystem>();
-            Repository registeredRepository = Lookup.getDefault().lookup(Repository.class);
+            Repository registeredRepository = lkp.lookup(Repository.class);
             Repository realRepository = assignRepository(registeredRepository);
             
             

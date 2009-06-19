@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import org.netbeans.modules.maven.spi.execute.AdvancedProcessKiller;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +55,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -87,7 +89,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private ProgressHandle handle;
     private Process process;
+    private String processUUID;
     private Process preProcess;
+    private String preProcessUUID;
+    private static final String KEY_UUID = "NB_MAVEN_PROCESS_UUID"; //NOI18N
     
     private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
@@ -144,6 +149,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
             if (clonedConfig.getPreExecution() != null) {
                 ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);
+                preProcessUUID = UUID.randomUUID().toString();
+                builder.environment().put(KEY_UUID, preProcessUUID);
                 preProcess = builder.start();
                 out.setStdOut(preProcess.getInputStream());
                 out.setStdIn(preProcess.getOutputStream());
@@ -160,6 +167,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 //                ioput.getOut().println(key + ":" + env.get(key));
 //            }
             ProcessBuilder builder = constructBuilder(clonedConfig, ioput);
+            processUUID = UUID.randomUUID().toString();
+            builder.environment().put(KEY_UUID, processUUID);
             process = builder.start();
             out.setStdOut(process.getInputStream());
             out.setStdIn(process.getOutputStream());
@@ -176,10 +185,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             LOGGER.log(Level.WARNING , x.getMessage(), x);
         } catch (ThreadDeath death) {
             if (preProcess != null) {
-                preProcess.destroy();
+                kill(preProcess, preProcessUUID);
             }
             if (process != null) {
-                process.destroy();
+                kill(process, processUUID);
             }
             throw death;
         } finally {
@@ -216,15 +225,23 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
     }
 
-
+    private void kill(Process prcs, String uuid) {
+        AdvancedProcessKiller killer = Lookup.getDefault().lookup(AdvancedProcessKiller.class);
+        if (killer != null) {
+            Map<String, String> env = new HashMap<String, String>();
+            env.put(KEY_UUID, uuid);
+            killer.kill(prcs, env);
+        } else {
+            prcs.destroy();
+        }
+    }
     
     public boolean cancel() {
         if (preProcess != null) {
-            preProcess.destroy();
-            preProcess = null;
+            kill(preProcess, preProcessUUID);
         }
         if (process != null) {
-            process.destroy();
+            kill(process, processUUID);
             process = null;
         }
         return true;

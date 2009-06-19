@@ -67,8 +67,8 @@ public abstract class RubyCodeCompleterTestBase extends RubyTestBase {
 
     @Override
     protected void setUp() throws Exception {
-        RubyIndexer.preindexingTest = true;
         super.setUp();
+        RubyIndexer.userSourcesTest = true;
     }
 
     @Override
