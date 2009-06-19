@@ -93,10 +93,15 @@ public class SyntaxParserResult {
 
     public DTD getDTD() {
         if(getPublicID() == null) {
-            return org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+            return getFallbackDTD();
         } else {
-            return org.netbeans.editor.ext.html.dtd.Registry.getDTD(getPublicID(), null);
+            DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(getPublicID(), null);
+            return dtd != null ? dtd : getFallbackDTD();
         }
+    }
+
+    private DTD getFallbackDTD() {
+        return org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
     }
     
 }
