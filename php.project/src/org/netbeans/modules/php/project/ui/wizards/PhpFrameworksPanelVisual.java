@@ -315,13 +315,14 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (value instanceof PhpFrameworkProvider) {
                 FrameworkModelItem item = model.getItem(row);
-                if (item.isValid()) {
-                    setForeground(NORMAL_COLOR);
-                } else {
-                    setForeground(ERROR_COLOR);
-                }
 
-                return super.getTableCellRendererComponent(table, item.getFramework().getName(), isSelected, false, row, column);
+                Component defaultRenderer = super.getTableCellRendererComponent(table, item.getFramework().getName(), isSelected, false, row, column);
+                if (item.isValid()) {
+                    defaultRenderer.setForeground(NORMAL_COLOR);
+                } else {
+                    defaultRenderer.setForeground(ERROR_COLOR);
+                }
+                return defaultRenderer;
             } else if (value instanceof Boolean && booleanRenderer != null) {
                 return booleanRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             }
