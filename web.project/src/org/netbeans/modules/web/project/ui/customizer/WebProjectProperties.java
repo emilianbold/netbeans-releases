@@ -86,6 +86,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -396,8 +397,8 @@ final public class WebProjectProperties {
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
-                projectProperties.getProperty(J2EE_PLATFORM),
-                J2eeModule.WAR);
+                Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM)),
+                J2eeModule.Type.WAR);
         RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
