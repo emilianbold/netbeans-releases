@@ -38,57 +38,72 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.wag.codegen.ui;
+package org.netbeans.modules.wag.manager.actions;
 
-import java.awt.datatransfer.Transferable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.spi.ConsumerFlavorProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Ayub Khan
+ * @author peterliu
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.wag.manager.spi.ConsumerFlavorProvider.class)
-public class WagClientFlavorProvider implements ConsumerFlavorProvider {
+public class ViewApiDocAction extends NodeAction {
 
-    public WagClientFlavorProvider() {
+    /** Creates a new instance of ViewWSDLAction */
+    public ViewApiDocAction() {
+        super();
     }
 
-    public Transferable addDataFlavors(Transferable transferable) {
-        try {
-            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR)) {
-                Object data = transferable.getTransferData(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR);
-        
-                if (data instanceof WagService) {
-                    WagService service = (WagService) data;
-                    ExTransferable t = ExTransferable.create(transferable);
-                    WagClientEditorDrop editorDrop = new WagClientEditorDrop(service);
-                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                    t.put(s);
-                    return t;
-                }
+    protected boolean enable(Node[] nodes) {
+        return getApiDocUrl(nodes) != null && HtmlBrowser.URLDisplayer.getDefault() != null;
+    }
+
+    private String getApiDocUrl(Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            WagService service = nodes[0].getLookup().lookup(WagService.class);
+
+            if (service != null) {
+                return service.getUrl();
             }
-        } catch (Exception ex) {
+        }
+        return null;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RefreshSearchAction.class);
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(ViewApiDocAction.class, "ViewApiDocAction");
+    }
+
+    protected void performAction(Node[] activatedNodes) {
+        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
+        if (displayer == null) {
+            String msg = NbBundle.getMessage(ViewApiDocAction.class, "MSG_NoDefaultBrowser");
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+
+        try {
+            URL href = new URL(getApiDocUrl(activatedNodes));
+            displayer.showURL(href);
+        } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        return transferable;
     }
 
-    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
-
-        private WagClientEditorDrop drop;
-
-        ActiveEditorDropTransferable(WagClientEditorDrop drop) {
-            super(WagClientEditorDrop.FLAVOR);
-
-            this.drop = drop;
-        }
-
-        public Object getData() {
-            return drop;
-        }
+    public boolean asynchronous() {
+        return true;
     }
 }

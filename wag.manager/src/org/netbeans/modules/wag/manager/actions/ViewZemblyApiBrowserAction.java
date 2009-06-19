@@ -38,57 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.wag.codegen.ui;
+package org.netbeans.modules.wag.manager.actions;
 
-import java.awt.datatransfer.Transferable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.spi.ConsumerFlavorProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Ayub Khan
+ * @author peterliu
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.wag.manager.spi.ConsumerFlavorProvider.class)
-public class WagClientFlavorProvider implements ConsumerFlavorProvider {
+public class ViewZemblyApiBrowserAction extends NodeAction {
 
-    public WagClientFlavorProvider() {
+    private static final String ZEMBLY_API_BROWSER_URL = "http://zembly.com/ui/apiBrowser";     //NOI18N
+
+    /** Creates a new instance of ViewWSDLAction */
+    public ViewZemblyApiBrowserAction() {
+        super();
     }
 
-    public Transferable addDataFlavors(Transferable transferable) {
+    protected boolean enable(Node[] nodes) {
+        return HtmlBrowser.URLDisplayer.getDefault() != null;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ViewZemblyApiBrowserAction.class);
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(ViewZemblyApiBrowserAction.class, "ViewZemblyApiBrowserAction");
+    }
+
+    protected void performAction(Node[] activatedNodes) {
+        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
+        if (displayer == null) {
+            String msg = NbBundle.getMessage(ViewZemblyApiBrowserAction.class, "MSG_NoDefaultBrowser");
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+
         try {
-            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR)) {
-                Object data = transferable.getTransferData(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR);
-        
-                if (data instanceof WagService) {
-                    WagService service = (WagService) data;
-                    ExTransferable t = ExTransferable.create(transferable);
-                    WagClientEditorDrop editorDrop = new WagClientEditorDrop(service);
-                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                    t.put(s);
-                    return t;
-                }
-            }
-        } catch (Exception ex) {
+            URL href = new URL(ZEMBLY_API_BROWSER_URL);
+            displayer.showURL(href);
+        } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        return transferable;
     }
 
-    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
-
-        private WagClientEditorDrop drop;
-
-        ActiveEditorDropTransferable(WagClientEditorDrop drop) {
-            super(WagClientEditorDrop.FLAVOR);
-
-            this.drop = drop;
-        }
-
-        public Object getData() {
-            return drop;
-        }
+    public boolean asynchronous() {
+        return true;
     }
 }
