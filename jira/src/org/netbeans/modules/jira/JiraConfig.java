@@ -192,17 +192,10 @@ public class JiraConfig {
         if(priorityIcons == null) {
             priorityIcons = new HashMap<String, Icon>();
             priorityIcons.put(Priority.BLOCKER_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/blocker.png", true));   // NOI18N
-            if(Utilities.isWindows()) {
-                priorityIcons.put(Priority.CRITICAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/critical_win.png", true)); // NOI18N
-                priorityIcons.put(Priority.MAJOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/major_win.png", true));       // NOI18N
-                priorityIcons.put(Priority.MINOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/minor_win.png", true));       // NOI18N
-                priorityIcons.put(Priority.TRIVIAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/trivial_win.png", true));   // NOI18N
-            } else {
-                priorityIcons.put(Priority.CRITICAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/critical.png", true)); // NOI18N
-                priorityIcons.put(Priority.MAJOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/major.png", true));       // NOI18N
-                priorityIcons.put(Priority.MINOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/minor.png", true));       // NOI18N
-                priorityIcons.put(Priority.TRIVIAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/trivial.png", true));   // NOI18N
-            }
+            priorityIcons.put(Priority.CRITICAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/critical.png", true)); // NOI18N
+            priorityIcons.put(Priority.MAJOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/major.png", true));       // NOI18N
+            priorityIcons.put(Priority.MINOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/minor.png", true));       // NOI18N
+            priorityIcons.put(Priority.TRIVIAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/trivial.png", true));   // NOI18N
         }
         return priorityIcons.get(priorityId);
     }
