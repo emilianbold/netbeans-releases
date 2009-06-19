@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
@@ -23,8 +24,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode;
+import org.netbeans.modules.jira.issue.JiraIssueNode.SummaryProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -43,8 +44,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private TwoLabelPanel twoLabelPanel;
     private static Icon hookIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/hook.png"));    // NOI18N
 
-    private RowAdjuster rowAdjuster = new RowAdjuster();
     private final IssueTable issueTable;
+    private boolean resetRowHeight;
 
     public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.query = query;
@@ -55,49 +56,50 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-        issueTable.removeCellActions(row, column);
+        fixRowHeightIfNeeded(table, row);
 
         if(!(value instanceof JiraIssueNode.SummaryProperty)) {
             return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
 
-        IssueProperty issueProperty = (IssueProperty) value;
-        NbJiraIssue issue = (NbJiraIssue) issueProperty.getIssue();
+        SummaryProperty summaryProperty = (SummaryProperty) value;
+        NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssue();
+        String summary = summaryProperty.getValue();
 
         TableCellStyle style = null;
         if(issue.hasSubtasks()) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
             
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
             } else {
                 style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
 
-            panel.north.setText(value.toString()); // XXX toString ???
-            panel.north.putClientProperty("format", style != null ? style.getFormat() : null);                        // NOI18N
+            panel.north.setText(summary);
+            panel.north.putClientProperty("format", style != null ? style.getFormat() : null);// NOI18N
 
             List<String> keys = issue.getSubtaskKeys();
             StringBuffer keysBuffer = new StringBuffer();
             Iterator<String> it = keys.iterator();
             while(it.hasNext()) {
                 keysBuffer.append(it.next());
-                if(it.hasNext()) keysBuffer.append(", ");
+                if(it.hasNext()) keysBuffer.append(", "); // NOI18N
             }
 
             panel.south.setText(keysBuffer.toString()); 
             panel.south.putClientProperty("format", isSelected ? null : subtasksFormat); // NOI18N
 
-            panel.setToolTipText(value.toString());  // XXX toString ???
+            panel.setToolTipText(summary);
             setRowColors(style, panel);
-            adjustRowSize(panel, table, row);
+            adjustRowHeightIfNeeded(panel, table, row);
             
             return panel;
         } else if(issue.isSubtask() ) {
             TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
 
             if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, issueProperty, isSelected, row);
+                style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
             } else {
                 style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
             }
@@ -105,14 +107,12 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             panel.north.setText(issue.getParentKey());
             panel.north.putClientProperty("format", isSelected ? null : parentFormat); // NOI18N
 
-            panel.south.setText(value.toString()); // XXX toString ???
+            panel.south.setText(summary); 
             panel.south.putClientProperty("format", style != null ? style.getFormat() : null); // NOI18N
 
-            panel.setToolTipText(value.toString());  // XXX toString ???
+            panel.setToolTipText(summary);
             setRowColors(style, panel);
-            adjustRowSize(panel, table, row);
-
-            addParentAction(row, column, panel.north, issue);
+            adjustRowHeightIfNeeded(panel, table, row);
 
             return panel;
         }
@@ -120,17 +120,34 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
 
-    private void adjustRowSize(JPanel panel, JTable table, int row) {
+    private int defaultRowHeight = -1;
+    public void resetDefaultRowHeight() {
+        resetRowHeight = true;
+    }
+    
+    private void adjustRowHeightIfNeeded(JPanel panel, JTable table, int row) {
+
+        if(defaultRowHeight == -1) {
+            defaultRowHeight = table.getRowHeight();
+        }
+
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
         if (table.getRowHeight(row) != h) {
             table.setRowHeight(h);
-        }
+        } 
     }
 
     private static MessageFormat getFormat(String key) {
         return new MessageFormat(NbBundle.getMessage(JiraQueryCellRenderer.class, key));
-    }    
+    }
+
+    private void fixRowHeightIfNeeded(JTable table, int row) {
+        if (resetRowHeight && table.getRowHeight(row) != defaultRowHeight) {
+            table.setRowHeight(defaultRowHeight);
+            resetRowHeight = false;
+        }
+    }
 
     private TwoLabelPanel getTwoLabelPanel(Font font) {
         if(twoLabelPanel == null) {
@@ -160,25 +177,36 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     }
 
     private class TwoLabelPanel extends JPanel {
-        AdjustableJLabel north = new AdjustableJLabel();
-        AdjustableJLabel south = new AdjustableJLabel();
+        RendererLabel north = new RendererLabel();
+        RendererLabel south = new RendererLabel();
         public TwoLabelPanel(Font font) {
-//            setOpaque(false);
             setLayout(new BorderLayout());
             add(north, BorderLayout.NORTH);
             add(south, BorderLayout.SOUTH);
             north.setFont(defaultIssueRenderer.getFont());
             south.setFont(defaultIssueRenderer.getFont());
             south.setIcon(hookIcon);
-        }        
+        }
     }
 
-    private class AdjustableJLabel extends JLabel {
+    private class RendererLabel extends JLabel {
         @Override
         public void paint(Graphics g) {
             QueryTableCellRenderer.fitText(this);
             super.paint(g);
         }
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void invalidate() {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void validate() {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void revalidate() {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void repaint(long tm, int x, int y, int width, int height) {}
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void repaint(Rectangle r) { }
+        /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        public void repaint() {}
     }
 
     private class RowAdjuster implements ActionListener {

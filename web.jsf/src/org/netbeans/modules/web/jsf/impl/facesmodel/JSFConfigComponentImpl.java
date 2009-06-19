@@ -44,7 +44,11 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import javax.xml.namespace.QName;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -68,6 +72,7 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
     public JSFConfigModelImpl getModel(){
         return (JSFConfigModelImpl)super.getModel();
     }
+    
     protected void populateChildren(List<JSFConfigComponent> children) {
         NodeList nodeList = getPeer().getChildNodes();
         if (nodeList != null){
@@ -75,7 +80,9 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
                 org.w3c.dom.Node node = nodeList.item(i);
                 if (node instanceof Element) {
                     JSFConfigModel model = getModel();
-                    JSFConfigComponent comp = (JSFConfigComponent) model.getFactory().create((Element)node, this);
+                    JSFConfigComponent comp = 
+                        (JSFConfigComponent) model.getFactory().
+                            create((Element)node, this);
                     if (comp != null) {
                         children.add(comp);
                     }
@@ -102,11 +109,21 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
     }
     
     protected Object getAttributeValueOf(Attribute attr, String stringValue) {
+        if ( attr instanceof FacesAttributes ){
+            Class<?> clazz = attr.getType();
+            if ( clazz.equals( Boolean.class )){
+                return Boolean.valueOf( stringValue );
+            }
+        }
         return stringValue;
     }
     
     protected List<String> getSortedListOfLocalNames(){
         return Collections.EMPTY_LIST;
+    }
+    
+    protected Map<String,Integer> getOrderedMapOfLocalNames(){
+        return Collections.EMPTY_MAP;
     }
     
     protected void reorderChildren(){
@@ -119,7 +136,14 @@ public abstract class JSFConfigComponentImpl extends AbstractDocumentComponent <
         SortingItem[] sortingItems = new SortingItem[length];
         for(int i = length-1; i > -1; i--){
             node = nodes.item(i);
-            orderNumber = getSortedListOfLocalNames().indexOf(node.getLocalName());
+            Map<String,Integer> orderMap = getOrderedMapOfLocalNames();
+            Integer index  = orderMap.get(node.getLocalName());
+            if ( index != null ){
+                orderNumber = index;
+            }
+            else {
+                orderNumber = getSortedListOfLocalNames().indexOf(node.getLocalName());
+            }
             if (orderNumber == -1){
                 if (lastRealOrderNumber == -1){
                     orderNumber = getSortedListOfLocalNames().size()+1;

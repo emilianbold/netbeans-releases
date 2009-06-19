@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -69,6 +70,7 @@ public class ServerListTestCase extends RemoteTestBase {
     }
 
     // NB: this test should go first
+    @ForAllEnvironments
     public void testAdd() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
@@ -84,11 +86,13 @@ public class ServerListTestCase extends RemoteTestBase {
         ServerList.set(Arrays.asList(local), local);
     }
 
+    @ForAllEnvironments
     public void testGetEnvironments() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertTrue("getEnvironments should contain " + execEnv, ServerList.getEnvironments().contains(execEnv));
     }
 
+    @ForAllEnvironments
     public void testGetRecords() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         Collection<? extends ServerRecord> records = ServerList.getRecords();
@@ -100,6 +104,7 @@ public class ServerListTestCase extends RemoteTestBase {
         assertTrue("getRecords should contain " + execEnv, false);
     }
 
+    @ForAllEnvironments
     public void testDefaultRecord() throws Exception {
         Collection<? extends ServerRecord> tcoll = ServerList.getRecords();
         ServerRecord[] records = tcoll.toArray(new ServerRecord[tcoll.size()]);

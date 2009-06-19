@@ -176,7 +176,6 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Components">
             <file name="find-usages.settings" url="find-usages.settings"/>
-            <file name="find_usages.settings_hidden"/>
             <file name="refactoring-preview.settings" url="refactoring-preview.settings"/>
         </folder>
     </folder>
@@ -188,7 +187,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
                         <attr name="position" intvalue="1001"/>
                     </file>
-                    <file name="RenameAction.instance_hidden"/>
+                    <file name="RenameAction.shadow_hidden"/>
             </folder>
         </folder>
     </folder>

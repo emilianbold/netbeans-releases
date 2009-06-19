@@ -567,7 +567,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance"/>
                     </file>
-                    <file name="NewTemplateAction.instance_hidden"/>
+                    <file name="NewTemplateAction.shadow_hidden"/>
                     <file name="NewProjectFile.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
                         <attr name="position" intvalue="200"/>
