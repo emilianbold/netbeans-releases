@@ -74,5 +74,21 @@ public class SyntaxParserResultTest extends TestBase {
         assertNotNull(result.getASTRoot());
 
     }
+
+    public void testInvalidPublicId() {
+        String code = "<!DOCTYPE HTML PUBLIC \"invalid_public_id\"><html><head><title>xxx</title></head><body>yyy</body></html>";
+        SyntaxParserResult result = SyntaxParser.parse(code);
+
+        assertNotNull(result);
+
+        assertNotNull(result.getPublicID());
+        assertEquals("invalid_public_id", result.getPublicID());
+
+        DTD dtd = result.getDTD(); //fallback
+        assertNotNull(dtd);
+
+        assertNotNull(result.getASTRoot());
+
+    }
     
 }
