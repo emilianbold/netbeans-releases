@@ -56,7 +56,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     private SymfonyOptionsPanel symfonyOptionsPanel = null;
-    private boolean changed;
+    private volatile boolean changed = false;
 
     @Override
     public void update() {
@@ -93,10 +93,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isChanged() {
-        if (!symfonyOptionsPanel.getSymfony().equals(getOptions().getSymfony())) {
-            return true;
-        }
-        return false;
+        return changed;
     }
 
     @Override

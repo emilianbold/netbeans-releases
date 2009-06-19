@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="PHP">
-        <folder name="Options">
-            <file name="org-netbeans-modules-php-symfony-ui-options-SymfonyAdvancedOptions.instance"/>
+    <folder name="OptionsDialog">
+        <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
+            <file name="Symfony.instance">
+                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.symfony.ui.options.SymfonyAdvancedOptions"/>
+                 <attr name="position" intvalue="200"/>
+             </file>
         </folder>
     </folder>
     <folder name="OptionsExport">

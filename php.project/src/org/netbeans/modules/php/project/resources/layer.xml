@@ -145,7 +145,13 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
             <attr name="position" intvalue="650"/>
         </file>
-    </folder>
+        <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
+            <file name="General.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpGeneralAdvancedOptions"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+        </folder>
+     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
@@ -173,8 +179,6 @@ made subject to such option by the copyright holder.
     <folder name="PHP">
         <folder name="RuntimeLibraries">
             <file name="pdo_mysql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pdo_mysql.php"/>
-        </folder>
-        <folder name="Options">
         </folder>
     </folder>
     <folder name="Loaders">
