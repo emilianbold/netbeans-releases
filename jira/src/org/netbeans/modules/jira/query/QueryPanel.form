@@ -690,7 +690,7 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="tablePanel" alignment="0" max="32767" attributes="2"/>
+                      <Component id="tablePanel" alignment="0" pref="1007" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -702,7 +702,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="tableHeaderPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="tablePanel" max="32767" attributes="0"/>
+                  <Component id="tablePanel" pref="350" max="32767" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>

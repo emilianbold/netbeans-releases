@@ -61,13 +61,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.jira.query.UserSearch.UserSearchItem;
+import org.netbeans.modules.jira.util.PriorityRenderer;
+import org.netbeans.modules.jira.util.ProjectRenderer;
+import org.netbeans.modules.jira.util.ResolutionRenderer;
+import org.netbeans.modules.jira.util.StatusRenderer;
+import org.netbeans.modules.jira.util.TypeRenderer;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -1179,66 +1178,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof Filter) {
                 value = ((Filter)value).getDisplayName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class ProjectRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Project) {
-                value = ((Project) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class StatusRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof JiraStatus) {
-                value = ((JiraStatus) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class TypeRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof IssueType) {
-                value = ((IssueType) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class ResolutionRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Resolution) {
-                value = ((Resolution) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class PriorityRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Priority) {
-                value = ((Priority) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class UserSearchRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof UserSearchItem) {
-                value = ((UserSearchItem) value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
