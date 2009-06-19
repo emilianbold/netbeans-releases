@@ -121,8 +121,6 @@ class AST2Bytecode {
         } else {
             constantPool = null;
         }
-        byte[] bytecodes_copy = new byte[bytecodes.length];
-        System.arraycopy(bytecodes, 0, bytecodes_copy, 0, bytecodes.length);
         for (int treeIndex = 0; treeIndex < length; treeIndex++) {
             Tree node = treeNodes.get(treeIndex);
             Tree.Kind kind = node.getKind();
@@ -347,16 +345,6 @@ class AST2Bytecode {
                 }
             } while (true);
         }
-
-        // Check the modification of bytecodes:
-        for (int i = 0; i < bytecodes.length; i++) {
-            if (bytecodes[i] != bytecodes_copy[i]) {
-                System.err.println("\n\nBYTECODE MISMATCH!!!");
-                System.err.println("bytecodes["+i+"] = "+bytecodes[i]+", bytecodes_copy["+i+"] = "+bytecodes_copy[i]);
-                System.err.println("\n\n");
-            }
-        }
-
         /*
         // Assign next operations:
         for (int treeIndex = 0; treeIndex < length; treeIndex++) {

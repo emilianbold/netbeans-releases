@@ -47,10 +47,10 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 
-public class ViewHandlerImpl extends JSFConfigComponentImpl implements ViewHandler {
+class ViewHandlerImpl extends FullyQualifiedClassTypeImpl implements ViewHandler {
     
     public ViewHandlerImpl(JSFConfigModelImpl model, Element element) {
         super(model, element);
@@ -63,11 +63,7 @@ public class ViewHandlerImpl extends JSFConfigComponentImpl implements ViewHandl
     public void accept(JSFConfigVisitor visitor) {
         visitor.visit(this);
     }
-
-    public String getFullyQualifiedClassType() {
-        return getText().trim();
-    }
-
+    
     public void setFullyQualifiedClassType(String type) {
         setText(VIEW_HANDLER, type);
     }

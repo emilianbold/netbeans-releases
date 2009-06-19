@@ -27,17 +27,8 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.impl.AddColumn;
 import org.netbeans.lib.ddl.impl.CreateIndex;
-import org.netbeans.lib.ddl.impl.DriverSpecification;
-import org.netbeans.lib.ddl.impl.DropIndex;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.lib.ddl.util.CommandBuffer;
@@ -51,85 +42,22 @@ import org.netbeans.lib.ddl.util.CommandBuffer;
  */
 public class AddTableColumnDDL {
     private Specification       spec;
-    private DriverSpecification drvSpec;
     private String              schema;
     private String              tablename;
-    private Map                 indexMap;
-    private Map                 uniqueIndexMap;
     
 
     public AddTableColumnDDL(
             Specification spec, 
-            DriverSpecification drvspec,
             String schema,
             String tablename) {
         this.spec       = spec;
-        this.drvSpec    = drvspec;
         this.schema     = schema;
         this.tablename  = tablename;
     }
         
-    public Map getIndexMap() throws DatabaseException {
-        if ( indexMap == null ) {
-            buildIndexMaps();
-        }
-        
-        return indexMap;
-    }
-    
-    public Map getUniqueIndexMap() throws DatabaseException {
-        if ( uniqueIndexMap == null ) {
-            buildIndexMaps();            
-        }
-        
-        return uniqueIndexMap;
-    }
-    
-    private void buildIndexMaps() throws DatabaseException {
-        try {
-            drvSpec.getIndexInfo(tablename, false, true);
-            ResultSet rs = drvSpec.getResultSet();
-            HashMap rset = new HashMap();
-
-            indexMap = new HashMap();
-            uniqueIndexMap = new HashMap();
-            String ixname;
-            while (rs.next()) {
-                rset = drvSpec.getRow();
-                ixname = (String) rset.get(new Integer(6));
-                if (ixname != null) {
-                    Vector ixcols = (Vector)indexMap.get(ixname);
-                    if (ixcols == null) {
-                        ixcols = new Vector();
-                        indexMap.put(ixname,ixcols);
-                        boolean uq = !Boolean.valueOf( 
-                                (String)rset.get( new Integer(4) ) ).booleanValue();
-                        if(uq)
-                            uniqueIndexMap.put( ixname, ColumnItem.UNIQUE );
-                    }
-
-                    ixcols.add((String) rset.get(new Integer(9)));
-                }
-                rset.clear();
-            }
-            rs.close();
-        } catch (SQLException sqle) {
-            DatabaseException dbe = new DatabaseException(sqle.getMessage());
-            dbe.initCause(sqle);
-            throw dbe;
-        }
-    }
-    
-    private boolean useIndex(ColumnItem citem) {
-        return citem.isIndexed() && !citem.isUnique() && !citem.isPrimaryKey(); 
-    }
-        
-    public boolean execute(String colname, ColumnItem citem, 
-            String indexName) throws Exception {
+    public boolean execute(String colname, ColumnItem citem) throws Exception {
         assert citem != null;
         assert colname != null;
-        assert (useIndex(citem) && indexName != null) ||
-                !useIndex(citem);
         
         CommandBuffer cbuff = new CommandBuffer();
 
@@ -154,41 +82,17 @@ public class AddTableColumnDDL {
 
         cbuff.add(cmd);
 
-        if (useIndex(citem) ) {
-            assert indexName != null;
-            addIndex(cbuff, citem, indexName);
+        if (citem.isIndexed() && !citem.isPrimaryKey() && !citem.isUnique()) {
+            CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
+            xcmd.setIndexName(tablename + "_" + colname + "_idx"); // NOI18N
+            xcmd.setIndexType(new String());
+            xcmd.setObjectOwner(schema);
+            xcmd.specifyNewColumn(colname);
+            cbuff.add(xcmd);
         }
 
         cbuff.execute();
 
         return cbuff.wasException();
     }
-    
-    private void addIndex(CommandBuffer cbuff, ColumnItem citem, 
-            String indexName) throws Exception {
-          buildIndexMaps();
-
-          String isUQ = new String();
-          if (indexMap.containsKey(indexName)) {
-              if(uniqueIndexMap.containsKey(indexName))
-                                isUQ = ColumnItem.UNIQUE;
-              DropIndex dropIndexCmd = spec.createCommandDropIndex(indexName);
-              dropIndexCmd.setTableName(tablename);
-              dropIndexCmd.setObjectOwner(schema);
-              cbuff.add(dropIndexCmd);
-          }
-
-          CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
-          xcmd.setIndexName(indexName);
-          xcmd.setIndexType(isUQ);
-          xcmd.setObjectOwner(schema);
-          Enumeration enu = ((Vector)indexMap.get(indexName)).elements();
-          while (enu.hasMoreElements()) {
-              xcmd.specifyColumn((String)enu.nextElement());
-          }
-          xcmd.specifyNewColumn(citem.getName());
-          cbuff.add(xcmd);
-
-    }
-
 }

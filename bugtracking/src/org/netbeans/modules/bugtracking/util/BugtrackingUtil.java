@@ -159,17 +159,34 @@ public class BugtrackingUtil {
         return DialogDisplayer.getDefault().notify(dd) == ok;
     }
 
+    /**
+     * Returns all curently openend issues which aren't new.
+     * 
+     * @return issues
+     */
     public static Issue[] getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
         List<Issue> issues = new ArrayList<Issue>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
-                issues.add(((IssueTopComponent)tc).getIssue());
+                Issue issue = ((IssueTopComponent)tc).getIssue();
+                if(!issue.isNew()) {
+                    issues.add(issue);
+                }
             }
         }
         return issues.toArray(new Issue[issues.size()]);
     }
 
+    /**
+     * Filters the given issue by the given criteria and returns
+     * those which either case unsensitively contain the criteria
+     * in their summary or those which id equals the criteria.
+     *
+     * @param issues
+     * @param criteria
+     * @return
+     */
     public static Issue[] getByIdOrSummary(Issue[] issues, String criteria) {
         if(criteria == null) {
             return issues;
@@ -178,10 +195,11 @@ public class BugtrackingUtil {
         if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
+        criteria = criteria.toLowerCase();
         List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {            
-            if(criteria.equals(issue.getID()) ||
-               issue.getSummary().indexOf(criteria) > -1)
+        for (Issue issue : issues) {  
+            if(criteria.equals(issue.getID().toLowerCase()) ||
+               issue.getSummary().toLowerCase().indexOf(criteria) > -1)
             {
                 ret.add(issue);
             }  
@@ -483,6 +501,21 @@ public class BugtrackingUtil {
     public static int getColumnWidthInPixels(String str, JComponent comp) {
         FontMetrics fm = comp.getFontMetrics(comp.getFont());
         return fm.stringWidth(str);
+    }
+
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        String[] valuesArray = values.toArray(new String[values.size()]);
+        return getLongestWordWidth(header, valuesArray, comp);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
+        }
+        return getColumnWidthInPixels(size, comp);
     }
 
     /**

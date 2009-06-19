@@ -60,6 +60,10 @@ import org.openide.util.Exceptions;
 public class PHPNewLineIndenter {
     private Context context;
 
+    private static final Collection<PHPTokenId> CONTROL_STATEMENT_TOKENS = Arrays.asList(
+            PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR,
+            PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE);
+    
     private Collection<ScopeDelimiter> scopeDelimiters = null;
     private int indentSize;
     private int continuationSize;
@@ -101,18 +105,27 @@ public class PHPNewLineIndenter {
                 while (ts.movePrevious()) {
                     Token token = ts.token();
                     ScopeDelimiter delimiter = getScopeDelimiter(token);
+                    int anchor = ts.offset();
+                    int shiftAtAncor = 0;
 
                     if (delimiter != null) {
                         if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
-                            // handle "break;" in the switch statement
-
                             if (breakProceededByCase(ts)){
-                                newIndent = getIndentAtOffset(doc, ts.offset()) - indentSize;
+                                newIndent = getIndentAtOffset(doc, anchor) - indentSize;
+                                break;
+                            }
+                            
+                            CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts);
+                            anchor = codeB4BreakData.expressionStartOffset;
+                            shiftAtAncor = codeB4BreakData.indentDelta;
+
+                            if (codeB4BreakData.processedByControlStmt){
+                                newIndent = getIndentAtOffset(doc, anchor) - indentSize;
                                 break;
                             }
                         }
 
-                        newIndent = getIndentAtOffset(doc, ts.offset()) + delimiter.indentDelta;
+                        newIndent = getIndentAtOffset(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
                         break;
                     } else {
                         if (ts.token().id() == PHPTokenId.PHP_TOKEN){
@@ -147,6 +160,33 @@ public class PHPNewLineIndenter {
         });
     }
 
+    private CodeB4BreakData processCodeBeforeBreak(TokenSequence ts){
+        CodeB4BreakData retunValue = new CodeB4BreakData();
+        int origOffset = ts.offset();
+
+        if (ts.movePrevious()){
+            while (ts.movePrevious()) {
+                Token token = ts.token();
+                ScopeDelimiter delimiter = getScopeDelimiter(token);
+
+                if (delimiter != null){
+
+                    if (CONTROL_STATEMENT_TOKENS.contains(delimiter.tokenId)){
+                        retunValue.processedByControlStmt = true;
+                    }
+
+                    retunValue.expressionStartOffset = ts.offset();
+                    retunValue.indentDelta = delimiter.indentDelta;
+                    break;
+                }
+            }
+        }
+
+        ts.move(origOffset);
+        ts.moveNext();
+        return retunValue;
+    }
+
     private boolean breakProceededByCase(TokenSequence ts){
         boolean retunValue = false;
         int origOffset = ts.offset();
@@ -159,12 +199,7 @@ public class PHPNewLineIndenter {
                     if (tid == PHPTokenId.PHP_CASE) {
                         retunValue = true;
                         break;
-                    } else if (tid == PHPTokenId.PHP_CURLY_OPEN 
-                            || tid == PHPTokenId.PHP_DO
-                            || tid == PHPTokenId.PHP_WHILE
-                            || tid == PHPTokenId.PHP_FOR
-                            || tid == PHPTokenId.PHP_FOREACH) {
-                        
+                    } else if (CONTROL_STATEMENT_TOKENS.contains(tid)) {
                         break;
                     }
                 }
@@ -173,7 +208,7 @@ public class PHPNewLineIndenter {
         }
 
         ts.move(origOffset);
-            ts.moveNext();
+        ts.moveNext();
         
         return retunValue;
     }
@@ -226,7 +261,13 @@ public class PHPNewLineIndenter {
         return null;
     }
 
-    static class ScopeDelimiter{
+    private static class CodeB4BreakData{
+        int expressionStartOffset;
+        boolean processedByControlStmt;
+        int indentDelta;
+    }
+
+    private static class ScopeDelimiter{
         private TokenId tokenId;
         private String tokenContent;
         private int indentDelta;

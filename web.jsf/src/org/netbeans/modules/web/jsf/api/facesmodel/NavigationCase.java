@@ -48,25 +48,47 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * combination of conditions that must match for this case to
  * be executed, and the view id of the component tree that
  * should be selected next.
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public interface NavigationCase extends JSFConfigComponent, DescriptionGroup {
+public interface NavigationCase extends JSFConfigComponent, DescriptionGroup, 
+    IdentifiableElement 
+{
     
-    public static final String FROM_ACTION = JSFConfigQNames.FROM_ACTION.getLocalName();
-    public static final String FROM_OUTCOME = JSFConfigQNames.FROM_OUTCOME.getLocalName();
-    public static final String TO_VIEW_ID = JSFConfigQNames.TO_VIEW_ID.getLocalName();
-    public static final String REDIRECT = JSFConfigQNames.REDIRECT.getLocalName();
+    String FROM_ACTION = JSFConfigQNames.FROM_ACTION.getLocalName();
+    String FROM_OUTCOME = JSFConfigQNames.FROM_OUTCOME.getLocalName();
+    String TO_VIEW_ID = JSFConfigQNames.TO_VIEW_ID.getLocalName();
+    String REDIRECT = JSFConfigQNames.REDIRECT.getLocalName();
     
+    String IF = JSFConfigQNames.IF.getLocalName();
+    
+    
+    // TODO : Incorrect signature. FromAction should be separate element. 
+    // It has additional attribute.
     public String getFromAction();
     public void setFromAction(String fromAction);
     
     public String getFromOutcome();
     public void setFromOutcome(String fromOutcome);
     
+    /**
+     * This method along with getter should not be used for JSF 2.0 spec.
+     * Redirect has number of subelements and attributes.
+     * Accessor methods to Redirect should be used instead.
+     */
     public void setRedirected(boolean redirect);
+    /**
+     * This method along with setter should not be used for JSF 2.0 spec.
+     * Redirect has number of subelements and attributes.
+     * Accessor methods to Redirect should be used instead.
+     */
     public boolean isRedirected();
     
     public String getToViewId();
     public void setToViewId(String toViewId);
     
+    If getIf();
+    void setIf( If iff );
+    
+    Redirect getRedirect();
+    void setRedirect(Redirect redirect);
 }

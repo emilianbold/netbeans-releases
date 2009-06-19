@@ -131,15 +131,15 @@ public class QmakeConfigurationTest {
     public void testGetOutputValueDynamicLib() {
         QmakeConfiguration qconf = newQmakeConfiguration(MakeConfiguration.TYPE_QT_DYNAMIC_LIB);
         if (Utilities.isWindows()) {
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest1.dll", qconf.getOutputValue());
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/QmakeConfigurationTest1.dll", qconf.getOutputValue());
             qconf.getVersion().setValue("2.0.0");
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest2.dll", qconf.getOutputValue());
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/QmakeConfigurationTest2.dll", qconf.getOutputValue());
             qconf.getDestdir().setValue(".");
-            assertEquals("./libQmakeConfigurationTest2.dll", qconf.getOutputValue());
+            assertEquals("./QmakeConfigurationTest2.dll", qconf.getOutputValue());
             qconf.getTarget().setValue("Dummy");
-            assertEquals("./libDummy2.dll", qconf.getOutputValue());
+            assertEquals("./Dummy2.dll", qconf.getOutputValue());
             qconf.getDestdir().reset();
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy2.dll", qconf.getOutputValue());
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Dummy2.dll", qconf.getOutputValue());
         } else if (Utilities.isUnix()) {
             String soext = Utilities.isMac() ? "dylib" : "so";
             assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest." + soext + ".1.0.0", qconf.getOutputValue());

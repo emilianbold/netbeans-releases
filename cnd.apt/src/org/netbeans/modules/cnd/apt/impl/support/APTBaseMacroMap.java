@@ -221,7 +221,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
         public StateImpl copyCleaned() {
             return new StateImpl(this, true);
-        }        
+        }
+
+        boolean isEmptyActiveMacroMap() {
+            return snap == null || snap.isEmtpy();
+        }
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 

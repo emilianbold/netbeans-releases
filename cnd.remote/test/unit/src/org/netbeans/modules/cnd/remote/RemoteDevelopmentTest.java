@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.cnd.remote;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
@@ -48,10 +46,8 @@ import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.netbeans.modules.nativeexecution.test.RcFile;
-import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
  *
@@ -75,54 +71,17 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
              TransportTestCase.class,
              RemoteUtilTestCase.class,
              ServerListTestCase.class,
-             ScpSyncWorkerTestCase.class);
+             ScpSyncWorkerTestCase.class,
+             HostSetupTestCase.class);
     }
 
 
     private RemoteDevelopmentTest(String name, Class... testClasses) {
-        super(name);
-        try {
-            for (Class testClass : testClasses) {
-                try {
-                    RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-                    for (String platform : rcFile.getKeys("remote.platforms")) {
-                        addTest(testClass, platform);
-                    }
-                } catch (FileNotFoundException ex) {
-                    // rcfile does not exists - no tests to run
-                }
-            }
-        } catch (IOException ex) {
-            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
-        } catch (FormatException ex) {
-            addTest(warning("Cannot get execution environment: " + exceptionToString(ex)));
-        }
+        super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
         TestSuite suite = new RemoteDevelopmentTest();
         return suite;
     }
-
-//    private ExecutionEnvironment[] getTestExecutionEnvironments() throws IOException, RcFile.FormatException {
-//        ExecutionEnvironment[] testEnvironments;
-//        List<ExecutionEnvironment> envs = new ArrayList<ExecutionEnvironment>();
-//        try {
-//            for (String platform : NativeExecutionTestSupport.getRcFile().getKeys("remote.platforms")) {
-//                ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(platform);
-//                envs.add(env);
-//            }
-//        } catch (FileNotFoundException e) {
-//            // rcfile just does not exist: use old-style
-//        }
-//        testEnvironments = envs.toArray(new ExecutionEnvironment[envs.size()]);
-//        // backup to the old-style
-//        if (testEnvironments.length == 0) {
-//            ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
-//            if (execEnv != null) {
-//                testEnvironments = new ExecutionEnvironment[] { execEnv };
-//            }
-//        }
-//        return testEnvironments;
-//    }
 }

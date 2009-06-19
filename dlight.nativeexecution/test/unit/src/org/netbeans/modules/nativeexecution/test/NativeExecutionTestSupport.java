@@ -43,6 +43,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +61,8 @@ public class NativeExecutionTestSupport {
 
     private static ExecutionEnvironment defaultTestExecutionEnvironment;
     private static RcFile rcFile;
+    private static final Map<String, ExecutionEnvironment> spec2env = new LinkedHashMap<String, ExecutionEnvironment>();
+    private static final Map<ExecutionEnvironment, String> env2spec = new LinkedHashMap<ExecutionEnvironment, String>();
 
     private NativeExecutionTestSupport() {
     }
@@ -117,7 +121,7 @@ public class NativeExecutionTestSupport {
         return defaultTestExecutionEnvironment;
     }
 
-    public static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException, CancellationException {
+    public static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException {
         ExecutionEnvironment result = null;
 
         if (mspec == null) {
@@ -180,7 +184,16 @@ public class NativeExecutionTestSupport {
             //ConnectionManager.getInstance().connectTo(result, passwd, false);
         }
 
+        spec2env.put(mspec, result);
+        env2spec.put(result, mspec);
         return result;
     }
 
+    /**
+     * Gets an MSpec string, which was used for getting the given environent
+     * (i.e. it's an inverse of getTestExecutionEnvironment(String))
+     */
+    public static String getMspec(ExecutionEnvironment execEnv) {
+        return env2spec.get(execEnv);
+    }
 }

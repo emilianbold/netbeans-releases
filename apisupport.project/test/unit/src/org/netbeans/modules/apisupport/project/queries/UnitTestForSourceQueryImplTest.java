@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import java.io.IOException;
 import java.net.URI;
 import java.io.File;
 import java.net.URL;
@@ -49,6 +50,7 @@ import java.util.Collections;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
@@ -94,5 +96,16 @@ public class UnitTestForSourceQueryImplTest extends TestBase {
         assertTrue("Source root exists", new File(URI.create(srcRoots[0].toExternalForm())).exists());
         assertEquals("Source root", URLMapper.findFileObject(srcRoots[0]), nbRoot().getFileObject("apisupport.project/src"));
     }        
-    
+
+    public void testCorrectURLForNonexistentFolder143633() throws IOException {
+        FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "noTestDir");
+        FileObject testFO = prjFO.getFileObject("test");
+        testFO.delete();
+        assertFalse("test dir successfully deleted in project " + prjFO, (new File(FileUtil.toFile(prjFO), "test").exists()));
+        FileObject srcFO = prjFO.getFileObject("src");
+        URL[] testRoots = UnitTestForSourceQuery.findUnitTests(srcFO);
+        assertEquals(testRoots.length, 1);
+        URL url = testRoots[0];
+        assertTrue("Nonexistent test root URL " + url + " must end with a slash", url.toString().endsWith("/"));
+    }
 }

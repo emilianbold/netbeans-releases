@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
@@ -85,7 +86,7 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -111,6 +112,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "jira.issue.assigned";    // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
@@ -158,6 +160,10 @@ public class NbJiraIssue extends Issue {
         ESTIMATE(JiraAttribute.ESTIMATE.id(), "LBL_ESTIMATE"),
         INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id(), "LBL_INITIAL_ESTIMATE"),
         ACTUAL(JiraAttribute.ACTUAL.id(), "LBL_ACTUALL"),
+        PARENT_ID(JiraAttribute.PARENT_ID.id(), null),
+        PARENT_KEY(JiraAttribute.PARENT_KEY.id(), null),
+        SUBTASK_IDS(JiraAttribute.SUBTASK_IDS.id(), null, false),
+        SUBTASK_KEYS(JiraAttribute.SUBTASK_KEYS.id(), null, false),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
         ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
@@ -206,6 +212,11 @@ public class NbJiraIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public boolean isNew() {
+        return taskData == null || taskData.isNew();
+    }
+
     public void setTaskData(TaskData taskData) {
         assert !taskData.isPartial();
         this.taskData = taskData;
@@ -219,7 +230,7 @@ public class NbJiraIssue extends Issue {
         });
     }
 
-    JiraRepository getRepository() {
+    public JiraRepository getRepository() {
         return repository;
     }
 
@@ -262,6 +273,32 @@ public class NbJiraIssue extends Issue {
 
     TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
+    }
+
+    public boolean isSubtask() {
+        String key = getParentKey();
+        return key != null && !key.trim().equals("");
+    }
+
+    public boolean hasSubtasks() {
+        List<String> keys = getSubtaskKeys();
+        return keys != null && keys.size() > 0;
+    }
+
+    public String getParentKey() {
+        return getFieldValue(IssueField.PARENT_KEY);
+    }
+
+    public List<String> getSubtaskKeys() {
+        return getFieldValues(IssueField.SUBTASK_KEYS);
+    }
+
+    public String getParentID() {
+        return getFieldValue(IssueField.PARENT_ID);
+    }
+
+    public List<String> getSubtaskID() {
+        return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
     Comment[] getComments() {
@@ -821,28 +858,47 @@ public class NbJiraIssue extends Issue {
         return attributes;
     }   
 
-    public static ColumnDescriptor[] getColumnDescriptors() {
+    public static ColumnDescriptor[] getColumnDescriptors(JiraRepository repository) {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
+            JiraConfiguration conf = repository.getConfiguration();
+            JTable t = new JTable();
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
-                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Type_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc"), // NOI18N
+                                                  BugtrackingUtil.getColumnWidthInPixels(20, t)),
                 new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                                   loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
+                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Type_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Type_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getIssueTypes()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getResolutions()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
             };
         }
         return DESCRIPTORS;
@@ -963,7 +1019,7 @@ public class NbJiraIssue extends Issue {
     }
 
     List<String> getFieldValues(IssueField f) {
-        if(f.isSingleAttribute()) {
+        if(!f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null) {
                 return a.getValues();
@@ -1261,6 +1317,11 @@ public class NbJiraIssue extends Issue {
             };
             repository.getExecutor().execute(cmd);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getKey() + ", " + getSummary() + "]";
     }
 
     private class IssueTask extends AbstractTask {

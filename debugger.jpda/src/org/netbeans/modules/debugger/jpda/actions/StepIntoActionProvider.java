@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,7 +58,16 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 
 
@@ -161,12 +172,24 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         if (methodLine < 0 || url == null || !url.endsWith (".java")) {
             return false;
         }
-        String className = debugger.getCurrentThread().getClassName();
-        VirtualMachine vm = debugger.getVirtualMachine();
-        if (vm == null) return false;
-        final List<ReferenceType> classes = VirtualMachineWrapper.classesByName0(vm, className);
-        if (!classes.isEmpty()) {
-            MethodChooser chooser = new MethodChooser(debugger, url, classes.get(0), methodLine, methodOffset);
+        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
+        ThreadReference threadReference = ct.getThreadReference();
+        // Find the class where the thread is stopped at
+        ReferenceType clazz = null;
+        try {
+            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return false;
+            clazz = LocationWrapper.declaringType(
+                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)));
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+        } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thrown when thread has exited
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        }
+        if (clazz != null) {
+            MethodChooser chooser = new MethodChooser(debugger, url, clazz, methodLine, methodOffset);
             boolean success = chooser.run();
             if (success && chooser.isInSelectMode()) {
                 synchronized (this) {

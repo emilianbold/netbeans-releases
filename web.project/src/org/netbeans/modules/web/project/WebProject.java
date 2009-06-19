@@ -502,6 +502,7 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
             webSources,
+            webSources.getSourceGroupModifierImplementation(),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(this),

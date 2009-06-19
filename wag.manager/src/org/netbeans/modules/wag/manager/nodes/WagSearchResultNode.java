@@ -42,6 +42,10 @@ package org.netbeans.modules.wag.manager.nodes;
 import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.modules.wag.manager.actions.DeleteSearchAction;
+import org.netbeans.modules.wag.manager.actions.NextResultsAction;
+import org.netbeans.modules.wag.manager.actions.PreviousResultsAction;
+import org.netbeans.modules.wag.manager.actions.RefineSearchAction;
+import org.netbeans.modules.wag.manager.actions.RefreshSearchAction;
 import org.netbeans.modules.wag.manager.model.WagSearchResult;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.openide.nodes.AbstractNode;
@@ -86,7 +90,13 @@ public class WagSearchResultNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {SystemAction.get(DeleteSearchAction.class)};
+        return new Action[] {
+            SystemAction.get(RefineSearchAction.class),
+            SystemAction.get(NextResultsAction.class),
+            SystemAction.get(PreviousResultsAction.class),
+            SystemAction.get(RefreshSearchAction.class),
+            SystemAction.get(DeleteSearchAction.class)
+        };
     }
     
     static final java.awt.Image ICON =
