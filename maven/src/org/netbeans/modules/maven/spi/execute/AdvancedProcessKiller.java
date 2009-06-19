@@ -37,58 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.modules.maven.spi.execute;
 
-import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.modules.html.editor.NbReaderProvider;
+import java.util.Map;
 
 /**
  *
- * @author marekfukala
+ * @author mkleint
  */
-public class SyntaxParserResultTest extends TestBase {
+public interface AdvancedProcessKiller {
 
-    public SyntaxParserResultTest(String testName) {
-        super(testName);
-    }
+    public void kill(Process preProcess, Map<String, String> env);
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
-    }
-    
-    public void testBasic() {
-        String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
-        SyntaxParserResult result = SyntaxParser.parse(code);
-
-        assertNotNull(result);
-        assertNotNull(result.getSource());
-        assertNotNull(result.getElements());
-
-        assertNull(result.getPublicID()); //not specified
-        DTD dtd = result.getDTD(); //fallback
-        assertNotNull(dtd);
-
-        assertNotNull(result.getASTRoot());
-
-    }
-
-    public void testInvalidPublicId() {
-        String code = "<!DOCTYPE HTML PUBLIC \"invalid_public_id\"><html><head><title>xxx</title></head><body>yyy</body></html>";
-        SyntaxParserResult result = SyntaxParser.parse(code);
-
-        assertNotNull(result);
-
-        assertNotNull(result.getPublicID());
-        assertEquals("invalid_public_id", result.getPublicID());
-
-        DTD dtd = result.getDTD(); //fallback
-        assertNotNull(dtd);
-
-        assertNotNull(result.getASTRoot());
-
-    }
-    
 }

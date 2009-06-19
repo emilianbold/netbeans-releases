@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="org.openide.util.Lookup.paths">
+        <api name="lookup"/>
+        <summary>Added
+            <code>org.openide.util.Lookup.paths</code> property
+        </summary>
+        <version major="7" minor="24"/>
+        <date day="19" month="6" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                 Better way to integrate Lookup.getDefault() and system filesystem.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Lookup"/>
+        <issue number="166782"/>
+    </change>
     <change id="enableStackTraces">
         <api name="util"/>
         <summary>Added constructor <code>RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces)</code></summary>
