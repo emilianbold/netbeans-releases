@@ -522,15 +522,10 @@ public final class SourcesHelper {
             if (lastRegisteredRoots != null) {
                 throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
             }
-            return addTo(type != null ? typedSourceRoots : principalSourceRoots);
-        }
-
-        @SuppressWarnings("unchecked")
-        private SourceRootConfig addTo(List list) {
             if (type != null) {
-                list.add(new TypedSourceRoot(type, hint, location, includes, excludes, displayName, icon, openedIcon));
+                typedSourceRoots.add(new TypedSourceRoot(type, hint, location, includes, excludes, displayName, icon, openedIcon));
             } else {
-                list.add(new SourceRoot(location, includes, excludes, hint, displayName, icon, openedIcon));
+                principalSourceRoots.add(new SourceRoot(location, includes, excludes, hint, displayName, icon, openedIcon));
             }
             return this;
         }
@@ -944,7 +939,7 @@ public final class SourcesHelper {
             if (type.equals(Sources.TYPE_GENERIC)) {
                 List<SourceRoot> roots = new ArrayList<SourceRoot>(principalSourceRoots);
                 // Always include the project directory itself as a default:
-                sourceRoot("").displayName(ProjectUtils.getInformation(getProject()).getDisplayName()).addTo(roots);    // NOI18N
+                roots.add(new SourceRoot("", null, null, null, ProjectUtils.getInformation(getProject()).getDisplayName(), null, null));
                 Map<FileObject,SourceRoot> rootsByDir = new LinkedHashMap<FileObject,SourceRoot>();
                 // First collect all non-redundant existing roots.
                 for (SourceRoot r : roots) {
