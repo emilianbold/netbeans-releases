@@ -109,14 +109,6 @@
 			minwidth = 20;
 		},
 		{
-			name = "comment";
-			columntitle = "Comment";
-			columnclass = java.lang.String;
-			default = "";
-			width = 200;
-			minwidth = 100;
-		},
-		{
 			name = "defval";
 			columntitle = "Default value";
 			columnclass = java.lang.String;

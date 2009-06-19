@@ -212,6 +212,11 @@ public class NbJiraIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public boolean isNew() {
+        return taskData == null || taskData.isNew();
+    }
+
     public void setTaskData(TaskData taskData) {
         assert !taskData.isPartial();
         this.taskData = taskData;

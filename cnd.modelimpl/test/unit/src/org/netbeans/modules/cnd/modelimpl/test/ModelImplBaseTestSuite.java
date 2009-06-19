@@ -66,14 +66,6 @@ public class ModelImplBaseTestSuite extends CndBaseTestSuite {
     }
 
     /**
-     * Constructs a TestSuite from the given class. Adds all the methods
-     * starting with "test" as test cases to the suite.
-     */
-    public ModelImplBaseTestSuite(Class<? extends TestCase> theClass) {
-        super(theClass);
-    }
-
-    /**
      * Constructs an empty TestSuite.
      */
     public ModelImplBaseTestSuite(String name) {

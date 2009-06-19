@@ -1328,7 +1328,7 @@ public class ASPanel extends DestinationPanel {
             "AS.error.unc.path.unsupported"); // NOI18N
     public static final String DEFAULT_BRACKETS_IN_NOT_SPACED_PATH =
             ResourceUtils.getString(ASPanel.class,
-            "AS.error.brackets.in.not.spaced.path"); // NOI18N
+            "AS.error.parantheses.in.not.spaced.path"); // NOI18N
     
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(ASPanel.class,

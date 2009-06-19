@@ -81,7 +81,7 @@ public class CndBaseTestSuite extends NativeExecutionBaseTestSuite {
      * starting with "test" as test cases to the suite.
      *
      */
-    public CndBaseTestSuite(Class<? extends TestCase> theClass) {
+    public CndBaseTestSuite(Class<? extends CndBaseTestCase> theClass) {
         super(theClass);
     }
 

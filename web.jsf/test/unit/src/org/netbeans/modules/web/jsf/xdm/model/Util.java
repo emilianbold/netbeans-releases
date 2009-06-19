@@ -29,6 +29,9 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -171,5 +174,20 @@ public class Util {
         File tempdir = new File(System.getProperty("java.io.tmpdir"), path);
         tempdir.mkdirs();
         return tempdir;
+    }
+
+    public static  Element getElement( Node parent , int index ) {
+        int j = 0;
+        NodeList nodes = parent.getChildNodes();
+        for ( int i = 0; i<nodes.getLength(); i++ ){
+            Node node = nodes.item(i);
+            if ( node instanceof Element ){
+                if ( j == index ){
+                    return (Element)node;
+                }
+                j++;
+            }
+        }
+        return null;
     }
 }
