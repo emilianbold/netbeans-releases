@@ -57,6 +57,8 @@ import java.util.Collections;
 import java.util.List;
 import java.awt.*;
 import java.beans.BeanInfo;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a path in repository, its children
@@ -152,13 +154,20 @@ public class RepositoryPathNode extends AbstractNode {
         }
 
         public void run() {
+            Client client = clientFactory.createClient();
             try {
-                List keys = ModuleSelector.listRepositoryPath(clientFactory.createClient(), root, path);
+                List keys = ModuleSelector.listRepositoryPath(client, root, path);
                 setKeys(keys);
             } catch (CommandException e) {
                 setKeys(Collections.singleton(errorNode(e)));
             } catch (AuthenticationException e) {
                 setKeys(Collections.singleton(errorNode(e)));
+            } finally {
+                try {
+                    client.getConnection().close();
+                } catch (Throwable ex) {
+                    Logger.getLogger(BranchSelector.class.getName()).log(Level.INFO, null, ex);
+                }
             }
         }
 

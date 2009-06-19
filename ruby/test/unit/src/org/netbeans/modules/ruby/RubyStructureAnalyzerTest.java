@@ -62,7 +62,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
 
     public RubyStructureAnalyzerTest(String testName) {
         super(testName);
-        RubyIndexer.skipTypeInferenceForTests = false;
+        RubyIndexer.userSourcesTest = true;
         TypeInferenceSettings.getDefault().setMethodTypeInference(true);
         TypeInferenceSettings.getDefault().setRdocTypeInference(true);
     }

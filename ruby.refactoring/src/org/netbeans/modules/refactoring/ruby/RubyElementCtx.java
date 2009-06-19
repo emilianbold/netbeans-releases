@@ -403,7 +403,7 @@ public class RubyElementCtx {
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge =
                             new ContextKnowledge(null, method, node, astOffset, lexOffset, doc, null);
-                        RubyTypeInferencer rti = RubyTypeInferencer.normal(knowledge);
+                        RubyTypeInferencer rti = RubyTypeInferencer.create(knowledge);
                         types = rti.inferType(lhs);
                     }
                 } else if (call == Call.LOCAL) {
