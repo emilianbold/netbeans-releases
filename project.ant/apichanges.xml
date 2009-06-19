@@ -115,9 +115,11 @@ is the proper place.
             <description>
                 <p>
                     Added method <code>SourcesHelper.createSourceGroupModifierImplementation</code> creating <code>SourceGroupModifierImplementation</code>
-                    implementation for Ant-based projects. Also added new versions of <code>SourcesHelper.addPrincipalSourceRoot</code>
-                    and <code>SourcesHelper.addTypedSourceRoot</code> with additional parameter <code>hint</code>, which is required
-                    for the implementation to work.
+                    implementation for Ant-based projects. Also added <code>SourcesHelper.SourceRootConfig</code> class
+                    and <code>SourcesHelper.sourceRoot(String location)</code> method for more readable configuration
+                    of source roots. These support additional parameter <code>hint()</code>, which is required
+                    for the implementation to work. Existing <code>SourcesHelper.addPrincipalSourceRoot</code>
+                    and <code>SourcesHelper.addTypedSourceRoot</code> methods are deprecated.
                 </p>
             </description>
             <class package="org.netbeans.spi.project.support.ant" name="SourcesHelper"/>

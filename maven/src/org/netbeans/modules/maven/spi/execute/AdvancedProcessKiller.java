@@ -37,66 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ide.ergonomics.fod;
+package org.netbeans.modules.maven.spi.execute;
 
-import java.net.URL;
-import java.util.logging.Level;
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ide.AntBasedType;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Lookup;
-
+import java.util.Map;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author mkleint
  */
-public class AdditionalAntBasedTest extends NbTestCase {
+public interface AdvancedProcessKiller {
 
-    public AdditionalAntBasedTest(String name) {
-        super(name);
-    }
+    public void kill(Process preProcess, Map<String, String> env);
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.emptyConfiguration().addTest(AdditionalAntBasedTest.class).
-            gui(false).
-            clusters("ergonomics.*").
-            clusters(".*").
-            enableModules("ide[0-9]*", ".*")
-        );
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.FINER;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        URL u = AdditionalAntBasedTest.class.getResource("default.xml");
-        assertNotNull("Default layer found", u);
-        XMLFileSystem xml = new XMLFileSystem(u);
-        FileObject fo = xml.findResource("Menu/Edit_hidden");
-        assertNotNull("File found", fo);
-    }
-
-    public void testIfAntBasedProjectInstalled() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Menu/Edit");
-        assertNull("Default layer is on and Edit is hidden", fo);
-
-        FileUtil.createData(FileUtil.getConfigRoot(), 
-            "Services/" + AntBasedType.class.getName().replace('.', '-') + ".instance"
-        );
-        AntBasedType f = Lookup.getDefault().lookup(AntBasedType.class);
-        assertNotNull("Ant found", f);
-        FoDFileSystem.getInstance().waitFinished();
-
-        fo = FileUtil.getConfigFile("Menu/Edit");
-        assertNotNull("Default layer is off and Edit is visible", fo);
-    }
 }
