@@ -504,18 +504,26 @@ public class BugtrackingUtil {
     }
 
     public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        return getLongestWordWidth(header, values, comp, false);
+    }
+
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp, boolean regardIcon) {
         String[] valuesArray = values.toArray(new String[values.size()]);
-        return getLongestWordWidth(header, valuesArray, comp);
+        return getLongestWordWidth(header, valuesArray, comp, regardIcon);
     }
 
     public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
+        return getLongestWordWidth(header, values, comp, false);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp, boolean regardIcon) {
         int size = header.length();
         for (String s : values) {
             if(size < s.length()) {
                 size = s.length();
             }
         }
-        return getColumnWidthInPixels(size, comp);
+        return getColumnWidthInPixels(size, comp) + (regardIcon ? 16 : 0);
     }
 
     /**
