@@ -132,6 +132,9 @@ public class ThreadsTest extends JellyTestCase {
             if (elem.toString().startsWith("java.util.TimerThread.run")) {
                 return true;
             }
+            if (elem.toString().startsWith("java.util.prefs.AbstractPreferences$EventDispatchThread")) {
+                return true;
+            }
             if (elem.toString().startsWith("sun.awt.image.ImageFetcher.run")) {
                 return true;
             }
