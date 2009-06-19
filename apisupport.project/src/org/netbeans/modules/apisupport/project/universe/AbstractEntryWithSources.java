@@ -90,6 +90,13 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         }
         return allPackageNames;
     }
+
+    private FileObject sourceFO;
+    private FileObject getSourceLocationFileObject() {
+        if (sourceFO == null || ! sourceFO.isValid())
+            sourceFO = FileUtil.toFileObject(getSourceLocation());
+        return sourceFO;
+    }
     
     private void scanForClasses(Set<String> result, String pkg, File dir, boolean recurse) throws IOException {
         if (!dir.isDirectory()) {
@@ -114,7 +121,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
 
     public String[] getRunDependencies() {
         Set<String> deps = new TreeSet<String>();
-        FileObject source = FileUtil.toFileObject(getSourceLocation());
+        FileObject source = getSourceLocationFileObject();
         if (source == null) { // ??
             return new String[0];
         }
@@ -147,7 +154,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
     }
 
     public String getSpecificationVersion() {
-        FileObject source = FileUtil.toFileObject(getSourceLocation());
+        FileObject source = getSourceLocationFileObject();
         if (source != null) {
             NbModuleProject project;
             try {
