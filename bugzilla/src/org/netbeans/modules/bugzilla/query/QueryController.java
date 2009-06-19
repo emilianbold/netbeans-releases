@@ -77,6 +77,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -143,6 +144,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
 
         issueTable = new IssueTable(query, query.getColumnDescriptors());
+        setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this);
 
         panel.productList.addListSelectionListener(this);
@@ -220,6 +222,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else {
             postPopulate(urlParameters, false);
         }
+    }
+
+    private void setupRenderer(IssueTable issueTable) {
+        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query));
+        issueTable.setRenderer(renderer);
     }
 
     @Override

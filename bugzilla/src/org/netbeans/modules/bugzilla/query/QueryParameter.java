@@ -40,14 +40,20 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.awt.Component;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -378,6 +384,20 @@ public abstract class QueryParameter {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof ParameterValue) value = ((ParameterValue)value).getDisplayName();
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    static class PriorityRenderer extends ParameterValueCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel renderer = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if(value instanceof ParameterValue) {
+                String prio = ((ParameterValue)value).getValue();
+                renderer.setIcon(BugzillaConfig.getInstance().getPriorityIcon(prio));
+            } else {
+                renderer.setIcon(null);
+            }
+            return renderer;
         }
     }
 
