@@ -115,21 +115,33 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
         return Collections.unmodifiableSortedSet(services);
     }
 
+    private SortedSet<WagService> getServicesInternal() {
+        if (services == null) {
+            services = new TreeSet<WagService>();
+        }
+
+        return services;
+    }
+
     public void addServices(Collection<WagService> servicesToAdd) {
+        SortedSet<WagService> services = getServicesInternal();
         SortedSet<WagService> old = new TreeSet<WagService>(services);
         services.addAll(servicesToAdd);
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
 
     public void removeServices(Collection<WagService> servicesToRemove) {
+        SortedSet<WagService> services = getServicesInternal();
         SortedSet<WagService> old = new TreeSet<WagService>(services);
         services.removeAll(servicesToRemove);
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
 
     public void refresh() {
+        SortedSet<WagService> services = getServicesInternal();
         SortedSet<WagService> old = new TreeSet<WagService>(services);
         services.clear();
+        fireChange(old, Collections.unmodifiableSortedSet(services));
         services.addAll(getSearchResult());
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
@@ -161,7 +173,6 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
     }
 
     private Collection<WagService> getSearchResult() {
-        //System.out.println("searching: query = " + query + " maxResults = " + maxResults + " currentIndex = " + currentIndex);
         return SearchEngine.getInstance().search(query, maxResults, currentIndex);
     }
 

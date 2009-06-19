@@ -52,18 +52,20 @@ import java.lang.annotation.Target;
  * 
  * In the case your method is annotated with this annotation,
  * NativeExecutionBaseTestSuite.addTest will create an instance of your class
- * for each such method and for each execution environment
- * (gotten from .cndtestrc/.testuserinfo). The constructor with (String, ExecutionEnvironment)
+ * (and run the test method) for each environment specified in given section.
+ *
+ * The constructor with (String, ExecutionEnvironment)
  * signature will be invoked in this case.
  *
  * (Note that such test method should be public, have void return type and no parameters)
  *
  * In the case test method it is not annotated, 
  * constructor with a single String parameter (test name) will be used,
- * only one instance of the class per test method will be created.
+ * only one instance of the class per test method will be created,
+ * and test method will be run only once.
  *
- * All the above is true in the case you use NativeExecutionBaseTestSuite
- * and NativeExecutionBaseTestCase descendants for suite and tests.
+ * All the above is true in the case you use NativeExecutionBaseTestSuite.addTest()
+ * method for adding tests.
  * Otherwise the annotation is just ignored.
  *
  * @author Vladimir Kvashin
