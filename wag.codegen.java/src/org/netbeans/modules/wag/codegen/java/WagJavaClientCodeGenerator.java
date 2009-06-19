@@ -102,7 +102,6 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
         addWagLib();
 
         try {
-            System.out.println("targetFolder= " + getTargetFolder());
             Util.createDataObjectFromTemplate("Templates/WAG/zcl.properties",
                     getDefaultFolder(), "zcl");
         } catch (Exception ex) {
@@ -113,7 +112,6 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
     private FileObject getDefaultFolder() {
         SourceGroup srcGroup = SourceGroupSupport.findSourceGroupForFile(getProject(), getTargetFile());
 
-        System.out.println("default pkg = " + srcGroup.getRootFolder());
         return srcGroup.getRootFolder();
     }
 
@@ -156,7 +154,7 @@ public class WagJavaClientCodeGenerator extends WagClientCodeGenerator {
             paramStr += "}";
 
             String code = "try {";
-            code += "String result = Zembly.getInstance().callService(\"" + service.getName() + "\", " + paramStr + ");" +
+            code += "String result = Zembly.getInstance().callService(\"" + service.getCallableName() + "\", " + paramStr + ");" +
                     "System.out.println(\"result: \" + result);";
             code += "} catch (Exception ex) {" +
                     "ex.printStackTrace();" +

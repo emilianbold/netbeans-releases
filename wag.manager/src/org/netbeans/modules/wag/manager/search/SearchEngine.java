@@ -71,19 +71,23 @@ public class SearchEngine {
     private static final String ITEM_URI_PARAM = "itemURI";
     private static final String VERSION_PARAM = "version";
 
+    private static final String CONTENT_TYPE_ATTR = "contentType";
     private static final String ITEMS_ATTR = "items";
     private static final String PATH_ATTR = "path";
     private static final String NAME_ATTR = "name";
-    private static final String UUID_ATTR = "uuid";
+    private static final String URL_ATTR = "url";
     private static final String PARAMETERS_ATTR = "parameters";
     private static final String TYPE_ATTR = "type";
+
+    private static final String WADL_CONTENT_TYPE = "application/vnd.sun.wadl+xml";
+    private static final String JAVA_SERVICE_CONTENT_TYPE = "application/java";
 
     private static SearchEngine instance;
     private Zembly zembly;
 
     private SearchEngine() {
         try {        
-            zembly = Zembly.getInstance();
+            zembly = Zembly.getInstance("org/netbeans/modules/wag/manager/resources/zcl.properties");
         } catch (Exception ex) {
             ex.printStackTrace();
             // ignore
@@ -117,6 +121,7 @@ public class SearchEngine {
 
     private List<WagService> parse(String data) {
         try {
+            //System.out.println("data = " + data);
             List<WagService> services = new ArrayList<WagService>();
             List<Parameter> params = new ArrayList<Parameter>();
 
@@ -127,24 +132,27 @@ public class SearchEngine {
             for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
 
-                if (!item.getString(TYPE_ATTR).endsWith("SERVICE")) {
-                    continue;
-                }
-
                 WagService svc = new WagService();
                 services.add(svc);
                 svc.setName(item.getString(NAME_ATTR));
-                //svc.setUuid(item.getString(UUID_ATTR));
                 String uri = item.getString(PATH_ATTR);
                 svc.setPath(uri);
+
+                String contentType = item.getString(CONTENT_TYPE_ATTR);
+
+                if (contentType.equals(WADL_CONTENT_TYPE) || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
+                    svc.setPrependWeb(true);
+                }
 
                 params.clear();
                 params.add(Parameter.create(ITEM_URI_PARAM, uri));
                 params.add(Parameter.create(VERSION_PARAM, "latest"));
                 String result = zembly.callService(GET_ITEM_INFO_URI, params);
+                //System.out.println("result = " + result);
                 parser = new JSONTokener(result);
 
                 JSONObject info = (JSONObject) parser.nextValue();
+                svc.setUrl(info.getString(URL_ATTR));
                 JSONArray svcParams = info.getJSONArray(PARAMETERS_ATTR);
                 List<WagServiceParameter> wagParams = new ArrayList<WagServiceParameter>();
                 svc.setParameters(wagParams);

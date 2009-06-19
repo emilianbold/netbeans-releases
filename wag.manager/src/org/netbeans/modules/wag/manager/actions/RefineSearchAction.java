@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,57 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.wag.codegen.ui;
 
-import java.awt.datatransfer.Transferable;
-import org.netbeans.modules.wag.manager.model.WagService;
-import org.netbeans.modules.wag.manager.spi.ConsumerFlavorProvider;
-import org.openide.util.Exceptions;
-import org.openide.util.datatransfer.ExTransferable;
+package org.netbeans.modules.wag.manager.actions;
+
+import org.netbeans.modules.wag.manager.model.WagSearchResult;
+import org.netbeans.modules.wag.manager.model.WagSearchResults;
+import org.netbeans.modules.wag.manager.wizards.RefineSearchDlg;
+import org.openide.nodes.Node;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.*;
 
 /**
- *
- * @author Ayub Khan
+ * 
+ * @author  peterliu
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.wag.manager.spi.ConsumerFlavorProvider.class)
-public class WagClientFlavorProvider implements ConsumerFlavorProvider {
-
-    public WagClientFlavorProvider() {
+public class RefineSearchAction extends NodeAction {
+    
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        return true;
     }
-
-    public Transferable addDataFlavors(Transferable transferable) {
-        try {
-            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR)) {
-                Object data = transferable.getTransferData(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR);
-        
-                if (data instanceof WagService) {
-                    WagService service = (WagService) data;
-                    ExTransferable t = ExTransferable.create(transferable);
-                    WagClientEditorDrop editorDrop = new WagClientEditorDrop(service);
-                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                    t.put(s);
-                    return t;
-                }
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new HelpCtx(RefineSearchAction.class);
+    }
+    
+    public String getName() {
+        return NbBundle.getMessage(RefineSearchAction.class, "RefineSearchAction");
+    }
+    
+    protected void performAction(Node[] nodes) {
+        if (nodes == null || nodes.length != 1) {
+            return;
         }
 
-        return transferable;
-    }
+        WagSearchResults results = nodes[0].getLookup().lookup(WagSearchResults.class);
 
-    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
-
-        private WagClientEditorDrop drop;
-
-        ActiveEditorDropTransferable(WagClientEditorDrop drop) {
-            super(WagClientEditorDrop.FLAVOR);
-
-            this.drop = drop;
+        if (results == null) {
+            throw new IllegalArgumentException("Node has no WagSearchResults");
         }
 
-        public Object getData() {
-            return drop;
-        }
+        new RefineSearchDlg(results, nodes[0].getLookup().lookup(WagSearchResult.class)).displayDialog();
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
+    
+    protected String iconResource() {
+        return "org/netbeans/modules/wag/manager/resources/restservice.png"; // NOI18N
+    }
+    
 }
