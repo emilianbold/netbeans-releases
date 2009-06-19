@@ -40,38 +40,21 @@
  */
 package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.MissingResourceException;
-import java.util.Random;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JTextPane;
-import javax.swing.UIManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.BadLocationException;
+import javax.swing.text.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
@@ -85,9 +68,26 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.packet.DelayInformation;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -116,6 +116,141 @@ public class ChatPanel extends javax.swing.JPanel {
     };
     private CompoundUndoManager undo;
     private MessageHistoryManager history = new MessageHistoryManager();
+
+    private static final String STACK_TRACE_STRING =
+            "(|catch.)at.((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)";//NOI18N
+    /**
+     * Regexp matching one line (not the first) of a stack trace.
+     * Captured groups:
+     * <ol>
+     * <li>package
+     * <li>filename
+     * <li>line number
+     * </ol>
+     */
+    private static final Pattern STACK_TRACE = Pattern.compile(STACK_TRACE_STRING);
+
+    private static final String EXCEPTION_MESSAGE_STRING = 
+            "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)";//NOI18N
+    /**
+     * Regexp matching the first line of a stack trace, with the exception message.
+     * Captured groups:
+     * <ol>
+     * <li>unqualified name of exception class plus possible message
+     * </ol>
+     */
+    private static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
+    // #42894: JRockit uses "Main Thread" not "main"
+    EXCEPTION_MESSAGE_STRING); 
+
+    private static final String CLASSPATH_RESOURCE_STRING = 
+            "(([a-zA-Z_$][a-zA-Z0-9_$]*/)+)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
+    /**
+     * group(5) is line
+     * group(1) is folder
+     * group(4) is file
+     */
+    private static final Pattern CLASSPATH_RESOURCE = Pattern.compile(CLASSPATH_RESOURCE_STRING);
+
+    private static final String ABSOLUTE_RESOURCE_STRING = 
+            "/(([a-zA-Z_$][a-zA-Z0-9_$]*/)+)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
+    /**
+     * group(5) is line
+     * group(1) is folder
+     * group(4) is file
+     */
+    private static final Pattern ABSOLUTE_RESOURCE = Pattern.compile(ABSOLUTE_RESOURCE_STRING);
+
+    private static final String PROJECT_RESOURCE_STRING = 
+            "\\{\\$([a-zA-Z_$][\\.a-zA-Z0-9_$]*)\\}/(([a-zA-Z_$][a-zA-Z0-9_$]*/)*)(([a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z0-9_$]*):([0-9]+))";//NOI18N
+
+    /**
+     * group(6) is line
+     * group(2) is folder
+     * group(5) is file
+     * group(1) is project name
+     */
+    private static final Pattern PROJECT_RESOURCE = Pattern.compile(PROJECT_RESOURCE_STRING);
+
+    private static final Pattern RESOURCES =
+            Pattern.compile("("+STACK_TRACE_STRING+")|("+CLASSPATH_RESOURCE_STRING +")|("+PROJECT_RESOURCE_STRING +")|("+ABSOLUTE_RESOURCE_STRING + ")");//NOI18N
+
+    private void selectStackTrace(Matcher m) {
+        String pkg = m.group(2);
+        String filename = m.group(3);
+        String resource = pkg.replace('.', '/') + filename;
+        int lineNumber = Integer.parseInt(m.group(4));
+        org.netbeans.api.java.classpath.ClassPath cp = ClassPathSupport.createClassPath(GlobalPathRegistry.getDefault().getSourceRoots().toArray(new FileObject[0]));
+        FileObject source = cp.findResource(resource);
+        if (source != null) {
+            doOpen(source, lineNumber);
+        }
+    }
+
+    private void selectClasspathResource(Matcher m) {
+        String resource = m.group(1) + m.group(4);
+        int lineNumber = Integer.parseInt(m.group(5));
+        org.netbeans.api.java.classpath.ClassPath cp = ClassPathSupport.createClassPath(GlobalPathRegistry.getDefault().getSourceRoots().toArray(new FileObject[0]));
+        FileObject source = cp.findResource(resource);
+        if (source != null) {
+            doOpen(source, lineNumber);
+        }
+    }
+
+    private void selectProjectResource(Matcher m) {
+        String resource = m.group(2) + m.group(5);
+        int lineNumber = Integer.parseInt(m.group(6));
+        for (Project p:OpenProjects.getDefault().getOpenProjects()) {
+            if (ProjectUtils.getInformation(p).getName().equals(m.group(1))) {
+                FileObject source = p.getProjectDirectory().getFileObject(resource);
+                doOpen(source, lineNumber);
+                return;
+            }
+        }
+    }
+
+    private void selectAbsoluteResource(Matcher m) {
+        String resource = "/" + m.group(1) + m.group(4);
+        int lineNumber = Integer.parseInt(m.group(5));
+        File file = new File(resource);
+        if (file.exists()) {
+            FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                doOpen(source, lineNumber);
+        }
+    }
+
+    private static boolean doOpen(FileObject fo, int line) {
+        try {
+            DataObject od = DataObject.find(fo);
+            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
+            LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
+
+            if (ec != null && lc != null && line != -1) {
+                StyledDocument doc = ec.openDocument();
+                if (doc != null) {
+                    if (line != -1) {
+                        Line l = lc.getLineSet().getCurrent(line - 1);
+
+                        if (l != null) {
+                            l.show(Line.SHOW_GOTO);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            OpenCookie oc = (OpenCookie) od.getCookie(OpenCookie.class);
+
+            if (oc != null) {
+                oc.open();
+                return true;
+            }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return false;
+    }
+
     
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
@@ -148,7 +283,30 @@ public class ChatPanel extends javax.swing.JPanel {
 
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    URLDisplayer.getDefault().showURL(e.getURL());
+                    if (e.getURL()!=null) {
+                        URLDisplayer.getDefault().showURL(e.getURL());
+                    } else {
+                        String link = e.getDescription();
+                        Matcher m = STACK_TRACE.matcher(link);
+                        if (m.matches()) {
+                            selectStackTrace(m);
+                        } else {
+                            m=CLASSPATH_RESOURCE.matcher(link);
+                            if (m.matches()) {
+                                selectClasspathResource(m);
+                            } else {
+                                m=PROJECT_RESOURCE.matcher(link);
+                                if (m.matches()) {
+                                    selectProjectResource(m);
+                                } else {
+                                    m=ABSOLUTE_RESOURCE.matcher(link);
+                                    if (m.matches()) {
+                                        selectAbsoluteResource(m);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -224,7 +382,10 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String replaceLinks(String body) {
         // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
-        return body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
+        String result = body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>");
+
+        result = RESOURCES.matcher(result).replaceAll("<a href=\"$0\">$0</a>");
+        return result.replaceAll(" ", "&nbsp;"); //NOI18N
     }
 
     private String replaceSmileys(String body) {
@@ -497,6 +658,32 @@ public class ChatPanel extends javax.swing.JPanel {
                     outbox.setText(message);
                 }
                 return;
+            }
+        }
+        if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_P) {
+            JTextComponent component = EditorRegistry.lastFocusedComponent();
+            if (component!=null) {
+                Document document = component.getDocument();
+                FileObject fo = NbEditorUtilities.getFileObject(document);
+                int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition())+1;
+                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                String outText="";//NOI18N
+                if (cp!=null) {
+                    outText=cp.getResourceName(fo);
+                } else {
+                    Project p = FileOwnerQuery.getOwner(fo);
+                    if (p!=null) {
+                        outText = "{$" + ProjectUtils.getInformation(p).getName() +"}/"+ FileUtil.getRelativePath(p.getProjectDirectory(), fo);//NOI18N
+                    } else {
+                        outText = fo.getPath();
+                    }
+                }
+                outText+= ":" + line;//NOI18N
+                try {
+                    outbox.getDocument().insertString(outbox.getCaretPosition(), outText, null);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }//GEN-LAST:event_outboxKeyPressed
