@@ -180,7 +180,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         fireChange();
     }
 
-    void fireChange() {
+    private void fireChange() {
         changeSupport.fireChange();
     }
 
