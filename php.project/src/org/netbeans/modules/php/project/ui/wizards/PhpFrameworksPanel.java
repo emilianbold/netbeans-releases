@@ -41,7 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -159,7 +159,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
     }
 
     private Map<PhpFrameworkProvider, PhpModuleExtender> createExtenders() {
-        Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new IdentityHashMap<PhpFrameworkProvider, PhpModuleExtender>();
+        Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new LinkedHashMap<PhpFrameworkProvider, PhpModuleExtender>();
         for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
             extenders.put(provider, provider.createPhpModuleExtender(null));
         }

@@ -44,7 +44,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
@@ -122,7 +122,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
     }
 
     public Map<PhpFrameworkProvider, PhpModuleExtender> getSelectedExtenders() {
-        Map<PhpFrameworkProvider, PhpModuleExtender> selectedExtenders = new IdentityHashMap<PhpFrameworkProvider, PhpModuleExtender>();
+        Map<PhpFrameworkProvider, PhpModuleExtender> selectedExtenders = new LinkedHashMap<PhpFrameworkProvider, PhpModuleExtender>();
         for (int i = 0; i < model.getRowCount(); ++i) {
             FrameworkModelItem item = model.getItem(i);
             if (item.isSelected()) {
