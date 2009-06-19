@@ -98,7 +98,7 @@ public class J2MEDataLoader extends MultiFileLoader {
     
     @Override
     protected FileObject findPrimaryFile(FileObject fo) {
-        return fo.isData() && "java".equals(fo.getExt()) && !fo.existsExt("form")&& !fo.existsExt("jwt") && J2MEProject.isJ2MEFile(fo) ? fo : null; //NOI18N
+        return fo.isData() && "java".equals(fo.getExt()) && J2MEProject.isJ2MEFile(fo) && !fo.existsExt("form")&& !fo.existsExt("jwt") ? fo : null; //NOI18N
     }
     
     
