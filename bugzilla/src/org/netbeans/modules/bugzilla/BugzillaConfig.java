@@ -41,12 +41,16 @@ package org.netbeans.modules.bugzilla;
 
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
 /**
@@ -66,6 +70,7 @@ public class BugzillaConfig {
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
+    private Map<String, Icon> iconMap;
 
     private BugzillaConfig() { }
 
@@ -221,5 +226,17 @@ public class BugzillaConfig {
 
     public String getLastChangeFrom() {
         return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
+    }
+
+    public Icon getPriorityIcon(String priority) {
+        if(iconMap == null) {
+            iconMap = new HashMap<String, Icon>();
+            iconMap.put("P1", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p1.png", true));
+            iconMap.put("P2", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p2.png", true));
+            iconMap.put("P3", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p3.png", true));
+            iconMap.put("P4", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p4.png", true));
+            iconMap.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true));
+        }
+        return iconMap.get(priority);
     }
 }
