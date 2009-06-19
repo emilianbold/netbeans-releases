@@ -41,9 +41,11 @@
 
 package org.openide.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -149,8 +151,10 @@ public abstract class Lookup {
         }
 
         DefLookup def = new DefLookup();
-        def.init(l, misl);
-        return defaultLookup = def;
+        def.init(l, misl, false);
+        defaultLookup = def;
+        def.init(l, misl, true);
+        return defaultLookup;
     }
     
     private static final class DefLookup extends ProxyLookup {
@@ -158,12 +162,21 @@ public abstract class Lookup {
             super(new Lookup[0]);
         }
         
-        public void init(ClassLoader loader, Lookup metaInfLookup) {
+        public void init(ClassLoader loader, Lookup metaInfLookup, boolean addPath) {
             // Had no such line, use simple impl.
             // It does however need to have ClassLoader available or many things will break.
             // Use the thread context classloader in effect now.
             Lookup clLookup = Lookups.singleton(loader);
-            setLookups(new Lookup[] { metaInfLookup, clLookup });
+            List<Lookup> arr = new ArrayList<Lookup>();
+            arr.add(metaInfLookup);
+            arr.add(clLookup);
+            String paths = System.getProperty("org.openide.util.Lookup.paths"); // NOI18N
+            if (addPath && paths != null) {
+                for (String p : paths.split(":")) { // NOI18N
+                    arr.add(Lookups.forPath(p));
+                }
+            }
+            setLookups(arr.toArray(new Lookup[0]));
         }
     }
     
@@ -173,7 +186,7 @@ public abstract class Lookup {
         if (defaultLookup instanceof DefLookup) {
             DefLookup def = (DefLookup)defaultLookup;
             ClassLoader l = Thread.currentThread().getContextClassLoader();
-            def.init(l, Lookups.metaInfServices(l));
+            def.init(l, Lookups.metaInfServices(l), true);
         }
     }
 
