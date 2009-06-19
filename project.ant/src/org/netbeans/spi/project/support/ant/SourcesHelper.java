@@ -516,7 +516,6 @@ public final class SourcesHelper {
          *                               {@link #createSources} or {@link #registerExternalRoots}
          *                               was called
          * @see SourcesHelper#registerExternalRoots
-         * @see Sources#TYPE_GENERIC
          * @return <code>this</code>
          */
         public SourceRootConfig add() throws IllegalStateException {
