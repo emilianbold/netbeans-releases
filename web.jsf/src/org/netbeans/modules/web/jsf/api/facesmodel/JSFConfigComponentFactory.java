@@ -45,7 +45,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 public interface JSFConfigComponentFactory {
     
@@ -65,4 +65,52 @@ public interface JSFConfigComponentFactory {
     DefaultLocale createDefatultLocale();
     SupportedLocale createSupportedLocale();
     ResourceBundle createResourceBundle();
+    ActionListener createActionListener();
+    DefaultRenderKitId createDefaultRenderKitId();
+    MessageBundle createMessageBundle();
+    NavigationHandler createNavigationHandler();
+    PartialTraversal createPartialTraversal();
+    StateManager createStateManager();
+    ElResolver createElResolver();
+    PropertyResolver createPropertyResolver();
+    VariableResolver createVariableResolver();
+    ResourceHandler createResourceHandler();
+    FacesSystemEventListener createSystemEventListener();
+    DefaultValidators createDefaultValidators();
+    Ordering createOrdering();
+    After createAfter();
+    Before createBefore();
+    Name createName();
+    Others createOthers();
+    AbsoluteOrdering createAbsoluteOrdering();
+    Factory createFactory();
+    ValidatorId createValidatorId();
+    ApplicationFactory createApplicationFactory ();
+    ExceptionHandlerFactory createExceptionHandlerFactory();
+    ExternalContextFactory createExternalContextFactory( );
+    FacesContextFactory createFacesContextFactory();
+    PartialViewContextFactory createPartialViewContextFactory( );
+    LifecycleFactory createLifecycleFactory();
+    ViewDeclarationLanguageFactory createViewDeclarationLanguageFactory( );
+    TagHandlerDelegateFactory createTagHandlerDelegateFactory( );
+    RenderKitFactory createRenderKitFactory( );
+    VisitContextFactory createVisitContextFactory( );
+    FacesComponent createComponent();
+    Facet createFacet();
+    ConfigAttribute createAttribute();
+    Property createProperty();
+    FacesManagedProperty createManagedProperty();
+    ListEntries createListEntries();
+    MapEntries createMapEntries();
+    If createIf();
+    Redirect createRedirect();
+    ViewParam createViewParam();
+    ReferencedBean createReferencedBean();
+    RenderKit createRenderKit();
+    FacesRenderer createRenderer();
+    FacesClientBehaviorRenderer createClientBehaviorRenderer();
+    Lifecycle createLifecycle();
+    PhaseListener createPhaseListener();
+    FacesValidator createValidator();
+    FacesBehavior createBehavior();
 }

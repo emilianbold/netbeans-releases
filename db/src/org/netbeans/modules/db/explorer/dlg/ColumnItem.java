@@ -41,14 +41,12 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.modules.db.explorer.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Vector;
 
 public class ColumnItem extends Hashtable {
     public static final String NAME = "name"; //NOI18N
@@ -58,7 +56,6 @@ public class ColumnItem extends Hashtable {
     public static final String PRIMARY_KEY = "pkey"; //NOI18N
     public static final String INDEX = "idx"; //NOI18N
     public static final String NULLABLE = "nullable"; //NOI18N
-    public static final String COMMENT = "comment"; //NOI18N
     public static final String DEFVAL = "defval"; //NOI18N
     public static final String UNIQUE = "unique"; //NOI18N
     public static final String CHECK = "check"; //NOI18N
@@ -251,6 +248,10 @@ public class ColumnItem extends Hashtable {
         if (name == null || name.length() == 0)
             return false;
 
+        // #155142 - check size of default value for VARCHAR
+        if (getType().getName().equals("VARCHAR") && getDefaultValue().length() > getSize()) {  //NOI18N
+            return false;
+        }
         return true;
     }
     /** Getter for property scale.

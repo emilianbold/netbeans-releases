@@ -292,6 +292,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
+        AppClientSources sources = new AppClientSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -310,7 +311,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            new AppClientSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            sources,
+            sources.getSourceGroupModifierImplementation(),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),

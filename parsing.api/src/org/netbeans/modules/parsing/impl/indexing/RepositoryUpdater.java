@@ -1334,55 +1334,61 @@ out:            for (String mimeType : order) {
                     return false;
                 }
 
+                final URL url = dirty.getURL();
+                if (url == null) {
+                    continue;
+                }
+                final FileObject fileObject = URLMapper.findFileObject(url);
+                if (fileObject == null) {
+                    continue;
+                }
+
+                final Source src = Source.create(fileObject);
                 try {
-                    final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());
-                    if (fileObject != null) {
-                        final Source src = Source.create(fileObject);
-                        ParserManager.parse(Collections.singleton(src), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                final String mimeType = src.getMimeType();
-                                final List<EmbeddingIndexerFactory> indexers = findEmbeddingIndexers (mimeType);
-                                for (EmbeddingIndexerFactory indexerFactory : indexers) {
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine("Indexing " + fileObject.getPath() + "; using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
-                                    }
-                                    visit(resultIterator,indexerFactory);
+                    ParserManager.parse(Collections.singleton(src), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            final String mimeType = src.getMimeType();
+                            final List<EmbeddingIndexerFactory> indexers = findEmbeddingIndexers (mimeType);
+                            for (EmbeddingIndexerFactory indexerFactory : indexers) {
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.fine("Indexing " + fileObject.getPath() + "; using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
                                 }
+                                visit(resultIterator,indexerFactory);
                             }
+                        }
 
-                            private void visit (final ResultIterator resultIterator,
-                                    final EmbeddingIndexerFactory currentIndexerFactory) throws ParseException,IOException {
-                                if (currentIndexerFactory != null) {
-                                    final Parser.Result pr = resultIterator.getParserResult();
-                                    if (pr != null) {
-                                        final String indexerName = currentIndexerFactory.getIndexerName();
-                                        final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
-                                        transactionContexts.add(context);
+                        private void visit (final ResultIterator resultIterator,
+                                final EmbeddingIndexerFactory currentIndexerFactory) throws ParseException,IOException {
+                            if (currentIndexerFactory != null) {
+                                final Parser.Result pr = resultIterator.getParserResult();
+                                if (pr != null) {
+                                    final String indexerName = currentIndexerFactory.getIndexerName();
+                                    final int indexerVersion = currentIndexerFactory.getIndexVersion();
+                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
+                                    transactionContexts.add(context);
 
-                                        final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
-                                        if (indexer != null) {
-                                            try {
-                                                SPIAccessor.getInstance().index(indexer, dirty, pr, context);
-                                            } catch (ThreadDeath td) {
-                                                throw td;
-                                            } catch (Throwable t) {
-                                                LOGGER.log(Level.WARNING, null, t);
-                                            }
+                                    final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
+                                    if (indexer != null) {
+                                        try {
+                                            SPIAccessor.getInstance().index(indexer, dirty, pr, context);
+                                        } catch (ThreadDeath td) {
+                                            throw td;
+                                        } catch (Throwable t) {
+                                            LOGGER.log(Level.WARNING, null, t);
                                         }
                                     }
                                 }
-                                Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
-                                for (Embedding embedding : embeddings) {
-                                    final String mimeType = embedding.getMimeType();
-                                    final List<EmbeddingIndexerFactory> indexerFactories = findEmbeddingIndexers(mimeType);
-                                    for (EmbeddingIndexerFactory indexerFactory : indexerFactories)
-                                        visit(resultIterator.getResultIterator(embedding), indexerFactory);
-                                }
                             }
-                        });
-                    }
+                            Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
+                            for (Embedding embedding : embeddings) {
+                                final String mimeType = embedding.getMimeType();
+                                final List<EmbeddingIndexerFactory> indexerFactories = findEmbeddingIndexers(mimeType);
+                                for (EmbeddingIndexerFactory indexerFactory : indexerFactories)
+                                    visit(resultIterator.getResultIterator(embedding), indexerFactory);
+                            }
+                        }
+                    });
                 } catch (final ParseException e) {
                     LOGGER.log(Level.WARNING, null, e);
                 }
@@ -1823,8 +1829,9 @@ out:            for (String mimeType : order) {
                 try {
                     depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
-                    LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
-                    return true;
+                    LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
+                    @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
+                    depCtx.newRootsToScan.addAll(partialSort);
                 }
                 Collections.reverse(depCtx.newRootsToScan);
 
@@ -2021,8 +2028,19 @@ out:            for (String mimeType : order) {
                                         ctx.oldBinaries.remove(binaryRoot);
                                     }
 
-                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot);
-                                    deps.add(binaryRoot);
+                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot) :
+                                        "binaryRoot=" + binaryRoot + //NOI18N
+                                        ", rootURL=" + rootURL + //NOI18N
+                                        ", cycleDetector.contains(" + binaryRoot + ")=" + ctx.cycleDetector.contains(binaryRoot); //NOI18N
+                                    
+                                    Set<String> sourceIds = PathRegistry.getDefault().getSourceIdsFor(binaryRoot);
+                                    if (sourceIds == null || sourceIds.isEmpty()) {
+                                        deps.add(binaryRoot);
+                                    } else {
+                                        LOGGER.log(Level.INFO, "The root {0} is registsred for both {1} and {2}", new Object[] { //NOI18N
+                                            binaryRoot, id, sourceIds
+                                        });
+                                    }
                                 }
                             }
                         }

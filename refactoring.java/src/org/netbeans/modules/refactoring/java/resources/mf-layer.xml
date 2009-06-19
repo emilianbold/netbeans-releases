@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
-                    <file name="RenameAction.instance_hidden"/>
+                    <file name="RenameAction.shadow_hidden"/>
             </folder>
         </folder>
     </folder>

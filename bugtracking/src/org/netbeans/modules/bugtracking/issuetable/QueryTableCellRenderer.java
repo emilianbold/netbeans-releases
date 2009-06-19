@@ -54,10 +54,13 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
         if(!query.isSaved()) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
+            JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setRowColors(style, l);
+            return l;
         }
         
-        IssueStyle style = null;
+        TableCellStyle style = null;
         JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         if(value instanceof IssueNode.SeenProperty) {
             IssueNode.SeenProperty ps = (IssueNode.SeenProperty) value;
@@ -68,30 +71,25 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         }
 
         if(value instanceof IssueNode.IssueProperty) {
-            style = getIssueStyle(table, (IssueProperty)value, isSelected, row);
+            style = getCellStyle(table, query, (IssueProperty)value, isSelected, row);
         }
 
         if(renderer instanceof JComponent && style != null) {
             JComponent l = (JComponent) renderer;
             l.putClientProperty("format", style.format);                        // NOI18N
             ((JComponent) renderer).setToolTipText(style.tooltip);
-            if(style.background != null) {
-                l.setBackground(style.background);
-            }
-            if(style.foreground != null) {
-                l.setForeground(style.foreground);
-            }
+            setRowColors(style, l);
         }
         return renderer;
     }
 
     @Override
     protected void paintComponent(Graphics g) {        
-        formatText(this);
+        fitText(this);
         super.paintComponent(g);
     }
 
-    public static void formatText(JLabel label) {
+    public static void fitText(JLabel label) {
         MessageFormat format = (MessageFormat) label.getClientProperty("format");     // NOI18N
         String s = computeFitText(label);
         if(format != null) {
@@ -129,23 +127,52 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return text;
     }
 
-    public static class IssueStyle {
-        public MessageFormat format;
-        public Color background;
-        public Color foreground;
-        public String tooltip;
+    public static class TableCellStyle {
+        private MessageFormat format;
+        private Color background;
+        private Color foreground;
+        private String tooltip;
+
+        public TableCellStyle(MessageFormat format, Color background, Color foreground, String tooltip) {
+            this.background = background;
+            this.foreground = foreground;
+            this.tooltip = tooltip;
+            this.format = format;
+        }
+        public Color getBackground() {
+            return background;
+        }
+        public Color getForeground() {
+            return foreground;
+        }
+        public MessageFormat getFormat() {
+            return format;
+        }
+        public String getTooltip() {
+            return tooltip;
+        }
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("[");
+            sb.append("background=");
+            sb.append(background);
+            sb.append(", foreground=");
+            sb.append(foreground);
+            sb.append(", format=");
+            sb.append(format != null ? format.toPattern() : null);
+            sb.append(", tooltip=");
+            sb.append(tooltip);
+            sb.append("]");
+            return sb.toString();
+        }
     }
 
-    public IssueStyle getIssueStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
-        IssueStyle style = new IssueStyle();
-        Issue issue = p.getIssue();
+    public static TableCellStyle getCellStyle(JTable table, Query query, IssueProperty p, boolean isSelected, int row) {
+        TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
         try {
-            // set default values
-            style.format     = null;
-            style.foreground = isSelected ? Color.WHITE : table.getForeground();
-            style.background = isSelected ? null        : getUnselectedBackground(row);
-
             // set text format and background depending on selection and issue status
+            Issue issue = p.getIssue();
             if(!query.contains(issue)) {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;
@@ -175,8 +202,31 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return style;
     }
 
-    private Color getUnselectedBackground(int row) {
+    public static TableCellStyle getDefaultCellStyle(JTable table, boolean isSelected, int row) {
+        // set default values
+        return new TableCellStyle(
+            null,                                                                       // format
+            isSelected ? table.getSelectionBackground() : getUnselectedBackground(row), // background
+            isSelected ? Color.WHITE : table.getForeground(),                           // foreground
+            null                                                                        // tooltip
+        );
+    }
+
+    private static Color getUnselectedBackground(int row) {
         return row % 2 != 0 ? unevenLineColor : Color.WHITE;
+    }
+
+    public static void setRowColors(TableCellStyle style, JComponent l) {
+        if(style == null) {
+            assert false;
+            return; // prefer to do nothing instead of breaking the rendering with an NPE
+        }
+        if (style.background != null) {
+            l.setBackground(style.background);
+        }
+        if (style.foreground != null) {
+            l.setForeground(style.foreground);
+        }
     }
 
 }

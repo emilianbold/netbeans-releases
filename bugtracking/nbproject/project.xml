@@ -209,8 +209,9 @@
                 <friend>org.netbeans.modules.bugtracking.util</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
-                <package>org.netbeans.modules.bugtracking.spi</package>
                 <package>org.netbeans.modules.bugtracking.issuetable</package>
+                <package>org.netbeans.modules.bugtracking.kenai.spi</package>
+                <package>org.netbeans.modules.bugtracking.spi</package>
                 <package>org.netbeans.modules.bugtracking.ui.search</package>
                 <package>org.netbeans.modules.bugtracking.util</package>
             </friend-packages>

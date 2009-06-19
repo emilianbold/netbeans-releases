@@ -32,9 +32,11 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public interface ResourceBundle extends JSFConfigComponent, DescriptionGroup {
+public interface ResourceBundle extends ApplicationElement, DescriptionGroup, 
+    IdentifiableElement 
+{
     /**
      * Property name of &lt;base-name&gt; element.
      * The fully qualified class name of the

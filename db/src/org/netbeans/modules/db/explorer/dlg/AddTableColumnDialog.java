@@ -98,13 +98,10 @@ public class AddTableColumnDialog {
     Dialog dialog = null;
     Specification spec;
     AddTableColumnDDL ddl;
-    Map ixmap;
-    Map ix_uqmap;
     String colname = null;
-    transient private static final String tempStr = new String();
     JTextField colnamefield, colsizefield, colscalefield, defvalfield;
     JTextArea checkfield;
-    JComboBox coltypecombo, idxcombo;
+    JComboBox coltypecombo;
     JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
     DataModel dmodel = new DataModel();
 
@@ -123,7 +120,7 @@ public class AddTableColumnDialog {
 
             DriverSpecification drvSpec = nfo.getLookup().lookup(DatabaseConnection.class).getConnector().getDriverSpecification(catName);
             
-            ddl = new AddTableColumnDDL(spec, drvSpec, schemaName, tableName);
+            ddl = new AddTableColumnDDL(spec, schemaName, tableName);
 
             JLabel label;
             JPanel pane = new JPanel();
@@ -382,6 +379,22 @@ public class AddTableColumnDialog {
             nullcheckbox.setToolTipText(NbBundle.getMessage (AddTableColumnDialog.class, "ACS_AddTableColumnConstraintNullTitleA11yDesc"));
             subpane.add(nullcheckbox, con);
 
+            con = new GridBagConstraints ();
+            con.gridx = 3;
+            con.gridy = 0;
+            con.gridwidth = 1;
+            con.gridheight = 1;
+            con.anchor = GridBagConstraints.WEST;
+            con.insets = new java.awt.Insets (0, 12, 0, 0);
+            con.weightx = 0.0;
+            con.weighty = 0.0;
+            ixcheckbox = new JCheckBox();
+            Mnemonics.setLocalizedText(ixcheckbox, NbBundle.getMessage (AddTableColumnDialog.class, "AddTableColumnIndexName")); //NOI18N
+            ixcheckbox.setName(ColumnItem.INDEX);
+            ixcheckbox.addActionListener(cbxlistener);
+            ixcheckbox.setToolTipText(NbBundle.getMessage (AddTableColumnDialog.class, "ACS_AddTableColumnIndexNameA11yDesc"));
+            subpane.add(ixcheckbox, con);
+
             // Insert subpane
 
             con = new GridBagConstraints ();
@@ -412,48 +425,11 @@ public class AddTableColumnDialog {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
 
-            // Index name combo
-
-            con = new GridBagConstraints ();
-            con.gridx = 0;
-            con.gridy = 5;
-            con.gridwidth = 1;
-            con.gridheight = 1;
-            con.anchor = GridBagConstraints.NORTHWEST;
-            con.insets = new java.awt.Insets (12, 0, 0, 0);
-            con.weightx = 0.0;
-            con.weighty = 0.0;
-            ixcheckbox = new JCheckBox();
-            Mnemonics.setLocalizedText(ixcheckbox, NbBundle.getMessage (AddTableColumnDialog.class, "AddTableColumnIndexName")); //NOI18N
-            ixcheckbox.setName(ColumnItem.INDEX);
-            ixcheckbox.addActionListener(cbxlistener);
-            ixcheckbox.setToolTipText(NbBundle.getMessage (AddTableColumnDialog.class, "ACS_AddTableColumnIndexNameA11yDesc"));
-            pane.add(ixcheckbox, con);
-
-            ixmap = ddl.getIndexMap();
-            ix_uqmap = ddl.getUniqueIndexMap();
-            
-            con = new GridBagConstraints ();
-            con.gridx = 1;
-            con.gridy = 5;
-            con.gridwidth = 3;
-            con.gridheight = 1;
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.insets = new java.awt.Insets (12, 12, 0, 0);
-            con.weightx = 1.0;
-            con.weighty = 0.0;
-            idxcombo = new JComboBox(ixmap.keySet().toArray ());
-            idxcombo.setToolTipText(NbBundle.getMessage (AddTableColumnDialog.class, "ACS_AddTableColumnIndexNameComboBoxA11yDesc"));
-            idxcombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AddTableColumnDialog.class, "ACS_AddTableColumnIndexNameComboBoxA11yName"));
-            idxcombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddTableColumnDialog.class, "ACS_AddTableColumnIndexNameComboBoxA11yDesc"));
-            //idxcombo.setSelectedIndex(0);
-            pane.add(idxcombo, con);
-
             // Check title and textarea
 
             con = new GridBagConstraints ();
             con.gridx = 0;
-            con.gridy = 6;
+            con.gridy = 5;
             con.gridwidth = 1;
             con.gridheight = 1;
             con.anchor = GridBagConstraints.NORTHWEST;
@@ -469,7 +445,7 @@ public class AddTableColumnDialog {
 
             con = new GridBagConstraints ();
             con.gridx = 1;
-            con.gridy = 6;
+            con.gridy = 5;
             con.gridwidth = 3;
             con.gridheight = 1;
             con.fill = GridBagConstraints.BOTH;
@@ -490,8 +466,6 @@ public class AddTableColumnDialog {
             nullcheckbox.setSelected(true);
             uniquecheckbox.setSelected(false);
             pkcheckbox.setEnabled(!isPK);
-            idxcombo.setEnabled(idxcombo.getItemCount()>0);
-            ixcheckbox.setEnabled(idxcombo.isEnabled());
             
             item.addPropertyChangeListener(new PropertyChangeListener() {
                                                public void propertyChange(PropertyChangeEvent evt) {
@@ -501,24 +475,12 @@ public class AddTableColumnDialog {
                                                        boolean set = ((Boolean)nval).booleanValue();
                                                        if (pname.equals(ColumnItem.PRIMARY_KEY)) {
                                                            pkcheckbox.setSelected(set);
-                                                           //idxcombo.setEnabled(!set);
-                                                           //ixcheckbox.setEnabled(!set);
-                                                           //ixcheckbox.setSelected(set);
                                                        } else if (pname.equals(ColumnItem.INDEX)) {
                                                            ixcheckbox.setSelected(set);
                                                        } else if (pname.equals(ColumnItem.UNIQUE)) {
                                                            uniquecheckbox.setSelected(set);
-                                                           idxcombo.setEnabled(!set);
                                                            ixcheckbox.setEnabled(!set);
                                                            ixcheckbox.setSelected(set);
-                                                           if(set) {
-                                                               idxcombo.addItem(tempStr);
-                                                               idxcombo.setSelectedItem(tempStr);
-                                                           } else {
-                                                               idxcombo.removeItem(tempStr);
-                                                               idxcombo.setEnabled(idxcombo.getItemCount()>0);
-                                                               ixcheckbox.setEnabled(idxcombo.isEnabled());
-                                                           }
                                                        } else if (pname.equals(ColumnItem.NULLABLE)) {
                                                            nullcheckbox.setSelected(set);
                                                        }
@@ -542,12 +504,11 @@ public class AddTableColumnDialog {
 
                       colname = colnamefield.getText();
                       final ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
-                      final String indexName = (String)idxcombo.getSelectedItem();
                       boolean wasException;
                       try {
                           wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
                               public Boolean call() throws Exception {
-                                  return ddl.execute(colname, citem, indexName);
+                                  return ddl.execute(colname, citem);
                               }
                           });
                       } catch (InvocationTargetException e) {

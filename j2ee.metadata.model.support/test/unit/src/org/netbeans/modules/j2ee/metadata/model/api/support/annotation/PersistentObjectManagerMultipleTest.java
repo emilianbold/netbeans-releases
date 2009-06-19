@@ -72,7 +72,7 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
 
     // XXX should refactor the waiting for added/changed/removed types to an utility class
 
-    private static final int EVENT_TIMEOUT = 10; // seconds
+    private static final int EVENT_TIMEOUT = 20; // seconds
 
     private PersistentObjectManager<ResourceImpl> manager;
 

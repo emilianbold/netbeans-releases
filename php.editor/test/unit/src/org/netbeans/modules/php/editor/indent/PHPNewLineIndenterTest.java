@@ -96,6 +96,22 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/indent_after_closing_bracket.php");
     }
 
+    public void testControlStmtWithoutBracket1() throws Exception{
+        testIndentInFile("testfiles/indent/control_stmt_without_bracket1.php");
+    }
+
+    public void testControlStmtWithoutBracket2() throws Exception{
+        testIndentInFile("testfiles/indent/control_stmt_without_bracket2.php");
+    }
+
+    public void testControlStmtWithoutBracket3() throws Exception{
+        testIndentInFile("testfiles/indent/control_stmt_without_bracket3.php");
+    }
+
+    public void testIndentAfterMultilineStmt1() throws Exception{
+        testIndentInFile("testfiles/indent/indent_after_multiline_stmt1.php");
+    }
+
     public void testArrays1() throws Exception{
         testIndentInFile("testfiles/indent/arrays1.php");
     }

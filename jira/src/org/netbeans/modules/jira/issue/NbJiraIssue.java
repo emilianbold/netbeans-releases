@@ -160,6 +160,10 @@ public class NbJiraIssue extends Issue {
         ESTIMATE(JiraAttribute.ESTIMATE.id(), "LBL_ESTIMATE"),
         INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id(), "LBL_INITIAL_ESTIMATE"),
         ACTUAL(JiraAttribute.ACTUAL.id(), "LBL_ACTUALL"),
+        PARENT_ID(JiraAttribute.PARENT_ID.id(), null),
+        PARENT_KEY(JiraAttribute.PARENT_KEY.id(), null),
+        SUBTASK_IDS(JiraAttribute.SUBTASK_IDS.id(), null, false),
+        SUBTASK_KEYS(JiraAttribute.SUBTASK_KEYS.id(), null, false),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
         ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
@@ -208,6 +212,11 @@ public class NbJiraIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public boolean isNew() {
+        return taskData == null || taskData.isNew();
+    }
+
     public void setTaskData(TaskData taskData) {
         assert !taskData.isPartial();
         this.taskData = taskData;
@@ -221,7 +230,7 @@ public class NbJiraIssue extends Issue {
         });
     }
 
-    JiraRepository getRepository() {
+    public JiraRepository getRepository() {
         return repository;
     }
 
@@ -267,35 +276,29 @@ public class NbJiraIssue extends Issue {
     }
 
     public boolean isSubtask() {
-        return getParentKey() != null;
+        String key = getParentKey();
+        return key != null && !key.trim().equals("");
     }
 
     public boolean hasSubtasks() {
-        return getSubtaskKeys() != null;
+        List<String> keys = getSubtaskKeys();
+        return keys != null && keys.size() > 0;
     }
 
     public String getParentKey() {
-        TaskAttribute attr = taskData.getRoot().getMappedAttribute(JiraAttribute.PARENT_KEY.id());
-        if(attr == null) {
-            return null;
-        }
-        String parentKey = attr.getValue();
-        if(parentKey == null || parentKey.trim().equals("")) {
-            return null;
-        }
-        return parentKey;
+        return getFieldValue(IssueField.PARENT_KEY);
     }
 
     public List<String> getSubtaskKeys() {
-        TaskAttribute attr = taskData.getRoot().getMappedAttribute(JiraAttribute.SUBTASK_KEYS.id());
-        if(attr == null) {
-            return null;
-        }
-        List<String> parentKeys = attr.getValues();
-        if(parentKeys == null || parentKeys.size() == 0) {
-            return null;
-        }
-        return parentKeys;
+        return getFieldValues(IssueField.SUBTASK_KEYS);
+    }
+
+    public String getParentID() {
+        return getFieldValue(IssueField.PARENT_ID);
+    }
+
+    public List<String> getSubtaskID() {
+        return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
     Comment[] getComments() {
@@ -1016,7 +1019,7 @@ public class NbJiraIssue extends Issue {
     }
 
     List<String> getFieldValues(IssueField f) {
-        if(f.isSingleAttribute()) {
+        if(!f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null) {
                 return a.getValues();

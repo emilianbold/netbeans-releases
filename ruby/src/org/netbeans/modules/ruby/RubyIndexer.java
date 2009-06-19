@@ -433,26 +433,42 @@ public class RubyIndexer extends EmbeddingIndexer {
             List<?extends AstElement> structure = ar.getElements();
 
             // Rails special case
-            // fall through to do normal indexing as well, these special cases
+            // in case of 2.3.3 fall through to do normal indexing as well, these special cases
             // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
+            // if rails is in vendor/rails, we can't tell the version from
+            // the path, so playing safe and falling through to do also normal
+            // indexing in that case
+            boolean fallThrough = RubyUtils.isRails23OrHigher(file.getPath())
+                    || file.getPath().contains("vendor/rails"); //NOI18N
             if (fileName.startsWith("acti")) { // NOI18N
                 if ("action_controller.rb".equals(fileName)) { // NOI18N
                     // Locate "ActionController::Base.class_eval do"
                     // and take those include statements and stick them into ActionController::Base
                     handleRailsBase("ActionController"); // NOI18N
+                    if (!fallThrough) {
+                        return;
+                    }
                 } else if ("active_record.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActiveRecord"); // NOI18N
 //                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
                     // HACK
                     handleMigrations();
+                    if (!fallThrough) {
+                        return;
+                    }
                 } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActionMailer"); // NOI18N
-                    return;
+                    if (!fallThrough) {
+                        return;
+                    }
                 } else if ("action_view.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActionView"); // NOI18N
 
                     // HACK
                     handleActionViewHelpers();
+                    if (!fallThrough) {
+                        return;
+                    }
 
                 //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
                     // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
@@ -462,6 +478,9 @@ public class RubyIndexer extends EmbeddingIndexer {
                 }
             } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
                 handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
+                if (!fallThrough) {
+                    return;
+                }
             } else if (fileName.equals("schema_definitions.rb")) {
                 handleSchemaDefinitions();
                 // Fall through - also do normal indexing on the file
@@ -483,7 +502,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
             analyze(structure);
         }
-        
+
         private void handleSchemaDefinitions() {
             // Make sure we're in Rails 2.0...
             if (url.indexOf("activerecord-2") == -1) { // NOI18N
@@ -1352,6 +1371,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         private void indexMethod(AstElement child, IndexDocument document, boolean topLevel, boolean nodoc) {
             MethodDefNode childNode = (MethodDefNode)child.getNode();
             String signature = AstUtilities.getDefSignature(childNode);
+            signature = AstUtilities.getDefSignature(childNode);
             Set<Modifier> modifiers = child.getModifiers();
             
             int flags = getModifiersFlag(modifiers);
@@ -1386,9 +1406,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 if (signature == null) {
                     return;
                 }
-            }
-
-            if (child.getType().isKnown()) {
+            } else if (child.getType().isKnown()) {
                 signature += ";;" + child.getType().asIndexedString() + ";"; // NOI18N
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
