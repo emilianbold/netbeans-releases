@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,11 +107,11 @@ public class RubyIndexer extends EmbeddingIndexer {
     //private static final boolean INDEX_UNDOCUMENTED = Boolean.getBoolean("ruby.index.undocumented");
     private static final boolean INDEX_UNDOCUMENTED = true;
 
-    // for unit tests
-    static boolean preindexingTest = false;
-    static boolean skipTypeInferenceForTests = false;
-
-    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    /**
+     * For unit tests, makes the indexer behave as when operating with 
+     * user's sources in a project.
+     */
+    static boolean userSourcesTest = false;
     
     // Class/Module Document
     static final String FIELD_EXTENDS_NAME = "extends"; //NOI18N
@@ -205,7 +206,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     static final String FIELD_DB_COLUMN = "dbcolumn"; //NOI18N
     /** Special version the schema.rb is marked with (rather than a migration number) */
     static final String SCHEMA_INDEX_VERSION = "schema"; // NOI18N
-    
+
     // Method Document
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
@@ -1088,7 +1089,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         
         private boolean shouldIndexTopLevel() {
             // Don't index top level methods in the libraries
-            if (!platform || preindexingTest) {
+            if (!platform || userSourcesTest) {
                 String name = file.getNameExt();
                 // Don't index spec methods or test methods
                 if (!name.endsWith("_spec.rb") && !name.endsWith("_test.rb")) {
@@ -1371,7 +1372,6 @@ public class RubyIndexer extends EmbeddingIndexer {
         private void indexMethod(AstElement child, IndexDocument document, boolean topLevel, boolean nodoc) {
             MethodDefNode childNode = (MethodDefNode)child.getNode();
             String signature = AstUtilities.getDefSignature(childNode);
-            signature = AstUtilities.getDefSignature(childNode);
             Set<Modifier> modifiers = child.getModifiers();
             
             int flags = getModifiersFlag(modifiers);
@@ -1399,15 +1399,19 @@ public class RubyIndexer extends EmbeddingIndexer {
 
             //XXX: this will skip TI for tests as it did in GSF where
             // platform was always false.
-            if (platform && !skipTypeInferenceForTests) {
-                Node root = AstUtilities.getRoot(result);
+
+            Node root = AstUtilities.getRoot(result);
+            if (platform && !userSourcesTest) {
                 signature = RubyIndexerHelper.getMethodSignature(
                         child, root, flags, signature, file, result.getSnapshot());
                 if (signature == null) {
                     return;
                 }
-            } else if (child.getType().isKnown()) {
-                signature += ";;" + child.getType().asIndexedString() + ";"; // NOI18N
+            } else {
+                if (!userSourcesTest) {
+                    signature = RubyIndexerHelper.replaceAttributes(signature, flags);
+                }
+                signature = RubyIndexerHelper.getMethodSignatureForUserSources(root, child, signature, flags, result.getSnapshot());
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
 
@@ -1496,7 +1500,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
             // Don't index globals in the libraries
-            if (!platform || preindexingTest) {
+            if (!platform || userSourcesTest) {
 
                 String signature = child.getName();
 //            int flags = getModifiersFlag(child.getModifiers());

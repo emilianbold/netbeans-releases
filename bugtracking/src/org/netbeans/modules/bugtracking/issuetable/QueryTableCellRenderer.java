@@ -166,6 +166,34 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
             sb.append("]");
             return sb.toString();
         }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TableCellStyle other = (TableCellStyle) obj;
+            if (this.format != other.format && (this.format == null || !this.format.equals(other.format))) {
+                return false;
+            }
+            if (this.background != other.background && (this.background == null || !this.background.equals(other.background))) {
+                return false;
+            }
+            if (this.foreground != other.foreground && (this.foreground == null || !this.foreground.equals(other.foreground))) {
+                return false;
+            }
+            if ((this.tooltip == null) ? (other.tooltip != null) : !this.tooltip.equals(other.tooltip)) {
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+
     }
 
     public static TableCellStyle getCellStyle(JTable table, Query query, IssueProperty p, boolean isSelected, int row) {

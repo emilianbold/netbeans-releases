@@ -193,4 +193,14 @@ public abstract class WebFrameworkProvider {
     public String getServletPath(FileObject file){
         return null;
     }
+
+    /**
+     * Test if this framework requires web.xml deployment descriptor for its
+     * functioning.
+     * @return true if web.xml is required by this framework
+     */
+    public boolean requiresWebXml() {
+        return true;
+    }
+
 }

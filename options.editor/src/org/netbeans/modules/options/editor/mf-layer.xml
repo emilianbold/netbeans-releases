@@ -319,11 +319,14 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-maven">
             <folder name="Customizer">
-                <file name="Formatting.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                <folder name="Formatting">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.indentation.Bundle"/>
                     <attr name="position" intvalue="1000"/>
-                </file>
+                    <file name="Self.instance">
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

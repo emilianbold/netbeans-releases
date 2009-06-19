@@ -238,31 +238,8 @@ public class WebProjectUtilities {
         
         FileObject webFO = projectDir.createFolder(DEFAULT_DOC_BASE_FOLDER);
         final FileObject webInfFO = webFO.createFolder(WEB_INF);
-        // create web.xml
-        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
-        String webXMLContent = null;
-        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
-            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-3.0.xml")); //NOI18N
-        } else if (Profile.JAVA_EE_5 == j2eeProfile) {
-            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.5.xml")); //NOI18N
-        } else if (Profile.J2EE_14 == j2eeProfile) {
-            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.4.xml")); //NOI18N
-        } else if (Profile.J2EE_13 == j2eeProfile) {
-            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.3.xml")); //NOI18N
-        }
-        // FIXME JAVA_EE_6
-        if (webXMLContent != null) {
-            final String webXmlText = webXMLContent;
-            FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
-            FileLock lock = webXML.lock();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
-            try {
-                bw.write(webXmlText);
-            } finally {
-                bw.close();
-                lock.releaseLock();
-            }
-        }
+
+        createWebXml(j2eeProfile, createData.isWebXmlRequired(), webInfFO);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element data = h.getPrimaryConfigurationData(true);
@@ -343,7 +320,38 @@ public class WebProjectUtilities {
 
         return h;
     }
-    
+
+    public static void createWebXml(Profile j2eeProfile, boolean webXmlRequired, FileObject dir) throws IOException {
+        String webXmlTemplate = null;
+        if ((Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) && webXmlRequired) {
+            webXmlTemplate = "web-3.0.xml"; //NOI18N
+        } else if (Profile.JAVA_EE_5 == j2eeProfile) {
+            webXmlTemplate = "web-2.5.xml"; //NOI18N
+        } else if (Profile.J2EE_14 == j2eeProfile) {
+            webXmlTemplate = "web-2.4.xml"; //NOI18N
+        } else if (Profile.J2EE_13 == j2eeProfile) {
+            webXmlTemplate = "web-2.3.xml"; //NOI18N
+        }
+
+        if (webXmlTemplate == null)
+            return;
+
+        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
+        String webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + webXmlTemplate));
+        if (webXMLContent != null) {
+            final String webXmlText = webXMLContent;
+            FileObject webXML = FileUtil.createData(dir, "web.xml"); //NOI18N
+            FileLock lock = webXML.lock();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
+            try {
+                bw.write(webXmlText);
+            } finally {
+                bw.close();
+                lock.releaseLock();
+            }
+        }
+    }
+
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         try {

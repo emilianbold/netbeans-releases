@@ -86,6 +86,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -101,6 +102,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -396,8 +398,8 @@ final public class WebProjectProperties {
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
-                projectProperties.getProperty(J2EE_PLATFORM),
-                J2eeModule.WAR);
+                Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM)),
+                J2eeModule.Type.WAR);
         RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
@@ -454,6 +456,11 @@ final public class WebProjectProperties {
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
             
+            Profile j2eeProfile = Profile.fromPropertiesString(project.getAPIWebModule().getJ2eePlatformVersion());
+            if (shouldCreateWebXml()) {
+                WebProjectUtilities.createWebXml(j2eeProfile, true, project.getAPIWebModule().getWebInf());
+            }
+
             // extend project with selected frameworks
             // It should be called outside mutex, which is used above. See issue#68118
             if (newExtenders != null) {
@@ -529,6 +536,21 @@ final public class WebProjectProperties {
             Exceptions.printStackTrace(ex);
         }
         
+    }
+
+    private boolean shouldCreateWebXml() {
+        boolean res = false;
+        if (addedFrameworkNames != null) {
+            for (String fName : addedFrameworkNames) {
+                for (WebFrameworkProvider wfp : WebFrameworks.getFrameworks()) {
+                    if (wfp.getName().equals(fName)) {
+                        res |= wfp.requiresWebXml();
+                        break;
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
@@ -678,16 +700,15 @@ final public class WebProjectProperties {
         
         // Set new context path
         try {
-	    String cp = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
-	    if (cp == null) {
-		cp = "/" + PropertyUtils.getUsablePropertyName(project.getName()); //NOI18N
-            } else if (!isCorrectCP(cp)) {
-		if (cp.startsWith("/")) //NOI18N
-		    cp = cp.substring(1);
-		cp = "/" + PropertyUtils.getUsablePropertyName(cp); //NOI18N
-	    }
-	    
-            setNewContextPathValue(cp, project, projectProperties, privateProperties);
+            String clsPth = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
+            if (clsPth == null) {
+                clsPth = "/" + PropertyUtils.getUsablePropertyName(project.getName()); //NOI18N
+            } else if (!isCorrectCP(clsPth)) {
+                if (clsPth.startsWith("/")) //NOI18N
+                    clsPth = clsPth.substring(1);
+                clsPth = "/" + PropertyUtils.getUsablePropertyName(clsPth); //NOI18N
+            }
+            setNewContextPathValue(clsPth, project, projectProperties, privateProperties);
         } catch (BadLocationException exc) {
             //ignore
         }

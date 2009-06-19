@@ -374,9 +374,9 @@ public final class SourcesHelper {
      * Note also that when adding {@link #type(String) typed} source root, principal (untyped) source
      * root usually needs to be added as well. You may reuse existing config object like this:
      * <pre>
-     * SourceRootConfig root = sourcesHelper.sourceRoot("${src.dir}").displayName("Source Packages");
-     * root.add();  // adding as principal root
-     * root.type("java").add(); // adding as typed root
+     * sourcesHelper.sourceRoot("${src.dir}").displayName("Source Packages")
+     * .add()  // adding as principal root, continuing configuration
+     * .type("java").add(); // adding as typed root
      * </pre>
      * </p>
      * @since org.netbeans.modules.project.ant/1 1.33
@@ -391,26 +391,8 @@ public final class SourcesHelper {
         private String type;
         private String hint;
 
-        /**
-         * Configures source location, already set in {@link SourcesHelper#sourceRoot(String location)}.
-         * <p>
-         * If the actual value of the location is inside the project directory,
-         * this is simply ignored; so it safe to configure source roots
-         * for any source directory which might be set to use an external path, even
-         * if the common location is internal.
-         * </p>
-         * <p>
-         * Source location need not to exist physically, when {@link #hint(String) hint} is specified
-         * and {@link SourceGroupModifier} created by this helper is added to project
-         * lookup, source root can be created on demand.
-         * </p>
-         * @param value a project-relative or absolute path giving the location
-         *                 of a source tree; may contain Ant property substitutions
-         * @return <code>this</code>
-         */
-        public SourceRootConfig location(String value) {
-            location = value;
-            return this;
+        private SourceRootConfig(String location) {
+            this.location = location;
         }
 
         /**
@@ -428,18 +410,22 @@ public final class SourcesHelper {
          * Value is evaluated and then treated as a comma- or space-separated pattern list,
          * as detailed in the Javadoc for {@link PathMatcher}.
          * (As a special convenience, a value consisting solely of an Ant property reference
-         * which cannot be evaluated, e.g. <samp>${undefined}</samp>, is treated like null.)
+         * which cannot be evaluated, e.g. <samp>${undefined}</samp>, is ignored.)
          * {@link SourceGroup#contains} will then reflect the includes and excludes for files, but note that the
          * semantics of that method requires that a folder be "contained" in case any folder or file
          * beneath it is contained, and in particular the root folder is always contained.
          * </p>
          * @param value Ant-style includes; may contain Ant property substitutions;
-         *                 if not null, only files and folders
-         *                 matching the pattern (or patterns), and not specified in the excludes list,
-         *                 will be {@link SourceGroup#contains included}
+         *                 Only files and folders matching the pattern (or patterns),
+         *                 and not specified in the {@link #excludes} list,
+         *                 will be {@link SourceGroup#contains included}.
+         *                 Must not be <code>null</code>.
          * @return <code>this</code>
+         * @throws IllegalArgumentException When <code>null</code> is passed as parameter.
          */
-        public SourceRootConfig includes(String value) {
+        public SourceRootConfig includes(String value) throws IllegalArgumentException {
+            if (value == null)
+                throw new IllegalArgumentException("Parameter 'value' must not be null.");    // NOI18N
             includes = value;
             return this;
         }
@@ -450,10 +436,14 @@ public final class SourcesHelper {
          * @param value Ant-style excludes; may contain Ant property substitutions;
          *                 if not null, files and folders
          *                 matching the pattern (or patterns) will not be {@link SourceGroup#contains included},
-         *                 even if specified in the includes list
+         *                 even if specified in the includes list.
+         *                 Must not be <code>null</code>.
          * @return <code>this</code>
+         * @throws IllegalArgumentException When <code>null</code> is passed as parameter.
          */
-        public SourceRootConfig excludes(String value) {
+        public SourceRootConfig excludes(String value) throws IllegalArgumentException {
+            if (value == null)
+                throw new IllegalArgumentException("Parameter 'value' must not be null.");    // NOI18N
             excludes = value;
             return this;
         }
@@ -508,22 +498,16 @@ public final class SourcesHelper {
          *                               {@link #createSources} or {@link #registerExternalRoots}
          *                               was called
          * @see SourcesHelper#registerExternalRoots
-         * @see Sources#TYPE_GENERIC
          * @return <code>this</code>
          */
         public SourceRootConfig add() throws IllegalStateException {
             if (lastRegisteredRoots != null) {
                 throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
             }
-            return addTo(type != null ? typedSourceRoots : principalSourceRoots);
-        }
-
-        @SuppressWarnings("unchecked")
-        private SourceRootConfig addTo(List list) {
             if (type != null) {
-                list.add(new TypedSourceRoot(type, hint, location, includes, excludes, displayName, icon, openedIcon));
+                typedSourceRoots.add(new TypedSourceRoot(type, hint, location, includes, excludes, displayName, icon, openedIcon));
             } else {
-                list.add(new SourceRoot(location, includes, excludes, hint, displayName, icon, openedIcon));
+                principalSourceRoots.add(new SourceRoot(location, includes, excludes, hint, displayName, icon, openedIcon));
             }
             return this;
         }
@@ -533,15 +517,30 @@ public final class SourcesHelper {
      * Creates a possible source root configuration.
      * Source root is a top-level folder which may
      * contain sources that should be considered part of the project.
-     * 
+     * <p>
+     * If the actual value of the <code>location</code> parameter is inside the project directory,
+     * this is simply ignored; so it safe to configure source roots
+     * for any source directory which might be set to use an external path, even
+     * if the common location is internal.
+     * </p>
+     * <p>
+     * Source location need not to exist physically, when {@link #hint(String) hint} is specified
+     * and {@link SourceGroupModifier} created by this helper is added to project
+     * lookup, source root can be created on demand.
+     * </p>
+     * <p>
+     * NOTE: don't forget to call {@link SourceRootConfig#add() add()} method
+     * on initialized <code>SourceRootConfig</code> to add it
+     * to <code>SourcesHelper</code>. See {@link SourceRootConfig} for details
+     * of usage and other parameters.
+     * </p>
      * @param location a project-relative or absolute path giving the location
      *                 of a source tree; may contain Ant property substitutions
      * @return source root configuration, that may be added to <code>SourcesHelper</code>
      * @see SourceRootConfig#location(String) for details about location parameter
-     * @see SourceRootConfig for details of usage and other parameters
      */
     public SourceRootConfig sourceRoot(String location) {
-        return new SourceRootConfig().location(location);
+        return new SourceRootConfig(location);
     }
 
     /**
@@ -563,6 +562,7 @@ public final class SourcesHelper {
      * @see Sources#TYPE_GENERIC
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addPrincipalSourceRoot(String location, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         addPrincipalSourceRoot(location, null, null, displayName, icon, openedIcon);
     }
@@ -596,8 +596,14 @@ public final class SourcesHelper {
      * @since org.netbeans.modules.project.ant/1 1.15
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addPrincipalSourceRoot(String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
-        sourceRoot(location).displayName(displayName).includes(includes).excludes(excludes).icon(icon).openedIcon(openedIcon).add();
+        SourceRootConfig cfg = sourceRoot(location).displayName(displayName).icon(icon).openedIcon(openedIcon);
+        if (includes != null)
+            cfg.includes(includes);
+        if (excludes != null)
+            cfg.excludes(excludes);
+        cfg.add();
     }
 
     /**
@@ -661,6 +667,7 @@ public final class SourcesHelper {
      *                               was called
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addTypedSourceRoot(String location, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         addTypedSourceRoot(location, null, null, type, displayName, icon, openedIcon);
     }
@@ -685,8 +692,14 @@ public final class SourcesHelper {
      * @since org.netbeans.modules.project.ant/1 1.15
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addTypedSourceRoot(String location, String includes, String excludes, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
-        sourceRoot(location).includes(includes).excludes(excludes).type(type).displayName(displayName).icon(icon).openedIcon(openedIcon).add();
+        SourceRootConfig cfg = sourceRoot(location).type(type).displayName(displayName).icon(icon).openedIcon(openedIcon);
+        if (includes != null)
+            cfg.includes(includes);
+        if (excludes != null)
+            cfg.excludes(excludes);
+        cfg.add();
     }
 
     private Project getProject() {
@@ -923,7 +936,7 @@ public final class SourcesHelper {
             if (type.equals(Sources.TYPE_GENERIC)) {
                 List<SourceRoot> roots = new ArrayList<SourceRoot>(principalSourceRoots);
                 // Always include the project directory itself as a default:
-                sourceRoot("").displayName(ProjectUtils.getInformation(getProject()).getDisplayName()).addTo(roots);    // NOI18N
+                roots.add(new SourceRoot("", null, null, null, ProjectUtils.getInformation(getProject()).getDisplayName(), null, null));
                 Map<FileObject,SourceRoot> rootsByDir = new LinkedHashMap<FileObject,SourceRoot>();
                 // First collect all non-redundant existing roots.
                 for (SourceRoot r : roots) {

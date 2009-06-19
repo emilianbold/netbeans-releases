@@ -386,12 +386,12 @@ final public class AppClientProjectProperties {
         RUN_JVM_ARGS_MODEL = projectGroup.createStringDocument( evaluator, RUN_JVM_ARGS );
         RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
 
+        Profile profile = Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM));
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty(J2EE_SERVER_INSTANCE),
-                projectProperties.getProperty(J2EE_PLATFORM),
-                J2eeModule.CLIENT);
-        J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
-            projectProperties.getProperty( J2EE_PLATFORM ));
+                profile,
+                J2eeModule.Type.CAR);
+        J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(profile);
     }
     
     public void save() {
