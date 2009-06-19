@@ -156,7 +156,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class PriorityProperty extends IssueProperty<String> {
+    public class PriorityProperty extends IssueProperty<String> {
         public PriorityProperty() {
             super(BugzillaIssue.LABEL_NAME_PRIORITY,
                   String.class,
