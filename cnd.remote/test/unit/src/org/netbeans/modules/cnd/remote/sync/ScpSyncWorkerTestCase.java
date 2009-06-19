@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.util.Lookup;
 
 /**
@@ -73,6 +74,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
     }
 
+    @ForAllEnvironments
     public void testSyncWorker_simple() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
@@ -80,6 +82,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         doTest(src, execEnv, getDestDir(execEnv));
     }
 
+    @ForAllEnvironments
     public void testSyncWorker_nb_platform_lib() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
@@ -88,6 +91,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
         doTest(netBeansDir, execEnv, getDestDir(execEnv));
     }
 
+    @ForAllEnvironments
     public void testSyncWorker_nb_platform() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);

@@ -121,12 +121,13 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         }
         for (String toolName : gizmoOptions.getNames()) {
             BooleanConfiguration conf = gizmoOptions.getConfigurationByName(toolName);
-//           if (conf.getModified()) {
+           //if (!gizmoOptions.isDefaultValue(toolName) &&  conf.getModified()) {
+            if (gizmoOptions.isConfigurationModified(toolName)){
                 AttrValuePair[] attributes = new AttrValuePair[2];
                 attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
                 attributes[1] = new AttrValuePair(TOOL_ENABLED_ATTRIBUTE, "" + conf.getValue());
                 xes.element(TOOL_ELEMENT, attributes);
-   //        }
+          }
         }
         if (gizmoOptions.getDataProvider().getModified()) {
             xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N

@@ -62,6 +62,7 @@ public class SupportedLocaleImpl extends JSFConfigComponentImpl implements Suppo
     }
     
     public void accept(JSFConfigVisitor visitor) {
+        visitor.visit( this );
     }
 
     public String getLocale() {

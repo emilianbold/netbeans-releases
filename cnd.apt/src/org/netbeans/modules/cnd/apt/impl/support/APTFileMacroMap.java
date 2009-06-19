@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.Collections;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -65,6 +66,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     private static final int INITIAL_CACHE_SIZE = 512;
     private APTMacroMap sysMacroMap;
     private Map<CharSequence,APTMacro> macroCache = NO_CACHE;
+    private int crc1 = 0;
+    private int crc2 = 0;
 
     public APTFileMacroMap() {
     }
@@ -112,7 +115,19 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     protected void putMacro(CharSequence name, APTMacro macro) {
         initCache();
         super.putMacro(name, macro);
-        macroCache.put(name, macro);
+        APTMacro old = macroCache.put(name, macro);
+        int i1 = name.hashCode();
+        int i2;
+        if (old != null) {
+            i2 = old.hashCode();
+            crc1 -= i1 + i2;
+            crc2 -= i1 ^ i2;
+        }
+        if (macro != APTMacroMapSnapshot.UNDEFINED_MACRO) {
+            i2 = macro.hashCode();
+            crc1 += i1 + i2;
+            crc2 += i1 ^ i2;
+        }
     }
 
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
@@ -131,14 +146,19 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
-        return new FileStateImpl(active.parent, sysMacroMap);
+        return new FileStateImpl(active.parent, sysMacroMap, crc1, crc2);
     }
 
     @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);
+        crc1 = 0;
+        crc2 = 0;
         if (state instanceof FileStateImpl) {
-            sysMacroMap = ((FileStateImpl)state).sysMacroMap;
+            FileStateImpl fileState = (FileStateImpl) state;
+            sysMacroMap = fileState.sysMacroMap;
+            crc1 = fileState.crc1;
+            crc2 = fileState.crc2;
         }
         macroCache = NO_CACHE;
     }
@@ -148,20 +168,38 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             macroCache =  new HashMap<CharSequence,APTMacro>(INITIAL_CACHE_SIZE);
             // fill cache to speedup getMacro
             APTMacroMapSnapshot.addAllMacros(active, macroCache);
+            if (crc1 == 0 && crc2 == 0) {
+                for(Map.Entry<CharSequence, APTMacro> entry : macroCache.entrySet()){
+                    int i1 = entry.getKey().hashCode();
+                    int i2 = entry.getValue().hashCode();
+                    crc1 += i1 + i2;
+                    crc2 += i1 ^ i2;
+                }
+            }
         }
     }
 
     public static class FileStateImpl extends StateImpl {
-        public final APTMacroMap sysMacroMap;
+        private final APTMacroMap sysMacroMap;
+        private final int crc1;
+        private final int crc2;
 
-        public FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap) {
+        private FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap, int crc1, int crc2) {
             super(snap);
             this.sysMacroMap = sysMacroMap;
+            this.crc1 = crc1;
+            this.crc2 = crc2;
         }
 
         private FileStateImpl(FileStateImpl state, boolean cleanedState) {
             super(state, cleanedState);
             this.sysMacroMap = state.sysMacroMap;
+            this.crc1 = state.crc1;
+            this.crc2 = state.crc2;
+        }
+
+        StateKey getStateKey() {
+            return new StateKey(crc1, crc2);
         }
 
         @Override
@@ -181,14 +219,16 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         @Override
         public void write(DataOutput output) throws IOException {
             super.write(output);
+            output.writeInt(crc1);
+            output.writeInt(crc2);
             APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
         }
 
         public FileStateImpl(final DataInput input) throws IOException {
             super(input);
-
+            this.crc1 = input.readInt();
+            this.crc2 = input.readInt();
             APTMacroMap systemMap = APTSerializeUtils.readSystemMacroMap(input);
-
             if (systemMap == null) {
                 this.sysMacroMap = APTBaseMacroMap.EMPTY;
             } else {

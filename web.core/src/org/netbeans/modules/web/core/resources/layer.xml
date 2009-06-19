@@ -320,7 +320,7 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.shadow_hidden"/>
+                <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.shadow_hidden"/>
                 <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="200"/>

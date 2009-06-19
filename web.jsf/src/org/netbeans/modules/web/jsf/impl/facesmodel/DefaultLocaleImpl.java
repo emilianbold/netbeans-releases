@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.DefaultLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
@@ -50,7 +48,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 
 public class DefaultLocaleImpl extends JSFConfigComponentImpl implements DefaultLocale {
@@ -64,6 +62,7 @@ public class DefaultLocaleImpl extends JSFConfigComponentImpl implements Default
     }
     
     public void accept(JSFConfigVisitor visitor) {
+        visitor.visit( this );
     }
 
     public String getLocale() {

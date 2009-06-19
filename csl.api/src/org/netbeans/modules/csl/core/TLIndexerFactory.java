@@ -40,7 +40,6 @@
 package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
-import java.lang.Void;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,18 +50,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.impl.indexing.SupportAccessor;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -71,8 +62,6 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
@@ -86,8 +75,12 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
 
-    public static final String  INDEXER_NAME = "TLIndexer";
-    public static final int     INDEXER_VERSION = 1;
+    public static final String  INDEXER_NAME = "TLIndexer"; //NOI18N
+    public static final int     INDEXER_VERSION = 2;
+
+    public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
+    public static final String FIELD_DESCRIPTION = "description"; //NOI18N
+    public static final String FIELD_LINE_NUMBER = "lineNumber"; //NOI18N
 
     @Override
     public EmbeddingIndexer createIndexer (
@@ -140,10 +133,9 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     // innerclasses ............................................................
 
-    private static Set<FileObject>
-                                karelPr = new HashSet<FileObject> ();
+    private static Set<FileObject> karelPr = new HashSet<FileObject> ();
 
-    private static class TLIndexer extends EmbeddingIndexer {
+    private static final class TLIndexer extends EmbeddingIndexer {
 
         @Override
         protected void index (
@@ -152,35 +144,10 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             Context             context
         ) {
             try {
-                ParserResult gsfParserResult = (ParserResult) parserResult;
-                Snapshot snapshot = parserResult.getSnapshot ();
-// workarround for #166982
-//                String mimeType = parserResult.getSnapshot ().getMimeType ();
-//                final LanguageRegistry registry = LanguageRegistry.getInstance ();
-//                Language language = registry.getLanguageByMimeType (mimeType);
                 IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
-                saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
-//                HintsProvider provider = language.getHintsProvider ();
-//                if (provider == null) {
-//                    saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
-//                } else {
-//                    GsfHintsManager gsfHintsManager = language.getHintsManager ();
-//                    if (gsfHintsManager == null) {
-//                        return;
-//                    }
-//                    RuleContext ruleContext = gsfHintsManager.createRuleContext (gsfParserResult, language, -1, -1, -1);
-//                    if (ruleContext == null) {
-//                        saveErrors (gsfParserResult.getDiagnostics (), snapshot, indexingSupport, indexable);
-//                    } else {
-//                        final List<Hint> hints = new ArrayList<Hint> ();
-//                        List<Error> errors = new ArrayList<Error> ();
-//                        provider.computeErrors (gsfHintsManager, ruleContext, hints, errors);
-//                        provider.computeErrors (gsfHintsManager, ruleContext, hints, errors);
-//                        saveErrors (errors, snapshot, indexingSupport, indexable);
-//                        saveHints (hints, gsfHintsManager, indexingSupport, indexable, gsfParserResult, language);
-//                    }
-//                }
-// end of workarround for #166982
+                ParserResult gsfParserResult = (ParserResult) parserResult;
+                saveErrors (gsfParserResult.getDiagnostics (), gsfParserResult.getSnapshot(), indexingSupport, indexable);
+
                 FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
                 if (!karelPr.contains (fileObject)) {
                     karelPr.add (fileObject);
@@ -217,104 +184,76 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 indexingSupport.addDocument (indexingSupport.createDocument (indexable));
                 return;
             }
+
+            List<Integer> lineStartOffsets = getLineStartOffsets(snapshot);
+
             for (Error error : errors) {
                 IndexDocument indexDocument = indexingSupport.createDocument (indexable);
                 indexDocument.addPair (
-                    "groupName",
+                    FIELD_GROUP_NAME,
                     error.getSeverity () == org.netbeans.modules.csl.api.Severity.ERROR ?
-                        "nb-tasklist-error" :
-                        "nb-tasklist-warning",
-                    true,
+                        "nb-tasklist-error" : //NOI18N
+                        "nb-tasklist-warning", //NOI18N
+                    false,
                     true
                 );
                 indexDocument.addPair (
-                    "description",
+                    FIELD_DESCRIPTION,
                     error.getDisplayName (),
-                    true,
+                    false,
                     true
                 );
+
+                int originalOffset = snapshot.getOriginalOffset(error.getStartPosition());
+                int lineNumber = 1;
+                if (originalOffset >= 0) {
+                    int idx = Collections.binarySearch(lineStartOffsets, originalOffset);
+                    if (idx < 0) {
+                        // idx == (-(insertion point) - 1) -> (insertion point) == -idx - 1
+                        int ln = -idx - 1;
+                        assert ln >= 1 && ln <= lineStartOffsets.size() :
+                            "idx=" + idx + ", lineNumber=" + ln + ", lineStartOffsets.size()=" + lineStartOffsets.size(); //NOI18N
+                        if (ln >= 1 && ln <= lineStartOffsets.size()) {
+                            lineNumber = ln;
+                        }
+                    } else {
+                        lineNumber = idx + 1;
+                    }
+                }
+                
                 indexDocument.addPair (
-                    "lineNumber",
-                    Integer.toString (getLineNumber (snapshot, error.getStartPosition ())),
-                    true,
+                    FIELD_LINE_NUMBER,
+                    Integer.toString (lineNumber),
+                    false,
                     true
                 );
                 indexingSupport.addDocument (indexDocument);
             }
         }
 
-        private static int getLineNumber (
-            Snapshot            snapshot,
-            int                 offset
-        ) {
-            int originalOffset = snapshot.getOriginalOffset (offset);
-            if (originalOffset < 0) return 0;
-            Snapshot originalSnapshot = snapshot.getSource ().createSnapshot ();
-            String text = originalSnapshot.getText ().toString ();
-            int i = text.indexOf ('\n'), o = 0;
-            int lineNumber = 1;
-            while (i >= 0) {
-                if (originalOffset <= i)
-                    return lineNumber;
-                i = text.indexOf ('\n', i + 1);
-                lineNumber++;
-            }
-            return lineNumber;
-        }
+// XXX: ideally we should cache the lineStartOffsets, but the cache has to be dropped
+// at the end of the indexing session and I don't know how to do that
+//        private static final Map<Source, List<Integer>> lineStartOffsetsCache = new WeakHashMap<Source, List<Integer>>();
+        private static List<Integer> getLineStartOffsets(Snapshot snapshot) {
+            Source source = snapshot.getSource();
+//            List<Integer> lineStartOffsets = lineStartOffsetsCache.get(source);
+//
+//            if (lineStartOffsets == null) {
+                List<Integer> lineStartOffsets = new ArrayList<Integer>();
 
-        private void saveHints (
-            List<Hint>          hints,
-            GsfHintsManager     gsfHintsManager,
-            IndexingSupport     indexingSupport,
-            Indexable           indexable,
-            ParserResult        gsfParserResult,
-            Language            language
-        ) {
-            if (hints == null || hints.isEmpty ()) {
-                indexingSupport.addDocument (indexingSupport.createDocument (indexable));
-                return;
-            }
-            RuleContext ruleContext = gsfHintsManager.createRuleContext (
-                gsfParserResult,
-                language,
-                -1, -1, -1
-            );
-            if (ruleContext == null) return;
-            if (hints != null)
-                for (Hint hint : hints) {
-                    ErrorDescription errorDescription = gsfHintsManager.createDescription (
-                        hint, ruleContext, false
-                    );
-                    if (errorDescription == null) continue;
-                    try {
-                        IndexDocument indexDocument = indexingSupport.createDocument (indexable);
-                        indexDocument.addPair (
-                            "lineNumber",
-                            Integer.toString (
-                                errorDescription.getRange ().getBegin ().getLine () + 1
-                            ),
-                            true,
-                            true
-                        );
-                        indexDocument.addPair (
-                            "groupName",
-                            (errorDescription.getSeverity () == Severity.ERROR) ?
-                                "nb-tasklist-errorhint" :
-                                "nb-tasklist-warninghint",
-                            true,
-                            true
-                        );
-                        indexDocument.addPair (
-                            "description",
-                            errorDescription.getDescription (),
-                            true,
-                            true
-                        );
-                        indexingSupport.addDocument (indexDocument);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace (ex);
+                lineStartOffsets.add(0);
+
+                CharSequence text = source.createSnapshot().getText();
+                for (int i = 0; i < text.length(); i++) {
+                    if (text.charAt(i) == '\n') { //NOI18N
+                        lineStartOffsets.add(i + 1);
                     }
-                } // for
-        } // saveHints
-    }
+                }
+
+//                lineStartOffsetsCache.put(source, lineStartOffsets);
+//            }
+
+            return lineStartOffsets;
+        }
+    } // End of TLIndexer class
 }
