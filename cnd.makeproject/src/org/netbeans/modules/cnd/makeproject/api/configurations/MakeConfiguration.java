@@ -458,12 +458,11 @@ public class MakeConfiguration extends Configuration {
         Project project = null;
         try {
             project = ProjectManager.getDefault().findProject(projectDirFO);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             // Error
             return;
         }
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
 
         Folder root = makeConfigurationDescriptor.getLogicalFolders();
@@ -474,7 +473,7 @@ public class MakeConfiguration extends Configuration {
         if (!folder.isProjectFiles()) {
             return;
         }
-        FolderConfiguration folderConfiguration = (FolderConfiguration)makeConf.getAuxObject(folder.getId());
+        FolderConfiguration folderConfiguration = (FolderConfiguration) makeConf.getAuxObject(folder.getId());
         if (folderConfiguration == null) {
             return;
         }
@@ -485,7 +484,7 @@ public class MakeConfiguration extends Configuration {
             folderConfiguration.getCCCompilerConfiguration().setMaster(ccCompilerConf);
         }
         for (Item item : folder.getItemsAsArray()) {
-            ItemConfiguration itemConfiguration = (ItemConfiguration)makeConf.getAuxObject(item.getId());
+            ItemConfiguration itemConfiguration = (ItemConfiguration) makeConf.getAuxObject(item.getId());
             if (itemConfiguration.getCCompilerConfiguration() != null) {
                 itemConfiguration.getCCompilerConfiguration().setMaster(folderConfiguration.getCCompilerConfiguration());
                 itemConfiguration.getCCompilerConfiguration().fixupMasterLinks(makeConf.getCCompilerConfiguration());

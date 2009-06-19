@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
