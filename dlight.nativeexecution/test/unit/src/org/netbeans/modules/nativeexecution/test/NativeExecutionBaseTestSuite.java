@@ -252,6 +252,37 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
     }
 
     /**
+     * Checking @conditional and @ignore annotations
+     * @param method method to check
+     * @return true in the case there are no @ignore annotation
+     * and either there are no @conditional or it's condition is true
+     */
+    private boolean checkConditionals(Method method) {        
+        if (method.getAnnotation(org.junit.Ignore.class) == null) {
+            Conditional conditionalAnnotation = method.getAnnotation(Conditional.class);
+            if (conditionalAnnotation != null) {
+                String secttion = conditionalAnnotation.section();
+                String key = conditionalAnnotation.key();
+                try {
+                    RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+                    String value = rcFile.get(secttion, key);
+                    return Boolean.parseBoolean(value);
+                } catch (FileNotFoundException ex) {
+                    // silently: just no file => condition is false, that's it
+                    return false;
+                } catch (IOException ex) {
+                    addTest(warning("Error getting condition for " + method.getName() + ": " + ex.getMessage()));
+                    return false;
+                } catch (RcFile.FormatException ex) {
+                    addTest(warning("Error getting condition for " + method.getName() + ": " + ex.getMessage()));
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Searches for 
      * - test methods
      * - constructors
@@ -274,6 +305,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             for (Method method : superClass.getDeclaredMethods()) {
                 if (!result.containsMethod(method.getName())) {
                     ForAllEnvironments forAllEnvAnnotation = method.getAnnotation(ForAllEnvironments.class);
+                    
                     if (method.getName().startsWith("test") 
                             || method.getAnnotation(org.junit.Test.class) != null
                             || forAllEnvAnnotation != null) {
@@ -284,8 +316,8 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         } else if (method.getParameterTypes().length > 0) {
                             addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should have no parameters"));
                         } else {
-                            // OK! The last thing to check is @ignore
-                            if (method.getAnnotation(org.junit.Ignore.class) == null) {
+                            // OK! The last thing to check is @ignore and @conditional
+                            if (checkConditionals(method)) {
                                 if (forAllEnvAnnotation != null) {
                                     String section = forAllEnvAnnotation.section();
                                     if (section == null || section.length() == 0) {

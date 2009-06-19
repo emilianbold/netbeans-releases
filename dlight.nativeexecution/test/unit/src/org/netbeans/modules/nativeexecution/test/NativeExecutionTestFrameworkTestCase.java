@@ -91,6 +91,22 @@ public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTes
     public void testForAllTestPlatforms() {
     }
 
+    @Conditional(section="test.conditional", key="cond-true")
+    public void testConditionalTrue() {
+    }
+
+    @Conditional(section="test.conditional", key="cond-false")
+    public void testConditionalFalse() {
+    }
+
+    @Conditional(section="test.conditional", key="cond-err")
+    public void testConditionalErrValue() {
+    }
+
+    @Conditional(section="test.conditional.inexistent", key="cond-err")
+    public void testConditionalInexistentKey() {
+    }
+
     public static junit.framework.Test suite() {
         Class testClass = NativeExecutionTestFrameworkTestCase.class;
         return new NativeExecutionBaseTestSuite(
