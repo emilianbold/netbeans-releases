@@ -199,6 +199,13 @@ public class HtmlCompletionQuery extends UserTask {
 //            result = getAutocompletedEndTag(parserResult, offset, dtd);
         } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
             /*Argument finder */
+
+            if(node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+                //nothing to complete in an unknown tag
+                return null;
+            }
+
+            //should be open tag if not unknown
             assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpecet node type " + node.type();
 
             DTD.Element tag = node.getDTDElement();

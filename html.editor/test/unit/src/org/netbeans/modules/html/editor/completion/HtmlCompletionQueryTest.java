@@ -320,6 +320,14 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 9);
     }
 
+    public void testCompleteAttributesInUnknownTag() throws BadLocationException, ParseException {
+        assertItems("<gggg |", arr(), Match.EMPTY);
+        assertItems("<gggg hhh=|", arr(), Match.EMPTY);
+        assertItems("<gggg hhh='|", arr(), Match.EMPTY);
+    }
+
+
+
     //helper methods ------------
 
     //test HTML 4.01
@@ -366,7 +374,10 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertNotNull(result[0]);
 
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
-        assertNotNull(completionResult);
+        if(expectedItemsNames.length == 0 && completionResult == null) {
+            //result may be null if we do not expect any result, nothing to test then
+            return ;
+        }
 
         Collection<HtmlCompletionItem> items = completionResult.getItems();
         assertNotNull(items);

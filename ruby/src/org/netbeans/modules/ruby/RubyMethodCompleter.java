@@ -184,7 +184,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             } else { // try method chaining
                 if (target.getNodeType() == NodeType.CALLNODE) {
                     Node receiver = ((CallNode) target).getReceiverNode();
-                    type = RubyTypeInferencer.normal(request.createContextKnowledge()).inferType(receiver);
+                    type = RubyTypeInferencer.create(request.createContextKnowledge()).inferType(receiver);
                 }
             }
         }
@@ -610,7 +610,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
     private static RubyTypeInferencer createTypeInferencer(final CompletionRequest request, final Node target) {
         ContextKnowledge knowledge = request.createContextKnowledge();
         request.target = target;
-        return RubyTypeInferencer.normal(knowledge);
+        return RubyTypeInferencer.create(knowledge);
     }
 
     private RubyType getTypesForConstant(final String constantFqn) {

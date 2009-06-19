@@ -85,10 +85,6 @@
     </target>
 
     <target name="clean" depends="projectized-common.clean">
-        <!-- temp hack to make clean-untracked-files pass:
-         deleting the old version that remained there because of preindexed files -->
-        <delete dir="${cluster}/jruby-1.1.4"/>
-        <delete dir="${unpatched_source}"/>
         <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
         <delete dir="unpatched_source"/>
     </target>
