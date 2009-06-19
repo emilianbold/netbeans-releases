@@ -45,24 +45,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate a test method with this annotation in the case you want it to be invoked
- * for each execution environment specified in .cndtestrc
- *
- * To put it more precise:  
- * 
- * In the case your method is annotated with this annotation,
- * NativeExecutionBaseTestSuite.addTest will create an instance of your class
- * (and run the test method) for each environment specified in given section.
- *
- * The constructor with (String, ExecutionEnvironment)
- * signature will be invoked in this case.
- *
- * (Note that such test method should be public, have void return type and no parameters)
- *
- * In the case test method it is not annotated, 
- * constructor with a single String parameter (test name) will be used,
- * only one instance of the class per test method will be created,
- * and test method will be run only once.
+ * Allows switching tests on and off via .cndtestrc
+ * If the value of the given key in the given section is "true",
+ * then test method that is annotated with this annotation will be run,
+ * otherwise it won't.
  *
  * All the above is true in the case you use NativeExecutionBaseTestSuite.addTest()
  * method for adding tests.
@@ -72,10 +58,9 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ForAllEnvironments {
-    /**
-     * In the case section is empty,
-     * default is set via suite constructor
-     */
-    String section() default "";
+public @interface Conditional {
+    /** Gets section of .cndtestrc that contains the given flag */
+    String section();
+    /** Gets flag key */
+    String key();
 }
