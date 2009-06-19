@@ -143,7 +143,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         versionList.setCellRenderer(new ParameterValueCellRenderer());
         statusList.setCellRenderer(new ParameterValueCellRenderer());
         resolutionList.setCellRenderer(new ParameterValueCellRenderer());
-        priorityList.setCellRenderer(new ParameterValueCellRenderer());
+        priorityList.setCellRenderer(new QueryParameter.PriorityRenderer());
         changedList.setCellRenderer(new ParameterValueCellRenderer());
 
         saveErrorLabel.setForeground(ERROR_COLOR);
