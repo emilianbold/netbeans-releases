@@ -157,11 +157,9 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.delicious</code-name-base>
                     </test-dependency>
-                    <!--
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.saas.services.youtube</code-name-base>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
--->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.zillow</code-name-base>
                     </test-dependency>
