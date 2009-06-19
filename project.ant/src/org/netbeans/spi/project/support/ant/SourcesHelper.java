@@ -391,26 +391,8 @@ public final class SourcesHelper {
         private String type;
         private String hint;
 
-        /**
-         * Configures source location, already set in {@link SourcesHelper#sourceRoot(String location)}.
-         * <p>
-         * If the actual value of the location is inside the project directory,
-         * this is simply ignored; so it safe to configure source roots
-         * for any source directory which might be set to use an external path, even
-         * if the common location is internal.
-         * </p>
-         * <p>
-         * Source location need not to exist physically, when {@link #hint(String) hint} is specified
-         * and {@link SourceGroupModifier} created by this helper is added to project
-         * lookup, source root can be created on demand.
-         * </p>
-         * @param value a project-relative or absolute path giving the location
-         *                 of a source tree; may contain Ant property substitutions
-         * @return <code>this</code>
-         */
-        public SourceRootConfig location(String value) {
-            location = value;
-            return this;
+        private SourceRootConfig(String location) {
+            this.location = location;
         }
 
         /**
@@ -536,6 +518,17 @@ public final class SourcesHelper {
      * Source root is a top-level folder which may
      * contain sources that should be considered part of the project.
      * <p>
+     * If the actual value of the <code>location</code> parameter is inside the project directory,
+     * this is simply ignored; so it safe to configure source roots
+     * for any source directory which might be set to use an external path, even
+     * if the common location is internal.
+     * </p>
+     * <p>
+     * Source location need not to exist physically, when {@link #hint(String) hint} is specified
+     * and {@link SourceGroupModifier} created by this helper is added to project
+     * lookup, source root can be created on demand.
+     * </p>
+     * <p>
      * NOTE: don't forget to call {@link SourceRootConfig#add() add()} method
      * on initialized <code>SourceRootConfig</code> to add it
      * to <code>SourcesHelper</code>. See {@link SourceRootConfig} for details
@@ -547,7 +540,7 @@ public final class SourcesHelper {
      * @see SourceRootConfig#location(String) for details about location parameter
      */
     public SourceRootConfig sourceRoot(String location) {
-        return new SourceRootConfig().location(location);
+        return new SourceRootConfig(location);
     }
 
     /**
@@ -569,6 +562,7 @@ public final class SourcesHelper {
      * @see Sources#TYPE_GENERIC
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addPrincipalSourceRoot(String location, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         addPrincipalSourceRoot(location, null, null, displayName, icon, openedIcon);
     }
@@ -602,6 +596,7 @@ public final class SourcesHelper {
      * @since org.netbeans.modules.project.ant/1 1.15
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addPrincipalSourceRoot(String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         SourceRootConfig cfg = sourceRoot(location).displayName(displayName).icon(icon).openedIcon(openedIcon);
         if (includes != null)
@@ -672,6 +667,7 @@ public final class SourcesHelper {
      *                               was called
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addTypedSourceRoot(String location, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         addTypedSourceRoot(location, null, null, type, displayName, icon, openedIcon);
     }
@@ -696,6 +692,7 @@ public final class SourcesHelper {
      * @since org.netbeans.modules.project.ant/1 1.15
      * @deprecated Use {@link #sourceRoot(String location)} and {@link SourceRootConfig} instead.
      */
+    @Deprecated
     public void addTypedSourceRoot(String location, String includes, String excludes, String type, String displayName, Icon icon, Icon openedIcon) throws IllegalStateException {
         SourceRootConfig cfg = sourceRoot(location).type(type).displayName(displayName).icon(icon).openedIcon(openedIcon);
         if (includes != null)
