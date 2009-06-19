@@ -57,7 +57,6 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -159,7 +158,7 @@ public class SymfonyScript extends PhpProgram {
         } catch (ExecutionException ex) {
             UiUtils.processExecutionException(ex, getOptionsSubPath());
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            Thread.currentThread().interrupt();
         }
     }
 
