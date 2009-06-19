@@ -65,6 +65,8 @@ import java.util.*;
 import java.util.List;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Allows to select branches for given repository path,
@@ -177,8 +179,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
         // non recursive operation doe not work with "." module
         // #58208 so here a random one is choosen
         if (".".equals(moduleName)) {  // NOI18N
-            Client client = Kit.createClient(root);
-            List l = ModuleSelector.listRepositoryPath(client, root, "");  // NOI18N
+            List l = listRepositoryPath(root, "");  // NOI18N
             int max = l.size();
             int counter = max;
             Random random = new Random();
@@ -196,7 +197,15 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
 
         Client client = Kit.createClient(root);
         client.setLocalPath(checkoutFolder.getAbsolutePath());
-        client.executeCommand(checkout, gtx);
+        try {
+            client.executeCommand(checkout, gtx);
+        } finally {
+            try {
+                client.getConnection().close();
+            } catch (Throwable e) {
+                Logger.getLogger(BranchSelector.class.getName()).log(Level.INFO, null, e);
+            }
+        }
 
         File folderToCheck = new File(checkoutFolder, moduleName);
         if (!folderToCheck.isDirectory()) {
@@ -213,8 +222,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
         if (filesToLog.size() > 0) return (File[]) filesToLog.toArray(new File[filesToLog.size()]);
 
         // there are no files to log, let us dive deeper
-        client = Kit.createClient(root);
-        List<String> fileList = ModuleSelector.listRepositoryPath(client, root, moduleName);
+        List<String> fileList = listRepositoryPath(root, moduleName);
 
         for (String child : fileList) {
             String childModule = moduleName + "/" + child;
@@ -234,6 +242,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
             gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
         }
         File checkoutFolder = null;
+        Client client = null;
         try {
 
             File[] files;
@@ -281,7 +290,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
                     }
                 }
             }
-            Client client = Kit.createClient(root);
+            client = Kit.createClient(root);
             
             final Set tags = new TreeSet();
             final Set branches = new TreeSet();
@@ -334,6 +343,13 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
             err.annotate(e, org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             err.notify(e);
         } finally {
+            try {
+                if (client != null) {
+                    client.getConnection().close();
+                }
+            } catch (Throwable e) {
+                Logger.getLogger(BranchSelector.class.getName()).log(Level.INFO, null, e);
+            }
             Kit.deleteRecursively(checkoutFolder);
         }
     }
@@ -378,6 +394,27 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
 
     private void error(String msg) {
         rootNode.setDisplayName(msg);
+    }
+
+    /**
+     * Lists subfolders in given repository folder.
+     *
+     * @param client engine to be used
+     * @param root identifies repository
+     * @param path "/" separated repository folder path (e.g. "javacvs/cvsmodule")
+     * @return folders never <code>null</code>
+     */
+    private List<String> listRepositoryPath (CVSRoot root, String path) throws CommandException, AuthenticationException {
+        Client client = Kit.createClient(root);
+        try {
+            return ModuleSelector.listRepositoryPath(client, root, path);
+        } finally {
+            try {
+                client.getConnection().close();
+            } catch (Throwable e) {
+                Logger.getLogger(BranchSelector.class.getName()).log(Level.INFO, null, e);
+            }
+        }
     }
 
 }
