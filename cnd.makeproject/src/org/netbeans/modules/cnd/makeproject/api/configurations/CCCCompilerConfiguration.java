@@ -121,7 +121,15 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 	preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
 	inheritPreprocessor = new BooleanConfiguration(null, true, null, null);
     }
-    
+
+    public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
+        super.fixupMasterLinks(compilerConfiguration);
+        getMTLevel().setMaster(compilerConfiguration.getMTLevel());
+        getLibraryLevel().setMaster(compilerConfiguration.getLibraryLevel());
+        getStandardsEvolution().setMaster(compilerConfiguration.getStandardsEvolution());
+        getLanguageExt().setMaster(compilerConfiguration.getLanguageExt());
+    }
+
     @Override
     public boolean getModified() {
         return super.getModified() ||

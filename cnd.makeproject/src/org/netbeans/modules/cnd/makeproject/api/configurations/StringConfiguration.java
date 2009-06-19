@@ -56,6 +56,10 @@ public class StringConfiguration {
 	reset();
     }
 
+    public void setMaster(StringConfiguration master) {
+        this.master = master;
+    }
+
     public void setValue(String b) {
 	if (b == null)
 	    b = ""; // NOI18N

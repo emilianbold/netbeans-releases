@@ -72,6 +72,10 @@ public class BooleanConfiguration {
         return master;
     }
 
+    public void setMaster(BooleanConfiguration master) {
+        this.master = master;
+    }
+    
     public void setValue(boolean b) {
         this.value = b;
         if (master != null) {
