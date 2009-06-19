@@ -79,6 +79,8 @@ public final class WebProjectCreateData {
     private boolean javaSourceBased = true;
     
     private String librariesDefinition;
+
+    private boolean webXmlRequired;
     
     /**
      * Creates a new instance of WebProjectCreateData
@@ -402,5 +404,13 @@ public final class WebProjectCreateData {
     public void setServerLibraryName(String serverLibraryName) {
         this.serverLibraryName = serverLibraryName;
     }
-    
+
+    public boolean isWebXmlRequired() {
+        return webXmlRequired;
+    }
+
+    public void setWebXmlRequired(boolean webXmlRequired) {
+        this.webXmlRequired = webXmlRequired;
+    }
+
 }
