@@ -156,8 +156,11 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         }
 
         for (TestMethodData methodData : testData.testMethods) {
+            if (!checkConditionals(methodData)) {
+                continue;
+            }
             if (methodData.isForAllEnvironments()) {
-                String[] platforms = getPlatforms(methodData.section);
+                String[] platforms = getPlatforms(methodData.envSection);
                 for (String platform : platforms) {
                     if (testData.forAllEnvConstructor == null) {
                         addTest(warning("Class " + testClass.getName() +
@@ -220,15 +223,20 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
          * (or default one in the case it isn't specified in the annotation);
          * if the method is not annotated with @ForAllEnvironments, contains null
          */
-        public final String section;
+        public final String envSection;
+        public final String condSection;
+        public final String condKey;
 
-        public TestMethodData(String name, String section) {
+        public TestMethodData(String name, String envSection, String condSection, String condKey) {
             this.name = name;
-            this.section = section;
+            this.envSection = envSection;
+            this.condSection = condSection;
+            this.condKey = condKey;
         }
 
+
         public boolean isForAllEnvironments() {
-            return section != null;
+            return envSection != null;
         }
     }
 
@@ -247,6 +255,36 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                     }
                 }
             }
+            return false;
+        }
+    }
+
+    /**
+     * Checking @conditional and @ignore annotations
+     * @param method method to check
+     * @return true in the case there are no @ignore annotation
+     * and either there are no @conditional or it's condition is true
+     */
+    private boolean checkConditionals(TestMethodData methodData) {
+        if (methodData.condSection == null || methodData.condSection.length() == 0) {
+            return true; // no condition
+        }
+        if (methodData.condKey == null || methodData.condKey.length() == 0) {
+            addTest(warning(methodData.name + " @condition does not specify key"));
+            return false;
+        }
+        try {
+            RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+            String value = rcFile.get(methodData.condSection, methodData.condKey);
+            return Boolean.parseBoolean(value);
+        } catch (FileNotFoundException ex) {
+            // silently: just no file => condition is false, that's it
+            return false;
+        } catch (IOException ex) {
+            addTest(warning("Error getting condition for " + methodData.name + ": " + ex.getMessage()));
+            return false;
+        } catch (RcFile.FormatException ex) {
+            addTest(warning("Error getting condition for " + methodData.name + ": " + ex.getMessage()));
             return false;
         }
     }
@@ -274,6 +312,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
             for (Method method : superClass.getDeclaredMethods()) {
                 if (!result.containsMethod(method.getName())) {
                     ForAllEnvironments forAllEnvAnnotation = method.getAnnotation(ForAllEnvironments.class);
+                    
                     if (method.getName().startsWith("test") 
                             || method.getAnnotation(org.junit.Test.class) != null
                             || forAllEnvAnnotation != null) {
@@ -284,20 +323,22 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         } else if (method.getParameterTypes().length > 0) {
                             addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should have no parameters"));
                         } else {
-                            // OK! The last thing to check is @ignore
                             if (method.getAnnotation(org.junit.Ignore.class) == null) {
+                                Conditional conditionalAnnotation = method.getAnnotation(Conditional.class);
+                                String condSection = (conditionalAnnotation == null) ? null : conditionalAnnotation.section();
+                                String condKey = (conditionalAnnotation == null) ? null : conditionalAnnotation.key();
                                 if (forAllEnvAnnotation != null) {
-                                    String section = forAllEnvAnnotation.section();
-                                    if (section == null || section.length() == 0) {
-                                        section = defaultSection;
+                                    String envSection = forAllEnvAnnotation.section();
+                                    if (envSection == null || envSection.length() == 0) {
+                                        envSection = defaultSection;
                                     }
-                                    if (section != null) {
-                                        result.testMethods.add(new TestMethodData(method.getName(), section));
+                                    if (envSection != null && envSection.length() > 0) {
+                                        result.testMethods.add(new TestMethodData(method.getName(), envSection, condSection, condKey));
                                     } else {
                                         addTest(warning("@ForAllEnvironments annotation for method " + testClass.getName() + '.' + method.getName() + " does not specify section"));
                                     }
                                 } else {
-                                    result.testMethods.add(new TestMethodData(method.getName(), null));
+                                    result.testMethods.add(new TestMethodData(method.getName(), null, condSection, condKey));
                                 }
                             }
                         }

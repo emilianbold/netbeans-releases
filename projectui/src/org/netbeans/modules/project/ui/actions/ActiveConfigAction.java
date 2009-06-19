@@ -507,6 +507,10 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private void refreshView(Lookup context) {
 
+        if (OpenProjectList.getDefault().getOpenProjects().length == 0) {
+            activeProjectChanged(null);
+        }
+
         Project mainPrj = OpenProjectList.getDefault().getMainProject();
 
         Project contextPrj = null;

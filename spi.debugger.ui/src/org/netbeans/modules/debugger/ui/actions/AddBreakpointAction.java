@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -67,7 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class AddBreakpointAction extends AbstractAction {
 
-    private static AddBreakpointDialogManager abdm;
+    private static WeakReference<AddBreakpointDialogManager> abdmRef;
 
     
     public AddBreakpointAction () {
@@ -87,8 +88,11 @@ public class AddBreakpointAction extends AbstractAction {
             return; // no breakpoint events...
 
         // create Add Breakpoint Dialog for it
-        if (abdm == null)
+        AddBreakpointDialogManager abdm = abdmRef != null ? abdmRef.get() : null;
+        if (abdm == null) {
             abdm = new AddBreakpointDialogManager ();
+            abdmRef = new WeakReference<AddBreakpointDialogManager>(abdm);
+        }
         abdm.getDialog ().setVisible (true);
     }
     
