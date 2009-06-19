@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
- * Miscellaneous file utilities.
+ * Miscellaneous UI utilities.
  * @author Tomas Mysik
  */
 public final class UiUtils {
@@ -64,17 +64,35 @@ public final class UiUtils {
 
     /**
      * Show a dialog that informs user about exception during running an external process.
-     * Opens IDE option, PHP options.
+     * Opens IDE options, PHP General category.
      * @param exc {@link ExecutionException} thrown
+     * @see #processExecutionException(ExecutionException, String)
      */
     public static void processExecutionException(ExecutionException exc) {
+        processExecutionException(exc, null);
+    }
+
+    /**
+     * Show a dialog that informs user about exception during running an external process.
+     * Opens IDE options, PHP &lt;subcategory> category or General category if no <code>subcategory</code> given.
+     * @param exc {@link ExecutionException} thrown
+     * @param subcategory subcategory to open (suitable e.g. for frameworks)
+     * @see #processExecutionException(ExecutionException)
+     */
+    public static void processExecutionException(ExecutionException exc, final String subcategory) {
+        Parameters.notNull("exc", exc);
+
         final Throwable cause = exc.getCause();
         assert cause != null;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(
                         cause, NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
-                OptionsDisplayer.getDefault().open(OPTIONS_PATH);
+                String path = OPTIONS_PATH;
+                if (StringUtils.hasText(subcategory)) {
+                    path += "/" + subcategory; // NOI18N
+                }
+                OptionsDisplayer.getDefault().open(path);
             }
         });
     }

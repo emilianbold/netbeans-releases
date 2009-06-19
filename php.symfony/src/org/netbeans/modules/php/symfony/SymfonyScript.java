@@ -66,7 +66,10 @@ import org.openide.windows.InputOutput;
  */
 public class SymfonyScript extends PhpProgram {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
-    public static final String PARAM_VERSION = "--version"; // NOI18N
+
+    private static final String PARAM_VERSION = "--version"; // NOI18N
+    private static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
+
 
     // unknown version
     static final int[] UNKNOWN_VERSION = new int[0];
@@ -98,6 +101,15 @@ public class SymfonyScript extends PhpProgram {
     public static void resetVersion() {
         version = null;
     }
+
+    public static String getOptionsPath() {
+        return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
+    }
+
+    public static String getOptionsSubPath() {
+        return OPTIONS_SUB_PATH;
+    }
+
 
     @Override
     public boolean isValid() {
@@ -133,7 +145,7 @@ public class SymfonyScript extends PhpProgram {
                 .addArgument(CMD_INIT_PROJECT)
                 .addArgument(projectName);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .optionsPath(UiUtils.OPTIONS_PATH)
+                .optionsPath(getOptionsPath())
                 .frontWindow(true)
                 .showProgress(true);
         String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName);
@@ -145,7 +157,7 @@ public class SymfonyScript extends PhpProgram {
         try {
             result.get();
         } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex);
+            UiUtils.processExecutionException(ex, getOptionsSubPath());
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
