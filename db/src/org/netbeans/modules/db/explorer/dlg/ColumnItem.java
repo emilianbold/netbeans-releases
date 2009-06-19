@@ -56,7 +56,6 @@ public class ColumnItem extends Hashtable {
     public static final String PRIMARY_KEY = "pkey"; //NOI18N
     public static final String INDEX = "idx"; //NOI18N
     public static final String NULLABLE = "nullable"; //NOI18N
-    public static final String COMMENT = "comment"; //NOI18N
     public static final String DEFVAL = "defval"; //NOI18N
     public static final String UNIQUE = "unique"; //NOI18N
     public static final String CHECK = "check"; //NOI18N
