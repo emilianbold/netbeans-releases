@@ -70,13 +70,13 @@ public class StartStopServer extends NbTestCase {
             if(inst.isRunning())
                 return;
 
-            ProgressUI pui = new ProgressUI("Start GlassFish V3", true);
+            ProgressUI pui = new ProgressUI("Start Prelude V3", true);
             inst.start(pui);
 
             Util.sleep(SLEEP);
 
             if(!inst.isRunning())
-                throw new Exception("GlassFish V3 server start failed");
+                throw new Exception("Prelude V3 server start failed");
 
             if (inst.isDebuggable(null))
                 fail("Server started in debug... it should not have done that");
@@ -96,13 +96,13 @@ public class StartStopServer extends NbTestCase {
             if(!inst.isRunning())
                 return;
 
-            ProgressUI pui = new ProgressUI("Stop GlassFish V3", true);
+            ProgressUI pui = new ProgressUI("Stop Prelude V3", true);
             inst.stop(pui);
 
             Util.sleep(SLEEP);
 
             if(inst.isRunning())
-                throw new Exception("GlassFish V3 server stop failed");
+                throw new Exception("Prelude V3 server stop failed");
 
             Util.sleep(SLEEP);
         } catch(Exception e) {
@@ -124,7 +124,7 @@ public class StartStopServer extends NbTestCase {
             Util.sleep(SLEEP);
 
             if(!inst.isRunning())
-                throw new Exception("GlassFish server restart failed");
+                throw new Exception("Prelude server restart failed");
 
             Util.sleep(SLEEP);
         } catch(Exception e) {
