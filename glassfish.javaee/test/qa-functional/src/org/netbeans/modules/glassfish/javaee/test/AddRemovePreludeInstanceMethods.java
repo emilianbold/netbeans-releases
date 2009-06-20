@@ -105,7 +105,7 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                     File.separator + "domain1");
             inst.setHttpPort(8080);
             inst.setAdminPort(4848);
-            wizard.putProperty("ServInstWizard_displayName","testdomain");
+            wizard.putProperty("ServInstWizard_displayName","Prelude V3");
             
             inst.initialize(wizard);
             inst.instantiate();
