@@ -1140,7 +1140,11 @@ run - start application for testing.
 
 run-jnlp - executes your JNLP application (currently from local files)
 
-test - run all module unit tests.
+test - run all module unit tests. Since NetBeans 6.8 runs tests of all suite modules
+by default, even if some of them fails and target succeeds regardless of test status.
+When property 'continue.after.failing.tests' is set to 'false', this target fails
+immediately after tests in some module fail and does not continue testing the rest
+of the suite (this was the default up to version 6.7).
 
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 
