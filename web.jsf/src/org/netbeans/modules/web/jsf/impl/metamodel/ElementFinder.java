@@ -38,17 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.metamodel;
+
+import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 
 
 /**
- * This interface could represent a child of faces-config XML root 
- * element either Annotation.  
  * @author ads
  *
  */
-public interface FacesConverter extends JsfModelElement {
-    
-    String getConverterForClass();
+public interface ElementFinder<T extends JsfModelElement> {
 
+    Class<? extends JSFConfigComponent> getConfigType( );
+    
+    List<T> getAnnotations();
 }

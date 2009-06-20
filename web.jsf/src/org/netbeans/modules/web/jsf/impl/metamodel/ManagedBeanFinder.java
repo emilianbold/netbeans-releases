@@ -38,17 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.metamodel;
+
+import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 
 
 /**
- * This interface could represent a child of faces-config XML root 
- * element either Annotation.  
  * @author ads
  *
  */
-public interface FacesConverter extends JsfModelElement {
-    
-    String getConverterForClass();
+class ManagedBeanFinder implements ElementFinder<FacesManagedBean> {
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations()
+     */
+    public List<FacesManagedBean> getAnnotations() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getConfigType()
+     */
+    public Class<? extends JSFConfigComponent> getConfigType() {
+        return ManagedBean.class;
+    }
 
 }
