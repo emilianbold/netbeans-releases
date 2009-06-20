@@ -286,7 +286,12 @@
 
         <xsl:choose>
             <xsl:when test="not($url)"/>
-            <xsl:when test="contains($url,'/')">
+            <xsl:when test="contains($url,':')">
+                <xsl:attribute name="url">
+                    <xsl:value-of select="$url"/>
+                </xsl:attribute>
+            </xsl:when>
+            <xsl:when test="starts-with($url,'/')">
                 <xsl:attribute name="url">
                     <xsl:value-of select="$url"/>
                 </xsl:attribute>
