@@ -41,19 +41,17 @@ package org.netbeans.modules.cnd.debugger.gdb;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbFunctionalTest extends TestSuite {
+public class GdbFunctionalTest extends CndBaseTestSuite {
 
     public GdbFunctionalTest() {
         super("Gdb functional tests");
-
-        if (System.getProperty("gdb.functional.tests") != null) {
-            addTestSuite(GdbDebuggerTestCase.class);
-        }
+        addTest(GdbDebuggerTestCase.class);
     }
 
     public static Test suite() {

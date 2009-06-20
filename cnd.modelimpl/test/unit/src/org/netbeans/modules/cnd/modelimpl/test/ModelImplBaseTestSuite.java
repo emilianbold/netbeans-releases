@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.test;
 
-import junit.framework.TestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
