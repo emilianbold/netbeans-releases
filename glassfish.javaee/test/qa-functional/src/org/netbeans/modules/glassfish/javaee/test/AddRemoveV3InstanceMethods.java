@@ -104,7 +104,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
                     File.separator + "domain1");
             inst.setHttpPort(8080);
             inst.setAdminPort(4848);
-            wizard.putProperty("ServInstWizard_displayName","testdomain");
+            wizard.putProperty("ServInstWizard_displayName","GlassFish V3");
             
             inst.initialize(wizard);
             inst.instantiate();
