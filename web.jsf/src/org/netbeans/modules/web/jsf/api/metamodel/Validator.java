@@ -47,7 +47,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * @author ads
  *
  */
-public interface Validator {
+public interface Validator extends JsfModelElement {
 
     String VALIDATOR_ID = JSFConfigQNames.VALIDATOR_ID.getLocalName();
     String VALIDATOR_CLASS = JSFConfigQNames.VALIDATOR_CLASS.getLocalName();
