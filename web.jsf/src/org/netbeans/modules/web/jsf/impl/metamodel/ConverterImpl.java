@@ -38,17 +38,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.metamodel;
+
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
 
 
 /**
- * This interface could represent a child of faces-config XML root 
- * element either Annotation.  
  * @author ads
  *
  */
-public interface FacesConverter extends JsfModelElement {
-    
-    String getConverterForClass();
+class ConverterImpl extends PersistentObject implements FacesConverter {
+
+    ConverterImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    {
+        super(helper, typeElement);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.FacesConverter#getConverterForClass()
+     */
+    public String getConverterForClass() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }
