@@ -47,7 +47,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * @author ads
  *
  */
-public interface FacesManagedBean {
+public interface FacesManagedBean extends JsfModelElement {
     
     String MANAGED_BEAN_NAME = JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName();
     
