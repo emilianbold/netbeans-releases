@@ -47,7 +47,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * @author ads
  *
  */
-public interface Behavior {
+public interface Behavior extends JsfModelElement{
 
     String BEHAVIOR_ID = JSFConfigQNames.BEHAVIOR_ID.getLocalName();
     String BEHAVIOR_CLASS = JSFConfigQNames.BEHAVIOR_CLASS.getLocalName();

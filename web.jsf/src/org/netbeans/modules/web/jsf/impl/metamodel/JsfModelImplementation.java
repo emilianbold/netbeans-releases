@@ -63,7 +63,7 @@ public class JsfModelImplementation implements MetadataModelImplementation<JsfMo
         ClasspathInfo classpathInfo = ClasspathInfo.create(unit.getBootPath(), 
                 unit.getBootPath(), unit.getBootPath());
         myHelper = AnnotationModelHelper.create(classpathInfo);
-        myModel = new JsfModelImpl( unit );
+        myModel = new JsfModelImpl( unit , getHelper() );
     }
 
     
