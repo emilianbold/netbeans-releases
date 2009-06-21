@@ -147,6 +147,7 @@ public class PropertiesBasedDataObjectTest extends NbTestCase {
         }
     }
 
+    /*
     public void testFileChanged() throws InterruptedException {
         FCL x = new FCL();
         file.addFileChangeListener(x);
@@ -195,6 +196,7 @@ public class PropertiesBasedDataObjectTest extends NbTestCase {
         assertGC("Object not collected", ref);
         assertEquals ("baz", p.getProperty("foo"));
     }
+     */
 
     @Test
     public void testOnDelete() throws Exception {
