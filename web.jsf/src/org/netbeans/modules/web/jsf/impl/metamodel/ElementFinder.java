@@ -50,9 +50,9 @@ import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
  * @author ads
  *
  */
-public interface ElementFinder<T extends JsfModelElement> {
+interface ElementFinder<T extends JsfModelElement> {
 
     Class<? extends JSFConfigComponent> getConfigType( );
     
-    List<T> getAnnotations();
+    List<T> getAnnotations(JsfModelImpl model );
 }

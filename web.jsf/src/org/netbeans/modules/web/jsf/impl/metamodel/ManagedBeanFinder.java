@@ -45,7 +45,6 @@ import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 
 
 /**
@@ -55,9 +54,9 @@ import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 class ManagedBeanFinder implements ElementFinder<FacesManagedBean> {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations()
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
      */
-    public List<FacesManagedBean> getAnnotations() {
+    public List<FacesManagedBean> getAnnotations( JsfModelImpl model  ) {
         // TODO Auto-generated method stub
         return null;
     }

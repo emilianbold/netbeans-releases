@@ -40,31 +40,39 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
-import java.util.List;
+import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.jsf.api.metamodel.Component;
 
 
 /**
  * @author ads
  *
  */
-class ConverterFinder implements ElementFinder<Converter> {
+class ComponentImpl extends PersistentObject implements Component {
+
+    ComponentImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    {
+        super(helper, typeElement);
+        // TODO Auto-generated constructor stub
+    }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
      */
-    public List<Converter> getAnnotations( JsfModelImpl model   ) {
+    public String getComponentClass() {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getConfigType()
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
      */
-    public Class<? extends JSFConfigComponent> getConfigType() {
-        return Converter.class;
+    public String getComponentType() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

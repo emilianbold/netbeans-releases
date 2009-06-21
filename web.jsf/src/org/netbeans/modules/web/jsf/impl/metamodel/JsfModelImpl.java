@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -67,7 +68,6 @@ import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
-import org.netbeans.modules.web.jsf.impl.facesmodel.AbstractJsfModel;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -86,14 +86,15 @@ import org.openide.util.lookup.ProxyLookup;
  * @author ads
  *
  */
-public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
+public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     
     private static final String SUFFIX = "."+ModelUnit.FACES_CONFIG; // NOI18N 
 
-    JsfModelImpl( ModelUnit unit ) {
+    JsfModelImpl( ModelUnit unit, AnnotationModelHelper helper ) {
+        super( helper );
         myUnit = unit;
         mySupport = new PropertyChangeSupport( this );
-        myModifiedModels = new CopyOnWriteArrayList<JSFConfigModel>();
+        //myModifiedModels = new CopyOnWriteArrayList<JSFConfigModel>();
         initModels();
         registerChangeListeners();
     }
@@ -114,7 +115,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
         if ( myMainModel != null && 
                 !myMainModel.getRootComponent().isMetaDataComplete() )
         {
-            result.addAll( finder.getAnnotations());
+            result.addAll( finder.getAnnotations( this  ));
         }
         
         return result;
@@ -164,9 +165,13 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
     }
     
     private void refreshModels(){
-        List<JSFConfigModel> list  = new ArrayList<JSFConfigModel>(myModifiedModels);
-        myModifiedModels.clear();
-        for ( JSFConfigModel model : list ){
+        /*
+         * sync() method checks if document is modified, so modified 
+         * list is not needed 
+         * 
+         * List<JSFConfigModel> list  = new ArrayList<JSFConfigModel>(myModifiedModels);
+        myModifiedModels.clear();*/
+        for ( JSFConfigModel model : myModels ){
             try {
                 model.sync();
             }
@@ -281,7 +286,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
                     
                     for ( JSFConfigModel model : deleted){
                         myModels.remove( model);
-                        myModifiedModels.remove( model );
+                        //myModifiedModels.remove( model );
                         myFacesConfigs.remove( model.getRootComponent());
                         // TODO : notify via property change event about model removal
                     }
@@ -291,7 +296,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
                         collectModels(newModels, root);
                     }
                     myModels.addAll( newModels );
-                    myModifiedModels.addAll( newModels );
+                    //myModifiedModels.addAll( newModels );
                     // TODO : notify via property change event about model creation
                     for ( JSFConfigModel model : newModels ){
                         myFacesConfigs.add( model.getRootComponent());
@@ -309,7 +314,11 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
             }
 
             public void fileChanged( FileEvent event ) {
-                FileObject file = event.getFile();
+                /*
+                 * sync() method checks if document is modified so there is no need
+                 * in myModifiedModels
+                 * 
+                 * FileObject file = event.getFile();
                 if ( !checkConfigFile(file)){
                     return;
                 }
@@ -324,7 +333,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
                 }
                 if  ( model != null ){
                     myModifiedModels.add( model );
-                }
+                }*/
             }
 
             public void fileDataCreated( FileEvent event ) {
@@ -337,7 +346,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
                     JSFConfigModel model = JSFConfigModelFactory.getInstance().
                         getModel( source );
                     myModels.add( model );
-                    myModifiedModels.add( model );
+                    //myModifiedModels.add( model );
                     myFacesConfigs.add( model.getRootComponent() );
                     // TODO : notify via property listener event about model creation
                 }
@@ -359,7 +368,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
                 }
                 if (model != null) {
                     myModels.remove(model);
-                    myModifiedModels.remove(model);
+                    //myModifiedModels.remove(model);
                     myFacesConfigs.remove(model.getRootComponent());
                     // TOFO : notify via property change event about model removal
                 }
@@ -416,7 +425,7 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
     private List<JSFConfigModel> myModels ;
     private JSFConfigModel myMainModel;
     private List<FacesConfig> myFacesConfigs;
-    private List<JSFConfigModel> myModifiedModels;
+    //private List<JSFConfigModel> myModifiedModels;
     private FileChangeListener myListener;
     private static final Logger LOG = Logger.getLogger(JsfModelImpl.class.getName());
 }

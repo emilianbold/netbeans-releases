@@ -54,9 +54,9 @@ import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
 class BehaviorFinder implements ElementFinder<Behavior> {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations()
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
      */
-    public List<Behavior> getAnnotations() {
+    public List<Behavior> getAnnotations(  JsfModelImpl model) {
         // TODO Auto-generated method stub
         return null;
     }

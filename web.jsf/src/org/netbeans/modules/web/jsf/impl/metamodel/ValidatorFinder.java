@@ -44,7 +44,6 @@ import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidator;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 
 
@@ -55,9 +54,9 @@ import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 class ValidatorFinder implements ElementFinder<Validator> {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations()
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
      */
-    public List<Validator> getAnnotations() {
+    public List<Validator> getAnnotations( JsfModelImpl model   ) {
         // TODO Auto-generated method stub
         return null;
     }

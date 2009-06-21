@@ -40,31 +40,59 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
-import java.util.List;
-
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
+import org.netbeans.modules.web.jsf.impl.facesmodel.AbstractJsfModel;
 
 
 /**
  * @author ads
  *
  */
-class ConverterFinder implements ElementFinder<Converter> {
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
-     */
-    public List<Converter> getAnnotations( JsfModelImpl model   ) {
-        // TODO Auto-generated method stub
-        return null;
+abstract class JsfModelManagers extends AbstractJsfModel {
+    
+    JsfModelManagers( AnnotationModelHelper helper ) {
+        myHelper = helper;
+        myBehaviorManager = helper.createPersistentObjectManager( 
+                new ObjectProviders.BehaviorProvider() );
+        myComponentManager = helper.createPersistentObjectManager( 
+                new ObjectProviders.ComponentProvider() );
+        myConverterManager = helper.createPersistentObjectManager( 
+                new ObjectProviders.ConverterProvider() );
+        myManagedBeanManager = helper.createPersistentObjectManager( 
+                new ObjectProviders.ManagedBeanProvider() );
+        myValidatorManager = helper.createPersistentObjectManager( 
+                new ObjectProviders.ValidatorProvider() );
     }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getConfigType()
-     */
-    public Class<? extends JSFConfigComponent> getConfigType() {
-        return Converter.class;
+    
+    PersistentObjectManager<BehaviorImpl> getBeahviorManager(){
+        return myBehaviorManager;
     }
-
+    
+    PersistentObjectManager<ComponentImpl> getComponentManager(){
+        return myComponentManager;
+    }
+    
+    PersistentObjectManager<ConverterImpl> getConverterManager(){
+        return myConverterManager;
+    }
+    
+    PersistentObjectManager<ManagedBeanImpl> getManagedBeanManager(){
+        return myManagedBeanManager;
+    }
+    
+    PersistentObjectManager<ValidatorImpl> getValidatorManager(){
+        return myValidatorManager;
+    }
+    
+    AnnotationModelHelper getHelper(){
+        return myHelper;
+    }
+    
+    private final PersistentObjectManager<BehaviorImpl> myBehaviorManager;
+    private final PersistentObjectManager<ComponentImpl> myComponentManager;
+    private final PersistentObjectManager<ConverterImpl> myConverterManager;
+    private final PersistentObjectManager<ManagedBeanImpl> myManagedBeanManager;
+    private final PersistentObjectManager<ValidatorImpl> myValidatorManager;
+    private AnnotationModelHelper myHelper;
 }

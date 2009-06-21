@@ -40,31 +40,38 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
-import java.util.List;
+import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
 
 
 /**
  * @author ads
  *
  */
-class ConverterFinder implements ElementFinder<Converter> {
+class BehaviorImpl extends PersistentObject implements Behavior {
+
+    BehaviorImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    {
+        super(helper, typeElement);
+    }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Behavior#getBehaviorClass()
      */
-    public List<Converter> getAnnotations( JsfModelImpl model   ) {
+    public String getBehaviorClass() {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getConfigType()
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Behavior#getBehaviorId()
      */
-    public Class<? extends JSFConfigComponent> getConfigType() {
-        return Converter.class;
+    public String getBehaviorId() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
