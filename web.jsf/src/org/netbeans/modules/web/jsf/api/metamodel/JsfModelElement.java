@@ -42,13 +42,10 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 
 
 /**
- * This interface could represent a child of faces-config XML root 
- * element either Annotation.  
+ * Represent top level model element.
  * @author ads
  *
  */
-public interface FacesConverter extends JsfModelElement {
-    
-    String getConverterForClass();
+public interface JsfModelElement {
 
 }

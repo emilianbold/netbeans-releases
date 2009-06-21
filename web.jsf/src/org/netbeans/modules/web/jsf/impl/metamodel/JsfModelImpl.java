@@ -43,40 +43,58 @@ package org.netbeans.modules.web.jsf.impl.metamodel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfigElement;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
+import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
+import org.netbeans.modules.web.jsf.api.metamodel.Component;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
-import org.netbeans.modules.web.jsf.impl.facesmodel.AbstractJsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.Validator;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
  * @author ads
  *
  */
-public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
+public class JsfModelImpl extends JsfModelManagers implements JsfModel {
+    
+    private static final String SUFFIX = "."+ModelUnit.FACES_CONFIG; // NOI18N 
 
-    JsfModelImpl( ModelUnit unit ) {
+    JsfModelImpl( ModelUnit unit, AnnotationModelHelper helper ) {
+        super( helper );
         myUnit = unit;
         mySupport = new PropertyChangeSupport( this );
-        myModels = new CopyOnWriteArrayList<JSFConfigModel>();
-        myLastModifications = new WeakHashMap<JSFConfigModel, Long>();
+        //myModifiedModels = new CopyOnWriteArrayList<JSFConfigModel>();
         initModels();
         registerChangeListeners();
     }
@@ -84,30 +102,46 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#getElement(java.lang.Class)
      */
-    public <T extends FacesConfigElement> List<T> getElement( Class<T> clazz ) {
-        // TODO Auto-generated method stub
-        return null;
+    public <T extends JsfModelElement> List<T> getElement( Class<T> clazz ) {
+        refreshModels();
+        ElementFinder<T> finder = getFinder(clazz);
+        Class<? extends JSFConfigComponent> type = finder.getConfigType();
+        List<T> result = new LinkedList<T>();
+        for ( FacesConfig config : myFacesConfigs ){
+            List<? extends JSFConfigComponent> children = config.getChildren(type);
+            result.addAll( (List)children );
+        }
+        
+        if ( myMainModel != null && 
+                !myMainModel.getRootComponent().isMetaDataComplete() )
+        {
+            result.addAll( finder.getAnnotations( this  ));
+        }
+        
+        return result;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#getFacesConfigs()
      */
     public List<FacesConfig> getFacesConfigs() {
-        return Collections.unmodifiableList( myFacesConfig );
+        refreshModels();
+        return Collections.unmodifiableList( myFacesConfigs );
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#getMainConfig()
      */
     public FacesConfig getMainConfig() {
-        // TODO Auto-generated method stub
-        return null;
+        refreshModels();
+        return myMainModel!= null ? myMainModel.getRootComponent() : null ;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#getModels()
      */
     public List<JSFConfigModel> getModels() {
+        refreshModels();
         return Collections.unmodifiableList( myModels );
     }
 
@@ -131,108 +165,267 @@ public class JsfModelImpl extends AbstractJsfModel implements JsfModel {
     }
     
     private void refreshModels(){
-        
+        /*
+         * sync() method checks if document is modified, so modified 
+         * list is not needed 
+         * 
+         * List<JSFConfigModel> list  = new ArrayList<JSFConfigModel>(myModifiedModels);
+        myModifiedModels.clear();*/
+        for ( JSFConfigModel model : myModels ){
+            try {
+                model.sync();
+            }
+            catch (IOException e) {
+                LOG.log(Level.SEVERE, "Error during faces-config.xml parsing! " +
+                		"File: "+model.getModelSource().getLookup().
+                		lookup(FileObject.class), e);
+            }
+        }
     }
     
     private void initModels() {
-        // TODO Auto-generated method stub
+        List<JSFConfigModel> models = new LinkedList<JSFConfigModel>();
+        myMainModel = JSFConfigModelFactory.getInstance().
+            getModel( getModelSource(getUnit().getMainFacesConfig(), true) );
+        
+        for ( FileObject fileObject : getUnit().getConfigFiles()){
+            if ( fileObject.equals( getMainConfig())){
+                models.add( myMainModel );
+            }
+            else {
+                models.add(JSFConfigModelFactory.getInstance().getModel( 
+                        getModelSource(fileObject, true)) );
+            }
+        }
+        
+        FileObject[] roots = getUnit().getCompilePath().getRoots();
+        for (FileObject fileObject : roots) {
+            if ( !FileUtil.isArchiveFile( fileObject )){
+                continue;
+            }
+            fileObject  = FileUtil.getArchiveRoot(fileObject);
+            collectModels(models, fileObject);
+        }
+        
+        myModels = new CopyOnWriteArrayList<JSFConfigModel>( models );
         List<FacesConfig> list = new ArrayList<FacesConfig>( myModels.size() );
         for ( JSFConfigModel model : myModels ){
             list.add( model.getRootComponent() );
         }
-        myFacesConfig = new CopyOnWriteArrayList<FacesConfig>( list );
-        for ( JSFConfigModel model : myModels ){
-            myLastModifications.put( model , -1L);
+        myFacesConfigs = new CopyOnWriteArrayList<FacesConfig>( list );
+    }
+
+    private void collectModels( List<JSFConfigModel> models,FileObject fileObject )
+    {
+        FileObject metaInf = fileObject.getFileObject( ModelUnit.META_INF);
+        if ( metaInf != null ){
+            FileObject[] children = metaInf.getChildren();
+            for (FileObject child : children) {
+                String name = child.getNameExt();
+                if ( name.equals( ModelUnit.FACES_CONFIG) || name.endsWith(SUFFIX )){
+                    models.add( JSFConfigModelFactory.getInstance().getModel( 
+                            getModelSource(child, false)) );
+                }
+            }
         }
+    }
+    
+    private ModelUnit getUnit(){
+        return myUnit;
+    }
+    
+    private ModelSource getModelSource( FileObject fileObject , 
+            boolean isEditable )
+    {
+        try {
+            ModelSource source = Utilities.createModelSource( fileObject,isEditable);
+            Lookup lookup = source.getLookup();
+            lookup = new ProxyLookup( lookup , Lookups.singleton(this));
+            return new ModelSource( lookup , isEditable );
+        } catch (CatalogModelException ex) {
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                ex.getMessage(), ex);
+        }
+        return null;
+    }
+    
+    private <T extends JsfModelElement> ElementFinder<T> getFinder( 
+            Class<T> clazz)
+    {
+        return (ElementFinder<T>)FINDERS.get( clazz);
     }
     
     private void registerChangeListeners() {
         
-        ClassPath compile = myUnit.getCompilePath();
+        ClassPath compile = getUnit().getCompilePath();
         compile.addPropertyChangeListener( new PropertyChangeListener(){
 
             public void propertyChange( PropertyChangeEvent event ) {
-                // TODO Auto-generated method stub
-                
+                if ( event.equals( ClassPath.PROP_ENTRIES)){
+                    FileObject[] roots = getUnit().getCompilePath().getRoots();
+                    List<JSFConfigModel> deleted = getModels();
+                    List<FileObject> added = new LinkedList<FileObject>();
+                    for (FileObject root : roots) {
+                        if ( !FileUtil.isArchiveFile( root )){
+                            continue;
+                        }
+                        root = FileUtil.getArchiveRoot( root );
+                        boolean found = false;
+                        for ( JSFConfigModel model : myModels ){
+                            FileObject fileObject = model.getModelSource().
+                                getLookup().lookup( FileObject.class);
+                            if ( FileUtil.isParentOf( root, fileObject)){
+                                found = true;
+                                deleted.remove( model );
+                            }
+                        }
+                        if ( !found){
+                            added.add( root );
+                        }
+                    }
+                    
+                    for ( JSFConfigModel model : deleted){
+                        myModels.remove( model);
+                        //myModifiedModels.remove( model );
+                        myFacesConfigs.remove( model.getRootComponent());
+                        // TODO : notify via property change event about model removal
+                    }
+                    List<JSFConfigModel> newModels = new ArrayList<JSFConfigModel>( 
+                            added.size()); 
+                    for ( FileObject root : added ){
+                        collectModels(newModels, root);
+                    }
+                    myModels.addAll( newModels );
+                    //myModifiedModels.addAll( newModels );
+                    // TODO : notify via property change event about model creation
+                    for ( JSFConfigModel model : newModels ){
+                        myFacesConfigs.add( model.getRootComponent());
+                    }
+                }
             }
             
         });
         
-        FileUtil.addFileChangeListener( new FileChangeListener(){
+        ClassPath sources = getUnit().getSourcePath();
+        FileObject[] fileObjects = sources.getRoots();
+        myListener = new FileChangeListener(){
 
-                public void fileAttributeChanged( FileAttributeEvent arg0 ) {
+            public void fileAttributeChanged( FileAttributeEvent arg0 ) {
+            }
+
+            public void fileChanged( FileEvent event ) {
+                /*
+                 * sync() method checks if document is modified so there is no need
+                 * in myModifiedModels
+                 * 
+                 * FileObject file = event.getFile();
+                if ( !checkConfigFile(file)){
+                    return;
                 }
-
-                public void fileChanged( FileEvent event ) {
-                    // TODO : check if it works . If so then we don't need
-                    // to check file modification. 
-                    FileObject file = event.getFile();
-                    if ( !checkName(file)){
-                        return;
-                    }
-                    ClassPath sources = myUnit.getSourcePath();
-                    FileObject[] fileObjects = sources.getRoots();
-                    for (FileObject fileObject : fileObjects) {
-                        if ( FileUtil.isParentOf( fileObject, file)){
-                            // TODO : find model by file object
-                            JSFConfigModel model = null;
-                            //model.sync();
-                        }
-                    }
-                }
-
-                public void fileDataCreated( FileEvent event ) {
-                    FileObject file = event.getFile();
-                    if ( !checkName(file)){
-                        return;
-                    }
-                    ClassPath sources = myUnit.getSourcePath();
-                    FileObject[] fileObjects = sources.getRoots();
-                    for (FileObject fileObject : fileObjects) {
-                        if ( FileUtil.isParentOf( fileObject, file)){
-                            // TODO : create model based on newly discovered file
-                            JSFConfigModel model = null;
-                            myModels.add( model );
-                            synchronized (myLastModifications) {
-                                myLastModifications.put( model,  -1L);
-                            }
-                        }
+                JSFConfigModel model = null;
+                for ( JSFConfigModel mod : myModels ){
+                    FileObject fileObject = mod.getModelSource().getLookup().
+                        lookup( FileObject.class);
+                    if ( fileObject.equals( event.getFile())){
+                        model = mod;
+                        break;
                     }
                 }
+                if  ( model != null ){
+                    myModifiedModels.add( model );
+                }*/
+            }
 
-                public void fileDeleted( FileEvent event ) {
-                    FileObject file = event.getFile();
-                    if ( !checkName(file)){
-                        return;
+            public void fileDataCreated( FileEvent event ) {
+                FileObject file = event.getFile();
+                if ( !checkConfigFile(file)){
+                    return;
+                }
+                ModelSource source=  getModelSource(file,  true );
+                if (  source!= null ){
+                    JSFConfigModel model = JSFConfigModelFactory.getInstance().
+                        getModel( source );
+                    myModels.add( model );
+                    //myModifiedModels.add( model );
+                    myFacesConfigs.add( model.getRootComponent() );
+                    // TODO : notify via property listener event about model creation
+                }
+            }
+
+            public void fileDeleted( FileEvent event ) {
+                FileObject file = event.getFile();
+                if ( !checkConfigFile(file)){
+                    return;
+                }
+                JSFConfigModel model = null;
+                for ( JSFConfigModel mod : myModels ){
+                    FileObject fileObject = mod.getModelSource().getLookup().
+                        lookup( FileObject.class);
+                    if ( fileObject.equals( event.getFile())){
+                        model = mod;
+                        break;
                     }
-                    // TODO : find model based on file object.
-                    JSFConfigModel model = null;
-                    myModels.remove( model );
-                    synchronized ( myLastModifications) {
-                        myLastModifications.remove( model );
-                    }
                 }
+                if (model != null) {
+                    myModels.remove(model);
+                    //myModifiedModels.remove(model);
+                    myFacesConfigs.remove(model.getRootComponent());
+                    // TOFO : notify via property change event about model removal
+                }
+            }
 
-                public void fileFolderCreated( FileEvent arg0 ) {
-                }
+            public void fileFolderCreated( FileEvent arg0 ) {
+            }
 
-                public void fileRenamed( FileRenameEvent arg0 ) {
-                    // TODO Auto-generated method stub
-                    
-                }
+            public void fileRenamed( FileRenameEvent arg0 ) {
+                // TODO Auto-generated method stub
                 
-                private boolean checkName( FileObject fileObject ){
-                    // TODO
+            }
+            
+            private boolean checkConfigFile( FileObject fileObject ){
+                if ( fileObject == null){
                     return false;
                 }
-                
-            });
+                if ( fileObject.equals( getUnit().getMainFacesConfig())){
+                    return true;
+                }
+                for( FileObject object : getUnit().getConfigFiles()){
+                    if ( fileObject.equals( object)){
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+        };
+        for (FileObject fileObject : fileObjects) {
+            // listeners are weakly registered, so there is no problem 
+            FileUtil.addFileChangeListener( myListener , 
+                    FileUtil.toFile(fileObject));
+        }
+        
+        
+    }
+    
+    private final static Map<Class<? extends JsfModelElement>, 
+        ElementFinder<? extends JsfModelElement>> FINDERS = 
+            new HashMap<Class<? extends JsfModelElement>, 
+                ElementFinder<? extends JsfModelElement>>();
+    
+    static {
+        FINDERS.put( Behavior.class , new BehaviorFinder() );
+        FINDERS.put( Component.class , new ComponentFinder());
+        FINDERS.put( FacesConverter.class , new ConverterFinder() );
+        FINDERS.put( FacesManagedBean.class,  new ManagedBeanFinder( ));
+        FINDERS.put( Validator.class ,  new ValidatorFinder());
     }
     
     private final PropertyChangeSupport mySupport;
     private ModelUnit myUnit;
     private List<JSFConfigModel> myModels ;
-    private List<FacesConfig> myFacesConfig;
-    private Map<JSFConfigModel, Long> myLastModifications;
+    private JSFConfigModel myMainModel;
+    private List<FacesConfig> myFacesConfigs;
+    //private List<JSFConfigModel> myModifiedModels;
+    private FileChangeListener myListener;
     private static final Logger LOG = Logger.getLogger(JsfModelImpl.class.getName());
 }

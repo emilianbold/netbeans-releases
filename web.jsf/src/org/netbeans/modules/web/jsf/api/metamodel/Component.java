@@ -50,7 +50,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * @author ads
  *
  */
-public interface Component {
+public interface Component extends JsfModelElement {
     
     /**
      * Property of &lt;component-type&gt; element. 

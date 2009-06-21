@@ -41,8 +41,13 @@
 package org.netbeans.modules.web.jsf.api.metamodel;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -54,25 +59,64 @@ import org.openide.filesystems.FileUtil;
  */
 public class ModelUnit {
     
+    public  static final String META_INF = "META-INF";      // NOI18N
+    private static final String WEB_INF = "WEB-INF";        // NOI18N
+    public static final String FACES_CONFIG = "faces-config.xml";// NOI18N
+    
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath, File mainFacesConfig)
     {
-        return new ModelUnit(bootPath, compilePath, sourcePath, mainFacesConfig);
+        return new ModelUnit(bootPath, compilePath, sourcePath, mainFacesConfig, 
+                null);
     }
     
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath)
     {
-        return new ModelUnit(bootPath, compilePath, sourcePath, null/* TODO : set here main faces config via default path to it*/);
+        return new ModelUnit(bootPath, compilePath, sourcePath, null);
+    }
+    
+    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
+            ClassPath sourcePath, FileObject[] configFiles )
+    {
+        return new ModelUnit(bootPath, compilePath, sourcePath, null,configFiles);
+    }
+    
+    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
+            ClassPath sourcePath, WebModule webModule )
+    {
+        return new ModelUnit(bootPath, compilePath, sourcePath, 
+                webModule);
     }
 
     private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, File mainFacesConfig) 
+            ClassPath sourcePath, File mainFacesConfig, FileObject[] configFiles ) 
     {
         myBootPath= bootPath;
         myCompilePath = compilePath;
         mySourcePath = sourcePath;
         myMainFacesConfig =mainFacesConfig ;
+        myConfigFiles = configFiles;
+        myModule = null;
+        getConfigFiles();
+    }
+    
+    private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
+            ClassPath sourcePath,  WebModule webModule ) 
+    {
+        myBootPath= bootPath;
+        myCompilePath = compilePath;
+        mySourcePath = sourcePath;
+        FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+        if ( configs != null && configs.length > 0 ){
+            myMainFacesConfig = FileUtil.toFile(configs[0]);
+        }
+        else {
+            myMainFacesConfig = null;
+        }
+        myModule = webModule;
+        myConfigFiles = null;
+        getConfigFiles();
     }
     
     
@@ -93,10 +137,46 @@ public class ModelUnit {
                 FileUtil.normalizeFile(myMainFacesConfig)) : null;
     }
     
+    public List<FileObject> getConfigFiles(){
+        FileObject[] objects = myModule == null ?  myConfigFiles :
+                ConfigurationUtils.getFacesConfigFiles( myModule );
+        
+        List<FileObject> configs;
+        if ( objects != null ){
+            configs = new LinkedList<FileObject>( Arrays.asList( objects ));
+        }
+        else {
+            configs = new LinkedList<FileObject>();
+        }
+        
+        if (myMainFacesConfig == null) {
+            List<FileObject> list = getSourcePath().findAllResources( 
+                    WEB_INF +"/" +FACES_CONFIG); // NOI18N
+            if ( list != null && list.size() > 0 ){
+                myMainFacesConfig =  FileUtil.toFile(list.get(0));
+            }
+        }
+        String suffix = "."+FACES_CONFIG;
+        for (FileObject root : getSourcePath().getRoots()) {
+            FileObject metaInf = root.getFileObject(META_INF);
+            if (metaInf != null) {
+                FileObject[] children = metaInf.getChildren();
+                for (FileObject fileObject : children) {
+                    String name = fileObject.getNameExt();
+                    if ( name.equals( FACES_CONFIG) || name.endsWith(suffix )){
+                        configs.add( fileObject );
+                    }
+                }
+            }
+        }
+        return configs;
+    }
+    
     private final ClassPath myBootPath;
     private final ClassPath myCompilePath;
     private final ClassPath mySourcePath;
-    private final File myMainFacesConfig;
-    
+    private File myMainFacesConfig;
+    private final WebModule myModule;
+    private final FileObject[] myConfigFiles;
 
 }

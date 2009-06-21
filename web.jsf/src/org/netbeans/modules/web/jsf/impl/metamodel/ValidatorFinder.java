@@ -38,17 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.metamodel;
+
+import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidator;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 
 
 /**
- * This interface could represent a child of faces-config XML root 
- * element either Annotation.  
  * @author ads
  *
  */
-public interface FacesConverter extends JsfModelElement {
-    
-    String getConverterForClass();
+class ValidatorFinder implements ElementFinder<Validator> {
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
+     */
+    public List<Validator> getAnnotations( JsfModelImpl model   ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getConfigType()
+     */
+    public Class<? extends JSFConfigComponent> getConfigType() {
+        return FacesValidator.class;
+    }
 
 }
