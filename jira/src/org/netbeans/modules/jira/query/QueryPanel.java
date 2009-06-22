@@ -83,12 +83,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private Color defaultTextColor;
 
     /** Creates new form QueryPanel */
-    public QueryPanel(JComponent tableComponent, QueryController controller) {
+    public QueryPanel(JComponent tableComponent, QueryController controller, boolean isFilter) {
         initComponents();
 
         Font f = new JLabel().getFont();
         int s = f.getSize();
         nameLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        jiraFilterLabel.setVisible(isFilter);
+        if(isFilter) {
+            jiraFilterLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        } 
         defaultTextColor = noContentLabel.getForeground();
 
         tablePanel.add(tableComponent);
@@ -974,6 +978,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         refreshCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.text")); // NOI18N
 
+        jiraFilterLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jiraFilterLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout queryHeaderPanelLayout = new org.jdesktop.layout.GroupLayout(queryHeaderPanel);
         queryHeaderPanel.setLayout(queryHeaderPanelLayout);
         queryHeaderPanelLayout.setHorizontalGroup(
@@ -983,7 +989,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .add(nameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 673, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jiraFilterLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 590, Short.MAX_VALUE)
                         .add(refreshCheckBox)
                         .add(18, 18, 18)
                         .add(lastRefreshLabel)
@@ -1011,7 +1019,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .add(11, 11, 11)
-                        .add(nameLabel))
+                        .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(nameLabel)
+                            .add(jiraFilterLabel)))
                     .add(queryHeaderPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(queryHeaderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -1167,6 +1177,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JScrollPane jScrollPane6 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane7 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane9 = new HackedScrollPane();
+    final javax.swing.JLabel jiraFilterLabel = new javax.swing.JLabel();
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
     final javax.swing.JLabel lblIssueKeyPrefix = new javax.swing.JLabel();

@@ -73,6 +73,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
@@ -148,7 +149,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         issueTable = new IssueTable(query, query.getColumnDescriptors());
         setupRenderer(issueTable);
-        panel = new QueryPanel(issueTable.getComponent(), this);
+        panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
@@ -198,6 +199,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             postPopulate((FilterDefinition) jiraFilter, false);
         }
+    }
+
+
+    private static boolean isNamedFilter(JiraFilter jiraFilter) {
+        return jiraFilter instanceof NamedFilter;
     }
 
     private void setupRenderer(IssueTable issueTable) {
