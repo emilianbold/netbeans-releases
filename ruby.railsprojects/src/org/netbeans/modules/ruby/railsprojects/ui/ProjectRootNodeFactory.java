@@ -136,6 +136,9 @@ public final class ProjectRootNodeFactory implements NodeFactory {
             if (subdir.equals("app/models")) { // NOI18N
                 return Generator.MODEL;
             }
+            if (subdir.equals("app/metal")) { // NOI18N
+                return Generator.METAL;
+            }
             if (subdir.equals("db")) { // NOI18N
                 return Generator.MIGRATION;
             }
