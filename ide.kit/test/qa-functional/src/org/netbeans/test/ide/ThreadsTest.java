@@ -87,7 +87,8 @@ public class ThreadsTest extends JellyTestCase {
 
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             ThreadsTest.class
-        ).clusters(".*").enableModules(".*").gui(true).reuseUserDir(false);
+        ).clusters(".*").enableModules(".*").gui(true).reuseUserDir(false)
+        .honorAutoloadEager(true);
 
         conf = conf.addTest("testThreads");
         
@@ -128,7 +129,20 @@ public class ThreadsTest extends JellyTestCase {
             if (elem.toString().startsWith("org.openide.util.RequestProcessor$Processor.run")) {
                 return true;
             }
+            if (elem.toString().startsWith("java.util.TimerThread.run")) {
+                return true;
+            }
+            if (elem.toString().startsWith("java.util.prefs.AbstractPreferences$EventDispatchThread")) {
+                return true;
+            }
             if (elem.toString().startsWith("sun.awt.image.ImageFetcher.run")) {
+                return true;
+            }
+            if (elem.toString().startsWith("sun.awt.X11.XToolkit")) {
+                return true;
+            }
+            // IZ http://www.netbeans.org/issues/show_bug.cgi?id=154324
+            if (elem.toString().startsWith("org.netbeans.lib.profiler.ProfilerClient$SeparateCmdExecutionThread.run")) {
                 return true;
             }
         }

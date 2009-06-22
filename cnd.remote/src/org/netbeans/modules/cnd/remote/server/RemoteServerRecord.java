@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -47,9 +48,11 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -213,6 +216,28 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteServerRecord other = (RemoteServerRecord) obj;
+        if (this.executionEnvironment != other.executionEnvironment && (this.executionEnvironment == null || !this.executionEnvironment.equals(other.executionEnvironment))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.executionEnvironment != null ? this.executionEnvironment.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public String getServerDisplayName() {
         if (displayName == null || displayName.length() == 0) {
             // TODO: should we add ExecutionEnvironment.getHostDisplayName() ?
@@ -264,4 +289,26 @@ public class RemoteServerRecord implements ServerRecord {
     /*package*/void setState(State state) {
         this.state = state;
     }
+
+    @Override
+    public boolean isSetUp() {
+        final Collection<? extends HostSetupProvider> providers = Lookup.getDefault().lookupAll(HostSetupProvider.class);
+        for (HostSetupProvider provider : providers) {
+            if (provider.canCheckSetup(executionEnvironment)) {
+                return provider.isSetUp(executionEnvironment);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean setUp() {
+        final Collection<? extends HostSetupProvider> providers = Lookup.getDefault().lookupAll(HostSetupProvider.class);
+        for (HostSetupProvider provider : providers) {
+            if (provider.canCheckSetup(executionEnvironment)) {
+                return provider.setUp(executionEnvironment);
+            }
+        }
+        return true;
+    }    
 }

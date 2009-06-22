@@ -1321,7 +1321,7 @@ public class GlassFishPanel extends DestinationPanel {
             "GFP.error.unc.path.unsupported"); // NOI18N
     public static final String DEFAULT_BRACKETS_IN_NOT_SPACED_PATH =
             ResourceUtils.getString(GlassFishPanel.class,
-            "GFP.error.brackets.in.not.spaced.path"); // NOI18N
+            "GFP.error.parantheses.in.not.spaced.path"); // NOI18N
             
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(GlassFishPanel.class,

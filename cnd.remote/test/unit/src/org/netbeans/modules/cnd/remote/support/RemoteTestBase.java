@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
@@ -50,28 +51,35 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * A common base class for remote "unit" tests
  * @author Sergey Grinev
  */
-public abstract class RemoteTestBase extends BaseTestCase {
+public abstract class RemoteTestBase extends CndBaseTestCase {
 
-    protected RemoteTestBase(String testName) {
+    protected final Logger log = Logger.getLogger("cnd.remote.logger");
+
+    // we need this for tests which should run NOT for all environments
+    public RemoteTestBase(String testName) {
         super(testName);
+    }
+
+    protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-        if (execEnv != null) {
-            ConnectionManager.getInstance().connectTo(execEnv,getRemotePassword(), false);
+        final ExecutionEnvironment env = getTestExecutionEnvironment();
+        if (env != null) {
+            // the password should be stored in the initialization phase
+            ConnectionManager.getInstance().connectTo(env);
         }
     }
-
 
     public static class FakeCompilerSet extends CompilerSet {
 

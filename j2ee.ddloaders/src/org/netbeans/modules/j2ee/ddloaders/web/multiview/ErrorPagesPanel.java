@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
-import org.netbeans.modules.j2ee.ddloaders.web.*;
-import org.netbeans.modules.xml.multiview.ui.*;
+import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 
 /**
  * @author  mkuchtiak

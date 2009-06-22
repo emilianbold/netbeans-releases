@@ -144,11 +144,11 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static String CONST_DOMAIN = "DOMAIN"; // NOI18N
     
     static {
-        MODULE_TYPES.add(J2eeModule.WAR);
-        MODULE_TYPES.add(J2eeModule.EAR);
-        MODULE_TYPES.add(J2eeModule.EJB);
-        MODULE_TYPES.add(J2eeModule.CONN);
-        MODULE_TYPES.add(J2eeModule.CLIENT);
+        MODULE_TYPES.add(J2eeModule.Type.WAR);
+        MODULE_TYPES.add(J2eeModule.Type.EAR);
+        MODULE_TYPES.add(J2eeModule.Type.EJB);
+        MODULE_TYPES.add(J2eeModule.Type.RAR);
+        MODULE_TYPES.add(J2eeModule.Type.CAR);
         SPEC_VERSIONS.add(J2eeModule.J2EE_14);
         SPEC_VERSIONS.add(J2eeModule.J2EE_13);
         SPEC_VERSIONS_WITH_5.add(J2eeModule.JAVA_EE_5);

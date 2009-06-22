@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -82,19 +83,23 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     
     private J2eeVersionWarningPanel warningPanel;
     private boolean sharableProject;
-    
-    private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "J2EESpecLevel_13"); //NOI18N
-    private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "J2EESpecLevel_14"); //NOI18N
-    private static final String JAVA_EE_SPEC_50_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "JavaEESpecLevel_50"); //NOI18N
 
     private List<Project> earProjects;
-    private Object j2eeModuleType;
+    private final J2eeModule.Type j2eeModuleType;
     private File projectLocation;
     
     private BigDecimal xmlVersion;
-    
-    /** Creates new form ProjectServerPanel */
+
+    @Deprecated
     public ProjectServerPanel(Object j2eeModuleType, String name, String title,
+            ProjectServerWizardPanel wizard, boolean showAddToEar,
+            boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
+
+        this(J2eeModule.Type.fromJsrType(j2eeModuleType), name, title, wizard, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+    }
+
+    /** Creates new form ProjectServerPanel */
+    public ProjectServerPanel(J2eeModule.Type j2eeModuleType, String name, String title,
             ProjectServerWizardPanel wizard, boolean showAddToEar, 
             boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
         initComponents();
@@ -385,18 +390,18 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         if (serverInstanceWrapper != null) {
             selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
-        String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        ProfileItem lastSelectedJ2eeProfile = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
         String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
         if (newServerInstanceID != null) {
             selectedServerInstanceID = newServerInstanceID;
             // clear the spec level selection
-            lastSelectedJ2eeSpecLevel = null;
+            lastSelectedJ2eeProfile = null;
             j2eeSpecComboBox.setSelectedItem(null);
         }
         // refresh the list of servers
         initServers(selectedServerInstanceID);
-        if (lastSelectedJ2eeSpecLevel != null) {
-            j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
+        if (lastSelectedJ2eeProfile != null) {
+            j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeProfile);
         }
 }//GEN-LAST:event_addServerButtonActionPerformed
 
@@ -405,27 +410,20 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
-        String prevSelectedItem = (String) j2eeSpecComboBox.getSelectedItem();
+        ProfileItem prevSelectedItem = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
         // update the j2ee spec list according to the selected server
         ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        j2eeSpecComboBox.removeAllItems();
         if (serverInstanceWrapper != null) {
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
-            Set supportedVersions = j2eePlatform.getSupportedSpecVersions(j2eeModuleType);
-            j2eeSpecComboBox.removeAllItems();
-            if (supportedVersions.contains(J2eeModule.JAVA_EE_5)) {
-                j2eeSpecComboBox.addItem(JAVA_EE_SPEC_50_LABEL);
-            }
-            if (supportedVersions.contains(J2eeModule.J2EE_14)) {
-                j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
-            }
-            if (supportedVersions.contains(J2eeModule.J2EE_13)) {
-                j2eeSpecComboBox.addItem(J2EE_SPEC_13_LABEL);
+            Set<Profile> profiles = new TreeSet<Profile>(Profile.REVERSE_COMPARATOR);
+            profiles.addAll(j2eePlatform.getSupportedProfiles(j2eeModuleType));
+            for (Profile profile : profiles) {
+                j2eeSpecComboBox.addItem(new ProfileItem(profile));
             }
             if (prevSelectedItem != null) {
                 j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
             }
-        } else {
-            j2eeSpecComboBox.removeAllItems();
         }
         // revalidate the form
         wizard.fireChangeEvent();
@@ -548,7 +546,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     
     void store(WizardDescriptor d) {
         d.putProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID, getSelectedServer());
-        d.putProperty(ProjectServerWizardPanel.J2EE_LEVEL, getSelectedJ2eeSpec());
+        d.putProperty(ProjectServerWizardPanel.J2EE_LEVEL, getSelectedJ2eeProfile());
         d.putProperty(ProjectServerWizardPanel.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
         d.putProperty(ProjectServerWizardPanel.EAR_APPLICATION, getSelectedEarApplication());
         d.putProperty(ProjectServerWizardPanel.WAR_NAME,  jTextFieldWebAppName.getText());
@@ -564,7 +562,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
             d.putProperty(ProjectServerWizardPanel.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
             
-            String j2ee = getSelectedJ2eeSpec();
+            Profile j2ee = getSelectedJ2eeProfile();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
                 UserProjectSettings fls = UserProjectSettings.getDefault();
@@ -664,7 +662,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(j2eeModuleType)) {
+            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
                 if (selectedItem == null || !gfv3Found) {
@@ -701,11 +699,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         }
     }
     
-    private String getSelectedJ2eeSpec() {
-        Object item = j2eeSpecComboBox.getSelectedItem();
-        return item == null ? null
-                            : item.equals(JAVA_EE_SPEC_50_LABEL) ? J2eeModule.JAVA_EE_5 : 
-                                ( item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13);
+    private Profile getSelectedJ2eeProfile() {
+        ProfileItem item = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
+        return item == null ? null : item.getProfile();
     }
     
     private String getSelectedServer() {
@@ -749,7 +745,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     }
     
     private void setJ2eeVersionWarningPanel() {
-        String j2ee = getSelectedJ2eeSpec();
+        Profile j2ee = getSelectedJ2eeProfile();
         if (j2ee == null) {
             warningPlaceHolderPanel.setVisible(false);
             return;
@@ -810,7 +806,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 }
             } else {
                 // suppose highest
-                j2eeSpecComboBox.setSelectedItem(JAVA_EE_SPEC_50_LABEL);
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.JAVA_EE_5));
             }
         }
     }
@@ -835,9 +831,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             }
             
             if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_13_LABEL);
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_13));
             } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_14_LABEL);
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             }
         } catch (IOException e) {
             String message = NbBundle.getMessage(ProjectServerPanel.class, "MSG_EjbJarXmlCorrupted"); // NOI18N
@@ -862,11 +858,11 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             }
             
             if (new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_3).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_13_LABEL);
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_13));
             } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_4).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_14_LABEL);
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_5_0).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(JAVA_EE_SPEC_50_LABEL);
+                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.JAVA_EE_5));
             }
         } catch (IOException e) {
             String message = NbBundle.getMessage(ProjectServerPanel.class, "MSG_AppClientXmlCorrupted"); // NOI18N
@@ -876,9 +872,10 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     
     private void setJ2eeVersionWarning(WizardDescriptor d) {
         String errorMessage;
-        String selectedItem = (String)j2eeSpecComboBox.getSelectedItem();
+        ProfileItem selectedItem = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
         
-        if (J2EE_SPEC_14_LABEL.equals(selectedItem) && new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(xmlVersion)) {
+        if ((Profile.J2EE_14 == selectedItem.getProfile())
+                && new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(xmlVersion)) {
             errorMessage = NbBundle.getMessage(ProjectServerPanel.class, "MSG_EjbJarXMLNotSupported");
         } else {
             errorMessage = null;
@@ -936,5 +933,46 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectServerPanel.class, j2eeModuleType));
+    }
+
+    private static class ProfileItem {
+
+        private final Profile profile;
+
+        public ProfileItem(Profile profile) {
+            this.profile = profile;
+        }
+
+        public Profile getProfile() {
+            return profile;
+        }
+
+        @Override
+        public String toString() {
+            return profile.getDisplayName();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ProfileItem other = (ProfileItem) obj;
+            if (this.profile != other.profile && (this.profile == null || !this.profile.equals(other.profile))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (this.profile != null ? this.profile.hashCode() : 0);
+            return hash;
+        }
+
     }
 }

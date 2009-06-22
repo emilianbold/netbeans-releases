@@ -44,18 +44,15 @@ import org.openide.util.lookup.Lookups;
 
 public class JspIndentTask implements IndentTask, Lookup.Provider {
 
-    private Context context;
     private JspIndenter indenter;
     private Lookup lookup;
     
     JspIndentTask(Context context) {
-        this.context = context;
         indenter = new JspIndenter(context);
         lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
     public void reindent() throws BadLocationException {
-        //new JSPLexerFormatter().process(context);
         indenter.reindent();
     }
     

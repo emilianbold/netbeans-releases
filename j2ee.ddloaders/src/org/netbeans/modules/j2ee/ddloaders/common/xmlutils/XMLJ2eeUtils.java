@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.j2ee.ddloaders.common.xmlutils;
 
+import java.util.Iterator;
+import java.util.List;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.CharacterData;
-import java.util.*;
-
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
@@ -65,7 +65,7 @@ public class XMLJ2eeUtils {
      */
     public static void updateDocument(javax.swing.text.Document doc, String newDoc, String prefixMark) throws javax.swing.text.BadLocationException {
         int origLen = doc.getLength();        
-        String origDoc = doc.getText(0, origLen);;
+        String origDoc = doc.getText(0, origLen);
         int prefixInd=0;
         if (prefixMark!=null) {
             prefixInd = origDoc.indexOf(prefixMark);

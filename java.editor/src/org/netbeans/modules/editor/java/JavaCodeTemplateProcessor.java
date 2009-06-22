@@ -599,6 +599,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
                 if (tm != null && tm.getKind() == TypeKind.ERROR)
                     tm = cInfo.getTrees().getOriginalType((ErrorType)tm);
+                if (tm.getKind() == TypeKind.NONE)
+                    tm = cInfo.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
                 return tm;
             }
         } catch (Exception e) {

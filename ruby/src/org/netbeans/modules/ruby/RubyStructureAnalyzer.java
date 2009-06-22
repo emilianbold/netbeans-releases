@@ -260,7 +260,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         AstPath path = new AstPath();
         path.descend(root);
         ContextKnowledge knowledge = new ContextKnowledge(index, root);
-        this.typeInferencer = RubyTypeInferencer.normal(knowledge);
+        this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
         path.ascend();
@@ -587,17 +587,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node instanceof DefnNode) {
-                String name = AstUtilities.getName(node);
-                DefnNode defNode = (DefnNode) node;
-                Set<Node> exits = new LinkedHashSet<Node>();
-                AstUtilities.findExitPoints(defNode, exits);
+            if (node instanceof DefnNode || node instanceof DefsNode) {
                 RubyType type = new RubyType();
-                for (Node exitPoint : exits) {
-                    if (exitPoint.getNodeType() != NodeType.FCALLNODE) {
-                        type.append(typeInferencer.inferType(exitPoint));
-                    }
-                }
+                type.append(typeInferencer.inferType(node));
                 co.setType(type);
             }
 

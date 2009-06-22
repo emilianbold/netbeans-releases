@@ -78,7 +78,7 @@ public class RemoteServerListDisplayer extends ServerListDisplayerEx {
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
+            cacheManager.setDefaultRecord(dlg.getDefaultRecord());
             return true;
         } else {
             return false;

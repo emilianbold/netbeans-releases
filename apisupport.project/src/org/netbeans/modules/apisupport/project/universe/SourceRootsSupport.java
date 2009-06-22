@@ -57,7 +57,7 @@ import org.openide.ErrorManager;
  * Utility class for containing a list of Java sources.
  * @author Richard Michalsky
  */
-public class SourceRootsSupport implements SourceRootsProvider {
+public final class SourceRootsSupport implements SourceRootsProvider {
 
     private URL[] sourceRoots;
     private SourceRootsProvider delegate;
@@ -97,7 +97,16 @@ public class SourceRootsSupport implements SourceRootsProvider {
         return delegate.getDefaultSourceRoots();
     }
 
-    public void addSourceRoot(URL root) throws IOException {
+    /**
+     * Adds new source root
+     * @param root
+     * @throws java.io.IOException
+     * @throws java.lang.IllegalArgumentException When root already present in sources.
+     */
+    public void addSourceRoot(URL root) throws IOException, IllegalArgumentException {
+        org.openide.util.Parameters.notNull("root", root);    // NOI18N
+        if (containsRoot(this, root))
+            throw new IllegalArgumentException("Root '" + root + "' already present in sources.");    // NOI18N
         maybeUpdateDefaultSources();
         URL[] newSourceRoots = new URL[sourceRoots.length + 1];
         System.arraycopy(sourceRoots, 0, newSourceRoots, 0, sourceRoots.length);
@@ -164,6 +173,8 @@ public class SourceRootsSupport implements SourceRootsProvider {
         maybeUpdateDefaultSources();
         Collection<URL> newSources = new ArrayList<URL>(Arrays.asList(sourceRoots));
         newSources.removeAll(Arrays.asList(urlsToRemove));
+        assert newSources.size() + urlsToRemove.length >= sourceRoots.length :
+            "Too many roots removed, one of " + Arrays.toString(urlsToRemove) + " was contained more than once";
         URL[] sources = new URL[newSources.size()];
         setSourceRootsInternal(newSources.toArray(sources));
     }
@@ -211,5 +222,21 @@ public class SourceRootsSupport implements SourceRootsProvider {
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Queries the provider if already contains given source root.
+     * @param provider
+     * @param root
+     * @return <tt>true</tt> if provider already contains the root.
+     */
+    public static boolean containsRoot(SourceRootsProvider provider, URL root) {
+        org.openide.util.Parameters.notNull("provider", provider);    // NOI18N
+        org.openide.util.Parameters.notNull("root", root);    // NOI18N
+        for (URL r2 : provider.getSourceRoots()) {
+            if (root.equals(r2))
+                return true;
+        }
+        return false;
     }
 }

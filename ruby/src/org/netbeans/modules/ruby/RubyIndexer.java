@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,11 +107,11 @@ public class RubyIndexer extends EmbeddingIndexer {
     //private static final boolean INDEX_UNDOCUMENTED = Boolean.getBoolean("ruby.index.undocumented");
     private static final boolean INDEX_UNDOCUMENTED = true;
 
-    // for unit tests
-    static boolean preindexingTest = false;
-    static boolean skipTypeInferenceForTests = false;
-
-    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    /**
+     * For unit tests, makes the indexer behave as when operating with 
+     * user's sources in a project.
+     */
+    static boolean userSourcesTest = false;
     
     // Class/Module Document
     static final String FIELD_EXTENDS_NAME = "extends"; //NOI18N
@@ -205,7 +206,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     static final String FIELD_DB_COLUMN = "dbcolumn"; //NOI18N
     /** Special version the schema.rb is marked with (rather than a migration number) */
     static final String SCHEMA_INDEX_VERSION = "schema"; // NOI18N
-    
+
     // Method Document
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
@@ -433,26 +434,42 @@ public class RubyIndexer extends EmbeddingIndexer {
             List<?extends AstElement> structure = ar.getElements();
 
             // Rails special case
-            // fall through to do normal indexing as well, these special cases
+            // in case of 2.3.3 fall through to do normal indexing as well, these special cases
             // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
+            // if rails is in vendor/rails, we can't tell the version from
+            // the path, so playing safe and falling through to do also normal
+            // indexing in that case
+            boolean fallThrough = RubyUtils.isRails23OrHigher(file.getPath())
+                    || file.getPath().contains("vendor/rails"); //NOI18N
             if (fileName.startsWith("acti")) { // NOI18N
                 if ("action_controller.rb".equals(fileName)) { // NOI18N
                     // Locate "ActionController::Base.class_eval do"
                     // and take those include statements and stick them into ActionController::Base
                     handleRailsBase("ActionController"); // NOI18N
+                    if (!fallThrough) {
+                        return;
+                    }
                 } else if ("active_record.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActiveRecord"); // NOI18N
 //                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
                     // HACK
                     handleMigrations();
+                    if (!fallThrough) {
+                        return;
+                    }
                 } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActionMailer"); // NOI18N
-                    return;
+                    if (!fallThrough) {
+                        return;
+                    }
                 } else if ("action_view.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActionView"); // NOI18N
 
                     // HACK
                     handleActionViewHelpers();
+                    if (!fallThrough) {
+                        return;
+                    }
 
                 //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
                     // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
@@ -462,6 +479,9 @@ public class RubyIndexer extends EmbeddingIndexer {
                 }
             } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
                 handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
+                if (!fallThrough) {
+                    return;
+                }
             } else if (fileName.equals("schema_definitions.rb")) {
                 handleSchemaDefinitions();
                 // Fall through - also do normal indexing on the file
@@ -483,7 +503,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
             analyze(structure);
         }
-        
+
         private void handleSchemaDefinitions() {
             // Make sure we're in Rails 2.0...
             if (url.indexOf("activerecord-2") == -1) { // NOI18N
@@ -1069,7 +1089,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         
         private boolean shouldIndexTopLevel() {
             // Don't index top level methods in the libraries
-            if (!platform || preindexingTest) {
+            if (!platform || userSourcesTest) {
                 String name = file.getNameExt();
                 // Don't index spec methods or test methods
                 if (!name.endsWith("_spec.rb") && !name.endsWith("_test.rb")) {
@@ -1379,17 +1399,19 @@ public class RubyIndexer extends EmbeddingIndexer {
 
             //XXX: this will skip TI for tests as it did in GSF where
             // platform was always false.
-            if (platform && !skipTypeInferenceForTests) {
-                Node root = AstUtilities.getRoot(result);
+
+            Node root = AstUtilities.getRoot(result);
+            if (platform && !userSourcesTest) {
                 signature = RubyIndexerHelper.getMethodSignature(
                         child, root, flags, signature, file, result.getSnapshot());
                 if (signature == null) {
                     return;
                 }
-            }
-
-            if (child.getType().isKnown()) {
-                signature += ";;" + child.getType().asIndexedString() + ";"; // NOI18N
+            } else {
+                if (!userSourcesTest) {
+                    signature = RubyIndexerHelper.replaceAttributes(signature, flags);
+                }
+                signature = RubyIndexerHelper.getMethodSignatureForUserSources(root, child, signature, flags, result.getSnapshot());
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
 
@@ -1478,7 +1500,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
             // Don't index globals in the libraries
-            if (!platform || preindexingTest) {
+            if (!platform || userSourcesTest) {
 
                 String signature = child.getName();
 //            int flags = getModifiersFlag(child.getModifiers());

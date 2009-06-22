@@ -118,7 +118,7 @@ final class LibrariesNode extends AbstractNode {
     private final Action[] actions;
 
     public LibrariesNode(final NbModuleProject project) {
-        super(new LibrariesChildren(project));
+        super(new LibrariesChildren(project), org.openide.util.lookup.Lookups.fixed(project));
         setName(LIBRARIES_NAME);
         setDisplayName(DISPLAY_NAME);
         if (Util.getModuleType(project) == NbModuleProvider.SUITE_COMPONENT) {
@@ -245,7 +245,7 @@ final class LibrariesNode extends AbstractNode {
         protected Node[] createNodes(Object key) {
             Node node;
             if (key == JDK_PLATFORM_NAME) {
-                node = PlatformNode.create(project.evaluator(), "nbjdk.home"); // NOI18N
+                node = PlatformNode.create(project, project.evaluator(), "nbjdk.home"); // NOI18N
             } else if (key instanceof ModuleDependency) {
                 ModuleDependency dep = (ModuleDependency) key;
                 File srcF = dep.getModuleEntry().getSourceLocation();

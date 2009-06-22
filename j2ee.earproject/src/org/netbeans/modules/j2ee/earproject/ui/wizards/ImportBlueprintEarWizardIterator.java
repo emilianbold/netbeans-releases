@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.openide.WizardDescriptor;
@@ -120,7 +121,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             srcF = FileUtil.normalizeFile(srcF);
         }
         String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
-        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        Profile j2eeProfile = (Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         //        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
         String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
@@ -131,18 +132,18 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         String librariesDefinition =
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
-        return testableInstantiate(platformName, sourceLevel, j2eeLevel, dirF,
+        return testableInstantiate(platformName, sourceLevel, j2eeProfile, dirF,
                 srcF, serverInstanceID, name, userModules, handle, librariesDefinition, serverLibraryName);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(final String platformName,
-            final String sourceLevel, final String j2eeLevel, final File dirF,
+            final String sourceLevel, final Profile j2eeProfile, final File dirF,
             final File srcF, final String serverInstanceID, final String name,
             final Map<FileObject, ModuleType> userModules, ProgressHandle handle,
             String librariesDefinition, String serverLibraryName) throws IOException {
         
-        EarProjectGenerator.importProject(dirF, srcF, name, j2eeLevel,
+        EarProjectGenerator.importProject(dirF, srcF, name, j2eeProfile,
                 serverInstanceID, platformName, sourceLevel, userModules, 
                 librariesDefinition, serverLibraryName);
         if (handle != null) {

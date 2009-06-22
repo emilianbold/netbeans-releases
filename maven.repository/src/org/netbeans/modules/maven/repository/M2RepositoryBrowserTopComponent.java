@@ -256,6 +256,7 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     final FindInRepoPanel pnl = new FindInRepoPanel();
     pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "ACSD_Find_In_Repositories"));
     final DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "TIT_Find_In_Repositories"));
+    pnl.attachDesc(dd);
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
         showFind(pnl.getQuery(), dd);

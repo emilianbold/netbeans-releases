@@ -157,8 +157,6 @@ public class JaxWsUtils {
     private static final String OLD_SOAP12_NAMESPACE = "http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/"; //NOI18N
     private static final String SOAP12_NAMESPACE = "http://www.w3.org/2003/05/soap/bindings/HTTP/";  //NOI18N
     private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
-    private static final String SOAP_BINDING_TYPE = "javax.xml.ws.soap.SOAPBinding";  //NOI18N
-    private static final String SOAP12_HTTP_BINDING = "SOAP12HTTP_BINDING"; //NOI18N
     private static int projectType;
     private static boolean jsr109Supported = false;
 
@@ -398,13 +396,17 @@ public class JaxWsUtils {
 
                     if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
                         TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
-                        if (bindingElement != null) {
-                            TypeElement soapBindingElement = workingCopy.getElements().getTypeElement(SOAP_BINDING_TYPE);
-                            ExpressionTree exp = make.MemberSelect(make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
 
+
+
+
+                        if (bindingElement != null) {
+                            List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
+                            bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
+                                    make.Identifier(OLD_SOAP12_NAMESPACE))); //NOI18N
                             AnnotationTree bindingAnnotation = make.Annotation(
                                     make.QualIdent(bindingElement),
-                                    Collections.<ExpressionTree>singletonList(exp));
+                                    bindingAttrs);
                             modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
                         }
                     }
@@ -479,20 +481,6 @@ public class JaxWsUtils {
         };
         targetSource.runModificationTask(task).commit();
 
-        final FileObject createdFile = implClassFo;
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                Service serv = findServiceForServiceName(createdFile, service.getName());
-                if (serv != null) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            NbBundle.getMessage(JaxWsUtils.class,"MSG_ServiceNameExists", service.getName(), serv.getImplementationClass()), 
-                            NotifyDescriptor.WARNING_MESSAGE));
-                }
-            }
-            
-        });
         //open in editor
         DataObject dobj = DataObject.find(implClassFo);
         openFileInEditor(dobj);
@@ -544,12 +532,12 @@ public class JaxWsUtils {
                     Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
-            Object moduleType = provider.getJ2eeModule().getModuleType();
-            if (J2eeModule.EJB.equals(moduleType)) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
                 projectType = ProjectInfo.EJB_PROJECT_TYPE;
-            } else if (J2eeModule.WAR.equals(moduleType)) {
+            } else if (J2eeModule.Type.WAR.equals(moduleType)) {
                 projectType = ProjectInfo.WEB_PROJECT_TYPE;
-            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
                 projectType = ProjectInfo.CAR_PROJECT_TYPE;
             } else {
                 projectType = ProjectInfo.JSE_PROJECT_TYPE;
@@ -910,12 +898,11 @@ public class JaxWsUtils {
                     if (isSOAP12 && bindingAnnotation == null) {
 
                         ModifiersTree modifiersTree = javaClass.getModifiers();
-                        TypeElement soapBindingElement = workingCopy.getElements().getTypeElement(SOAP_BINDING_TYPE);
-                        ExpressionTree exp = make.MemberSelect(make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
 
+                        AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(OLD_SOAP12_NAMESPACE)); //NOI18N
                         AnnotationTree soapVersionAnnotation = make.Annotation(
                                 make.QualIdent(bindingElement),
-                                Collections.<ExpressionTree>singletonList(exp));
+                                Collections.<ExpressionTree>singletonList(soapVersion));
 
                         ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
 
@@ -1320,7 +1307,7 @@ public class JaxWsUtils {
             }
             try {
                 J2eePlatform platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
-                if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                if (platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
                     return true;
                 }
             } catch (InstanceRemovedException ex) {

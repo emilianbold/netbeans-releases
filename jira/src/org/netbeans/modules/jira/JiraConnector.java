@@ -40,14 +40,15 @@
 package org.netbeans.modules.jira;
 
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
-import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
+import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -81,13 +82,6 @@ public class JiraConnector extends BugtrackingConnector {
         return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
     }
 
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
-    }
 
     @Override
     public IssueFinder getIssueFinder() {
@@ -97,4 +91,14 @@ public class JiraConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    public Lookup getLookup() {
+        return Lookups.singleton(getKenaiSupport());
+    }
+
+    private KenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = new KenaiSupportImpl();
+        }
+        return kenaiSupport;
+    }
 }

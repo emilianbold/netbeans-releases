@@ -56,7 +56,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -146,7 +145,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
 
         // Make sure all languages are update
-        ((MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor()).refreshRequiredLanguages();
+        projectDescriptorProvider.getConfigurationDescriptor().refreshRequiredLanguages();
 
         // Create options
         JButton options[] = new JButton[]{
@@ -212,7 +211,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put(project, dialog);
         dialog.setVisible(true);
-        //clonedProjectdescriptor.closed();
+    //clonedProjectdescriptor.closed();
     }
 
     /** Listens to the actions on the Customizer's option buttons */
@@ -252,15 +251,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
                 makeCustomizer.save();
 
-                List<String> oldSourceRoots = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRoots();
-                List<String> newSourceRoots = ((MakeConfigurationDescriptor)clonedProjectdescriptor).getSourceRoots();
+                List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
+                List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                Configuration oldActive = projectDescriptor.getConfs().getActive();
+                Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
 
                 projectDescriptor.assign(clonedProjectdescriptor);
                 projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
-
+                ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
 //                ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
 
                 fireActionEvent(e);

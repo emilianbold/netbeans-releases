@@ -168,7 +168,7 @@ public class TreeFactory {
     }
     
     public BreakTree Break(CharSequence label) {
-        Name n = label != null ? names.fromString(label.toString()) : null;
+    Name n = label != null ? names.fromString(label.toString()) : names.empty;
         return make.Break(n);
     }
     
@@ -282,7 +282,7 @@ public class TreeFactory {
     }
     
     public ContinueTree Continue(CharSequence label) {
-        Name n = label != null ? names.fromString(label.toString()) : null;
+        Name n = label != null ? names.fromString(label.toString()) : names.empty;
         return make.Continue(n);
     }
     
@@ -630,12 +630,15 @@ public class TreeFactory {
                 
                 tp = make.TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
                 break;
+            case NULL:
+                tp = make.Literal(TypeTags.BOT, null);
+                break;
             case ERROR:
                 tp = make.Ident(((ErrorType) type).tsym.name);
                 break;
             default:
-        return make.Type((Type)type);
-    }
+                return make.Type((Type)type);
+        }
     
         return tp;
     }

@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -124,11 +125,9 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         clientModuleUriCombo.setModel(uiProperties.CLIENT_MODULE_MODEL);
         jCheckBoxDeployOnSave.setModel(uiProperties.DEPLOY_ON_SAVE_MODEL);
 
-        String j2eeVersion = uiProperties.getProject().getJ2eePlatformVersion();
-        if (J2eeModule.JAVA_EE_5.equals(j2eeVersion)) {
-            jTextFieldVersion.setText(EarProjectProperties.JAVA_EE_SPEC_50_LABEL);
-        } else if (J2eeModule.J2EE_14.equals(j2eeVersion)) {
-            jTextFieldVersion.setText(EarProjectProperties.J2EE_SPEC_14_LABEL);
+        Profile j2eeProfile = uiProperties.getProject().getJ2eeProfile();
+        if (j2eeProfile != null) {
+            jTextFieldVersion.setText(j2eeProfile.getDisplayName());
         }
         setDeployOnSaveState();
         handleWebModuleRelated();
@@ -147,9 +146,8 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }
     
     private int getLongestVersionLength() {
-        return Math.max(
-                EarProjectProperties.JAVA_EE_SPEC_50_LABEL.length(),
-                EarProjectProperties.J2EE_SPEC_14_LABEL.length());
+        // FIXME fix UI to handle the case without this stuff :/
+        return Profile.JAVA_EE_6_FULL.getDisplayName().length();
     }
     
     /** This method is called from within the constructor to
@@ -491,10 +489,10 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         
         private void initValues(List<ClassPathSupport.Item> list) {
             Set<ClientModuleItem> items = new TreeSet<ClientModuleItem>();
-            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.WAR)) {
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.Type.WAR)) {
                 items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), false));
             }
-            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.CLIENT)) {
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.Type.CAR)) {
                 items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), true));
             }
             values = new ArrayList<ClientModuleItem>(items);

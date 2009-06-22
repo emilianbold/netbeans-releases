@@ -361,7 +361,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 //if it is DataProvider instance it had to be returned at the previous loop
                 //and if we are here it means no storage exists for this DataProvider
                 // no providers for this storage can be found nor created
-                log.info("Unable to find storage to create Visualizer with ID == " + configuration.getID()); // NOI18N
+                log.fine("Unable to find storage to create Visualizer with ID == " + configuration.getID()); // NOI18N
                 return null;
             } else {
                 // Found! Can craete visualizer with this id for this dataProvider
@@ -375,7 +375,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         }
         if (visualizer == null) {
-            log.info("Unable to find factory to create Visualizer with ID == " + configuration.getID()); // NOI18N
+            log.fine("Unable to find factory to create Visualizer with ID == " + configuration.getID()); // NOI18N
             return null;
 
         }

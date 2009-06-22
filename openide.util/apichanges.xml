@@ -49,6 +49,38 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="org.openide.util.Lookup.paths">
+        <api name="lookup"/>
+        <summary>Added
+            <code>org.openide.util.Lookup.paths</code> property
+        </summary>
+        <version major="7" minor="24"/>
+        <date day="19" month="6" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                 Better way to integrate Lookup.getDefault() and system filesystem.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Lookup"/>
+        <issue number="166782"/>
+    </change>
+    <change id="enableStackTraces">
+        <api name="util"/>
+        <summary>Added constructor <code>RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces)</code></summary>
+        <version major="7" minor="24"/>
+        <date day="8" month="6" year="2009"/>
+        <author login="rmichalsky"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Newly added constructor allows to disable (slow) filling stack traces before posting each task. 
+            </p>
+        </description>
+        <class package="org.openide.util" name="RequestProcessor"/>
+        <issue number="165862"/>
+    </change>
     <change id="ImageUtilities.loadImageIcon">
         <api name="util"/>
         <summary>Added <code>loadImageIcon(String resource, boolean localized)</code></summary>

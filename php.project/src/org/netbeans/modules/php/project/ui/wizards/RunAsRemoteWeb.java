@@ -317,6 +317,17 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         indexFileBrowseButton.setVisible(false);
     }
 
+    public void hideRunAs() {
+        runAsLabel.setVisible(false);
+        runAsComboBox.setVisible(false);
+    }
+
+    public void hideUploadFiles() {
+        uploadFilesLabel.setVisible(false);
+        uploadFilesComboBox.setVisible(false);
+        uploadFilesHintLabel.setVisible(false);
+    }
+
     void updateRemoteConnectionHint() {
         RemoteConfiguration configuration = (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
         if (configuration == NO_REMOTE_CONFIGURATION) {

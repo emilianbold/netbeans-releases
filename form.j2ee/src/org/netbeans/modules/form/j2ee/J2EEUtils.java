@@ -98,9 +98,9 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -180,7 +180,7 @@ public class J2EEUtils {
             provider = ProviderUtil.TOPLINK_PROVIDER;
         }
 
-        unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection);
+        unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection, persistence.getVersion());
         unit.setTransactionType("RESOURCE_LOCAL"); // NOI18N
 
         // TopLink/Derby combination doesn't like empty username and password,

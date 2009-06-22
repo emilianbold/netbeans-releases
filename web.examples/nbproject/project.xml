@@ -107,7 +107,10 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.j2ee.samples</friend>
+                <package>org.netbeans.modules.web.examples</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -87,6 +87,10 @@ public class TaskIndexer extends CustomIndexer {
         try {
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : files ) {
+                if (context.isCancelled()) {
+                    LOG.log(Level.FINE, "Indexer cancelled"); //NOI18N
+                    return;
+                }
                 if( null == scanners ) {
                     scanners = new ArrayList<FileTaskScanner>( 20 );
                     for( FileTaskScanner s : tm.getFileScanners() ) {
@@ -99,7 +103,7 @@ public class TaskIndexer extends CustomIndexer {
                 }
                 FileObject root = context.getRoot();
                 if( null == root ) {
-                    LOG.log(Level.FINE, "Context root not avaible");
+                    LOG.log(Level.FINE, "Context root not available");
                     return;
                 }
                 FileObject fo = root.getFileObject(idx.getRelativePath());
@@ -107,6 +111,7 @@ public class TaskIndexer extends CustomIndexer {
                     LOG.log(Level.FINE, "Cannot find file [%0] under root [%1]", new Object[] {idx.getRelativePath(), root});
                     continue;
                 }
+                is.removeDocuments(idx);
                 IndexDocument doc = null;
                 for( FileTaskScanner scanner : scanners ) {
                     List<? extends Task> tasks = scanner.scan(fo);

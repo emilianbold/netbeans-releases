@@ -42,9 +42,12 @@ package org.netbeans.modules.bugtracking.kenai;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Query.Filter;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;
@@ -75,8 +78,14 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
     }
 
     public void actionPerformed(ActionEvent e) {
-        query.setFilter(filter);
-        QueryAction.openKenaiQuery(query, null);
+
+        // XXX this is a hack for now - filter should be set only for the one relevant support
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (BugtrackingConnector c : connectors) {
+            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
+            support.setFilter(query, filter);
+        }
+        QueryAction.openQuery(query, null, true);
     }
 
     static QueryResultHandleImpl forStatus(Query query, int status) {
@@ -89,7 +98,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 return new QueryResultHandleImpl(
                         query,
                         totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
-                        query.FILTER_ALL);
+                        Filter.getAllFilter(query));
 
             case Issue.ISSUE_STATUS_NOT_SEEN:
 
@@ -103,7 +112,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 StringBuffer label = new StringBuffer();
                 unseenFormat.format(new Object[] {notIssues}, label, null);
                 
-                return new QueryResultHandleImpl(query, label.toString(), Query.FILTER_NOT_SEEN);
+                return new QueryResultHandleImpl(query, label.toString(), Filter.getNotSeenFilter());
 
             case Issue.ISSUE_STATUS_NEW:
 
@@ -117,7 +126,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 label = new StringBuffer();
                 newFormat.format(new Object[] {newIssues}, label, null);
 
-                return new QueryResultHandleImpl(query, label.toString(), query.FILTER_NEW);
+                return new QueryResultHandleImpl(query, label.toString(), Filter.getNewFilter(query));
 
             default:
                 throw new IllegalStateException("wrong status value [" + status + "]"); // NOI18N

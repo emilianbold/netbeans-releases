@@ -300,8 +300,7 @@ public class APTSerializeUtils {
         }
     }
 
-    public static void readStringToMacroMap(Map<CharSequence, APTMacro> macros, DataInput input) throws IOException {
-        int collSize = input.readInt();
+    public static void readStringToMacroMap(int collSize, Map<CharSequence, APTMacro> macros, DataInput input) throws IOException {
         for (int i = 0; i < collSize; ++i) {
             CharSequence key = CharSequenceKey.create(input.readUTF());
             assert key != null;

@@ -39,12 +39,14 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import org.openide.util.Lookup;
+
 /**
  * Represents a bugtracking connector.
  * 
  * @author Tomas Stupka
  */
-public abstract class BugtrackingConnector {
+public abstract class BugtrackingConnector implements Lookup.Provider {
     
     /**
      * Returns the display name for this connector
@@ -71,17 +73,6 @@ public abstract class BugtrackingConnector {
      * @return known repositories
      */
     public abstract Repository[] getRepositories();
-
-    /**
-     *
-     * Returns a {@link KenaiSupport} instance or null if not
-     * provided by the connector
-     *
-     * @return KenaiSupport or null if not provided
-     */
-    public KenaiSupport getKenaiSupport() {
-        return null;
-    }
 
     /**
      * Returns an {@code IssueFinder} for the connector, or {@code null}

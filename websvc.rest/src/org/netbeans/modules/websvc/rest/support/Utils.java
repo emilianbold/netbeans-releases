@@ -58,6 +58,8 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -109,7 +111,7 @@ public class Utils {
                 
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        line.show(Line.SHOW_SHOW, (int) position[1]);
+                        line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE, (int) position[1]);
                     }
                 });
             }

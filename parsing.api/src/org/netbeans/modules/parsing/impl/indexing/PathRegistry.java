@@ -94,7 +94,8 @@ public final class PathRegistry implements Runnable {
     private Collection<URL> libraryPath;
     private Collection<URL> binaryLibraryPath;
     private Collection<URL> unknownSourcePath;
-
+    private Map<URL, PathIds> rootPathIds;
+    
     private final Listener listener;
     private final List<PathRegistryListener> listeners;
 
@@ -198,6 +199,7 @@ public final class PathRegistry implements Runnable {
                     this.sourceResults = res.newSR;
                     this.translatedRoots = res.translatedRoots;
                     this.unknownRoots = res.unknownRoots;
+                    this.rootPathIds = res.rootPathIds;
                 }
                 return this.sourcePaths;
             }
@@ -239,6 +241,7 @@ public final class PathRegistry implements Runnable {
                     this.sourceResults = res.newSR;
                     this.translatedRoots = res.translatedRoots;
                     this.unknownRoots = res.unknownRoots;
+                    this.rootPathIds = res.rootPathIds;
                 }
                 return this.libraryPath;
             }
@@ -280,6 +283,7 @@ public final class PathRegistry implements Runnable {
                     this.sourceResults = res.newSR;
                     this.translatedRoots = res.translatedRoots;
                     this.unknownRoots = res.unknownRoots;
+                    this.rootPathIds = res.rootPathIds;
                 }
                 return this.binaryLibraryPath;
             }
@@ -321,6 +325,7 @@ public final class PathRegistry implements Runnable {
                     this.sourceResults = res.newSR;
                     this.translatedRoots = res.translatedRoots;
                     this.unknownRoots = res.unknownRoots;
+                    this.rootPathIds = res.rootPathIds;
                 }
                 return this.unknownSourcePath;
             }
@@ -330,15 +335,25 @@ public final class PathRegistry implements Runnable {
         }
     }
 
-   /**
-    * If all the source path events where fired (task is finished) return true,
-    * otherwise false. (Means there is waiting event to be fired.)
-    *
-    * @return true when there is no waiting event, otherwise false
-    */
-   public boolean isFinished() {
+    public Set<String> getSourceIdsFor(URL root) {
+        PathIds pathIds = getRootPathIds().get(root);
+        return pathIds != null ? pathIds.getSids() : null;
+    }
+
+    public Set<String> getLibraryIdsFor(URL root) {
+        PathIds pathIds = getRootPathIds().get(root);
+        return pathIds != null ? pathIds.getLids() : null;
+    }
+
+    /**
+     * If all the source path events where fired (task is finished) return true,
+     * otherwise false. (Means there is waiting event to be fired.)
+     *
+     * @return true when there is no waiting event, otherwise false
+     */
+    public boolean isFinished() {
        return firerTask.isFinished();
-   }
+    }
 
     public void run () {
         assert firer.isRequestProcessorThread();
@@ -360,6 +375,48 @@ public final class PathRegistry implements Runnable {
         LOGGER.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
     }
 
+    private Map<URL, PathIds> getRootPathIds () {
+        Request request;
+        synchronized (this) {
+            if (this.rootPathIds != null) {
+                return rootPathIds;
+            }
+            request = new Request (
+                getTimeStamp(),
+                getSourcePaths(),
+                getLibraryPaths(),
+                getBinaryLibraryPaths(),
+                new HashSet<ClassPath> (this.activeCps),
+                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
+                new HashMap<URL, WeakValue> (this.unknownRoots),
+                this.listener,
+                this.listener);
+        }
+        final Result res = createResources (request);
+        if (this.debugCallBack != null) {
+            this.debugCallBack.run();
+        }
+        synchronized (this) {
+            if (getTimeStamp() == res.timeStamp) {
+                if (rootPathIds == null) {
+                    this.sourcePaths = res.sourcePath;
+                    this.libraryPath = res.libraryPath;
+                    this.binaryLibraryPath = res.binaryLibraryPath;
+                    this.unknownSourcePath = res.unknownSourcePath;
+                    this.activeCps = res.newCps;
+                    this.sourceResults = res.newSR;
+                    this.translatedRoots = res.translatedRoots;
+                    this.unknownRoots = res.unknownRoots;
+                    this.rootPathIds = res.rootPathIds;
+                }
+                return this.rootPathIds;
+            }
+            else {
+                return res.rootPathIds;
+            }
+        }
+    }
+
     private static Result createResources (final Request request) {
         assert request != null;
         final Set<URL> sourceResult = new HashSet<URL> ();
@@ -369,11 +426,21 @@ public final class PathRegistry implements Runnable {
         final Map<URL,URL[]> translatedRoots = new HashMap<URL, URL[]>();
         final Set<ClassPath> newCps = new HashSet<ClassPath> ();
         final Map<URL,SourceForBinaryQuery.Result2> newSR = new HashMap<URL,SourceForBinaryQuery.Result2> ();
+        final Map<URL, PathIds> pathIdsResult = new HashMap<URL, PathIds>();
 
-        for (ClassPath cp : request.sourceCps) {
+        for (TaggedClassPath tcp : request.sourceCps) {
+            ClassPath cp = tcp.getClasspath();
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
-                sourceResult.add(entry.getURL());
+                URL root = entry.getURL();
+                sourceResult.add(root);
+                PathIds pathIds = pathIdsResult.get(root);
+                if (pathIds == null) {
+                    pathIds = new PathIds();
+                    pathIdsResult.put(root, pathIds);
+                }
+                pathIds.addAll(tcp.getPathIds());
+//                LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
             }
             boolean notContained = newCps.add (cp);
             if (isNew && notContained) {
@@ -381,10 +448,19 @@ public final class PathRegistry implements Runnable {
             }
         }
 
-        for (ClassPath cp : request.libraryCps) {
+        for (TaggedClassPath tcp : request.libraryCps) {
+            ClassPath cp = tcp.getClasspath();
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
-                libraryResult.add(entry.getURL());
+                URL root = entry.getURL();
+                libraryResult.add(root);
+                PathIds pathIds = pathIdsResult.get(root);
+                if (pathIds == null) {
+                    pathIds = new PathIds();
+                    pathIdsResult.put(root, pathIds);
+                }
+                pathIds.addAll(tcp.getPathIds());
+//                LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
             }
             boolean notContained = newCps.add (cp);
             if (isNew && notContained) {
@@ -392,7 +468,8 @@ public final class PathRegistry implements Runnable {
             }
         }
 
-        for (ClassPath cp : request.binaryLibraryCps) {
+        for (TaggedClassPath tcp : request.binaryLibraryCps) {
+            ClassPath cp = tcp.getClasspath();
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL url = entry.getURL();
@@ -417,6 +494,10 @@ public final class PathRegistry implements Runnable {
                         libraryResult.addAll(srcRoots);
                     }
                     translatedRoots.put(url, cacheURLs.toArray(new URL[cacheURLs.size()]));
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("T: " + url + " -> " + cacheURLs); //NOI18N
+                    }
+
                     if (isNewSR) {
                         sr.addChangeListener(request.changeListener);
                     }
@@ -438,7 +519,7 @@ public final class PathRegistry implements Runnable {
         unknownResult.addAll(request.unknownRoots.keySet());
 
         return new Result (request.timeStamp, sourceResult, libraryResult, binaryLibraryResult, unknownResult,
-                newCps, newSR, translatedRoots, request.unknownRoots);
+                newCps, newSR, translatedRoots, request.unknownRoots, pathIdsResult);
     }
 
     private static Collection <URL> getSources (final SourceForBinaryQuery.Result2 sr, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
@@ -477,6 +558,7 @@ public final class PathRegistry implements Runnable {
             this.libraryPath = null;
             this.binaryLibraryPath = null;
             this.unknownSourcePath = null;
+            this.rootPathIds = null;
             this.timeStamp++;
             this.changes.add(new PathRegistryEvent.Change(eventKind, pathKind, pathId, paths));
         }
@@ -512,19 +594,19 @@ public final class PathRegistry implements Runnable {
         return null;
     }
 
-    private Set<ClassPath> getSourcePaths () {
+    private Collection<TaggedClassPath> getSourcePaths () {
         return getPaths(PathKind.SOURCE);
     }
 
-    private Set<ClassPath> getLibraryPaths () {
+    private Collection<TaggedClassPath> getLibraryPaths () {
         return getPaths(PathKind.LIBRARY);
     }
 
-    private Set<ClassPath> getBinaryLibraryPaths () {
+    private Collection<TaggedClassPath> getBinaryLibraryPaths () {
         return getPaths(PathKind.BINARY_LIBRARY);
     }
 
-    private Set<ClassPath> getPaths (final PathKind kind) {
+    private Collection<TaggedClassPath> getPaths (final PathKind kind) {
         Set<String> ids;
         switch (kind) {
             case SOURCE:
@@ -538,14 +620,28 @@ public final class PathRegistry implements Runnable {
                 break;
             default:
                 LOGGER.warning("Not expecting PathKind of " + kind); //NOI18N
-                return Collections.<ClassPath>emptySet();
+                return Collections.<TaggedClassPath>emptySet();
         }
 
-        Set<ClassPath> result = new HashSet<ClassPath>();   //Maybe caching, but should be called once per change
+        Map<ClassPath, TaggedClassPath> result = new HashMap<ClassPath, TaggedClassPath>();   //Maybe caching, but should be called once per change
         for (String id : ids) {
-            result.addAll (this.regs.getPaths(id));
+            for(ClassPath cp : this.regs.getPaths(id)) {
+                TaggedClassPath tcp = result.get(cp);
+                if (tcp == null) {
+                    tcp = new TaggedClassPath(cp);
+                    result.put(cp, tcp);
+                }
+                switch (kind) {
+                    case SOURCE:
+                        tcp.associateWithSourceId(id); break;
+                    case LIBRARY:
+                        tcp.associateWithLibraryId(id); break;
+                    case BINARY_LIBRARY:
+                        tcp.associateWithBinaryLibraryId(id); break;
+                }
+            }
         }
-        return result;
+        return result.values();
     }
 
     private long getTimeStamp () {
@@ -555,18 +651,20 @@ public final class PathRegistry implements Runnable {
     private static class Request {
 
         final long timeStamp;
-        final Set<ClassPath> sourceCps;
-        final Set<ClassPath> libraryCps;
-        final Set<ClassPath> binaryLibraryCps;
+        final Collection<TaggedClassPath> sourceCps;
+        final Collection<TaggedClassPath> libraryCps;
+        final Collection<TaggedClassPath> binaryLibraryCps;
         final Set<ClassPath> oldCps;
         final Map <URL, SourceForBinaryQuery.Result2> oldSR;
         final Map<URL, WeakValue> unknownRoots;
         final PropertyChangeListener propertyListener;
         final ChangeListener changeListener;
 
-        public Request (final long timeStamp, final Set<ClassPath> sourceCps, final Set<ClassPath> libraryCps, final Set<ClassPath> binaryLibraryCps,
+        public Request (final long timeStamp, 
+            final Collection<TaggedClassPath> sourceCps, final Collection<TaggedClassPath> libraryCps, final Collection<TaggedClassPath> binaryLibraryCps,
             final Set<ClassPath> oldCps, final Map <URL, SourceForBinaryQuery.Result2> oldSR, final Map<URL, WeakValue> unknownRoots,
-            final PropertyChangeListener propertyListener, final ChangeListener changeListener) {
+            final PropertyChangeListener propertyListener, final ChangeListener changeListener
+        ) {
             assert sourceCps != null;
             assert libraryCps != null;
             assert binaryLibraryCps != null;
@@ -599,6 +697,7 @@ public final class PathRegistry implements Runnable {
         final Map<URL, SourceForBinaryQuery.Result2> newSR;
         final Map<URL, URL[]> translatedRoots;
         final Map<URL, WeakValue> unknownRoots;
+        final Map<URL, PathIds> rootPathIds;
 
         public Result (final long timeStamp,
             final Collection<URL> sourcePath,
@@ -607,7 +706,8 @@ public final class PathRegistry implements Runnable {
             final Collection<URL> unknownSourcePath,
             final Set<ClassPath> newCps,
             final Map<URL, SourceForBinaryQuery.Result2> newSR, final Map<URL, URL[]> translatedRoots,
-            final Map<URL, WeakValue> unknownRoots) {
+            final Map<URL, WeakValue> unknownRoots,
+            final Map<URL, PathIds> rootPathIds) {
             assert sourcePath != null;
             assert libraryPath != null;
             assert binaryLibraryPath != null;
@@ -615,6 +715,7 @@ public final class PathRegistry implements Runnable {
             assert newCps != null;
             assert newSR  != null;
             assert translatedRoots != null;
+            assert rootPathIds != null;
             this.timeStamp = timeStamp;
             this.sourcePath = sourcePath;
             this.libraryPath = libraryPath;
@@ -624,6 +725,7 @@ public final class PathRegistry implements Runnable {
             this.newSR = newSR;
             this.translatedRoots = translatedRoots;
             this.unknownRoots = unknownRoots;
+            this.rootPathIds = rootPathIds;
         }
     }
 
@@ -707,4 +809,64 @@ public final class PathRegistry implements Runnable {
                 resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY_LIBRARY, null, null);
             }
     }
+
+    private static final class TaggedClassPath {
+
+        private final ClassPath classpath;
+        private final PathIds pathIds = new PathIds();
+
+        public TaggedClassPath(ClassPath classpath) {
+            this.classpath = classpath;
+        }
+
+        public ClassPath getClasspath() {
+            return classpath;
+        }
+
+        public PathIds getPathIds() {
+            return pathIds;
+        }
+
+        public void associateWithSourceId(String id) {
+            pathIds.getSids().add(id);
+        }
+
+        public void associateWithLibraryId(String id) {
+            pathIds.getLids().add(id);
+        }
+
+        public void associateWithBinaryLibraryId(String id) {
+            pathIds.getBlids().add(id);
+        }
+    } // End of TaggedClassPath class
+
+    private static final class PathIds {
+
+        private final Set<String> sourcePathIds = new HashSet<String>();
+        private final Set<String> libraryPathIds = new HashSet<String>();
+        private final Set<String> binaryLibraryPathIds = new HashSet<String>();
+
+        public Set<String> getSids() {
+            return sourcePathIds;
+        }
+
+        public Set<String> getLids() {
+            return libraryPathIds;
+        }
+
+        public Set<String> getBlids() {
+            return binaryLibraryPathIds;
+        }
+
+        public void addAll(PathIds pathIds) {
+            sourcePathIds.addAll(pathIds.getSids());
+            libraryPathIds.addAll(pathIds.getLids());
+            binaryLibraryPathIds.addAll(pathIds.getBlids());
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + ";sids=" + sourcePathIds + ", lids=" + libraryPathIds + ", blids=" + binaryLibraryPathIds; //NOI18N
+        }
+    } // End of PathIds class
 }

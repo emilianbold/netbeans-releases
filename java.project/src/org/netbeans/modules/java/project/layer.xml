@@ -219,10 +219,17 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
   </folder>
+
+  <folder name="Actions">
+      <folder name="Project">
+        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance"/>
+      </folder>
+  </folder>
   
     <folder name="ProjectsTabActions">
-        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance">
+        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.shadow">
             <attr name="position" intvalue="1600"/>
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance"/>
         </file>
     </folder>
     

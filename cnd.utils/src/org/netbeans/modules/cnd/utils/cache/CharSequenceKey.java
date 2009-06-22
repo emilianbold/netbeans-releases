@@ -170,6 +170,30 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         return -1;
     }
 
+    public static String toString(CharSequence prefix, char separator, CharSequence postfix) {
+        int prefLength = prefix.length();
+        int postLength = postfix.length();
+        char[] chars = new char[prefLength + 1 + postLength];
+        int indx = 0;
+        if (prefix instanceof String) {
+            ((String)prefix).getChars(0, prefLength, chars, indx);
+            indx = prefLength;
+        } else {
+            for (int i = 0; i < prefLength; i++) {
+                chars[indx++] = prefix.charAt(i);
+            }
+        }
+        chars[indx++] = separator;
+        if (postfix instanceof String) {
+            ((String)postfix).getChars(0, postLength, chars, indx);
+        } else {
+            for (int i = 0; i < postLength; i++) {
+                chars[indx++] = postfix.charAt(i);
+            }
+        }
+        return new String(chars);
+    }
+
     private static TinyCharSequence createFromBytes(byte[] b, int n) {
         assert b != null;
         if (n < 8) {
@@ -423,8 +447,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 
         @Override
         public String toString() {
-            StringBuilder buf = new StringBuilder(this);
-            return buf.toString();
+            int n = length();
+            char[] r = new char[n];
+            for (int i = 0; i < n; i++) {
+                r[i] = charAt(i);
+            }
+            return new String(r);
         }
 
         @Override
@@ -535,8 +563,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 
         @Override
         public String toString() {
-            StringBuilder buf = new StringBuilder(this);
-            return buf.toString();
+            int n = length();
+            char[] r = new char[n];
+            for (int i = 0; i < n; i++) {
+                r[i] = charAt(i);
+            }
+            return new String(r);
         }
 
         @Override

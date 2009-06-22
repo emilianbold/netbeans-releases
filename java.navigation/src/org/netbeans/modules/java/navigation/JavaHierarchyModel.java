@@ -80,9 +80,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -164,7 +164,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
                 return;
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -355,7 +355,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                 }
                             }, true);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }
@@ -393,7 +393,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
                     return;
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }
@@ -603,7 +603,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                                         }
                                                     }, true);
                                             } catch (IOException ioe) {
-                                                ErrorManager.getDefault().notify(ioe);
+                                                Exceptions.printStackTrace(ioe);
                                             }
                                         }                                       
                                     }

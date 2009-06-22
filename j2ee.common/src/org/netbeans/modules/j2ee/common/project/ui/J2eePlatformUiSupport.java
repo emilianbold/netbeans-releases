@@ -50,7 +50,9 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,37 +60,60 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea, Radko Najman
  */
 public class J2eePlatformUiSupport {
-
-    private static final String JAVA_EE_5_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "JAVA_EE_5_displayName"); // NOI18N 
-    private static final String J2EE_1_4_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "J2EE_1_4_displayName"); // NOI18N 
-    private static final String J2EE_1_3_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "J2EE_1_3_displayName"); // NOI18N  
     
     private J2eePlatformUiSupport() {
     }
-    
+
+    @Deprecated
     public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String j2eeLevel, Object moduleType) {
-        return new J2eePlatformComboBoxModel(serverInstanceId, j2eeLevel, moduleType);
+        return new J2eePlatformComboBoxModel(serverInstanceId, Profile.fromPropertiesString(j2eeLevel), J2eeModule.Type.fromJsrType(moduleType));
     }
-    
+
+    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, Profile j2eeProfile, J2eeModule.Type moduleType) {
+        return new J2eePlatformComboBoxModel(serverInstanceId, j2eeProfile, moduleType);
+    }
+
+    @Deprecated
     public static ComboBoxModel createSpecVersionComboBoxModel(String j2eeSpecVersion) {
-        return new J2eeSpecVersionComboBoxModel(j2eeSpecVersion);
+        return new J2eeSpecVersionComboBoxModel(Profile.fromPropertiesString(j2eeSpecVersion));
     }
-    
+
+    public static ComboBoxModel createSpecVersionComboBoxModel(Profile profile) {
+        return new J2eeSpecVersionComboBoxModel(profile);
+    }
+
+    @Deprecated
     public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
             Object j2eeSpecVersionModelObject, Object moduleType) {
-        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String)) {
+
+        return getJ2eePlatformAndSpecVersionMatch(j2eePlatformModelObject, j2eeSpecVersionModelObject, J2eeModule.Type.fromJsrType(moduleType));
+    }
+
+    public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
+            Object j2eeSpecVersionModelObject, J2eeModule.Type moduleType) {
+        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter
+                && (j2eeSpecVersionModelObject instanceof String || j2eeSpecVersionModelObject instanceof Profile))) {
             return false;
         }
-        
+
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
-        String specVersion = (String)j2eeSpecVersionModelObject;
-        return j2eePlatform.getSupportedSpecVersions(moduleType).contains(specVersion);
+        Profile profile = null;
+        if (j2eeSpecVersionModelObject instanceof Profile) {
+            profile = (Profile) j2eeSpecVersionModelObject;
+        } else {
+            profile = Profile.fromPropertiesString((String) j2eeSpecVersionModelObject);
+        }
+        return j2eePlatform.getSupportedProfiles(moduleType).contains(profile);
     }
-    
+
+    @Deprecated
     public static String getSpecVersion(Object j2eeSpecVersionModelObject) {
-        return ((J2eePlatformComboBoxItem)j2eeSpecVersionModelObject).getCode();
+        return ((J2eePlatformComboBoxItem)j2eeSpecVersionModelObject).getProfile().toPropertiesString();
     }
-    
+
+    public static Profile getJavaEEProfile(Object j2eeSpecVersionModelObject) {
+        return ((J2eePlatformComboBoxItem) j2eeSpecVersionModelObject).getProfile();
+    }
     
     public static String getServerInstanceID(Object j2eePlatformModelObject) {
         if (j2eePlatformModelObject == null)
@@ -120,12 +145,12 @@ public class J2eePlatformUiSupport {
         private J2eePlatformAdapter[] j2eePlatforms;
         private final String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
-        private final String j2eeLevel;
-        private final Object moduleType;
+        private final Profile j2eeProfile;
+        private final J2eeModule.Type moduleType;
         
-        public J2eePlatformComboBoxModel(String serverInstanceID, String j2eeLevel, Object moduleType) {
+        public J2eePlatformComboBoxModel(String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
             initialJ2eePlatform = serverInstanceID;
-            this.j2eeLevel = j2eeLevel;
+            this.j2eeProfile = j2eeProfile;
             this.moduleType = moduleType;
 
             getJ2eePlatforms(moduleType);
@@ -156,7 +181,7 @@ public class J2eePlatformUiSupport {
             }
         }
                 
-        private synchronized J2eePlatformAdapter[] getJ2eePlatforms(Object moduleType) {
+        private synchronized J2eePlatformAdapter[] getJ2eePlatforms(J2eeModule.Type moduleType) {
             if (j2eePlatforms == null) {
                 String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
                 Set<J2eePlatformAdapter> orderedNames = new TreeSet<J2eePlatformAdapter>();
@@ -165,8 +190,8 @@ public class J2eePlatformUiSupport {
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        if (j2eePlatform.getSupportedModuleTypes().contains(moduleType)
-                                && j2eePlatform.getSupportedSpecVersions(moduleType).contains(j2eeLevel)) {
+                        if (j2eePlatform.getSupportedTypes().contains(moduleType)
+                                && j2eePlatform.getSupportedProfiles(moduleType).contains(j2eeProfile)) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform, serverInstanceIDs[i]);
                             orderedNames.add(adapter);
                         
@@ -224,15 +249,15 @@ public class J2eePlatformUiSupport {
         private J2eePlatformComboBoxItem initialJ2eeSpecVersion;
         private J2eePlatformComboBoxItem selectedJ2eeSpecVersion;
     
-        public J2eeSpecVersionComboBoxModel(String j2eeSpecVersion) {
-            initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeSpecVersion);
+        public J2eeSpecVersionComboBoxModel(Profile j2eeProfile) {
+            initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeProfile);
             
             List<J2eePlatformComboBoxItem> orderedListItems = new ArrayList<J2eePlatformComboBoxItem>();
-            orderedListItems.add(new J2eePlatformComboBoxItem(J2EEProjectProperties.JAVA_EE_5));
-            orderedListItems.add(new J2eePlatformComboBoxItem(J2EEProjectProperties.J2EE_1_4));
-            if (!J2EEProjectProperties.JAVA_EE_5.equals(initialJ2eeSpecVersion.getCode()) &&
-                    !J2EEProjectProperties.J2EE_1_4.equals(initialJ2eeSpecVersion.getCode())) {
-                orderedListItems.add(0, new J2eePlatformComboBoxItem(J2EEProjectProperties.J2EE_1_3));
+            orderedListItems.add(new J2eePlatformComboBoxItem(Profile.JAVA_EE_5));
+            orderedListItems.add(new J2eePlatformComboBoxItem(Profile.J2EE_14));
+            if (!(Profile.JAVA_EE_5 == initialJ2eeSpecVersion.getProfile()) &&
+                    !(Profile.J2EE_14 == initialJ2eeSpecVersion.getProfile())) {
+                orderedListItems.add(0, new J2eePlatformComboBoxItem(Profile.J2EE_13));
             }
             
             j2eeSpecVersions = orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
@@ -257,41 +282,19 @@ public class J2eePlatformUiSupport {
     }
     
     private static final class J2eePlatformComboBoxItem{
-        private String code;
-        private String displayName;
+        private final Profile profile;
 
-        public J2eePlatformComboBoxItem (String code, String displayName){
-            this.code = code;
-            this.displayName = displayName;        
+        public J2eePlatformComboBoxItem (Profile profile){
+            this.profile = profile;
         }
 
-        public J2eePlatformComboBoxItem (String code){
-             this(code, findDisplayName(code));        
-        }
-
-        private static String findDisplayName(String code){
-            if (code == null) {
-                return "";
-            }
-            if(code.equals(J2EEProjectProperties.JAVA_EE_5)) {
-                return JAVA_EE_5_DISPLAY_NAME;
-            }
-            if(code.equals(J2EEProjectProperties.J2EE_1_4)) {
-                return J2EE_1_4_DISPLAY_NAME;
-            }
-            if(code.equals(J2EEProjectProperties.J2EE_1_3)) {
-                return J2EE_1_3_DISPLAY_NAME;
-            }
-            return code; //version display name not found, use the version code for display name        
-        }
-
-        public String getCode(){
-            return code;        
+        public Profile getProfile() {
+            return profile;
         }
 
         @Override
         public String toString(){
-            return displayName;        
+            return profile.getDisplayName();
         }
     }
 

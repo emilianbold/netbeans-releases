@@ -44,14 +44,15 @@ import org.w3c.dom.Element;
  * FacesContext for this request and the value of the var
  * element below.
  * 
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 
-public class ResourceBundleImpl extends DescriptionGroupImpl implements ResourceBundle {
+public class ResourceBundleImpl extends IdentifiableDescriptionGroupImpl implements ResourceBundle {
 
-    protected static final List<String> RESOURCE_BUNDLE_SORTED_ELEMENTS = new ArrayList<String>();
+    protected static final List<String> RESOURCE_BUNDLE_SORTED_ELEMENTS 
+        = new ArrayList<String>( DESCRIPTION_GROUP_SORTED_ELEMENTS.size() +2 );
     static {
-        RESOURCE_BUNDLE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
+        RESOURCE_BUNDLE_SORTED_ELEMENTS.addAll(DESCRIPTION_GROUP_SORTED_ELEMENTS);
         RESOURCE_BUNDLE_SORTED_ELEMENTS.add(JSFConfigQNames.BASE_NAME.getLocalName());
         RESOURCE_BUNDLE_SORTED_ELEMENTS.add(JSFConfigQNames.VAR.getLocalName());
     }

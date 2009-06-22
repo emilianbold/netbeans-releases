@@ -57,16 +57,20 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
+import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -82,10 +86,11 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.filesystems.FileUtil;
@@ -107,6 +112,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "jira.issue.assigned";    // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
@@ -134,45 +140,45 @@ public class NbJiraIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
 
     enum IssueField {
-        KEY(JiraAttribute.ISSUE_KEY.id()),
-        SUMMARY(JiraAttribute.SUMMARY.id()),
-        DESCRIPTION(JiraAttribute.DESCRIPTION.id()),
-        STATUS(TaskAttribute.STATUS),
-        PRIORITY(JiraAttribute.PRIORITY.id()),
-        RESOLUTION(JiraAttribute.RESOLUTION.id()),
-        PROJECT(JiraAttribute.PROJECT.id()),
-        COMPONENT(JiraAttribute.COMPONENTS.id()),
-        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id()),
-        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id()),
-        ENVIRONMENT(JiraAttribute.ENVIRONMENT.id()),
-        REPORTER(JiraAttribute.USER_REPORTER.id()),
-        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id()),
-//        NEWCC(JiraAttribute.NEWCC.getName()),
-//        REMOVECC(JiraAttribute.REMOVECC.getName()),
-//        CC(JiraAttribute.CC.getName()),
-//        DEPENDS_ON(JiraAttribute.DEPENDSON.getName()),
-//        BLOCKS(JiraAttribute.BLOCKED.getName()),
-//        URL(JiraAttribute.BUG_FILE_LOC.getName()),
-//        KEYWORDS(JiraAttribute.KEYWORDS.getName()),
-        TYPE(JiraAttribute.TYPE.id()),
-        CREATION(JiraAttribute.CREATION_DATE.id()),
-        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id()),
-        DUE(JiraAttribute.DUE_DATE.id()),
-        ESTIMATE(JiraAttribute.ESTIMATE.id()),
-        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id()),
-        ACTUAL(JiraAttribute.ACTUAL.id());
-//        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
-//        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
+        KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
+        SUMMARY(JiraAttribute.SUMMARY.id(), "LBL_SUMMARY"),
+        DESCRIPTION(JiraAttribute.DESCRIPTION.id(), "LBL_DESCRIPTION"),
+        STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
+        PRIORITY(JiraAttribute.PRIORITY.id(), "LBL_PRIORITY"),
+        RESOLUTION(JiraAttribute.RESOLUTION.id(), "LBL_RESOLUTION"),
+        PROJECT(JiraAttribute.PROJECT.id(), "LBL_PROJECT"),
+        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT"),
+        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS"),
+        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS"),
+        ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
+        REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
+        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNEE"),
+        TYPE(JiraAttribute.TYPE.id(), "LBL_TYPE"),
+        CREATION(JiraAttribute.CREATION_DATE.id(), null),
+        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id(), null),
+        DUE(JiraAttribute.DUE_DATE.id(), "LBL_DUE"),
+        ESTIMATE(JiraAttribute.ESTIMATE.id(), "LBL_ESTIMATE"),
+        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id(), "LBL_INITIAL_ESTIMATE"),
+        ACTUAL(JiraAttribute.ACTUAL.id(), "LBL_ACTUALL"),
+        PARENT_ID(JiraAttribute.PARENT_ID.id(), null),
+        PARENT_KEY(JiraAttribute.PARENT_KEY.id(), null),
+        SUBTASK_IDS(JiraAttribute.SUBTASK_IDS.id(), null, false),
+        SUBTASK_KEYS(JiraAttribute.SUBTASK_KEYS.id(), null, false),
+        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
+        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
         private final String key;
         private boolean singleAttribute;
+        private final String displayNameKey;
 
-        IssueField(String key) {
-            this(key, true);
+        IssueField(String key, String displayNameKey) {
+            this(key, displayNameKey, true);
         }
-        IssueField(String key, boolean singleAttribute) {
+
+        IssueField(String key, String displayNameKey, boolean singleAttribute) {
             this.key = key;
             this.singleAttribute = singleAttribute;
+            this.displayNameKey = displayNameKey;
         }
         public String getKey() {
             return key;
@@ -182,6 +188,10 @@ public class NbJiraIssue extends Issue {
         }
         public boolean isReadOnly() {
             return !singleAttribute;
+        }
+        public String getDisplayName() {
+            assert displayNameKey != null; // shouldn't be called for a field with a null display name
+            return NbBundle.getMessage(NbJiraIssue.class, displayNameKey);
         }
     }
 
@@ -202,6 +212,11 @@ public class NbJiraIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public boolean isNew() {
+        return taskData == null || taskData.isNew();
+    }
+
     public void setTaskData(TaskData taskData) {
         assert !taskData.isPartial();
         this.taskData = taskData;
@@ -215,7 +230,7 @@ public class NbJiraIssue extends Issue {
         });
     }
 
-    JiraRepository getRepository() {
+    public JiraRepository getRepository() {
         return repository;
     }
 
@@ -258,6 +273,32 @@ public class NbJiraIssue extends Issue {
 
     TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
+    }
+
+    public boolean isSubtask() {
+        String key = getParentKey();
+        return key != null && !key.trim().equals("");
+    }
+
+    public boolean hasSubtasks() {
+        List<String> keys = getSubtaskKeys();
+        return keys != null && keys.size() > 0;
+    }
+
+    public String getParentKey() {
+        return getFieldValue(IssueField.PARENT_KEY);
+    }
+
+    public List<String> getSubtaskKeys() {
+        return getFieldValues(IssueField.SUBTASK_KEYS);
+    }
+
+    public String getParentID() {
+        return getFieldValue(IssueField.PARENT_ID);
+    }
+
+    public List<String> getSubtaskID() {
+        return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
     Comment[] getComments() {
@@ -566,27 +607,6 @@ public class NbJiraIssue extends Issue {
         ta.setValue(operation.getOperationId());
     }
 
-    public void resolveFixed(String val) {
-//        try {
-//            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
-//            Resolution resolution = null;
-//            if(res != null) {
-//                for (Resolution r : res) {
-//                    // XXX HACK
-//                    if(r.getName().equals("Fixed")) {
-//                        resolution = r;
-//                    }
-//                }
-//            }
-//            if(resolution == null) {
-//                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
-//            }
-//            resolve(resolution, val);
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//        }
-    }
-
     @Override
     public String getDisplayName() {
         return taskData.isNew() ?
@@ -636,7 +656,12 @@ public class NbJiraIssue extends Issue {
 
         // resolved attrs
         if(close) {
-            resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
+            try {
+                resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
+            } catch (IllegalStateException ise) {
+                // so do not set to close if already closed
+                Jira.LOG.log(Level.INFO, "Close not permitted, current status is " + getStatus().getName() + ", leaving status the same", ise);
+            }
         }
 
         JiraCommand submitCmd = new JiraCommand() {
@@ -714,54 +739,166 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getRecentChanges() {
-        return ""; // XXX implement me
+        if(wasSeen()) {
+            return "";                                                          // NOI18N
+        }
+        int status = repository.getIssueCache().getStatus(getID());
+        if(status == Issue.ISSUE_STATUS_NEW) {
+            return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
+        } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
+            List<IssueField> changedFields = new ArrayList<IssueField>();
+            Map<String, String> seenAtributes = getSeenAttributes();
+            assert seenAtributes != null;
+            for (IssueField f : IssueField.values()) {
+                switch(f) {
+                    case MODIFICATION :
+                        continue;
+                }
+                String value = getFieldValue(f);
+                String seenValue = seenAtributes.get(f.key);
+                if(seenValue == null) {
+                    seenValue = "";                                             // NOI18N
+                }
+                if(!value.trim().equals(seenValue)) {
+                    changedFields.add(f);
+                }
+            }
+            int changedCount = changedFields.size();
+            if(changedCount == 1) {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    switch(changedField) {
+                        case SUMMARY :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
+                            break;
+//                        XXX
+//                        case DEPENDS_ON :
+//                        case BLOCKS :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
+//                            break;
+                        case COMMENT_COUNT :
+                            String value = getFieldValue(changedField);
+                            String seenValue = seenAtributes.get(changedField.key);
+                            if(seenValue == null || seenValue.trim().equals("")) {
+                                seenValue = "0";
+                            }
+                            int count = 0;
+                            try {
+                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                            } catch(NumberFormatException ex) {
+                                Jira.LOG.log(Level.WARNING, ret, ex);
+                            }
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
+                            break;
+                        case ATTACHEMENT_COUNT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_ATTACHMENTS_CHANGED");
+                            break;
+                        default :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldDisplayValue(changedField)});
+                    }
+                }
+                return ret;
+            } else {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    switch(changedField) {
+                        case SUMMARY :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
+                            break;
+                        case PRIORITY :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
+                            break;
+                        case TYPE :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_TYPE", new Object[] {changedCount});
+                            break;
+                        case PROJECT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PROJECT", new Object[] {changedCount});
+                            break;
+                        case COMPONENT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
+                            break;
+                        case ENVIRONMENT :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ENVIRONMENT", new Object[] {changedCount});
+                            break;
+// XXX
+//                        case VERSION :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
+//                            break;
+//                        case MILESTONE :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
+//                            break;
+                        case ASSIGNEE :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
+                            break;                        
+//                        case DEPENDS_ON :
+//                        case BLOCKS :
+//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
+//                            break;
+                        default :
+                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES", new Object[] {changedCount});
+                    }
+                    return ret;
+                }
+            }
+        }
+        return "";
     }
 
     @Override
     public Map<String, String> getAttributes() {
-//        if(attributes == null) {
-//            attributes = new HashMap<String, String>();
-//            String value;
-//            for (IssueField field : IssueField.values()) {
-//                switch(field) {
-//                    case REPORTER_NAME:
-//                    case QA_CONTACT_NAME:
-//                    case ASSIGNED_TO_NAME:
-//                        continue;
-//                    default:
-//                        value = getFieldValue(field);
-//                }
-//                if(value != null && !value.trim().equals("")) {                 // NOI18N
-//                    attributes.put(field.key, value);
-//                }
-//            }
-//        }
-//        return attributes;
-        return Collections.emptyMap();
+        if(attributes == null) {
+            attributes = new HashMap<String, String>();
+            for (IssueField field : IssueField.values()) {
+                String value = getFieldValue(field);
+                if(value != null && !value.trim().equals("")) {                 // NOI18N
+                    attributes.put(field.key, value);
+                }
+            }
+        }
+        return attributes;
     }   
 
-    public static ColumnDescriptor[] getColumnDescriptors() {
+    public static ColumnDescriptor[] getColumnDescriptors(JiraRepository repository) {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
+            JiraConfiguration conf = repository.getConfiguration();
+            JTable t = new JTable();
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
-                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Type_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc"), // NOI18N
+                                                  BugtrackingUtil.getColumnWidthInPixels(20, t)),
                 new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                                   loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
+                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Type_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Type_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getIssueTypes()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getResolutions()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
             };
         }
         return DESCRIPTORS;
@@ -789,6 +926,48 @@ public class NbJiraIssue extends Issue {
     String getFieldValue(IssueField f) {
         return getFieldValue(taskData, f);
     }
+
+    /**
+     * Returns the given fields diplay value
+     * @param f
+     * @return
+     */
+    private String getFieldDisplayValue(IssueField f) {
+        String value = getFieldValue(taskData, f);
+        if(value == null || value.trim().equals("")) {
+            return "";                                                          // NOI18N
+        }
+        JiraConfiguration config = repository.getConfiguration();
+        switch(f) {
+            case STATUS:
+                JiraStatus status = config != null ? config.getStatusById(value) : null;
+                return status != null ? status.getName() : "";                  // NOI18N
+            case PRIORITY:
+                Priority prio = config != null ? config.getPriorityById(value) : null;
+                return prio != null ? prio.getName() : "";                      // NOI18N
+            case RESOLUTION:
+                Resolution res = config != null ? config.getResolutionById(value) : null;
+                return res != null ? res.getName() : "";                        // NOI18N
+            case PROJECT:
+                Project project = config != null ? config.getProjectById(value) : null;
+                return project != null ? project.getName() : "";                // NOI18N
+            case COMPONENT:
+                String projectId = getFieldValue(IssueField.PROJECT);
+                Component comp = config != null ? config.getComponentById(projectId, value) : null;
+                return comp != null ? comp.getName() : "";                      // NOI18N
+            case AFFECTSVERSIONS:
+            case FIXVERSIONS:
+                projectId = getFieldValue(IssueField.PROJECT);
+                Version version = config != null ? config.getVersionById(projectId, value) : null;
+                return version != null ? version.getName() : "";                // NOI18N
+            case TYPE:
+                IssueType type = config != null ? config.getIssueTypeById(value) : null;
+                return type != null ? type.getName() : "";                      // NOI18N
+            default:
+                return value;
+        }
+    }
+
 
     static String getFieldValue(TaskData taskData, IssueField f) {
         if(f.isSingleAttribute()) {
@@ -840,7 +1019,7 @@ public class NbJiraIssue extends Issue {
     }
 
     List<String> getFieldValues(IssueField f) {
-        if(f.isSingleAttribute()) {
+        if(!f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null) {
                 return a.getValues();
@@ -1138,6 +1317,11 @@ public class NbJiraIssue extends Issue {
             };
             repository.getExecutor().execute(cmd);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getKey() + ", " + getSummary() + "]";
     }
 
     private class IssueTask extends AbstractTask {

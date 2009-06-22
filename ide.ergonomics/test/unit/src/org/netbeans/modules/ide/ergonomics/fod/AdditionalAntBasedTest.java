@@ -40,6 +40,7 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.net.URL;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -68,6 +69,11 @@ public class AdditionalAntBasedTest extends NbTestCase {
             clusters(".*").
             enableModules("ide[0-9]*", ".*")
         );
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
     }
 
     @Override

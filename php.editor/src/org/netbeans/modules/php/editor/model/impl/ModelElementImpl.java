@@ -343,6 +343,6 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public OffsetRange getOffsetRange(ParserResult result) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getNameRange();
     }
 }

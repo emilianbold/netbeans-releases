@@ -92,7 +92,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
         final MoveRefactoring[] moveRef = new MoveRefactoring[1];
         final CharSequence REFACTORED_OBJ = "org.gjt.sp.jedit.ActionSet";
 
-        src.runUserActionTask(new Task<CompilationController>() {
+        src.runWhenScanFinished(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
@@ -101,7 +101,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
                 ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
                 moveRef[0].getContext().add(cpi);
             }
-        }, false);
+        }, false).get();
         RefactoringSession rs = RefactoringSession.create("Session");
 
         File f = FileUtil.toFile(getProjectDir().getFileObject("/src/org/gjt/sp"));
@@ -136,6 +136,6 @@ public class MoveClassPerfTest extends RefPerfTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(MoveClassPerfTest.class, "testMoveActionSet").gui(true));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(MoveClassPerfTest.class, "testMoveActionSet").gui(false));
     }
 }

@@ -83,14 +83,12 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
 
         FileObject testFile = getProjectDir().getFileObject("/src/org/gjt/sp/jedit/jEdit.java");
 
-        ClasspathInfo cpi = ClasspathInfo.create(getBoot(), getCompile(), getSource());
-
-        JavaSource src = JavaSource.create(cpi, testFile);
+        JavaSource src = JavaSource.forFileObject(testFile);
 
         // find usages of symbols collected below
         final List<TreePathHandle> handle = new ArrayList<TreePathHandle>();
 
-        src.runUserActionTask(new Task<CompilationController>() {
+        src.runWhenScanFinished(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
@@ -99,12 +97,12 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                     handle.add(TreePathHandle.create(element, controller));
                 }
             }
-        }, false);
+        }, false).get();
 
         // do find usages query
         for (final TreePathHandle element : handle) {
 
-            src.runUserActionTask(new Task<CompilationController>() {
+            src.runWhenScanFinished(new Task<CompilationController>() {
 
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
@@ -140,7 +138,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                     System.err.println(sb);
 
                 }
-            }, false);
+            }, false).get();
             System.gc(); System.gc();
         }
         src = null;

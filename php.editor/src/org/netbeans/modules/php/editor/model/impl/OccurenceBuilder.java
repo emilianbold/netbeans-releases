@@ -50,6 +50,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
@@ -63,7 +64,6 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -83,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -293,9 +294,12 @@ class OccurenceBuilder {
         if (canBePrepared(classDeclaration, scope)) {
             ClassDeclarationInfo node = ClassDeclarationInfo.create(classDeclaration);
             clasDeclarations.put(node, scope);
-            prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
-            List<Identifier> interfaes = classDeclaration.getInterfaes();
-            for (Identifier identifier : interfaes) {
+            Identifier superClsName = (classDeclaration.getSuperClass() != null) ?
+                CodeUtils.extractIdentifier(classDeclaration.getSuperClass()) : null;
+            prepare(Kind.CLASS, superClsName, scope);
+            List<Expression> interfaes = classDeclaration.getInterfaes();
+            for (Expression iface : interfaes) {
+                Identifier identifier = CodeUtils.extractIdentifier(iface);
                 prepare(Kind.IFACE, identifier, scope);
             }
             setOccurenceAsCurrent(node);
@@ -306,8 +310,9 @@ class OccurenceBuilder {
         if (canBePrepared(interfaceDeclaration, scope)) {
             InterfaceDeclarationInfo node = InterfaceDeclarationInfo.create(interfaceDeclaration);
             ifaceDeclarations.put(node, scope);
-            List<Identifier> interfaes = interfaceDeclaration.getInterfaes();
-            for (Identifier identifier : interfaes) {
+            List<Expression> interfaes = interfaceDeclaration.getInterfaes();
+            for (Expression iface : interfaes) {
+                Identifier identifier = CodeUtils.extractIdentifier(iface);
                 prepare(Kind.IFACE, identifier, scope);
             }
             setOccurenceAsCurrent(node);
@@ -488,7 +493,7 @@ class OccurenceBuilder {
             ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
             String methodName = nodeInfo.getName();
             if (queryName.equalsIgnoreCase(methodName)) {
-                String originalClzName = nodeInfo.getOriginalNode().getClassName().getName();
+                String originalClzName = CodeUtils.extractClassName(nodeInfo.getOriginalNode());
                 boolean isParent = originalClzName.equals("parent");//NOI18N
                 List<ModelElement> allMethods = new ArrayList<ModelElement>();
                 Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), originalClzName);
@@ -519,7 +524,7 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 StaticFieldAccess sfa = nodeInfo.getOriginalNode();
                 List<ModelElement> allFields = new ArrayList<ModelElement>();
-                Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), sfa.getClassName().getName());
+                Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), CodeUtils.extractClassName(sfa));
                 for (ClassScope clz : classes) {
                     List<? extends ModelElement> fields = ModelUtils.filter(clz.getFields(), nodeInfo.getName());
                     //TODO: if not found, then lookup inherited
@@ -541,7 +546,7 @@ class OccurenceBuilder {
             if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
                 StaticConstantAccess sca = nodeInfo.getOriginalNode();
                 List<ModelElement> allConstants = new ArrayList<ModelElement>();
-                Collection<? extends TypeScope> types = getStaticTypeName(entry.getValue(), sca.getClassName().getName());
+                Collection<? extends TypeScope> types = getStaticTypeName(entry.getValue(), CodeUtils.extractClassName(sca));
                 for (TypeScope type : types) {
                     Collection<? extends ModelElement> constants = type.findInheritedConstants(queryName);
                     //TODO: if not found, then lookup inherited
@@ -688,8 +693,8 @@ class OccurenceBuilder {
                 VariableScope varScope = (VariableScope) entry.getValue();
                 List<? extends ModelElement> elems = ModelUtils.filter(varScope.getDeclaredVariables(), name);
                 if (elems.isEmpty()) {
-                    elems = ModelUtils.filter(fileScope.getDeclaredVariables(), name);
-                }
+                    elems = ModelUtils.filter(ModelUtils.getDeclaredVariables(fileScope), name);
+                    }
 
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));
@@ -734,8 +739,8 @@ class OccurenceBuilder {
                 VariableScope varScope = (VariableScope) entry.getValue();
                 List<? extends ModelElement> elems = ModelUtils.filter(varScope.getDeclaredVariables(), name);
                 if (elems.isEmpty()) {
-                    elems = ModelUtils.filter(fileScope.getDeclaredVariables(), name);
-                }
+                    elems = ModelUtils.filter(ModelUtils.getDeclaredVariables(fileScope), name);
+                    }
 
                 if (!elems.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(elems, nodeInfo.getRange(), fileScope));

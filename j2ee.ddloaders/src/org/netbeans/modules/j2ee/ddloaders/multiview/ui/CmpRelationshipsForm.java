@@ -44,9 +44,15 @@ package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.LayoutFocusTraversalPolicy;
 import org.netbeans.modules.j2ee.ddloaders.multiview.Utils;
-
-import javax.swing.*;
 
 /**
  * @author pfiala

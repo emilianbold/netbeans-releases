@@ -64,6 +64,7 @@ public class SyntaxTree {
     static final String FORBIDDEN_END_TAG = "forbidded_endtag"; //NOI18N
     static final String UNMATCHED_TAG = "unmatched_tag"; //NOI18N
     static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
+    static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
         assert elements != null;
@@ -74,7 +75,7 @@ public class SyntaxTree {
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
-        AstNode rootNode = new AstNode("root", AstNode.NodeType.ROOT, 0, lastEndOffset); //NOI18N
+        AstNode rootNode = AstNode.createRootNode(0, lastEndOffset, dtd);
         LinkedList<AstNode> stack = new LinkedList<AstNode>();
         stack.add(rootNode);
 
@@ -119,7 +120,7 @@ public class SyntaxTree {
                         currentNodeDtdElement, stack(stack));
 
                 //check tag attributes
-                openTagNode.addDescriptions(checkTagAttributes((SyntaxElement.Tag) tagElement, currentNodeDtdElement));
+                checkTagAttributes(openTagNode, (SyntaxElement.Tag) tagElement, currentNodeDtdElement);
 
                 //add existing tag attributes
                 setTagAttributes(openTagNode, tagElement);
@@ -179,7 +180,7 @@ public class SyntaxTree {
 
                              */
 
-                            
+
                             int reduce_index = -1;
                             for (int i = stack.size() - 1; i > 0; i--) {
                                 AstNode node = stack.get(i);
@@ -196,7 +197,7 @@ public class SyntaxTree {
                                 //workaround
                                 stack.remove(lastNode);
                                 lastNode.setLogicalEndOffset(openTagNode.startOffset());
-                                
+
                                 lastNode = stack.getLast();
                                 lastNode.addChild(openTagNode);
 
@@ -274,7 +275,7 @@ public class SyntaxTree {
                     if (tagName.equals(node.name())) {
                         //found the matching open tag, maybe
                         //check if the matching open tag has forbidden end tag
-                        if (hasForbiddedEndTag(node)) {
+                        if (AstNodeUtils.hasForbiddenEndTag(node)) {
                             //cannot match, report error
                             closeTagNode.addDescriptionToNode(FORBIDDEN_END_TAG, NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR); //NOI18N
                         } else {
@@ -374,19 +375,28 @@ public class SyntaxTree {
         for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
             AstNode node = stack.get(i);
 
+            boolean nodeOk = true;
+
             if (!hasOptionalEndTag(node)) {
                 //unclosed tag, mark
                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNMATCHED_TAG"); //NOI18N
                 node.addDescriptionToNode(UNMATCHED_TAG, errorMessage, Description.WARNING);
+                nodeOk = false;
             }
 
             if (!node.isResolved()) {
                 //unresolved, mark
                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG", //NOI18N
                         new Object[]{elementsToString(node.getAllPossibleElements())});
-
                 node.addDescriptionToNode(UNRESOLVED_TAG_KEY, errorMessage, Description.ERROR);
+                nodeOk = false;
             }
+
+//            if(nodeOk) {
+                //if the tag is ok, then close it by the end of the file
+                node.setLogicalEndOffset(lastEndOffset);
+//            }
+
         }
 
         return rootNode;
@@ -400,12 +410,7 @@ public class SyntaxTree {
         return s;
     }
 
-    private static boolean hasForbiddedEndTag(AstNode node) {
-        Element e = node.getDTDElement();
-        assert e != null;
-
-        return e.isEmpty();
-    }
+    
 
     private static boolean hasOptionalEndTag(AstNode node) {
         Element e = node.getDTDElement();
@@ -422,22 +427,44 @@ public class SyntaxTree {
         return tagName.contains(":"); //NOI18N
     }
 
-    private static Collection<Description> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
-        Collection<Description> errmsgs = new ArrayList<Description>(3);
-        //check attributes
+    private static void checkTagAttributes(AstNode node, SyntaxElement.Tag element, Element dtdElement) {
+        //check existing attributes
         List<TagAttribute> existingAttrs = element.getAttributes();
-
+        List<String> existingAttrNames = new ArrayList<String>(existingAttrs.size());
         for (TagAttribute ta : existingAttrs) {
-            if (!isIgnoredTagAttribute(ta.getName()) &&
-                    dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
-                //unknown attribute
-                Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
-                        new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
+            String tagName = ta.getName().toLowerCase(Locale.ENGLISH);
+            existingAttrNames.add(ta.getName().toLowerCase(Locale.ENGLISH));
+            DTD.Attribute attr = dtdElement.getAttribute(tagName);
+            if(attr == null) {
+                if (!isIgnoredTagAttribute(ta.getName())) {
+                    //unknown attribute
+                    Description desc = Description.create(UNKNOWN_ATTRIBUTE_KEY, NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE", //NOI18N
+                            new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
 
-                errmsgs.add(desc);
+                    node.addDescription(desc);
+                }
             }
         }
-        return errmsgs;
+
+        //check missing required attributes
+        StringBuffer missingAttributesListMsg = new StringBuffer();
+        for(Object _attr : dtdElement.getAttributeList(null)) {
+            DTD.Attribute attr = (DTD.Attribute)_attr;
+            if(attr.isRequired() && !existingAttrNames.contains(attr.getName())) {
+                //missing required attribute
+                missingAttributesListMsg.append(attr.getName());
+                missingAttributesListMsg.append(", ");
+            }
+        }
+        if(missingAttributesListMsg.length() > 0) {
+            //cut last comma and space
+            missingAttributesListMsg.deleteCharAt(missingAttributesListMsg.length() - 2);
+            //attach the error description
+            node.addDescriptionToNode(MISSING_REQUIRED_ATTRIBUTES,
+                    NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
+                    new Object[]{missingAttributesListMsg.toString()}),
+                    Description.WARNING);
+        }
     }
 
     private static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {

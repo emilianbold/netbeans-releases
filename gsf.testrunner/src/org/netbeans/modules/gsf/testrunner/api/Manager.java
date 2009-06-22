@@ -43,14 +43,17 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
@@ -341,7 +344,7 @@ public final class Manager {
             Mutex.EVENT.writeAccess(new Displayer(null, promote));
         }
     }
-    
+
     /**
      *
      */
@@ -355,11 +358,6 @@ public final class Manager {
         }
         public void run() {
             final ResultWindow window = ResultWindow.getInstance();
-            if (displayHandler != null) {
-                window.addDisplayComponent(displayHandler.getDisplayComponent());
-                window.setOutputComp(displayHandler.getOutputComponent());
-                displayHandler.createIO(window.getIOContainer());
-            }
             if (promote) {
                window.promote();
             }
@@ -380,11 +378,35 @@ public final class Manager {
                 displayHandlers = new WeakHashMap<TestSession,ResultDisplayHandler>(7);
             }
             displayHandler = new ResultDisplayHandler(session);
+            createIO(displayHandler);
             displayHandlers.put(session, displayHandler);
         }
         return displayHandler;
     }
     
+    /**
+     * Creates an <code>IOContainer</code> for the given <code>displayHandler</code>.
+     * 
+     * @param displayHandler
+     */
+    private void createIO(final ResultDisplayHandler displayHandler) {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    final ResultWindow window = ResultWindow.getInstance();
+                    window.addDisplayComponent(displayHandler.getDisplayComponent());
+                    window.setOutputComp(displayHandler.getOutputComponent());
+                    displayHandler.createIO(window.getIOContainer());
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     /** */
     private Map<TestSession,Boolean> displaysMap;
     

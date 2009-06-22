@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import org.netbeans.modules.maven.spi.execute.AdvancedProcessKiller;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +53,10 @@ import hidden.org.codehaus.plexus.util.StringUtils;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -59,6 +64,9 @@ import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.cmd.Constructor;
+import org.netbeans.modules.maven.execute.cmd.DirectConstructor;
+import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -81,7 +89,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private ProgressHandle handle;
     private Process process;
+    private String processUUID;
     private Process preProcess;
+    private String preProcessUUID;
+    private static final String KEY_UUID = "NB_MAVEN_PROCESS_UUID"; //NOI18N
     
     private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
@@ -138,6 +149,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
             if (clonedConfig.getPreExecution() != null) {
                 ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);
+                preProcessUUID = UUID.randomUUID().toString();
+                builder.environment().put(KEY_UUID, preProcessUUID);
                 preProcess = builder.start();
                 out.setStdOut(preProcess.getInputStream());
                 out.setStdIn(preProcess.getOutputStream());
@@ -154,6 +167,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 //                ioput.getOut().println(key + ":" + env.get(key));
 //            }
             ProcessBuilder builder = constructBuilder(clonedConfig, ioput);
+            processUUID = UUID.randomUUID().toString();
+            builder.environment().put(KEY_UUID, processUUID);
             process = builder.start();
             out.setStdOut(process.getInputStream());
             out.setStdIn(process.getOutputStream());
@@ -170,10 +185,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             LOGGER.log(Level.WARNING , x.getMessage(), x);
         } catch (ThreadDeath death) {
             if (preProcess != null) {
-                preProcess.destroy();
+                kill(preProcess, preProcessUUID);
             }
             if (process != null) {
-                process.destroy();
+                kill(process, processUUID);
             }
             throw death;
         } finally {
@@ -210,33 +225,29 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
     }
 
-    // we run the shell/bat script in the process, on windows we need to quote any spaces
-    //once/if we get rid of shell/bat execution, we might need to remove this
-    //#164234
-    private static String quoteSpaces(String val, String quote) {
-        if (val.indexOf(' ') != -1) { //NOI18N
-            if (Utilities.isWindows()) {
-                return quote + val + quote; //NOI18N
-            }
+    private void kill(Process prcs, String uuid) {
+        AdvancedProcessKiller killer = Lookup.getDefault().lookup(AdvancedProcessKiller.class);
+        if (killer != null) {
+            Map<String, String> env = new HashMap<String, String>();
+            env.put(KEY_UUID, uuid);
+            killer.kill(prcs, env);
+        } else {
+            prcs.destroy();
         }
-        return val;
     }
-
     
     public boolean cancel() {
         if (preProcess != null) {
-            preProcess.destroy();
-            preProcess = null;
+            kill(preProcess, preProcessUUID);
         }
         if (process != null) {
-            process.destroy();
+            kill(process, processUUID);
             process = null;
         }
         return true;
     }
         
-    private static List<String> createMavenExecutionCommand(RunConfig config) {
-        File mavenHome = MavenSettings.getDefault().getCommandLinePath();
+    private static List<String> createMavenExecutionCommand(RunConfig config, Constructor base) {
         //#164234
         //if maven.bat file is in space containing path, we need to quote with simple quotes.
         String quote = "\"";
@@ -244,22 +255,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         // correctly to the java runtime on windows
         String escaped = "\\" + quote;
         List<String> toRet = new ArrayList<String>();
-        String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
-        if (mavenHome != null) {
-            File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
-            if (bin.exists()) {
-                    toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
-            } else {
-                toRet.add(ex);
-            }
-        } else {
-            toRet.add(ex);
-        }
-
-        if (Utilities.isWindows() && Boolean.getBoolean("maven.run.cmd")) { //#153101
-            toRet.add(0, "/c"); //NOI18N
-            toRet.add(0, "cmd"); //NOI18N
-        }
+        toRet.addAll(base.construct());
         
         for (Object key : config.getProperties().keySet()) {
             String val = config.getProperties().getProperty((String)key);
@@ -351,25 +347,20 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
 
     private ProcessBuilder constructBuilder(final RunConfig clonedConfig, InputOutput ioput) {
-        List<String> cmdLine = createMavenExecutionCommand(clonedConfig);
-        ProcessBuilder builder = new ProcessBuilder(cmdLine);
-        builder.redirectErrorStream(true);
-        builder.directory(clonedConfig.getExecutionDirectory());
-        ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
-        boolean hasJavaSet = false;
+        File javaHome = null;
+        Map<String, String> envMap = new HashMap<String, String>();
         for (Object key : clonedConfig.getProperties().keySet()) {
             String keyStr = (String) key;
             if (keyStr.startsWith(ENV_PREFIX)) {
                 String env = keyStr.substring(ENV_PREFIX.length());
                 String val = clonedConfig.getProperties().getProperty(keyStr);
-                builder.environment().put(env, val);
-                ioput.getOut().println("NetBeans:      " + env + "=" + val);
+                envMap.put(env, val);
                 if (keyStr.equals(ENV_JAVAHOME)) {
-                    hasJavaSet = true;
+                    javaHome = new File(val);
                 }
             }
         }
-        if (!hasJavaSet) {
+        if (javaHome == null) {
             if (clonedConfig.getProject() != null) {
                 //TODO somehow use the config.getMavenProject() call rather than looking up the
                 // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
@@ -381,23 +372,53 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                     for (FileObject fo : objs) {
                         if (FileUtil.isParentOf(fo, java)) {
                             path = FileUtil.toFile(fo);
+                            if (path != null) {
+                                javaHome = path;
+                                envMap.put(ENV_JAVAHOME.substring(ENV_PREFIX.length()), path.getAbsolutePath());
+                            }
                             break;
                         }
                     }
                 }
-                if (path != null) {
-                    builder.environment().put(ENV_JAVAHOME.substring(ENV_PREFIX.length()), path.getAbsolutePath());
-                    ioput.getOut().println("NetBeans:      JAVA_HOME =" + path.getAbsolutePath());
-                    hasJavaSet = true;
-                }
             }
             //#151559
-            if (!hasJavaSet && System.getenv("JAVA_HOME") == null) {
-                //NOI18N
-                builder.environment().put("JAVA_HOME", System.getProperty("java.home")); //NOI18N
-                ioput.getOut().println("NetBeans:      JAVA_HOME =" + System.getProperty("java.home"));
+            if (javaHome == null) {
+                if (System.getenv("JAVA_HOME") == null) {
+                    //NOI18N
+                    javaHome = new File(System.getProperty("java.home"));
+                    envMap.put("JAVA_HOME", javaHome.getAbsolutePath()); //NOI18N
+                } else {
+                    javaHome = new File(System.getenv("JAVA_HOME"));
+                    envMap.put("JAVA_HOME", javaHome.getAbsolutePath()); //NOI18N
+                }
             }
         }
+
+        File mavenHome = MavenSettings.getDefault().getCommandLinePath();
+        Constructor constructeur;
+
+        if (Boolean.getBoolean("maven.direct")) {
+            //TODO don't assume we know the path to mvn..
+            DefaultArtifactVersion dav = new DefaultArtifactVersion(MavenSettings.getCommandLineMavenVersion());
+            constructeur = new DirectConstructor(dav, javaHome, mavenHome);
+        } else {
+            constructeur = new ShellConstructor(mavenHome);
+        }
+
+        List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
+
+        ProcessBuilder builder = new ProcessBuilder(cmdLine);
+        builder.redirectErrorStream(true);
+        builder.directory(clonedConfig.getExecutionDirectory());
+        ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'"); //NOI18N - to be shown in log.
+        for (Map.Entry<String, String> entry : envMap.entrySet()) {
+            String env = entry.getKey();
+            String val = entry.getValue();
+            // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
+            builder.environment().put(env, val);
+            ioput.getOut().println("NetBeans:      " + env + "=" + val);
+        }
+
         return builder;
     }
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 import antlr.TokenStreamException;
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -115,16 +114,12 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (!startPath.equals(cacheEntry.getFilePath())) {
                 System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
             }
-            Object lock = cacheEntry.getIncludeLock(aptInclude);
-            synchronized (lock) {
-                APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-                if (postIncludeState != null && !hasIncludeActionSideEffects()) {
-                    getPreprocHandler().getMacroMap().setState(postIncludeState);
-                    return;
-                }
-                if (include(resolvedPath, aptInclude, postIncludeState)) {
-                    postIncludeState = getPreprocHandler().getMacroMap().getState();
-                    cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+            if (cacheEntry.isSerial()) {
+                serialIncludeImpl(aptInclude, resolvedPath);
+            } else {
+                Object lock = cacheEntry.getIncludeLock(aptInclude);
+                synchronized (lock) {
+                    serialIncludeImpl(aptInclude, resolvedPath);
                 }
             }
         } else {
@@ -145,8 +140,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
-            List<APTToken> body = define.getBody();
-            getMacroMap().define(getRootFile(), define.getName(), define.getParams(), body, Kind.DEFINED);
+            getMacroMap().define(getRootFile(), define, Kind.DEFINED);
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
@@ -218,9 +212,21 @@ public abstract class APTAbstractWalker extends APTWalker {
                 }
             }
         } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node {0}\n{1}", new Object[] { apt, ex });// NOI18N
         }
         onEval(apt, res);
         return res;
+    }
+
+    private void serialIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
+        if (postIncludeState != null && !hasIncludeActionSideEffects()) {
+            getPreprocHandler().getMacroMap().setState(postIncludeState);
+            return;
+        }
+        if (include(resolvedPath, aptInclude, postIncludeState)) {
+            postIncludeState = getPreprocHandler().getMacroMap().getState();
+            cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+        }
     }
 }

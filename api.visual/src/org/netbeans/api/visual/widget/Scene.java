@@ -212,6 +212,7 @@ public class Scene extends Widget {
      * Returns an instance of Graphics2D which is used for calculating boundaries and rendering all widgets in the scene.
      * @return the instance of Graphics2D
      */
+    @Override
     public final Graphics2D getGraphics () {
         return graphics;
     }
@@ -278,6 +279,7 @@ public class Scene extends Widget {
      * Returns whether the whole scene is validated and there is no widget or region that has to be revalidated.
      * @return true, if the whole scene is validated
      */
+    @Override
     public boolean isValidated () {
         return super.isValidated ()  &&  repaintRegion == null  &&  repaintWidgets.isEmpty ();
     }
@@ -286,6 +288,7 @@ public class Scene extends Widget {
      * Returns whether the layer widget requires to repainted after revalidation.
      * @return always false
      */
+    @Override
     protected boolean isRepaintRequiredForRevalidating () {
         return false;
     }
@@ -391,34 +394,37 @@ public class Scene extends Widget {
                 listener.sceneValidating ();
 
             layoutScene ();
-
-            for (Widget widget : repaintWidgets) {
-                Rectangle repaintBounds = widget.getBounds ();
-                if (repaintBounds == null)
-                    continue;
-                repaintBounds = widget.convertLocalToScene (repaintBounds);
-                if (repaintRegion != null)
-                    repaintRegion.add (repaintBounds);
-                else
-                    repaintRegion = repaintBounds;
-            }
-            repaintWidgets.clear ();
-    //        System.out.println ("r = " + r);
-
-            // NOTE - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
-            if (repaintRegion != null) {
-                Rectangle r = convertSceneToView (repaintRegion);
-                r.grow (1, 1);
-                if (component != null)
-                    component.repaint (r);
-                repaintSatellite ();
-                repaintRegion = null;
-            }
-    //        System.out.println ("time: " + System.currentTimeMillis ());
+            resolveRepaints ();
 
             for (SceneListener listener : ls)
                 listener.sceneValidated ();
         }
+    }
+
+    private void resolveRepaints () {
+        for (Widget widget : repaintWidgets) {
+            Rectangle repaintBounds = widget.getBounds ();
+            if (repaintBounds == null)
+                continue;
+            repaintBounds = widget.convertLocalToScene (repaintBounds);
+            if (repaintRegion != null)
+                repaintRegion.add (repaintBounds);
+            else
+                repaintRegion = repaintBounds;
+        }
+        repaintWidgets.clear ();
+//        System.out.println ("r = " + r);
+
+        // NOTE - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
+        if (repaintRegion != null) {
+            Rectangle r = convertSceneToView (repaintRegion);
+            r.grow (1, 1);
+            if (component != null)
+                component.repaint (r);
+            repaintSatellite ();
+            repaintRegion = null;
+        }
+//        System.out.println ("time: " + System.currentTimeMillis ());
     }
 
     /**
@@ -629,12 +635,14 @@ public class Scene extends Widget {
         return widgetHoverAction;
     }
     
+    @Override
     public void setResourceTable(ResourceTable table) {
         
         // TODO: What to do if a resource table already exist.
         resourceTable = table;
     }
     
+    @Override
     public ResourceTable getResourceTable() {
         return resourceTable;
     }

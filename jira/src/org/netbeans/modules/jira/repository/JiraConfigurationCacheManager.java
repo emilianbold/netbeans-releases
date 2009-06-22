@@ -178,6 +178,7 @@ public final class JiraConfigurationCacheManager {
      * @param url
      */
     void removeCachedData (String url) {
+        // TODO is not called yet, could be called in Repository.remove() - but careful, kenai can have the same URL as general trackers
         if (url == null) {
             return;
         }

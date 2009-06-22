@@ -50,8 +50,6 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -95,17 +93,7 @@ public final class FileIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
-            try {
-                IndexingSupport is = IndexingSupport.getInstance(context);
-                for(Indexable i : dirty) {
-                    is.markDirtyDocuments(i);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("dirty " + i.getURL() + "/" + i.getRelativePath());
-                    }
-                }
-            } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
-            }
+            // no need to do anything, we are not indexing anythong from inside of the file
         }
 
         @Override
@@ -135,6 +123,10 @@ public final class FileIndexer extends CustomIndexer {
             int cnt = 0;
             IndexingSupport is = IndexingSupport.getInstance(context);
             for(Indexable i : files) {
+                if (context.isCancelled()) {
+                    LOG.fine("Indexer cancelled"); //NOI18N
+                    break;
+                }
                 cnt++;
                 String nameExt = getNameExt(i);
                 if (nameExt.length() > 0) {
@@ -178,13 +170,13 @@ public final class FileIndexer extends CustomIndexer {
     }
 
     private static String getMimeType(Indexable i) {
-        FileObject f = URLMapper.findFileObject(i.getURL());
-        if (f != null) {
-            String mimeType = f.getMIMEType();
+//        FileObject f = URLMapper.findFileObject(i.getURL());
+//        if (f != null) {
+            String mimeType = i.getMimeType();
             if (!mimeType.equals("content/unknown")) { //NOI18N
                 return mimeType;
             }
-        }
+//        }
         return null;
     }
 }

@@ -39,7 +39,6 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
@@ -47,32 +46,32 @@ import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
-import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 final class RubyMethodTypeInferencer {
 
 
-    private static final String[] COMPARISON_OPERATORS = {"==", "==="}; //NOI18N
+    private static final String[] COMPARISON_OPERATORS = {"==", "===", "!=", }; //NOI18N
     /**
      * Names of the methods that whose return type is (typically) the same as the receiver.
      */
-    private static final String[] RECEIVER_METHODS = {"new", "clone", "dup", "freeze"};
+    private static final String[] RECEIVER_METHODS = {"new", "clone", "dup", "freeze", "+", "-"};
 
     /**
      * Method names whose return type we know.
      */
     private static final Map<String, RubyType> METHOD_TYPES = new HashMap<String, RubyType>(16);
 
-    /**
-     * Specifies whether certain time consuming type inference operations
-     * should be skipped.
-     */
-    private final boolean fast;
-
     static {
-        METHOD_TYPES.put("<=>", RubyType.INTEGER);
+        // some implementations of the comparison method below may return nil,
+        // such as in Module or Class
+        METHOD_TYPES.put("<=>", new RubyType(RubyType.FIXNUM, RubyType.NIL_CLASS));
+        METHOD_TYPES.put("<", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+        METHOD_TYPES.put(">", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+        METHOD_TYPES.put("<=", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+        METHOD_TYPES.put("=>", new RubyType(RubyType.BOOLEAN, RubyType.NIL_CLASS));
+
         METHOD_TYPES.put("to_s", RubyType.STRING);
         METHOD_TYPES.put("to_str", RubyType.STRING);
         METHOD_TYPES.put("to_string", RubyType.STRING);
@@ -82,22 +81,23 @@ final class RubyMethodTypeInferencer {
         METHOD_TYPES.put("to_ary", RubyType.ARRAY);
         METHOD_TYPES.put("to_array", RubyType.ARRAY);
         METHOD_TYPES.put("to_i", RubyType.INTEGER);
+        METHOD_TYPES.put("to_int", RubyType.INTEGER);
         METHOD_TYPES.put("to_f", RubyType.FLOAT);
+        METHOD_TYPES.put("to_float", RubyType.FLOAT);
     }
 
 
     private Node callNodeToInfer;
     private ContextKnowledge knowledge;
 
-    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge, boolean fast) {
+    private RubyMethodTypeInferencer(final Node nodeToInfer, final ContextKnowledge knowledge) {
         assert AstUtilities.isCall(nodeToInfer) : "Must be a call node";
         this.callNodeToInfer = nodeToInfer;
         this.knowledge = knowledge;
-        this.fast = fast;
     }
 
-    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge, boolean fast) {
-        return new RubyMethodTypeInferencer(nodeToInfer, knowledge, fast).inferType();
+    static RubyType inferTypeFor(final Node nodeToInfer, final ContextKnowledge knowledge) {
+        return new RubyMethodTypeInferencer(nodeToInfer, knowledge).inferType();
     }
 
     /**
@@ -185,7 +185,7 @@ final class RubyMethodTypeInferencer {
         }
 
         // this can be very time consuming, return if TI is not enabled
-        if (!TypeInferenceSettings.getDefault().getMethodTypeInference() || fast) {
+        if (!TypeInferenceSettings.getDefault().getMethodTypeInference()) {
             return RubyType.createUnknown();
         }
 
@@ -195,19 +195,6 @@ final class RubyMethodTypeInferencer {
             Set<IndexedMethod> methods = index.getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
             for (IndexedMethod indexedMethod : methods) {
                 RubyType type = indexedMethod.getType();
-                // no point in searching rdoc for dynamic methods
-                if (!type.isKnown() 
-                        && indexedMethod.getMethodType() != IndexedMethod.MethodType.DYNAMIC_FINDER
-                        && TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                    // fallback to the RDoc comment
-                    IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
-                    if (match != null) {
-                        List<String> comment = RubyCodeCompleter.getComments(null, match);
-                        if (comment != null) {
-                            type = RDocAnalyzer.collectTypesFromComment(comment);
-                        }
-                    }
-                }
                 resultType.append(type);
             }
             index.logMostTimeConsuming();
@@ -216,7 +203,7 @@ final class RubyMethodTypeInferencer {
     }
 
     private RubyType getReceiverType(final Node receiver) {
-        RubyType type = RubyTypeInferencer.normal(knowledge).inferType(receiver);
+        RubyType type = RubyTypeInferencer.create(knowledge).inferType(receiver);
         if (!type.isKnown() && receiver instanceof INameNode) {
             String name = ((INameNode) receiver).getName();
             // create a type for classes only -- no point in creating a type

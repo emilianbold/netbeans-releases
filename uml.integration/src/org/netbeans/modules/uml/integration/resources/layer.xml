@@ -40,7 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     <folder name="Actions">
@@ -80,19 +79,19 @@ made subject to such option by the copyright holder.
     
     <folder name="Menu">
         <folder name="Edit">
+            <file name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance"/>
+                <attr name="position" intvalue="2700"/>
+            </file>
+            <file name="org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance"/>
+                <attr name="position" intvalue="2800"/>
+            </file>
             <file name="sep-before-find-in-model.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="2600"/>
             </file>
-            <file name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance">
-                <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance"/>
-                <attr name="position" intvalue="2700"/>
-            </file>
-            <file name="org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance">
-                <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance"/>
-                <attr name="position" intvalue="2800"/>
-            </file>
-        </folder>   
+            </folder>   
         
     </folder>    
     

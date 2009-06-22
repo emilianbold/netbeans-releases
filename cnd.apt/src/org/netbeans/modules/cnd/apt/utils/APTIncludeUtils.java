@@ -44,8 +44,12 @@ package org.netbeans.modules.cnd.apt.utils;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -65,9 +69,9 @@ public class APTIncludeUtils {
         if (baseFile != null) {
             String folder = new File(baseFile.toString()).getParent();
             File fileFromBasePath = new File(folder, inclString);
-            if (!isDirectory(fileFromBasePath) && exists(fileFromBasePath)) {
+            if (isExistingFile(fileFromBasePath)) {
                 String absolutePath = fileFromBasePath.getAbsolutePath();
-                return new ResolvedPath(folder, normalize(absolutePath), absolutePath, true, 0);
+                return new ResolvedPath(FilePathCache.getManager().getString(folder), normalize(absolutePath), absolutePath, true, 0);
             }
         }
         return null;
@@ -76,35 +80,36 @@ public class APTIncludeUtils {
     public static ResolvedPath resolveAbsFilePath(String file) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
             File absFile = new File(file);
-            if (absFile.isAbsolute() && !isDirectory(absFile) && exists(absFile)) {
-                return new ResolvedPath(absFile.getParent(), normalize(file), file, false, 0);
+            if (absFile.isAbsolute() && isExistingFile(absFile) ) {
+                return new ResolvedPath(FilePathCache.getManager().getString(absFile.getParent()), normalize(file), file, false, 0);
             }
         }   
         return null;
     }    
     
-    public static ResolvedPath resolveFilePath(Iterator<CharSequence> searchPaths, String includedFile, int dirOffset) {
+    public static ResolvedPath resolveFilePath(Iterator<IncludeDirEntry> searchPaths, String includedFile, int dirOffset) {
+        if (Utilities.isWindows()){
+            includedFile = includedFile.replace('/', File.separatorChar);
+        }
         while( searchPaths.hasNext() ) {
-            CharSequence sysPrefix = searchPaths.next();
-            String sysPrefixString = sysPrefix.toString();
-            File fileFromPath = new File(new File(sysPrefixString), includedFile);
-            if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
-                String absolutePath = fileFromPath.getAbsolutePath();
-                return new ResolvedPath(sysPrefix, normalize(absolutePath), absolutePath, false, dirOffset);
-            } else {
-                if (sysPrefixString.endsWith("/Frameworks")){ // NOI18N
-                    int i = includedFile.indexOf('/'); // NOI18N
-                    if (i > 0) {
-                        // possible it is framework include (see IZ#160043)
-                        // #include <GLUT/glut.h>
-                        // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
-                        // system path is /System/Library/Frameworks
-                        // So convert framework path
-                        String fileName = sysPrefixString+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
-                        fileFromPath = new File(fileName);
-                        if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
-                            String absolutePath = fileFromPath.getAbsolutePath();
-                            return new ResolvedPath(sysPrefix, normalize(absolutePath), absolutePath, false, dirOffset);
+            IncludeDirEntry dirPrefix = searchPaths.next();
+            if (dirPrefix.isExistingDirectory()) {
+                String absolutePath = CharSequenceKey.toString(dirPrefix.getAsSharedCharSequence(), File.separatorChar, includedFile);
+                if (isExistingFile(absolutePath)) {
+                    return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
+                } else {
+                    if (dirPrefix.isFramework()) {
+                        int i = includedFile.indexOf('/'); // NOI18N
+                        if (i > 0) {
+                            // possible it is framework include (see IZ#160043)
+                            // #include <GLUT/glut.h>
+                            // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
+                            // system path is /System/Library/Frameworks
+                            // So convert framework path
+                            absolutePath = dirPrefix.getAsString()+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
+                            if (isExistingFile(absolutePath)) {
+                                return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
+                            }
                         }
                     }
                 }
@@ -118,11 +123,11 @@ public class APTIncludeUtils {
         return CndFileUtils.normalizeAbsolutePath(path);
     }
 
-    private static boolean exists(File file) {
-        return CndFileUtils.exists(file);
+    private static boolean isExistingFile(File file) {
+        return CndFileUtils.isExistingFile(file);
     }
-    
-    private static boolean isDirectory(File file) {
-        return CndFileUtils.isDirectory(file);
-    }    
+
+    private static boolean isExistingFile(String filePath) {
+        return CndFileUtils.isExistingFile(filePath);
+    }
 }

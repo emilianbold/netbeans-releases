@@ -296,6 +296,20 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
         return new GizmoIndicatorsTopComponent(true);
     }
 
+    public static synchronized TopComponent activateInstance() {
+        //find and open VisualizerDispAction
+        GizmoIndicatorTopComponentRegsitry registry = GizmoIndicatorTopComponentRegsitry.getRegistry();
+        if (registry.getOpened() == null || registry.getOpened().size() == 0){
+            return findInstance();
+        }
+        GizmoIndicatorsTopComponent activatedTopComponent = registry.getActivated();
+        if (activatedTopComponent == null){
+            activatedTopComponent = registry.getOpened().iterator().next();
+        }
+        activatedTopComponent.requestActive();
+        return activatedTopComponent;
+    }
+
     @Override
     public int getPersistenceType() {
         if (!dock) {

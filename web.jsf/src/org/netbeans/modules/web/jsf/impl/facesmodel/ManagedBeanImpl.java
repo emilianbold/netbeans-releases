@@ -43,30 +43,46 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
+import org.netbeans.modules.web.jsf.api.facesmodel.ListEntries;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanExtension;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanProps;
+import org.netbeans.modules.web.jsf.api.facesmodel.MapEntries;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean {
+public class ManagedBeanImpl extends IdentifiableDescriptionGroupImpl implements ManagedBean {
     
     // caching properties
     private String beanName;
     private String beanClass;
     private ManagedBean.Scope beanScope;
     
-    protected static final List<String> SORTED_ELEMENTS = new ArrayList<String>();
+    protected static final Map<String, Integer> SORTED_ELEMENTS = new HashMap<String
+        , Integer>();
     static {
-        SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
-        SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_SCOPE.getLocalName());
+        int i=0;
+        for( String name : DESCRIPTION_GROUP_SORTED_ELEMENTS ){
+            SORTED_ELEMENTS.put( name, i);
+            i++;
+        }
+        SORTED_ELEMENTS.put(JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName(), i++);
+        SORTED_ELEMENTS.put(JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName(), i++);
+        SORTED_ELEMENTS.put(JSFConfigQNames.MANAGED_BEAN_SCOPE.getLocalName(), i++);
+        SORTED_ELEMENTS.put(JSFConfigQNames.MANAGED_PROPERTY.getLocalName(), i);
+        SORTED_ELEMENTS.put(JSFConfigQNames.MAP_ENTRIES.getLocalName(), i);
+        SORTED_ELEMENTS.put(JSFConfigQNames.LIST_ENTRIES.getLocalName(), i++);
+        SORTED_ELEMENTS.put(JSFConfigQNames.MANAGED_BEAN_EXTENSION.getLocalName(),i++);
     }
     
     /** Creates a new instance of ManagedBeanImpl */
@@ -139,14 +155,126 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     }
     
     public void setManagedBeanScope(ManagedBean.Scope scope) {
-        setChildElementText(MANAGED_BEAN_SCOPE, scope.toString(), JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getPeer().getNamespaceURI()));
-    }
-    
-    protected List<String> getSortedListOfLocalNames(){
-        return SORTED_ELEMENTS;
+        setManagedBeanScope(scope.toString());
     }
     
     public void accept(JSFConfigVisitor visitor) {
         visitor.visit(this);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#addManagedBeanExtension(org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanExtension)
+     */
+    public void addManagedBeanExtension( ManagedBeanExtension extension ) {
+        appendChild( MANAGED_BEAN_EXTENSION, extension);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#addManagedBeanExtension(int, org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanExtension)
+     */
+    public void addManagedBeanExtension( int index,
+            ManagedBeanExtension extension )
+    {
+        insertAtIndex( MANAGED_BEAN_EXTENSION, extension, index , 
+                ManagedBeanExtension.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#addManagedBeanProps(org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanProps)
+     */
+    public void addManagedBeanProps( ManagedBeanProps props ) {
+        appendChild( getPropertyName(props), props);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#addManagedBeanProps(int, org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanProps)
+     */
+    public void addManagedBeanProps( int index, ManagedBeanProps props ) {
+        insertAtIndex(getPropertyName(props), props, index , ManagedBeanProps.class);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#getManagedBeanExtensions()
+     */
+    public List<ManagedBeanExtension> getManagedBeanExtensions() {
+        return getChildren( ManagedBeanExtension.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#getManagedBeanScopeString()
+     */
+    public String getManagedBeanScopeString() {
+        String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getNamespaceURI()));
+        return scopeText;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#getManagedProps()
+     */
+    public List<ManagedBeanProps> getManagedProps() {
+        return getChildren( ManagedBeanProps.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#removeManagedBeanExtension(org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanExtension)
+     */
+    public void removeManagedBeanExtension( ManagedBeanExtension extension ) {
+        removeChild( MANAGED_BEAN_EXTENSION, extension);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#removeManagedBeanProps(org.netbeans.modules.web.jsf.api.facesmodel.ManagedBeanProps)
+     */
+    public void removeManagedBeanProps( ManagedBeanProps props ) {
+        removeChild( getPropertyName(props), props);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#setEager(java.lang.Boolean)
+     */
+    public void setEager( Boolean eager ) {
+        setAttribute( EAGER, FacesAttributes.EAGER,  eager == null? null: 
+            eager.toString().toLowerCase() );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#setManagedBeanScope(java.lang.String)
+     */
+    public void setManagedBeanScope( String scope ) {
+        setChildElementText(MANAGED_BEAN_SCOPE, scope, 
+                JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getPeer().getNamespaceURI()));
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean#getEager()
+     */
+    public Boolean getEager() {
+        String eager = getAttribute(FacesAttributes.EAGER);
+        if ( eager == null ) {
+            return null;
+        }
+        return Boolean.valueOf( eager );
+    }
+    
+    @Override
+    protected Map<String, Integer> getOrderedMapOfLocalNames(){
+        return SORTED_ELEMENTS;
+    }
+    
+    private String getPropertyName( ManagedBeanProps props ){
+        String propName = null;
+        if ( props instanceof ManagedProperty ){
+            propName = MANAGED_PROPERTY;
+        }
+        else if ( props instanceof ListEntries) {
+            propName = LIST_ENTRIES;
+        }
+        else if ( props instanceof MapEntries ){
+            propName = MAP_ENTRIES;
+        }
+        assert propName != null : props +" element has unknown type. " +
+                "Add appropriate child for ManagedBean with " +
+                ManagedBeanProps.class+ "  superclass";       // NOI18N
+        return propName;
     }
 }

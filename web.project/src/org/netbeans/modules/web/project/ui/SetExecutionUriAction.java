@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.web.project.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
@@ -53,7 +55,9 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.web.project.ProjectWebModule;
+import org.netbeans.modules.web.project.WebAppMetadataHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -64,8 +68,9 @@ import org.openide.NotifyDescriptor;
 public final class SetExecutionUriAction extends NodeAction {
     public static final String ATTR_EXECUTION_URI = "execution.uri"; //NOI18N
     
-    /** Creates and starts a thread for generating documentation
-    */
+    /**
+     * Creates and starts a thread for generating documentation
+     */
     protected void performAction(Node[] activatedNodes) {
         if ((activatedNodes != null) && (activatedNodes.length == 1)) {
             if (activatedNodes[0] != null) {
@@ -125,28 +130,32 @@ public final class SetExecutionUriAction extends NodeAction {
         return false;
     }
 
-    /* Help context where to find more about the action.
-    * @return the help context for this action
-    */
+    /**
+     * Help context where to find more about the action.
+     * @return the help context for this action
+     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (SetExecutionUriAction.class);
     }
 
-    /* Human presentable name of the action. This should be
-    * presented as an item in a menu.
-    * @return the name of the action
-    */
+    /**
+     * Human presentable name of the action. This should be presented as an item in a menu.
+     * @return the name of the action
+     */
     public String getName() {
         return NbBundle.getMessage(SetExecutionUriAction.class, "LBL_serveltExecutionUriAction");
     }
     
-    /** The action's icon location.
-    * @return the action's icon location
-    */
+    /**
+     * The action's icon location.
+     * @return the action's icon location
+     */
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/web/project/ui/resources/servletUri.gif"; // NOI18N
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -155,41 +164,25 @@ public final class SetExecutionUriAction extends NodeAction {
         if (webModule == null)
             return null;
         
-//        FileObject webDir = webModule.getDocumentBase ();
-//        if (webDir==null) return null;
-//        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
-        
-        FileObject webInf = webModule.getWebInf();
-        if (webInf == null)
-            return null;
-        
-        FileObject fo = webInf.getFileObject(ProjectWebModule.FILE_DD);
-        if (fo == null)
-            return null;
-        
         ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
         String className = classPath.getResourceName(javaClass,'.',false);
+
         try {
-            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
-            Servlet[] servlets = webApp.getServlet();
-            java.util.List<String> mappingList = new java.util.ArrayList<String>();
-            for (int i=0;i<servlets.length;i++) {
-                if (className.equals(servlets[i].getServletClass())) {
-                    String servletName=servlets[i].getServletName();
-                    ServletMapping[] maps  = webApp.getServletMapping();
-                    for (int j=0;j<maps.length;j++) {
-                        if (maps[j].getServletName().equals(servletName)) {
-                            String urlPattern = maps[j].getUrlPattern();
-                            if (urlPattern!=null)
-                                mappingList.add(urlPattern);
-                        }
-                    }
+            List<ServletInfo> servlets =
+                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
+            List<String> mappingList = new ArrayList<String>();
+            for (ServletInfo si : servlets) {
+                if (className.equals(si.getServletClass())) {
+                    mappingList.addAll(si.getUrlPatterns());
                 }
             }
             String[] mappings = new String[mappingList.size()];
             mappingList.toArray(mappings);
             return mappings;
-        } catch (java.io.IOException ex) {return null;}  
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
     
     private static boolean isServletFile(WebModule webModule, FileObject javaClass) {
@@ -197,38 +190,27 @@ public final class SetExecutionUriAction extends NodeAction {
             return false;
         }
         
-        FileObject webInf = webModule.getWebInf();
-        if (webInf == null) {
-            return false;
-        }
-        
-        FileObject fo = webInf.getFileObject(ProjectWebModule.FILE_DD);
-        if (fo == null) {
-            return false;
-        }
-        
         ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
         if (classPath == null) {
             return false;
         }
-        
         String className = classPath.getResourceName(javaClass,'.',false);
         if (className == null) {
             return false;
         }
         
         try {
-            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
-            Servlet[] servlets = webApp.getServlet();
-            for (int i=0;i<servlets.length;i++) {
-                if (className.equals(servlets[i].getServletClass())) {
+            List<ServletInfo> servlets =
+                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
+            for (ServletInfo si : servlets) {
+                if (className.equals(si.getServletClass())) {
                     return true;
                 }
             }
-            return false;
         } catch (java.io.IOException ex) {
-            return false;
-        }  
+            ex.printStackTrace();
+        }
+        return false;
     }
     
 }

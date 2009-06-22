@@ -58,7 +58,7 @@ public final class Model {
     }
 
     public FileScope getFileScope() {
-        return getModelVisitor(-1).getModelScope();
+        return getModelVisitor(-1).getFileScope();
     }
 
     public IndexScope getIndexScope() {

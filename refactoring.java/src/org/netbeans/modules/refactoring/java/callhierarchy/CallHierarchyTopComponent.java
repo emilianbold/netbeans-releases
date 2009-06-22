@@ -43,11 +43,11 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -57,6 +57,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -381,6 +382,13 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     protected String preferredID() {
         return PREFERRED_ID;
     }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return beanTreeView.requestFocusInWindow();
+    }
     
     final static class ResolvableHelper implements Serializable {
 
@@ -409,7 +417,7 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
             this.model.removePropertyChangeListener(modelListener);
         }
         this.model = model;
-        manager.setRootContext(CallNode.createRoot(model));
+        switchRootNode();
         if (model == null) {
             return;
         }
@@ -426,8 +434,12 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
     
     private void switchRootNode() {
-        if (model != null) {
-            manager.setRootContext(CallNode.createRoot(model));
+        Node root = CallNode.createRoot(model);
+        manager.setRootContext(root);
+        try {
+            manager.setSelectedNodes(new Node[]{root});
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

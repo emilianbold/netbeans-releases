@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -54,60 +57,62 @@ public class RemoteUtilTestCase extends RemoteTestBase {
 //        System.setProperty("cnd.remote.logger.level", "0");
 //        System.setProperty("nativeexecution.support.logger.level", "0");
     }
-    public RemoteUtilTestCase(String testName) {
-        super(testName);
+    public RemoteUtilTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
+    @ForAllEnvironments
     public void testGetHomeDirectory() throws Exception {
-        if (canTestRemote()) {
-            System.out.printf("Testng getHomeDirectory\n");
-            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-            long time1 = System.currentTimeMillis();
-            String home = RemoteUtil.getHomeDirectory(execEnv);
-            time1 = System.currentTimeMillis() - time1;
-            System.out.printf("\tgetHomeDirectory: returned %s for %s; time is %d ms\n", home, execEnv, time1);
-            assertNotNull(home);
-            boolean exists = HostInfoProvider.fileExists(execEnv, home);
-            assertTrue(exists);
-        }
+        System.out.printf("Testng getHomeDirectory\n");
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        long time1 = System.currentTimeMillis();
+        String home = RemoteUtil.getHomeDirectory(execEnv);
+        time1 = System.currentTimeMillis() - time1;
+        System.out.printf("\tgetHomeDirectory: returned %s for %s; time is %d ms\n", home, execEnv, time1);
+        assertNotNull(home);
+        boolean exists = HostInfoProvider.fileExists(execEnv, home);
+        assertTrue(exists);
     }
 
+    @ForAllEnvironments
     public void testGetHomeDirectoryCachingNotNull() throws Exception {
-        if (canTestRemote()) {
-            System.out.printf("Testng getHomeDirectory caching: returning not null\n");
-            ExecutionEnvironment goodEnv = getRemoteExecutionEnvironment();
-            long time1 = System.currentTimeMillis();
-            String home = RemoteUtil.getHomeDirectory(goodEnv);
-            time1 = System.currentTimeMillis() - time1;
-            System.out.printf("Testng getHomeDirectory: returned %s for %s; time is %d ms\n", home, goodEnv, time1);
-            assertNotNull(home);
-            for (int i = 0; i < 10; i++) {
-                long time2 = System.currentTimeMillis();
-                String t = RemoteUtil.getHomeDirectory(goodEnv);
-                time2 = System.currentTimeMillis() - time2;
-                System.out.printf("Good, pass %d; time is %d ms\n", i, time2);
-                assert(time2 < 100);
-            }
+        System.out.printf("Testng getHomeDirectory caching: returning not null\n");
+        ExecutionEnvironment goodEnv = getTestExecutionEnvironment();
+        long time1 = System.currentTimeMillis();
+        String home = RemoteUtil.getHomeDirectory(goodEnv);
+        time1 = System.currentTimeMillis() - time1;
+        System.out.printf("Testng getHomeDirectory: returned %s for %s; time is %d ms\n", home, goodEnv, time1);
+        assertNotNull(home);
+        for (int i = 0; i < 10; i++) {
+            long time2 = System.currentTimeMillis();
+            String t = RemoteUtil.getHomeDirectory(goodEnv);
+            time2 = System.currentTimeMillis() - time2;
+            System.out.printf("Good, pass %d; time is %d ms\n", i, time2);
+            assert(time2 < 100);
         }
     }
 
+    @ForAllEnvironments
     public void testGetHomeDirectoryCachingNull() throws Exception {
-        if (canTestRemote()) {
-            System.out.printf("Testng getHomeDirectory caching: returning null\n");
-            ExecutionEnvironment badEnv = ExecutionEnvironmentFactory.createNew("inexistent/user", "inexistent/host");
-            long time1 = System.currentTimeMillis();
-            String home = RemoteUtil.getHomeDirectory(badEnv);
-            time1 = System.currentTimeMillis() - time1;
-            System.out.printf("Testng getHomeDirectory: returned %s for %s; time is %d ms\n", home, badEnv, time1);
-            assertNull(home);
-            for (int i = 0; i < 10; i++) {
-                long time2 = System.currentTimeMillis();
-                String t = RemoteUtil.getHomeDirectory(badEnv);
-                time2 = System.currentTimeMillis() - time2;
-                System.out.printf("Bad, pass %d; time is %d ms\n", i, time2);
-                long max = 100;
-                assertTrue("getHomeDirectory time should be less than " + time2 + "; but it is" + max, time2 < max);
-            }
+        System.out.printf("Testng getHomeDirectory caching: returning null\n");
+        ExecutionEnvironment badEnv = ExecutionEnvironmentFactory.createNew("inexistent/user", "inexistent/host");
+        long time1 = System.currentTimeMillis();
+        String home = RemoteUtil.getHomeDirectory(badEnv);
+        time1 = System.currentTimeMillis() - time1;
+        System.out.printf("Testng getHomeDirectory: returned %s for %s; time is %d ms\n", home, badEnv, time1);
+        assertNull(home);
+        for (int i = 0; i < 10; i++) {
+            long time2 = System.currentTimeMillis();
+            String t = RemoteUtil.getHomeDirectory(badEnv);
+            time2 = System.currentTimeMillis() - time2;
+            System.out.printf("Bad, pass %d; time is %d ms\n", i, time2);
+            long max = 100;
+            assertTrue("getHomeDirectory time should be less than " + time2 + "; but it is" + max, time2 < max);
         }
     }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteUtilTestCase.class);
+    }
+
 }

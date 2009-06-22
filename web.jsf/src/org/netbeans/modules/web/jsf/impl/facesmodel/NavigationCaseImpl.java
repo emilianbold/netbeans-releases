@@ -42,22 +42,30 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.If;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.Redirect;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public class NavigationCaseImpl extends DescriptionGroupImpl implements NavigationCase{
+public class NavigationCaseImpl extends IdentifiableDescriptionGroupImpl 
+    implements NavigationCase
+{
     
-    protected static final List<String> NAVIGATION_CASE_SORTED_ELEMENTS = new ArrayList();
+    protected static final List<String> NAVIGATION_CASE_SORTED_ELEMENTS 
+        = new ArrayList<String>( DESCRIPTION_GROUP_SORTED_ELEMENTS.size() +5 );
     static {
-        NAVIGATION_CASE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
+        NAVIGATION_CASE_SORTED_ELEMENTS.addAll(DESCRIPTION_GROUP_SORTED_ELEMENTS);
         NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_ACTION.getLocalName());
         NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_OUTCOME.getLocalName());
+        NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.IF.getLocalName());
         NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.TO_VIEW_ID.getLocalName());
         NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.REDIRECT.getLocalName());
     }
@@ -76,41 +84,80 @@ public class NavigationCaseImpl extends DescriptionGroupImpl implements Navigati
     }
     
     public void setFromAction(String fromAction) {
-        setChildElementText(FROM_ACTION, fromAction, JSFConfigQNames.FROM_ACTION.getQName(getNamespaceURI()));
+        setChildElementText(FROM_ACTION, fromAction, 
+                JSFConfigQNames.FROM_ACTION.getQName(getNamespaceURI()));
     }
     
     public String getFromOutcome() {
-        return getChildElementText(JSFConfigQNames.FROM_OUTCOME.getQName(getNamespaceURI()));
+        return getChildElementText(JSFConfigQNames.FROM_OUTCOME.getQName(
+                getNamespaceURI()));
     }
     
     public void setFromOutcome(String fromOutcome) {
-        setChildElementText(FROM_OUTCOME, fromOutcome, JSFConfigQNames.FROM_OUTCOME.getQName(getNamespaceURI()));
+        setChildElementText(FROM_OUTCOME, fromOutcome, 
+                JSFConfigQNames.FROM_OUTCOME.getQName(getNamespaceURI()));
     }
 
-    protected List<String> getSortedListOfLocalNames() {
-        return NAVIGATION_CASE_SORTED_ELEMENTS;
-    }
-    
     public void setRedirected(boolean redirect) {
         if (redirect)
-            setChildElementText(REDIRECT, "", JSFConfigQNames.REDIRECT.getQName(getNamespaceURI()));
+            setChildElementText(REDIRECT, "", 
+                    JSFConfigQNames.REDIRECT.getQName(getNamespaceURI()));
         else
-            setChildElementText(REDIRECT, null, JSFConfigQNames.REDIRECT.getQName(getNamespaceURI()));
+            setChildElementText(REDIRECT, null, 
+                    JSFConfigQNames.REDIRECT.getQName(getNamespaceURI()));
     }
     
     public boolean isRedirected() {
-        return (null != getChildElementText(JSFConfigQNames.REDIRECT.getQName(getNamespaceURI())));
+        return (null != getChildElementText(
+                JSFConfigQNames.REDIRECT.getQName(getNamespaceURI())));
     }
     
     public String getToViewId() {
-        return getChildElementText(JSFConfigQNames.TO_VIEW_ID.getQName(getNamespaceURI()));
+        return getChildElementText(
+                JSFConfigQNames.TO_VIEW_ID.getQName(getNamespaceURI()));
     }
     
     public void setToViewId(String toViewId) {
-        setChildElementText(TO_VIEW_ID, toViewId, JSFConfigQNames.TO_VIEW_ID.getQName(getNamespaceURI()));
+        setChildElementText(TO_VIEW_ID, toViewId, 
+                JSFConfigQNames.TO_VIEW_ID.getQName(getNamespaceURI()));
     }
     
     public void accept(JSFConfigVisitor visitor) {
         visitor.visit(this);
     }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase#getIf()
+     */
+    public If getIf() {
+        return getChild(If.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase#setIf(org.netbeans.modules.web.jsf.api.facesmodel.If)
+     */
+    public void setIf( If iff ) {
+        setChild( If.class, IF, iff , Collections.EMPTY_LIST);
+        reorderChildren();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase#getRedirect()
+     */
+    public Redirect getRedirect() {
+        return getChild(Redirect.class);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase#setRedirect(org.netbeans.modules.web.jsf.api.facesmodel.Redirect)
+     */
+    public void setRedirect(Redirect redirect) {
+        setChild( Redirect.class, REDIRECT, redirect, Collections.EMPTY_LIST);
+        reorderChildren();
+    }
+    
+    protected List<String> getSortedListOfLocalNames() {
+        return NAVIGATION_CASE_SORTED_ELEMENTS;
+    }
+
 }

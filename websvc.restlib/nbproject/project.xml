@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.api</package>
                 <package>com.sun.jersey.api.client</package>
                 <package>com.sun.jersey.api.client.config</package>
+                <package>com.sun.jersey.api.client.filter</package>
                 <package>com.sun.jersey.api.container</package>
                 <package>com.sun.jersey.api.container.grizzly</package>
                 <package>com.sun.jersey.api.container.httpserver</package>
@@ -99,10 +100,22 @@ made subject to such option by the copyright holder.
                 <package>com.sun.grizzly.util.net.jsse</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jackson-lgpl-0.9.4.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-client.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-core.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-json.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-server.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
@@ -120,7 +133,7 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/jdom-1.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jettison-1.0-RC1.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/grizzly-servlet-webserver-1.7.3.2.jar</runtime-relative-path>

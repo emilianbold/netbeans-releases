@@ -91,6 +91,10 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PLATFORM = "platform"; //NOI18N
     /** Wizard descriptor name for the Rails version */
     static final String RAILS_VERSION = "rails.version"; //NOI18N
+    /**
+     * Additional options for the rails command, such as --with-dispatcher
+     */
+    static final String RAILS_OPTIONS = "rails.options"; //NOI18N
     
     static final int TYPE_APP = 0;
     //static final int TYPE_LIB = 1;
@@ -170,8 +174,9 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         }
         
         String railsVersion = (String) wiz.getProperty(RAILS_VERSION);
+        String railsOptions = (String) wiz.getProperty(RAILS_OPTIONS);
         RailsProjectCreateData data = new RailsProjectCreateData(platform, dirF, name, type == TYPE_APP,
-                databaseConf, deploy, server.getServerUri(), railsVersion);
+                databaseConf, deploy, server.getServerUri(), railsVersion, railsOptions);
         h = RailsProjectGenerator.createProject(data);
         handle.progress(2);
 

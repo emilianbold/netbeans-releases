@@ -49,6 +49,7 @@ import java.util.List;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import java.net.URISyntaxException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
@@ -627,10 +628,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             else if (ELEMENT_RESOURCE.equals(qName)) {
                 try {
                     //make sure, that after install URL is resolved correctly
-                    File f = new File(new URL(this.buffer.toString()).getPath());
-                    this.path.add (f.toURI().toURL());
+                    URL url = new URL(this.buffer.toString());
+                    try {
+                        url.toURI(); //test URI
+                        this.path.add (url);
+                    } catch (URISyntaxException e) {
+                        File f = new File(url.getPath());
+                        this.path.add (f.toURI().toURL());
+                    }
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(mue); 
+                    ErrorManager.getDefault().notify(mue);
                 }
                 this.buffer = null;
             }

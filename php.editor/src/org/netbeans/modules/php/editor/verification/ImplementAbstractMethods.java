@@ -95,11 +95,11 @@ public class ImplementAbstractMethods extends ModelRule {
     }
 
     @Override
-    void check(FileScope modelScope, RuleContext context, List<Hint> hints) {
-        Collection<? extends TypeScope> allClasses = modelScope.getDeclaredTypes();
-        long computedDigest = computeDigest(allClasses);
+    void check(FileScope fileScope, RuleContext context, List<Hint> hints) {
+        Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(fileScope);
+        long computedDigest = computeDigest(allTypes);
         if (computedDigest != diggest || !cahcedFixedInfo.isEmpty()) {            
-            fillCachedFixedInfo(allClasses, computedDigest != diggest);
+            fillCachedFixedInfo(allTypes, computedDigest != diggest);
         }
         diggest = computedDigest;
         for (CachedFixInfo fixInfo : cahcedFixedInfo.values()) {

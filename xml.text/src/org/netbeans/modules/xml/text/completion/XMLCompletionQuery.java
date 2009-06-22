@@ -137,7 +137,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                 if (helper.getCompletionType() == SyntaxQueryHelper.COMPLETION_TYPE_VALUE) {
                     //might be the end tag autocompletion
                     if(helper.getToken().getTokenID() == XMLDefaultTokenContext.TAG) {
-                        SyntaxElement se = helper.getSyntaxElement();
+                    SyntaxElement se = helper.getSyntaxElement();
                         if(se instanceof StartTag) {
                             String tagName = ((StartTag)se).getNodeName();
                             if(tagName != null && !XMLBraceMatcher.hasEndTag(doc, offset, tagName))
@@ -183,10 +183,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                     }
                     
                     if (addEndTag) {
-                        //prevent autocompletion of the only CC item.
-                        if(!list.isEmpty() || startTags.size() > 1) {
-                            all.addAll(startTags);
-                        }
+                        all.addAll(startTags);
                     }
                     
                 }
