@@ -46,7 +46,7 @@ import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
-import org.netbeans.modules.hudson.spi.AcegiAuthorizer;
+import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -54,18 +54,19 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Implements authentication based on Hudson's standard login form.
  * {@code main/core/src/main/resources/hudson/model/Hudson/login.jelly} shows the style.
- * Uses {@link AcegiAuthorizer} to find the username and password.
- * Assumes the Hudson instance is set up to use ACEGI-based security, not "legacy" container auth.
+ * Uses {@link PasswordAuthorizer} to find the username and password.
+ * Can handle both ACEGI-based security, and "legacy" container auth using
+ * form-based logins according to the Servlet spec.
  */
 @ServiceProvider(service=ConnectionAuthenticator.class, position=100)
-public class AcegiConnectionAuthenticator implements ConnectionAuthenticator {
+public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
 
-    private static final Logger LOGGER = Logger.getLogger(AcegiConnectionAuthenticator.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ServletConnectionAuthenticator.class.getName());
 
     public void prepareRequest(URLConnection conn, URL home) {}
 
     public URLConnection forbidden(URLConnection conn, URL home) {
-        for (AcegiAuthorizer aa : Lookup.getDefault().lookupAll(AcegiAuthorizer.class)) {
+        for (PasswordAuthorizer aa : Lookup.getDefault().lookupAll(PasswordAuthorizer.class)) {
             String[] auth = aa.authorize(home);
             if (auth != null) {
                 LOGGER.log(Level.FINE, "Got authorization for {0} on {1} from {2}", new Object[] {auth[0], home, aa});
