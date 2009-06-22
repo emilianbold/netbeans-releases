@@ -156,15 +156,24 @@ public final class SourceRoots {
             plainFiles.add(readme);
         }
         
+        // show app/metal for Rack applications, but only if the folder already exists
+        boolean metal = fo.getFileObject("app/metal") != null;//NOI18N
+
         sourceRootNames = new ArrayList<String>(20);
         sourceRootProperties = new ArrayList<String>(20);
         // Note Keep list in sync with root properties list below
         sourceRootNames.add(getNodeDescription("app_controllers")); // NOI18N
         sourceRootNames.add(getNodeDescription("app_helpers")); // NOI18N
+        if (metal) {
+            sourceRootNames.add(getNodeDescription("app_metal")); // NOI18N
+        }
         sourceRootNames.add(getNodeDescription("app_models")); // NOI18N
         sourceRootNames.add(getNodeDescription("app_views")); // NOI18N
         sourceRootProperties.add("app/controllers"); // NOI18N
         sourceRootProperties.add("app/helpers"); // NOI18N
+        if (metal) {
+            sourceRootProperties.add("app/metal"); // NOI18N
+        }
         sourceRootProperties.add("app/models"); // NOI18N
         sourceRootProperties.add("app/views"); // NOI18N
 
