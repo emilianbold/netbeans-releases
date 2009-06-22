@@ -86,7 +86,7 @@ public final class DeepReparsingUtils {
             for (CsmFile file : coherence) {
                 if (topParents.contains(file)) {
                     ((FileImpl)file).clearStateCache();
-                } else if (parents.contains(top)) {
+                } else if (parents.contains(file)) {
                     ((FileImpl)file).clearStateCache();
                     invalidateFileAndPreprocState(project, file);
                 } else {
