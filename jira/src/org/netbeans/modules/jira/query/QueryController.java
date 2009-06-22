@@ -68,6 +68,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
@@ -76,7 +77,6 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.DateFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.DateRangeFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.EstimateVsActualFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
@@ -176,6 +176,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.assigneeTextField.addActionListener(this);
         panel.reporterTextField.addActionListener(this);
         panel.idTextField.getDocument().addDocumentListener(this);
+
+        panel.createdFromTextField.getDocument().addDocumentListener(this);
+        panel.createdToTextField.getDocument().addDocumentListener(this);
+        panel.updatedFromTextField.getDocument().addDocumentListener(this);
+        panel.updatedToTextField.getDocument().addDocumentListener(this);
+        panel.dueFromTextField.getDocument().addDocumentListener(this);
+        panel.dueToTextField.getDocument().addDocumentListener(this);
+
+        panel.ratioMinTextField.getDocument().addDocumentListener(this);
+        panel.ratioMaxTextField.getDocument().addDocumentListener(this);
 
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
                     
@@ -782,10 +792,68 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void documentChanged (DocumentEvent e) {
-        if (e.getDocument() == panel.idTextField.getDocument()) {
+        final Document document = e.getDocument();
+        panel.searchButton.setEnabled(true);
+        panel.saveButton.setEnabled(true);
+        panel.warningLabel.setVisible(false);
+        panel.warningLabel.setText(""); // NOI18N
+        if (document == panel.idTextField.getDocument()) {
             panel.lblIssueKeyWarning.setVisible(false);
-        } else {
-            fireDataChanged();
+        } else if (document == panel.createdFromTextField.getDocument()) {
+            validateDateField(panel.createdFromTextField);
+        } else if (document == panel.createdToTextField.getDocument()) {
+            validateDateField(panel.createdToTextField);
+        } else if (document == panel.updatedFromTextField.getDocument()) {
+            validateDateField(panel.updatedFromTextField);
+        } else if (document == panel.updatedToTextField.getDocument()) {
+            validateDateField(panel.updatedToTextField);
+        } else if (document == panel.dueFromTextField.getDocument()) {
+            validateDateField(panel.dueFromTextField);
+        } else if (document == panel.dueToTextField.getDocument()) {
+            validateDateField(panel.dueToTextField);
+        } else if (document == panel.ratioMaxTextField.getDocument()) {
+            validateLongField(panel.ratioMaxTextField);
+        } else if (document == panel.ratioMinTextField.getDocument()) {
+            validateLongField(panel.ratioMinTextField);
+        }
+
+        fireDataChanged();
+    }
+
+    private void validateDateField(JTextField txt) {
+        try {
+            String str = txt.getText().trim();
+            if(str.equals("")) {
+                return;
+            }
+            dateRangeDateFormat.parse(str);
+        } catch (ParseException ex) {
+            panel.searchButton.setEnabled(false);
+            panel.saveButton.setEnabled(false);
+            panel.warningLabel.setVisible(true);
+            panel.warningLabel.setText(NbBundle.getMessage(QueryPanel.class, "MSG_VALUE_MUST_BE_A_DATE")); // NOI18N
+        }
+    }
+
+    private void validateLongField(JTextField txt) {
+        String str = txt.getText().trim();
+        if(str.equals("")) {
+            return;
+        }
+        boolean isValid = true;
+        try {
+            long l = Long.parseLong(str);
+            if(l < 0 || l > 100) {
+                isValid = false;
+            }
+        } catch (NumberFormatException ex) {
+            isValid = false;
+        }
+        if(!isValid) {
+            panel.searchButton.setEnabled(false);
+            panel.saveButton.setEnabled(false);
+            panel.warningLabel.setVisible(true);
+            panel.warningLabel.setText(NbBundle.getMessage(QueryPanel.class, "MSG_VALUE_MUST_BE_A_BETWEEN_1_100")); // NOI18N
         }
     }
 
