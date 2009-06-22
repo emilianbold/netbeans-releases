@@ -63,13 +63,15 @@ public class CheckoutExecutor extends ExecutorSupport {
     
     private Set refreshedFiles;
     private Set expandedModules = new HashSet();
+    private final File workingFolder;
 
     public CheckoutExecutor(CvsVersioningSystem cvs, CheckoutCommand cmd) {
-        this(cvs, cmd, null);
+        this(cvs, cmd, null, null);
     }
     
-    public CheckoutExecutor(CvsVersioningSystem cvs, CheckoutCommand cmd, GlobalOptions options) {
+    public CheckoutExecutor(CvsVersioningSystem cvs, CheckoutCommand cmd, GlobalOptions options, File workingFolder) {
         super(cvs, cmd, options);
+        this.workingFolder = workingFolder;
     }
 
     /**
@@ -108,7 +110,11 @@ public class CheckoutExecutor extends ExecutorSupport {
             cache.refreshCached(file, repositoryStatus);
             refreshedFiles.add(file);
         }
-        
+
+        // refresh FS
+        if (workingFolder != null) {
+            FileUtil.refreshFor(workingFolder);
+        }
         // refresh all command roots
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {
