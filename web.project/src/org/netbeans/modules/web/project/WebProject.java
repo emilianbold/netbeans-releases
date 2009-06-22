@@ -65,6 +65,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -135,12 +136,14 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -171,6 +174,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Represents one plain Web project.
  * @author Jesse Glick, et al., Pavel Buzek
+ * @author kaktus
  */
 public final class WebProject implements Project, AntProjectListener {
     
@@ -475,14 +479,13 @@ public final class WebProject implements Project, AntProjectListener {
         WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
-        Lookup base = Lookups.fixed(new Object[] {            
+        List base = new ArrayList(Arrays.asList(new Object[] {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
-            //new WebProjectEjbJarProvider(this), // TODO: dongmei: register it only for Java EE 6 web project
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
@@ -499,9 +502,10 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
             webSources,
+            webSources.getSourceGroupModifierImplementation(),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
-            new RecommendedTemplatesImpl(),
+            new RecommendedTemplatesImpl(this),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             classPathExtender,
             buildExtender,
@@ -526,9 +530,16 @@ public final class WebProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-        });
-        lookup = base;
-        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
+        }));
+
+        Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
+        if (profile == Profile.JAVA_EE_6_FULL){
+            base.add(EjbJarSupport.createEjbJarProvider(this, apiEjbJar));
+            base.add(EjbJarSupport.createEjbJarsInProject(apiEjbJar));
+        }
+
+        lookup = Lookups.fixed(base.toArray());
+        return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     
     public ClassPathProviderImpl getClassPathProvider () {
@@ -1177,6 +1188,30 @@ public final class WebProject implements Project, AntProjectListener {
         "simple-files"          // NOI18N
     };
 
+    private static final String[] JAVAEE6_TYPES = new String[] {
+        "java-classes",         // NOI18N
+        "java-main-class",      // NOI18N
+        "java-forms",           // NOI18N
+        "java-beans",           // NOI18N
+        "persistence",          // NOI18N
+        "oasis-XML-catalogs",   // NOI18N
+        "XML",                  // NOI18N
+        "ant-script",           // NOI18N
+        "ant-task",             // NOI18N
+        "servlet-types",        // NOI18N
+        "web-types",            // NOI18N
+        "web-types-server",     // NOI18N
+        "web-services",         // NOI18N
+        "web-service-clients",  // NOI18N
+        "wsdl",                 // NOI18N
+        "junit",                // NOI18N
+        "simple-files",         // NOI18N
+        
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "ejb-types_3_0"         // NOI18N
+    };
+
     private static final String[] TYPES_ARCHIVE = new String[] { 
         "deployment-descriptor",          // NOI18N
         "XML",                            // NOI18N
@@ -1272,10 +1307,14 @@ public final class WebProject implements Project, AntProjectListener {
     }
     
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
-        RecommendedTemplatesImpl () {
+        private WebProject project;
+        
+        RecommendedTemplatesImpl (WebProject project) {
+            this.project = project;
         }
         
-        private boolean isEE5 = false;
+        private boolean isEjb30Supported = false;
+        private boolean isEJB31Supported = false;
         private boolean checked = false;
         private boolean isArchive = false;
 
@@ -1284,9 +1323,11 @@ public final class WebProject implements Project, AntProjectListener {
             checkEnvironment();
             if (isArchive) {
                 retVal = TYPES_ARCHIVE;
-            } else {
-                    retVal = TYPES;
-                }
+            } else if (isEJB31Supported){
+                retVal = JAVAEE6_TYPES;
+            }else{
+                retVal = TYPES;
+            }
            
             return retVal;
         }
@@ -1297,7 +1338,7 @@ public final class WebProject implements Project, AntProjectListener {
             if (isArchive) {
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                if (isEE5) {
+                if (isEjb30Supported) {
                     retVal = getPrivilegedTemplatesEE5();
                 } else {
                     retVal = WebProject.this.getPrivilegedTemplates();
@@ -1313,7 +1354,9 @@ public final class WebProject implements Project, AntProjectListener {
                 if ("false".equals(srcType)) {
                     isArchive = true;
                 }
-                isEE5 = J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
+                Capabilities projectCap = Capabilities.forProject(project);
+                isEjb30Supported = projectCap.isEJB30Supported();
+                isEJB31Supported = projectCap.isEJB31Supported();
                 checked = true;
             }
         }
@@ -1727,7 +1770,7 @@ public final class WebProject implements Project, AntProjectListener {
     public boolean isJavaEE5(Project project) {
         return J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
     }
-    
+
     private static final class WebPropertyEvaluatorImpl implements WebPropertyEvaluator {
         private PropertyEvaluator evaluator;
         public WebPropertyEvaluatorImpl (PropertyEvaluator eval) {

@@ -222,14 +222,14 @@ public final class SunDDVisualPanel extends JPanel {
 
     private String getConfigFileName(J2eeModule j2eeModule) {
         String result = null;
-        Object moduleType = j2eeModule.getModuleType();
-        if(J2eeModule.WAR.equals(moduleType)) {
+        Object moduleType = j2eeModule.getType();
+        if(J2eeModule.Type.WAR.equals(moduleType)) {
             result = "sun-web.xml"; // NOI18N
-        } else if(J2eeModule.EJB.equals(moduleType)) {
+        } else if(J2eeModule.Type.EJB.equals(moduleType)) {
             result = "sun-ejb-jar.xml"; // NOI18N
-        } else if(J2eeModule.EAR.equals(moduleType)) {
+        } else if(J2eeModule.Type.EAR.equals(moduleType)) {
             result = "sun-application.xml"; // NOI18N
-        } else if(J2eeModule.CLIENT.equals(moduleType)) {
+        } else if(J2eeModule.Type.CAR.equals(moduleType)) {
             result = "sun-application-client.xml"; // NOI18N
         }
         return result;

@@ -44,6 +44,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -65,6 +67,9 @@ public final class Context {
     private final int indexerVersion;
     private final boolean followUpJob;
     private final boolean checkForEditorModifications;
+    private final boolean allFilesJob;
+    private final boolean sourceForBinaryRoot;
+    private final CancelRequest cancelRequest;
     
     private FileObject root;
     private IndexingSupport indexingSupport;
@@ -75,7 +80,10 @@ public final class Context {
     Context (final FileObject indexBaseFolder,
              final URL rootURL, final String indexerName, final int indexerVersion,
              final IndexFactoryImpl factory, boolean followUpJob,
-             final boolean checkForEditorModifications
+             final boolean checkForEditorModifications,
+             final boolean allFilesJob,
+             final boolean sourceForBinaryRoot,
+             final CancelRequest cancelRequest
     ) throws IOException {
         assert indexBaseFolder != null;
         assert rootURL != null;
@@ -89,6 +97,9 @@ public final class Context {
         final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
         this.checkForEditorModifications = checkForEditorModifications;
+        this.allFilesJob = allFilesJob;
+        this.sourceForBinaryRoot = sourceForBinaryRoot;
+        this.cancelRequest = cancelRequest;
     }
 
     /**
@@ -144,7 +155,7 @@ public final class Context {
         if (repouLogger.isLoggable(Level.FINE)) {
             repouLogger.fine("addSupplementaryFiles: root=" + root + ", files=" + files); //NOI18N
         }
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false, true);
     }
 
     /**
@@ -158,6 +169,34 @@ public final class Context {
      */
     public boolean isSupplementaryFilesIndexing() {
         return followUpJob;
+    }
+
+    /**
+     * Indicates whether all files under the root are being indexed. In general indexing
+     * jobs can either index selected files under a given root (eg. when scheduled
+     * through {@link IndexingManager}) or they can index all files under the root. Some
+     * indexers are interested in knowing this information in order to optimize their
+     * indexing.
+     *
+     * @return <code>true</code> if indexing all files under the root.
+     *
+     * @since 1.6
+     */
+    public boolean isAllFilesIndexing() {
+        return allFilesJob;
+    }
+
+    /**
+     * Indicates whether sources of some binary library are being indexed. Some
+     * indexers are interested in knowing this information in order to optimize their
+     * indexing.
+     *
+     * @return <code>true</code> if indexing sources for binary root.
+     *
+     * @since 1.6
+     */
+    public boolean isSourceForBinaryRootIndexing() {
+        return sourceForBinaryRoot;
     }
 
     /**
@@ -177,6 +216,14 @@ public final class Context {
      */
     public boolean checkForEditorModifications() {
         return checkForEditorModifications;
+    }
+
+    /**
+     * @return
+     * @since 1.13
+     */
+    public boolean isCancelled() {
+        return cancelRequest == null ? false : cancelRequest.isRaised();
     }
 
     String getIndexerName () {

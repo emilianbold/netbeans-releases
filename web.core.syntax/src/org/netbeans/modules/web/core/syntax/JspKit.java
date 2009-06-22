@@ -45,7 +45,6 @@ package org.netbeans.modules.web.core.syntax;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.editor.ext.html.HtmlIndenter;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -54,7 +53,7 @@ import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.html.editor.HtmlAutoCompletion;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -62,7 +61,6 @@ import java.beans.*;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -77,19 +75,14 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.netbeans.editor.ext.html.HtmlSyntax;
+import org.netbeans.modules.web.core.syntax.deprecated.HtmlSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
-import org.netbeans.editor.ext.html.HtmlLexerFormatter;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.web.core.syntax.formatting.JspLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
@@ -428,31 +421,47 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         private JTextComponent currentTarget;
 
         @Override
-        public void actionPerformed(ActionEvent e, JTextComponent target) {
-            currentTarget = target;
+        public void actionPerformed(final ActionEvent e, final JTextComponent target) {
+            //assure we have indent lock inside so can reindent then
             if (target != null) {
-                TokenSequence javaTokenSequence;
-                AbstractDocument adoc = (AbstractDocument)target.getDocument();
-                adoc.readLock();
+                currentTarget = target; //hack
+                BaseDocument adoc = (BaseDocument) target.getDocument();
+                final Indent indent = Indent.get(adoc);
+                indent.lock();
                 try {
-                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
-                } finally {
-                    adoc.readUnlock();
-                }
-
-                if (javaTokenSequence != null) {
-                    JavaKit jkit = (JavaKit) getKit(JavaKit.class);
-                    if (jkit != null) {
-                        Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
-                        if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
-                            ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
-                            return;
+                    adoc.runAtomic(new Runnable() {
+                        public void run() {
+                            //trigger JavaDKTAction
+                            if(!triggerJavaDefaultKeyTypedAction(e, target)) {
+                                //delegate to jsp default action if java didn't handle this keystroke
+                                JspDefaultKeyTypedAction.super.actionPerformed(e, target);
+                            }
                         }
+                    });
+                } finally {
+                    indent.unlock();
+                }
+                currentTarget = null; //hack
+            } else {
+                //backw. comp.
+                super.actionPerformed(e, target);
+            }
+
+        }
+
+        private boolean triggerJavaDefaultKeyTypedAction(ActionEvent e, JTextComponent target) {
+            TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+            if (javaTokenSequence != null) {
+                JavaKit jkit = (JavaKit) getKit(JavaKit.class);
+                if (jkit != null) {
+                    Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
+                    if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
+                        ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
+                        return true;
                     }
                 }
             }
-            super.actionPerformed(e, target);
-            currentTarget = null;
+            return false;
         }
 
         /** called under document atomic lock */
@@ -481,10 +490,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
 
             super.insertString(doc, dotPos, caret, str, overwrite);
-            //handle reformat
-            handleTagClosingSymbol(doc, dotPos, str.charAt(0));
-            //handle html quotations completion
-            HtmlAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
 
         @Override
@@ -534,60 +539,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
 
-        /** called under document atomic lock */
-        private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, char lastChar) throws BadLocationException {
-            if (lastChar == '>') {
-                LanguagePath jspLanguagePath = LanguagePath.get(JspTokenId.language());
-                final LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HTMLTokenId.language());
-                HtmlLexerFormatter htmlFormatter = new HtmlLexerFormatter(htmlInJSPPath);
-
-                if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                      HtmlIndenter.indentEndTag(doc, htmlInJSPPath, dotPos, null);
-//                    reformat(doc, dotPos);
-                } else {
-                    //We cannot run the jsp reformatter from this thread since the document
-                    //is already atomically locked so doing the source lock here is deadlock prone.
-                    //There doesn't seem to be an elegant way how to do this so usign a workaround
-                    JspLexerFormatter jspFormatter = new JspLexerFormatter();
-                    if (jspFormatter.isJustAfterClosingTag(doc, dotPos)) {
-
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                try {
-                                    reformat(doc, doc.createPosition(dotPos));
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-
-                    }
-                }
-            }
-        }
-
-        private void reformat(final BaseDocument doc, final Position dotPos) {
-            final Reformat reformat = Reformat.get(doc);
-            reformat.lock();
-
-            try {
-                doc.runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            int offset = dotPos.getOffset();
-                            int startOffset = org.netbeans.editor.Utilities.getRowStart(doc, offset);
-                            int endOffset = org.netbeans.editor.Utilities.getRowEnd(doc, offset);
-                            reformat.reformat(startOffset, endOffset);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-
-            } finally {
-                reformat.unlock();
-            }
-        }
     }
 
     public static class JspDeleteCharAction extends ExtDeleteCharAction {

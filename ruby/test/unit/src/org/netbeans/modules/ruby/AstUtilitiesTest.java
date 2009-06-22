@@ -83,6 +83,14 @@ public class AstUtilitiesTest extends RubyTestBase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        // makes the indexer to index also top level methods in tests
+        RubyIndexer.userSourcesTest = true;
+    }
+
+
+    @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return rubyTestsClassPath();
     }

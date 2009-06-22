@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
-import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushAction;
+import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext.LogEntry;
@@ -186,7 +186,7 @@ public class HgHookImpl extends HgHook {
             issue.addComment(msg, panel.resolveCheckBox.isSelected());
             issue.open();
         } else {
-            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushAction(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
+            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
             LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
         }
         LOG.log(Level.FINE, "hg afterCommit end for " + file);                  // NOI18N
@@ -206,18 +206,23 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "push hook start for " + file);                     // NOI18N
 
-        Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true);
-        if(repo == null) {
-            LOG.log(Level.FINE, " could not find issue tracker for " + file);      // NOI18N
-            return;
-        }
+        Repository repo = null;
         LogEntry[] entries = context.getLogEntries();
         for (LogEntry logEntry : entries) {
 
-            PushAction pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
+            PushOperation pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
             if(pa == null) {
                 LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
                 continue;
+            }
+
+            if(repo == null) { // don't go for the repository until we really need it
+                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true); // true -> ask user if repository unknown
+                                                                                        //         might have deleted in the meantime
+                if(repo == null) {
+                    LOG.log(Level.WARNING, " could not find issue tracker for " + file);      // NOI18N
+                    break;
+                }
             }
 
             Issue issue = repo.getIssue(pa.getIssueID());
@@ -233,21 +238,15 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public JPanel createComponent(HgHookContext context) {
-        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        File referenceFile;
         if(context.getFiles().length == 0) {
+            referenceFile = null;
             LOG.warning("creating hg hook component for zero files");           // NOI18N
-            Repository repoToSelect
-                    = BugtrackingOwnerSupport.getInstance()
-                      .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
-            panel = new HookPanel(repos, repoToSelect);
         } else {
-            File file = context.getFiles()[0];
-            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
-            if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
-            }
-            panel = new HookPanel(repos, repoToSelect);
+            referenceFile = context.getFiles()[0];
         }
+        panel = new HookPanel();
+        RepositorySelector.setup(panel, referenceFile);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onShowRevisionFormat();
@@ -267,14 +266,14 @@ public class HgHookImpl extends HgHook {
     }
 
     private void onShowRevisionFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgCommentFormat(), VCSHooksConfig.getDefaultHgFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgCommentFormat(p.getFormat());
         }
     }
 
     private void onShowIssueFormat() {
-        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat());
+        FormatPanel p = new FormatPanel(VCSHooksConfig.getInstance().getHgIssueFormat(), VCSHooksConfig.getDefaultIssueFormat());
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgIssueFormat(p.getFormat());
         }

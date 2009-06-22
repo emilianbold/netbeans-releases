@@ -75,6 +75,7 @@
                     <file name="RunFile.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.GroovyProjectModule.run"/>
                         <attr name="position" intvalue="550"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                 </folder>
             </folder>

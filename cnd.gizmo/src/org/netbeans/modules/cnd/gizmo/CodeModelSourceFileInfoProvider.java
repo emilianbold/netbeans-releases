@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
 
-    public SourceFileInfo fileName(String functionName, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
             String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
@@ -83,6 +83,9 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             }
             String sourceFile =    function.getContainingFile().getAbsolutePath().toString();
             int startOffset = function.getStartOffset();
+            if (lineNumber > 0){
+                return new SourceFileInfo(sourceFile,  lineNumber, 0);
+            }
             return new SourceFileInfo(sourceFile, startOffset);//) + offset);
 //            CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
 //            if (csmDeclaration == null) {

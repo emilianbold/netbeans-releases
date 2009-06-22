@@ -200,6 +200,8 @@ public abstract class CLIHandler extends Object {
             }
 
             if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
+                // disable all logging from standard logger (which prints to stdout) to prevent help mesage disruption
+                Logger.getLogger("").setLevel(Level.OFF); // NOI18N
                 PrintWriter w = new PrintWriter(args.getOutputStream());
                 showHelp(w, handlers, -1);
                 w.flush();
@@ -742,7 +744,7 @@ public abstract class CLIHandler extends Object {
                                 case -1:
                                     enterState(48, block);
                                     // EOF. Why does this happen?
-                                    break;
+                                    break COMMUNICATION;
                                 default:
                                     enterState(49, block);
                                     assert false : reply;

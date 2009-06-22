@@ -184,7 +184,7 @@ public final class PrintManager {
     }
 
     /**
-     * Returns the Print action for given {@linkplain PrintProvider print providers}.
+     * Returns the Print action for the given {@linkplain PrintProvider print providers}.
      * All {@link org.netbeans.spi.print.PrintPage}s returned by the providers are
      * shown in the Print Preview dialog.
      *

@@ -345,7 +345,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     currentState = POST_CHECK;
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            placeErrorPanel(new Problem(true, ioe.getMessage()));
+                            String message = ioe.getMessage();
+                            message = message != null ? message : ""; // NOI18N
+                            placeErrorPanel(new Problem(true, message));
                         }});
                 } finally {
                     if (inputState == currentState) {

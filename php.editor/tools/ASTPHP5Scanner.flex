@@ -420,6 +420,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createSymbol(ASTPHP5Symbols.T_CONTINUE);
 }
 
+<ST_IN_SCRIPTING>"goto" {
+ 	return createSymbol(ASTPHP5Symbols.T_GOTO);
+}
+
 <ST_IN_SCRIPTING>"echo" {
 	return createSymbol(ASTPHP5Symbols.T_ECHO);
 }
@@ -449,6 +453,9 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     return createSymbol(ASTPHP5Symbols.T_OBJECT_OPERATOR);
 }
 
+<ST_IN_SCRIPTING,ST_LOOKING_FOR_PROPERTY>{WHITESPACE}+ {
+}
+
 <ST_LOOKING_FOR_PROPERTY>"->" {
 	return createSymbol(ASTPHP5Symbols.T_OBJECT_OPERATOR);
 }
@@ -465,6 +472,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING>"::" {
 	return createSymbol(ASTPHP5Symbols.T_PAAMAYIM_NEKUDOTAYIM);
+}
+
+<ST_IN_SCRIPTING>"\\" {
+	return createSymbol(ASTPHP5Symbols.T_NS_SEPARATOR);
 }
 
 <ST_IN_SCRIPTING>"new" {
@@ -529,6 +540,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING>"require_once" {
 	return createSymbol(ASTPHP5Symbols.T_REQUIRE_ONCE);
+}
+
+<ST_IN_SCRIPTING>"namespace" {
+ 	return createSymbol(ASTPHP5Symbols.T_NAMESPACE);
 }
 
 <ST_IN_SCRIPTING>"use" {
@@ -795,6 +810,14 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     return createSymbol(ASTPHP5Symbols.T_FILE);
 }
 
+<ST_IN_SCRIPTING>"__DIR__" {
+ 	return createSymbol(ASTPHP5Symbols.T_DIR);
+}
+
+<ST_IN_SCRIPTING>"__NAMESPACE__" {
+	return createSymbol(ASTPHP5Symbols.T_NS_C);
+}
+
 <YYINITIAL>(([^<]|"<"[^?%s<])+)|"<s"|"<" {
     return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
 }
@@ -893,6 +916,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 <ST_VAR_OFFSET>[ \n\r\t\\'#] {
 	yypushback(1);
 	popState();
+        /*<ST_VAR_OFFSET>[ \n\r\t\\'#]*/
 	return createSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 
@@ -903,9 +927,6 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING,ST_VAR_OFFSET>{LABEL} {
     return createFullSymbol(ASTPHP5Symbols.T_STRING);
-}
-
-<ST_IN_SCRIPTING>{WHITESPACE} {
 }
 
 <ST_IN_SCRIPTING>"#"|"//" {
@@ -1078,6 +1099,7 @@ yybegin(ST_DOCBLOCK);
         yypushback(3);
         yybegin(ST_END_NOWDOC);
         // we need to remove the closing label from the symbol value.
+        /*<ST_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r]*/
         Symbol sym = createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
         String value = (String)sym.value;
         sym.value = value.substring(0, label_len - nowdoc_len);
@@ -1149,6 +1171,7 @@ yybegin(ST_DOCBLOCK);
 		yypushback(2);
         	yybegin(ST_END_HEREDOC);
         	// we need to remove the closing label from the symbol value.
+                /*<ST_HEREDOC>{HEREDOC_CHARS}*{HEREDOC_NEWLINE}+{LABEL}";"?[\n\r]*/
         	Symbol sym = createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
         	String value = (String)sym.value;
         	sym.value = value.substring(0, value.length() - heredocLength + 1);
@@ -1171,6 +1194,7 @@ yybegin(ST_DOCBLOCK);
 }
 
 <ST_DOUBLE_QUOTES>{DOUBLE_QUOTES_CHARS}+ {
+        /*<ST_DOUBLE_QUOTES>{DOUBLE_QUOTES_CHARS}+*/
 	return createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 
@@ -1180,10 +1204,12 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
 */
 <ST_DOUBLE_QUOTES>{DOUBLE_QUOTES_CHARS}*("{""{"+|"$""$"+|(("{"+|"$"+)[\"])) {
     yypushback(1);
+    /*<ST_DOUBLE_QUOTES>{DOUBLE_QUOTES_CHARS}*("{""{"+|"$""$"+|(("{"+|"$"+)[\"]))*/
     return createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 
 <ST_BACKQUOTE>{BACKQUOTE_CHARS}+ {
+        /*<ST_BACKQUOTE>{BACKQUOTE_CHARS}+*/
 	return createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 
@@ -1193,10 +1219,12 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
 */
 <ST_BACKQUOTE>{BACKQUOTE_CHARS}*("{""{"+|"$""$"+|(("{"+|"$"+)[`])) {
 	yypushback(1);
+        /*<ST_BACKQUOTE>{BACKQUOTE_CHARS}*("{""{"+|"$""$"+|(("{"+|"$"+)[`]))*/
 	return createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 
 <ST_HEREDOC>{HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)? {
+        /*<ST_HEREDOC>{HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)?*/
 	return createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 
@@ -1206,6 +1234,7 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
 */
 <ST_HEREDOC>{HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)?("{""{"+|"$""$"+) {
     yypushback(1);
+    /*<ST_HEREDOC>{HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)?("{""{"+|"$""$"+)*/
     return createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
 }
 

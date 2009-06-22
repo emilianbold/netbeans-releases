@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -64,14 +62,14 @@ public final class DeletedIndexable implements IndexableImpl {
         this.relativePath = relativePath;
     }
 
-    public long getLastModified() {
-        return -1;
-    }
-
-    public String getName() {
-        int index = this.relativePath.lastIndexOf('/'); //NOI18N
-        return index == -1 ? relativePath : relativePath.substring(index+1);
-    }
+//    public long getLastModified() {
+//        return -1;
+//    }
+//
+//    public String getName() {
+//        int index = this.relativePath.lastIndexOf('/'); //NOI18N
+//        return index == -1 ? relativePath : relativePath.substring(index+1);
+//    }
 
     public String getRelativePath() {
         return relativePath;
@@ -86,9 +84,13 @@ public final class DeletedIndexable implements IndexableImpl {
         }
     }
 
-    public InputStream openInputStream() throws IOException {
-        throw new IOException();
+    public String getMimeType() {
+        return null;
     }
+
+//    public InputStream openInputStream() throws IOException {
+//        throw new IOException();
+//    }
 
     @Override
     public String toString() {

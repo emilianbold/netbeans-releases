@@ -79,6 +79,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         Configuration config = NbModuleSuite.createConfiguration(ExpandFolderTest.class)
             .clusters(clusters)
             .enableModules(modules)
+            .honorAutoloadEager(true)
             .gui(false);
         return NbModuleSuite.create(config);
     }
@@ -87,11 +88,12 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
     @Override
     public void setUp() throws Exception {
         clearWorkDir();
+        final File wd = getWorkDir().getCanonicalFile();
         
-        File r = new File(getWorkDir(), "dir");
+        File r = new File(wd, "dir");
         r.mkdirs();
         root = FileUtil.toFileObject(r);
-        assertNotNull("Cannot find dir for " + getWorkDir() + " exists: " + getWorkDir().exists(), root);
+        assertNotNull("Cannot find dir for " + wd + " exists: " + wd.exists(), root);
 
         int extPos = getName().indexOf("Ext");
         String ext = getName().substring(extPos + 3);

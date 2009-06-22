@@ -52,6 +52,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
@@ -69,7 +71,7 @@ public class ASTNodeInfo<T extends ASTNode> {
 
     public enum Kind {
 
-        IFACE, CLASS, CLASS_INSTANCE_CREATION,
+        NAMESPACE_DECLARATION, IFACE, CLASS, CLASS_INSTANCE_CREATION,
         METHOD, STATIC_METHOD,
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,

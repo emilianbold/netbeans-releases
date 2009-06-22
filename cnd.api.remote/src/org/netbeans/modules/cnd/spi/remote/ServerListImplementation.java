@@ -51,13 +51,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public interface ServerListImplementation {
     
-    /** The index of the default development server */
-    public abstract int getDefaultIndex();
-
     public abstract Collection<? extends ServerRecord> getRecords();
     
-    /** Set the index of the default development server */
-    public abstract void setDefaultIndex(int defaultIndex);
+    public abstract void setDefaultRecord(ServerRecord record);
     
     public abstract List<ExecutionEnvironment> getEnvironments();
 
@@ -65,7 +61,7 @@ public interface ServerListImplementation {
     
     public abstract ServerRecord getDefaultRecord();
     
-    public abstract void set(List<ServerRecord> records, int defaultIndex);
+    public abstract void set(List<ServerRecord> records, ServerRecord defaultRecord);
 
     public ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect);
 

@@ -70,9 +70,12 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.options.DontShowAgainSettings;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -107,6 +110,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
     private Project project;
     private CheckBoxUpdater debugUpdater;
     private CheckBoxUpdater deprecateUpdater;
+    private static boolean warningShown = false;
 
     private Color origComPlatformFore;
 
@@ -181,9 +185,20 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     //just reset the value, no need to persist default.
                     value = null;
                 }
+                if (VALUES[0].equals(value) || VALUES[1].equals(value)) {
+                    if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutApplicationCoS()) {
+                        WarnPanel panel = new WarnPanel(NbBundle.getMessage(CompilePanel.class, "HINT_ApplicationCoS"));
+                        NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
+                        DialogDisplayer.getDefault().notify(dd);
+                        if (panel.disabledWarning()) {
+                            DontShowAgainSettings.getDefault().dontshowWarningAboutApplicationCoSAnymore();
+                        }
+                        warningShown = true;
+                    }
+                }
+
                 MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
                 boolean hasConfig = props.get(Constants.HINT_COMPILE_ON_SAVE, true, false) != null;
-                //TODO also try to take the value in pom vs inherited pom value into account.
 
                 org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 if (prof != null) {

@@ -47,7 +47,6 @@ import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -69,8 +68,8 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     @Override
-    public VariableNameImpl createElement(Program program, Variable node) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node, false);
+    public VariableNameImpl createElement(Variable node) {
+        VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
         return retval;
     }

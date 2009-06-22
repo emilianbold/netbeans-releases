@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="javacard.ri.bundle">
+
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra" depends="build-init">
+        <unzip src="external/javacard_ri.zip" dest="${cluster}"/>
+    </target>
+
+</project>

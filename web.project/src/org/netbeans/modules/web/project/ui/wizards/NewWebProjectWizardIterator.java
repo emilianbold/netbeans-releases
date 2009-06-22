@@ -78,7 +78,9 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.project.Utils;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
@@ -137,7 +139,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (createData.getSourceStructure() == null) {
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
         }
-        createData.setJavaEEVersion((String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
+        createData.setJavaEEProfile((Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
         createData.setContextPath((String) wiz.getProperty(ProjectServerWizardPanel.CONTEXT_PATH));
         createData.setJavaPlatformName((String) wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL));
@@ -145,6 +147,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setLibrariesDefinition(
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
         createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
+        createData.setWebXmlRequired(checkFrameworksForWebXml());
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);
@@ -188,7 +191,10 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-        resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, apiWebModule.getDeploymentDescriptor()));
+        FileObject dd = apiWebModule.getDeploymentDescriptor();
+        if (dd != null) {
+            resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd));
+        }
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 
@@ -328,14 +334,22 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    
-    // helper methods, finds indexJSP's FileObject
-    private FileObject getIndexJSPFO(FileObject webRoot, String indexJSP) {
-        // replace '.' with '/'
-        indexJSP = indexJSP.replace ('.', '/'); // NOI18N
-        
-        // ignore unvalid mainClass ???
-        
-        return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
+
+    private boolean checkFrameworksForWebXml() {
+        boolean res = false;
+
+        List<String> frameworkNames = (List<String>)wiz.getProperty(WizardProperties.FRAMEWORK_NAMES);
+        if (frameworkNames != null) {
+            for (String fName : frameworkNames) {
+                for (WebFrameworkProvider wfp : WebFrameworks.getFrameworks()) {
+                    if (wfp.getName().equals(fName)) {
+                        res |= wfp.requiresWebXml();
+                        break;
+                    }
+                }
+            }
+        }
+        return res;
     }
+
 }

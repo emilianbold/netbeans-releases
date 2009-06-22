@@ -44,10 +44,9 @@ package org.netbeans.modules.j2ee.common.ui;
 import java.awt.Dialog;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.j2ee.common.*;
-import org.netbeans.modules.j2ee.common.ui.NoSelectedServerWarning;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -91,10 +90,18 @@ public class BrokenServerSupport {
      * @param j2eeSpec one of {@link J2eeModule#EJB}, {@link J2eeModule#EAR}
      * @param moduleType
      * @return selected application server. Might be <code>null</code>.
+     * @deprecated
      */
     public static String selectServer(final String j2eeSpec, final Object moduleType) {
         return NoSelectedServerWarning.selectServerDialog(
                 new Object[] { moduleType }, j2eeSpec,
+                NbBundle.getMessage(BrokenServerSupport.class, "LBL_Resolve_Missing_Server_Title"),
+                NbBundle.getMessage(BrokenServerSupport.class, "ACSD_Resolve_Missing_Server")); //  NOI18N
+    }
+
+    public static String selectServer(final Profile j2eeProfile, final J2eeModule.Type moduleType) {
+        return NoSelectedServerWarning.selectServerDialog(
+                new J2eeModule.Type[] { moduleType }, j2eeProfile,
                 NbBundle.getMessage(BrokenServerSupport.class, "LBL_Resolve_Missing_Server_Title"),
                 NbBundle.getMessage(BrokenServerSupport.class, "ACSD_Resolve_Missing_Server")); //  NOI18N
     }

@@ -219,9 +219,7 @@ public final class SVGFileModel {
     private final DocumentModelListener m_modelListener = new DocumentModelListener() {
         public void documentElementRemoved(DocumentElement de) {
             if (isTagElement(de)) {
-                if ( SceneManager.isEnabled(Level.FINEST)) {
-                    SceneManager.log(Level.FINEST, "Element removed: " +de); //NOI18N
-                }
+                SceneManager.log(Level.FINEST, "Element removed: " + de); //NOI18N
                 m_mapping.remove(de);
                 fireModelChange();
             }
@@ -229,27 +227,21 @@ public final class SVGFileModel {
 
         public void documentElementChanged(DocumentElement de) {
             if (isTagElement(de)) {
-                if ( SceneManager.isEnabled(Level.FINEST)) {
-                    SceneManager.log(Level.FINEST, "Element changed: " +de); //NOI18N
-                }
+                SceneManager.log(Level.FINEST, "Element changed: " +de); //NOI18N
                 fireModelChange();
             }
         }
 
         public void documentElementAttributesChanged(DocumentElement de) {
             if (isTagElement(de)) {
-                if ( SceneManager.isEnabled(Level.FINEST)) {
-                    SceneManager.log(Level.FINEST, "Element attr changed: " +de); //NOI18N
-                }
+                SceneManager.log(Level.FINEST, "Element attr changed: " + de); //NOI18N
                 fireModelChange();
             }
         }
 
         public void documentElementAdded(DocumentElement de) {
             if (isTagElement(de)) {
-                if ( SceneManager.isEnabled(Level.FINEST)) {
-                    SceneManager.log(Level.FINEST, "Element added: " + de); //NOI18N
-                }
+                SceneManager.log(Level.FINEST, "Element added: " + de); //NOI18N
                 m_mapping.add(de);
                 fireModelChange();
             }
@@ -259,7 +251,7 @@ public final class SVGFileModel {
     private final DocumentModelStateListener m_modelStateListener = new DocumentModelStateListener() {
         public void sourceChanged() {
             synchronized (m_lock) {
-                SceneManager.log(Level.FINER, "Document source changed."); //NOI18N
+                SceneManager.log(Level.FINEST, "Document source changed."); //NOI18N
                 m_sourceChanged = true;
                 m_lock.notifyAll();
             }
@@ -267,7 +259,7 @@ public final class SVGFileModel {
 
         public void scanningStarted() {
             synchronized (m_lock) {
-                SceneManager.log(Level.FINER, "Document scanning started."); //NOI18N
+                SceneManager.log(Level.FINEST, "Document scanning started."); //NOI18N
                 getSceneManager().setBusyState(MODEL_UPDATE_TOKEN, true);
                 m_updateInProgress = true;
                 m_sourceChanged = false;
@@ -276,7 +268,7 @@ public final class SVGFileModel {
         }
 
         public void updateStarted() {
-            SceneManager.log(Level.FINER, "Model update started."); //NOI18N
+            SceneManager.log(Level.FINEST, "Model update started."); //NOI18N
         }
 
         public void updateFinished() {
@@ -385,7 +377,7 @@ public final class SVGFileModel {
         if (m_model == null) {
             try {
                 BaseDocument doc = getDoc();
-                if (doc != null) {
+                if (doc != null && doc.getLength() > 0) {
                     m_model = DocumentModel.getDocumentModel(doc);
                     m_model.addDocumentModelListener(m_modelListener);
                     m_model.addDocumentModelStateListener(m_modelStateListener);
@@ -530,6 +522,12 @@ public final class SVGFileModel {
         checkModel();
         DocumentElement elem = m_mapping.id2element(id);
         return elem;
+    }
+
+    public void forceUpdateModel(){
+        synchronized (getTransactionMonitor()) {
+            updateModel();
+        }
     }
 
     public String getElementAsText(String id) throws BadLocationException {

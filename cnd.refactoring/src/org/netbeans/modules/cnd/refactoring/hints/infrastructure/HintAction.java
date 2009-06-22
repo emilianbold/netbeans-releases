@@ -61,6 +61,9 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     }
 
     private void updateEnabled() {
+        if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
+            return;
+        }
         setEnabled(getCurrentDocument(new int[] {0,0,0}) != null);
     }
 
@@ -74,6 +77,9 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
+            return;
+        }
         String error = doPerform();
 
         if (error != null) {

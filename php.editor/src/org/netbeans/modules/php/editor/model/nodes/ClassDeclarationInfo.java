@@ -41,10 +41,12 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 
 /**
@@ -78,10 +80,11 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
     }
 
     public Identifier getSuperClass() {
-        return getOriginalNode().getSuperClass();
+        return (getOriginalNode().getSuperClass() != null) ?
+            CodeUtils.extractIdentifier(getOriginalNode().getSuperClass()) : null;
     }
 
-    public List<? extends Identifier> getInterfaces() {
+    public List<? extends Expression> getInterfaces() {
         return getOriginalNode().getInterfaes();
     }
 

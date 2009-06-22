@@ -41,14 +41,11 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.bugtracking.ui.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.nodes.PropertySupport.ReadOnly;
-import org.openide.util.NbBundle;
 
 /**
  * Represents an query on a bugtracing repository.
@@ -60,30 +57,23 @@ public abstract class Query implements Comparable<Query> {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public Filter FILTER_ALL = new AllFilter(this);
-    public static Filter FILTER_NOT_SEEN = new NotSeenFilter();
-    public Filter FILTER_NEW = new NewFilter(this);
-    public Filter FILTER_OBSOLETE = new ObsoleteDateFilter(this);
-    public Filter FILTER_ALL_BUT_OBSOLETE = new AllButObsoleteDateFilter(this);
-
     /**
-     * querie issues list was changed
+     * queries issue list was changed
      */
-    public static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
+    public final static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
 
     /**
      * query was saved
      */
-    public static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
+    public final static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
 
     /**
-     * qeury was removed
+     * query was removed
      */
-    public static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
+    public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
 
     private List<QueryNotifyListener> notifyListeners;
-    private IssueTable issueTable;
     protected boolean saved;
     private long lastRefresh = -1;
 
@@ -107,23 +97,10 @@ public abstract class Query implements Comparable<Query> {
 
     /**
      * Returns the {@link BugtrackignController} for this query
+     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
     public abstract BugtrackingController getController();
-
-    /**
-     * Returns the issue table filters for this query
-     * @return
-     */
-    public Filter[] getFilters() {
-        return new Filter[] {
-            FILTER_ALL,
-            FILTER_NEW,
-            FILTER_NOT_SEEN,
-            new ObsoleteDateFilter(this),
-            FILTER_ALL_BUT_OBSOLETE
-        };    
-    }
 
     /**
      *
@@ -133,6 +110,22 @@ public abstract class Query implements Comparable<Query> {
      */
     public abstract Repository getRepository();
 
+    /**
+     * XXX should this realy be in the spi?
+     * @param query
+     */
+    public void open() {
+        QueryAction.openQuery(this, getRepository());
+    }
+
+    /**
+     * XXX should this realy be in the spi?
+     * @param query
+     */
+    public static void openNew(Repository repository) {
+        QueryAction.openQuery(null, repository);
+    }
+
     /*********
      * DATA
      *********/
@@ -141,8 +134,8 @@ public abstract class Query implements Comparable<Query> {
      * Refreshes this Query
      * @return true if the query was refreshed, otherwise false
      */
-    public abstract boolean refresh(); 
-    
+    public abstract boolean refresh();
+
     /**
      * Sets te queries status as saved. The {@link IssueTable} assotiated with
      * this query will change its column layout
@@ -152,7 +145,6 @@ public abstract class Query implements Comparable<Query> {
     protected void setSaved(boolean saved) {
         this.saved = saved;
         fireQuerySaved();
-        getIssueTable().initColumns();
     }
 
     /**
@@ -162,10 +154,10 @@ public abstract class Query implements Comparable<Query> {
     public boolean isSaved() {
         return saved;
     }
-    
+
     /**
      * Returns issue given by the last refresh
-     * @return 
+     * @return
      */
     public abstract Issue[] getIssues(int includeStatus);
 
@@ -174,12 +166,12 @@ public abstract class Query implements Comparable<Query> {
     }
 
     /**
-     * Returns true if the issue doesn't belong to the query 
+     * Returns true if the issue doesn't belong to the query
      * @param issue
      * @return
      */
     public abstract boolean contains(Issue issue);
-    
+
     /**
      * Returns all issues given by the last refresh for
      * which applies that their ID or summary contains the
@@ -199,51 +191,9 @@ public abstract class Query implements Comparable<Query> {
             return 1;
         }
         return getDisplayName().compareTo(q.getDisplayName());
-    }
+    }    
 
-    /*********
-     * TABLE
-     *********/
-
-    /**
-     * Returns a visual component containig a table with this queries issues 
-     * @return
-     */
-    public JComponent getTableComponent() {
-        return getIssueTable().getComponent();
-    }
-
-    /**
-     * Describes a particular column in the queries table
-     */
-    public static class ColumnDescriptor<T> extends ReadOnly<T> {
-        private int width;
-        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
-            this(name, type, displayName, shortDescription, -1); // -1 means default
-        }
-        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription, int width) {
-            super(name, type, displayName, shortDescription);
-            this.width = width;
-        }
-        @Override
-        public T getValue() throws IllegalAccessException, InvocationTargetException {
-            return null;
-        }
-        public int getWidth() {
-            return width;
-        }
-    }
-
-    /**
-     * Returns the columns descriptors for this queries table
-     * @return
-     */
-    public abstract ColumnDescriptor[] getColumnDescriptors(); 
-
-    public void setFilter(Filter filter) {
-        getIssueTable().setFilter(filter);
-    }
-
+    // XXX get rid of this
     public long getLastRefresh() {
         return lastRefresh;
     }
@@ -319,16 +269,9 @@ public abstract class Query implements Comparable<Query> {
             setLastRefresh(System.currentTimeMillis());
         }
     }
-    
+
     protected void setLastRefresh(long lastRefresh) {
         this.lastRefresh = lastRefresh;
-    }
-
-    private IssueTable getIssueTable() {
-        if(issueTable == null) {
-            issueTable = new IssueTable(this);
-        }
-        return issueTable;
     }
 
     private QueryNotifyListener[] getListeners() {
@@ -346,79 +289,4 @@ public abstract class Query implements Comparable<Query> {
         }
         return notifyListeners;
     }
-
-    public abstract static class Filter {
-        public abstract String getDisplayName();
-        public abstract boolean accept(Issue issue);
-    }
-
-    private static class AllFilter extends Filter {
-        private final Query query;
-        public AllFilter(Query query) {
-            this.query = query;
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_AllIssuesFilter");     // NOI18N
-        }
-        @Override
-        public boolean accept(Issue issue) {
-            return query.contains(issue) || !issue.wasSeen();
-        }
-    }
-    private static class NotSeenFilter extends Filter {
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_UnseenIssuesFilter");  // NOI18N
-        }
-        @Override
-        public boolean accept(Issue issue) {
-            return !issue.wasSeen();
-        }
-    }
-    private static class NewFilter extends Filter {
-        private final Query query;
-        public NewFilter(Query query) {
-            this.query = query;
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_NewIssuesFilter");     // NOI18N
-        }
-        @Override
-        public boolean accept(Issue issue) {
-            return query.getIssueStatus(issue) == Issue.ISSUE_STATUS_NEW;
-        }
-    }
-    private static class ObsoleteDateFilter extends Filter {
-        private final Query query;
-
-        public ObsoleteDateFilter(Query query) {
-            this.query = query;
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_ObsoleteIssuesFilter");// NOI18N
-        }
-        @Override
-        public boolean accept(Issue issue) {
-            return !query.contains(issue);
-        }
-    }
-    private static class AllButObsoleteDateFilter extends Filter {
-        private final Query query;
-
-        public AllButObsoleteDateFilter(Query query) {
-            this.query = query;
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_AllButObsoleteIssuesFilter");  // NOI18N
-        }
-        @Override
-        public boolean accept(Issue issue) {
-            return query.contains(issue);
-        }
-    }
-
 }

@@ -89,6 +89,14 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/existingPhpProject.html"/>
                 </file>
+                <file name="remotePHPProject.php">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.remote"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/remotePhpProject.html"/>
+                </file>
             </folder>
         </folder>
         <folder name="Scripting">
@@ -98,7 +106,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
-                <attr name="template" boolvalue="true" />
+                <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="100"/>
@@ -107,7 +115,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
-                <attr name="template" boolvalue="true" />
+                <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPWebPageDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
@@ -117,7 +125,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
-                <attr name="template" boolvalue="true" />
+                <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPClassDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="300"/>
@@ -126,7 +134,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
-                <attr name="template" boolvalue="true" />
+                <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPInterfaceDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="400"/>
@@ -171,69 +179,69 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-php5">
                 <folder name="Actions">
-                    <file name="OpenAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                    <file name="CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="NewAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-NewAction.instance"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
                         <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="PasteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
-                    <file name="CutAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="CopyAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="PasteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
                     <file name="Separator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="NewAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
-                        <attr name="position" intvalue="900"/>
                     </file>
                     <file name="Separator3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="SaveAsTemplateAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
                     <file name="Separator4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                        <attr name="position" intvalue="1300"/>
                     </file>
                     <file name="Separator5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                    <file name="ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                        <attr name="position" intvalue="1600"/>
                     </file>
                 </folder>
             </folder>

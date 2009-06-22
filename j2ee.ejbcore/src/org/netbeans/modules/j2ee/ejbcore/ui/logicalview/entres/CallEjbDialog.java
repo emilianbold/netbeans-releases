@@ -62,6 +62,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.CallEjbGenerator;
 import org.openide.DialogDisplayer;
@@ -100,7 +101,7 @@ public class CallEjbDialog {
         Node root = new AbstractNode(children);
         root.setDisplayName(NbBundle.getMessage(CallEjbDialog.class, "LBL_EJBModules"));
         EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
-        boolean isJavaEE5orHigher = Utils.isJavaEE5orHigher(enterpriseProject);
+        boolean isJavaEE5orHigher = Util.isJavaEE5orHigher(enterpriseProject);
         final CallEjbPanel panel = new CallEjbPanel(referencingFO, root, isJavaEE5orHigher ? null : erc.getServiceLocatorName(), referencingClassName);
         if (isJavaEE5orHigher) {
             panel.disableServiceLocator();

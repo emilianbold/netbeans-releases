@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
@@ -55,6 +56,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -183,7 +185,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             public void actionPerformed(ActionEvent e) {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
-                        QueryAction.openKenaiQuery(null, repo);
+                        QueryAction.openQuery(null, repo, true);
                     }
                 });          
             }
@@ -249,14 +251,24 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             synchronized(queryHandles) {
                 queryHandles.clear();
             }
-        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
-            ProjectHandleListener[] pls;
-            synchronized(projectListeners) {
-                pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            if(evt.getNewValue() == null) {
+                ProjectHandleListener[] pls;
+                synchronized(projectListeners) {
+                    pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+                }
+                for (ProjectHandleListener pl : pls) {
+                    pl.closeQueries();
+                }
             }
-            for (ProjectHandleListener pl : pls) {
-                pl.closeQueries();
-            }
+            refreshKenaiQueries();
+        }
+    }
+
+    private void refreshKenaiQueries() {
+        Set<QueryTopComponent> tcs = QueryTopComponent.getOpenQueries(); // XXX updates also non kenai TC
+        for (QueryTopComponent tc : tcs) {
+            tc.updateSavedQueries();
         }
     }
     

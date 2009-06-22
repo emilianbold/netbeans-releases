@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeListener;
@@ -52,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -64,32 +64,30 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.ServerListImplementation.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.remote.ServerListImplementation.class)
 public class RemoteServerList implements ServerListImplementation {
-    
+
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
     private static final char SERVER_RECORD_SEPARATOR = '|'; //NOI18N
     private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
-    
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    
     private int defaultIndex;
     private final PropertyChangeSupport pcs;
     private final ChangeSupport cs;
     private final ArrayList<RemoteServerRecord> unlisted;
     private final ArrayList<RemoteServerRecord> items = new ArrayList<RemoteServerRecord>();
-    
+
     public RemoteServerList() {
         String slist = getPreferences().get(REMOTE_SERVERS, null);
         defaultIndex = getPreferences().getInt(DEFAULT_INDEX, 0);
         pcs = new PropertyChangeSupport(this);
         cs = new ChangeSupport(this);
         unlisted = new ArrayList<RemoteServerRecord>();
-        
+
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(ExecutionEnvironmentFactory.getLocal(), null, 
+        addServer(ExecutionEnvironmentFactory.getLocal(), null,
                 RemoteSyncFactory.getDefault(), // doesn't make a lot of sense here... but anyhow better than null
                 false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
@@ -128,20 +126,20 @@ public class RemoteServerList implements ServerListImplementation {
     public synchronized ServerRecord get(ExecutionEnvironment env) {
 
         // Search the active server list
-	for (RemoteServerRecord record : items) {
+        for (RemoteServerRecord record : items) {
             if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
-	}
-        
+        }
+
         // Search the unlisted servers list. These are records created by Tools->Options
         // which haven't been added yet (and won't until/unless OK is pressed in T->O).
-	for (RemoteServerRecord record : unlisted) {
+        for (RemoteServerRecord record : unlisted) {
             if (env.equals(record.getExecutionEnvironment())) {
                 return record;
             }
-	}
-        
+        }
+
         // Create a new unlisted record and return it
         RemoteServerRecord record = new RemoteServerRecord(env, null, RemoteSyncFactory.getDefault(), false);
         unlisted.add(record);
@@ -153,39 +151,44 @@ public class RemoteServerList implements ServerListImplementation {
         return items.get(defaultIndex);
     }
 
-    @Override
-    public synchronized int getDefaultIndex() {
-        return defaultIndex;
-    }
-
-    @Override
-    public synchronized void setDefaultIndex(int defaultIndex) {
+    private synchronized void setDefaultIndexImpl(int defaultIndex) {
         this.defaultIndex = defaultIndex;
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
-    
+
     @Override
-    public synchronized  List<ExecutionEnvironment> getEnvironments() {
+    public void setDefaultRecord(ServerRecord record) {
+        assert record != null;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).equals(record)) {
+                setDefaultIndexImpl(i);
+                return;
+            }
+        }
+        CndUtils.assertTrue(false, "Can not set nonexistent record as default");
+    }
+
+    @Override
+    public synchronized List<ExecutionEnvironment> getEnvironments() {
         List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
             result.add(item.getExecutionEnvironment());
         }
         return result;
     }
-    
+
     private void addServer(ExecutionEnvironment execEnv, String displayName,
             RemoteSyncFactory syncFactory, boolean asDefault, RemoteServerRecord.State state) {
         RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, displayName, syncFactory, asDefault, false);
         addServer.setState(state);
     }
 
-
     @Override
     public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, String displayName,
             RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
 
         RemoteServerRecord record = null;
-        
+
         // First off, check if we already have this record
         for (RemoteServerRecord r : items) {
             if (r.getExecutionEnvironment().equals(execEnv)) {
@@ -196,7 +199,7 @@ public class RemoteServerList implements ServerListImplementation {
                 return r;
             }
         }
-        
+
         // Now see if its unlisted (created in Tools->Options but cancelled with no OK)
         for (RemoteServerRecord r : unlisted) {
             if (r.getExecutionEnvironment().equals(execEnv)) {
@@ -204,7 +207,7 @@ public class RemoteServerList implements ServerListImplementation {
                 break;
             }
         }
-        
+
         if (record == null) {
             record = new RemoteServerRecord(execEnv, displayName, syncFactory, connect);
         } else {
@@ -250,32 +253,40 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     public synchronized void removeServer(ServerRecord record) {
+        log.finest("ServerList: remove " + record);
+        SystemIncludesUtils.cancel(record.getExecutionEnvironment());
         if (items.remove(record)) {
             removeFromPreferences(record);
             refresh();
         }
     }
-    
+
     @Override
-    public synchronized void set(List<ServerRecord> records, int defaultIndex) {
-        clear();
+    public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
+        log.finest("ServerList: set " + records);
+        Collection<ExecutionEnvironment> removed = clear();
         for (ServerRecord rec : records) {
             addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
+            removed.remove(rec.getExecutionEnvironment());
         }
-        setDefaultIndex(defaultIndex);
+        setDefaultRecord(defaultRecord);
+        SystemIncludesUtils.cancel(removed);
     }
 
-    private void clear() {
+    private Collection<ExecutionEnvironment> clear() {
+        Collection<ExecutionEnvironment> removed = new ArrayList<ExecutionEnvironment>();
         for (RemoteServerRecord record : items) {
             record.setDeleted(true);
+            removed.add(record.getExecutionEnvironment());
         }
         getPreferences().remove(REMOTE_SERVERS);
         unlisted.addAll(items);
         items.clear();
+        return removed;
     }
 
     private void removeFromPreferences(ServerRecord recordToRemove) {
-        StringBuilder sb = new StringBuilder();        
+        StringBuilder sb = new StringBuilder();
         for (RemoteServerRecord record : items) {
             if (!recordToRemove.equals(record)) {
                 sb.append(record.getDisplayName());
@@ -288,7 +299,7 @@ public class RemoteServerList implements ServerListImplementation {
     protected void refresh() {
         cs.fireChange();
     }
-    
+
     public synchronized RemoteServerRecord getLocalhostRecord() {
         return items.get(0);
     }
@@ -310,35 +321,34 @@ public class RemoteServerList implements ServerListImplementation {
         }
         return exit_status == 0;
     }
-    
+
     @Override
     public synchronized Collection<? extends ServerRecord> getRecords() {
         return new ArrayList<RemoteServerRecord>(items);
     }
-    
+
     // TODO: Are these still needed?
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
-    
+
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
-    
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
-    
+
     public void firePropertyChange(String property, Object n) {
         pcs.firePropertyChange(property, null, n);
     }
-    
+
     private static Preferences getPreferences() {
         return NbPreferences.forModule(RemoteServerList.class);
     }
-    
 }

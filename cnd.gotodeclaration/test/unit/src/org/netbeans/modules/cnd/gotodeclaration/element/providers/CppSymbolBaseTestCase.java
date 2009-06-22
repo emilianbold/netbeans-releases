@@ -74,9 +74,7 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
     ////////////////////////////////////////////////////////////////////////////
 
     protected final File getQuoteDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.gotodeclaration", "cnd.modelimpl"); // NOI18N
-        String filePath = "common/quote_nosyshdr"; // NOI18N
-        return Manager.normalizeFile(new File(dataPath, filePath));
+        return Manager.normalizeFile(new File(getDataDir(), "common/quote_nosyshdr"));
     }
 
     protected void peformTest(String text, SearchType type) throws Exception {

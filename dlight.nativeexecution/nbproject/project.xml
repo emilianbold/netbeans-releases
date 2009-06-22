@@ -112,8 +112,19 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.microchip.mdbcore</friend>
+                <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.sun.cloud.api</friend>
+                <friend>com.sun.cloud.cnd</friend>
+                <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.cloud.impl.rest</friend>
+                <friend>com.sun.cloud.test</friend>
+                <friend>com.sun.cloud.ui</friend>
+                <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common</friend>
+                <friend>org.netbeans.modules.cnd.debugger.commonMC</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
@@ -132,13 +143,9 @@
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>com.sun.cloud.api</friend>
-                <friend>com.sun.cloud.ui</friend>
-                <friend>com.sun.cloud.impl.rest</friend>
-                <friend>com.sun.cloud.test</friend>
-                <friend>com.sun.cloud.cnd</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
+                <package>org.netbeans.modules.nativeexecution.spi</package>
             </friend-packages>
         </data>
     </configuration>

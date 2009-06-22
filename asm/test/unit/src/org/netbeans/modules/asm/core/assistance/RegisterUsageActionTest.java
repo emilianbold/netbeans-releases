@@ -41,22 +41,29 @@
 
 package org.netbeans.modules.asm.core.assistance;
 
-import java.util.Arrays;
-import java.util.List;
-//import junit.framework.*;
+//import java.util.Arrays;
+//import java.util.List;
+import junit.framework.*;
 
-import org.netbeans.modules.asm.model.lang.AsmElement;
-import org.netbeans.modules.asm.model.lang.LabelElement;
-import org.netbeans.modules.asm.model.lang.impl.BaseAsmElement;
+//import org.netbeans.modules.asm.model.lang.AsmElement;
+//import org.netbeans.modules.asm.model.lang.LabelElement;
+//import org.netbeans.modules.asm.model.lang.impl.BaseAsmElement;
 //import org.netbeans.modules.asm.model.lang.impl.BaseInstructionOperand;
-import org.netbeans.modules.asm.model.lang.InstructionElement;
-import org.netbeans.modules.asm.model.lang.Register;
+//import org.netbeans.modules.asm.model.lang.InstructionElement;
+//import org.netbeans.modules.asm.model.lang.Register;
 
-import static org.netbeans.modules.asm.core.assistance.RegisterUsageAccesor.PredefinedStatuses.*;
-import org.netbeans.modules.asm.core.assistance.RegisterUsageAccesor.RegisterStatus;
+//import static org.netbeans.modules.asm.core.assistance.RegisterUsageAccesor.PredefinedStatuses.*;
+//import org.netbeans.modules.asm.core.assistance.RegisterUsageAccesor.RegisterStatus;
 
-public class RegisterUsageActionTest {}/*extends TestCase {
-    
+public class RegisterUsageActionTest extends TestCase {
+
+    public void testFake() {
+        System.out.println("I'm here to prevent JUnit from complaining of \"No runnable methods\"");
+        System.out.println("Please replace me with real test eventually.");
+    }
+
+}
+/*
     private static int REG_COUNT = 4;
                             
     private static InstructionElement makeInstr(int start, int end, Register []read, Register []write) {

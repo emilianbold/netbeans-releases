@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
@@ -61,67 +60,58 @@ import static java.lang.Character.isSpaceChar;
 public abstract class Issue {
 
     private static final int SHORT_DISP_NAME_LENGTH = 15;
-
     private final PropertyChangeSupport support;
 
+    // XXX do we need this?
     public static final String ATTR_DATE_MODIFICATION = "date.modification";    // NOI18N
-
     /**
      * Seen property id
      */
-    public static String LABEL_NAME_SEEN = "issue.seen";                        // NOI18N
-    
+    public static final String LABEL_NAME_SEEN = "issue.seen";                        // NOI18N
     /**
      * Recetn Changes property id
      */
-    public static String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
-
+    public static final String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
     /**
      * issue data were changed
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
-
     /**
      * issues seen state changed
      */
     public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
-
     /**
      * No information available
      */
-    public static final int ISSUE_STATUS_UNKNOWN        = 0;
-
+    public static final int ISSUE_STATUS_UNKNOWN = 0;
     /**
      * Issue was seen
      */
-    public static final int ISSUE_STATUS_SEEN           = 2;
-
+    public static final int ISSUE_STATUS_SEEN = 2;
     /**
      * Issue wasn't seen yet
      */
-    public static final int ISSUE_STATUS_NEW            = 4;
-
+    public static final int ISSUE_STATUS_NEW = 4;
     /**
      * Issue was remotely modified since the last time it was seen
      */
-    public static final int ISSUE_STATUS_MODIFIED       = 8;
-
+    public static final int ISSUE_STATUS_MODIFIED = 8;
     /**
      * Seen, New or Modified
      */
-    public static final int ISSUE_STATUS_ALL   =
-                                ISSUE_STATUS_NEW |
-                                ISSUE_STATUS_MODIFIED |
-                                ISSUE_STATUS_SEEN;
+    public static final int ISSUE_STATUS_ALL =
+            ISSUE_STATUS_NEW |
+            ISSUE_STATUS_MODIFIED |
+            ISSUE_STATUS_SEEN;
     /**
      * New or modified
      */
-    public static final int ISSUE_STATUS_NOT_SEEN   =
-                                ISSUE_STATUS_NEW |
-                                ISSUE_STATUS_MODIFIED;
-
-    private Repository repository;
+    public static final int ISSUE_STATUS_NOT_SEEN =
+            ISSUE_STATUS_NEW |
+            ISSUE_STATUS_MODIFIED;
     
+    private Repository repository;
+
     /**
      * Creates an issue
      */
@@ -178,12 +168,17 @@ public abstract class Issue {
     public abstract String getTooltip();
 
     /**
+     * Returns true if the issue isn't stored in a arepository yet. Otherwise false.
+     * @return
+     */
+    public abstract boolean isNew();
+
+    /**
      * Refreshes this Issues data from its bugtracking repositry
      *
      * @return true if the issue was refreshed, otherwise false
      */
     public abstract boolean refresh();
-
 
     // XXX throw exception
     public abstract void addComment(String comment, boolean closeAsFixed);
@@ -193,6 +188,7 @@ public abstract class Issue {
 
     /**
      * Returns this issues controller
+     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
     public abstract BugtrackingController getController();
@@ -205,29 +201,32 @@ public abstract class Issue {
      */
     public static void open(final Repository repository, final String issueId) {
         final ProgressHandle[] handle = new ProgressHandle[1];
-        handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {issueId}));
+        handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
         handle[0].start();
         final IssueTopComponent tc = IssueTopComponent.find(issueId);
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 final Issue issue = tc.getIssue();
-                if(issue == null) {
+                if (issue == null) {
                     tc.initNoIssue();
                 }
                 tc.open();
                 tc.requestActive();
 
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+
                     public void run() {
                         try {
-                            if(issue != null) {
+                            if (issue != null) {
                                 handle[0].finish();
-                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[] {issueId}));
+                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
                                 handle[0].start();
                                 issue.refresh();
                             } else {
                                 final Issue refIssue = repository.getIssue(issueId);
                                 SwingUtilities.invokeLater(new Runnable() {
+
                                     public void run() {
                                         tc.setIssue(refIssue);
                                     }
@@ -259,10 +258,11 @@ public abstract class Issue {
      * @param refresh also refreshes the issue after opening
      * 
      */
-    final public void open(final boolean refresh) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {getID()}));
+    final void open(final boolean refresh) {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{getID()}));
         handle.start();
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 IssueTopComponent tc = IssueTopComponent.find(Issue.this);
 
@@ -270,10 +270,11 @@ public abstract class Issue {
                 tc.requestActive();
 
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+
                     public void run() {
                         try {
                             try {
-                                if(refresh && !Issue.this.refresh()) {
+                                if (refresh && !Issue.this.refresh()) {
                                     return;
                                 }
                                 Issue.this.setSeen(true);
@@ -309,7 +310,7 @@ public abstract class Issue {
 
     /**
      * Returns a description summarizing the changes made
-     * in this issues since the last time it was set as seen.
+     * in this issue since the last time it was as seen.
      */
     public abstract String getRecentChanges();
 
@@ -345,10 +346,20 @@ public abstract class Issue {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Notify listeners on this issue that its data were changed
+     */
     protected void fireDataChanged() {
         support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
+    /**
+     * Notify listeners on this issue that the seen state has chaged
+     *
+     * @param oldSeen the old seen state
+     * @param newSeen the new seen state
+     * @see #EVENT_ISSUE_SEEN_CHANGED
+     */
     protected void fireSeenChanged(boolean oldSeen, boolean newSeen) {
         support.firePropertyChange(EVENT_ISSUE_SEEN_CHANGED, oldSeen, newSeen);
     }

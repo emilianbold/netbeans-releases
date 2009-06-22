@@ -183,7 +183,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Util.allMimeTypes = Collections.singleton("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
-        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false);
+        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false, true);
         ruSync.await();
 
         assertEquals("Wrong number of ordinary scans", 1, indexer.cnt);
@@ -316,15 +316,15 @@ public class RepositoryUpdater2Test extends NbTestCase {
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
         MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
-        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
-        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
         Util.allMimeTypes = Collections.singleton("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
         mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
+        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
         // wait for the first root to arrive in the indexer
         long tm = System.currentTimeMillis();
@@ -371,15 +371,15 @@ public class RepositoryUpdater2Test extends NbTestCase {
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
         MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
-        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
-        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
         final TimeoutCustomIndexer indexer = new TimeoutCustomIndexer(2000);
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
         Util.allMimeTypes = Collections.singleton("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
         mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
+        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
         for(int cnt = 1; cnt <= 3; cnt++) {
             long tm = System.currentTimeMillis();
@@ -472,7 +472,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
             }
         }
 
-    } // End of testRootsWorkCancelling_CustomIndexer class
+    } // End of TimeoutCustomIndexer class
 
     private static final class FixedCustomIndexerFactory<T extends CustomIndexer> extends CustomIndexerFactory {
 

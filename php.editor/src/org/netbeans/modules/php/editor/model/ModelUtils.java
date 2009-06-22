@@ -45,7 +45,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.filesystems.FileObject;
@@ -58,8 +60,74 @@ public class ModelUtils {
     private ModelUtils() {
     }
 
+    public static Collection<? extends TypeScope> getDeclaredTypes(FileScope fileScope) {
+        List<TypeScope> retval = new ArrayList<TypeScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredTypes());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends ClassScope> getDeclaredClasses(FileScope fileScope) {
+        List<ClassScope> retval = new ArrayList<ClassScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredClasses());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends InterfaceScope> getDeclaredInterfaces(FileScope fileScope) {
+        List<InterfaceScope> retval = new ArrayList<InterfaceScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredInterfaces());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends ConstantElement> getDeclaredConstants(FileScope fileScope) {
+        List<ConstantElement> retval = new ArrayList<ConstantElement>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredConstants());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends FunctionScope> getDeclaredFunctions(FileScope fileScope) {
+        List<FunctionScope> retval = new ArrayList<FunctionScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredFunctions());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends VariableName> getDeclaredVariables(FileScope fileScope) {
+        List<VariableName> retval = new ArrayList<VariableName>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredVariables());
+        }
+        return retval;
+    }
+
+    public static List<? extends ModelElement> getElements(Scope scope, boolean resursively) {
+        List<ModelElement> retval = new ArrayList<ModelElement>();
+        List<? extends ModelElement> elements = scope.getElements();
+        retval.addAll(elements);
+        for (ModelElement modelElement : elements) {
+            if (modelElement instanceof Scope) {
+                retval.addAll(getElements((Scope) modelElement, resursively));
+            }
+        }
+        return retval;
+    }
+
     @NonNull
-    public static Collection<? extends TypeScope> typeOfVariableBase(Model model, VariableBase varBase) {
+    public static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase) {
         Collection<? extends TypeScope> retval = Collections.emptyList();
         VariableScope scp = model.getVariableScope(varBase.getStartOffset());
         if (scp != null) {
@@ -68,6 +136,21 @@ public class ModelUtils {
                 FileScope fileScope = ModelUtils.getFileScope(scp);
                 retval = VariousUtils.getType(fileScope, scp, vartype, varBase.getStartOffset(), true);
             }
+        }
+        return retval;
+    }
+
+    @NonNull
+    public static Collection<? extends TypeScope> resolveTypeAfterReferenceToken(Model model, TokenSequence<PHPTokenId> tokenSequence, int offset) {
+        tokenSequence.move(offset);
+        Collection<? extends TypeScope> retval = Collections.emptyList();
+        VariableScope scp = model.getVariableScope(offset);
+        if (scp != null) {
+                String semiType = VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, scp);
+                if (semiType != null) {
+                    return VariousUtils.getType(ModelUtils.getFileScope(scp), scp, semiType, offset, true);
+                }
+
         }
         return retval;
     }
@@ -166,6 +249,16 @@ public class ModelUtils {
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (FileScope) ((element instanceof FileScope) ? element : null);
+        }
+        return retval;
+    }
+
+    @CheckForNull
+    public static NamespaceScope getNamespaceScope(ModelElement element) {
+        NamespaceScope retval = (element instanceof NamespaceScope) ? (NamespaceScope)element : null;
+        while (retval == null && element != null) {
+            element = element.getInScope();
+            retval = (NamespaceScope) ((element instanceof NamespaceScope) ? element : null);
         }
         return retval;
     }

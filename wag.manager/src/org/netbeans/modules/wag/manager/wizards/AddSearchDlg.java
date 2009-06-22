@@ -59,6 +59,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Enables searching for Web Services, via an URL, on the local file system
@@ -101,54 +102,6 @@ public class AddSearchDlg extends JPanel implements ActionListener {
 
     private void checkValues() {
         setErrorMessage(null);
-        // Check the package name
-        /*
-        final String packageName = searchQueryTF.getText().trim();
-        boolean defaultPackage = DEFAULT_PACKAGE_HOLDER.equals(packageName) || packageName.length() == 0;
-        if (!defaultPackage && !isValidPackageName(packageName)) {
-            setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "INVALID_PACKAGE"));
-        } else if (jTxtLocalFilename.isEnabled()) {
-            String localText = jTxtLocalFilename.getText().trim();
-            if (localText.length() == 0) {
-                setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "EMPTY_FILE"));
-                return;
-            }
-
-            File f = new File(localText);
-            if (!f.exists()) {
-                setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "INVALID_FILE_NOT_FOUND"));
-                return;
-            } else if (!f.isFile()) {
-                setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "INVALID_FILE_NOT_FILE"));
-                return;
-            } else if (group.serviceExists(localText)) {
-                setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "SERVICE_ALREADY_EXISTS_FOR_FILE"));
-                return;
-            } else {
-                setErrorMessage(defaultMsg);
-            }
-        } else if (jTxServiceURL.isEnabled()) {
-            String urlText = jTxServiceURL.getText().trim();
-            if (urlText.length() == 0) {
-                setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "EMPTY_URL"));
-                return;
-            }
-
-            try {
-                URL url = new URL(urlText);
-
-                if (group.serviceExists(urlText)) {
-                    setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "SERVICE_ALREADY_EXISTS_FOR_URL"));
-                } else {
-                    setErrorMessage(defaultMsg);
-                }
-            } catch (MalformedURLException ex) {
-                setErrorMessage(NbBundle.getMessage(AddSearchDlg.class, "INVALID_URL"));
-            }
-        } else {
-            setErrorMessage(defaultMsg);
-        }
-         */
     }
 
     private void myInitComponents() {
@@ -186,7 +139,7 @@ public class AddSearchDlg extends JPanel implements ActionListener {
 
     public void displayDialog() {
 
-        dlg = new DialogDescriptor(this, NbBundle.getMessage(AddSearchDlg.class, "LBL_AddSearch"),
+        dlg = new DialogDescriptor(this, NbBundle.getMessage(AddSearchDlg.class, "LBL_RefineSearch"),
                 true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
 
@@ -196,7 +149,11 @@ public class AddSearchDlg extends JPanel implements ActionListener {
         dialog.setVisible(true);
 
         if (dlg.getValue() == DialogDescriptor.OK_OPTION) {
-            addSearchResult();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    addSearchResult();
+                }
+            });
         }
     }
 
@@ -211,8 +168,6 @@ public class AddSearchDlg extends JPanel implements ActionListener {
     public HelpCtx getHelpCtx() {
         return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
     }
-
- 
 
     public void actionPerformed(ActionEvent evt) {
     }
@@ -322,5 +277,4 @@ private void maxResultsTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JLabel queryLabel;
     private javax.swing.JTextField searchQueryTF;
     // End of variables declaration//GEN-END:variables
-
 }

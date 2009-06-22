@@ -45,53 +45,169 @@ import org.netbeans.api.java.source.Comment;
 
 /**
  * The set of comments associated with a single tree node.
+ * 
+ * @since 0.45
+ * @author Petr Hrebejk
+ * @author Rastislav Komara (<a href="mailto:moonko@netbeans.org">RKo</a>)
  */
 public interface CommentSet {
     /**
-     * Add the specified comment to the list of preceding comments.
+     * Define position of comment against coresponding tree element within java source.
      */
+    public enum RelativePosition {
+        /**
+         * Represents preceding comment position. This comment is mean to be before coresponding tree in 
+         * common literal sense.
+         */
+        PRECEDING,
+        /**
+         * This comment should be preceding or trailing to corresponding tree, 
+         * but are still located on one continuous line in common literal sense.
+         */
+        INLINE,
+        /**
+         * This comment is inside coresponding tree. This allows specifing inner comments for block like empty 
+         * statements. 
+         */
+        INNER,
+        /**
+         * Represents trailing comment position. This comment is mean to be following coresponding tree in 
+         * common literal sense. 
+         */
+        TRAILING
+    }
+    /**
+     * Adds the specified comment to the list of preceding comments.
+     * @param c comment to add as preceding
+     * @deprecated Use 
+     * {@link #addComment(org.netbeans.modules.java.source.query.CommentSet.RelativePosition , org.netbeans.api.java.source.Comment)} 
+     * instead of this. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#PRECEDING}
+     */
+    @Deprecated
     void addPrecedingComment(Comment c);
 
     /**
-     * Add the specified comment string to the list of preceding comments.
+     * Adds the specified comment string to the list of preceding comments.
+     * @param s textual representation of comment.
+     * @deprecated Use 
+     * {@link #addComment(org.netbeans.modules.java.source.query.CommentSet.RelativePosition , org.netbeans.api.java.source.Comment)} 
+     * instead of this. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#PRECEDING}
      */
+    @Deprecated
     void addPrecedingComment(java.lang.String s);
 
     /**
-     * Add a list of comments to the list of preceding comments.
+     * Adds a list of comments to the list of preceding comments.
+     * @param comments list of comment to add.
+     * @deprecated Use 
+     * {@link #addComment(org.netbeans.modules.java.source.query.CommentSet.RelativePosition , org.netbeans.api.java.source.Comment)} 
+     * instead of this. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#PRECEDING}
      */
+    @Deprecated
     void addPrecedingComments(java.util.List<Comment> comments);
 
     /**
-     * Add the specified comment to the list of trailing comments.
+     * Adds the specified comment to the list of trailing comments.
+     * @param c comment to add
+     * @deprecated Use 
+     * {@link #addComment(org.netbeans.modules.java.source.query.CommentSet.RelativePosition , org.netbeans.api.java.source.Comment)} 
+     * instead of this. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#TRAILING}
      */
+    @Deprecated
     void addTrailingComment(Comment c);
 
     /**
-     * Add the specified comment string to the list of trailing comments.
+     * Adds the specified comment string to the list of trailing comments.
+     * @param s textual content of comment to add.
+     * @deprecated Use 
+     * {@link #addComment(org.netbeans.modules.java.source.query.CommentSet.RelativePosition , org.netbeans.api.java.source.Comment)} 
+     * instead of this. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#TRAILING}
      */
+    @Deprecated
     void addTrailingComment(java.lang.String s);
 
     /**
-     * Add a list of comments to the list of preceding comments.
+     * Adds a list of comments to the list of preceding comments.
+     * @param comments list of comments to add.
+     * @deprecated Use 
+     * {@link #addComment(org.netbeans.modules.java.source.query.CommentSet.RelativePosition , org.netbeans.api.java.source.Comment)} 
+     * instead of this. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#TRAILING}
      */
+    @Deprecated
     void addTrailingComments(java.util.List<Comment> comments);
 
+    /**
+     * Gets list of preceding comments. The returned list is read-only.
+     * @return list of preceding comments. This method always return list event if list is empty.
+     * @deprecated Use {@link #getComments(org.netbeans.modules.java.source.query.CommentSet.RelativePosition)} 
+     * instead of this method. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#PRECEDING} 
+     */
+    @Deprecated
     java.util.List<Comment> getPrecedingComments();
 
+    /**
+     * Gets list of trailing comments. The returned list is read-only.
+     * @return list of training comments. This method always return list event if list is empty.
+     * @deprecated Use {@link #getComments(org.netbeans.modules.java.source.query.CommentSet.RelativePosition)} 
+     * instead of this method. As {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition} use 
+     * {@link org.netbeans.modules.java.source.query.CommentSet.RelativePosition#TRAILING} 
+     */
+    @Deprecated
     java.util.List<Comment> getTrailingComments();
 
+    /**
+     * Returns true if there has been added any newly created comment.
+     * @return true if this list containes newly create comments by user.
+     * @see org.netbeans.api.java.source.Comment#isNew() 
+     */
     boolean hasChanges();
 
+    /**
+     * Returns true if this comment set not empty.
+     * @return true if there is at least one comment in this set.
+     */
     boolean hasComments();
 
     /**
-     * 
      * Returns the first character position, which is either the initial
-     * position of the first preceding comment, or NOPOS if there are no comments.
-     * 
-     * @see org.netbeans.modules.java.source.query.Query#NOPOS
+     * position of the first preceding comment, or {@link org.netbeans.modules.java.source.save.PositionEstimator#NOPOS} 
+     * if there are no comments.
+     *
+     * @return start position of first comment or {@link org.netbeans.modules.java.source.save.PositionEstimator#NOPOS}
+     *  if there is no comment.
      */
     int pos();
-    
+
+    /**
+     * Returns document offset of first comment on relative position or 
+     * {@link org.netbeans.modules.java.source.save.PositionEstimator#NOPOS} if there are no comments for this position. 
+     * @param position the relative position of comment against associated tree.
+     * @return document offset of first comment or {@link org.netbeans.modules.java.source.save.PositionEstimator#NOPOS}
+     */
+    int pos(RelativePosition position);
+
+    /**
+     * Adds comment with specified positioning.
+     * @param positioning relative position of comment against coresponding tree. 
+     * @param c comment to add.
+     * 
+     * @see org.netbeans.modules.java.source.query.CommentSet.RelativePosition
+     */
+    void addComment(RelativePosition positioning, Comment c);
+
+    /**
+     * Gets non-null list of comments on specified relative position. This list is read-only. If you need to check if 
+     * there is any comment in this set use {@link #hasComments()}.  
+     * @param positioning relative position against associated tree. 
+     * @return non-null read-only list of comments on specified position.
+     * @see org.netbeans.modules.java.source.query.CommentSet.RelativePosition
+     */
+    java.util.List<Comment> getComments(RelativePosition positioning);
 }

@@ -1169,6 +1169,7 @@ public class UnitTab extends javax.swing.JPanel {
                 wizardFinished = wizard.invokeWizard ();
             } finally {
                 Containers.forUninstall ().removeAll ();
+                Containers.forDisable().removeAll ();
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
@@ -1178,6 +1179,25 @@ public class UnitTab extends javax.swing.JPanel {
                 focusTable ();
             }
         }
+
+        @Override
+        public void tableDataChanged (Collection<Unit> units) {
+            if (units.size() == 0) {
+                setEnabled(false);
+                return;
+            }
+            for (Unit u : units) {
+                if (u instanceof Unit.Installed) {
+                    Unit.Installed inst = (Unit.Installed)u;
+                    if (!inst.isUninstallAllowed() && !inst.isDeactivationAllowed()) {
+                        setEnabled(false);
+                        return;
+                    }
+                }
+            }
+            setEnabled (true);
+        }
+
     }
     
     private class UpdateAction extends TabAction {
@@ -1266,7 +1286,7 @@ public class UnitTab extends javax.swing.JPanel {
             String category = u.getCategoryName();
             List<Unit> units = model.getUnits();
             for (Unit unit : units) {
-                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked()) {
+                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked() && unit.canBeMarked()) {
                     retval = true;
                     break;
                 }
@@ -1481,6 +1501,7 @@ public class UnitTab extends javax.swing.JPanel {
                 Containers.forUninstall().removeAll();
             }
             Containers.forDisable().removeAll();
+            fireUpdataUnitChange ();
             restoreSelectedRow(row);
             refreshState ();
             focusTable ();

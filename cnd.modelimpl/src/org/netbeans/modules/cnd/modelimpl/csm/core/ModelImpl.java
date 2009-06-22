@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
@@ -442,6 +443,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (Iterator projIter = libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
         }
+        LibraryManager.getInstance().shutdown();
 
         cleanCaches();
 
@@ -648,6 +650,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
         APTDriver.getInstance().close();
+        APTFileCacheManager.close();
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();
         CndFileUtils.clearFileExistenceCache();

@@ -275,7 +275,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                     continue;
                 Toolbar tb = bars.get(tc.getName());
                 if( null != tb ) {
-                    ToolbarContainer container = new ToolbarContainer( tb, dndSupport, tc.isDragable() );
+                    ToolbarContainer container = new ToolbarContainer( tb, dndSupport, tc.isDraggable() );
                     row.add( tc.getName(), container );
                 }
             }

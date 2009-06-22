@@ -56,7 +56,6 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
-import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -72,7 +71,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
@@ -84,8 +82,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 
 /**
  * Commit action for mercurial:
@@ -316,7 +312,7 @@ public class CommitAction extends ContextAction {
         }
 
         String contentTitle = (String) panel.getClientProperty("contentTitle"); // NOI18N
-// NOI18N
+
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {

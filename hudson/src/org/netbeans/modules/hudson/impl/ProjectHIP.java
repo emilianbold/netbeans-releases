@@ -57,7 +57,7 @@ class ProjectHIP extends HudsonInstanceProperties {
 
     private final Set<Project> providers = new HashSet<Project>();
     public ProjectHIP() {
-        super("", "", "0"); // NOI18N
+        super("", "", "5"); // NOI18N
     }
 
     public @Override boolean isPersisted() {

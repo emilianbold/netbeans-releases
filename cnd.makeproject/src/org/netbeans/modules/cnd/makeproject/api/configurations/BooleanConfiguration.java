@@ -38,16 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 public class BooleanConfiguration {
-    private BooleanConfiguration master;
 
+    private BooleanConfiguration master;
     private boolean def;
     private String falseValue;
     private String trueValue;
-
     private boolean value;
     private boolean modified;
     private boolean dirty = false;
@@ -70,6 +68,10 @@ public class BooleanConfiguration {
 
     protected BooleanConfiguration getMaster() {
         return master;
+    }
+
+    public void setMaster(BooleanConfiguration master) {
+        this.master = master;
     }
 
     public void setValue(boolean b) {
@@ -141,5 +143,4 @@ public class BooleanConfiguration {
         clone.setModified(getModified());
         return clone;
     }
-
 }

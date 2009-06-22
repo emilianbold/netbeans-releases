@@ -43,11 +43,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -207,5 +212,37 @@ public class JiraUtils {
         boolean retval = false;
         assert retval = true;
         return retval;
+    }
+
+    public static String[] toStrings(IssueType[] types) {
+        String[] ret = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            ret[i] = types[i].getName();
+        }
+        return ret;
+    }
+
+    public static String[] toStrings(Priority[] prios) {
+        String[] ret = new String[prios.length];
+        for (int i = 0; i < prios.length; i++) {
+            ret[i] = prios[i].getName();
+        }
+        return ret;
+    }
+
+    public static String[] toStrings(JiraStatus[] statuses) {
+        String[] ret = new String[statuses.length];
+        for (int i = 0; i < statuses.length; i++) {
+            ret[i] = statuses[i].getName();
+        }
+        return ret;
+    }
+
+    public static String[] toStrings(Resolution[] resolutions) {
+        String[] ret = new String[resolutions.length];
+        for (int i = 0; i < resolutions.length; i++) {
+            ret[i] = resolutions[i].getName();
+        }
+        return ret;
     }
 }

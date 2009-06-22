@@ -40,12 +40,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
@@ -62,6 +65,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodePro
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -428,6 +433,8 @@ public class MakeConfiguration extends Configuration {
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
+            } else if (auxs[i] instanceof FolderConfiguration) {
+                copiedAuxs.add(((FolderConfiguration) auxs[i]).copy(copy));
             } else {
                 String id = auxs[i].getId();
                 ConfigurationAuxObject copyAux = copy.getAuxObject(id);
@@ -440,7 +447,56 @@ public class MakeConfiguration extends Configuration {
             }
         }
         copy.setAuxObjects(copiedAuxs);
+        // Fixup folder and item configuration links links
+        fixupMasterLinks(copy);
+
         return copy;
+    }
+
+    private void fixupMasterLinks(MakeConfiguration makeConf) {
+        FileObject projectDirFO = FileUtil.toFileObject(new File(getBaseDir()));
+        Project project = null;
+        try {
+            project = ProjectManager.getDefault().findProject(projectDirFO);
+        } catch (IOException ioe) {
+            // Error
+            return;
+        }
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+
+        Folder root = makeConfigurationDescriptor.getLogicalFolders();
+        fixupFolderItemLinks(makeConf, root, makeConf.getCCompilerConfiguration(), makeConf.getCCCompilerConfiguration());
+    }
+
+    private void fixupFolderItemLinks(MakeConfiguration makeConf, Folder folder, BasicCompilerConfiguration cCompilerConf, BasicCompilerConfiguration ccCompilerConf) {
+        if (!folder.isProjectFiles()) {
+            return;
+        }
+        FolderConfiguration folderConfiguration = (FolderConfiguration) makeConf.getAuxObject(folder.getId());
+        if (folderConfiguration == null) {
+            return;
+        }
+        if (folderConfiguration.getCCompilerConfiguration() != null) {
+            folderConfiguration.getCCompilerConfiguration().setMaster(cCompilerConf);
+        }
+        if (folderConfiguration.getCCCompilerConfiguration() != null) {
+            folderConfiguration.getCCCompilerConfiguration().setMaster(ccCompilerConf);
+        }
+        for (Item item : folder.getItemsAsArray()) {
+            ItemConfiguration itemConfiguration = (ItemConfiguration) makeConf.getAuxObject(item.getId());
+            if (itemConfiguration.getCCompilerConfiguration() != null) {
+                itemConfiguration.getCCompilerConfiguration().setMaster(folderConfiguration.getCCompilerConfiguration());
+                itemConfiguration.getCCompilerConfiguration().fixupMasterLinks(makeConf.getCCompilerConfiguration());
+            }
+            if (itemConfiguration.getCCCompilerConfiguration() != null) {
+                itemConfiguration.getCCCompilerConfiguration().setMaster(folderConfiguration.getCCCompilerConfiguration());
+                itemConfiguration.getCCCompilerConfiguration().fixupMasterLinks(makeConf.getCCCompilerConfiguration());
+            }
+        }
+        for (Folder subfolder : folder.getFoldersAsArray()) {
+            fixupFolderItemLinks(makeConf, subfolder, folderConfiguration.getCCompilerConfiguration(), folderConfiguration.getCCCompilerConfiguration());
+        }
     }
 
     /**

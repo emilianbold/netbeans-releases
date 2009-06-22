@@ -152,6 +152,8 @@ public final class NbMavenProjectImpl implements Project {
     //TODO remove
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
+    private static RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
+
     private FileObject fileObject;
     private FileObject folderFileObject;
     private File projectFile;
@@ -792,7 +794,7 @@ public final class NbMavenProjectImpl implements Project {
         Set<File> toRet = new HashSet<File>();
         File fil = new File(uri);
         if (fil.exists()) {
-            toRet.addAll(Arrays.asList(fil.listFiles(new FilenameFilter() {
+            File[] fls = fil.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
                     return !("java".equalsIgnoreCase(name)) && //NOI18N
@@ -801,7 +803,11 @@ public final class NbMavenProjectImpl implements Project {
                            !("scala".equalsIgnoreCase(name)) //NOI18N
                        && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
                 }
-            })));
+            });
+            if (fls != null) { //#166709 listFiles() shall not return null for existing folders
+                // but somehow it does, maybe IO problem? do a proper null check.
+                toRet.addAll(Arrays.asList(fls));
+            }
         }
         URI[] res = getResources(test);
         for (URI rs : res) {
@@ -891,7 +897,6 @@ public final class NbMavenProjectImpl implements Project {
                     profileHandler,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
-                    new ProjectOpenedHookImpl(this),
                     new ClassPathProviderImpl(this),
                     sharability,
                     new MavenTestForSourceImpl(this),
@@ -913,6 +918,7 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenFileLocator(this),
 
                     // default mergers..        
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
@@ -922,7 +928,7 @@ public final class NbMavenProjectImpl implements Project {
                     new BackwardCompatibilityWithMevenideChecker(),
                     new JarPackagingRunChecker(),
                     new DebuggerChecker(),
-                    new CosChecker(),
+                    new CosChecker(this),
                     CosChecker.createResultChecker(),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
@@ -1294,10 +1300,16 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         public void actionPerformed(java.awt.event.ActionEvent event) {
-            EmbedderFactory.resetProjectEmbedder();
-            for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
-                NbMavenProject.fireMavenProjectReload(prj);
-            }
+            //#166919 - need to run in RP to prevent RPing later in fireProjectReload()
+            RELOAD_RP.post(new Runnable() {
+                public void run() {
+                    EmbedderFactory.resetProjectEmbedder();
+                    for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
+                        NbMavenProject.fireMavenProjectReload(prj);
+                    }
+                }
+            });
+
         }
 
         public Action createContextAwareInstance(Lookup actionContext) {

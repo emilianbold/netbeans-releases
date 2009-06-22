@@ -50,6 +50,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -157,9 +159,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                             attachAsNeeded(l);
 
                             if (col1 == -1) {
-                                l.show(Line.SHOW_GOTO);
+                                l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                             } else {
-                                l.show(Line.SHOW_GOTO, col1 - 1);
+                                l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, col1 - 1);
                             }
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
@@ -217,9 +219,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                         attachAsNeeded(l);
 
                         if (col1 == -1) {
-                            l.show(Line.SHOW_TRY_SHOW);
+                            l.show(ShowOpenType.NONE, ShowVisibilityType.NONE);
                         } else {
-                            l.show(Line.SHOW_TRY_SHOW, col1 - 1);
+                            l.show(ShowOpenType.NONE, ShowVisibilityType.NONE, col1 - 1);
                         }
                     }
                 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -58,7 +59,6 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -284,7 +284,7 @@ public class ProjectActionSupport {
             return tab;
         }
 
-        public void reRun() {
+        private void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
             synchronized (lock) {
@@ -299,7 +299,7 @@ public class ProjectActionSupport {
             go();
         }
 
-        public void go() {
+        private void go() {
             currentHandler = null;
             sa.setEnabled(false);
             ra.setEnabled(false);
@@ -327,7 +327,7 @@ public class ProjectActionSupport {
                 initHandler(customHandler, pae);
                 customHandler.execute(ioTab);
             } else {
-                if (!checkRemotePath(pae)) {
+                if (currentAction == 0 && !checkRemotePath(pae)) {
                     progressHandle.finish();
                     return;
                 }
@@ -346,21 +346,34 @@ public class ProjectActionSupport {
 
         // moved from DefaultProjectActionHandler.execute
         private boolean checkRemotePath(ProjectActionEvent pae) {
+            boolean success = true;
             MakeConfiguration conf = pae.getConfiguration();
             if (!conf.getDevelopmentHost().isLocalhost()) {
-                // Make sure the project root is visible remotely
-                String basedir = pae.getProfile().getBaseDir();
-                if (MakeActionProvider.useRsync) {
-//                        ProjectInformation info = pae.getProject().getLookup().lookup(ProjectInformation.class);
-//                        final String projectName = info.getDisplayName();
-//                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
-                } else {
-                    ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
-                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(basedir), env, null, null);
-                    return syncWorker.synchronize();
+                // Make sure the project and 1st level subprojects are visible remotely
+                String baseDir = pae.getProfile().getBaseDir();
+                ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+                for (String subprojectDir : conf.getSubProjectLocations()) {
+                    subprojectDir = IpeUtils.toAbsolutePath(baseDir, subprojectDir);
+                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(subprojectDir), env, null, null);
+                    success &= syncWorker.synchronize();
+                    if (!success) {
+                        break;
+                    }
+                }
+                if (success) {
+                    PrintWriter err = null;
+                    PrintWriter out = null;
+                    InputOutput tab = getTab();
+                    if (tab != null) {
+                        out = this.ioTab.getOut();
+                        err = this.ioTab.getErr();
+                    }
+                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
+                            new File(baseDir), env, out, err);
+                    success &= syncWorker.synchronize();
                 }
             }
-            return true;
+            return success;
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae) {

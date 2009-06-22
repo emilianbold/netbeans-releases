@@ -35,15 +35,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -69,6 +77,7 @@ public abstract class SourceTestSupport extends NbTestCase{
         ClassPathProviderImpl classPathProvider = new ClassPathProviderImpl(getClassPathRoots());
         setLookups(
                 classPathProvider,
+                new JavaFileResolver(),
                 new FakeJavaDataLoaderPool(),
                 new TestSourceLevelQueryImplementation()
                 );
@@ -170,5 +179,35 @@ public abstract class SourceTestSupport extends NbTestCase{
         }
         
     }
+
+    static private class JavaFileResolver extends MIMEResolver
+    {
+
+        public JavaFileResolver() {
+            super("text/x-java");
+        }
+
+
+        @Override
+        public String findMIMEType(FileObject fo) {
+            if(JavaDataLoader.JAVA_EXTENSION.equals(fo.getExt()))return JavaDataLoader.JAVA_MIME_TYPE;
+            else return null;
+        }
+
+    }
     
+    @ServiceProvider(service=MimeDataProvider.class)
+    public static final class JavacParserProvider implements MimeDataProvider {
+
+        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory());
+
+        public Lookup getLookup(MimePath mimePath) {
+            if (mimePath.getPath().endsWith(JavacParser.MIME_TYPE)) {
+                return javaLookup;
+            }
+
+            return Lookup.EMPTY;
+        }
+
+    }
 }

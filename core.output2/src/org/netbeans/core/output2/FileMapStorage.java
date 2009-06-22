@@ -279,7 +279,6 @@ class FileMapStorage implements Storage {
                         this.contents = cont;
                     } catch (IOException ioe) {
                         Logger.getAnonymousLogger().info("Failed to memory map output file for reading. Trying to read it normally."); //NOI18N
-                        Exceptions.printStackTrace(ioe);
 
                         // Memory mapping failed, fallback to non-mapped
                         cont = ByteBuffer.allocate((int) (mappedRange - mappedStart));

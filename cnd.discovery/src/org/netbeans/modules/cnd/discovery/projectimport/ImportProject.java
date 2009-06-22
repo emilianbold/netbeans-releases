@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
@@ -60,7 +61,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
+import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -85,6 +88,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -95,6 +99,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -130,8 +135,8 @@ public class ImportProject implements PropertyChangeListener {
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
-    private String includeDirectories = "";
-    private String macros = "";
+    private String includeDirectories = ""; // NOI18N
+    private String macros = ""; // NOI18N
     private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
     private Iterator<SourceFolderInfo> sources;
     private String sourceFoldersFilter = null;
@@ -143,7 +148,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.setLevel(Level.ALL);
         }
-        if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) {
+        if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) { // NOI18N
             simpleSetup(wizard);
         } else {
             customSetup(wizard);
@@ -315,16 +320,22 @@ public class ImportProject implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-            OpenProjects.getDefault().removePropertyChangeListener(this);
-            //if (setAsMain) {
-            //    OpenProjects.getDefault().setMainProject(makeProject);
-            //}
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                public void run() {
-                    doWork();
+            if (evt.getNewValue() instanceof Project[]) {
+                Project[] projects = (Project[])evt.getNewValue();
+                if (projects.length == 0) {
+                    return;
                 }
-            });
+                OpenProjects.getDefault().removePropertyChangeListener(this);
+                //if (setAsMain) {
+                //    OpenProjects.getDefault().setMainProject(makeProject);
+                //}
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        doWork();
+                    }
+                });
+            }
         }
     }
 
@@ -345,7 +356,7 @@ public class ImportProject implements PropertyChangeListener {
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor();
         if (pdp.gotDescriptor()) {
-            if (configurePath != null && configurePath.length() > 0) {
+            if (runConfigure && configurePath != null && configurePath.length() > 0 && configureFile != null && configureFile.exists()) {
                 postConfigure();
             } else {
                 if (runMake) {
@@ -359,6 +370,8 @@ public class ImportProject implements PropertyChangeListener {
                     });
                 }
             }
+        } else {
+            isFinished = true;
         }
     }
 
@@ -392,59 +405,94 @@ public class ImportProject implements PropertyChangeListener {
     private void postConfigure() {
         try {
             if (!isProjectOpened()) {
+                isFinished = true;
                 return;
             }
             FileObject configureFileObject = FileUtil.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
+            String mime = FileUtil.getMIMEType(configureFileObject);
             // Add arguments to configure script?
             if (configureArguments != null) {
-                ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
-                try {
-                    // Keep user arguments as is in args[0]
-                    ses.setArguments(new String[]{configureArguments});
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
+                    ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                    try {
+                        // Keep user arguments as is in args[0]
+                        ses.setArguments(new String[]{configureArguments});
+                        // duplicate configure variables in environment
+                        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+                        ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    try {
+                        // extract configure variables in environment
+                        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+                        for (String s : ImportUtils.quoteList(vars)) {
+                            int i = configureArguments.indexOf(s);
+                            if (i >= 0){
+                                configureArguments = configureArguments.substring(0, i) + configureArguments.substring(i + s.length());
+                            }
+                        }
+                        ses.setArguments(new String[]{configureArguments});
+                        ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                    ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+                    try {
+                        ses.setArguments(new String[]{configureArguments});
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
-            // Possibly run the configure script
-            if (runConfigure) {
-                // If no makefile, create empty one so it shows up in Interesting Files
-                //if (!makefileFile.exists()) {
-                //    makefileFile.createNewFile();
-                //}
-                //final File configureLog = createTempFile("configure");
-                ExecutionListener listener = new ExecutionListener() {
+            // If no makefile, create empty one so it shows up in Interesting Files
+            //if (!makefileFile.exists()) {
+            //    makefileFile.createNewFile();
+            //}
+            //final File configureLog = createTempFile("configure");
+            ExecutionListener listener = new ExecutionListener() {
 
-                    public void executionStarted() {
-                    }
+                public void executionStarted() {
+                }
 
-                    public void executionFinished(int rc) {
-                        if (rc == 0) {
-                            importResult.put(Step.Configure, State.Successful);
-                        } else {
-                            importResult.put(Step.Configure, State.Fail);
-                        }
-                        if (runMake && rc == 0) {
-                            //parseConfigureLog(configureLog);
-                            makeProject(false);
-                        } else {
-                            switchModel(true);
-                            postModelDiscovery(true);
-                        }
+                public void executionFinished(int rc) {
+                    if (rc == 0) {
+                        importResult.put(Step.Configure, State.Successful);
+                    } else {
+                        importResult.put(Step.Configure, State.Fail);
                     }
-                };
-                if (TRACE) {
-                    logger.log(Level.INFO, "#configure " + configureArguments);
-                } // NOI18N
-                ShellRunAction.performAction(node, listener, null, makeProject); //, new BufferedWriter(new FileWriter(configureLog)));
+                    if (runMake && rc == 0) {
+                        //parseConfigureLog(configureLog);
+                        makeProject(false);
+                    } else {
+                        switchModel(true);
+                        postModelDiscovery(true);
+                    }
+                }
+            };
+            if (TRACE) {
+                logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
+            }
+            if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
+                ShellRunAction.performAction(node, listener, null, makeProject);
+            } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+                CMakeAction.performAction(node, listener, null, makeProject);
+            } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                QMakeAction.performAction(node, listener, null, makeProject);
             }
         } catch (DataObjectNotFoundException e) {
+            isFinished = true;
         }
     }
 
     private void makeProject(boolean doClean) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         if (makefileFile != null && makefileFile.exists()) {
@@ -459,6 +507,7 @@ public class ImportProject implements PropertyChangeListener {
                     postMake(node);
                 }
             } catch (DataObjectNotFoundException ex) {
+                isFinished = true;
             }
         } else {
             String path = nativeProjectFolder.getAbsolutePath();
@@ -478,6 +527,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void postClean(final Node node) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         ExecutionListener listener = new ExecutionListener() {
@@ -494,14 +544,22 @@ public class ImportProject implements PropertyChangeListener {
                 postMake(node);
             }
         };
+        String arguments = ""; // NOI18N
+        if (cleanCommand != null){
+            arguments = getArguments(cleanCommand);
+        }
+        if (arguments.length()==0) {
+            arguments = "clean"; // NOI18N
+        }
         if (TRACE) {
-            logger.log(Level.INFO, "#make clean");
-        } // NOI18N
-        MakeAction.execute(node, "clean", listener, null, makeProject); // NOI18N
+            logger.log(Level.INFO, "#make "+arguments); // NOI18N
+        }
+        MakeAction.execute(node, arguments, listener, null, makeProject, null); // NOI18N
     }
 
     private void postMake(Node node) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         final File makeLog = createTempFile("make"); // NOI18N
@@ -527,10 +585,51 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
+        String arguments = ""; // NOI18N
+        if (buildCommand != null){
+            arguments = getArguments(buildCommand);
+        }
         if (TRACE) {
-            logger.log(Level.INFO, "#make > " + makeLog.getAbsolutePath());
-        } // NOI18N
-        MakeAction.execute(node, "", listener, outputListener, makeProject); // NOI18N
+            logger.log(Level.INFO, "#make "+arguments+" > " + makeLog.getAbsolutePath()); // NOI18N
+        }
+        MakeAction.execute(node, arguments, listener, outputListener, makeProject, ImportUtils.parseEnvironment(configureArguments)); // NOI18N
+    }
+
+    private String getArguments(String command){
+        String arguments = _getArguments(command);
+        int i = arguments.indexOf("-f "); // NOI18N
+        if (i >= 0) {
+            String res = arguments.substring(0, i);
+            arguments = arguments.substring(i+3).trim();
+            int j = arguments.indexOf(' ');
+            if (j < 0) {
+                return res;
+            } else {
+                return res+arguments.substring(j).trim();
+            }
+        }
+        return arguments;
+    }
+
+    private String _getArguments(String command){
+        if (command.startsWith("\"")) { // NOI18N
+            int i = command.indexOf('"', 1); // NOI18N
+            if (i > 0) {
+                return command.substring(i).trim();
+            }
+            return ""; // NOI18N
+        } else if (command.startsWith("\'")) { // NOI18N
+            int i = command.indexOf('\'', 1); // NOI18N
+            if (i > 0) {
+                return command.substring(i).trim();
+            }
+            return ""; // NOI18N
+        }
+        int i = command.indexOf(' '); // NOI18N
+        if (i > 0) {
+            return command.substring(i).trim();
+        }
+        return ""; // NOI18N
     }
 
     private DiscoveryProvider getProvider(String id) {
@@ -553,6 +652,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void discovery(int rc, File makeLog) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         waitConfigurationDescriptor();
@@ -568,12 +668,12 @@ public class ImportProject implements PropertyChangeListener {
                         DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                         if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                             if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by log file " + provider.getProperty("make-log-file").getValue());
-                            } // NOI18N
+                                logger.log(Level.INFO, "#start discovery by log file " + provider.getProperty("make-log-file").getValue()); // NOI18N
+                            }
                         } else {
                             if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by object files");
-                            } // NOI18N
+                                logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
+                            }
                         }
                         try {
                             done = true;
@@ -588,8 +688,8 @@ public class ImportProject implements PropertyChangeListener {
                         }
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#no dwarf information found in object files");
-                        } // NOI18N
+                            logger.log(Level.INFO, "#no dwarf information found in object files"); // NOI18N
+                        }
                     }
                 }
             }
@@ -601,8 +701,8 @@ public class ImportProject implements PropertyChangeListener {
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start discovery by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#start discovery by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                         try {
                             done = true;
                             extension.apply(map, makeProject);
@@ -612,8 +712,8 @@ public class ImportProject implements PropertyChangeListener {
                         }
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#discovery cannot be done by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#discovery cannot be done by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                     }
                 }
             } else if (done && makeLog != null) {
@@ -627,16 +727,16 @@ public class ImportProject implements PropertyChangeListener {
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                         @SuppressWarnings("unchecked")
                         List<ProjectConfiguration> confs = (List) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
                         fixMacros(confs);
                         importResult.put(Step.FixMacros, State.Successful);
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#fix macros cannot be done by log file " + makeLog.getAbsolutePath());
-                        } // NOI18N
+                            logger.log(Level.INFO, "#fix macros cannot be done by log file " + makeLog.getAbsolutePath()); // NOI18N
+                        }
                     }
                 }
             }
@@ -659,8 +759,8 @@ public class ImportProject implements PropertyChangeListener {
                     NativeFileItem item = findByNormalizedName(new File(fileConf.getFilePath()));
                     if (item instanceof Item) {
                         if (TRACE) {
-                            logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath());
-                        } // NOI18N
+                            logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath()); // NOI18N
+                        }
                         ProjectBridge.fixFileMacros(fileConf.getUserMacros(), (Item) item);
                     }
                 }
@@ -671,7 +771,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void saveMakeConfigurationDescriptor() {
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        final MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         makeConfigurationDescriptor.setModified();
         makeConfigurationDescriptor.save();
         SwingUtilities.invokeLater(new Runnable() {
@@ -679,14 +779,15 @@ public class ImportProject implements PropertyChangeListener {
             public void run() {
                 makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
                 if (TRACE) {
-                    logger.log(Level.INFO, "#save configuration descriptor");
-                } // NOI18N
+                    logger.log(Level.INFO, "#save configuration descriptor"); // NOI18N
+                }
             }
         });
     }
 
     private void postModelDiscovery(final boolean isFull) {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         CsmModel model = CsmModelAccessor.getModel();
@@ -695,8 +796,10 @@ public class ImportProject implements PropertyChangeListener {
             final CsmProject p = model.getProject(np);
             if (p == null) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#discovery cannot be done by model");
-                } // NOI18N
+                    logger.log(Level.INFO, "#discovery cannot be done by model"); // NOI18N
+                }
+                isFinished = true;
+                return;
             }
             CsmProgressListener listener = new CsmProgressAdapter() {
 
@@ -706,8 +809,8 @@ public class ImportProject implements PropertyChangeListener {
                         ImportProject.listeners.remove(p);
                         CsmListeners.getDefault().removeProgressListener(this);
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start discovery by model");
-                        } // NOI18N
+                            logger.log(Level.INFO, "#start discovery by model"); // NOI18N
+                        }
                         if (isFull) {
                             modelDiscovery();
                         } else {
@@ -719,10 +822,30 @@ public class ImportProject implements PropertyChangeListener {
             };
             CsmListeners.getDefault().addProgressListener(listener);
             ImportProject.listeners.put(p, listener);
+        } else {
+            isFinished = true;
         }
     }
 
+    private boolean isFinished = false;
+    public boolean isFinished(){
+        return isFinished;
+    }
+
+    public Project getProject(){
+        return makeProject;
+    }
+
+    private boolean isUILessMode = false;
+    public void setUILessMode(){
+        isUILessMode = true;
+    }
+
     private void showFollwUp(final NativeProject project) {
+        isFinished = true;
+        if (isUILessMode) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -742,6 +865,7 @@ public class ImportProject implements PropertyChangeListener {
     // remove wrong "exclude from project" flags
     private void fixExcludedHeaderFiles() {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         CsmModel model = CsmModelAccessor.getModel();
@@ -750,8 +874,8 @@ public class ImportProject implements PropertyChangeListener {
             final CsmProject p = model.getProject(np);
             if (p != null && np != null) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#start fixing excluded header files by model");
-                } // NOI18N
+                    logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
+                }
                 Set<String> needCheck = new HashSet<String>();
                 for (CsmFile file : p.getAllFiles()) {
                     if (file instanceof FileImpl) {
@@ -764,8 +888,8 @@ public class ImportProject implements PropertyChangeListener {
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
                                 if (TRACE) {
-                                    logger.log(Level.FINE, "#fix excluded header for file " + impl.getAbsolutePath());
-                                } // NOI18N
+                                    logger.log(Level.FINE, "#fix excluded header for file " + impl.getAbsolutePath()); // NOI18N
+                                }
                                 ProjectBridge.setExclude((Item) item, false);
                                 if (file.isHeaderFile()) {
                                     needCheck.add(item.getFile().getAbsolutePath());
@@ -792,7 +916,7 @@ public class ImportProject implements PropertyChangeListener {
             normalizedItems = new HashMap<String,Item>();
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (pdp != null) {
-                MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+                MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
                 if (makeConfigurationDescriptor != null) {
                     for(Item item : makeConfigurationDescriptor.getProjectItems()){
                         normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
@@ -806,6 +930,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void modelDiscovery() {
         if (!isProjectOpened()) {
+            isFinished = true;
             return;
         }
         Map<String, Object> map = new HashMap<String, Object>();
@@ -818,8 +943,8 @@ public class ImportProject implements PropertyChangeListener {
             if (extension != null) {
                 if (extension.canApply(map, makeProject)) {
                     if (TRACE) {
-                        logger.log(Level.INFO, "#start discovery by object files");
-                    } // NOI18N
+                        logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
+                    }
                     try {
                         extension.apply(map, makeProject);
                         importResult.put(Step.DiscoveryDwarf, State.Successful);
@@ -829,15 +954,15 @@ public class ImportProject implements PropertyChangeListener {
                     }
                 } else {
                     if (TRACE) {
-                        logger.log(Level.INFO, "#no dwarf information found in object files");
-                    } // NOI18N
+                        logger.log(Level.INFO, "#no dwarf information found in object files"); // NOI18N
+                    }
                 }
             }
         }
         if (!does) {
             if (TRACE) {
-                logger.log(Level.INFO, "#start discovery by model");
-            } // NOI18N
+                logger.log(Level.INFO, "#start discovery by model"); // NOI18N
+            }
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(nativeProjectFolder.getAbsolutePath()); // NOI18N
@@ -865,13 +990,13 @@ public class ImportProject implements PropertyChangeListener {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#enable model for " + np.getProjectDisplayName());
-                } // NOI18N
+                    logger.log(Level.INFO, "#enable model for " + np.getProjectDisplayName()); // NOI18N
+                }
                 ((ModelImpl) model).enableProject(np);
             } else {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#disable model for " + np.getProjectDisplayName());
-                } // NOI18N
+                    logger.log(Level.INFO, "#disable model for " + np.getProjectDisplayName()); // NOI18N
+                }
                 ((ModelImpl) model).disableProject(np);
             }
         }

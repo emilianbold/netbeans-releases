@@ -42,41 +42,40 @@ package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentSet;
-import com.sun.source.tree.Tree;
-import java.util.ArrayList;
-import java.util.List;
-import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+import static org.netbeans.modules.java.source.save.PositionEstimator.NOPOS;
+
+import java.util.*;
 
 /**
  * Class that associates the before and after comments to a tree.
  */
-public class CommentSetImpl implements Cloneable, CommentSet {
-    private final List<Comment> precedingComments = new ArrayList<Comment>();
-    private final List<Comment> trailingComments = new ArrayList<Comment>();
+public final class CommentSetImpl implements Cloneable, CommentSet {
+//    private final List<Comment> precedingComments = new ArrayList<Comment>();
+//    private final List<Comment> trailingComments = new ArrayList<Comment>();
     private boolean commentsMapped;
+    private final Map<RelativePosition, List<Comment>> commentsMap = new HashMap<RelativePosition, List<Comment>>();
 
     /**
      * Add the specified comment string to the list of preceding comments. 
      */
     public void addPrecedingComment(String s) {
         addPrecedingComment(Comment.create(s));
-        commentsMapped();
     }
 
     /**
      * Add the specified comment to the list of preceding comments. 
      */
     public void addPrecedingComment(Comment c) {
-        precedingComments.add(c);
-        commentsMapped();
+        addComment(RelativePosition.PRECEDING, c);
     }
 
     /**
      * Add a list of comments to the list of preceding comments.
      */
     public void addPrecedingComments(List<Comment> comments) {
-        precedingComments.addAll(comments);
-        commentsMapped();
+        for (Comment comment : comments) {
+            addComment(RelativePosition.PRECEDING, comment);
+        }
     }
     
     /**
@@ -84,35 +83,34 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      */
     public void addTrailingComment(String s) {
         addTrailingComment(Comment.create(s));
-        commentsMapped();
     }
 
     /**
      * Add the specified comment to the list of trailing comments. 
      */
     public void addTrailingComment(Comment c) {
-        trailingComments.add(c);
-        commentsMapped();
+        addComment(RelativePosition.TRAILING, c);
     }
 
     /**
      * Add a list of comments to the list of preceding comments.
      */
     public void addTrailingComments(List<Comment> comments) {
-        trailingComments.addAll(comments);
-        commentsMapped();
+        for (Comment comment : comments) {
+            addComment(RelativePosition.TRAILING, comment);
+        }
     }
     
     public List<Comment> getPrecedingComments() {
-        return precedingComments;
+        return getComments(RelativePosition.PRECEDING);
     }
     
     public List<Comment> getTrailingComments() {
-        return trailingComments;
+        return getComments(RelativePosition.TRAILING);
     }
     
     public boolean hasComments() {
-        return precedingComments.size() > 0 || trailingComments.size() > 0;
+        return !commentsMap.isEmpty();
     }
     
     /** 
@@ -120,17 +118,41 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      * position of the first preceding comment, or NOPOS if there are no comments.
      */
     public int pos() {
-        return precedingComments.size() > 0 ? 
-            precedingComments.get(0).pos() : NOPOS;
+        return pos(RelativePosition.PRECEDING);
     }
-        
+
+    public int pos(RelativePosition position) {
+        List<Comment> list = getComments(position);
+        return list.isEmpty() ? NOPOS : list.get(0).pos();
+    }
+
+    public void addComment(RelativePosition positioning, Comment c) {
+        List<Comment> comments;
+        if (commentsMap.containsKey(positioning)) {
+            comments = commentsMap.get(positioning);
+        } else {
+            comments = new LinkedList<Comment>();
+            commentsMap.put(positioning, comments);
+        }
+        comments.add(c);
+        commentsMapped();
+    }
+
+    public List<Comment> getComments(RelativePosition positioning) {
+        if (commentsMap.containsKey(positioning)) {
+            return Collections.unmodifiableList(commentsMap.get(positioning));
+        }
+        return Collections.emptyList();
+    }
+
+    @SuppressWarnings({"MethodWithMultipleLoops"})
     public boolean hasChanges() {
-        for (Comment c : precedingComments)
-            if (c.isNew())
-                return true;
-        for (Comment c : trailingComments)
-            if (c.isNew())
-                return true;
+        if (commentsMap.isEmpty()) return false;
+        for (List<Comment> commentList : commentsMap.values()) {
+            for (Comment comment : commentList) {
+                if (comment.isNew()) return true;
+            }
+        }
         return false;
     }
     
@@ -138,26 +160,25 @@ public class CommentSetImpl implements Cloneable, CommentSet {
         try {
             return super.clone();
         } catch (CloneNotSupportedException e) {
-	    throw new InternalError("Unexpected " + e);
+	        throw new InternalError("Unexpected " + e);
         }
     }
     
+    @SuppressWarnings({"MethodWithMultipleLoops"})
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        boolean first = true;
         sb.append('{');
-        for (Comment c : precedingComments) {
-            if (!first)
-                sb.append(',');
-            sb.append(c.getText());
-            first = false;
-        }
-        for (Comment c : trailingComments) {
-            if (!first)
-                sb.append(',');
-            sb.append(c.getText());
-            first = false;
-        }
+        boolean first = true;
+        for (Map.Entry<RelativePosition, List<Comment>> entry : commentsMap.entrySet()) {
+            if (!first) {
+                sb.append(", "); first = false;
+            }
+            sb.append("[").append(entry.getKey()).append(" -> ");
+            for (Comment comment : entry.getValue()) {
+                sb.append(',').append(comment.getText());
+            }
+            sb.append("]");
+        }        
         sb.append('}');
         return sb.toString();
     }

@@ -49,7 +49,6 @@ import java.util.Set;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.soa.validation.util.LineUtil;
@@ -62,7 +61,6 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ui.ValidationAnnotation;
 import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -91,6 +89,8 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -236,7 +236,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                     Line line = LineUtil.getLine(resultItem);
 
                     if (line != null) {
-                      line.show(Line.SHOW_GOTO);
+                      line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
                     }
                 }
             }

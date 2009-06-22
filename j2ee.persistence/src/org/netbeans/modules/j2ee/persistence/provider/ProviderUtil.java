@@ -42,20 +42,24 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Properties;
+import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
+import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -79,6 +83,7 @@ public class ProviderUtil {
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
     public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider();
     public static final Provider KODO_PROVIDER = new KodoProvider();
+    public static final Provider DATANUCLEUS_PROVIDER = new DataNucleusProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     
@@ -220,7 +225,12 @@ public class ProviderUtil {
         if(provider == null ) {
             return;
         }
-        Property tableGenerationProperty = provider.getTableGenerationProperty(tableGenerationStrategy);
+        String version=Persistence.VERSION_1_0;
+        if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit)
+        {
+            version=Persistence.VERSION_2_0;
+        }
+        Property tableGenerationProperty = provider.getTableGenerationProperty(tableGenerationStrategy,version);
         Properties properties = persistenceUnit.getProperties();
         if (properties == null) {
             properties = persistenceUnit.newProperties();
@@ -302,13 +312,20 @@ public class ProviderUtil {
      *
      * @return the created persistence unit.
      */
-    public static PersistenceUnit buildPersistenceUnit(String name, Provider provider, DatabaseConnection connection) {
+    public static PersistenceUnit buildPersistenceUnit(String name, Provider provider, DatabaseConnection connection, String version) {
         
         Parameters.notNull("name", name);
         Parameters.notNull("provider", provider);
         Parameters.notNull("connection", connection);
-        
-        PersistenceUnit persistenceUnit = new PersistenceUnit();
+        PersistenceUnit persistenceUnit = null;
+        if(Persistence.VERSION_2_0.equals(version))
+        {
+            persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+        }
+        else//currently default 1.0
+        {
+            persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        }
         persistenceUnit.setName(name);
         persistenceUnit.setProvider(provider.getProviderClass());
         Properties properties = persistenceUnit.newProperties();
@@ -596,11 +613,14 @@ public class ProviderUtil {
             return null;
         }
         final FileObject[] dd = new FileObject[1];
+        //get max supported version
+        String ret=PersistenceUtils.getJPAVersion(project);
+        final String version=ret!=null ? ret : Persistence.VERSION_1_0;
         // must create the file using AtomicAction, see #72058
         persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 dd[0] = FileUtil.copyFile(FileUtil.getConfigFile(
-                        "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
+                        "org-netbeans-modules-j2ee-persistence/persistence-"+version+".xml"), persistenceLocation, "persistence"); //NOI18N
             }
         });
         return dd[0];
@@ -646,7 +666,7 @@ public class ProviderUtil {
     public static Provider[] getAllProviders() {
         return new Provider[]{
             TOPLINK_PROVIDER, ECLIPSELINK_PROVIDER, HIBERNATE_PROVIDER, 
-            KODO_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
+            KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     
     /**

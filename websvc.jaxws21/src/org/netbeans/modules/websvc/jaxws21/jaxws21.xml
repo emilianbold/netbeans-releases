@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/jaxb/jaxb-xjc.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/api/jsr173_api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/FastInfoset.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/gmbal.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/http.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxws-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-rt.jar!/</resource>
@@ -62,11 +63,13 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr181-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr250-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/mimepull.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/policy.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/saaj-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/saaj-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/sjsxp.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/stax-ex.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/streambuffer.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/woodstox.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>

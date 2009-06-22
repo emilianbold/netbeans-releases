@@ -50,4 +50,5 @@ made subject to such option by the copyright holder.
              glyph="nbresloc:/org/netbeans/modules/java/resources/warning-glyph.gif"
              waveunderline="#c0c000"
 	     severity="warning"
-             type="linepart"/>
+             type="linepart"
+             priority="5"/>

@@ -78,7 +78,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         List<FileObject> files = new ArrayList<FileObject>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         addFile(projectDirectory, "nbproject", files); // NOI18N
-        addFile(projectDirectory, ((MakeConfigurationDescriptor) pdp.getConfigurationDescriptor()).getProjectMakefileName(), files); // NOI18N
+        addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files); // NOI18N
 
         return files;
     }
@@ -123,6 +123,12 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject instanceof NativeProjectProvider) {
             ((NativeProjectProvider) nativeProject).fireProjectDeleted();
+        }
+
+        // Notify configuration listeners (worka-round for http://www.netbeans.org/issues/show_bug.cgi?id=167259
+        MakeProjectConfigurationProvider makeProjectConfigurationProvider = project.getLookup().lookup(MakeProjectConfigurationProvider.class);
+        if (makeProjectConfigurationProvider != null) {
+            makeProjectConfigurationProvider.propertyChange(null);
         }
     }
 

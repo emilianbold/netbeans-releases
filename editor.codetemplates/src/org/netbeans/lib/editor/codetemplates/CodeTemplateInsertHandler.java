@@ -146,9 +146,6 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
         }
 
         setParametrizedText(codeTemplate.getParametrizedText());
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Created " + super.toString() + "\n"); // NOI18N
-        }
         if (TIMERS.isLoggable(Level.FINE)) {
             LogRecord rec = new LogRecord(Level.FINE, "CodeTemplateInsertHandler"); // NOI18N
             rec.setParameters(new Object[] { this });
@@ -284,10 +281,16 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
 
             // First check if there is a caret selection and if so remove it
             Caret caret = component.getCaret();
+            Position pos;
             if (Utilities.isSelectionShowing(caret)) {
                 int removeOffset = component.getSelectionStart();
                 int removeLength = component.getSelectionEnd() - removeOffset;
+                pos = doc.createPosition(removeOffset);
+                // Removal can cause vars of outer tepmlate to get updated
+                // so removeOffset needs to be remembered as position
                 doc.remove(removeOffset, removeLength);
+            } else { // No selection
+                pos = doc.createPosition(caret.getDot());
             }
 
             // insert the complete text
@@ -295,7 +298,10 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             completeTextRegion.updateBounds(null, 
                     TextRegion.createFixedPosition(completeInsertString.length()));
 
-            doc.insertString(insertOffset, completeInsertString, null);
+
+            doc.insertString(pos.getOffset(), completeInsertString, null);
+            // Positions at offset 0 do not move - swing anomally :-( so do Math.max()
+            pos = doc.createPosition(Math.max(pos.getOffset() - completeInsertString.length(), 0));
             // #132615
             // Insert a special undoable-edit marker that - once undone will release CT editing.
             if (bdoc != null) {
@@ -324,15 +330,15 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             // just update the caret position and release
             textSyncGroup.setClientInfo(this);
             TextRegionManager trm = textRegionManager();
-            trm.addGroup(textSyncGroup, insertOffset);
+            trm.addGroup(textSyncGroup, pos.getOffset());
             // Add the listener before reformat() so that the possible releasing gets catched
             trm.addTextRegionManagerListener(this);
             // Mark inserted - before reformat (otherwise ISE - the parameters' text could not be changed)
             this.inserted = true;
             
             if (bdoc != null) {
-                formatter.reformat(bdoc, insertOffset,
-                        insertOffset + completeInsertString.length());
+                formatter.reformat(bdoc, pos.getOffset(),
+                        pos.getOffset() + completeInsertString.length());
             }
 
             if (!released) {
@@ -400,8 +406,7 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
     
     private void notifyParameterUpdate(CodeTemplateParameter parameter, boolean typingChange) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(super.toString() + ".notifyParameterUpdate() CALLED for " + parameter.getName() + "\n"); // NOI18N
-            LOG.fine(toStringDetail());
+            LOG.fine("CodeTemplateInsertHandler.notifyParameterUpdate() CALLED for " + parameter.getName() + "\n"); // NOI18N
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer(textRegionManager().toString() + "\n");
             }
@@ -496,7 +501,7 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.INFO, "", new Exception());
             }
-            LOG.fine(super.toString() + ".release() CALLED\n");
+            LOG.fine("CodeTemplateInsertHandler.release() CALLED\n");
             LOG.fine(toStringDetail());
         }
 

@@ -658,6 +658,37 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
                 var.setLastColumnNumber(call.getMethod().getColumnNumber());
                 call.setObjectExpression(var);
             }
+        // FIXME http://jira.codehaus.org/browse/GROOVY-3472
+        } else if (node instanceof MethodNode || node instanceof ClosureExpression) {
+            Statement code = null;
+            if (node instanceof MethodNode) {
+                code = ((MethodNode) node).getCode();
+            } else {
+                code = ((ClosureExpression) node).getCode();
+            }
+
+            if (code != null && code instanceof BlockStatement
+                    && ((code.getLineNumber() < 0 && code.getColumnNumber() < 0)
+                    || (code.getLastLineNumber() < 0 && code.getLastColumnNumber() < 0))) {
+                BlockStatement block = (BlockStatement) code;
+                List statements = block.getStatements();
+                if (statements != null && !statements.isEmpty()) {
+                    if (code.getLineNumber() < 0 && code.getColumnNumber() < 0) {
+                        Statement first = (Statement) statements.get(0);
+                        code.setLineNumber(first.getLineNumber());
+                        code.setColumnNumber(first.getColumnNumber());
+                    }
+                    if (code.getLastLineNumber() < 0 && code.getLastColumnNumber() < 0) {
+                        // maybe not accurate
+                        code.setLastLineNumber(node.getLastLineNumber());
+                        int lastColumn = node.getLastColumnNumber();
+                        if (lastColumn > 0) {
+                            lastColumn--;
+                        }
+                        code.setLastColumnNumber(lastColumn);
+                    }
+                }
+            }
         }
     }
 

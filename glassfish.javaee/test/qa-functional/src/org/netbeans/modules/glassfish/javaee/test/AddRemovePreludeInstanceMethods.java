@@ -42,18 +42,17 @@
 package org.netbeans.modules.glassfish.javaee.test;
 
 import java.io.File;
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-//import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.AddServerLocationVisualPanel;
 import org.netbeans.modules.glassfish.common.wizards.Retriever;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-//import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
-//import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 
@@ -68,13 +67,13 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
     public AddRemovePreludeInstanceMethods(String testName) {
         super(testName);
     }
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+
+    GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
     
-    public void addPreludeInstance() {
-        try {
+    public void addPreludeInstance() throws IOException {
             File f = new File(Util._PRELUDE_LOCATION);
 
-            if (f.list().length < 1) {
+            if (!f.exists() || f.list().length < 1) {
                 // time to retrieve
                 Retriever r = new Retriever(f.getParentFile(),gip.getIndirectDownloadUrl(),
                         AddServerLocationVisualPanel.V3_DOWNLOAD_PREFIX,
@@ -93,17 +92,8 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                 }, "glassfishv3");
                 r.run();
             }
-            //GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
             ServerWizardIterator inst = new ServerWizardIterator(gip);
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
-//            wizard.putProperty(Util.PLATFORM_LOCATION, new File(Util._PLATFORM_LOCATION));
-//            wizard.putProperty(Util.INSTALL_LOCATION, Util._INSTALL_LOCATION);
-//            wizard.putProperty(Util.PROP_DISPLAY_NAME, Util._DISPLAY_NAME);
-//            wizard.putProperty(Util.HOST, Util._HOST);
-//            wizard.putProperty(Util.PORT, Util._PORT);
-//            wizard.putProperty(Util.DOMAIN, Util._DOMAIN);
-//            wizard.putProperty(Util.USER_NAME, Util._USER_NAME);
-//            wizard.putProperty(Util.PASSWORD, Util._PASSWORD);
 
             inst.setInstallRoot(Util._PRELUDE_LOCATION);
             int dex = Util._PRELUDE_LOCATION.lastIndexOf(File.separator);
@@ -115,7 +105,7 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                     File.separator + "domain1");
             inst.setHttpPort(8080);
             inst.setAdminPort(4848);
-            wizard.putProperty("ServInstWizard_displayName","testdomain");
+            wizard.putProperty("ServInstWizard_displayName","Prelude V3");
             
             inst.initialize(wizard);
             inst.instantiate();
@@ -123,9 +113,6 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
             ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
             
             Util.sleep(SLEEP);
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
     }
     
     public void removePreludeInstance() {
@@ -143,19 +130,34 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
 
             try {
                 ServerRegistry.getInstance().checkInstanceExists(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
-            } catch(Exception e) {
-                if (wasRunning && inst.isRunning())
+            } catch (Exception e) {
+                if (wasRunning && inst.isRunning()) {
                     fail("remove did not stop the instance");
+                }
                 String instances[] = ServerRegistry.getInstance().getInstanceURLs();
-                if (null != instances) 
-                    if (instances.length > 1)
+                if (null != instances) {
+                    if (instances.length > 1) {
                         fail("too many instances");
+                    }
+                }
+
                 return;
             }
-            
+
             fail("v3 Prelude instance still exists !");
-        } catch(Exception e) {
-            fail(e.getMessage());
+        } finally {
+                File ff = new File(Util._PRELUDE_LOCATION);
+                if (ff.getAbsolutePath().contains(Util.TEMP_FILE_PREFIX)) {
+                    System.out.println("Deleting: " + ff.getAbsolutePath());
+                    Util.deleteJunk(ff.getParentFile());
+                }
+        }
+    }
+
+    public void checkJavaDB() {
+        String location = DerbySupport.getLocation();
+        if (null == location || location.trim().length() < 1) {
+            fail("JavaDB is not registered!");
         }
     }
     
@@ -163,9 +165,5 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(AddRemovePreludeInstanceMethods.class).
                 addTest("addSjsasInstance","removeSjsasInstance").enableModules(".*").clusters(".*"));
-//        NbTestSuite suite = new NbTestSuite("AddRemoveSjsasInstanceMethods");
-//        suite.addTest(new AddRemoveSjsasInstanceMethods("addSjsasInstance"));        
-//        suite.addTest(new AddRemoveSjsasInstanceMethods("removeSjsasInstance"));        
-//        return suite;
     }
 }

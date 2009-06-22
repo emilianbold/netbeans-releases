@@ -73,10 +73,10 @@ public class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
        assert prj != null;
         List<URI> lst = new ArrayList<URI>();
         if (prj.getBuild() != null) {
-            File fil = new File(prj.getBuild().getOutputDirectory());
+            File fil = new File(prj.getBuild().getTestOutputDirectory());
             fil = FileUtil.normalizeFile(fil);
             lst.add(fil.toURI());
-            fil = new File(prj.getBuild().getTestOutputDirectory());
+            fil = new File(prj.getBuild().getOutputDirectory());
             fil = FileUtil.normalizeFile(fil);
             lst.add(fil.toURI());
         }

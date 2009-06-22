@@ -145,6 +145,8 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.spi.actions");
         // needed in IDE cluster because of issue #162414
         permittedDisabledAutoloads.add("org.netbeans.modules.web.client.tools.api");
+        // schlieman is our diamond
+        permittedDisabledAutoloads.add("org.netbeans.modules.languages");
         SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, permittedDisabledAutoloads);
         if (!problems.isEmpty()) {
             StringBuilder message = new StringBuilder("Problems found with autoloads");

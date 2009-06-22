@@ -61,6 +61,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final String[] friends;
     private final boolean deprecated;
     private URL javadoc;
+    private File sourceLocation;
     
     public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
             String module, String cpext, String releaseVersion,
@@ -81,7 +82,9 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     }
     
     public File getSourceLocation() {
-        return FileUtil.normalizeFile(new File(nball, path.replace('/', File.separatorChar)));
+        if (sourceLocation == null)
+            sourceLocation = FileUtil.normalizeFile(new File(nball, path.replace('/', File.separatorChar)));
+        return sourceLocation;
     }
     
     public String getNetBeansOrgPath() {

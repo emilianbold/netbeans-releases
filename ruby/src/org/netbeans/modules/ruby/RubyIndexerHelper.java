@@ -42,6 +42,7 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.MethodElement;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -108,7 +109,10 @@ public final class RubyIndexerHelper {
             String hashNames = "";
             int originalFlags = flags;
 
-            List<String> callseq = getCallSeq(fo, child, snapshot);
+            List<String> callseq = null;
+            if (isRubyStubs(fo) || TypeInferenceSettings.getDefault().getRdocTypeInference()) {
+                callseq = getCallSeq(child, snapshot);
+            }
 
             // See if the method takes blocks
             //List<Node> yields = new ArrayList<Node>();
@@ -279,8 +283,6 @@ public final class RubyIndexerHelper {
                 flags |= IndexedMethod.BLOCK;
             }
 
-            RubyType returnType = getReturnTypes(line, callseq, name);
-
             // Replace attributes
             int attributeIndex = signature.indexOf(';');
             if (flags != originalFlags || attributeIndex == -1) {
@@ -317,6 +319,13 @@ public final class RubyIndexerHelper {
                 }
             }
 
+            RubyType returnType = child.getType().isKnown()
+                    ? child.getType()
+                    : getReturnTypes(root, child, callseq);
+
+            if (returnType.isKnown()) {
+                child.setType(returnType);
+            }
 
             // See RubyIndexer for a description of the signature format
             if (blockArgs.length() > 0 || returnType.isKnown() || hashNames.length() > 0) {
@@ -408,35 +417,65 @@ public final class RubyIndexerHelper {
         return true;
     }
 
-    private static List<String> getCallSeq(FileObject fo, AstElement child, Snapshot snapshot) {
+    private static List<String> getCallSeq(AstElement child, Snapshot snapshot) {
         List<String> callseq = null;
-        if (fo.getParent() != null && fo.getParent().getParent() != null && 
-                RubyPlatform.RUBYSTUBS.equals(fo.getParent().getParent().getName())) { // NOI18N
-            List<String> comments = AstUtilities.gatherDocumentation(snapshot, child.getNode());
-            for (int i = 0; i < comments.size(); i++) {
-                String line = comments.get(i);
-                if (!line.startsWith("#   ") || line.substring(1).trim().length() == 0) {
-                    // This is not a callseq
-                    if (i > 0) {
-                        callseq = new ArrayList<String>(i);
-                        for (int j = 0; j < i; j++) {
-                            callseq.add(comments.get(j));
-                        }
+        List<String> comments = AstUtilities.gatherDocumentation(snapshot, child.getNode());
+        if (comments == null) {
+            return null;
+        }
+        for (int i = 0; i < comments.size(); i++) {
+            String line = comments.get(i);
+            if (!line.startsWith("#   ") || line.substring(1).trim().length() == 0) {
+                // This is not a callseq
+                if (i > 0) {
+                    callseq = new ArrayList<String>(i);
+                    for (int j = 0; j < i; j++) {
+                        callseq.add(comments.get(j));
                     }
-                    break;
                 }
+                break;
             }
         }
-
         return callseq;
     }
 
-    private static RubyType getReturnTypes(String line, List<String> callseq, String name) {
-        
-        RubyType result = RubyMethodTypeInferencer.fastCheckType(name);
-        if (result != null) {
-            return result;
+    private static boolean isRubyStubs(FileObject fo) {
+        return fo.getParent() != null && fo.getParent().getParent() != null &&
+                RubyPlatform.RUBYSTUBS.equals(fo.getParent().getParent().getName());
+
+    }
+
+    static String replaceAttributes(String signature, int flags) {
+        int attributeIndex = signature.indexOf(';');
+        if (attributeIndex == -1) {
+            char first = IndexedElement.flagToFirstChar(flags);
+            char second = IndexedElement.flagToSecondChar(flags);
+            if (attributeIndex == -1) {
+                signature = ((signature + ";") + first) + second;
+            } else {
+                signature = (signature.substring(0, attributeIndex + 1) + first) + second + signature.substring(attributeIndex + 3);
+            }
         }
+        return signature;
+
+    }
+    static String getMethodSignatureForUserSources(Node root, AstElement methodElement, String signature, int flags, Snapshot snapshot) {
+        RubyType type = methodElement.getType();
+        if (!type.isKnown()) {
+            List<String> callSeq = null;
+            if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
+                callSeq = getCallSeq(methodElement, snapshot);
+            }
+            type = getReturnTypes(root, methodElement, callSeq);
+        }
+        if (type.isKnown()) {
+            methodElement.setType(type);
+            return signature + ";;" + methodElement.getType().asIndexedString() + ";"; // NOI18N
+        }
+        return signature;
+    }
+
+    private static RubyType getReturnTypes(Node root, AstElement methodElement, List<String> callseq) {
 
         if (callseq != null) {
             RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
@@ -444,8 +483,17 @@ public final class RubyIndexerHelper {
                 return types;
             }
         }
+        
+        if (TypeInferenceSettings.getDefault().getMethodTypeInference()) {
+            AstPath path = new AstPath();
+            path.descend(root);
+            ContextKnowledge knowledge = new ContextKnowledge(null, root);
+            RubyTypeInferencer typeInferencer = RubyTypeInferencer.create(knowledge);
+            return typeInferencer.inferType(methodElement.getNode());
+        }
 
         return RubyType.createUnknown();
+
     }
     
     // BEGIN AUTOMATICALLY GENERATED CODE. SEE THE http://hg.netbeans.org/main/misc/ruby/indexhelper PROJECT FOR DETAILS.

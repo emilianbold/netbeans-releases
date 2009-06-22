@@ -72,7 +72,7 @@ import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileUtil;
@@ -83,7 +83,7 @@ import org.openide.util.Exceptions;
  * war/webapp related apis implementation..
  * @author  Milos Kleint 
  */
-public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImplementation {
+public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImplementation2 {
     private Project project;
     private WebModuleProviderImpl provider;
     private MetadataModel<WebAppMetadata> webAppMetadataModel;
@@ -219,8 +219,8 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
         return version;
     }
     
-    public Object getModuleType() {
-        return J2eeModule.WAR;
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.WAR;
     }
     
     /**

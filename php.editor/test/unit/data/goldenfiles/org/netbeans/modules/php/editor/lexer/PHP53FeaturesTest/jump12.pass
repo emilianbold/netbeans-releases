@@ -9,7 +9,7 @@ token #7 WHITESPACE
 token #8 PHP_CONSTANT_ENCAPSED_STRING "ok!\n"
 token #9 PHP_SEMICOLON ;
 token #10 WHITESPACE \n
-token #11 PHP_STRING goto
+token #11 PHP_GOTO goto
 token #12 WHITESPACE  
 token #13 PHP_STRING c
 token #14 PHP_SEMICOLON ;
@@ -45,7 +45,7 @@ token #43 WHITESPACE
 token #44 PHP_CONSTANT_ENCAPSED_STRING "ok!\n"
 token #45 PHP_SEMICOLON ;
 token #46 WHITESPACE \n    
-token #47 PHP_STRING goto
+token #47 PHP_GOTO goto
 token #48 WHITESPACE  
 token #49 PHP_STRING b
 token #50 PHP_SEMICOLON ;

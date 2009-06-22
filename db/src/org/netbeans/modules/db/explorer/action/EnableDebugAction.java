@@ -60,12 +60,12 @@ public class EnableDebugAction extends BaseAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        return !RootNode.getOption().getDebugMode();
+        return !RootNode.instance().getSpecificationFactory().isDebugMode();
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        RootNode.getOption().setDebugMode(true);
+        RootNode.instance().getSpecificationFactory().setDebugMode(true);
     }
 
 }

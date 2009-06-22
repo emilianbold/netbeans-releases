@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -92,7 +91,7 @@ public abstract class APTTokenAbstact implements APTToken {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final APTCommentToken other = (APTCommentToken) obj;
+        final APTTokenAbstact other = (APTTokenAbstact) obj;
         if (this.getType() != other.getType()) {
             return false;
         }

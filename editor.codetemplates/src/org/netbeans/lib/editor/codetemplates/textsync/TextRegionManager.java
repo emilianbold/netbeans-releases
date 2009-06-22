@@ -154,6 +154,8 @@ public final class TextRegionManager {
     private int masterRegionEndOffset;
     
     private int ignoreDocModifications;
+
+    private boolean forceSyncByMaster;
     
     private final Highlighting highlighting = new Highlighting(this);
 
@@ -246,6 +248,10 @@ public final class TextRegionManager {
 
     public Document document() {
         return doc;
+    }
+
+    void markIgnoreDocModifications() {
+        ignoreDocModifications++;
     }
 
     /**
@@ -424,6 +430,10 @@ public final class TextRegionManager {
         }
         // Fire focus change event
         TextRegionManagerEvent evt = createEvent(true, removedGroups, previousTextSync);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Firing event - focusing of activeTextSync:\n" + activeTextSync + // NOI18N
+                    "previousTextSync=" + previousTextSync + ", removedGroups=" + removedGroups + '\n'); // NOI18N
+        }
         fireEvent(evt);
         if (removedGroups != null) {
             removeGroupsUpdate();
@@ -487,6 +497,9 @@ public final class TextRegionManager {
 
     void activeTextSyncModified() {
         TextRegionManagerEvent evt = createEvent(false, Collections.<TextSyncGroup<?>>emptyList(), activeTextSync);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Firing event - mod of activeTextSync=" + activeTextSync + '\n'); // NOI18N
+        }
         fireEvent(evt);
         highlighting.requestRepaint();
     }
@@ -582,9 +595,14 @@ public final class TextRegionManager {
                             }
                             beforeDocumentModification();
                             try {
-                                for (TextRegion<?> region : activeTextSync.regions()) {
-                                    if (region != master) {
-                                        doc.insertString(region.startOffset() + relOffset, insertText, null);
+                                if (forceSyncByMaster) {
+                                    forceSyncByMaster = false;
+                                    syncByMaster(activeTextSync);
+                                } else {
+                                    for (TextRegion<?> region : activeTextSync.regions()) {
+                                        if (region != master) {
+                                            doc.insertString(region.startOffset() + relOffset, insertText, null);
+                                        }
                                     }
                                 }
                             } finally {
@@ -601,11 +619,16 @@ public final class TextRegionManager {
                         fixRegionStartOffset(master, offset);
                         beforeDocumentModification();
                         try {
-                            for (TextRegion<?> region : activeTextSync.regions()) {
-                                if (region != master) {
-                                    int startOffset = region.startOffset();
-                                    doc.insertString(startOffset, insertText, null);
-                                    fixRegionStartOffset(region, startOffset);
+                            if (forceSyncByMaster) {
+                                forceSyncByMaster = false;
+                                syncByMaster(activeTextSync);
+                            } else { // Sync by inserting the right text
+                                for (TextRegion<?> region : activeTextSync.regions()) {
+                                    if (region != master) {
+                                        int startOffset = region.startOffset();
+                                        doc.insertString(startOffset, insertText, null);
+                                        fixRegionStartOffset(region, startOffset);
+                                    }
                                 }
                             }
                         } finally {
@@ -659,12 +682,25 @@ public final class TextRegionManager {
                         int relOffset = offset - master.startOffset();
                         beforeDocumentModification();
                         try {
-                            for (TextRegion<?> region : activeTextSync.regions()) {
-                                if (region != master) {
-                                    doc.remove(region.startOffset() + relOffset, removeLength);
+                            // In case of JTextComponent.replaceSelection()
+                            // the DOC_REPLACE_SELECTION_PROPERTY is expected to be set to TRUE
+                            // by surrounding editor code. It must be treated specially
+                            // since the replaceSelection() remembers mod-offset as int
+                            // and reuses it for insert so any post-modifications
+                            // (that could generally precede the mod-offset would be fatal
+                            // and result into an insertion at incorrect offset.
+                            // At the time of subsequent insert the slaves must be re-synced
+                            // by the contents of the master.
+                            if (Boolean.TRUE.equals(doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY))) {
+                                forceSyncByMaster = true;
+                            } else {
+                                for (TextRegion<?> region : activeTextSync.regions()) {
+                                    if (region != master) {
+                                        doc.remove(region.startOffset() + relOffset, removeLength);
+                                    }
                                 }
+                                activeTextSyncModified();
                             }
-                            activeTextSyncModified();
                         } catch (BadLocationException e) {
                             stopSyncEditing();
                             LOG.log(Level.WARNING, "Unexpected exception during synchronization", e); // NOI18N

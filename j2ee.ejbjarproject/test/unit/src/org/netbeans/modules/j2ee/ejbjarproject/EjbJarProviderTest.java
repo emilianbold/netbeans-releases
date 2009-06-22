@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
@@ -139,11 +140,11 @@ public class EjbJarProviderTest extends TestBase {
     
     public void testNeedConfigurationFolder() {
         assertTrue("1.3 needs configuration folder",
-                EjbJarProvider.needConfigurationFolder(J2EEProjectProperties.J2EE_1_3));
+                EjbJarProvider.needConfigurationFolder(EjbProjectConstants.J2EE_13_LEVEL));
         assertTrue("1.4 needs configuration folder",
-                EjbJarProvider.needConfigurationFolder(J2EEProjectProperties.J2EE_1_4));
+                EjbJarProvider.needConfigurationFolder(EjbProjectConstants.J2EE_14_LEVEL));
         assertFalse("5.0 does not need configuration folder",
-                EjbJarProvider.needConfigurationFolder(J2EEProjectProperties.JAVA_EE_5));
+                EjbJarProvider.needConfigurationFolder(EjbProjectConstants.JAVA_EE_5_LEVEL));
         assertFalse("Anything else does not need configuration folder",
                 EjbJarProvider.needConfigurationFolder("5.0"));
         assertFalse("Anything else does not need configuration folder",
