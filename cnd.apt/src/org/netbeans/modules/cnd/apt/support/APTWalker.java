@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.apt.support;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.util.LinkedList;
-import java.util.Stack;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -245,14 +244,14 @@ public abstract class APTWalker {
     }
     
     private void pushState() {
-        visits.push(new WalkerState(curAPT, curWasInChild));
+        visits.addLast(new WalkerState(curAPT, curWasInChild));
     }
     
     private boolean popState() {
         if (visits.isEmpty()) {
             return false;
         }
-        WalkerState state = visits.pop();
+        WalkerState state = visits.removeLast();
         curAPT = state.lastNode;
         curWasInChild = state.wasInChild;
         return true;
@@ -393,7 +392,7 @@ public abstract class APTWalker {
     private APT curAPT;
     private boolean curWasInChild;
     private LinkedList<TokenStream> tokens = new LinkedList<TokenStream>();
-    private Stack<WalkerState> visits = new Stack<WalkerState>();
+    private LinkedList<WalkerState> visits = new LinkedList<WalkerState>();
     
     private static final class WalkerState {
         private final APT lastNode;
