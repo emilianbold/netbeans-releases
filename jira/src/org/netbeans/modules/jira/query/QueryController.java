@@ -275,7 +275,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private Long getLongValue(JTextField txt) {
         try {
-            return Long.parseLong(panel.ratioMinTextField.getText().trim());
+            return Long.parseLong(txt.getText().trim());
         } catch (NumberFormatException ex) {
             return null;
         }
@@ -448,7 +448,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         setDateRangeFilter((DateRangeFilter) fd.getCreatedDateFilter(), panel.createdFromTextField, panel.createdToTextField);
         setDateRangeFilter((DateRangeFilter) fd.getUpdatedDateFilter(), panel.updatedFromTextField, panel.updatedToTextField);
-        setDateRangeFilter((DateRangeFilter) fd.getDueDateFilter(), panel.dueFromTextField, panel.dueToTextField);
+        setDateRangeFilter((DateRangeFilter) fd.getDueDateFilter(),     panel.dueFromTextField,     panel.dueToTextField);
        
     }
 
