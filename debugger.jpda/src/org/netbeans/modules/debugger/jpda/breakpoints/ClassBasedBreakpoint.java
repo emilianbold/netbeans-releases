@@ -79,6 +79,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ClassUnloadEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -312,7 +313,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         if (loadedClasses != null && loadedClasses.size() > 0) {
             ReferenceType preferredType;
             try {
-                preferredType = getPreferredReferenceType(loadedClasses);
+                preferredType = JPDAUtils.getPreferredReferenceType(loadedClasses, logger);
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return false;
             }
@@ -322,58 +323,6 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             classLoaded(loadedClasses);
         }
         return matched;
-    }
-
-    private final ReferenceType getPreferredReferenceType(List<ReferenceType> referenceTypes) throws VMDisconnectedExceptionWrapper {
-        ReferenceType preferredType; // The preferred reference type from the list
-        // Thry to find the preferred ReferenceType from the list of ReferenceTypes.
-        // If some class loader has a null parent, it's not the preferred one.
-        if (referenceTypes.size() == 1) {
-            preferredType = null; // referenceTypes.get(0); - not necessary
-        } else {
-            preferredType = null;
-            try {
-                for (ReferenceType referenceType : referenceTypes) {
-                    ClassLoaderReference clr = ReferenceTypeWrapper.classLoader(referenceType);
-                    //clr.invokeMethod(null, null, referenceTypes, lineNumber)
-                    Field parentField;
-                    try {
-                        parentField = ReferenceTypeWrapper.fieldByName(ObjectReferenceWrapper.referenceType(clr), "parent");
-                    } catch (ObjectCollectedExceptionWrapper ex) {
-                        continue; // Collected - not interesting
-                    }
-                    if (parentField != null) {
-                        Value parent;
-                        try {
-                            parent = ObjectReferenceWrapper.getValue(clr, parentField);
-                        } catch (ObjectCollectedExceptionWrapper ex) {
-                            continue; // Collected - not interesting
-                        }
-                        if (parent != null) {
-                            // The class loader has a parent
-                            if (preferredType != null) {
-                                preferredType = null; // More class loaders with parent => no preferred
-                                break;
-                            } else {
-                                preferredType = referenceType;
-                            }
-                        }
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("Class loader of reference type: "+clr+" have parent class loader: "+parent);
-                        }
-                    } else {
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("Class loader of reference type: "+clr+". Parent class loader - field parent does not exist.");
-                        }
-                    }
-                }
-            } catch (InternalExceptionWrapper iex) {
-                preferredType = null;
-            } catch (ClassNotPreparedExceptionWrapper cnpex) {
-                preferredType = null;
-            }
-        }
-        return preferredType;
     }
 
     public boolean exec (Event event) {
