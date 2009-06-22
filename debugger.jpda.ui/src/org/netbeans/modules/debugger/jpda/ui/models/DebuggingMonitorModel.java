@@ -80,6 +80,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -566,10 +567,17 @@ NodeActionsProviderFilter, TableModel, Constants {
         private void setVarInfo(ObjectVariable v, CallStackFrame f, JPDADebugger debugger) {
             ObjectVariable t = f.getThisVariable();
             long uid = v.getUniqueID();
-            // Test static fields
-            List<JPDAClassType> classes = debugger.getClassesByName(f.getClassName());
-            if (classes != null && classes.size() > 0) {
-                List<Field> fields = classes.get(0).staticFields();
+            JPDAClassType clazz;
+            try {
+                // Test static fields
+                //JPDAClassType clazz = f.getClassType();
+                clazz = (JPDAClassType) f.getClass().getMethod("getClassType").invoke(f); // NOI18N
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                clazz = null;
+            }
+            if (clazz != null) {
+                List<Field> fields = clazz.staticFields();
                 for (Field field : fields) {
                     if (field instanceof ObjectVariable &&
                         uid == ((ObjectVariable) field).getUniqueID()) {
