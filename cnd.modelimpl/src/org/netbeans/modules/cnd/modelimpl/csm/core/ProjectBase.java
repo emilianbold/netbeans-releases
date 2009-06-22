@@ -2187,7 +2187,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert state != null;
         assert state.isCleaned();
         // walk through include stack to restore preproc information
-        List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
+        LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
         assert (reverseInclStack != null);
         if (reverseInclStack.isEmpty()) {
             if (TRACE_PP_STATE_OUT) {
@@ -2200,7 +2200,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             // we need to reverse includes stack
             assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
-            Stack<APTIncludeHandler.IncludeInfo> inclStack = reverse(reverseInclStack);
+            LinkedList<APTIncludeHandler.IncludeInfo> inclStack = reverse(reverseInclStack);
             StartEntryInfo sei = getStartEntryInfo(preprocHandler, state);
             FileImpl csmFile = sei.csmFile;
             ProjectBase startProject = sei.startProject;
@@ -2408,11 +2408,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    private static <T> Stack<T> reverse(List<T> original) {
-        Stack<T> reverse = new Stack<T>();
-        for (int i = original.size() - 1; i >= 0; i--) {
-            T inclInfo = original.get(i);
-            reverse.push(inclInfo);
+    private static <T> LinkedList<T> reverse(LinkedList<T> original) {
+        LinkedList<T> reverse = new LinkedList<T>();
+        ListIterator<T> it = original.listIterator(original.size());
+        while(it.hasPrevious()){
+           reverse.addLast(it.previous());
         }
         return reverse;
     }

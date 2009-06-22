@@ -244,12 +244,12 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
 
-    private Stack<CharSequence> expandingMacros = new Stack<CharSequence>();
+    private LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
 
     public boolean pushExpanding(APTToken token) {
         assert (token != null);
         if (!isExpanding(token)) {
-            expandingMacros.push(token.getTextID());
+            expandingMacros.addLast(token.getTextID());
             return true;
         }
         return false;
@@ -257,7 +257,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     public void popExpanding() {
         try {
-            expandingMacros.pop();
+            expandingMacros.removeLast();
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why pop from empty stack?"; // NOI18N
         }

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
+import java.util.LinkedList;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -64,18 +64,18 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
  */
 public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     private final String interestedFile;
-    private final Stack<IncludeInfo> inclStack;
+    private final LinkedList<IncludeInfo> inclStack;
     private final APTIncludeHandler.IncludeInfo stopDirective;
     private final boolean searchInterestedFile;
     
     /** Creates a new instance of APTRestorePreprocStateWalker */
-    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, Stack<IncludeInfo> inclStack, String interestedFile, APTFileCacheEntry cacheEntry) {
+    public APTRestorePreprocStateWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, LinkedList<IncludeInfo> inclStack, String interestedFile, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
         this.searchInterestedFile = true;
         this.interestedFile = interestedFile;
         this.inclStack = inclStack;
-        assert (!inclStack.empty());
-        this.stopDirective = this.inclStack.pop();
+        assert (!inclStack.isEmpty());
+        this.stopDirective = this.inclStack.removeLast();
         assert (stopDirective != null);
     }
     
@@ -105,7 +105,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 // we met candidate to stop on #include directive
                 assert inclStack != null;
                 // look if it the real target or target is in sub-#include
-                if (!inclStack.empty()) {
+                if (!inclStack.isEmpty()) {
                     // this is not the target
                     // need to continue restoring in sub-#includes
                     APTFile aptLight = inclFileOwner.getAPTLight(csmFile);

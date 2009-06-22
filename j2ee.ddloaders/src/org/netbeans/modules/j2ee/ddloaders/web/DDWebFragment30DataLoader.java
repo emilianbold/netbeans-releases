@@ -27,29 +27,42 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.web;
 
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+
 /**
- * A data loader for web.xml version 3.0. Required for providing
+ * A data loader for web-fragment.xml version 3.0. Required for providing
  * a different action context than for older versions - see #85570.
  *
- * @author Erno Mononen
+ * @author Petr Slechta
  */
-public class DDWeb30DataLoader extends DDDataLoader {
+public class DDWebFragment30DataLoader extends DDDataLoader {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String REQUIRED_MIME = "text/x-dd-servlet3.0"; // NOI18N
+    private static final String REQUIRED_MIME = "text/x-dd-servlet-fragment3.0"; // NOI18N
 
-    public DDWeb30DataLoader() {
-        super("org.netbeans.modules.j2ee.ddloaders.web.DDDataObject");  // NOI18N
+    public DDWebFragment30DataLoader() {
+        super("org.netbeans.modules.j2ee.ddloaders.web.DDFragmentDataObject");  // NOI18N
     }
 
     @Override
     protected String actionsContext() {
-        return "Loaders/text/x-dd-web3.0/Actions/"; // NOI18N
+        return "Loaders/text/x-dd-web-fragment3.0/Actions/"; // NOI18N
     }
 
     @Override
     protected String[] getSupportedMimeTypes() {
         return new String[]{REQUIRED_MIME};
     }
+
+    @Override
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
+        throws DataObjectExistsException, IOException
+    {
+        return new DDFragmentDataObject(primaryFile, this);
+    }
+
 }

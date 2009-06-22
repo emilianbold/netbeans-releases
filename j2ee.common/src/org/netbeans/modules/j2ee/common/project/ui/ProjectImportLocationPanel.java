@@ -580,7 +580,24 @@ private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     public HelpCtx getHelpCtx() {
         return new HelpCtx(generateHelpID(ProjectImportLocationPanel.class, j2eeModuleType));
     }
-    
+
+    static String generateHelpID(Class clazz, J2eeModule.Type moduleType) {
+        if (J2eeModule.Type.CAR.equals(moduleType)) {
+            return clazz.getName()+"_APPCLIENT"; // NOI18N
+        }
+        if (J2eeModule.Type.EJB.equals(moduleType)) {
+            return clazz.getName()+"_EJB"; // NOI18N
+        }
+        if (J2eeModule.Type.EAR.equals(moduleType)) {
+            return clazz.getName()+"_EAR"; // NOI18N
+        }
+        if (J2eeModule.Type.WAR.equals(moduleType)) {
+            return clazz.getName()+"_WAR"; // NOI18N
+        }
+        throw new AssertionError("Unknown module type: "+moduleType); // NOI18N
+    }
+
+    @Deprecated
     static String generateHelpID(Class clazz, Object moduleType) {
         if (moduleType == J2eeModule.CLIENT) {
             return clazz.getName()+"_APPCLIENT"; // NOI18N

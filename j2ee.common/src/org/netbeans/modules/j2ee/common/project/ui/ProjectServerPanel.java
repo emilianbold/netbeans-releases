@@ -268,24 +268,24 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(serverInstanceComboBox, 0, 324, Short.MAX_VALUE)
+                        .add(serverInstanceComboBox, 0, 350, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addServerButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
                         .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
             .add(layout.createSequentialGroup()
-                .add(mainClassLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(423, Short.MAX_VALUE))
+                .add(mainClassLabel)
+                .addContainerGap(463, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -300,11 +300,11 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .add(jTextFieldCarName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                     .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE))
                 .add(74, 74, 74))
-            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(jLabelEnterprise)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jComboBoxEnterprise, 0, 330, Short.MAX_VALUE))
+                .add(jComboBoxEnterprise, 0, 342, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -465,18 +465,18 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, ProjectLocationPanel.decorateMessage(
                     NbBundle.getMessage(ProjectServerPanel.class, "PanelSharability.licenseWarning.text")));
         }
-        if (j2eeModuleType == J2eeModule.EJB) {
+        if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             setJ2eeVersionWarning(wizardDescriptor);
         }
         
-        if (j2eeModuleType == J2eeModule.CLIENT) {
+        if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
             if (!isMainClassValid(mainClassTextField.getText())) {
                 setErrorMessage("ERROR_IllegalMainClassName", wizardDescriptor); // NOI18N
                 return false;
             }
         }
 
-        if (j2eeModuleType == J2eeModule.EAR) {
+        if (J2eeModule.Type.EAR.equals(j2eeModuleType)) {
             if (createWARCheckBox.isSelected()) {
                 String warName = jTextFieldWebAppName.getText();
                 if (warName.length() < 1) {
@@ -552,7 +552,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.WAR_NAME,  jTextFieldWebAppName.getText());
         d.putProperty(ProjectServerWizardPanel.JAR_NAME, jTextFieldEjbModuleName.getText());
         d.putProperty(ProjectServerWizardPanel.CAR_NAME, jTextFieldCarName.getText());
-        d.putProperty(ProjectServerWizardPanel.MAIN_CLASS, j2eeModuleType == J2eeModule.CLIENT ? mainClassTextField.getText().trim() : mainClassTextFieldWithinEar.getText().trim()); // NOI18N
+        d.putProperty(ProjectServerWizardPanel.MAIN_CLASS, J2eeModule.Type.CAR.equals(j2eeModuleType) ? mainClassTextField.getText().trim() : mainClassTextFieldWithinEar.getText().trim()); // NOI18N
         d.putProperty(ProjectServerWizardPanel.CREATE_WAR, Boolean.valueOf(createWARCheckBox.isVisible() ? createWARCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
@@ -597,14 +597,14 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             serverLibraryCheckbox.setSelected(false);
         }
         projectLocation = (File)d.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
-        if (j2eeModuleType == J2eeModule.EJB) {
+        if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             updateJ2EEVersion("ejb-jar.xml");
         }
-        if (j2eeModuleType == J2eeModule.CLIENT) {
+        if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
             initClientAppMainClass((String)d.getProperty(ProjectLocationWizardPanel.NAME));
             updateJ2EEVersion("application-client.xml");
         }
-        if (j2eeModuleType == J2eeModule.EAR) {
+        if (J2eeModule.Type.EAR.equals(j2eeModuleType)) {
             String newProjectName = (String)d.getProperty(ProjectLocationWizardPanel.NAME);
             initClientAppMainClass(newProjectName);
             this.jTextFieldEjbModuleName.setText(MessageFormat.format(
@@ -799,9 +799,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(fo, configFileName);
             if (configFilesPath != null) {
                 FileObject configFile = configFilesPath.getFileObject(configFileName); // NOI18N
-                if (j2eeModuleType == J2eeModule.EJB) {
+                if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
                     checkEjbJarXmlJ2eeVersion(configFile);
-                } else if (j2eeModuleType == J2eeModule.CLIENT) {
+                } else if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
                     checkACXmlJ2eeVersion(configFile);
                 }
             } else {
@@ -892,7 +892,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         if (!Utilities.isJavaIdentifier(newProjectName)) {
             newProjectName = NbBundle.getMessage(ProjectServerPanel.class, "TXT_PackageNameSuffix", newProjectName);
         }
-        if (j2eeModuleType == J2eeModule.CLIENT) {
+        if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
             mainClassTextField.setText(MessageFormat.format(
                     NbBundle.getMessage(ProjectServerPanel.class,"TXT_ClassName"), new Object[] {newProjectName}
             ));
