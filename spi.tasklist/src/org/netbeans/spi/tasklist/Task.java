@@ -42,6 +42,7 @@
 package org.netbeans.spi.tasklist;
 
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +61,8 @@ import org.openide.util.NbBundle;
  */
 public final class Task {
     
-    private FileObject resource;
+    private URL url;
+    private FileObject file;
     private TaskGroup group;
     private String description;
     private int line;
@@ -70,6 +72,20 @@ public final class Task {
         Accessor.DEFAULT = new AccessorImpl();
     }
     
+
+    /**
+     * Create a new Task
+     *
+     * @param resource Resource which the Task applies to, cannot be null.
+     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param description A brief summary of the task (one line if possible), cannot be null.
+     *
+     * @return New task.
+     */
+    public static Task create( URL resource, String groupName, String description ) {
+        return new Task( null, resource, getTaskGroup( groupName ), description, -1, null );
+    }
+
     /**
      * Create a new Task
      * 
@@ -81,7 +97,8 @@ public final class Task {
      * @return New task.
      */
     public static Task create( FileObject resource, String groupName, String description, int line ) {
-        return new Task( resource, getTaskGroup( groupName ), description, line, null );
+        assert null != resource;
+        return new Task(resource, null, getTaskGroup(groupName), description, line, null);
     }
     
     /**
@@ -101,28 +118,38 @@ public final class Task {
      * @return New task.
      */
     public static Task create( FileObject resource, String groupName, String description, ActionListener al ) {
-        return new Task( resource, getTaskGroup( groupName ), description, -1, al );
+        assert null != resource;
+        return new Task(resource, null, getTaskGroup(groupName), description, -1, al);
     }
     
     /** Creates a new instance of Task */
-    private Task( FileObject resource, TaskGroup group, String description, int line, ActionListener al ) {
+    private Task( FileObject file, URL url, TaskGroup group, String description, int line, ActionListener al ) {
         assert null != group;
         assert null != description;
-        assert null != resource;
+        assert null == file || null == url;
         
-        this.resource = resource;
+        this.file = file;
+        this.url = url;
         this.group = group;
         this.description = description;
         this.line = line;
         this.al = al;
     }
-    
+
     /**
-     * Resource (file or folder) this taks applies to.
-     * @return Resource (file or folder) this taks applies to.
+     * Resource this taks applies to.
+     * @return Resource this taks applies to.
      */
-    FileObject getResource() {
-        return resource;
+    URL getURL() {
+        return url;
+    }
+
+    /**
+     * Resource this taks applies to.
+     * @return Resource this taks applies to.
+     */
+    FileObject getFile() {
+        return file;
     }
     
     /**
@@ -199,8 +226,11 @@ public final class Task {
         if (this.group != test.group && this.group != null &&
             !this.group.equals(test.group))
             return false;
-        if (this.resource != test.resource && this.resource != null &&
-            !this.resource.equals(test.resource))
+        if (this.url != test.url && this.url != null &&
+            !this.url.equals(test.url))
+            return false;
+        if (this.file != test.file && this.file != null &&
+            !this.url.equals(test.file))
             return false;
         return true;
     }
@@ -212,7 +242,8 @@ public final class Task {
         hash = 17 * hash + this.line;
         hash = 17 * hash + (this.description != null ? this.description.hashCode() : 0);
         hash = 17 * hash + (this.group != null ? this.group.hashCode() : 0);
-        hash = 17 * hash + (this.resource != null ? this.resource.hashCode() : 0);
+        hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
+        hash = 17 * hash + (this.url != null ? this.url.hashCode() : 0);
         return hash;
     }
     
@@ -220,7 +251,7 @@ public final class Task {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append( "[" ); 
-        buffer.append( getResource() );
+        buffer.append( null == url ? getFile() : getURL() );
         buffer.append( ", " ); 
         buffer.append( getLine() );
         buffer.append( ", " ); 

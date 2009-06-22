@@ -43,10 +43,12 @@ package org.netbeans.spi.tasklist;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 
@@ -92,7 +94,7 @@ public class TaskTest extends NbTestCase {
         return suite;
     }
 
-    public void testGetters() {
+    public void testGetters() throws FileStateInvalidException {
         String description = "task description";
         int lineNo = 123;
         FileObject resource = FileUtil.getConfigRoot();
@@ -101,7 +103,7 @@ public class TaskTest extends NbTestCase {
         
         assertEquals( description, t.getDescription() );
         assertEquals( lineNo, t.getLine() );
-        assertEquals( resource, t.getResource() );
+        assertEquals( resource.getURL(), t.getResource() );
         assertEquals( TaskGroupFactory.getDefault().getGroup( TASK_GROUP_NAME), t.getGroup() );
         assertNull( t.getActionListener() );
         
@@ -115,7 +117,7 @@ public class TaskTest extends NbTestCase {
         
         assertEquals( description, t.getDescription() );
         assertEquals( -1, t.getLine() );
-        assertEquals( resource, t.getResource() );
+        assertEquals( resource.getURL(), t.getResource() );
         assertEquals( TaskGroupFactory.getDefault().getGroup( TASK_GROUP_NAME), t.getGroup() );
         assertEquals( al, t.getActionListener() );
     }
@@ -124,9 +126,16 @@ public class TaskTest extends NbTestCase {
         String description = "task description";
         int lineNo = 123;
         FileObject resource = FileUtil.getConfigRoot();
-        
+
         try {
-            Task.create(null, TASK_GROUP_NAME, description, lineNo );
+            Task.create((FileObject)null, TASK_GROUP_NAME, description, lineNo );
+            fail( "resource cannot be null" );
+        } catch( AssertionError e ) {
+            //that's what we want
+        }
+
+        try {
+            Task.create((URL)null, TASK_GROUP_NAME, description, lineNo );
             fail( "resource cannot be null" );
         } catch( AssertionError e ) {
             //that's what we want
@@ -147,10 +156,10 @@ public class TaskTest extends NbTestCase {
         }
     }
 
-    public void testNegativeLineNumberAllowed() {
+    public void testNegativeLineNumberAllowed() throws FileStateInvalidException {
         String description = "task description";
         int lineNo = -1;
-        FileObject resource = FileUtil.getConfigRoot();
+        URL resource = FileUtil.getConfigRoot().getURL();
         
         Task t = Task.create(resource, TASK_GROUP_NAME, description, lineNo );
         
@@ -160,10 +169,10 @@ public class TaskTest extends NbTestCase {
         assertEquals( TaskGroupFactory.getDefault().getGroup( TASK_GROUP_NAME), t.getGroup() );
     }
 
-    public void testUnknownTaskGroup() {
+    public void testUnknownTaskGroup() throws FileStateInvalidException {
         String description = "task description";
         int lineNo = 123;
-        FileObject resource = FileUtil.getConfigRoot();
+        URL resource = FileUtil.getConfigRoot().getURL();
         
         Task t = Task.create(resource, "unknown task group name", description, lineNo );
         
@@ -173,10 +182,10 @@ public class TaskTest extends NbTestCase {
         assertEquals( TaskGroupFactory.getDefault().getDefaultGroup(), t.getGroup() );
     }
 
-    public void testEquals() {
+    public void testEquals() throws FileStateInvalidException {
         String description = "task description";
         int lineNo = 123;
-        FileObject resource = FileUtil.getConfigRoot();
+        URL resource = FileUtil.getConfigRoot().getURL();
         
         Task t1 = Task.create(resource, TASK_GROUP_NAME, description, lineNo );
         Task t2 = Task.create(resource, TASK_GROUP_NAME, description, lineNo );

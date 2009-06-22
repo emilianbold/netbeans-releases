@@ -93,6 +93,10 @@ public abstract class TaskManager {
      * @param tasks 
      */
     public abstract void setTasks( PushTaskScanner scanner, FileObject resource, List<? extends Task> tasks );
+
+    public void setTasks( PushTaskScanner scanner, List<? extends Task> tasks ) {
+        setTasks(scanner, null, tasks);
+    }
     
     /**
      * 

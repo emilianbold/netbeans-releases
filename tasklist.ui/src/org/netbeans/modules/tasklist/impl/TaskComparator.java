@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.tasklist.impl;
 
+import java.net.URL;
 import java.util.Comparator;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
@@ -66,14 +67,19 @@ public class TaskComparator {
 
                     //compare file
                     if( 0 == result ) {
-                        FileObject f1 = Accessor.getResource(t1);
-                        FileObject f2 = Accessor.getResource(t2);
-                        if( null == f1 && null != f2 )
+                        URL u1 = Accessor.getURL(t1);
+                        URL u2 = Accessor.getURL(t2);
+                        if( null == u1 && null != u2 ) {
                             result = -1;
-                        else if( null != f1 && null == f2 ) 
+                        } else if( null != u1 && null == u2 ) {
                             result = 1;
-                        else if( null != f1 && null != f2 ) 
+                        } else if( null != u1 && null != u2 ) {
+                            result = u1.toString().compareTo( u2.toString() );
+                        } else {
+                            FileObject f1 = Accessor.getFile(t1);
+                            FileObject f2 = Accessor.getFile(t2);
                             result = f1.getPath().compareTo( f2.getPath() );
+                        }
                     }
 
                     //compare line number
@@ -105,10 +111,6 @@ public class TaskComparator {
         return new LocationComparator( asc );
     }
     
-    public static Comparator<Task> getLineComparator( boolean asc ) {
-        return new LineComparator( asc );
-    }
-    
     public static Comparator<Task> getFileComparator( boolean asc ) {
         return new FileComparator( asc );
     }
@@ -128,6 +130,7 @@ public class TaskComparator {
             return result;
         }
     
+        @Override
         public boolean equals(Object o) {
             if (o == null)
                 return false;
@@ -140,51 +143,10 @@ public class TaskComparator {
             return true;
         }
 
+        @Override
         public int hashCode() {
             int hash = 7;
             hash = 69 * hash + (this.asc ? 1 : 0);
-            return hash;
-        }
-    }
-    
-    private static class LineComparator implements Comparator<Task> {
-        private boolean asc;
-        public LineComparator( boolean asc ) {
-            this.asc = asc;
-        }
-
-        public int compare( Task t1, Task t2 ) {
-            int result = 0;
-            if( Accessor.getLine(t1) <= 0 && Accessor.getLine(t2) > 0 )
-                result = -1;
-            else if( Accessor.getLine(t1) > 0 && Accessor.getLine(t2) <= 0 )
-                result = 1;
-            else if( Accessor.getLine(t1) > 0 && Accessor.getLine(t2) > 0 )
-                result = Accessor.getLine(t1)- Accessor.getLine(t2);
-            
-            if( 0 == result )
-                result = getDefault().compare( t1, t2 );
-            else if( !asc )
-                result *= -1;
-            
-            return result;
-        }
-    
-        public boolean equals(Object o) {
-            if (o == null)
-                return false;
-            if (getClass() != o.getClass())
-                return false;
-            final LineComparator test = (LineComparator) o;
-
-            if (this.asc != test.asc)
-                return false;
-            return true;
-        }
-
-        public int hashCode() {
-            int hash = 7;
-            hash = 79 * hash + (this.asc ? 1 : 0);
             return hash;
         }
     }
@@ -198,14 +160,14 @@ public class TaskComparator {
         public int compare( Task t1, Task t2 ) {
             int result = 0;
             
-            FileObject f1 = Accessor.getResource(t1);
-            FileObject f2 = Accessor.getResource(t2);
+            String f1 = Accessor.getFileNameExt(t1);
+            String f2 = Accessor.getFileNameExt(t2);
             if( null == f1 && null != f2 )
                 result = -1;
             else if( null != f1 && null == f2 ) 
                 result = 1;
             else if( null != f1 && null != f2 ) {
-                result = f1.getNameExt().compareTo( f2.getNameExt() );
+                result = f1.compareTo( f2 );
             }
             
             if( 0 == result )
@@ -216,6 +178,7 @@ public class TaskComparator {
             return result;
         }
     
+        @Override
         public boolean equals(Object o) {
             if (o == null)
                 return false;
@@ -228,6 +191,7 @@ public class TaskComparator {
             return true;
         }
 
+        @Override
         public int hashCode() {
             int hash = 7;
             hash = 89 * hash + (this.asc ? 1 : 0);
@@ -244,14 +208,14 @@ public class TaskComparator {
         public int compare( Task t1, Task t2 ) {
             int result = 0;
             
-            FileObject f1 = Accessor.getResource(t1);
-            FileObject f2 = Accessor.getResource(t2);
+            String f1 = Accessor.getLocation(t1);
+            String f2 = Accessor.getLocation(t2);
             if( null == f1 && null != f2 )
                 result = -1;
             else if( null != f1 && null == f2 ) 
                 result = 1;
             else if( null != f1 && null != f2 ) {
-                result = f1.getPath().compareTo( f2.getPath() );
+                result = f1.compareTo( f2 );
             }
             
             if( 0 == result )
@@ -262,6 +226,7 @@ public class TaskComparator {
             return result;
         }
     
+        @Override
         public boolean equals(Object o) {
             if (o == null)
                 return false;
@@ -274,6 +239,7 @@ public class TaskComparator {
             return true;
         }
 
+        @Override
         public int hashCode() {
             int hash = 7;
             hash = 99 * hash + (this.asc ? 1 : 0);

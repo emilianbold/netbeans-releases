@@ -280,10 +280,10 @@ public class TaskManagerImpl extends TaskManager {
     }
 
     public void refresh( final FileTaskScanner scanner, final FileObject... resources) {
-        synchronized( this ) {
-            taskList.clear( scanner, resources );
-        }
         try {
+            synchronized( this ) {
+                taskList.clear( scanner, resources );
+            }
             ArrayList<URL> toRefresh = new ArrayList<URL>(1);
             for( FileObject fo : resources ) {
                 toRefresh.clear();
@@ -356,8 +356,24 @@ public class TaskManagerImpl extends TaskManager {
     }
 
     public void setTasks( PushTaskScanner scanner, FileObject resource, List<? extends Task> tasks ) {
-        if( isObserved() && scope.isInScope( resource ) )
-            taskList.setTasks( scanner, resource, tasks, filter );
+        if( isObserved() && scope.isInScope( resource ) ) {
+            try {
+                taskList.setTasks(scanner, resource, tasks, filter);
+            } catch( IOException ioE ) {
+                getLogger().log(Level.INFO, "Error while updating tasks from " + Accessor.getDisplayName(scanner), ioE);
+            }
+        }
+    }
+
+    @Override
+    public void setTasks( PushTaskScanner scanner, List<? extends Task> tasks ) {
+        if( isObserved() ) {
+            try {
+                taskList.setTasks(scanner, null, tasks, filter);
+            } catch( IOException ioE ) {
+                getLogger().log(Level.INFO, "Error while updating tasks from " + Accessor.getDisplayName(scanner), ioE);
+            }
+        }
     }
     
     public void clearAllTasks( PushTaskScanner scanner ) {
