@@ -188,7 +188,7 @@ public class FileStatusCache {
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
                 if (VersioningSupport.isFlat(root)) {
-                    if (file.equals(root) || file.getParentFile().equals(root)) {
+                    if (file.equals(root) || root.equals(file.getParentFile())) {
                         set.add(file);
                         break;
                     }
