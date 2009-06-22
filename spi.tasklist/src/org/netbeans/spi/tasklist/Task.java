@@ -88,6 +88,20 @@ public final class Task {
 
     /**
      * Create a new Task
+     *
+     * @param resource Resource which the Task applies to, cannot be null.
+     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param description A brief summary of the task (one line if possible), cannot be null.
+     * @param al Task's default action, e.g. double-click or Enter key in the Task List window.
+     *
+     * @return New task.
+     */
+    public static Task create( URL resource, String groupName, String description, ActionListener al ) {
+        return new Task( null, resource, getTaskGroup( groupName ), description, -1, al );
+    }
+
+    /**
+     * Create a new Task
      * 
      * @param resource File or folder which the Task applies to, cannot be null.
      * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
