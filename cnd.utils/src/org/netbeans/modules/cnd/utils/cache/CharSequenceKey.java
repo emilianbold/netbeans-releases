@@ -175,12 +175,21 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         int postLength = postfix.length();
         char[] chars = new char[prefLength + 1 + postLength];
         int indx = 0;
-        for (int i = 0; i < prefLength; i++) {
-            chars[indx++] = prefix.charAt(i);
+        if (prefix instanceof String) {
+            ((String)prefix).getChars(0, prefLength, chars, indx);
+            indx = prefLength;
+        } else {
+            for (int i = 0; i < prefLength; i++) {
+                chars[indx++] = prefix.charAt(i);
+            }
         }
         chars[indx++] = separator;
-        for (int i = 0; i < postLength; i++) {
-            chars[indx++] = postfix.charAt(i);
+        if (postfix instanceof String) {
+            ((String)postfix).getChars(0, postLength, chars, indx);
+        } else {
+            for (int i = 0; i < postLength; i++) {
+                chars[indx++] = postfix.charAt(i);
+            }
         }
         return new String(chars);
     }
