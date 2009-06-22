@@ -2028,14 +2028,18 @@ out:            for (String mimeType : order) {
                                         ctx.oldBinaries.remove(binaryRoot);
                                     }
 
-                                    assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot) :
-                                        "binaryRoot=" + binaryRoot + //NOI18N
-                                        ", rootURL=" + rootURL + //NOI18N
-                                        ", cycleDetector.contains(" + binaryRoot + ")=" + ctx.cycleDetector.contains(binaryRoot); //NOI18N
-                                    
                                     Set<String> sourceIds = PathRegistry.getDefault().getSourceIdsFor(binaryRoot);
                                     if (sourceIds == null || sourceIds.isEmpty()) {
-                                        deps.add(binaryRoot);
+// In some cases people have source roots among libraries for some reason. Misconfigured project?
+// Maybe. Anyway, just do the regular check for cycles.
+//                                        assert !binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot) :
+//                                            "binaryRoot=" + binaryRoot + //NOI18N
+//                                            ", rootURL=" + rootURL + //NOI18N
+//                                            ", cycleDetector.contains(" + binaryRoot + ")=" + ctx.cycleDetector.contains(binaryRoot); //NOI18N
+
+                                        if (!binaryRoot.equals(rootURL) && !ctx.cycleDetector.contains(binaryRoot)) {
+                                            deps.add(binaryRoot);
+                                        }
                                     } else {
                                         LOGGER.log(Level.INFO, "The root {0} is registsred for both {1} and {2}", new Object[] { //NOI18N
                                             binaryRoot, id, sourceIds

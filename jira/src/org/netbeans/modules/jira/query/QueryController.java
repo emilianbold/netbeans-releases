@@ -51,6 +51,7 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -74,6 +76,9 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.DateFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.DateRangeFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.EstimateVsActualFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
@@ -122,11 +127,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
     protected JiraQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
+
     private QueryTask refreshTask;
     private final boolean modifiable;
     private final JiraFilter jiraFilter;
     private final IssueTable issueTable;
     private JiraQueryCellRenderer renderer;
+
+    private static SimpleDateFormat dateRangeDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -240,7 +248,54 @@ public class QueryController extends BugtrackingController implements DocumentLi
             fd.setAssignedToFilter(userFilter);
         }
 
+        Long min = getLongValue(panel.ratioMinTextField);
+        Long max = getLongValue(panel.ratioMaxTextField);
+        if(min != null || max != null) {
+            EstimateVsActualFilter estimateFilter = new EstimateVsActualFilter(min != null ? min : 0, max != null ? max : 0);
+            fd.setEstimateVsActualFilter(estimateFilter);
+        }
+
+        DateRangeFilter rf = getDateRangeFilter(panel.createdFromTextField, panel.createdToTextField);
+        if(rf != null) {
+            fd.setCreatedDateFilter(rf);
+        }
+
+        rf = getDateRangeFilter(panel.updatedFromTextField, panel.updatedToTextField);
+        if(rf != null) {
+            fd.setUpdatedDateFilter(rf);
+        }
+
+        rf = getDateRangeFilter(panel.dueFromTextField, panel.dueToTextField);
+        if(rf != null) {
+            fd.setDueDateFilter(rf);
+        }
+
         return fd;
+    }
+
+    private Long getLongValue(JTextField txt) {
+        try {
+            return Long.parseLong(panel.ratioMinTextField.getText().trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Date getDateValue(JTextField txt) {
+        try {
+            return dateRangeDateFormat.parse(txt.getText().trim());
+        } catch (ParseException ex) {
+            return null;
+        }
+    }
+
+    private DateRangeFilter getDateRangeFilter(JTextField fromTxt, JTextField toTxt) {
+        Date from = getDateValue(fromTxt);
+        Date to = getDateValue(toTxt);
+        if (from != null || to != null) {
+            return new DateRangeFilter(from, to);
+        }
+        return null;
     }
 
     private <T> List<T> getValues(JList list) {
@@ -384,9 +439,26 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if (uf != null) {
             assigneeUserSearch.setFilter(uf);
         }
-        // find by last change
-        // XXX finish me
+
+        EstimateVsActualFilter estimateFilter = fd.getEstimateVsActualFilter();
+        if(estimateFilter != null) {
+            panel.ratioMinTextField.setText(Long.toString(estimateFilter.getMinVariation()));
+            panel.ratioMaxTextField.setText(Long.toString(estimateFilter.getMaxVariation()));
+        }
+
+        setDateRangeFilter((DateRangeFilter) fd.getCreatedDateFilter(), panel.createdFromTextField, panel.createdToTextField);
+        setDateRangeFilter((DateRangeFilter) fd.getUpdatedDateFilter(), panel.updatedFromTextField, panel.updatedToTextField);
+        setDateRangeFilter((DateRangeFilter) fd.getDueDateFilter(), panel.dueFromTextField, panel.dueToTextField);
        
+    }
+
+    private void setDateRangeFilter(DateRangeFilter dateRangeFilter, JTextField fromTxt, JTextField toTxt) {
+        if(dateRangeFilter != null) {
+            Date from = dateRangeFilter.getFromDate();
+            Date to = dateRangeFilter.getToDate();
+            fromTxt.setText(dateRangeDateFormat.format(from));
+            toTxt.setText(dateRangeDateFormat.format(to));
+        }
     }
 
     private void setSelected (JList list, Object[] selectedItems) {

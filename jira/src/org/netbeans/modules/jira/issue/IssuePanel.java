@@ -83,6 +83,11 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.util.PriorityRenderer;
+import org.netbeans.modules.jira.util.ProjectRenderer;
+import org.netbeans.modules.jira.util.ResolutionRenderer;
+import org.netbeans.modules.jira.util.StatusRenderer;
+import org.netbeans.modules.jira.util.TypeRenderer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -144,37 +149,13 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void initRenderers() {
         // Project combo
-        projectCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof Project) {
-                    value = ((Project)value).getName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
+        projectCombo.setRenderer(new ProjectRenderer());
 
         // Issue type combo
-        issueTypeCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof IssueType) {
-                    value = ((IssueType)value).getName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
+        issueTypeCombo.setRenderer(new TypeRenderer());
 
         // Priority combo
-        priorityCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof Priority) {
-                    value = ((Priority)value).getName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
+        priorityCombo.setRenderer(new PriorityRenderer());
 
         // Component list
         componentList.setCellRenderer(new DefaultListCellRenderer() {
@@ -188,26 +169,10 @@ public class IssuePanel extends javax.swing.JPanel {
         });
 
         // Status combo
-        statusCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof JiraStatus) {
-                    value = ((JiraStatus)value).getName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
+        statusCombo.setRenderer(new StatusRenderer());
 
         // Resolution combo
-        resolutionCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof Resolution) {
-                    value = ((Resolution)value).getName();
-                }
-                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        });
+        resolutionCombo.setRenderer(new ResolutionRenderer());
     }
 
     private void initProjectCombo() {

@@ -471,6 +471,10 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private static final String WEBAPP_2_5 = JAVAEE_NS+"/"+WEBAPP_2_5_XSD; // NOI18N
     public static final String WEBAPP_2_5_ID = "SCHEMA:"+WEBAPP_2_5; // NOI18N
 
+    private static final String WEBAPP_3_0_XSD="web-app_3_0.xsd"; // NOI18N
+
+    private static final String WEBFRAGMENT_3_0_XSD="web-fragment_3_0.xsd"; // NOI18N
+
     public static final String PERSISTENCE_NS = "http://java.sun.com/xml/ns/persistence"; // NOI18N
     private static final String PERSISTENCE_TAG="persistence"; //NOI18N
     private static final String PERSISTENCE_XSD="persistence_1_0.xsd"; // NOI18N
@@ -538,6 +542,12 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         }
         else if (systemId!=null && systemId.endsWith(WEBAPP_2_5_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBAPP_2_5_XSD);
+        }
+        else if (systemId!=null && systemId.endsWith(WEBAPP_3_0_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBAPP_3_0_XSD);
+        }
+        else if (systemId!=null && systemId.endsWith(WEBFRAGMENT_3_0_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBFRAGMENT_3_0_XSD);
         }
         else if (systemId!=null && systemId.endsWith(APP_5_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+APP_5_XSD);
