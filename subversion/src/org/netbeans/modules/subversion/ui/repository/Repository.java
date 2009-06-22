@@ -93,7 +93,8 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     private static final String HTTP_PANEL        = "http-panel";       //NOI18N
     private static final String SSH_PANEL         = "ssh-panel";        //NOI18N
     private static final String INVALID_URL_PANEL = "invalid-url-panel";//NOI18N
-
+    private static final String INVALID_SVN_URL = "invalid svn url:";   //NOI18N
+    
     private String currentConnPanelType;
 
     private ConnectionType currentPanel;
@@ -300,7 +301,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 rc.getSvnRevision();
             }
         } catch (Exception ex) {             
-            message = ex.getLocalizedMessage();
+            message = translateMessage(ex.getLocalizedMessage());
             valid = false;
         }        
         
@@ -642,5 +643,15 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 return new RepositoryConnection(url);
             }
         }
+    }
+
+    private String translateMessage (String message) {
+        message = message.toLowerCase();
+        int pos = message.indexOf(INVALID_SVN_URL);
+        if (pos != -1) {
+            message = message.substring(INVALID_SVN_URL.length());
+            message = NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", message);
+        }
+        return message;
     }
 }

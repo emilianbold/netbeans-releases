@@ -366,7 +366,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
-        if ("true".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
+        if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
             // refresh all at once
             filesToRefresh.add(fileToRefresh);
         } else {
@@ -385,7 +385,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         public void run() {
             Thread.interrupted();
             File fileToRefresh;
-            if ("true".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
+            if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
                 // fill a fileset with all the modified files
                 HashSet<File> files = new HashSet<File>(filesToRefresh.size());
                 File file;

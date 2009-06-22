@@ -103,6 +103,6 @@ public final class IncludeDirEntry {
     }
 
     public String getAsString() {
-        return asCharSeq.toString();
+        return file.getPath();
     }
 }

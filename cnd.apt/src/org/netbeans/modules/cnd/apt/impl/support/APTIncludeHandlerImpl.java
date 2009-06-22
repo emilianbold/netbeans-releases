@@ -48,11 +48,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -77,7 +77,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     
     private Map<CharSequence, Integer> recurseIncludes = null;
     private static final int MAX_INCLUDE_DEEP = 5;    
-    private Stack<IncludeInfo> inclStack = null;
+    private LinkedList<IncludeInfo> inclStack = null;
     private StartEntry startFile;
     
     /*package*/ APTIncludeHandlerImpl(StartEntry startFile) {
@@ -116,7 +116,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
     
     private int getCurDirIndex() {
-        if (inclStack != null && !inclStack.empty()) {
+        if (inclStack != null && !inclStack.isEmpty()) {
             IncludeInfo info = inclStack.peek();
             return info.getIncludedDirIndex();
         } else {
@@ -150,7 +150,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         private final StartEntry   startFile;
         
         private final Map<CharSequence, Integer> recurseIncludes;
-        private final Stack<IncludeInfo> inclStack;
+        private final LinkedList<IncludeInfo> inclStack;
         
         protected StateImpl(APTIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
@@ -158,15 +158,15 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.startFile = handler.startFile;
             
             if (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) {
-                assert (handler.inclStack != null && !handler.inclStack.empty()) : "must be in sync with inclStack";
+                assert (handler.inclStack != null && !handler.inclStack.isEmpty()) : "must be in sync with inclStack";
                 this.recurseIncludes = new HashMap<CharSequence, Integer>();
                 this.recurseIncludes.putAll(handler.recurseIncludes);
             } else {
                 this.recurseIncludes = null;
             }
-            if (handler.inclStack != null && !handler.inclStack.empty()) {
+            if (handler.inclStack != null && !handler.inclStack.isEmpty()) {
                 assert (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) : "must be in sync with recurseIncludes";
-                this.inclStack = new Stack<IncludeInfo>();
+                this.inclStack = new LinkedList<IncludeInfo>();
                 this.inclStack.addAll(handler.inclStack);
             } else {
                 this.inclStack = null;
@@ -207,7 +207,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                     handler.recurseIncludes.putAll(this.recurseIncludes);
                 }
                 if (this.inclStack != null) {
-                    handler.inclStack = new Stack<IncludeInfo>();
+                    handler.inclStack = new LinkedList<IncludeInfo>();
                     handler.inclStack.addAll(this.inclStack);
                 }
             }
@@ -261,9 +261,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             } else {
                 size = inclStack.size();
                 output.writeInt(size);
-                
-                for (int i = 0; i < size; i++ ) {
-                    final IncludeInfo inclInfo = inclStack.get(i);
+                Iterator<IncludeInfo> it = inclStack.iterator();
+                while(it.hasNext()) {
+                    final IncludeInfo inclInfo = it.next();
                     assert inclInfo != null;
                     
                     final IncludeInfoImpl inclInfoImpl = new IncludeInfoImpl(
@@ -318,7 +318,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             if (size == -1) {
                 inclStack = null;
             } else {
-                inclStack = new Stack<IncludeInfo>();
+                inclStack = new LinkedList<IncludeInfo>();
                 
                 for (int i = 0; i < size; i++) {
                     final IncludeInfoImpl impl = new IncludeInfoImpl(input);
@@ -351,15 +351,17 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return hash;
         }
         
-        private boolean compareStacks(Stack<IncludeInfo> inclStack1, Stack<IncludeInfo> inclStack2) {
+        private boolean compareStacks(LinkedList<IncludeInfo> inclStack1, LinkedList<IncludeInfo> inclStack2) {
             if (inclStack1 != null) {
                 int size = inclStack1.size();
                 if (inclStack2 == null || inclStack2.size() != size) {
                     return false;
                 }
-                for (int i = 0; i < size; i++) {
-                    IncludeInfo cur1 = inclStack1.get(i);
-                    IncludeInfo cur2 = inclStack2.get(i);
+                Iterator<IncludeInfo> it1 = inclStack1.iterator();
+                Iterator<IncludeInfo> it2 = inclStack2.iterator();
+                while(it1.hasNext()) {
+                    IncludeInfo cur1 = it1.next();
+                    IncludeInfo cur2 = it2.next();
                     if (!cur1.equals(cur2)) {
                         return false;
                     }
@@ -370,7 +372,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }        
 
-        /*package*/ List<IncludeInfo> getIncludeStack() {
+        /*package*/ LinkedList<IncludeInfo> getIncludeStack() {
             return this.inclStack;
         }
         
@@ -397,7 +399,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private boolean pushIncludeImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
         if (recurseIncludes == null) {
             assert (inclStack == null): inclStack.toString() + " started on " + startFile;
-            inclStack = new Stack<IncludeInfo>();
+            inclStack = new LinkedList<IncludeInfo>();
             recurseIncludes = new HashMap<CharSequence, Integer>();
         }
         assert path instanceof TinyCharSequence : "must be char sequence key " + path; // NOI18N
@@ -405,7 +407,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
             recurseIncludes.put(path, counter);
-            inclStack.push(new IncludeInfoImpl(path, directiveLine, directiveOffset, resolvedDirIndex));
+            inclStack.addLast(new IncludeInfoImpl(path, directiveLine, directiveOffset, resolvedDirIndex));
             return true;
         } else {
             assert (recurseIncludes.get(path) != null) : "included file must be in map"; // NOI18N
@@ -496,7 +498,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         assert (inclStack != null);
         assert (!inclStack.isEmpty());
         assert (recurseIncludes != null);
-        IncludeInfo inclInfo = inclStack.pop();
+        IncludeInfo inclInfo = inclStack.removeLast();
         CharSequence path = inclInfo.getIncludedPath();
         Integer counter = recurseIncludes.remove(path);
         assert (counter != null) : "must be added before"; // NOI18N
@@ -518,7 +520,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
                                     Map<CharSequence, Integer> recurseIncludes,
-                                    Stack<IncludeInfo> inclStack) {
+                                    LinkedList<IncludeInfo> inclStack) {
         StringBuilder retValue = new StringBuilder();
         retValue.append("User includes:\n"); // NOI18N
         retValue.append(APTUtils.includes2String(userIncludePaths));
@@ -530,7 +532,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return retValue.toString();
     }
 
-    private static String includesStack2String(Stack<IncludeInfo> inclStack) {
+    private static String includesStack2String(LinkedList<IncludeInfo> inclStack) {
         StringBuilder retValue = new StringBuilder();
         if (inclStack == null) {
             retValue.append("<not from #include>"); // NOI18N

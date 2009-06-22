@@ -169,9 +169,11 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -1588,6 +1590,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (vm == null) return null;
         List<ReferenceType> classes = vm.classesByName(name);
         if (classes.size() > 0) {
+            try {
+                ReferenceType preferredType = JPDAUtils.getPreferredReferenceType(classes, null);
+                if (preferredType != null) {
+                    return preferredType;
+                }
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                throw ex.getCause();
+            }
             return classes.get(0);
         }
         // Class not found. If the source is not fully resolved, we may
@@ -3588,6 +3598,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                                                 EvaluationContext evaluationContext) {
         List<ReferenceType> types = vm.classesByName(name);
         if (types.size() > 0) {
+            if (types.size() == 1) {
+                return types.get(0);
+            }
+            ClassLoaderReference contextClassLoader = evaluationContext.getFrame().location().declaringType().classLoader();
+            // Return the class which was loaded by the context class loader
+            for (ReferenceType type : types) {
+                if (contextClassLoader.equals(type.classLoader())) {
+                    return type;
+                }
+            }
+            // No type was loaded by our context classloader, select the preferred one:
+            try {
+                ReferenceType preferedType = JPDAUtils.getPreferredReferenceType(types, null);
+                if (preferedType != null) {
+                    return preferedType;
+                }
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                throw ex.getCause();
+            }
+            // No preferred, just take the first one:
             return types.get(0);
         }
         // DO NOT TRY TO LOAD THE CLASS ON JDK 5 AND OLDER!

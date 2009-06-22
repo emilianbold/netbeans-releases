@@ -265,25 +265,25 @@ public class BugzillaIssue extends Issue {
             new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
-                                              getLongestWordWidth(
+                                              BugtrackingUtil.getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Severity_Title"),      // NOI18N
                                                 bc.getSeverities(), t)),
             new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                               loc.getString("CTL_Issue_Priority_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Priority_Desc"),         // NOI18N
-                                              getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
-                                                bc.getPriorities(), t)),
+                                              BugtrackingUtil.getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Priority_Title"),
+                                                bc.getPriorities(), t, true)),
             new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                               loc.getString("CTL_Issue_Status_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Status_Desc"),           // NOI18N
-                                              getLongestWordWidth(
+                                              BugtrackingUtil.getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Status_Title"),        // NOI18N
                                                 bc.getStatusValues(), t)),
             new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                               loc.getString("CTL_Issue_Resolution_Title"),      // NOI18N
                                               loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
-                                              getLongestWordWidth(
+                                              BugtrackingUtil.getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
                                                 bc.getResolutions(), t)),
             new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
@@ -291,16 +291,6 @@ public class BugzillaIssue extends Issue {
                                               loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
                                               BugtrackingUtil.getColumnWidthInPixels(20, t))
         };
-    }
-
-    private static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
-        int size = header.length();
-        for (String s : values) {
-            if(size < s.length()) {
-                size = s.length();
-            }
-        }
-        return BugtrackingUtil.getColumnWidthInPixels(size, comp);
     }
 
     @Override
