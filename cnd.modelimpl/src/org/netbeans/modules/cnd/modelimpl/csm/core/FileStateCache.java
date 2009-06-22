@@ -118,7 +118,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
                 stateCacheSuccessAttempt++;
                 System.err.println("State Cache Attempt="+stateCacheAttempt+" successful="+stateCacheSuccessAttempt+" cache size="+stateCache.size()+" in file "+file.getName());
                 System.err.println("    Key="+key);
-                //System.err.println("    Res="+createKey(APTHandlersSupport.extractMacroMap(res)));
+                System.err.println("    Res="+createKey(res.state));
             }
         }
         return res;
@@ -129,6 +129,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
             try {
                 stateCacheLock.writeLock().lock();
                 stateCache.clear();
+                if (TRACE) {
+                   System.err.println("Clear State Cache in file "+file.getName());
+                }
             } finally {
                 stateCacheLock.writeLock().unlock();
             }
@@ -141,7 +144,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
     private boolean isCacheableState(APTPreprocHandler.State inputState) {
         //return !APTHandlersSupport.isEmptyActiveMacroMap(inputState);
-        return APTHandlersSupport.getMacroSize(inputState) < MAX_KEY_SIZE;
+        return true;//APTHandlersSupport.getMacroSize(inputState) < MAX_KEY_SIZE;
     }
 
     private static class Value {

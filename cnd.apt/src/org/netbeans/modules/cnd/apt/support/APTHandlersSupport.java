@@ -141,5 +141,10 @@ public class APTHandlersSupport {
         public int hashCode() {
             return crc1 ^ crc2;
         }
+
+        @Override
+        public String toString() {
+            return "<"+crc1+","+crc2+">"; // NOI18N
+        }
     }
 }
