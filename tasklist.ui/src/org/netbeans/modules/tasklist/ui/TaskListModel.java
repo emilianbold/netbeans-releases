@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.tasklist.ui;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
