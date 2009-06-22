@@ -2,7 +2,7 @@
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
-    <Container class="javax.swing.JPanel" name="byLastChangePanel">
+    <Container class="javax.swing.JPanel" name="byOtherPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
@@ -1241,11 +1241,11 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="byOtherLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="byTextContainer" alignment="0" pref="1025" max="32767" attributes="2"/>
-                  <Component id="byLastChangeContainer" alignment="0" pref="1025" max="32767" attributes="1"/>
+                  <Component id="byOtherContainer" alignment="0" pref="1025" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -1273,9 +1273,9 @@
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       <Component id="byPeopleContainer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="byOtherLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Component id="byLastChangeContainer" min="-2" max="-2" attributes="0"/>
+                      <Component id="byOtherContainer" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1341,20 +1341,20 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
             </Container>
-            <Component class="javax.swing.JLabel" name="byLastChangeLabel">
+            <Component class="javax.swing.JLabel" name="byOtherLabel">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Lucida Grande" size="13" style="1"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/jira/query/Bundle.properties" key="QueryPanel.byLastChangeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/jira/query/Bundle.properties" key="QueryPanel.byOtherLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
               </AuxValues>
             </Component>
-            <Container class="javax.swing.JPanel" name="byLastChangeContainer">
+            <Container class="javax.swing.JPanel" name="byOtherContainer">
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
               </AuxValues>

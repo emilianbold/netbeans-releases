@@ -78,7 +78,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final ExpandablePanel byText;
     final ExpandablePanel byDetails;
     final ExpandablePanel byPeople;
-    final ExpandablePanel byLastChange;
+    final ExpandablePanel byOther;
     private static final Color ERROR_COLOR = new Color(153,0,0);
     private Color defaultTextColor;
 
@@ -101,17 +101,17 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         byTextContainer.add(byTextPanel);
         byDetailsContainer.add(byDetailsPanel);
         byPeopleContainer.add(byAttributesPanel);
-        byLastChangeContainer.add(byLastChangePanel);
+        byOtherContainer.add(byOtherPanel);
 
         byText = new ExpandablePanel(byTextLabel, byTextContainer, ei, ci);
         byDetails = new ExpandablePanel(byDetailsLabel, byDetailsContainer, ei, ci);
         byPeople = new ExpandablePanel(byPeopleLabel, byPeopleContainer, ei, ci);
-        byLastChange = new ExpandablePanel(byLastChangeLabel, byLastChangeContainer, ei, ci);
+        byOther = new ExpandablePanel(byOtherLabel, byOtherContainer, ei, ci);
 
         byText.expand();
         byDetails.expand();
         byPeople.colapse();
-        byLastChange.colapse();
+        byOther.colapse();
 
         queryHeaderPanel.setVisible(false);
         tableFieldsPanel.setVisible(false);
@@ -197,7 +197,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        byLastChangePanel = new javax.swing.JPanel();
+        byOtherPanel = new javax.swing.JPanel();
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -232,7 +232,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         noContentPanel = new javax.swing.JPanel();
         noContentLabel = new javax.swing.JLabel();
 
-        byLastChangePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        byOtherPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         jLabel17.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel17.text")); // NOI18N
 
@@ -375,43 +375,43 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        org.jdesktop.layout.GroupLayout byLastChangePanelLayout = new org.jdesktop.layout.GroupLayout(byLastChangePanel);
-        byLastChangePanel.setLayout(byLastChangePanelLayout);
-        byLastChangePanelLayout.setHorizontalGroup(
-            byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(byLastChangePanelLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout byOtherPanelLayout = new org.jdesktop.layout.GroupLayout(byOtherPanel);
+        byOtherPanel.setLayout(byOtherPanelLayout);
+        byOtherPanelLayout.setHorizontalGroup(
+            byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(byOtherPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(jLabel17)
                 .add(18, 18, 18)
-                .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(byLastChangePanelLayout.createSequentialGroup()
-                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(byOtherPanelLayout.createSequentialGroup()
+                        .add(byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel19)
                             .add(jLabel18))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(ratioMinTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(ratioMaxTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(byLastChangePanelLayout.createSequentialGroup()
+                    .add(byOtherPanelLayout.createSequentialGroup()
                         .add(jLabel20)
                         .add(0, 0, 0)))
                 .addContainerGap(44, Short.MAX_VALUE))
         );
-        byLastChangePanelLayout.setVerticalGroup(
-            byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(byLastChangePanelLayout.createSequentialGroup()
+        byOtherPanelLayout.setVerticalGroup(
+            byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(byOtherPanelLayout.createSequentialGroup()
                 .addContainerGap(20, Short.MAX_VALUE)
-                .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(byLastChangePanelLayout.createSequentialGroup()
-                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(byOtherPanelLayout.createSequentialGroup()
+                        .add(byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel17)
                             .add(jLabel18)
                             .add(ratioMinTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(byOtherPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel19)
                             .add(ratioMaxTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -766,10 +766,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byPeopleContainer.setLayout(new java.awt.BorderLayout());
 
-        byLastChangeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        byLastChangeLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.byLastChangeLabel.text")); // NOI18N
+        byOtherLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        byOtherLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.byOtherLabel.text")); // NOI18N
 
-        byLastChangeContainer.setLayout(new java.awt.BorderLayout());
+        byOtherContainer.setLayout(new java.awt.BorderLayout());
 
         org.jdesktop.layout.GroupLayout criteriaPanelLayout = new org.jdesktop.layout.GroupLayout(criteriaPanel);
         criteriaPanel.setLayout(criteriaPanelLayout);
@@ -779,10 +779,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(byTextLabel)
                 .addContainerGap())
             .add(criteriaPanelLayout.createSequentialGroup()
-                .add(byLastChangeLabel)
+                .add(byOtherLabel)
                 .addContainerGap())
             .add(byTextContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1025, Short.MAX_VALUE)
-            .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1025, Short.MAX_VALUE)
+            .add(byOtherContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1025, Short.MAX_VALUE)
             .add(criteriaPanelLayout.createSequentialGroup()
                 .add(byDetailsLabel)
                 .addContainerGap())
@@ -807,9 +807,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(0, 0, 0)
                 .add(byPeopleContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
-                .add(byLastChangeLabel)
+                .add(byOtherLabel)
                 .add(0, 0, 0)
-                .add(byLastChangeContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(byOtherContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         cancelChangesButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.text")); // NOI18N
@@ -1119,9 +1119,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JPanel byDetailsContainer = new javax.swing.JPanel();
     final javax.swing.JLabel byDetailsLabel = new javax.swing.JLabel();
     final javax.swing.JPanel byDetailsPanel = new javax.swing.JPanel();
-    final javax.swing.JPanel byLastChangeContainer = new javax.swing.JPanel();
-    final javax.swing.JLabel byLastChangeLabel = new javax.swing.JLabel();
-    private javax.swing.JPanel byLastChangePanel;
+    final javax.swing.JPanel byOtherContainer = new javax.swing.JPanel();
+    final javax.swing.JLabel byOtherLabel = new javax.swing.JLabel();
+    private javax.swing.JPanel byOtherPanel;
     final javax.swing.JPanel byPeopleContainer = new javax.swing.JPanel();
     final javax.swing.JLabel byPeopleLabel = new javax.swing.JLabel();
     final javax.swing.JPanel byTextContainer = new javax.swing.JPanel();
@@ -1280,7 +1280,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     void switchQueryFields(boolean showAdvanced) {
         byDetails.setVisible(showAdvanced);
         byText.setVisible(showAdvanced);
-        byLastChange.setVisible(showAdvanced);
+        byOther.setVisible(showAdvanced);
         byPeople.setVisible(showAdvanced);
     }
 
