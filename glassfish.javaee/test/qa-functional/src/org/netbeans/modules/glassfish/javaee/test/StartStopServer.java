@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,6 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+/**
+ * @author davisn
+ */
 
 package org.netbeans.modules.glassfish.javaee.test;
 
@@ -49,10 +52,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 
-/**
- *
- * @author davisn9
- */
+
 public class StartStopServer extends NbTestCase {
     
     private final int SLEEP = 10000;
@@ -208,11 +208,7 @@ public class StartStopServer extends NbTestCase {
         } catch(Exception e) {
             fail(e.getMessage());
         }
-    }
-
-
-
-    
+    }  
 
 
     public void restartV3Server() {
@@ -239,7 +235,8 @@ public class StartStopServer extends NbTestCase {
 
     public void startDebugV3Server() {
         try {
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._V3_LOCATION);
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
 
             if(inst.isRunning())
                 return;
@@ -260,6 +257,5 @@ public class StartStopServer extends NbTestCase {
             fail(e.getMessage());
         }
     }
-
     
 }
