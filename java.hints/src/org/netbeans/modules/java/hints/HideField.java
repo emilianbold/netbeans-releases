@@ -103,8 +103,9 @@ public class HideField extends AbstractHint {
             return null;
         }
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-            (span[1] + span[0]) / 2,
-            compilationInfo.getFileObject()
+                (span[1] + span[0]) / 2,
+                compilationInfo.getFileObject(),
+                false
         ));
 
 
@@ -158,18 +159,20 @@ public class HideField extends AbstractHint {
         return null;
     }    
 
-    static final class FixImpl implements Fix, Runnable {
+    static class FixImpl implements Fix, Runnable {
         private final int caret;
         private final FileObject file;
+        private final boolean hideFieldByVariable;
         
-        public FixImpl(int caret, FileObject file) {
+        public FixImpl(int caret, FileObject file, boolean hideFieldByVariable) {
             this.caret = caret;
             this.file = file;
+            this.hideFieldByVariable = hideFieldByVariable;
         }
         
         
         public String getText() {
-            return NbBundle.getMessage(DoubleCheck.class, "MSG_FixHiddenFiledText"); // NOI18N
+            return hideFieldByVariable ? NbBundle.getMessage(DoubleCheck.class, "MSG_FixHiddenByVariableFiledText") : NbBundle.getMessage(DoubleCheck.class, "MSG_FixHiddenFiledText"); // NOI18N
         }
         
         public ChangeInfo implement() throws IOException {

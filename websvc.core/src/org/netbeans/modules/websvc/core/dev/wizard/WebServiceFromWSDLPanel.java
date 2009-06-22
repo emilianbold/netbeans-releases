@@ -357,6 +357,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     }
                 }
             }
+            fireChange();
         }
     }//GEN-LAST:event_jButtonBrowsePortActionPerformed
 
@@ -459,16 +460,16 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     return false;
                 }
 
-                if (findServiceInProject(service.getName())) {
+                if (findServiceInProject(service.getName(), port.getName())) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                            NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", service.getName()));
+                            NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", service.getName(), port.getName()));
                     return false; // Service name exists 
                 }
             } else {
                 if (wsdlServiceHandler != null && wsdlServiceHandler.getServiceName() != null && wsdlServiceHandler.getPortName() != null) {
-                    if (findServiceInProject(wsdlServiceHandler.getServiceName())) {
+                    if (findServiceInProject(wsdlServiceHandler.getServiceName(), wsdlServiceHandler.getPortName()) ) {
                         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", wsdlServiceHandler.getServiceName()));
+                                NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", wsdlServiceHandler.getServiceName(), wsdlServiceHandler.getPortName()));
                         return false; // Service name exists                        
                     } else {
                         if (message != null) {
@@ -641,13 +642,13 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         }
     }
 
-    private boolean findServiceInProject(String serviceName) {
+    private boolean findServiceInProject(String serviceName, String portName) {
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (support != null) {
             for (Object o : support.getServices()) {
                 Service s = (Service) o;
                 if (s.getWsdlUrl() != null &&
-                        serviceName.equals(s.getServiceName())) {
+                        serviceName.equals(s.getServiceName()) && portName.equals(s.getPortName())) {
                     return true;
                 }
             }
