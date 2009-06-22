@@ -46,8 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
@@ -76,7 +77,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 72;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 74;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -122,30 +123,41 @@ public final class RepositoryUtils {
         return counter++;
     }
 
-    public static void remove(CsmUID uid) {
+    public static void remove(CsmUID uid, CsmObject obj) {
         Key key = UIDtoKey(uid);
         if (key != null) {
-            if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
-                long time = System.currentTimeMillis();
-                int index = nextIndex();
-                System.err.println(index + ": " + System.identityHashCode(key) + "@removing key " + key);
+            try {
+                if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
+                    long time = System.currentTimeMillis();
+                    int index = nextIndex();
+                    System.err.println(index + ": " + System.identityHashCode(key) + "@removing key " + key);
+                    if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
+                        repository.remove(key);
+                    }
+                    time = System.currentTimeMillis() - time;
+                    System.err.println(index + ": " + System.identityHashCode(key) + "@removed in " + time + "ms the key " + key);
+                    return;
+                }
                 if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
                     repository.remove(key);
                 }
-                time = System.currentTimeMillis() - time;
-                System.err.println(index + ": " + System.identityHashCode(key) + "@removed in " + time + "ms the key " + key);
-                return;
+            } finally {
+                disposeUID(uid, obj);
             }
-            if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
-                repository.remove(key);
-            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void disposeUID(CsmUID uid, CsmObject obj) {
+        if (uid instanceof KeyBasedUID<?>) {
+            ((KeyBasedUID<CsmObject>)uid).dispose(obj);
         }
     }
 
     public static void remove(Collection<? extends CsmUID> uids) {
         if (uids != null) {
             for (CsmUID uid : uids) {
-                remove(uid);
+                remove(uid, null);
             }
         }
     }
@@ -221,7 +233,7 @@ public final class RepositoryUtils {
         return uids;
     }
 
-    public static <T extends CsmDeclaration> void setSelfUIDs(Collection<T> decls) {
+    public static <T extends CsmObject> void setSelfUIDs(Collection<T> decls) {
         assert decls != null;
         for (T decl : decls) {
             org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(decl);

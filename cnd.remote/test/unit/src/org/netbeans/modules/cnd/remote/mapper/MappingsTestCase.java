@@ -41,7 +41,11 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.io.StringReader;
 import java.util.Map;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  *
@@ -57,16 +61,13 @@ public class MappingsTestCase extends RemoteTestBase {
 //        Map<String, String> mappings = new HostMappingProviderSamba().findMappings("tester@eaglet-sr", "");
 //        assert mappings != null && "/export/pub".equals(mappings.get("pub"));
 //    }
-    
+
+    @ForAllEnvironments
     public void testAnalyzer() throws Exception {
-        if (canTestRemote()) {
-            HostMappingsAnalyzer ham = new HostMappingsAnalyzer(getRemoteExecutionEnvironment()); //sg155630@elif
-            final Map<String, String> mappings = ham.getMappings();
-            assert mappings != null;
-            System.err.println(mappings);
-        } else {
-            System.err.println("Remote tests are not configured.");
-        }
+        HostMappingsAnalyzer ham = new HostMappingsAnalyzer(getTestExecutionEnvironment()); //sg155630@elif
+        final Map<String, String> mappings = ham.getMappings();
+        assert mappings != null;
+        System.err.println(mappings);
     }
 
     public void testHostMappingProviderWindows() throws Exception {
@@ -135,7 +136,17 @@ public class MappingsTestCase extends RemoteTestBase {
 //        }
 //    }
 
+    // we need this since some methods are without @ForAllEnvironments
     public MappingsTestCase(String testName) {
         super(testName);
     }
+
+    public MappingsTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+    }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(MappingsTestCase.class);
+    }
+
 }

@@ -134,6 +134,13 @@ public class JaxWsClientCreator implements ClientCreator {
                 final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String clientName = wsdlFo.getName();
+
+                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class, true);
+                if (prefs != null) {
+                    // remember original wsdlUrl for Client
+                    prefs.put(MavenWebService.CLIENT_PREFIX+WSUtils.getUniqueId(wsdlFo.getName(), jaxWsSupport.getServices()), wsdlUrl);
+                }
+
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         if (!isJaxWsLibrary) {
@@ -150,6 +157,7 @@ public class JaxWsClientCreator implements ClientCreator {
                                 WSUtils.isEJB(project) ?
                                     MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
                                     MavenModelUtils.addJaxWSPlugin(model);
+                        
                         MavenModelUtils.addWsimportExecution(plugin, clientName, relativePath);
                         if (WSUtils.isWeb(project)) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
@@ -160,11 +168,6 @@ public class JaxWsClientCreator implements ClientCreator {
                 };
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
                         Collections.singletonList(operation));
-                Preferences prefs = ProjectUtils.getPreferences(project, MavenWebService.class, true);
-                if (prefs != null) {
-                    // repember original wsdlUrl for Client
-                    prefs.put(MavenWebService.CLIENT_PREFIX+wsdlFo.getName(), wsdlUrl);
-                }
 
                 // execute wsimport goal
                 RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(

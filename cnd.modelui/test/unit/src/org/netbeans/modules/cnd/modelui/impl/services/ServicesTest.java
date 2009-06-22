@@ -43,19 +43,24 @@ package org.netbeans.modules.cnd.modelui.impl.services;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * Test suite for services
  *
  * @author Nick Krasilnikov
  */
-public class ServicesTest extends BaseTestSuite {
+public class ServicesTest extends CndBaseTestSuite {
 
     public ServicesTest() {
         super("Model UI Services Impl");
 
-        addTestSuite(MacroExpansionDocProviderImplTestCase.class);
+        addTestSuite(MacroExpansionExpandTestCase.class);
+        addTestSuite(MacroExpansionNextPrevMacroTestCase.class);
+        addTestSuite(MacroExpansionOffsetsTestCase.class);
+        addTestSuite(MacroExpansionSpanTestCase.class);
+        addTestSuite(MacroExpansionTablesTestCase.class);
+        addTestSuite(MacroExpansionUsagesTestCase.class);
     }
 
     public static Test suite() {

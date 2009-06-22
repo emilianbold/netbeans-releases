@@ -62,6 +62,10 @@ done
 while [ -n "$1" ]
 do
     case "$1" in
+        --gdb)
+                echo "Enable GDB-window and do not delete gdb-cmds logs"
+                PARAMS="${PARAMS} -J-Dgdb.console.window=true -J-Dgdb.console.savelog=true"
+                ;;
 	--cache)
 		shift
                 echo "Redirecting cache to $1"
@@ -113,7 +117,7 @@ do
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE"
+                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,noj2ee,disablestacktelemetry,disablej2ee,disableexceptiontelemetry"
                 ;;
         --userdir)
 		shift

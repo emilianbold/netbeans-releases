@@ -45,13 +45,15 @@ import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends BaseTestSuite {
+public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
 //    static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
@@ -59,17 +61,27 @@ public class RemoteDevelopmentTest extends BaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
+    public RemoteDevelopmentTest(Class testClass) {
+        this(testClass.getName(), testClass);
+    }
+
     public RemoteDevelopmentTest() {
-        super("Remote Development"); // NOI18N
-        addTestSuite(MappingsTestCase.class);
-        addTestSuite(TransportTestCase.class);
-        addTestSuite(RemoteUtilTestCase.class);
-        addTestSuite(ServerListTestCase.class);
+        this("Remote Development", // NOI18N
+             MappingsTestCase.class,
+             TransportTestCase.class,
+             RemoteUtilTestCase.class,
+             ServerListTestCase.class,
+             ScpSyncWorkerTestCase.class,
+             HostSetupTestCase.class);
+    }
+
+
+    private RemoteDevelopmentTest(String name, Class... testClasses) {
+        super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
         TestSuite suite = new RemoteDevelopmentTest();
         return suite;
     }
-
 }

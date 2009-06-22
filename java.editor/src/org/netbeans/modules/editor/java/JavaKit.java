@@ -43,9 +43,9 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -61,10 +61,13 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -93,7 +96,8 @@ public class JavaKit extends NbEditorKit {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     static final long serialVersionUID =-5445829962533684922L;
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JavaKit.class.getName());
 
     public JavaKit(){
     }
@@ -500,7 +504,6 @@ public class JavaKit extends NbEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             try {
                 super.actionPerformed(evt, target);
-
                 // XXX temporary solution until the editor will provide a SPI to plug. See issue #115739
                 // This must run outside the document lock
                 if (isJavadocTouched) {
@@ -508,6 +511,61 @@ public class JavaKit extends NbEditorKit {
                     ActionEvent newevt = new ActionEvent(target, ActionEvent.ACTION_PERFORMED, "fix-javadoc");
                     for (TextAction action : res.allInstances()) {
                         action.actionPerformed(newevt);
+                    }
+                } else {
+                    //Complete block comment
+                    Document doc = target.getDocument();
+                    int start = ((AbstractDocument) doc).getParagraphElement(target.getCaretPosition()).getStartOffset();
+                    int end = ((AbstractDocument) doc).getParagraphElement(target.getCaretPosition()).getEndOffset();
+                    //Check if line with just one * surrounded by spaces is already entered
+                    //If not do not complete block comment
+                    try {
+                        if (doc.getText(start, end - start - 1).matches("\\s+\\*\\s+")) { // NOI18N
+                            TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+                            TokenSequence ts = th.tokenSequence();
+                            ts.move(target.getCaretPosition());
+                            ts.moveNext();
+                            Token t = ts.token();
+                            if (t.id() == JavaTokenId.BLOCK_COMMENT) {
+                                if (t.partType() == PartType.START) {
+                                    //Case when first "/*" in entered to document and there is no closing "*/"
+                                    //Insert block comment end
+                                    String s = doc.getText(start, end - start - 1);
+                                    s = s.replaceFirst(" \\* ", " */"); // NOI18N
+                                    s = "\n" + s; // NOI18N
+                                    int cursorPos = target.getCaretPosition();
+                                    doc.insertString(end - 1, s, null);
+                                    target.setCaretPosition(cursorPos);
+                                } else if (t.partType() == PartType.COMPLETE) {
+                                    //If there is already closing "*/" in document after entered "/*".
+                                    //Search for first closing "*/" and reparse substring from current
+                                    //position to first closing "*/".
+                                    //Look at last token if it is INVALID_COMMENT_END it matches just entered "/*"
+                                    //so there is no need to enter closing "*/"
+                                    String part = doc.getText(end, doc.getLength() - end);
+                                    int pos = part.indexOf("*/"); // NOI18N
+                                    if (pos != -1) {
+                                        part = part.substring(0, pos + 2);
+                                        TokenHierarchy<String> thp = TokenHierarchy.create(part, JavaTokenId.language());
+                                        TokenSequence tsp = thp.tokenSequence();
+                                        tsp.moveEnd();
+                                        tsp.movePrevious();
+                                        Token tp = tsp.token();
+                                        if (tp.id() != JavaTokenId.INVALID_COMMENT_END) {
+                                            //Insert block comment end
+                                            String s = doc.getText(start, end - start - 1);
+                                            s = s.replaceFirst(" \\* ", " */"); // NOI18N
+                                            s = "\n" + s; // NOI18N
+                                            int cursorPos = target.getCaretPosition();
+                                            doc.insertString(end - 1, s, null);
+                                            target.setCaretPosition(cursorPos);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.WARNING, "Cannot complete block comment", ex); // NOI18N
                     }
                 }
             } finally {
@@ -830,11 +888,8 @@ public class JavaKit extends NbEditorKit {
         }
 
         public static final class GlobalAction extends MainMenuAction {
-            private final JMenuItem menuPresenter;
-
             public GlobalAction() {
                 super();
-                this.menuPresenter = new JMenuItem(getMenuItemText());
                 setMenu();
             }
 
@@ -845,12 +900,8 @@ public class JavaKit extends NbEditorKit {
             protected String getActionName() {
                 return fixImportsAction;
             }
-
-            public JMenuItem getMenuPresenter() {
-                return menuPresenter;
-            }
-        }
-    } // End of JavaFixImports action
+        } // End of GlobalAction class
+    } // End of JavaFixImports class
 
     @EditorActionRegistration(
             name = gotoHelpAction,

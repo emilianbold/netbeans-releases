@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
@@ -57,6 +58,8 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
@@ -128,12 +131,16 @@ public class JiraQuery extends Query {
     }
 
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        return new QueryController(r, q, jiraFilter);
+        if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
+            return new QueryController(r, q, (FilterDefinition) jiraFilter);
+        } else if(jiraFilter instanceof NamedFilter) {
+            return new QueryController(r, q, jiraFilter, false);
+        }
+        throw new IllegalStateException("wrong fileter type : " + jiraFilter.getClass().getName());
     }
 
-    @Override
     public ColumnDescriptor[] getColumnDescriptors() {
-        return NbJiraIssue.getColumnDescriptors();
+        return NbJiraIssue.getColumnDescriptors(repository);
     }
 
     @Override
@@ -261,10 +268,8 @@ public class JiraQuery extends Query {
         super.setSaved(saved);
     }
 
-    @Override
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
-        super.setFilter(filter);
     }
 
     @Override
@@ -305,7 +310,7 @@ public class JiraQuery extends Query {
      * @return an instance of FilterDefinition set in UI
      */
     public FilterDefinition getFilterDefinition () {
-        return getController().getFilterDefinition();
+        return (FilterDefinition) getController().getJiraFilter();
     }
     
     boolean wasRun() {

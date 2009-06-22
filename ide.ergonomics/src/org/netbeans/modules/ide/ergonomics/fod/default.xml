@@ -10,11 +10,11 @@
         <folder name="File">
             <file name="Separator3.instance_hidden"/>
             <file name="Separator4.instance_hidden"/>
-            <file name="org-netbeans-modules-editor-ExportHtmlAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-ExportHtmlAction.shadow_hidden"/>
             <file name="org-netbeans-modules-print-action-PageSetupAction.shadow_hidden"/>
             <file name="org-netbeans-modules-print-action-PrintAction.shadow_hidden"/>
-            <file name="org-openide-actions-SaveAction.instance_hidden"/>
-            <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
+            <file name="org-openide-actions-SaveAction.shadow_hidden"/>
+            <file name="org-openide-actions-SaveAllAction.shadow_hidden"/>
             <file name="org-openide-actions-SaveAsAction.shadow_hidden"/>
 
             <folder name ="Import">
@@ -69,22 +69,18 @@
 
         <file name="Source_hidden"/>
         <folder name="Tools">
-            <file name="JavaPlatformsCustomizerAction.instance_hidden"/>
-            <file name="LibrariesCustomizerAction.instance_hidden"/>
-            <file name="MobilityDeploymentManagerAction.instance_hidden"/>
+            <file name="JavaPlatformsCustomizerAction.shadow_hidden"/>
+            <file name="LibrariesCustomizerAction.shadow_hidden"/>
+            <file name="MobilityDeploymentManagerAction.shadow_hidden"/>
             <file name="PaletteManager_hidden"/>
-            <file name="SecurityManagerAction.instance_hidden"/>
+            <file name="SecurityManagerAction.shadow_hidden"/>
             <file name="Separator1.instance_hidden"/>
             <file name="Separator2.instance_hidden"/>
-            <file name="ServerManagerAction3.instance_hidden"/>
-            <file name="VariablesCustomizerAction.instance_hidden"/>
-            <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance_hidden"/>
-            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance_hidden"/>
-            <file name="org-netbeans-modules-ruby-platform-RubyPlatformAction.shadow_hidden"/>
-            <file name="org-netbeans-modules-ruby-platform-gems-GemAction.shadow_hidden"/>
-            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance_hidden"/>
-            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance_hidden"/>
-            <file name="org-openide-actions-ToolsAction.instance_hidden"/>
+            <file name="ServerManagerAction3.shadow_hidden"/>
+            <file name="VariablesCustomizerAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>
+            <file name="org-openide-actions-ToolsAction.shadow_hidden"/>
         </folder>
         <folder name="View">
             <file name="Separator1.instance_hidden"/>
@@ -109,7 +105,7 @@
     </folder>
     <folder name="Toolbars">
         <folder name="File">
-            <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
+            <file name="org-openide-actions-SaveAllAction.shadow_hidden"/>
         </folder>
         <file name="Build_hidden"/>
         <file name="Clipboard_hidden"/>

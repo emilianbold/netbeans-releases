@@ -110,7 +110,7 @@ public abstract class GlassfishConfiguration implements
 
 
     protected GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
-        this(module, J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType()));
+        this(module, J2eeModuleHelper.getJ2eeModuleHelper(module.getType()));
     }
 
     protected GlassfishConfiguration(J2eeModule module, J2eeModuleHelper moduleHelper) throws ConfigurationException {
@@ -120,7 +120,7 @@ public abstract class GlassfishConfiguration implements
             this.primarySunDD = moduleHelper.getPrimarySunDDFile(module);
             this.secondarySunDD = moduleHelper.getSecondarySunDDFile(module);
         } else {
-            throw new ConfigurationException("Unsupported module type: " + module.getModuleType());
+            throw new ConfigurationException("Unsupported module type: " + module.getType());
         }
 
         addConfiguration(primarySunDD, this);
@@ -131,7 +131,7 @@ public abstract class GlassfishConfiguration implements
         this.deferredAppServerChange = false;
 
         try {
-            Object mt = module.getModuleType();
+            Object mt = module.getType();
             ModuleType moduleType = mt instanceof ModuleType ? (ModuleType) mt : null;
             String moduleVersion = module.getModuleVersion();
 
@@ -375,12 +375,12 @@ public abstract class GlassfishConfiguration implements
     }
 
     public J2EEBaseVersion getJ2eeVersion() {
-        return J2EEBaseVersion.getVersion(module.getModuleType(), module.getModuleVersion());
+        return J2EEBaseVersion.getVersion(module.getType(), module.getModuleVersion());
     }
 
     public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
             stdRootDD = j2eeModuleHelper.getStandardRootDD(module);
         }
@@ -389,7 +389,7 @@ public abstract class GlassfishConfiguration implements
 
     public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
         org.netbeans.modules.j2ee.dd.api.webservices.Webservices wsRootDD = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
             wsRootDD = j2eeModuleHelper.getWebServicesRootDD(module);
         }
@@ -576,7 +576,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     public String getContextRoot() throws ConfigurationException {
         String contextRoot = null;
-        if (ModuleType.WAR.equals(module.getModuleType())) {
+        if (J2eeModule.Type.WAR.equals(module.getType())) {
             try {
                 RootInterface rootDD = getSunDDRoot(false);
                 if (rootDD instanceof SunWebApp) {
@@ -589,13 +589,13 @@ public abstract class GlassfishConfiguration implements
             }
         } else {
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                    "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getModuleType());
+                    "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
         }
         return contextRoot;
     }
 
     public void setContextRoot(String contextRoot) throws ConfigurationException {
-        if (ModuleType.WAR.equals(module.getModuleType())) {
+        if (J2eeModule.Type.WAR.equals(module.getType())) {
             try {
                 FileObject primarySunDDFO = getSunDD(primarySunDD, true);
                 if (primarySunDDFO != null) {
@@ -617,7 +617,7 @@ public abstract class GlassfishConfiguration implements
             }
         } else {
                 Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getModuleType());
+                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
         }
     }
 
@@ -1248,7 +1248,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     public void saveConfiguration(OutputStream outputStream) throws ConfigurationException {
         try {
-            if (this.module.getModuleType().equals(ModuleType.WAR)) {
+            if (this.module.getType().equals(J2eeModule.Type.WAR)) {
                 // copy sun-web.xml to stream directly.
                 FileObject configFO = FileUtil.toFileObject(primarySunDD);
                 if(configFO != null) {

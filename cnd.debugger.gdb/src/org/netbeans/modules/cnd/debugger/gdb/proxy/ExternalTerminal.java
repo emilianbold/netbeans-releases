@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -104,6 +107,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             }
         }
 
+        pb.redirectErrorStream(true);
         Process process = pb.start();
         
         int count = 0;
@@ -114,12 +118,24 @@ public class ExternalTerminal implements PropertyChangeListener {
                 // first check for process termination
                 try {
                     int rc = process.exitValue();
+
+                    // In case of failure - read output and log it
+                    // See IZ 164026
+                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    StringBuilder sb = new StringBuilder();
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    br.close();
+
                     // process already terminated - exit
                     throw new IllegalStateException(NbBundle.getMessage(
                             ExternalTerminal.class,
                             "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
                             termOptions,
-                            rc));
+                            rc,
+                            sb.toString()));
                 } catch (IllegalThreadStateException e) {
                     // do nothing
                 }

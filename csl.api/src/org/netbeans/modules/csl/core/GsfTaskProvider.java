@@ -41,48 +41,35 @@ package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import java.util.Map;
 import java.util.Set;
-import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.HintsProvider;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
+
 
 /**
  * Task provider which provides tasks for the tasklist corresponding
  * to hints in files.
  * 
- * @todo Caching
  * @todo Register via instanceCreate to ensure this is a singleton
  *   (Didn't work - see uncommented code below; try to fix.)
  * @todo Exclude tasks that are not Rule#showInTaskList==true
@@ -90,130 +77,117 @@ import org.openide.util.TaskListener;
  * Much of this class is based on the similar JavaTaskProvider in
  * java/source by Stanislav Aubrecht and Jan Lahoda
  * 
- * @author Tor Norbye
+ * @author Jan Jancura
  */
-public class GsfTaskProvider extends PushTaskScanner  {
-    private TaskScanningScope scope;
-    private Callback callback;
-    // Registered by core/tasklist's layer
-    private static final String TASKLIST_ERROR = "nb-tasklist-error"; //NOI18N
-    private static final String TASKLIST_WARNING = "nb-tasklist-warning"; //NOI18N
-    private static final String TASKLIST_ERROR_HINT = "nb-tasklist-errorhint"; //NOI18N
-    private static final String TASKLIST_WARNING_HINT = "nb-tasklist-warninghint"; //NOI18N
-    private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
-    private static boolean clearing;
-    private static final RequestProcessor WORKER = new RequestProcessor("GSF Task Provider");
+public final class GsfTaskProvider extends PushTaskScanner  {
 
-    //private static final GsfTaskProvider INSTANCE = new GsfTaskProvider(LanguageRegistry.getInstance().getLanguagesDisplayName());
-    //public static GsfTaskProvider getInstance() {
-    //    return INSTANCE;
-    //}
-    //
-    // For some reason, the instanceCreate method didn't work here, so use a lame setup instead.
-    // If you set up instanceCreate again, make sure the refresh() call doesn't do work before
-    // the tasklist is open...
+    private static final Logger LOG = Logger.getLogger(GsfTaskProvider.class.getName());
+    
     private static GsfTaskProvider INSTANCE;
-    public GsfTaskProvider() {
-        this(getAllLanguageNames());
+
+    private Callback callback;
+    private TaskScanningScope scope;
+
+    public GsfTaskProvider () {
+        this (getAllLanguageNames ());
         INSTANCE = this;
     }
 
-    private GsfTaskProvider(String languageList) {
-        super(NbBundle.getMessage(GsfTaskProvider.class, "GsfTasks", languageList),
-              NbBundle.getMessage(GsfTaskProvider.class, "GsfTasksDesc", languageList), null);
+    private GsfTaskProvider (String languageList) {
+        super (
+            NbBundle.getMessage (GsfTaskProvider.class, "GsfTasks", languageList), //NOI18N
+            NbBundle.getMessage (GsfTaskProvider.class, "GsfTasksDesc", languageList), //NOI18N
+            null
+        );
     }
 
     @Override
-    public synchronized void setScope(TaskScanningScope scope, Callback callback) {
+    public synchronized void setScope (TaskScanningScope scope, Callback callback) {
         //cancel all current operations:
         cancelAllCurrent();
-        
-        synchronized (TASKS) {
-            this.scope = scope;
-            this.callback = callback;
-        }
-        
-        if (scope == null || callback == null) {
-            return;
-        }
-        
+
+        this.scope = scope;
+        this.callback = callback;
+
+        if (scope == null || callback == null)
+            return ;
+
         for (FileObject file : scope.getLookup().lookupAll(FileObject.class)) {
             enqueue(new Work(file, callback));
         }
-        
-        for (Project p : scope.getLookup().lookupAll(Project.class)) {
-            // Performance: Only do project scanning for GSF-enabled projects! (See issue 141514)
-            ClassPathProvider provider = p.getLookup().lookup(ClassPathProvider.class);
-            if (provider == null) {
-                continue;
-            }
 
-            ClassPath cp = provider.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
-            if (cp != null) {
-                for (FileObject root : cp.getRoots()) {
-                    enqueue(new Work(root, callback));
-                }
-            }
+        for (Project p : scope.getLookup().lookupAll(Project.class)) {
+            enqueue(new Work(p, callback));
         }
     }
 
-    public static void refresh(FileObject file) {
+    public static void refresh (FileObject file) {
         if (INSTANCE != null) {
-            INSTANCE.refreshImpl(file);
+            INSTANCE.refreshImpl (file);
         }
     }
     
-    private synchronized void refreshImpl(FileObject file) {
-        if (scope == null || callback == null) {
-            return;  //nothing to refresh
-        }
+    private synchronized void refreshImpl (FileObject file) {
+        LOG.log(Level.FINE, "refresh: {0}", file); //NOI18N
+
+        if (scope == null || callback == null)
+            return ; //nothing to refresh
+
         if (!scope.isInScope(file)) {
-            if (!file.isFolder()) {
+            if (!file.isFolder())
                 return;
-            }
-            
+
             //the given file may be a parent of some file that is in the scope:
             for (FileObject inScope : scope.getLookup().lookupAll(FileObject.class)) {
                 if (FileUtil.isParentOf(file, inScope)) {
                     enqueue(new Work(inScope, callback));
                 }
             }
-            
+
             return ;
         }
-        
+
+        LOG.log(Level.FINE, "enqueing work for: {0}", file); //NOI18N
         enqueue(new Work(file, callback));
     }
-    
+
+
+    /* package */ static String getAllLanguageNames () {
+        StringBuilder sb = new StringBuilder ();
+        for (Language language : LanguageRegistry.getInstance ()) {
+            if (sb.length () > 0) {
+                sb.append (", "); //NOI18N
+            }
+            sb.append (language.getDisplayName ());
+        }
+
+        return sb.toString ();
+    }
+
+    private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    private static boolean clearing;
+    private static final RequestProcessor WORKER = new RequestProcessor("CSL Task Provider"); //NOI18N
+
     private static void enqueue(Work w) {
         synchronized (TASKS) {
-            if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
-               INSTANCE.callback.started();
-            }
             final RequestProcessor.Task task = WORKER.post(w);
-            
+
             TASKS.add(task);
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     synchronized (TASKS) {
                         if (!clearing) {
-                            TASKS.remove(task);
-                            if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
-                               INSTANCE.callback.finished();
-                            }
+                            TASKS.remove((RequestProcessor.Task) task);
                         }
                     }
                 }
             });
             if (task.isFinished()) {
                 TASKS.remove(task);
-                if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
-                   INSTANCE.callback.finished();
-                }
             }
         }
     }
-    
+
     private static void cancelAllCurrent() {
         synchronized (TASKS) {
             clearing = true;
@@ -227,219 +201,127 @@ public class GsfTaskProvider extends PushTaskScanner  {
             }
         }
     }
-    
-    
-    private static final class Work implements Runnable {
-        private FileObject fileOrRoot;
-        private Callback callback;
 
-        public Work(FileObject fileOrRoot, Callback callback) {
-            this.fileOrRoot = fileOrRoot;
+    private static final class Work implements Runnable {
+        private final FileObject file;
+        private final Project project;
+        private final Callback callback;
+
+        public Work(FileObject file, Callback callback) {
+            Parameters.notNull("file", file); //NOI18N
+            Parameters.notNull("callback", callback); //NOI18N
+            this.file = file;
+            this.project = null;
             this.callback = callback;
         }
-        
-        public FileObject getFileOrRoot() {
-            return fileOrRoot;
+
+        public Work(Project project, Callback callback) {
+            Parameters.notNull("project", project); //NOI18N
+            Parameters.notNull("callback", callback); //NOI18N
+            this.file = null;
+            this.project = project;
+            this.callback = callback;
         }
 
-        public Callback getCallback() {
-            return callback;
-        }
-        
         public void run() {
-            FileObject file = getFileOrRoot();
-            refreshFile(file);
-        }
-        
-        private void refreshFile(final FileObject file) {
-            if (!file.isValid()) {
-                return;
-            }
-            if (file.isFolder()) {
-                if (!VisibilityQuery.getDefault().isVisible(file)) {
-                    return;
-                }
-                final String name = file.getName();
-                if (name.equals("vendor")) { // NOI18N
-                    if (file.getParent().getFileObject("nbproject") != null) { // NOI18N
-                        return;
+            Collection<? extends IndexResult> results = null;
+
+            if (file != null) {
+                Collection<FileObject> roots = QuerySupport.findRoots (
+                    file,
+                    null,
+                    Collections.<String> emptyList (),
+                    Collections.<String> emptyList ()
+                );
+
+                String relativePath = null;
+                for(FileObject root : roots) {
+                    if (null != (relativePath = FileUtil.getRelativePath(root, file))) {
+                        break;
                     }
                 }
 
-                // TODO FIXME The hints providers need to pass in relevant directories
-                for (FileObject child : file.getChildren()) {
-                    refreshFile(child);
+                LOG.log(Level.FINE, "Querying TL index for {0}", relativePath); //NOI18N
+                assert relativePath != null : "File " + file + " not under roots: " + roots; //NOI18N
+                if (relativePath != null) {
+                    try {
+                        QuerySupport querySupport = QuerySupport.forRoots (
+                            TLIndexerFactory.INDEXER_NAME,
+                            TLIndexerFactory.INDEXER_VERSION,
+                            roots.toArray (new FileObject [roots.size ()])
+                        );
+                        results = querySupport.query("_sn", relativePath, Kind.EXACT); //NOI18N
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, null, ioe);
+                    }
                 }
-                return;
-            }
-            final LanguageRegistry registry = LanguageRegistry.getInstance();
-            final List<Language> applicableLanguages = registry.getApplicableLanguages(file.getMIMEType());
-            boolean applicable = false;
-            for (Language language : applicableLanguages) {
-                HintsProvider provider = language.getHintsProvider();
-                if (provider != null) {
-                    applicable = true;
-                    break;
-                }
-                //HANZ
-//                if (language.getParser() != null) {
-//                    applicable = true;
-//                    break;
-//                }
-            }
-            if (!applicable) {
-                // No point compiling the file if there are no hintsproviders
-                return;
-            }
-
-            // Make sure we're not dealing with a huge file!
-            // Causes issues like 132306
-            // openide.loaders/src/org/openide/text/DataEditorSupport.java
-            // has an Env#inputStream method which posts a warning to the user
-            // if the file is greater than 1Mb...
-            //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
-            //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
-            // I don't want to try indexing these files... (you get an interactive
-            // warning during indexing
-            if (file.getSize () > 1024 * 1024) {
-                return;
-            }
-            
-            final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-            
-            Source source = Source.create(file);
-            if (source == null) {
-                return;
-            }
-
-            final List<Task> tasks = new ArrayList<Task>();
-
-            UserTask task = new UserTask () {
-
-                public void run (ResultIterator resultIterator) throws Exception {
-                    // Ensure document is forced open
-                    GsfUtilities.getDocument(resultIterator.getSnapshot ().getSource ().getFileObject (), true);
-                    refreshEmbedding (file, resultIterator, result, tasks);
-                }
-            };
-            
-            try {
-                ParserManager.parse (Collections.singleton (source), task);
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            for (final ErrorDescription hint : result) {
+            } else { // project != null
+                Collection<FileObject> roots = QuerySupport.findRoots (
+                    project,
+                    null,
+                    Collections.<String> emptyList (),
+                    Collections.<String> emptyList ()
+                );
                 try {
-                    Task tasklistTask = Task.create(file,
-                            severityToTaskListString(hint.getSeverity()),
-                            hint.getDescription(),
-                            hint.getRange().getBegin().getLine()+1);
-                    tasks.add(tasklistTask);
+                    QuerySupport querySupport = QuerySupport.forRoots (
+                        TLIndexerFactory.INDEXER_NAME,
+                        TLIndexerFactory.INDEXER_VERSION,
+                        roots.toArray (new FileObject [roots.size ()])
+                    );
+                    // search for all documents in the roots
+                    results = querySupport.query ("_sn", "", Kind.PREFIX); //NOI18N
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    LOG.log(Level.WARNING, null, ioe);
                 }
             }
 
-            callback.setTasks(file, tasks);
+            if (results != null) {
+                pushTasks(results, callback);
+            }
         }
-    }
 
-    private static void refreshEmbedding (
-        FileObject              file, 
-        ResultIterator          resultIterator,
-        List<ErrorDescription>  result,
-        List<Task>              tasks
-    ) throws ParseException {
-        Snapshot snapshot = resultIterator.getSnapshot ();
-        Parser.Result presult = resultIterator.getParserResult ();
-        if(!(presult instanceof ParserResult)) {
-            return ;
-        }
-        ParserResult parserResult = (ParserResult)presult;
+        private static void pushTasks(Collection<? extends IndexResult> results, Callback callback) {
+            Map<FileObject, List<Task>> tasks = new HashMap<FileObject, List<Task>>();
 
-        refreshEmbedding (file, parserResult, snapshot, result, tasks);
-        for (Embedding embedding : resultIterator.getEmbeddings ())
-            refreshEmbedding (file, resultIterator.getResultIterator (embedding), result, tasks);
-    }
-    
-    private static void refreshEmbedding (
-        FileObject              file, 
-        ParserResult            parserResult,
-        Snapshot                snapshot,
-        List<ErrorDescription>  result,
-        List<Task>              tasks
-    ) throws ParseException {
-        String mimeType = snapshot.getMimeType ();
-        final LanguageRegistry registry = LanguageRegistry.getInstance ();
-        Language language = registry.getLanguageByMimeType (mimeType);
-        HintsProvider provider = language.getHintsProvider();
-        List<Error> errors = new ArrayList<Error>();
-
-        if (provider == null) {
-            // Just parser errors, no hints
-            List<? extends Error> parserErrors = parserResult.getDiagnostics();
-            if (parserErrors != null) {
-                errors.addAll(parserErrors);
-            }
-        } else {
-            GsfHintsManager manager = language.getHintsManager();
-            if (manager == null) {
-                return;
-            }
-            RuleContext ruleContext = manager.createRuleContext(parserResult, language, -1, -1, -1);
-            if (ruleContext == null) {
-                return;
-            }
-            final List<Hint> hints = new ArrayList<Hint>();
-            provider.computeErrors(manager, ruleContext, hints, errors);
-            provider.computeHints(manager, ruleContext, hints);
-
-            if (!file.isValid()) {
-                return;
-            }
-            for (Hint desc : hints) {
-                ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
-                if (errorDesc != null) {
-                    result.add(errorDesc);
+            for (IndexResult result : results) {
+                FileObject f = result.getFile();
+                if (f == null || !f.isValid()) {
+                    continue;
                 }
+
+                List<Task> l = tasks.get(f);
+                if (l == null) {
+                    l = new ArrayList<Task>();
+                    tasks.put(f, l);
+                }
+
+                String description = result.getValue (TLIndexerFactory.FIELD_DESCRIPTION);
+                if (description == null) {
+                    continue;
+                }
+
+                int lineNumber = 1;
+                try {
+                    lineNumber = Integer.parseInt(result.getValue(TLIndexerFactory.FIELD_LINE_NUMBER));
+                } catch (NumberFormatException ex) {
+                    // ignore
+                }
+
+                Task task = Task.create(
+                    f,
+                    result.getValue(TLIndexerFactory.FIELD_GROUP_NAME),
+                    description,
+                    lineNumber
+                );
+                l.add(task);
+            }
+
+            for (FileObject f : tasks.keySet()) {
+                List<Task> l = tasks.get(f);
+                LOG.log(Level.FINE, "Refreshing TL for {0} with {1}", new Object [] { f, l }); //NOI18N
+                callback.setTasks(f, l);
             }
         }
-
-        for (Error error : errors) {
-            StyledDocument doc = (StyledDocument) snapshot.getSource ().getDocument (false);
-            if (doc == null) {
-                continue;
-            }
-
-            int astOffset = error.getStartPosition();
-            int lexOffset = snapshot.getOriginalOffset (astOffset);
-            if (lexOffset == -1) {
-                continue;
-            }
-
-            int lineno = NbDocument.findLineNumber(doc, lexOffset) + 1;
-            Task task = Task.create(file, 
-                    error.getSeverity() == org.netbeans.modules.csl.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
-                    error.getDisplayName(),
-                    lineno);
-            tasks.add(task);
-        }
-    }
-    
-    private static String severityToTaskListString(Severity severity){
-        return (severity == Severity.ERROR) ? TASKLIST_ERROR_HINT : TASKLIST_WARNING_HINT;
-    }
-
-    /* package */ static String getAllLanguageNames() {
-        StringBuilder sb = new StringBuilder();
-        for (Language language : LanguageRegistry.getInstance()) {
-            if (sb.length() > 0) {
-                sb.append(", "); //NOI18N
-            }
-            sb.append(language.getDisplayName());
-        }
-
-        return sb.toString();
-    }
+    } // End of Work class
 }
+

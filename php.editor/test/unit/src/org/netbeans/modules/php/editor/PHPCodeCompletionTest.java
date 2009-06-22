@@ -625,9 +625,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarAssignment_24() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$cParam5->^", false);
     }
-    public void testUnknown() throws Exception {
+    //TODO: should be evaluated later whether this way of CC should be supported
+    /*public void testUnknown() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$unknown->aCreate^", false);
-    }
+    }*/
     public void test145835() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment2.php", "$cVarAdvancedTest->^", false);
     }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,8 @@ import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -74,6 +77,8 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
     private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
     public static final String METHOD_NAME = "nb.single.run.methodName"; //NOI18N
+    private static final String VARIABLE_PREFIX = "var."; //NOI18N
+    // as defined in org.netbeans.modules.project.ant.VariablesModel
 
     public DefaultReplaceTokenProvider(Project prj) {
         project = prj;
@@ -104,6 +109,10 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         SourceGroup group = null;
         FileObject fo = null;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
+        //read global variables defined in the IDE
+        Map<String, String> vars = readVariables();
+        replaceMap.putAll(vars);
+
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         replaceMap.put(GROUPID, prj.getMavenProject().getGroupId());
         replaceMap.put(ARTIFACTID, prj.getMavenProject().getArtifactId());
@@ -113,6 +122,25 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             Sources srcs = project.getLookup().lookup(Sources.class);
             SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
+                for (int i = 0; i < grp.length; i++) {
+                    relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
+                    if (relPath != null) {
+                        group = grp[i];
+                        replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
+                        replaceMap.put(CLASSNAME, fo.getName());
+                        String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
+                        if (pack != null) { //#141175
+                            replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
+                        } else {
+                            replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
+                        }
+                        break;
+                    }
+                }
+            }
+            //TODO refactor to reuse in both java and groovy mimetype
+            grp = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY);
+            if ("text/x-groovy".equals(fo.getMIMEType())) {//NOI18N
                 for (int i = 0; i < grp.length; i++) {
                     relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                     if (relPath != null) {
@@ -161,6 +189,18 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         }
         return replaceMap;
     }
+
+    public static Map<String, String> readVariables() {
+        Map<String, String> vs = new HashMap<String, String>();
+        EditableProperties ep = PropertyUtils.getGlobalProperties();
+        for (Map.Entry<String, String> entry : ep.entrySet()) {
+            if (entry.getKey().startsWith(VARIABLE_PREFIX)) {
+                vs.put(entry.getKey().substring(VARIABLE_PREFIX.length()), FileUtil.normalizeFile(new File(entry.getValue())).getAbsolutePath());
+            }
+        }
+        return vs;
+    }
+
 
 //    /*
 //     * copied from ActionUtils and reworked so that it checks for mimeType of files, and DOES NOT include files with suffix 'suffix'
@@ -224,6 +264,12 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                             }
                         }
                     }
+                }
+                if ("text/x-groovy".equals(fo.getMIMEType())) {
+                    //TODO this only applies to groovy files with main() method.
+                    // we should have a way to execute any groovy script? how?
+                    // running groovy tests is another specialized usecase.
+                    return action + ".main";
                 }
             }
         }

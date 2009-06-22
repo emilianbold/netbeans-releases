@@ -69,6 +69,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.Action;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.core.startup.layers.LayerCacheManager;
@@ -88,7 +89,6 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 
 /** Checks consistency of System File System contents.
  */
@@ -371,11 +371,114 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 PrintStream ps = new PrintStream(baos);
                 ex.printStackTrace(ps);
                 ps.flush();
-                errors.add ("File " + fo.getPath() + " threw: " + baos);
+                errors.add(
+                    "File " + fo.getPath() +
+                    "\nRead from: " + Arrays.toString((Object[])fo.getAttribute("layers")) +
+                    "\nthrew: " + baos);
             }
         }
         
         assertNoErrors("Some instances cannot be created", errors);
+    }
+
+    public void testActionInstancesOnlyInActionsFolder() {
+        List<String> errors = new ArrayList<String>();
+
+        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
+        FILE: while (files.hasMoreElements()) {
+            FileObject fo = files.nextElement();
+
+            if (skipFile(fo.getPath())) {
+                continue;
+            }
+
+            try {
+                DataObject obj = DataObject.find (fo);
+                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
+                if (ic == null) {
+                    continue;
+                }
+                Object o;
+                try {
+                    o = ic.instanceCreate();
+                } catch (ClassNotFoundException ok) {
+                    // wrong instances are catched by another test
+                    continue;
+                }
+                if (!(o instanceof Action)) {
+                    continue;
+                }
+                if (fo.hasExt("xml")) {
+                    continue;
+                }
+                if (fo.getPath().startsWith("Actions/")) {
+                    continue;
+                }
+                if (fo.getPath().startsWith("Editors/")) {
+                    // editor is a bit different world
+                    continue;
+                }
+                if (fo.getPath().startsWith("Databases/Explorer/")) {
+                    // db explorer actions shall not influence start
+                    // => let them be for now.
+                    continue;
+                }
+                if (fo.getPath().startsWith("WelcomePage/")) {
+                    // welcome screen actions are not intended for end user
+                    continue;
+                }
+                if (fo.getPath().startsWith("Projects/org-netbeans-modules-mobility-project/Actions/")) {
+                    // I am not sure what mobility is doing, but
+                    // I guess I do not need to care
+                    continue;
+                }
+                if (fo.getPath().startsWith("NativeProjects/Actions/")) {
+                    // I should probably report a bug for NativeProjects
+                    continue;
+                }
+                if (fo.getPath().startsWith("contextmenu/uml/")) {
+                    // UML is not the most important thing to fix
+                    continue;
+                }
+                if (fo.getPath().equals("Menu/Help/org-netbeans-modules-j2ee-blueprints-ShowBluePrintsAction.instance")) {
+                    // action included in some binary blob
+                    continue;
+                }
+                if (
+                    fo.getPath().startsWith("Loaders/text/x-java/Actions/") ||
+                    fo.getPath().startsWith("Loaders/text/x-jsp/Actions/")
+                ) {
+                    // imho both java and jsp are doing something wrong, they
+                    // should refer to some standard action, not invent their
+                    // own
+                    continue;
+                }
+
+                if (Boolean.TRUE.equals(fo.getAttribute("misplaced.action.allowed"))) {
+                    // it seems necessary some actions to stay outside
+                    // of the Actions folder
+                    continue;
+                }
+                if (fo.hasExt("shadow")) {
+                    o = fo.getAttribute("originalFile");
+                    if (o instanceof String) {
+                        String origF = o.toString().replaceFirst("\\/*", "");
+                        if (origF.startsWith("Actions/")) {
+                            continue;
+                        }
+                    }
+                }
+                errors.add("File " + fo.getPath() + " represents an action which is not in Actions/ subfolder. Provided by " + Arrays.toString((Object[])fo.getAttribute("layers")));
+            } catch (Exception ex) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos);
+                ex.printStackTrace(ps);
+                ps.flush();
+                errors.add ("File " + fo.getPath() + " threw: " + baos);
+            }
+        }
+
+        assertNoErrors(errors.size() + " actions is not registered properly", errors);
     }
     
     public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
@@ -414,6 +517,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Map</* path */String,Map</* attr name */String,Map</* module name */String,/* attr value */Object>>> folderAttributes =
                 new TreeMap<String,Map<String,Map<String,Object>>>();
         StringBuffer sb = new StringBuffer();
+        Map<String,URL> hiddenFiles = new HashMap<String, URL>();
+        Set<String> allFiles = new HashSet<String>();
+        final String suffix = "_hidden";
+
         
         boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
@@ -437,11 +544,18 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             java.net.URLConnection connect = layerURL.openConnection ();
             connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
-            
+
             Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
                 FileObject fo = all.nextElement ();
                 String path = fo.getPath();
+
+                if (path.endsWith(suffix)) {
+                    hiddenFiles.put(path, layerURL);
+                } else {
+                    allFiles.add(path);
+                }
+
                 Map<String,Object> attributes = getAttributes(fo, base);
 
                 /* XXX too many failures to enable yet:
@@ -572,6 +686,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
         if (sb.length () > 0) {
             fail ("Some modules override their files and do not depend on each other\n" + sb);
+        }
+
+
+        for (Map.Entry<String, URL> e : hiddenFiles.entrySet()) {
+            String p = e.getKey().substring(0, e.getKey().length() - suffix.length());
+            if (allFiles.contains(p)) {
+                continue;
+            }
+            sb.append("file " + e.getKey() + " from " + e.getValue() + " does not hide any other file\n");
+        }
+
+        if (sb.length () > 0) {
+            fail ("There are some useless hidden files\n" + sb);
         }
     }
     

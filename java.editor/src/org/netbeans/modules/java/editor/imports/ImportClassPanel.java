@@ -51,7 +51,6 @@ import java.awt.Font;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,8 +72,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -335,7 +334,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
             try {
                 javaSource.runModificationTask(task).commit();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

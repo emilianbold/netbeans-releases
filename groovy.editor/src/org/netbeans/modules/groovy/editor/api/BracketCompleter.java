@@ -1005,12 +1005,18 @@ public class BracketCompleter implements KeystrokeHandler {
         case ' ': {
             // Backspacing over "// " ? Delete the "//" too!
             TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
-            if (ts != null && ts.token().id() == GroovyTokenId.LINE_COMMENT) {
-                if (ts.offset() == dotPos-2) {
-                    doc.remove(dotPos-2, 2);
-                    target.getCaret().setDot(dotPos-2);
-                
-                    return true;
+            if (ts != null) {
+                Token<? extends GroovyTokenId> token = ts.token();
+                if (token.id() == GroovyTokenId.NLS && ts.movePrevious() && ts.isValid()) {
+                    token = ts.token();
+                }
+                if (token.id() == GroovyTokenId.LINE_COMMENT) {
+                    if (ts.offset() == dotPos-2) {
+                        doc.remove(dotPos-2, 2);
+                        target.getCaret().setDot(dotPos-2);
+
+                        return true;
+                    }
                 }
             }
             break;
@@ -1343,7 +1349,7 @@ public class BracketCompleter implements KeystrokeHandler {
 
         if ((token.id() == GroovyTokenId.BLOCK_COMMENT) || (token.id() == GroovyTokenId.LINE_COMMENT)) {
             return false;
-        } else if ((token.id() == GroovyTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
+        } else if ((token.id() == GroovyTokenId.WHITESPACE || token.id() == GroovyTokenId.NLS) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
             token = LexUtilities.getToken(doc, dotPos - 1);
 

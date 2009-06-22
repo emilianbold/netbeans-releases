@@ -186,92 +186,7 @@ public class Registry implements PropertyContainer {
         
         setRegistryProperties();
         
-        final CompositeProgress compositeProgress = new CompositeProgress();
-        Progress childProgress;
-        
-        int percentageChunk = Progress.COMPLETE / (remoteRegistryUris.size() + 2);
-        int percentageLeak = Progress.COMPLETE % (remoteRegistryUris.size() + 2);
-        
-        compositeProgress.synchronizeTo(progress);
-        compositeProgress.synchronizeDetails(true);
-        
-        childProgress = new Progress();
-        compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
-        compositeProgress.setTitle(
-                ResourceUtils.getString(Registry.class,
-                LOADING_LOCAL_REGISTRY_KEY,
-                localRegistryFile));
-        
-        try {
-            loadProductRegistry(
-                    localRegistryFile.toURI().toString(),
-                    childProgress,
-                    RegistryType.LOCAL,
-                    false);
-        } catch (InitializationException e) {
-            if (!UiUtils.showYesNoDialog(
-                    ResourceUtils.getString(
-                    Registry.class, ERROR_LOADING_LOCAL_REGISTRY_TITLE_KEY),
-                    ResourceUtils.getString(Registry.class,
-                    ERROR_LOADING_LOCAL_REGISTRY_MESSAGE_KEY, localRegistryFile)
-                    )) {
-                finishHandler.criticalExit();
-            } else {
-                LogManager.log(ErrorLevel.ERROR, e);
-            }
-        }
-        
-        childProgress = new Progress();
-        compositeProgress.addChild(childProgress, percentageChunk);
-        compositeProgress.setTitle( ResourceUtils.getString(Registry.class,
-                LOADING_BUNDLED_REGISTRY_KEY,
-                bundledRegistryUri));
-        
-        try {
-            loadProductRegistry(
-                    bundledRegistryUri,
-                    childProgress,
-                    RegistryType.BUNDLED,
-                    true);
-        } catch (InitializationException e) {
-            if (!UiUtils.showYesNoDialog(
-                    ResourceUtils.getString(
-                    Registry.class, ERROR_LOADING_BUNDLED_REGISTRY_TITLE_KEY),
-                    ResourceUtils.getString(Registry.class,
-                    ERROR_LOADING_BUNDLED_REGISTRY_MESSAGE_KEY, bundledRegistryUri)
-                    )) {
-                finishHandler.criticalExit();
-            } else {
-                LogManager.log(ErrorLevel.ERROR, e);
-            }
-        }
-        
-        for (String remoteRegistryURI: remoteRegistryUris) {
-            childProgress = new Progress();
-            compositeProgress.addChild(childProgress, percentageChunk);
-            compositeProgress.setTitle(ResourceUtils.getString(Registry.class,
-                    LOADING_REMOTE_REGISTRY_KEY,
-                    remoteRegistryURI));
-            
-            try {
-                loadProductRegistry(
-                        remoteRegistryURI,
-                        childProgress,
-                        RegistryType.REMOTE,
-                        true);
-            } catch (InitializationException e) {
-                if (!UiUtils.showYesNoDialog(
-                        ResourceUtils.getString(
-                        Registry.class, ERROR_LOADING_REMOTE_REGISTRY_TITLE_KEY),
-                        ResourceUtils.getString(Registry.class,
-                        ERROR_LOADING_REMOTE_REGISTRY_MESSAGE_KEY, remoteRegistryURI)
-                        )) {
-                    finishHandler.criticalExit();
-                } else {
-                    LogManager.log(ErrorLevel.ERROR, e);
-                }
-            }
-        }
+        loadAllRegistries(progress);
         
         validateDependencies();
         
@@ -289,6 +204,112 @@ public class Registry implements PropertyContainer {
         LogManager.logExit("... product registry initialization complete");
     }
     
+    private void loadAllRegistries (Progress progress) {
+        final CompositeProgress compositeProgress = new CompositeProgress();
+        int percentageChunk = Progress.COMPLETE / (remoteRegistryUris.size() + 2);
+        int percentageLeak = Progress.COMPLETE % (remoteRegistryUris.size() + 2);
+
+        compositeProgress.synchronizeTo(progress);
+        compositeProgress.synchronizeDetails(true);
+        compositeProgress.setPercentage(percentageLeak);
+
+        loadProductRegistry(compositeProgress, localRegistryFile, RegistryType.LOCAL, percentageChunk, false);
+        loadProductRegistry(compositeProgress, bundledRegistryUri, RegistryType.BUNDLED, percentageChunk, true);
+
+        for (String remoteRegistryURI: remoteRegistryUris) {
+            loadProductRegistry(compositeProgress, remoteRegistryURI, RegistryType.REMOTE, percentageChunk, true);
+        }
+    }
+    
+    private String getLoadingRegistryMessageKey (RegistryType type) {
+        switch (type) {
+            case BUNDLED : return LOADING_BUNDLED_REGISTRY_KEY;
+            case LOCAL   : return LOADING_LOCAL_REGISTRY_KEY;
+            case REMOTE  : return LOADING_REMOTE_REGISTRY_KEY;
+            default: return null;
+        }
+    }
+    
+    private String getErrorLoadingRegistryTitleKey (RegistryType type) {
+        switch (type) {
+            case BUNDLED : return ERROR_LOADING_BUNDLED_REGISTRY_TITLE_KEY;
+            case LOCAL   : return ERROR_LOADING_LOCAL_REGISTRY_TITLE_KEY;
+            case REMOTE  : return ERROR_LOADING_REMOTE_REGISTRY_TITLE_KEY;
+            default: return null;
+        }
+    }
+    private String getErrorLoadingRegistryMessageKey (RegistryType type) {
+        switch (type) {
+            case BUNDLED : return ERROR_LOADING_BUNDLED_REGISTRY_MESSAGE_KEY;
+            case LOCAL   : return ERROR_LOADING_LOCAL_REGISTRY_MESSAGE_KEY;
+            case REMOTE  : return ERROR_LOADING_REMOTE_REGISTRY_MESSAGE_KEY;
+            default: return null;
+        }
+    }
+
+    private void loadProductRegistry (
+            CompositeProgress compositeProgress,
+            File registryFile,
+            RegistryType type,
+            int percentageChunk,
+            boolean includes) {
+
+        loadProductRegistry (compositeProgress,
+                registryFile.toURI().toString(),
+                registryFile,
+                type,
+                percentageChunk,
+                includes);
+    }
+    
+    private void loadProductRegistry (
+            CompositeProgress compositeProgress,
+            String registryUri,
+            RegistryType type,
+            int percentageChunk,
+            boolean includes) {
+
+        loadProductRegistry (compositeProgress,
+                registryUri,
+                registryUri,
+                type,
+                percentageChunk,
+                includes);
+    }
+
+    private void loadProductRegistry(
+            CompositeProgress compositeProgress,
+            String registryUri,
+            Object registryDisplayName,
+            RegistryType type,
+            int percentageChunk,
+            boolean includes) {
+        
+        Progress childProgress = new Progress();
+        compositeProgress.addChild(childProgress, percentageChunk);
+        compositeProgress.setTitle(ResourceUtils.getString(Registry.class,
+                getLoadingRegistryMessageKey(type),
+                registryDisplayName));
+
+        try {
+            loadProductRegistry(
+                    registryUri,
+                    childProgress,
+                    type,
+                    includes);
+        } catch (InitializationException e) {
+            if (!UiUtils.showYesNoDialog(
+                    ResourceUtils.getString(
+                    Registry.class, getErrorLoadingRegistryTitleKey(type)),
+                    ResourceUtils.getString(Registry.class,
+                    getErrorLoadingRegistryMessageKey(type), registryDisplayName))) {
+                finishHandler.criticalExit();
+            } else {
+                LogManager.log(ErrorLevel.ERROR, e);
+            }
+        }
+    }
+
     public void finalizeRegistry(
             final Progress progress) throws FinalizationException {
         LogManager.logEntry("finalizing product registry");
@@ -486,13 +507,16 @@ public class Registry implements PropertyContainer {
         LogManager.logExit("initializing product registry properties");
     }
     
-    private void validateDependencies(
-            ) throws InitializationException {
+    private void validateDependencies() throws InitializationException {
         for (Product product: getProducts()) {
-            validateRequirements(product);
-            validateConflicts(product);
-            validateInstallAfters(product);
+            validateDependencies(product);
         }
+    }
+
+    private void validateDependencies(final Product product) throws InitializationException {
+        validateRequirements(product);
+        validateConflicts(product);
+        validateInstallAfters(product);        
     }
     
     private void applyRegistryFilters() {
@@ -892,6 +916,7 @@ public class Registry implements PropertyContainer {
             final RegistryType registryType,
             final boolean loadIncludes) throws InitializationException {
         try {
+            LogManager.log("... loading registry from " + uri);
             final Element registryElement =
                     loadRegistryDocument(uri).getDocumentElement();
             
@@ -1882,8 +1907,6 @@ public class Registry implements PropertyContainer {
             "R.error.cannot.create.registry";//NOI18N
     private static final String ERROR_REGISTRY_IS_DIRECTORY_KEY =
             "R.error.registry.is.dir";//NOI18N
-    private static final String ERROR_CANNOT_READ_REGISTRY_KEY =
-            "R.error.cannot.read.registry";//NOI18N
     private static final String ERROR_CANNOT_WRITE_REGISTRY_KEY =
             "R.error.cannot.write.registry";//NOI18N
     private static final String ERROR_CANNOT_PARSE_PLATFORM_KEY =

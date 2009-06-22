@@ -53,7 +53,6 @@ public class ResRefPanel extends javax.swing.JPanel {
     /** Creates new form ResRefPanel */
     public ResRefPanel() {
         initComponents();
-        org.netbeans.modules.xml.multiview.Utils.makeTextAreaLikeTextField(descriptionTA, nameTF);
     }
 
     void setResRefName(String name) {
@@ -123,6 +122,7 @@ public class ResRefPanel extends javax.swing.JPanel {
         scopeLabel = new javax.swing.JLabel();
         scopeCB = new javax.swing.JComboBox();
         descriptionLabel = new javax.swing.JLabel();
+        descriptionSP = new javax.swing.JScrollPane();
         descriptionTA = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
@@ -209,13 +209,17 @@ public class ResRefPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(descriptionLabel, gridBagConstraints);
 
+        descriptionTA.setColumns(20);
         descriptionTA.setRows(3);
+        descriptionSP.setViewportView(descriptionTA);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
-        add(descriptionTA, gridBagConstraints);
+        add(descriptionSP, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -224,6 +228,7 @@ public class ResRefPanel extends javax.swing.JPanel {
     private javax.swing.JLabel authLabel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JScrollPane descriptionSP;
     private javax.swing.JTextArea descriptionTA;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTF;

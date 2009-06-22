@@ -42,21 +42,29 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
+
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent> implements JSFConfigModel {
     
@@ -64,11 +72,18 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
     
     private FacesConfig facesConfig;
     private final JSFConfigComponentFactory componentFactory;
+    private JsfModel myMetaModel;
     
     /** Creates a new instance of JSFConfigModelImpl */
     public JSFConfigModelImpl(ModelSource source) {
         super(source);
         componentFactory = new JSFConfigComponentFactoryImpl(this);
+    }
+    
+    /** Creates a new instance of JSFConfigModelImpl */
+    public JSFConfigModelImpl(ModelSource source, JsfModel model ) {
+        this( source );
+        myMetaModel = model;
     }
 
     public JSFConfigComponent createRootComponent(Element root) {
@@ -99,7 +114,13 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
     public JSFVersion getVersion() {
         String namespaceURI = getRootComponent().getPeer().getNamespaceURI();
         JSFVersion version = JSFVersion.JSF_1_1;
-        if (JSFConfigQNames.JSF_1_2_NS.equals(namespaceURI)){
+        if ( JSFConfigQNames.JSF_2_0_NS.equals(namespaceURI)
+                && (getRootComponent().getVersion().equals("2.0") ||
+                checkJSF20SchemaLocation( getRootComponent().getPeer()))) 
+        {   //NOI18N
+            version = JSFVersion.JSF_2_0;
+        }
+        else if (JSFConfigQNames.JSF_1_2_NS.equals(namespaceURI)){
             version = JSFVersion.JSF_1_2;
         }
         return version;
@@ -107,6 +128,47 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
     
     public Set<QName> getQNames() {
         return JSFConfigQNames.getMappedQNames(getVersion());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel#getMetaModel()
+     */
+    public JsfModel getMetaModel() {
+        return myMetaModel;
+    }
+    
+    private boolean checkJSF20SchemaLocation( Element element ) {
+        NamedNodeMap map = element.getAttributes();
+        String prefix = null;
+        for ( int i=0; i<map.getLength(); i++ ){
+            Node node = map.item(i);
+            Attr attr = (Attr)node;
+            String value = attr.getValue();
+            if ( value.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)){
+                String prefixedAttr = null;
+                prefixedAttr = attr.getName();
+                if ( prefixedAttr.indexOf(":") !=-1){                             // NOI18N
+                    prefix = prefixedAttr.substring( prefixedAttr.indexOf(":")+1);// NOI18N
+                }
+                break;
+            }
+        }
+        String schemaLocation = "schemaLocation";       // NOI18N
+        if ( prefix != null && prefix.length() >0 ){
+            schemaLocation = prefix+":"+schemaLocation; // NOI18N
+        }
+        Attr attr = (Attr)map.getNamedItem( schemaLocation );
+        if ( attr == null ){
+            return false;
+        }
+        String value = attr.getValue();
+        StringTokenizer tokenizer = new StringTokenizer( value );
+        String location = null;
+        while ( tokenizer.hasMoreTokens() ){
+            location = tokenizer.nextToken();
+        }
+        return "http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd". // NOI18N
+            equals(location);       
     }
 
 }

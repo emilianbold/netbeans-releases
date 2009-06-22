@@ -232,8 +232,10 @@ public class WindowsNativeUtils extends NativeUtils {
             ErrorManager.notifyCritical("Cannot load native library which is stricly necessary to work correctly.",e);
         }
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
-        initializeForbiddenFiles();
-        initializeRegistryKeys();
+        if(nativeLibraryLoaded) {
+            initializeForbiddenFiles();
+            initializeRegistryKeys();
+        }
     }
     @Override
     protected Platform getPlatform() {
@@ -362,12 +364,16 @@ public class WindowsNativeUtils extends NativeUtils {
         return true;
     }
     
-    public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
+    public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {        
+        if (shortcut.getPath() != null) {
+            return new File(shortcut.getPath());
+        } 
+        
         String path = shortcut.getRelativePath();
         if (path == null) {
-            path = "";
+             path = "";          
         }
-        
+
         String fileName = shortcut.getName();
         if(shortcut instanceof FileShortcut) {
             fileName += ".lnk";
@@ -376,7 +382,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
         
         final String allUsersRootPath = SystemUtils.getEnvironmentVariable("allusersprofile");
-        
+        File shortcutFile = null;
         switch (locationType) {
             case CURRENT_USER_DESKTOP:
                 String userDesktop = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Desktop", false);
@@ -384,7 +390,8 @@ public class WindowsNativeUtils extends NativeUtils {
                     userDesktop = SystemUtils.getUserHomeDirectory() + File.separator + "Desktop";
                 }
                 
-                return new File(userDesktop, fileName);
+                shortcutFile = new File(userDesktop, fileName);
+                break;
                 
             case ALL_USERS_DESKTOP:
                 String commonDesktop = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Desktop", false);
@@ -392,7 +399,8 @@ public class WindowsNativeUtils extends NativeUtils {
                     commonDesktop = allUsersRootPath + File.separator + "Desktop";
                 }
                 
-                return new File(commonDesktop, fileName);
+                shortcutFile = new File(commonDesktop, fileName);
+                break;
                 
             case CURRENT_USER_START_MENU:
                 String userStartMenu = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Programs", false);
@@ -400,7 +408,8 @@ public class WindowsNativeUtils extends NativeUtils {
                     userStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
                 }
                 
-                return new File(userStartMenu, path + File.separator + fileName);
+                shortcutFile = new File(userStartMenu, path + File.separator + fileName);
+                break;
                 
             case ALL_USERS_START_MENU:
                 String commonStartMenu = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Programs", false);
@@ -408,10 +417,16 @@ public class WindowsNativeUtils extends NativeUtils {
                     commonStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
                 }
                 
-                return new File(commonStartMenu, path + File.separator + fileName);
+                shortcutFile = new File(commonStartMenu, path + File.separator + fileName);
+                break;
+            case CUSTOM:
+                shortcutFile = new File(path + File.separator + fileName);
+                break;
         }
-        
-        return null;
+        if(shortcutFile!=null) {
+            shortcut.setPath(shortcutFile.getAbsolutePath());
+        }
+        return shortcutFile;
     }
     
     protected void createURLShortcut(InternetShortcut shortcut) throws NativeException {
@@ -432,8 +447,6 @@ public class WindowsNativeUtils extends NativeUtils {
     
     public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         File shortcutFile = getShortcutLocation(shortcut, locationType);
-        
-        shortcut.setPath(shortcutFile.getAbsolutePath());
         if(shortcut instanceof FileShortcut) {
             createShortcut0((FileShortcut)shortcut);
         } else if(shortcut instanceof InternetShortcut) {
@@ -453,6 +466,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 switch (locationType) {
                     case CURRENT_USER_START_MENU:
                     case ALL_USERS_START_MENU:
+                    case CUSTOM:
                         FileUtils.deleteEmptyParents(shortcutFile);
                         break;
                     default:

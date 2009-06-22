@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2008 Sun Microsystems, Inc. All rights reserved.
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <meta name="generator" content="Helen">
+    <link href="/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
+    <meta content="Helen" name="generator">
     <title>Configuring C and C++ Build Tools</title>
   </head>
   <body>
@@ -15,7 +15,7 @@ Use is subject to license terms.
        Configuring C and C++ Build Tools
     </h2>
     <p>
-       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
        You can use the Options window to configure default build tools for your C and C++ projects.
@@ -50,9 +50,9 @@ Use is subject to license terms.
         <ul>
           <li>
             To add a remote host, click Edit. In the Development Host Manager dialog box, click
-            Add. The New Remote Development Host wizard starts. See the <a href=
-            "NewRemoteDevelopmentHostWizardP1.html">help for the New Remote Development Host
-            wizard</a> for more information.
+            Add. The New Remote Development Host wizard starts. See the help for the <a href=
+            "NewRemoteDevelopmentHostWizardP1.html">New Remote Development Host wizard</a> for more
+            information.
           </li>
           <li>
             To remove a remote host, click Edit. In the Development Host Manager dialog box, select
@@ -71,7 +71,15 @@ Use is subject to license terms.
             host.
           </li>
           <li>
-            To set the
+            To change IDE properties related to a remote development host, click Properties. In
+            the Host Properties dialog box, you can change the name displayed in the IDE for the
+            host by typing in the Name field. To change the way project files are shared with the
+            remote host, select the file synchronization method in the Synchronization list. If the
+            project files are in a shared folder accessible from the local host and remote host,
+            select File System Sharing. If sharing the files is not possible, select rsync to use
+            the rsync utility to copy files to the remote host, or scp to use the secure copy
+            command to copy the files. The files are copied to your .netbeans directory by default.
+            This can be changed with the Path Mapper.
           </li>
         </ul>
       </li>
@@ -158,7 +166,7 @@ Use is subject to license terms.
     </p>
     <table>
       <tr>
-        <th colspan="2" align="left">
+        <th align="left" colspan="2">
           <a name="seealso">See also</a> 
         </th>
       </tr>
@@ -170,7 +178,7 @@ Use is subject to license terms.
     </table>
     <hr>
     <p>
-       <a href="../credits.html"><small>Legal Notices</small></a>
+       <small><a href="../credits.html">Legal Notices</a></small>
     </p>
     <table border="0" cellpadding="20">
       <tr>

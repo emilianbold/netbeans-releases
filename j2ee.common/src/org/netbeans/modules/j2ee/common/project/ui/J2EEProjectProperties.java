@@ -52,10 +52,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  */
 public final class J2EEProjectProperties {
 
-    public static final String JAVA_EE_5 = "1.5"; // NOI18N
-    public static final String J2EE_1_4 = "1.4"; // NOI18N
-    public static final String J2EE_1_3 = "1.3"; // NOI18N
-
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     
     /**

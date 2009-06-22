@@ -126,7 +126,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                RubyType type = RubyTypeInferencer.normal(knowledge).inferTypesOfRHS(node);
+                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
 
                 // null element in types set means that we are not able to infer
                 // the expression

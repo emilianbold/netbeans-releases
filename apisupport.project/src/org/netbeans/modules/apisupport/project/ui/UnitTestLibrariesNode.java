@@ -109,7 +109,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
     private final Action[] actions;
     
     public UnitTestLibrariesNode(String testType, final NbModuleProject project) {
-        super(new LibrariesChildren(testType, project));
+        super(new LibrariesChildren(testType, project), org.openide.util.lookup.Lookups.fixed(project));
         setName(testType);
         setDisplayName(getMessage("LBL_" + testType + "_test_libraries"));
         actions = new Action[] {

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -41,7 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     <folder name="Actions">
@@ -66,8 +64,10 @@ made subject to such option by the copyright holder.
     <folder name="contextmenu">
 	<folder name="uml">
 	    <folder name="generate">
-		<file name="org-netbeans-modules-uml-reporting-GenerateModelReportAction.instance"/>
-	    </folder>
+		<file name="org-netbeans-modules-uml-reporting-GenerateModelReportAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-reporting-GenerateModelReportAction.instance"/>
+                </file>
+            </folder>
 	</folder>
     </folder>
 

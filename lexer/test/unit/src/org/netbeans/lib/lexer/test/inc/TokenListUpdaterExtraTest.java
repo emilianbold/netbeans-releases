@@ -120,6 +120,9 @@ public class TokenListUpdaterExtraTest extends TestCase {
         doc.remove(1, 3); // Remove "/* "
         ts = hi.tokenSequence();
         ts.moveEnd();
+        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+        assertTrue(ts.movePrevious());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", -1);
         assertTrue(ts.movePrevious());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.DIV, "/", -1);
     }

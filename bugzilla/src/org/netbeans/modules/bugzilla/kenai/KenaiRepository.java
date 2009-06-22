@@ -48,6 +48,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -152,9 +153,9 @@ public class KenaiRepository extends BugzillaRepository {
     }
 
     @Override
-    protected BugzillaConfiguration createConfiguration() {
+    protected BugzillaConfiguration createConfiguration(boolean forceRefresh) {
         KenaiConfiguration kc = new KenaiConfiguration(this, product);
-        kc.initialize(this, false);
+        kc.initialize(this, forceRefresh);
         return kc;
     }
 
@@ -193,4 +194,11 @@ public class KenaiRepository extends BugzillaRepository {
         return "";                                                              // NOI18N
     }
 
+    @Override
+    protected QueryParameter[] getSimpleSearchParameters() {
+        return new QueryParameter[] {
+            new QueryParameter.SimpleQueryParameter("product",          //NOI18N
+                    new String[] { product } )
+        };
+    }
 }

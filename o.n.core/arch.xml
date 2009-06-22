@@ -514,6 +514,12 @@ made subject to such option by the copyright holder.
         The <code>context</code> field is accessed from editor module by reflection
         from <a href="@org-netbeans-modules-editor-lib@/org/netbeans/editor/MultiKeymap.html">MultiKeymap</a>.
     </api>
+    <api type="import" name="SelfProfileAction" category="friend" group="java">
+         The module expects profiler to provide <code>SelfProfileAction</code>
+         and interacts with it as described in
+         <code>profiler/test/unit/src/org/netbeans/modules/profiler/actions/SelfSamplerActionTest.java</code>
+         test.
+    </api>
   </p>
  </answer>
 

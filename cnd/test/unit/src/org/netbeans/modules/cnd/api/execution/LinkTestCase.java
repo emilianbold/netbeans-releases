@@ -65,7 +65,14 @@ public class LinkTestCase extends NbTestCase {
     public void testLink() throws Exception {
         URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.exe.lnk.data"); // NOI18N
         String resolved = LinkSupport.getOriginalFile(file.getFile());
-        assertEquals("C:\\util\\cygwin\\etc\\alternatives\\gcc", resolved); // NOI18N
+        if ("C:\\util\\cygwin\\etc\\alternatives\\gcc".equals(resolved)) {
+            // normal processing
+        } else if ("C:\\util\\cygwin\\bin\\gcc-3.exe".equals(resolved) ||
+                   "C:\\util\\cygwin\\bin\\gcc-4.exe".equals(resolved)) {
+            // it is possible on real windows platform where exist "C:\\util\\cygwin\\etc\\alternatives\\gcc"
+        } else {
+            assertEquals("C:\\util\\cygwin\\etc\\alternatives\\gcc", resolved); // NOI18N
+        }
         file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.lnk.data"); // NOI18N
         resolved = LinkSupport.getOriginalFile(file.getFile());
         assertEquals("C:\\util\\cygwin\\bin\\gcc-3.exe", resolved); // NOI18N

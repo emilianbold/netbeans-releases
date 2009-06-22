@@ -445,7 +445,7 @@ public class Utils {
     public static LibraryChooser.Filter getFilter(WebProject p) {
         LibraryChooser.Filter filter = null;
         WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
-        if (wm != null && "1.3".equals(wm.getJ2eePlatformVersion())) { // NOI18N
+        if (wm != null && WebModule.J2EE_13_LEVEL.equals(wm.getJ2eePlatformVersion())) { // NOI18N
             filter = new LibraryChooser.Filter() {
                 public boolean accept(Library library) {
                     if ("javascript".equals(library.getType())) { //NOI18N

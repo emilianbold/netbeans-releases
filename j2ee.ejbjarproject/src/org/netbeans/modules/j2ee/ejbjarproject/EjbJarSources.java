@@ -56,6 +56,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -113,10 +115,16 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
         });
     }
 
+    SourceGroupModifierImplementation sgmi;
+
+    SourceGroupModifierImplementation getSourceGroupModifierImplementation() {
+        return sgmi;
+    }
+
     private Sources initSources() {
         SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
-        register(sourcesHelper, sourceRoots);
-        register(sourcesHelper, testRoots);
+        register(sourcesHelper, sourceRoots, JavaProjectConstants.SOURCES_HINT_MAIN);
+        register(sourcesHelper, testRoots, JavaProjectConstants.SOURCES_HINT_TEST);
         
         // Configuration Files
         String configFilesLabel = org.openide.util.NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Node_DocBase"); //NOI18N
@@ -126,10 +134,11 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
         sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        sgmi = sourcesHelper.createSourceGroupModifierImplementation();
         return sourcesHelper.createSources();
     }
 
-    private void register(SourcesHelper sourcesHelper, SourceRoots roots) {
+    private void register(SourcesHelper sourcesHelper, SourceRoots roots, String hint) {
         String[] propNames = roots.getRootProperties();
         String[] rootNames = roots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
@@ -138,8 +147,9 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
             String loc = "${" + prop + "}"; // NOI18N
             String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
             String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-            sourcesHelper.addPrincipalSourceRoot(loc, includes, excludes, displayName, null, null); // NOI18N
-            sourcesHelper.addTypedSourceRoot(loc, includes, excludes, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null); // NOI18N
+            sourcesHelper.sourceRoot(loc).includes(includes).excludes(excludes).hint(hint).displayName(displayName)
+                    .add() // principal root
+                    .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // typed root
         }
      }
     
@@ -160,7 +170,9 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
-        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName)
+        // was listening to PROP_ROOT_PROPERTIES, changed to PROP_ROOTS in #143633 as changes
+        // from SourceGroupModifierImplementation need refresh too
+        if (SourceRoots.PROP_ROOTS.equals(propName)
                 || EjbJarProjectProperties.BUILD_DIR.equals(propName)
                 || EjbJarProjectProperties.DIST_DIR.equals(propName)) {
             this.fireChange();

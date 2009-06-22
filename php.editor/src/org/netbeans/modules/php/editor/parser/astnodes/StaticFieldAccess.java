@@ -47,7 +47,7 @@ public class StaticFieldAccess extends StaticDispatch {
 
     private Variable field;
 
-    public StaticFieldAccess(int start, int end, Identifier className, Variable field) {
+    public StaticFieldAccess(int start, int end, Expression className, Variable field) {
         super(start, end, className);
         this.field = field;
     }

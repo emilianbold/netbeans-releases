@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -112,7 +112,7 @@ implements PropertyChangeListener, LookupListener {
     public static Map<String,String> projectFiles() {
         return FeatureInfo.projectFiles();
     }
-    
+
     public static Collection<? extends FeatureInfo> features() {
         return featureTypesLookup().lookupAll(FeatureInfo.class);
     }
@@ -173,7 +173,7 @@ implements PropertyChangeListener, LookupListener {
         }
         return cnt;
     }
-    
+
     /** Used from tests */
     public static synchronized void assignFeatureTypesLookup(Lookup lkp) {
         boolean eaOn = false;
@@ -242,7 +242,7 @@ implements PropertyChangeListener, LookupListener {
         }
         enabledCnbs = tmp;
         if (ev != null) {
-            support.fireChange();
+            fireChange();
         }
     }
     public void propertyChange(PropertyChangeEvent evt) {
@@ -251,13 +251,20 @@ implements PropertyChangeListener, LookupListener {
             if (!noCnbCheck && enabledCnbs.contains(mi.getCodeNameBase()) && mi.isEnabled()) {
                 return;
             }
-            support.fireChange();
+            fireChange();
             if (mi.isEnabled()) {
                 enabledCnbs.add(mi.getCodeNameBase());
             } else {
                 enabledCnbs.remove(mi.getCodeNameBase());
             }
         }
+    }
+
+    private void fireChange() {
+        for (FeatureInfo f : features()) {
+            f.clearCache();
+        }
+        support.fireChange();
     }
 
 }

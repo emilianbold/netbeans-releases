@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  */
 public class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
 
-    private SortedMap<CharSequence, Object> declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
+    private final TreeMap<CharSequence, Object> declarations;
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
     // empty stub
@@ -103,23 +103,26 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
         super(new DeclarationContainerKey(project.getUniqueName().toString()), false);
+        declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
         put();
     }
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(CsmNamespace ns) {
         super(new NamespaceDeclarationContainerKey(ns), false);
+        declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
         put();
     }
 
     public DeclarationContainer(DataInput input) throws IOException {
         super(input);
-        read(input);
+        declarations = UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(input, UniqueNameCache.getManager());
     }
 
     // only for EMPTY static field
     private DeclarationContainer() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
     }
 
     public static DeclarationContainer empty() {
@@ -467,9 +470,5 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         } finally {
             declarationsLock.readLock().unlock();
         }
-    }
-
-    private void read(DataInput aStream) throws IOException {
-        UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(declarations, aStream, UniqueNameCache.getManager());
     }
 }

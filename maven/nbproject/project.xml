@@ -371,6 +371,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.spring</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
+                <friend>org.netbeans.modules.maven.killer</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>
@@ -383,8 +384,10 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.execute.model.io.jdom</package>
                 <package>org.netbeans.modules.maven.execute.model.io.xpp3</package>
                 <package>org.netbeans.modules.maven.spi.actions</package>
+                <package>org.netbeans.modules.maven.spi.cos</package>
                 <package>org.netbeans.modules.maven.spi.customizer</package>
                 <package>org.netbeans.modules.maven.spi.debug</package>
+                <package>org.netbeans.modules.maven.spi.execute</package>
                 <package>org.netbeans.modules.maven.spi.grammar</package>
                 <package>org.netbeans.modules.maven.spi.lifecycle</package>
                 <package>org.netbeans.modules.maven.spi.nodes</package>

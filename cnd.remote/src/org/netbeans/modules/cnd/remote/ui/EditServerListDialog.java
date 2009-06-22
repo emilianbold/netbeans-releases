@@ -81,12 +81,19 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
     private DefaultListModel model;
     private DialogDescriptor desc;
-    private int defaultIndex;
+    private ServerRecord defaultRecord;
     private ProgressHandle phandle;
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private final ToolsCacheManager cacheManager;
+
+    private static final String CMD_ADD = "Add"; // NOI18N
+    private static final String CMD_REMOVE = "Remove"; // NOI18N
+    private static final String CMD_DEFAULT = "SetAsDefault"; // NOI18N
+    private static final String CMD_PATHMAPPER = "PathMapper"; // NOI18N
+    private static final String CMD_PROPERTIES = "Properties"; // NOI18N
+    private static final String CMD_RETRY = "Retry"; // NOI18N
 
     public EditServerListDialog(ToolsCacheManager cacheManager) {
         this.cacheManager = cacheManager;
@@ -105,6 +112,16 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer.addActionListener(this);
         btSetAsDefault.addActionListener(this);
         btPathMapper.addActionListener(this);
+        btProperties.addActionListener(this);
+        btRetry.addActionListener(this);
+
+        btAddServer.setActionCommand(CMD_ADD);
+        btRemoveServer.setActionCommand(CMD_REMOVE);
+        btSetAsDefault.setActionCommand(CMD_DEFAULT);
+        btPathMapper.setActionCommand(CMD_PATHMAPPER);
+        btProperties.setActionCommand(CMD_PROPERTIES);
+        btRetry.setActionCommand(CMD_RETRY);
+
         pcs = new PropertyChangeSupport(this);
         pcs.addPropertyChangeListener(this);
         setButtons(true);
@@ -118,15 +135,15 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             for (ServerRecord rec : ServerList.getRecords()) {
                 model.addElement(rec);
             }
-            defaultIndex = ServerList.getDefaultIndex();
+            defaultRecord = ServerList.getDefaultRecord();
         } else {
             for (ServerRecord rec : cache.getHosts()) {
                 model.addElement(rec);
             }
-            defaultIndex = cache.getDefaultIndex();
+            defaultRecord = cache.getDefaultRecord();
         }
         lstDevHosts.setModel(model);
-        lstDevHosts.setSelectedIndex(defaultIndex);
+        lstDevHosts.setSelectedValue(defaultRecord, false);
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
@@ -183,7 +200,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             ServerRecord rec = (ServerRecord) value;
             out.setText(rec.getDisplayName());
-            if (index == getDefaultIndex()) {
+            if (value != null && value.equals(getDefaultRecord())) {
                 out.setFont(out.getFont().deriveFont(Font.BOLD));
             }
             return out;
@@ -202,8 +219,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         return result;
     }
 
-    public int getDefaultIndex() {
-        return defaultIndex;
+    public ServerRecord getDefaultRecord() {
+        return defaultRecord;
     }
 
     private void showPathMapper() {
@@ -235,12 +252,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
     /** Enable/disable the Remove and Set As Default buttons */
     public void valueChanged(ListSelectionEvent evt) {
-        int idx = lstDevHosts.getSelectedIndex();
-        if (idx >= 0) {
-            RemoteServerRecord record = getSelectedRecord();
+        RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
+        if (record != null) {
             tfStatus.setText(record.getStateAsText());
-            btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
-            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
+            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);
+            btSetAsDefault.setEnabled( ! record.equals(defaultRecord) && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
             btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote());
             if (!record.isOnline()) {
@@ -271,7 +287,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
         if (o instanceof JButton) {
             JButton b = (JButton) o;
-            if (b.getActionCommand().equals("Add")) { // NOI18N
+            if (b.getActionCommand().equals(CMD_ADD)) {
                 ServerRecord result = CreateHostWizardIterator.invokeMe(cacheManager);
                 if (result != null) {
                     if (!model.contains(result)) {
@@ -279,22 +295,33 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                         lstDevHosts.setSelectedValue(result, true);
                     }
                 }
-            } else if (b.getActionCommand().equals("Remove")) { // NOI18N
+            } else if (b.getActionCommand().equals(CMD_REMOVE)) {
+                ServerRecord rec2delete = (ServerRecord) lstDevHosts.getSelectedValue();
                 int idx = lstDevHosts.getSelectedIndex();
-                if (idx > 0) {
-                    model.remove(idx);
+                if (rec2delete != null) {
+                    model.removeElement(rec2delete);
                     lstDevHosts.setSelectedIndex(model.size() > idx ? idx : idx - 1);
-                    if (defaultIndex >= idx) {
-                        defaultIndex--;
+                    if (defaultRecord.equals(rec2delete)) {
+                        defaultRecord = (ServerRecord) lstDevHosts.getSelectedValue();
                     }
                 }
                 lstDevHosts.repaint();
-            } else if (b.getActionCommand().equals("SetAsDefault")) { // NOI18N
-                defaultIndex = lstDevHosts.getSelectedIndex();
+
+            } else if (b.getActionCommand().equals(CMD_DEFAULT)) {
+                defaultRecord = (ServerRecord) lstDevHosts.getSelectedValue();
                 b.setEnabled(false);
                 lstDevHosts.repaint();
-            } else if (b.getActionCommand().equals("PathMapper")) { // NOI18N
+            } else if (b.getActionCommand().equals(CMD_PATHMAPPER)) {
                 showPathMapper();
+            } else if (b.getActionCommand().equals(CMD_PROPERTIES)) {
+                RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
+                if (record.isRemote()) {
+                    if (HostPropertiesDialog.invokeMe(record)) {
+                        lstDevHosts.repaint();
+                    }
+                }
+            } else if (b.getActionCommand().equals(CMD_RETRY)) {
+                this.revalidateRecord(getSelectedRecord(), null, false);
             }
         }
     }
@@ -364,7 +391,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
         btAddServer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_AddServer").charAt(0));
         btAddServer.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_AddServer")); // NOI18N
-        btAddServer.setActionCommand("Add"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -385,7 +411,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         add(btRemoveServer, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(btSetAsDefault, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
-        btSetAsDefault.setActionCommand("SetAsDefault"); // NOI18N
         btSetAsDefault.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -397,7 +422,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
 
         btPathMapper.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_PathMapper").charAt(0));
         btPathMapper.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_PathMapper")); // NOI18N
-        btPathMapper.setActionCommand("PathMapper"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -407,11 +431,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         add(btPathMapper, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(btProperties, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.btProperties.text")); // NOI18N
-        btProperties.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btPropertiesActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
@@ -444,11 +463,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRetry.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Retry").charAt(0));
         btRetry.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Retry")); // NOI18N
         btRetry.setEnabled(false);
-        btRetry.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btRetryActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
@@ -487,17 +501,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(pbarStatusPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
-        this.revalidateRecord(getSelectedRecord(), null, false);
-    }//GEN-LAST:event_btRetryActionPerformed
-
-    private void btPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPropertiesActionPerformed
-        RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
-        if (record.isRemote()) {
-            HostPropertiesDialog.invokeMe(record);
-        }
-    }//GEN-LAST:event_btPropertiesActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddServer;

@@ -112,24 +112,6 @@ made subject to such option by the copyright holder.
         <include name="javahelp/external/jh*.jar"/>
       </fileset>
     </path>
-    <!-- Sanity check: -->
-    <pathconvert pathsep=":" property="class.files.in.antsrc">
-        <path>
-            <fileset dir="antsrc">
-                <include name="**/*.class"/>
-            </fileset>
-        </path>
-    </pathconvert>
-    <fail>
-        <condition>
-            <not>
-                <equals arg1="${class.files.in.antsrc}" arg2=""/>
-            </not>
-        </condition>
-        You have stray *.class files in ${basedir}/antsrc which you must remove.
-        Probably you failed to clean your sources before updating. Try: ant clean
-    </fail>
-    <!-- OK, continue: -->
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
       <classpath refid="bootstrap-cp"/>
@@ -1510,6 +1492,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </classpath>
             <sysproperty key="nb_all" file=".."/>
             <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
+            <sysproperty key="nbjunit.workdir" file="build/test/unit/work"/>
+            <syspropertyset>
+                <propertyref prefix="test-unit-sys-prop."/>
+                <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+            </syspropertyset>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
             <jvmarg value="-ea"/>
@@ -1768,6 +1755,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <zipfileset dir="${nb_all}" includes="${source.dirs}">
           <exclude name="*/build/**/*"/>
           <exclude name="nbbuild/netbeans/**"/>
+	  <exclude name="nbbuild/licenses/**"/>
+      </zipfileset>
+      <zipfileset dir="${nb_all}">
+          <include name="nbbuild/licenses/CDDL-GPL-2-CP"/>
       </zipfileset>
     </zip>
   </target>

@@ -210,6 +210,9 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
             applicationName = appname.replaceAll("[ \t]", "_");
             applicationDir = appdir;
             contextRoot = calculateContextRoot(module, appname);
+            if("".equals(contextRoot)) {
+                contextRoot = "/";
+            }
             doStart = startRequired;
             step = "start";
         }
@@ -456,7 +459,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
         // Define properties to enable rdebug inside Grizzly/JRuby adapter if
         // debugging is enabled.
         if(debug) {
-            builder.append(" -Djruby.reflection=true -Djruby.compile.mode=OFF");
+            builder.append(" -Djruby.reflection=true -Djruby.compile.mode=OFF -Djruby.debug.fullTrace=true");
             builder.append(
                     " -Dglassfish.rdebug=${rdebug.path}" +
                     " -Dglassfish.rdebug.port=${rdebug.port}" +
@@ -469,6 +472,9 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
 
         // Arguments to Grizzly/JRuby standalone server
         builder.append(" com.sun.grizzly.standalone.JRuby");
+        if(debug) {
+            builder.append(" --debug");
+        }
         builder.append(" -p ");
         builder.append(httpPort);
         builder.append(" -n 1 ");
@@ -521,7 +527,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
     private static String calculateContextRoot(GlassfishModule commonModule, String applicationName) {
         boolean useRootContext = Boolean.valueOf(
                 commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-        return useRootContext ? "/" : "/" + applicationName.replaceAll("[ \t]", "_");
+        return useRootContext ? "" : "/" + applicationName.replaceAll("[ \t]", "_");
     }
 
     /**

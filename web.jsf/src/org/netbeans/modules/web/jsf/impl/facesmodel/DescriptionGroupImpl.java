@@ -43,24 +43,31 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.List;
-import org.netbeans.modules.web.jsf.api.facesmodel.*;
+
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
+import org.netbeans.modules.web.jsf.api.facesmodel.DescriptionGroup;
+import org.netbeans.modules.web.jsf.api.facesmodel.DisplayName;
+import org.netbeans.modules.web.jsf.api.facesmodel.Icon;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public abstract class DescriptionGroupImpl extends JSFConfigComponentImpl implements DescriptionGroup {
+abstract class DescriptionGroupImpl extends PropertyAttributeContainerImpl 
+    implements DescriptionGroup 
+{
     
-    protected static final List<String> DESCRIPTION_GROUP_SORTED_ELEMENTS = new ArrayList();
+    protected static final List<String> DESCRIPTION_GROUP_SORTED_ELEMENTS 
+        = new ArrayList<String>(3);
     static { 
         DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.DESCRIPTION.getLocalName());
         DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.DISPLAY_NAME.getLocalName());
         DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.ICON.getLocalName());
     }
             
-    public DescriptionGroupImpl(JSFConfigModelImpl model, Element element) {
+    DescriptionGroupImpl(JSFConfigModelImpl model, Element element) {
         super(model, element);
     }
     

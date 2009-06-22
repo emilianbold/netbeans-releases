@@ -115,6 +115,12 @@ public class ClusterUpdateProvider implements UpdateProvider {
                 LOG.info ("Jar file " + jarFile + " doesn't exists. Skip checking " + cnb);
                 continue;
             }
+            File updateTrackingFile = new File(cluster, "update_tracking" + File.separator + cf.getName());
+            if (! updateTrackingFile.exists ()) {
+                LOG.info ("Update tracking file " + updateTrackingFile + " doesn't exists. Skip checking " + cnb);
+                continue;
+            }
+
             Manifest mf = new JarFile (jarFile).getManifest ();
             UpdateItem item = UpdateItem.createModule (
                 cnb,

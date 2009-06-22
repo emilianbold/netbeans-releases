@@ -262,7 +262,8 @@ public abstract class Unit {
         
         private UpdateElement installEl = null;
         private UpdateElement backupEl = null;
-        private boolean isUninstallAllowed ;
+        private boolean uninstallationAllowed;
+        private boolean deactivationAllowed;
         
         public static boolean isOperationAllowed (UpdateUnit uUnit, UpdateElement element, OperationContainer<OperationSupport> container) {
             return container.canBeAdded (uUnit, element);
@@ -285,32 +286,54 @@ public abstract class Unit {
             } else {
                 container = Containers.forUninstall ();
             }
-            this.isUninstallAllowed = isOperationAllowed (this.updateUnit, installEl, container);
+            uninstallationAllowed = isOperationAllowed (this.updateUnit, installEl, container);
+            deactivationAllowed = isOperationAllowed (this.updateUnit, installEl, Containers.forDisable());
+                
             initState();
+        }
+
+        public boolean isUninstallAllowed() {
+            return uninstallationAllowed;
+        }
+        public boolean isDeactivationAllowed() {
+            return deactivationAllowed;
         }
         
         public boolean isMarked () {
+            boolean uninstallMarked;
             OperationContainer container = null;
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
                 container = Containers.forCustomUninstall ();
             } else {
                 container = Containers.forUninstall ();
             }
-            return container.contains (installEl);
+            uninstallMarked = container.contains (installEl);
+            boolean deactivateMarked = Containers.forDisable().contains (installEl);
+            return deactivateMarked || uninstallMarked;
         }
         
         public void setMarked (boolean marked) {
             assert marked != isMarked ();
-            OperationContainer container = null;
-            if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
-                container = Containers.forCustomUninstall ();
-            } else {
-                container = Containers.forUninstall ();
+            if (isUninstallAllowed()) {
+                OperationContainer container = null;
+                if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                    container = Containers.forCustomUninstall ();
+                } else {
+                    container = Containers.forUninstall ();
+                }
+                if (marked) {
+                    container.add (updateUnit, installEl);
+                } else {
+                    container.remove (installEl);
+                }
             }
-            if (marked) {
-                container.add (updateUnit, installEl);
-            } else {
-                container.remove (installEl);
+            if (isDeactivationAllowed()) {
+                OperationContainer container = Containers.forDisable();
+                if (marked) {
+                    container.add (updateUnit, installEl);
+                } else {
+                    container.remove (installEl);
+                }
             }
         }
         
@@ -341,14 +364,10 @@ public abstract class Unit {
             }
             return Unit.compareDisplayVersions (u1, u2);
         }
-        
+
         @Override
         public boolean canBeMarked () {
-            if (super.canBeMarked ()) {
-                return isUninstallAllowed ;
-            } else {
-                return false;
-            }
+            return super.canBeMarked () && (isDeactivationAllowed() || isUninstallAllowed());
         }
         
         public String getInstalledVersion () {

@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.dd.impl.common.annotation;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
@@ -84,7 +85,7 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 "}");
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                checkSecurityRoles(metadata.getRoot().getSecurityRole());
+                checkSecurityRoles(metadata.getSecurityRoles());
                 return null;
             }
         });
@@ -94,6 +95,13 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 return null;
             }
         });
+    }
+
+    private void checkSecurityRoles(List<String> securityRoles) {
+        assertEquals(3, securityRoles.size());
+        assertTrue(securityRoles.contains("BusinessAdmin"));
+        assertTrue(securityRoles.contains("Visitor"));
+        assertTrue(securityRoles.contains("Administrator"));
     }
 
     private void checkSecurityRoles(SecurityRole[] securityRoles) {
@@ -116,7 +124,9 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("myDS", "yourDataSource"));
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                assertResourceRefNames(resourceNames, metadata.getRoot().getResourceRef());
+                List<ResourceRef> rs = metadata.getResourceRefs();
+                ResourceRef[] rsArr = new ResourceRef[rs.size()];
+                assertResourceRefNames(resourceNames, rs.toArray(rsArr));
                 return null;
             }
         });
@@ -155,7 +165,9 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("myInteractionSpec", "yourClass"));
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                assertResourceEnvRefNames(resourceNames, metadata.getRoot().getResourceEnvRef());
+                List<ResourceEnvRef> rs = metadata.getResourceEnvRefs();
+                ResourceEnvRef[] rsArr = new ResourceEnvRef[rs.size()];
+                assertResourceEnvRefNames(resourceNames, rs.toArray(rsArr));
                 return null;
             }
         });
@@ -194,7 +206,9 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("myString", "yourLong"));
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                assertEnvEntryNames(resourceNames, metadata.getRoot().getEnvEntry());
+                List<EnvEntry> rs = metadata.getEnvEntries();
+                EnvEntry[] rsArr = new EnvEntry[rs.size()];
+                assertEnvEntryNames(resourceNames, rs.toArray(rsArr));
                 return null;
             }
         });
@@ -233,7 +247,9 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("myQueue"));
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                assertMessageDestinationRefNames(resourceNames, metadata.getRoot().getMessageDestinationRef());
+                List<MessageDestinationRef> rs = metadata.getMessageDestinationRefs();
+                MessageDestinationRef[] rsArr = new MessageDestinationRef[rs.size()];
+                assertMessageDestinationRefNames(resourceNames, rs.toArray(rsArr));
                 return null;
             }
         });
@@ -272,7 +288,9 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("yourService"));
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                assertServiceRefNames(resourceNames, metadata.getRoot().getServiceRef());
+                List<ServiceRef> rs = metadata.getServiceRefs();
+                ServiceRef[] rsArr = new ServiceRef[rs.size()];
+                assertServiceRefNames(resourceNames, rs.toArray(rsArr));
                 return null;
             }
         });

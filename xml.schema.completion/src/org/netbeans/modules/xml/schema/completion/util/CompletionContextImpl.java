@@ -216,6 +216,12 @@ public class CompletionContextImpl extends CompletionContext {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }                    
+                    if(chars != null && chars.startsWith("<")) {
+                        typedChars = chars.substring(1);
+                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                        pathFromRoot = getPathFromRoot(element);
+                        break;
+                    }
                     if(chars != null &&
                        token.getPrevious().getImage().trim().equals(">")) {
                         if(!chars.equals("") && !chars.equals(">"))
@@ -229,10 +235,6 @@ public class CompletionContextImpl extends CompletionContext {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
-                    if(chars != null && chars.startsWith("<"))
-                        typedChars = chars.substring(1);
-                    completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                    pathFromRoot = getPathFromRoot(element);
                     break;
 
                 //start tag of an element

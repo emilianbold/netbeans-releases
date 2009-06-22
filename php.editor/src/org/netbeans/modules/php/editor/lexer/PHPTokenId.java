@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.lexer;
@@ -70,6 +70,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_FILE(null, "php"),
     //	PHP_REFERENCE(null, "php"),
     PHP_SEMICOLON(null, "separator"), //NOI18N
+    PHP_NS_SEPARATOR(null, "separator"), //NOI18N
     PHP_CASE(null, "keyword"), //NOI18N
     PHP_NUMBER(null, "number"), //NOI18N
     //	PHP_DNUMBER(null, "php"),
@@ -155,6 +156,7 @@ public enum PHPTokenId implements TokenId {
     PHP_ENDFOR(null, "keyword"), //NOI18N
     //	PHP_IS_SMALLER_OR_EQUAL(null, "php"),
     PHP_REQUIRE_ONCE(null, "keyword"), //NOI18N
+    PHP_NAMESPACE(null, "keyword"), //NOI18N
     //	PHP_LNUMBER(null, "php"),
     PHP_FUNCTION(null, "keyword"), //NOI18N
     PHP_PROTECTED(null, "keyword"), //NOI18N
@@ -172,6 +174,7 @@ public enum PHPTokenId implements TokenId {
     PHP_CONTINUE(null, "keyword"), //NOI18N
     //	PHP_IS_IDENTICAL(null, "php"),
     PHP_ECHO(null, "keyword"), //NOI18N
+    PHP_GOTO(null, "keyword"), //NOI18N
     //	PHP_DOUBLE_ARROW(null, "php"),
     //	PHP_CHARACTER(null, "php"),
     //	PHP_TIMES(null, "php"),
@@ -229,6 +232,8 @@ public enum PHPTokenId implements TokenId {
     PHP_CASTING(null, "keyword"), //NOI18N
     PHP__FILE__(null, "constant"), //NOI18N
     PHP__LINE__(null, "constant"), //NOI18N
+    PHP__DIR__(null, "constant"), //NOI18N
+    PHP__NAMESPACE__(null, "constant"), //NOI18N
     PHP_OPERATOR(null, "operator"), //NOI18N
     PHP_PARENT(null, "keyword"), //NOI18N
     PHP__CLASS__(null, "constant"), //NOI18N
@@ -238,7 +243,7 @@ public enum PHPTokenId implements TokenId {
     PHP_FALSE(null, "keyword"), //NOI18N
     PHP_NULL(null, "keyword"), //NOI18N
     TASK(null, "php"); //NOI18N
-    
+
     private final String fixedText;
     private final String primaryCategory;
 
@@ -250,7 +255,7 @@ public enum PHPTokenId implements TokenId {
     public String fixedText() {
         return fixedText;
     }
-    
+
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -312,7 +317,7 @@ public enum PHPTokenId implements TokenId {
 
 
     // This is hack. The right was is that the php is emebeded by default in to
-    // a top level language. In NB 6.5 
+    // a top level language. In NB 6.5
     public static Language<PHPTokenId> languageInPHP() {
         languageHierarchy.setInPHP(true);
         return languageHierarchy.language();

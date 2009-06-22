@@ -241,6 +241,11 @@ import org.openide.util.NbBundle;
             if (hostValidator.validate(env, password, rememberPassword, new TextComponentWriter(tpOutput))) {
                 hostFound = env;
                 runOnFinish = hostValidator.getRunOnFinish();
+                try { // let user see the log ;-)
+                    Thread.sleep(1500);
+                } catch (InterruptedException ex) {
+                    // nothing
+                }
             }
         } finally {
             phandle.finish();

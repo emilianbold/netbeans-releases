@@ -54,9 +54,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -70,8 +72,8 @@ import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
  * @author Vladimir Voskresensky
  */
 public class APTIncludeHandlerImpl implements APTIncludeHandler {
-    private List<CharSequence> systemIncludePaths;
-    private List<CharSequence> userIncludePaths;
+    private List<IncludeDirEntry> systemIncludePaths;
+    private List<IncludeDirEntry> userIncludePaths;
     
     private Map<CharSequence, Integer> recurseIncludes = null;
     private static final int MAX_INCLUDE_DEEP = 5;    
@@ -79,19 +81,19 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private StartEntry startFile;
     
     /*package*/ APTIncludeHandlerImpl(StartEntry startFile) {
-        this(startFile, new ArrayList<CharSequence>(), new ArrayList<CharSequence>());
+        this(startFile, new ArrayList<IncludeDirEntry>(), new ArrayList<IncludeDirEntry>());
     }
     
     public APTIncludeHandlerImpl(StartEntry startFile,
-                                    List<CharSequence> systemIncludePaths,
-                                    List<CharSequence> userIncludePaths) {
+                                    List<IncludeDirEntry> systemIncludePaths,
+                                    List<IncludeDirEntry> userIncludePaths) {
         this.startFile =startFile;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;        
     }
 
-    public boolean pushInclude(CharSequence path, int directiveLine, int resolvedDirIndex) {
-        return pushIncludeImpl(path, directiveLine, resolvedDirIndex);
+    public boolean pushInclude(CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
+        return pushIncludeImpl(path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
     }
 
     public CharSequence popInclude() {
@@ -143,8 +145,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     /** immutable state object of include handler */ 
     public final static class StateImpl implements State, Persistent, SelfPersistent {
         // for now just remember lists
-        private final List<CharSequence> systemIncludePaths;
-        private final List<CharSequence> userIncludePaths;
+        private final List<IncludeDirEntry> systemIncludePaths;
+        private final List<IncludeDirEntry> userIncludePaths;
         private final StartEntry   startFile;
         
         private final Map<CharSequence, Integer> recurseIncludes;
@@ -226,14 +228,14 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = systemIncludePaths.size();
             output.writeInt(size);
             for (int i = 0; i < size; i++) {
-                output.writeUTF(systemIncludePaths.get(i).toString());
+                output.writeUTF(systemIncludePaths.get(i).getAsString());
             }
             
             size = userIncludePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                output.writeUTF(userIncludePaths.get(i).toString());
+                output.writeUTF(userIncludePaths.get(i).getAsString());
             }
             
             if (recurseIncludes == null) {
@@ -267,6 +269,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                     final IncludeInfoImpl inclInfoImpl = new IncludeInfoImpl(
                             inclInfo.getIncludedPath(), 
                             inclInfo.getIncludeDirectiveLine(), 
+                            inclInfo.getIncludeDirectiveOffset(),
                             inclInfo.getIncludedDirIndex());
                     assert inclInfoImpl != null;
                     
@@ -282,17 +285,17 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             
             startFile = new StartEntry(input);
 
-            systemIncludePaths = new ArrayList<CharSequence>();
+            systemIncludePaths = new ArrayList<IncludeDirEntry>();
             int size = input.readInt();
             for (int i = 0; i < size; i++) {
-                CharSequence path = pathManager.getString(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
                 systemIncludePaths.add(i, path);
             }
             
-            userIncludePaths = new ArrayList<CharSequence>();
+            userIncludePaths = new ArrayList<IncludeDirEntry>();
             size = input.readInt();
             for (int i = 0; i < size; i++) {
-                CharSequence path = pathManager.getString(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
                 userIncludePaths.add(i, path);                
             }
             
@@ -379,11 +382,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return new StateImpl(this, cleanState);
         }
         
-        /*package*/ List<CharSequence> getSysIncludePaths() {
+        /*package*/ List<IncludeDirEntry> getSysIncludePaths() {
             return this.systemIncludePaths;
         }
         
-        /*package*/ List<CharSequence> getUserIncludePaths() {
+        /*package*/ List<IncludeDirEntry> getUserIncludePaths() {
             return this.userIncludePaths;
         }        
     }
@@ -391,7 +394,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
 
-    private boolean pushIncludeImpl(CharSequence path, int directiveLine, int resolvedDirIndex) {
+    private boolean pushIncludeImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
         if (recurseIncludes == null) {
             assert (inclStack == null): inclStack.toString() + " started on " + startFile;
             inclStack = new Stack<IncludeInfo>();
@@ -402,7 +405,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
             recurseIncludes.put(path, counter);
-            inclStack.push(new IncludeInfoImpl(path, directiveLine, resolvedDirIndex));
+            inclStack.push(new IncludeInfoImpl(path, directiveLine, directiveOffset, resolvedDirIndex));
             return true;
         } else {
             assert (recurseIncludes.get(path) != null) : "included file must be in map"; // NOI18N
@@ -414,22 +417,23 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private static final class IncludeInfoImpl implements IncludeInfo, SelfPersistent, Persistent {
         private final CharSequence path;
         private final int directiveLine;
+        private final int directiveOffset;
         private final int resolvedDirIndex;
         
-        public IncludeInfoImpl(CharSequence path, int directiveLine, int resolvedDirIndex) {
+        public IncludeInfoImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
             assert path != null;
             this.path = path;
             assert directiveLine >= 0;
             this.directiveLine = directiveLine;
+            this.directiveOffset = directiveOffset;
             this.resolvedDirIndex = resolvedDirIndex;
         }
         
         public IncludeInfoImpl(final DataInput input) throws IOException {
             assert input != null;
             this.path = FilePathCache.getManager().getString(input.readUTF());
-            
             directiveLine = input.readInt();
-            
+            directiveOffset = input.readInt();
             resolvedDirIndex = input.readInt();
         }
 
@@ -441,11 +445,15 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return directiveLine;
         }
 
+        public int getIncludeDirectiveOffset() {
+            return directiveOffset;
+        }
+
         @Override
         public String toString() {
             String retValue;
             
-            retValue = "(" + getIncludeDirectiveLine() + ": " + // NOI18N
+            retValue = "(" + getIncludeDirectiveLine() + "/" + getIncludeDirectiveOffset() + ": " + // NOI18N
                     getIncludedPath() + ":" + getIncludedDirIndex() + ")"; // NOI18N
             return retValue;
         }
@@ -456,7 +464,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 return false;
             }
             IncludeInfoImpl other = (IncludeInfoImpl)obj;
-            return this.directiveLine == other.directiveLine &&
+            return this.directiveLine == other.directiveLine && this.directiveOffset == other.directiveOffset &&
                     this.path.equals(other.path) && (resolvedDirIndex == other.resolvedDirIndex);
         }
 
@@ -465,6 +473,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int hash = 3;
             hash = 73 * hash + (this.path != null ? this.path.hashCode() : 0);
             hash = 73 * hash + this.directiveLine;
+            hash = 73 * hash + this.directiveOffset;
             hash = 73 * hash + this.resolvedDirIndex;
             return hash;
         }
@@ -474,6 +483,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             
             output.writeUTF(path.toString());
             output.writeInt(directiveLine);
+            output.writeInt(directiveOffset);
             output.writeInt(resolvedDirIndex);
         }
 
@@ -505,8 +515,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }    
     
     private static String toString(CharSequence startFile,
-                                    List<CharSequence> systemIncludePaths,
-                                    List<CharSequence> userIncludePaths,
+                                    List<IncludeDirEntry> systemIncludePaths,
+                                    List<IncludeDirEntry> userIncludePaths,
                                     Map<CharSequence, Integer> recurseIncludes,
                                     Stack<IncludeInfo> inclStack) {
         StringBuilder retValue = new StringBuilder();

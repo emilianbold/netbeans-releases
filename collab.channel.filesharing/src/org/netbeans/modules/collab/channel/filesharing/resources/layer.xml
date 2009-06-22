@@ -40,7 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
@@ -85,24 +84,31 @@ made subject to such option by the copyright holder.
 	</folder>
 
 	<folder name="Shortcuts">
-		<file name="C-L.instance">
-			<attr name="instanceClass" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.actions.SyncAction"/>
-		</file>
-	</folder> <!-- Shortcuts -->
+		<file name="C-L.shadow">
+            <attr name="originalFile" stringvalue="Actions/Tools/C-L.instance"/>
+        </file>
+    </folder> <!-- Shortcuts -->
 
         <!-- actions -->
         <folder name="Actions">
             <folder name="Collaboration">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.resources.Bundle"/>
-                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareFilesAction.instance" />
+                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareFilesAction.instance"/>
             </folder>
+            <folder name="Tools">
+            <file name="C-L.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.actions.SyncAction"/>
+            </file>
+            <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance"/>
         </folder>
+    </folder>
 
-        <folder name="Projects" >
-	    <folder name="Actions" >
-                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance">
-                    <attr name="position" intvalue="290"/>
-                </file>
-            </folder>
+        <folder name="Projects">
+	    <folder name="Actions">
+                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance"/>
+                <attr name="position" intvalue="290"/>
+            </file>
+        </folder>
         </folder>
 </filesystem>

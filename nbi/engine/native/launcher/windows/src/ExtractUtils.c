@@ -522,7 +522,7 @@ void loadI18NStrings(LauncherProperties * props) {
             if(!isOK(props)) break;
             
             isLocaleMatches = (localeName==NULL) ?  1 :
-                wcsstr(currentLocale, localeName) != NULL;
+                searchW(currentLocale, localeName) != NULL;
                 
                 //read properties names and value
                 for(i=0;i<numberOfProperties;i++) {

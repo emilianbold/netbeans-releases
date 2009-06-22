@@ -68,8 +68,9 @@ import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -82,7 +83,7 @@ import org.openide.filesystems.URLMapper;
  * implementation of ejb netbeans functionality
  * @author Milos Kleint 
  */
-public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation, ModuleChangeReporter {
+public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation2, ModuleChangeReporter {
     
     private Project project;
     private List versionListeners;
@@ -198,8 +199,8 @@ public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementatio
         return EjbJar.VERSION_2_1;
     }
     
-    public Object getModuleType() {
-        return J2eeModule.EJB;
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.EJB;
     }
     
     /**

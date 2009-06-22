@@ -42,10 +42,14 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -201,7 +205,15 @@ public final class FilePreprocessorConditionState {
         }
         return true;
     }
-    
+
+    public final List<CsmOffsetable> createBlocksForFile(CsmFile file) {
+        List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
+        for (int i = 0; i < offsets.length; i+=2) {
+            blocks.add(org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(file, offsets[i], offsets[i+1]));
+        }
+        return blocks;
+    }
+
     public static final class Builder implements APTParseFileWalker.EvalCallback {
         private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
         private final CharSequence name;
@@ -292,7 +304,9 @@ public final class FilePreprocessorConditionState {
             // check consistency for ordering and absence of intersections
             for (int i = 0; i < pcState.offsets.length; i++) {
                 if (i + 1 < pcState.offsets.length) {
-                    CndUtils.assertTrue(pcState.offsets[i] < pcState.offsets[i + 1], "inconsistent state " + pcState);  // NOI18N
+                    if (!(pcState.offsets[i] < pcState.offsets[i + 1])) {
+                        CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
+                    }
                 }
             }
         }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.ui.selectors;
 
+import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.DialogDescriptor;
@@ -58,29 +59,33 @@ public class SelectorPanel {
                                   "SelectorPanel.connectorLabel.text"); //NOI18N
 
     boolean open() {
-        String title = NbBundle.getMessage(SelectorPanel.class,
-                                           "CTL_CreateTitle");          //NOI18N
-        builder.setLabelText(comboLabelText);
-        builder.setBugtrackingConnectorDisplayFormat("{0}");            //NOI18N
-
+        String title = createOpenDescriptor();
         DialogDescriptor dd = builder.createDialogDescriptor(title);
-
         boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
         return ret;
     }
 
     boolean edit(Repository repository, String errorMessage) {
-        String title = NbBundle.getMessage(SelectorPanel.class,
-                                           "CTL_EditTitle");            //NOI18N
+        DialogDescriptor dd = createEditDescriptor(repository, errorMessage);
+        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
+        return ret;
+    }
+
+    private String createOpenDescriptor() throws MissingResourceException {
+        String title = NbBundle.getMessage(SelectorPanel.class, "CTL_CreateTitle"); //NOI18N
+        builder.setLabelText(comboLabelText);
+        builder.setBugtrackingConnectorDisplayFormat("{0}"); //NOI18N
+        return title;
+    }
+
+    private DialogDescriptor createEditDescriptor(Repository repository, String errorMessage) throws MissingResourceException {
+        String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle"); //NOI18N
         builder.setLabelVisible(false);
         builder.setComboBoxVisible(false);
         builder.setPreselectedRepository(repository);
         builder.setInitialErrorMessage(errorMessage);
-
         DialogDescriptor dd = builder.createDialogDescriptor(title);
-
-        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
-        return ret;
+        return dd;
     }
 
     Repository getRepository() {

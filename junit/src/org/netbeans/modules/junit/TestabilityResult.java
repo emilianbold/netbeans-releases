@@ -97,6 +97,16 @@ final class TestabilityResult {
     public static TestabilityResult combine(TestabilityResult lhs, TestabilityResult rhs) {
         return new TestabilityResult(lhs.reason | rhs.reason);
     }
+   /**
+    * Remove reasons from result according filter bit mask
+    * 
+    * @param lhs the TestabilityResult which reasons should be filtered
+    * @param filterMask the filter bit mask
+    * @return
+    */
+    public static TestabilityResult filter(TestabilityResult lhs, long filterMask) {
+        return new TestabilityResult(lhs.reason & filterMask);
+    }
 
     /**
      * Returns true if the result is for a testable class.
@@ -114,6 +124,9 @@ final class TestabilityResult {
         return reason != 0;
     }
 
+    public long getReasonValue(){
+        return reason;
+    }
     /**
      * Returns a human-readable representation of the reason. If the reason 
      * is a combination of multiple reasons, they are separated with ",".

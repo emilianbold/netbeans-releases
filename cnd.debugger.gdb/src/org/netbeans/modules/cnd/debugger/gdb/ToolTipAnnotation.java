@@ -130,6 +130,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         expression = GdbWatchVariable.expandMacro(debugger, expression);
 
+        // Do not evaluate empty strings, see IZ 166207
+        if (expression == null || expression.length() == 0) {
+            return;
+        }
+
         String type = debugger.requestWhatis(expression);
         String value = debugger.evaluate(expression);
 

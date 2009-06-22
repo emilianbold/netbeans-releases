@@ -61,6 +61,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -284,7 +286,9 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     void read(WizardDescriptor settings) {
         Properties properties = controller.getProperties();
         properties.setProperty("name", (String) settings.getProperty("name")); // NOI18N
-        properties.setProperty("j2eeLevel", (String) settings.getProperty("j2eeLevel")); // NOI18N
+
+        // FIXME I left string here for compatibility reasons (frameworks)
+        properties.setProperty(ProjectServerWizardPanel.J2EE_LEVEL, ((Profile) settings.getProperty(ProjectServerWizardPanel.J2EE_LEVEL)).toPropertiesString()); // NOI18N
         properties.setProperty("serverInstanceID", (String) settings.getProperty("serverInstanceID")); // NOI18N
         properties.setProperty("setSourceLevel", (String) settings.getProperty("setSourceLevel")); // NOI18N
 

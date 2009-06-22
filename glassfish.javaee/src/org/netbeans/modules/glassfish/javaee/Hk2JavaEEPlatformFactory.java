@@ -47,6 +47,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.openide.util.NbBundle;
@@ -75,9 +76,11 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
             NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_PRELUDE_LIBRARY"),
             "J2EE/DeploymentPlugins/gfv3/Lookup",
             new HashSet(Arrays.asList(new String[] {"1.6","1.5"})),
-            new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR })),
+            new HashSet(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR })),
             new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
-            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})));
+            J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5})),
+            new HashSet(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
+                Profile.JAVA_EE_5})));
     }
 
     public static Hk2JavaEEPlatformFactory createEe6() {
@@ -86,11 +89,14 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
         String ln = NbBundle.getMessage(Hk2JavaEEPlatformFactory.class, "LBL_V3_LIBRARY");
         String lk = "J2EE/DeploymentPlugins/gfv3ee6/Lookup";
         Set sjp = new HashSet(Arrays.asList(new String[] {"1.6"}));
-        Set smt = new HashSet(Arrays.asList(new ModuleType[] { ModuleType.WAR,
-            ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR }));
+        Set smt = new HashSet(Arrays.asList(new J2eeModule.Type[] { J2eeModule.Type.WAR,
+            J2eeModule.Type.CAR, J2eeModule.Type.EAR, J2eeModule.Type.EJB, J2eeModule.Type.RAR }));
         Set ss = new HashSet(Arrays.asList(new String[] {J2eeModule.J2EE_13,
             J2eeModule.J2EE_14, J2eeModule.JAVA_EE_5}));
-        return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,ss);
+        return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,ss,
+                new HashSet(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
+                Profile.JAVA_EE_5, Profile.JAVA_EE_6_FULL })));
+
     }
 
     private String displayName;
@@ -100,12 +106,14 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
     private Set supportedJavaPlatforms;
     private Set supportedModuleTypes;
     private Set supportedSpecs;
+    private Set<Profile> supportedProfiles;
 
     protected Hk2JavaEEPlatformFactory(String displayName,
             JavaPlatform jp, String libraryName, String lookupKey, 
             Set supportedJavaPlatforms,
             Set supportedModuleTypes,
-            Set supportedSpecs) {
+            Set supportedSpecs,
+            Set supportedProfiles) {
         this.displayName = displayName;
         this.javaPlatform = jp;
         this.libraryName = libraryName;
@@ -113,6 +121,7 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
         this.supportedJavaPlatforms = supportedJavaPlatforms;
         this.supportedModuleTypes = supportedModuleTypes;
         this.supportedSpecs = supportedSpecs;
+        this.supportedProfiles = supportedProfiles;
     }
     
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -150,6 +159,12 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
     Set getSupportedSpecVersions() {
         Set retVal = new HashSet();
         retVal.addAll(supportedSpecs);
+        return retVal;
+    }
+
+    Set<Profile> getSupportedProfiles() {
+        Set<Profile> retVal = new HashSet<Profile>();
+        retVal.addAll(supportedProfiles);
         return retVal;
     }
 }

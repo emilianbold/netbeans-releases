@@ -1136,6 +1136,21 @@ itor tabs #66700).
     }
 
     /**
+     * Returns true if hg in a given version supports 'hg resolve' command
+     * Resolve command was introduced in 1.1
+     * @param version
+     * @return
+     */
+    public static boolean hasResolveCommand(String version) {
+        if (version != null && (!version.startsWith("0.")               //NOI18N
+                || !version.startsWith("1.0"))) {                       //NOI18N
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {

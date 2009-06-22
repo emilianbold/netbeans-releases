@@ -42,11 +42,7 @@
 package org.netbeans.modules.j2ee.earproject.test;
 
 import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,13 +50,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -71,7 +63,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
@@ -81,20 +72,21 @@ import org.openide.util.test.MockLookup;
  * @author Lukas Jungmann
  */
 public final class TestUtil {
-    
-    private static final int BUFFER = 2048;
+
+    // coming from test layer.xml in j2eeserver
+    public static final String SERVER_URL = "fooservice";
     
     /** Do not call directly */
     private TestUtil() {
+        super();
     }
     
     /** It is usually good idea to clear working directory before calling this method */
-    public static void initLookup(NbTestCase test) throws Exception {
-        MockLookup.setLayersAndInstances(new IFL());
+    public static void initLookup(NbTestCase test, Object... instances) throws Exception {        
+        MockLookup.setLayersAndInstances(instances);
         
         FileObject root = FileUtil.toFileObject(test.getWorkDir());
         FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
-        FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
         
         Assert.assertNotNull(FileUtil.getConfigFile("J2EE/InstalledServers").toString());
     }
@@ -220,96 +212,6 @@ public final class TestUtil {
      */
     public static void notifyDeleted(Project p) {
         ((TestProject)p).state.notifyDeleted();
-    }
-    
-    /**
-     * Register Sun Application Server in the "IDE" to be used by unit test.
-     * This method creates dummy userdir as well as dummy NetBeans home
-     * in test's working directory. Both properties - <code>netbeans.home</code>
-     * and <code>netbeans.user</code> - will be set by this method if they are
-     * not already defined.
-     *
-     * @param test a test which requires SunAppServer
-     * @return id of registered server
-     */
-    public static String registerSunAppServer(NbTestCase test) throws Exception {
-        return registerSunAppServer(test, new Object[0]);
-    }
-    
-    public static String registerSunAppServer(NbTestCase test, Object[] additionalLookupItems) throws Exception {
-        String oldNbHome = System.getProperty("netbeans.home"); // NOI18N
-        String oldNbUser = System.getProperty("netbeans.user"); // NOI18N
-        FileObject root = FileUtil.toFileObject(test.getWorkDir());
-        FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
-        FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
-        FileUtil.createFolder(systemDir, "J2EE/DeploymentPlugins"); // NOI18N
-        FileUtil.createFolder(root, "nb/platform"); // NOI18N
-        System.setProperty("netbeans.home", new File(test.getWorkDir(), "nb/platform").getAbsolutePath()); // NOI18N
-        System.setProperty("netbeans.user", new File(test.getWorkDir(), "ud").getAbsolutePath()); // NOI18N
-        
-        // lookup content
-        Object[] appServerNeed = new Object[] { new IFL() };
-        Object[] instances = new Object[additionalLookupItems.length + appServerNeed.length];
-        System.arraycopy(additionalLookupItems, 0, instances, 0, additionalLookupItems.length);
-        System.arraycopy(appServerNeed, 0, instances, additionalLookupItems.length, appServerNeed.length);
-        MockLookup.setLayersAndInstances(instances);
-        
-        File asRoot = null;
-        if (System.getProperty("appserv.home") != null) { // NOI18N
-            asRoot = new File(System.getProperty("appserv.home")); // NOI18N
-        } else {
-            asRoot = extractAppSrv(test.getWorkDir(), new File(test.getDataDir(), "SunAppServer.zip")); // NOI18N
-        }
-        FileObject dir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
-        String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
-        FileObject instanceFO = dir.createData(name);
-        String serverID = "[" + asRoot.getAbsolutePath() + "]deployer:Sun:AppServer::localhost:4848"; // NOI18N
-        instanceFO.setAttribute(InstanceProperties.URL_ATTR, serverID);
-        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, "admin"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, "adminadmin"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, "testdname"); // NOI18N
-        instanceFO.setAttribute(InstanceProperties.HTTP_PORT_NUMBER, "4848"); // NOI18N
-        instanceFO.setAttribute("DOMAIN", "testdomain1"); // NOI18N
-        instanceFO.setAttribute("LOCATION", new File(asRoot, "domains").getAbsolutePath()); // NOI18N
-        ServerRegistry sr = ServerRegistry.getInstance();
-        sr.addInstance(instanceFO);
-        if (oldNbHome != null) {
-            System.setProperty("netbeans.home", oldNbHome); // NOI18N
-        }
-        if (oldNbUser != null) {
-            System.setProperty("netbeans.user", oldNbUser); // NOI18N
-        }
-        return serverID;
-    }
-    
-    private static File extractAppSrv(File destDir, File archiveFile) throws IOException {
-        ZipInputStream zis = null;
-        BufferedOutputStream dest = null;
-        try {
-            FileInputStream fis = new FileInputStream(archiveFile);
-            zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry;
-            while((entry = zis.getNextEntry()) != null) {
-                byte data[] = new byte[BUFFER];
-                File entryFile = new File(destDir, entry.getName());
-                if (entry.isDirectory()) {
-                    FileUtil.createFolder(entryFile);
-                } else {
-                    FileUtil.createFolder(entryFile.getParentFile());
-                    FileOutputStream fos = new FileOutputStream(entryFile);
-                    dest = new BufferedOutputStream(fos, BUFFER);
-                    int count;
-                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                }
-            }
-        } finally {
-            if (zis != null) { zis.close(); }
-            if (dest != null) { dest.close(); }
-        }
-        return new File(destDir, archiveFile.getName().substring(0, archiveFile.getName().length() - 4));
     }
     
     public static EditableProperties loadProjectProperties(
@@ -510,21 +412,6 @@ public final class TestUtil {
             }
         }
         return fo;
-    }
-    
-    /** Copied from AntLoggerTest. */
-    private static final class IFL extends InstalledFileLocator {
-        
-        public IFL() {}
-        
-        public File locate(String relativePath, String codeNameBase, boolean localized) {
-            if (relativePath.equals("modules/ext/appsrvbridge.jar")) {
-                String path = System.getProperty("test.appsrvbridge.jar");
-                Assert.assertNotNull("must set test.appsrvbridge.jar", path);
-                return new File(path);
-            }
-            return null;
-        }
     }
     
 }

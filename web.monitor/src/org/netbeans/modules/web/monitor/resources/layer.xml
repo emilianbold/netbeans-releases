@@ -66,8 +66,8 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="DS-5.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
+        <file name="DS-5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
         </file>
     </folder>
 

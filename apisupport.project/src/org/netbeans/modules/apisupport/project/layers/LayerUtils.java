@@ -516,7 +516,8 @@ public class LayerUtils {
             if (path == null) {
                 return null;
             }
-            return Util.getResourceDirectory(project).getFileObject(path);
+            FileObject ret = Util.getResourceDirectory(project);
+            return ret == null ? null : ret.getFileObject(path);
         }
         
         /**
@@ -718,10 +719,10 @@ public class LayerUtils {
             }
             File root = other.getSourceLocation();
             assert root != null : other;
-            NbModuleProject p2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(root));
-            if (p2 == null) {
-                continue;
-            }
+            FileObject fo = FileUtil.toFileObject(root);
+            if (fo == null) continue;   // #142696, project deleted during scan
+            NbModuleProject p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+            if (p2 == null) continue;
             projects.add(p2);
         }
         return projects;

@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 
-public class ConfigurationSupport {
+public final class ConfigurationSupport {
+    private ConfigurationSupport() {
+    }
     public static String appendConfName(String oldConfs, Configuration newConf) {
 	return oldConfs + "," + newConf.getDisplayName(); // NOI18N
     }
@@ -187,8 +189,16 @@ public class ConfigurationSupport {
 	return conf.getDisplayName();
     }
 
-    public static ConfigurationDescriptor getProjectDescriptor(Project project) {
-	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-	return pdp.getConfigurationDescriptor();
+    public static MakeConfiguration getProjectActiveConfiguration(Project project) {
+        if (project != null) {
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp != null) {
+                MakeConfigurationDescriptor cd = pdp.getConfigurationDescriptor();
+                if (cd != null) {
+                    return cd.getActiveConfiguration();
+                }
+            }
+        }
+        return null;
     }
 }

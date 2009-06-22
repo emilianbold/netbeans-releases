@@ -431,7 +431,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                     subscribedIndicators.add(i);
                                 }
                                 target.addTargetListener(idp);
-                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
+                                log.fine("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
                             }
                         }
                     }

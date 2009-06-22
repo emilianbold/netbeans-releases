@@ -38,10 +38,12 @@
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component 
         class="org.netbeans.installer.wizard.components.actions.InitializeRegistryAction"/>
-    <component 
+    <component
         class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
     <component 
         class="org.netbeans.installer.wizard.components.sequences.MainSequence"/>
+    <component
+        class="org.netbeans.installer.wizard.components.sequences.CreateBundleSequence"/>
     <component 
         class="org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction"/>
 </wizard>

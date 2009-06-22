@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -366,34 +368,43 @@ public class UIDUtilities {
      * Base UID for cached objects
      */
     /* package */ static class CachedUID<T> extends KeyBasedUID<T> {
-        private WeakReference<T> weakT;
+        private static final SoftReference<Object> DUMMY = new SoftReference<Object>(null);
+        private Reference<Object> weakT;
 
-        protected CachedUID(Key key) {
+        protected CachedUID(Key key, T obj) {
             super(key);
+            weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && key.hasCache() ? new WeakReference<Object>(obj) : DUMMY;
         }
 
-        /* package */ CachedUID(DataInput aStream) throws IOException {
+        CachedUID(DataInput aStream) throws IOException {
             super(aStream);
+            weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache() ? new WeakReference<Object>(null) : DUMMY;
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public T getObject() {
             T out = null;
-            WeakReference<T> weak = null;
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
-                weak = weakT;
-                if (weak != null) {
-                    out = weak.get();
-                    if (out != null) {
-                        return out;
-                    }
+            Reference<T> weak = (Reference<T>) weakT;
+            if (weak != DUMMY) {
+                out = weak.get();
+                if (out != null) {
+                    return out;
                 }
             }
             out = RepositoryUtils.get(this);
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE && out != null) {
-                weakT = new WeakReference<T>(out);
+            if (out != null && weak != DUMMY) {
+                weakT = (Reference<Object>) new WeakReference<T>(out);
             }
             return out;
+        }
+
+        public void dispose(T obj) {
+            if (obj == null) {
+                weakT = DUMMY;
+            } else {
+                weakT = new SoftReference<Object>(obj);
+            }
         }
     }
 
@@ -403,7 +414,7 @@ public class UIDUtilities {
     /* package */ static final class ProjectUID extends CachedUID<CsmProject> { //KeyBasedUID<CsmProject> {
 
         public ProjectUID(ProjectBase project) {
-            super(KeyUtilities.createProjectKey(project));
+            super(KeyUtilities.createProjectKey(project), project);
         }
 
         /* package */ ProjectUID(DataInput aStream) throws IOException {
@@ -417,7 +428,7 @@ public class UIDUtilities {
     /* package */ static final class NamespaceUID extends CachedUID<CsmNamespace> { //KeyBasedUID<CsmNamespace> {
 
         public NamespaceUID(CsmNamespace ns) {
-            super(KeyUtilities.createNamespaceKey(ns));
+            super(KeyUtilities.createNamespaceKey(ns), ns);
         }
 
         /* package */ NamespaceUID(DataInput aStream) throws IOException {
@@ -431,7 +442,7 @@ public class UIDUtilities {
     /* package */ static final class FileUID extends CachedUID<CsmFile> { //KeyBasedUID<CsmFile> {
 
         public FileUID(FileImpl file) {
-            super(KeyUtilities.createFileKey(file));
+            super(KeyUtilities.createFileKey(file), file);
         }
 
         /* package */ FileUID(DataInput aStream) throws IOException {
@@ -442,14 +453,14 @@ public class UIDUtilities {
     /**
      * base UID for CsmDeclaration
      */
-    private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
+    private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends CachedUID<T> { //KeyBasedUID<T> {
 
         public OffsetableDeclarationUIDBase(T declaration) {
-            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration));
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration), declaration);
         }
 
-        protected OffsetableDeclarationUIDBase(Key key) {
-            super(key);
+        protected OffsetableDeclarationUIDBase(Key key, T obj) {
+            super(key, obj);
         }
 
         /* package */ OffsetableDeclarationUIDBase(DataInput aStream) throws IOException {
@@ -473,11 +484,11 @@ public class UIDUtilities {
     private static abstract class OffsetableDeclarationUIDBaseCached<T extends CsmOffsetableDeclaration> extends CachedUID<T> { //KeyBasedUID<T> {
 
         public OffsetableDeclarationUIDBaseCached(T declaration) {
-            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration));
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration), declaration);
         }
 
-        protected OffsetableDeclarationUIDBaseCached(Key key) {
-            super(key);
+        protected OffsetableDeclarationUIDBaseCached(Key key, T obj) {
+            super(key, obj);
         }
 
         /* package */ OffsetableDeclarationUIDBaseCached(DataInput aStream) throws IOException {
@@ -523,10 +534,10 @@ public class UIDUtilities {
     /**
      * UID for CsmMacro
      */
-    /* package */ static final class MacroUID extends KeyBasedUID<CsmMacro> {
+    /* package */ static final class MacroUID extends CachedUID<CsmMacro> { //KeyBasedUID<CsmMacro> {
 
         public MacroUID(CsmMacro macro) {
-            super(KeyUtilities.createMacroKey(macro));
+            super(KeyUtilities.createMacroKey(macro), macro);
         }
 
         /* package */ MacroUID(DataInput aStream) throws IOException {
@@ -537,10 +548,10 @@ public class UIDUtilities {
     /**
      * UID for CsmInclude
      */
-    /* package */ static final class IncludeUID extends KeyBasedUID<CsmInclude> {
+    /* package */ static final class IncludeUID extends CachedUID<CsmInclude> { //KeyBasedUID<CsmInclude> {
 
         public IncludeUID(CsmInclude incl) {
-            super(KeyUtilities.createIncludeKey(incl));
+            super(KeyUtilities.createIncludeKey(incl), incl);
         }
 
         /* package */ IncludeUID(DataInput aStream) throws IOException {
@@ -551,10 +562,10 @@ public class UIDUtilities {
     /**
      * UID for CsmParameterList
      */
-    /* package */ static final class ParamListUID<T extends CsmNamedElement> extends KeyBasedUID<CsmParameterList<T>> {
+    /* package */ static final class ParamListUID<T extends CsmNamedElement> extends CachedUID<CsmParameterList<T>> { //KeyBasedUID<CsmParameterList<T>> {
 
         public ParamListUID(CsmParameterList<T> paramList) {
-            super(KeyUtilities.createParamListKey(paramList));
+            super(KeyUtilities.createParamListKey(paramList), paramList);
         }
 
         /* package */ ParamListUID(DataInput aStream) throws IOException {
@@ -606,7 +617,7 @@ public class UIDUtilities {
     /* package */ static final class UnnamedClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
         public UnnamedClassifierUID(T classifier, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) classifier, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) classifier, index), classifier);
         }
 
         /* package */ UnnamedClassifierUID(DataInput aStream) throws IOException {
@@ -625,7 +636,7 @@ public class UIDUtilities {
     /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
         public UnnamedOffsetableDeclarationUID(T decl, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) decl, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) decl, index), decl);
         }
 
         /* package */ UnnamedOffsetableDeclarationUID(DataInput aStream) throws IOException {

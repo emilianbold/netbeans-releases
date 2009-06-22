@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class ReferencesTest extends BaseTestSuite {
+public class ReferencesTest extends CndBaseTestSuite {
     
     public ReferencesTest() {
         super("C/C++ xRef");

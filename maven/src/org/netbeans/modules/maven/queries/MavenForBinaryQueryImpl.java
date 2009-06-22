@@ -221,7 +221,17 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         for (int i = 0; i < res.length; i++) {
             FileObject fo = FileUtil.toFileObject(new File(res[i]));
             if (fo != null) {
-                toReturn.add(fo);
+                boolean ok = true;
+                //#166655 resource root cannot contain the real java/xxx roots
+                for (FileObject form : toReturn) {
+                    if (FileUtil.isParentOf(fo, form)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    toReturn.add(fo);
+                }
             }
         }
         return toReturn.toArray(new FileObject[toReturn.size()]);
@@ -242,7 +252,17 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         for (int i = 0; i < res.length; i++) {
             FileObject fo = FileUtil.toFileObject(new File(res[i]));
             if (fo != null) {
-                toReturn.add(fo);
+                boolean ok = true;
+                //#166655 resource root cannot contain the real java/xxx roots
+                for (FileObject form : toReturn) {
+                    if (FileUtil.isParentOf(fo, form)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    toReturn.add(fo);
+                }
             }
         }
         return toReturn.toArray(new FileObject[toReturn.size()]);

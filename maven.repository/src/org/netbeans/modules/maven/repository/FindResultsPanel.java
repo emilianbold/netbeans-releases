@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,7 +105,21 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
                 try {
                     infos = RepositoryQueries.find(fields);
                 } catch (BooleanQuery.TooManyClauses exc) {
-                    infos = Collections.<NBVersionInfo>emptyList();
+                    List<QueryField> withoutClasses = new ArrayList<QueryField>(fields);
+                    Iterator<QueryField> it = withoutClasses.iterator();
+                    while (it.hasNext()) {
+                        QueryField qf = it.next();
+                        if (qf.getField().equals(QueryField.FIELD_CLASSES)) {
+                            it.remove();
+                            break;
+                        }
+                    }
+                    try {
+                        infos = RepositoryQueries.find(withoutClasses);
+                    } catch (BooleanQuery.TooManyClauses exc2) {
+                        infos = Collections.<NBVersionInfo>emptyList();
+                        //TODO report as problem..
+                    }
                 }
 
                 final List<NBVersionInfo> finalInfos = infos;

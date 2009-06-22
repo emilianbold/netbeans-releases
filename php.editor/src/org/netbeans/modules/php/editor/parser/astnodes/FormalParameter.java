@@ -47,12 +47,12 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  */
 public class FormalParameter extends ASTNode {
 
-    private Identifier parameterType;
+    private Expression parameterType;
     private Expression parameterName;
     private Expression defaultValue;
     private boolean isMandatory; // php4 "const" keyword 
 
-    private FormalParameter(int start, int end, Identifier type, final Expression parameterName, Expression defaultValue, boolean isMandatory) {
+    private FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue, boolean isMandatory) {
         super(start, end);
 
         this.parameterName = parameterName;
@@ -61,23 +61,23 @@ public class FormalParameter extends ASTNode {
         this.isMandatory = isMandatory;
     }
 
-    public FormalParameter(int start, int end, Identifier type, final Variable parameterName, Expression defaultValue) {
+    public FormalParameter(int start, int end, Expression type, final Variable parameterName, Expression defaultValue) {
         this(start, end, type, (Expression) parameterName, defaultValue, false);
     }
 
-    public FormalParameter(int start, int end, Identifier type, final Reference parameterName, Expression defaultValue) {
+    public FormalParameter(int start, int end, Expression type, final Reference parameterName, Expression defaultValue) {
         this(start, end, type, (Expression) parameterName, defaultValue, false);
     }
 
-    public FormalParameter(int start, int end, Identifier type, final Variable parameterName) {
+    public FormalParameter(int start, int end, Expression type, final Variable parameterName) {
         this(start, end, type, (Expression) parameterName, null, false);
     }
 
-    public FormalParameter(int start, int end, Identifier type, final Variable parameterName, boolean isMandatory) {
+    public FormalParameter(int start, int end, Expression type, final Variable parameterName, boolean isMandatory) {
         this(start, end, type, (Expression) parameterName, null, isMandatory);
     }
 
-    public FormalParameter(int start, int end, Identifier type, final Reference parameterName) {
+    public FormalParameter(int start, int end, Expression type, final Reference parameterName) {
         this(start, end, type, (Expression) parameterName, null, false);
     }
 
@@ -105,7 +105,7 @@ public class FormalParameter extends ASTNode {
     /**
      * @return the type of this parameter
      */
-    public Identifier getParameterType() {
+    public Expression getParameterType() {
         return parameterType;
     }
     

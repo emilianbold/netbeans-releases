@@ -66,7 +66,8 @@ public class GameCodeGenerator implements CodeGenerator {
         if (GameController.PROJECT_TYPE_GAME.equals (context.getProjectType ())) {
             DataObject dataObject = context.getDataObject ();
             StyledDocument styledDocument = IOSupport.getDataObjectInteface (dataObject).getEditorDocument ();
-            JavaCodeGenerator.getDefault ().updateUserCodesFromEditor (styledDocument);
+            JavaCodeGenerator.getDefault ().updateUserCodesFromEditor (styledDocument,
+                    document);
         }
     }
 

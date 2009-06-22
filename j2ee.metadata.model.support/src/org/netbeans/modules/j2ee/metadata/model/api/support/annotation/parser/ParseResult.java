@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser;
 
 import java.util.Map;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.*;
 import org.openide.util.Parameters;
 
 /**
