@@ -554,6 +554,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                         <attr name="position" intvalue="1720"/>
                     </file>
+                    <file name="org-netbeans-modules-project-ui-TestSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
+                        <attr name="position" intvalue="1780"/>
+                    </file>
                     </folder>
             </folder>
         </folder>
