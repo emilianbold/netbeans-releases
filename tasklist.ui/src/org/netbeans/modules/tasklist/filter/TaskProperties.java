@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.tasklist.filter;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.modules.tasklist.impl.Accessor;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 
@@ -92,19 +93,13 @@ class TaskProperties {
     
     public static TaskProperty PROP_FILE = new TaskProperty(PROPID_FILE, String.class) {
         public Object getValue(Task t) {
-            FileObject file = Accessor.getResource(t);
-            if( null == file || file.isFolder() )
-                return ""; //NOI18N
-            return file.getNameExt();
+            return Accessor.getFileNameExt(t);
         }
     };
     
     public static TaskProperty PROP_LOCATION = new TaskProperty(PROPID_LOCATION, String.class) {
         public Object getValue(Task t) {
-            FileObject file = Accessor.getResource(t);
-            if( null == file || file.isFolder() )
-                return FileUtil.getFileDisplayName( file );
-            return FileUtil.getFileDisplayName( file.getParent() );
+            return Accessor.getLocation(t);
         }
     };
 }

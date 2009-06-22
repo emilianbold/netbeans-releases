@@ -43,6 +43,7 @@ package org.netbeans.spi.tasklist;
 
 import java.awt.Image;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
@@ -59,8 +60,12 @@ class AccessorImpl extends Accessor {
         return t.getDescription();
     }
 
-    public FileObject getResource(Task t) {
-        return t.getResource();
+    public FileObject getFile(Task t) {
+        return t.getFile();
+    }
+
+    public URL getURL(Task t) {
+        return t.getURL();
     }
 
     public TaskGroup getGroup(Task t) {

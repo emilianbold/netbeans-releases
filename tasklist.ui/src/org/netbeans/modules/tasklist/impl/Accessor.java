@@ -43,6 +43,7 @@ package org.netbeans.modules.tasklist.impl;
 
 import java.awt.Image;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
 import org.netbeans.spi.tasklist.FileTaskScanner;
@@ -60,9 +61,33 @@ public class Accessor {
     /** Creates a new instance of Accessor */
     private Accessor() {
     }
-    
-    public static FileObject getResource( Task t ) {
-        return org.netbeans.modules.tasklist.trampoline.Accessor.DEFAULT.getResource( t );
+
+    public static URL getURL( Task t ) {
+        return org.netbeans.modules.tasklist.trampoline.Accessor.DEFAULT.getURL( t );
+    }
+
+    public static FileObject getFile( Task t ) {
+        return org.netbeans.modules.tasklist.trampoline.Accessor.DEFAULT.getFile( t );
+    }
+
+    public static String getLocation( Task t ) {
+        URL url = getURL(t);
+        if( null != url ) {
+            return url.toString();
+        }
+        FileObject fo = getFile(t);
+        String location = fo.getPath();
+        int line = getLine(t);
+        if( line >= 0 )
+            location += ":" + line;
+        return location;
+    }
+
+    public static String getFileNameExt( Task t ) {
+        FileObject fo = getFile(t);
+        if( null == fo )
+            return null;
+        return fo.getNameExt();
     }
     
     public static String getDescription( Task t ) {
@@ -104,7 +129,7 @@ public class Accessor {
     }
     
     public static TaskScanningScope getEmptyScope() {
-        return org.netbeans.modules.tasklist.trampoline.Accessor.DEFAULT.getEmptyScope();
+        return org.netbeans.modules.tasklist.trampoline.Accessor.getEmptyScope();
     }
 
 
