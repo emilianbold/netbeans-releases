@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -337,7 +338,9 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
-                    for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
+                    Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
+                    while(it.hasNext()){
+                        APTIncludeHandler.IncludeInfo info = it.next();
                         int offset = info.getIncludeDirectiveOffset();
                         CsmInclude find = null;
                         for(CsmInclude inc : startFile.getIncludes()){

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
@@ -133,11 +134,12 @@ public class APTHandlersSupportImpl {
         return incl == null ? 0 : incl.getIncludeStackDepth();
     }
 
-    public static List<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
+    private static final LinkedList<APTIncludeHandler.IncludeInfo> EMPLY_LINKED_LIST = new LinkedList<APTIncludeHandler.IncludeInfo>();
+
+    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         assert state != null;
         List<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
-        return inclStack == null ? Collections.<APTIncludeHandler.IncludeInfo>emptyList() : 
-            new ArrayList<APTIncludeHandler.IncludeInfo>(inclStack);
+        return inclStack == null ? EMPLY_LINKED_LIST : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
 
     public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
@@ -155,7 +157,7 @@ public class APTHandlersSupportImpl {
 	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
     }
     
-    private static List<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
+    private static LinkedList<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
     }
     
