@@ -53,6 +53,8 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.wizards.RailsInstallationValidator.RailsInstallationInfo;
@@ -84,8 +86,21 @@ public class RailsInstallationPanel extends JPanel {
 
         this.setName(NbBundle.getMessage(RailsInstallationPanel.class,"LAB_InstallRails"));
         this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(RailsInstallationPanel.class,"TXT_NewRoRApp")); // NOI18N
+
+        initWithDispatchersCheckBox();
     }
-    
+
+    private void initWithDispatchersCheckBox() {
+        boolean enable = false;
+        String selected = (String) railsVersionComboBox.getSelectedItem();
+        if (selected != null) {
+            RailsVersion version23 = new RailsVersion(2, 3);
+            enable = RailsProjectUtil.versionFor(selected).compareTo(version23) >= 0;
+        }
+        withDispatchersCheckBox.setSelected(withDispatchersCheckBox.isSelected() && enable);
+        withDispatchersCheckBox.setEnabled(enable);
+    }
+
     private void initRailsVersionComboBox() {
         List<GemInfo> gemInfos = platform().getGemManager().getVersions("rails"); //NOI18N
         int size = gemInfos.size();
@@ -168,6 +183,7 @@ public class RailsInstallationPanel extends JPanel {
         // In case user went back to the previous panel and changed the ruby settings
         updateGemProblem();
         initRailsVersionComboBox();
+        initWithDispatchersCheckBox();
 
     }
 
@@ -180,6 +196,9 @@ public class RailsInstallationPanel extends JPanel {
             if (version != null && !version.equals(latest)) {
                 settings.putProperty(NewRailsProjectWizardIterator.RAILS_VERSION, railsVersionComboBox.getSelectedItem());
             }
+        }
+        if (withDispatchersCheckBox.isSelected()) {
+            settings.putProperty(NewRailsProjectWizardIterator.RAILS_OPTIONS, "--with-dispatchers"); //NOI18N
         }
     }
 
@@ -247,6 +266,7 @@ public class RailsInstallationPanel extends JPanel {
         installWarblerButton = new javax.swing.JButton();
         gfGemLabel = new javax.swing.JLabel();
         installGfGemButton = new javax.swing.JButton();
+        withDispatchersCheckBox = new javax.swing.JCheckBox();
 
         FormListener formListener = new FormListener();
 
@@ -272,6 +292,7 @@ public class RailsInstallationPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(railsVersionLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsVersionLabel.text")); // NOI18N
 
         railsVersionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        railsVersionComboBox.addItemListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(warblerLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.warblerLabel.text")); // NOI18N
 
@@ -283,6 +304,8 @@ public class RailsInstallationPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(installGfGemButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installGfGemButton.text")); // NOI18N
         installGfGemButton.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(withDispatchersCheckBox, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.withDispatchersCheckBox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -290,6 +313,7 @@ public class RailsInstallationPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(withDispatchersCheckBox)
                     .add(proxyButton)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -303,15 +327,15 @@ public class RailsInstallationPanel extends JPanel {
                             .add(railsDetailButton)
                             .add(railsButton))
                         .add(162, 162, 162))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
-                    .add(jrubyLabel)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 469, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jrubySslLabel)
                     .add(sslButton)
                     .add(warblerLabel)
                     .add(installWarblerButton)
                     .add(gfGemLabel)
-                    .add(installGfGemButton))
-                .addContainerGap())
+                    .add(installGfGemButton)
+                    .add(jrubyLabel))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -325,11 +349,13 @@ public class RailsInstallationPanel extends JPanel {
                     .add(railsVersionLabel)
                     .add(railsVersionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(railsButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(withDispatchersCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jrubyLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jrubySslLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslButton)
@@ -341,7 +367,7 @@ public class RailsInstallationPanel extends JPanel {
                 .add(gfGemLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installGfGemButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
+                .add(18, 18, 18)
                 .add(proxyButton)
                 .addContainerGap())
         );
@@ -354,7 +380,7 @@ public class RailsInstallationPanel extends JPanel {
 
     // Code for dispatching events from components to event handlers.
 
-    private class FormListener implements java.awt.event.ActionListener {
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.ItemListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == railsButton) {
@@ -374,6 +400,12 @@ public class RailsInstallationPanel extends JPanel {
             }
             else if (evt.getSource() == installGfGemButton) {
                 RailsInstallationPanel.this.installGfGemButtonActionPerformed(evt);
+            }
+        }
+
+        public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            if (evt.getSource() == railsVersionComboBox) {
+                RailsInstallationPanel.this.railsVersionComboBoxItemStateChanged(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -405,6 +437,7 @@ public class RailsInstallationPanel extends JPanel {
             RailsInstallationPanel.this.firer.fireChangeEvent();
             platform().recomputeRoots();
             initRailsVersionComboBox();
+            initWithDispatchersCheckBox();
         }
     }
 
@@ -444,6 +477,10 @@ public class RailsInstallationPanel extends JPanel {
 
     }//GEN-LAST:event_installGfGemButtonActionPerformed
 
+    private void railsVersionComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_railsVersionComboBoxItemStateChanged
+        initWithDispatchersCheckBox();
+    }//GEN-LAST:event_railsVersionComboBoxItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
@@ -460,6 +497,7 @@ public class RailsInstallationPanel extends JPanel {
     private javax.swing.JLabel railsVersionLabel;
     private javax.swing.JButton sslButton;
     private javax.swing.JLabel warblerLabel;
+    private javax.swing.JCheckBox withDispatchersCheckBox;
     // End of variables declaration//GEN-END:variables
 
     static class Panel implements WizardDescriptor.ValidatingPanel {

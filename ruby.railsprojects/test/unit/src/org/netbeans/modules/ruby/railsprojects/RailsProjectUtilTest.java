@@ -64,4 +64,24 @@ public class RailsProjectUtilTest extends RubyTestBase {
         String version = RailsProjectUtil.getSpecifiedRailsVersion(versionFo);
         assertEquals("2.1.0", version);
     }
+
+    public void testVersionFor() {
+        RailsProjectUtil.RailsVersion version = RailsProjectUtil.versionFor("1");
+        assertEquals("1.0.0", version.asString());
+
+        version = RailsProjectUtil.versionFor("2.2");
+        assertEquals("2.2.0", version.asString());
+
+        version = RailsProjectUtil.versionFor("2.3.2");
+        assertEquals("2.3.2", version.asString());
+
+        version = RailsProjectUtil.versionFor("x.1");
+        assertEquals("0.0.0", version.asString());
+    }
+
+    public void testCompareRailsVersions() {
+        assertEquals(-1, RailsProjectUtil.versionFor("2.1").compareTo(RailsProjectUtil.versionFor("2.3.0")));
+        assertEquals(0, RailsProjectUtil.versionFor("1.1").compareTo(RailsProjectUtil.versionFor("1.1")));
+        assertEquals(1, RailsProjectUtil.versionFor("2.4.10").compareTo(RailsProjectUtil.versionFor("2.4.9")));
+    }
 }
