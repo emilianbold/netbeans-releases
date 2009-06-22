@@ -61,13 +61,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.jira.query.UserSearch.UserSearchItem;
+import org.netbeans.modules.jira.util.PriorityRenderer;
+import org.netbeans.modules.jira.util.ProjectRenderer;
+import org.netbeans.modules.jira.util.ResolutionRenderer;
+import org.netbeans.modules.jira.util.StatusRenderer;
+import org.netbeans.modules.jira.util.TypeRenderer;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -172,8 +171,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         tableSummaryLabel.addFocusListener(this);
         webButton.addFocusListener(this);
         
-        byLastChangeLabel.setVisible(false);
-        byLastChangeContainer.setVisible(false);
         lblIssueKeyWarning.setVisible(false);
 
         validate();
@@ -198,6 +195,20 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private void initComponents() {
 
         byLastChangePanel = new javax.swing.JPanel();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
         byAttributesPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
@@ -220,15 +231,180 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byLastChangePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
+        jLabel17.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel17.text")); // NOI18N
+
+        jLabel18.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel18.text")); // NOI18N
+
+        ratioMinTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.ratioMinTextField.text")); // NOI18N
+
+        jLabel19.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel19.text")); // NOI18N
+
+        ratioMaxTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.ratioMaxTextField.text")); // NOI18N
+        ratioMaxTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ratioMaxTextFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel20.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jLabel20.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel20.text")); // NOI18N
+
+        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        jLabel11.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel11.text")); // NOI18N
+
+        dueFromTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.dueFromTextField.text")); // NOI18N
+
+        jLabel10.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jLabel10.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel10.text")); // NOI18N
+
+        jLabel12.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel12.text")); // NOI18N
+
+        updatedToTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.updatedToTextField.text")); // NOI18N
+        updatedToTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updatedToTextFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel14.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel14.text")); // NOI18N
+
+        jLabel16.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jLabel16.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel16.text")); // NOI18N
+
+        jLabel9.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel9.text")); // NOI18N
+
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel7.text")); // NOI18N
+
+        createdFromTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.createdFromTextField.text")); // NOI18N
+
+        dueToTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.dueToTextField.text")); // NOI18N
+        dueToTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dueToTextFieldActionPerformed(evt);
+            }
+        });
+
+        updatedFromTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.updatedFromTextField.text")); // NOI18N
+
+        jLabel15.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel15.text")); // NOI18N
+
+        createdToTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.createdToTextField.text")); // NOI18N
+        createdToTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createdToTextFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel13.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jLabel13.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel13.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel7)
+                    .add(jLabel14)
+                    .add(jLabel11))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel16)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(dueFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel15)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(dueToTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel13)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(updatedFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel12)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(updatedToTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel10)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(createdFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel9)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(createdToTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE))))
+        );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {createdFromTextField, createdToTextField, dueFromTextField, dueToTextField, updatedFromTextField, updatedToTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(jLabel7)
+                .add(createdFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel9)
+                .add(createdToTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(36, 36, 36)
+                .add(jLabel10)
+                .add(20, 20, 20)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel12)
+                    .add(updatedToTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(updatedFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel11))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel13)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dueFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel15)
+                    .add(dueToTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel14))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel16))
+        );
+
         org.jdesktop.layout.GroupLayout byLastChangePanelLayout = new org.jdesktop.layout.GroupLayout(byLastChangePanel);
         byLastChangePanel.setLayout(byLastChangePanelLayout);
         byLastChangePanelLayout.setHorizontalGroup(
             byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 784, Short.MAX_VALUE)
+            .add(byLastChangePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jLabel17)
+                .add(18, 18, 18)
+                .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(byLastChangePanelLayout.createSequentialGroup()
+                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel19)
+                            .add(jLabel18))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(ratioMinTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(ratioMaxTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(byLastChangePanelLayout.createSequentialGroup()
+                        .add(jLabel20)
+                        .add(0, 0, 0)))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
         byLastChangePanelLayout.setVerticalGroup(
             byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 182, Short.MAX_VALUE)
+            .add(byLastChangePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(byLastChangePanelLayout.createSequentialGroup()
+                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel17)
+                            .add(jLabel18)
+                            .add(ratioMinTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(byLastChangePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel19)
+                            .add(ratioMaxTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel20)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         byAttributesPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -537,7 +713,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tableFieldsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(tableFieldsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1007, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableHeaderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -546,7 +722,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             .add(tableFieldsPanelLayout.createSequentialGroup()
                 .add(tableHeaderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(tablePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -903,6 +1079,22 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         // TODO add your handling code here:
     }//GEN-LAST:event_reloadAttributesButtonActionPerformed
 
+    private void createdToTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createdToTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_createdToTextFieldActionPerformed
+
+    private void updatedToTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updatedToTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_updatedToTextFieldActionPerformed
+
+    private void dueToTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dueToTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_dueToTextFieldActionPerformed
+
+    private void ratioMaxTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ratioMaxTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ratioMaxTextFieldActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JComboBox assigneeComboBox = new javax.swing.JComboBox();
@@ -921,8 +1113,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JPanel byTextPanel;
     final javax.swing.JButton cancelChangesButton = new javax.swing.JButton();
     final javax.swing.JCheckBox commentsCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JTextField createdFromTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField createdToTextField = new javax.swing.JTextField();
     private javax.swing.JPanel criteriaPanel;
     final javax.swing.JCheckBox descriptionCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JTextField dueFromTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField dueToTextField = new javax.swing.JTextField();
     final javax.swing.JCheckBox environmentCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JComboBox filterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel filterLabel;
@@ -930,12 +1126,26 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
     final javax.swing.JTextField idTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     final javax.swing.JScrollPane jScrollPane10 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane11 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane6 = new HackedScrollPane();
@@ -959,6 +1169,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel queryLabel = new javax.swing.JLabel();
     final javax.swing.JTextField queryNameTextField = new javax.swing.JTextField();
     final javax.swing.JTextField queryTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField ratioMaxTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField ratioMinTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JCheckBox refreshCheckBox = new javax.swing.JCheckBox();
     final org.netbeans.modules.bugtracking.util.LinkButton reloadAttributesButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -983,6 +1195,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel tableSummaryLabel = new javax.swing.JLabel();
     final javax.swing.JLabel typeLabel = new javax.swing.JLabel();
     final javax.swing.JList typeList = new javax.swing.JList();
+    final javax.swing.JTextField updatedFromTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField updatedToTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
 
@@ -1179,66 +1393,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof Filter) {
                 value = ((Filter)value).getDisplayName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class ProjectRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Project) {
-                value = ((Project) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class StatusRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof JiraStatus) {
-                value = ((JiraStatus) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class TypeRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof IssueType) {
-                value = ((IssueType) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class ResolutionRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Resolution) {
-                value = ((Resolution) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class PriorityRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Priority) {
-                value = ((Priority) value).getName();
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-    }
-
-    private static class UserSearchRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof UserSearchItem) {
-                value = ((UserSearchItem) value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
