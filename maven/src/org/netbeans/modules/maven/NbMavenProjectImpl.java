@@ -152,6 +152,8 @@ public final class NbMavenProjectImpl implements Project {
     //TODO remove
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
+    private static RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
+
     private FileObject fileObject;
     private FileObject folderFileObject;
     private File projectFile;
@@ -1298,10 +1300,16 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         public void actionPerformed(java.awt.event.ActionEvent event) {
-            EmbedderFactory.resetProjectEmbedder();
-            for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
-                NbMavenProject.fireMavenProjectReload(prj);
-            }
+            //#166919 - need to run in RP to prevent RPing later in fireProjectReload()
+            RELOAD_RP.post(new Runnable() {
+                public void run() {
+                    EmbedderFactory.resetProjectEmbedder();
+                    for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
+                        NbMavenProject.fireMavenProjectReload(prj);
+                    }
+                }
+            });
+
         }
 
         public Action createContextAwareInstance(Lookup actionContext) {

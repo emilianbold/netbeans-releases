@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.unit;
 
 import junit.framework.*;
 import junit.textui.TestRunner;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 
 /**
@@ -62,7 +63,10 @@ public class PersistenceUnitDataObjectTest extends PersistenceEditorTestBase{
     }
     
     public void testAddPersistenceUnit() throws Exception{
-        PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        String version=dataObject.getPersistence().getVersion();
+        PersistenceUnit persistenceUnit = Persistence.VERSION_1_0.equals(version) ?
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
         persistenceUnit.setName("em3");
         persistenceUnit.setJtaDataSource("jdbc/__default");
         dataObject.addPersistenceUnit(persistenceUnit);

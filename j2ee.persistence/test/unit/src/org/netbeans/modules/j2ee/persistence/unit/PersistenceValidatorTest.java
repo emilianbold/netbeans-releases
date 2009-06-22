@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.unit;
 
 import junit.framework.*;
 import java.util.List;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.xml.multiview.Error;
 
@@ -64,10 +65,15 @@ public class PersistenceValidatorTest extends PersistenceEditorTestBase {
      * Tests that validator reports duplicate names as errors.
      */
     public void testValidateNameIsUnique() {
-        PersistenceUnit unit1 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        String version=dataObject.getPersistence().getVersion();
+        PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ? 
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
         unit1.setName("name1");
         dataObject.addPersistenceUnit(unit1);
-        PersistenceUnit unit2 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        PersistenceUnit unit2 = Persistence.VERSION_1_0.equals(version) ?
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
         unit2.setName("name1");
         dataObject.addPersistenceUnit(unit2);
         PersistenceValidator validator = new PersistenceValidatorImpl(dataObject, false);
@@ -85,7 +91,10 @@ public class PersistenceValidatorTest extends PersistenceEditorTestBase {
     public void testValidateExcludeUnlistedClasses(){
         // Java SE
         PersistenceValidator javaSEvalidator = new PersistenceValidatorImpl(dataObject, true);
-        PersistenceUnit unit1 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        String version=dataObject.getPersistence().getVersion();
+        PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ?
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
         unit1.setName("unit1");
         unit1.setExcludeUnlistedClasses(true);
         dataObject.addPersistenceUnit(unit1);
@@ -105,7 +114,10 @@ public class PersistenceValidatorTest extends PersistenceEditorTestBase {
     public void testValidateJarFiles(){
         // Java SE
         PersistenceValidator javaSEvalidator = new PersistenceValidatorImpl(dataObject, true);
-        PersistenceUnit unit1 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        String version=dataObject.getPersistence().getVersion();
+        PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ?
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
         unit1.setName("unit1");
         unit1.addJarFile("my-jar.jar");
         dataObject.addPersistenceUnit(unit1);
