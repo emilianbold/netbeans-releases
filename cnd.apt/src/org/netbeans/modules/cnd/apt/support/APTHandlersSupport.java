@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap;
@@ -110,7 +111,7 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createCleanPreprocState(orig);
     }
     
-    public static List<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
+    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         return APTHandlersSupportImpl.extractIncludeStack(state);
     }
     
@@ -140,6 +141,11 @@ public class APTHandlersSupport {
         @Override
         public int hashCode() {
             return crc1 ^ crc2;
+        }
+
+        @Override
+        public String toString() {
+            return "<"+crc1+","+crc2+">"; // NOI18N
         }
     }
 }

@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import antlr.TokenStreamRecognitionException;
-import java.util.Stack;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -129,7 +129,7 @@ public final class APTBuilderImpl {
     }
     
     //////Build APT without recursion (a little bit faster, can be tuned even more)
-    private Stack<APTBaseNode> nodeStack = new Stack<APTBaseNode>();
+    private LinkedList<APTBaseNode> nodeStack = new LinkedList<APTBaseNode>();
     
     private APTToken build(APTFileNode aptFile, TokenStream stream) throws TokenStreamException {
         assert(stream != null);
@@ -145,8 +145,8 @@ public final class APTBuilderImpl {
                 }
                 
                 if (APTUtils.isEndCondition(nextToken)) {
-                    assert (!nodeStack.empty()) : nextToken.getText() + " found without corresponding if: " + nextToken;
-                    root = nodeStack.pop();
+                    assert (!nodeStack.isEmpty()) : nextToken.getText() + " found without corresponding if: " + nextToken;
+                    root = nodeStack.removeLast();
                     root.addChild(activeNode);
                     nextToken = (APTToken) stream.nextToken();
                     continue;
@@ -157,7 +157,7 @@ public final class APTBuilderImpl {
 
                 if (activeNode.getType() == APT.Type.CONDITION_CONTAINER) {
                     assert(root.getType() != APT.Type.CONDITION_CONTAINER);
-                    nodeStack.push(root);
+                    nodeStack.addLast(root);
                     root = activeNode;
                     activeNode = createConditionChildNode(nextToken);
                     root.addChild(activeNode);
@@ -170,10 +170,10 @@ public final class APTBuilderImpl {
                         nextToken = (APTToken) stream.nextToken();
                     }
                     if (activeNode.getType() == APT.Type.ENDIF) {
-                        assert (!nodeStack.empty()) : "endif found without corresponding if: " + nextToken;
-                        root = nodeStack.pop();
+                        assert (!nodeStack.isEmpty()) : "endif found without corresponding if: " + nextToken;
+                        root = nodeStack.removeLast();
                     } else if (root.getType() == APT.Type.CONDITION_CONTAINER) {
-                        nodeStack.push(root);
+                        nodeStack.addLast(root);
                         root = activeNode;
                     } 
                     activeNode = null;

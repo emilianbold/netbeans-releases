@@ -76,7 +76,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
-        declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
+        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
         name = NameCache.getManager().getString(ast.getText());
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
@@ -110,7 +110,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
-        synchronized (this) {
+        synchronized (declarations) {
             decls = UIDCsmConverter.UIDsToDeclarations(declarations);
         }
         return decls;
@@ -118,7 +118,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         Iterator<CsmOffsetableDeclaration> out;
-        synchronized (this) {
+        synchronized (declarations) {
             out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations, filter);
          }
          return out;
@@ -128,7 +128,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CsmUID<CsmOffsetableDeclaration> out = null;
         // look for the object with the same start position and the same name
         // TODO: for now we are in O(n), but better to be O(ln n) speed
-        synchronized (this) {
+        synchronized (declarations) {
             out = UIDUtilities.findExistingUIDInList(declarations, start, end, name);
 //            if (FileImpl.traceFile(getContainingFile().getAbsolutePath())) {
 //                System.err.printf("%s found %s [%d-%d] in \n\t%s\n", (out == null) ? "NOT " : "", name, start, end, declarations);
@@ -140,7 +140,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
-        synchronized (this) {
+        synchronized (declarations) {
             UIDUtilities.insertIntoSortedUIDList(uid, declarations);
         }
         if (decl instanceof VariableImpl) {
@@ -182,7 +182,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
         assert uid != null;
-        declarations.remove(uid);
+        synchronized (declarations) {
+            declarations.remove(uid);
+        }
         RepositoryUtils.remove(uid, declaration);
         // update repository
         RepositoryUtils.put(this);
@@ -238,7 +240,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
         Collection<CsmOffsetableDeclaration> decls;
         List<CsmUID<CsmOffsetableDeclaration>> uids;
-        synchronized (this) {
+        synchronized (declarations) {
             decls = getDeclarations();
             uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations);
             declarations.clear();
@@ -294,9 +296,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         int collSize = input.readInt();
         if (collSize < 0) {
-            declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
+            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         } else {
-            declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize));
+            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize);
         }
         factory.readUIDCollection(declarations, input, collSize);
         

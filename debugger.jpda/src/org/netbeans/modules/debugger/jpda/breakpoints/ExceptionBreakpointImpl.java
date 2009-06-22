@@ -42,12 +42,12 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ExceptionEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ExceptionRequest;
 
+import java.util.List;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.Session;
@@ -55,13 +55,11 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ExceptionEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ExceptionRequestWrapper;
-import org.openide.util.Exceptions;
 
 /**
 * Implementation of breakpoint on method.
@@ -89,20 +87,24 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
         checkLoadedClasses (breakpoint.getExceptionClassName (), null);
     }
     
-    protected void classLoaded (ReferenceType referenceType) {
-        try {
-            ExceptionRequest er = EventRequestManagerWrapper.createExceptionRequest (
-                getEventRequestManager(),
-                referenceType, 
-                (breakpoint.getCatchType () & 
-                    ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED) != 0, 
-                (breakpoint.getCatchType () & 
-                    ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
-            );
-            addFilters(er, breakpoint.getClassFilters(), breakpoint.getClassExclusionFilters());
-            addEventRequest (er);
-        } catch (VMDisconnectedExceptionWrapper e) {
-        } catch (InternalExceptionWrapper e) {
+    @Override
+    protected void classLoaded (List<ReferenceType> referenceTypes) {
+        for (ReferenceType referenceType : referenceTypes) {
+            try {
+                ExceptionRequest er = EventRequestManagerWrapper.createExceptionRequest (
+                    getEventRequestManager(),
+                    referenceType,
+                    (breakpoint.getCatchType () &
+                        ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED) != 0,
+                    (breakpoint.getCatchType () &
+                        ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
+                );
+                addFilters(er, breakpoint.getClassFilters(), breakpoint.getClassExclusionFilters());
+                addEventRequest (er);
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return ;
+            } catch (InternalExceptionWrapper e) {
+            }
         }
     }
     

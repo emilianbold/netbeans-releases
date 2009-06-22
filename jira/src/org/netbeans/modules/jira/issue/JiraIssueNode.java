@@ -134,7 +134,7 @@ public class JiraIssueNode extends IssueNode {
         }
     }
 
-    private class PriorityProperty extends IssueProperty<String> {
+    public class PriorityProperty extends IssueProperty<String> {
         public PriorityProperty() {
             super(NbJiraIssue.LABEL_NAME_PRIORITY,
                   String.class,
@@ -142,8 +142,11 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
         }
         public String getValue() {
-            Priority priority = getNbJiraIssue().getPriority();
+            Priority priority = getPriority();
             return priority != null ? priority.getName() : "";                  // NOI18N
+        }
+        public Priority getPriority() {
+            return getNbJiraIssue().getPriority();
         }
         @Override
         public Object getValue(String attributeName) {

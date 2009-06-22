@@ -94,6 +94,16 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="xml"/>
+        <resolver mime="text/x-dd-servlet-fragment3.0">
+            <xml-rule>
+            	<element name="web-fragment" ns="http://java.sun.com/xml/ns/javaee">
+                    <attr name="version" text="3.0"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
         <resolver mime="text/x-dd-ejbjar2.0">
             <xml-rule>
             	<doctype public-id="-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"/>

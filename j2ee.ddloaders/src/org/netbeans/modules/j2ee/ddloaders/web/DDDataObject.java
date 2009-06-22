@@ -698,7 +698,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         };
     }
 
-    private static class DDView extends DesignMultiViewDesc implements Serializable {
+    static class DDView extends DesignMultiViewDesc implements Serializable {
         private static final long serialVersionUID = -4814134594154669985L;
         private String name;
 
