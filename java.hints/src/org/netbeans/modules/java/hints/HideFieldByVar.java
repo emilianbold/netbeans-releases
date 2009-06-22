@@ -113,7 +113,8 @@ public class HideFieldByVar extends HideField {
         }
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
             (span[1] + span[0]) / 2,
-            compilationInfo.getFileObject()
+            compilationInfo.getFileObject(),
+            true
         ));
         bounds[0] = span[0];
         bounds[1] = span[1];
