@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import com.sun.jdi.ClassLoaderReference;
+import com.sun.jdi.Field;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.ClassUnloadEvent;
 import com.sun.jdi.event.Event;
@@ -53,7 +55,10 @@ import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
@@ -62,7 +67,10 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
@@ -71,9 +79,9 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ClassUnloadEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -128,6 +136,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
     }
     
+    @Override
     protected void remove () {
         super.remove();
         synchronized (SOURCE_ROOT_LOCK) {
@@ -138,6 +147,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
     }
     
+    @Override
     protected boolean isEnabled() {
         synchronized (SOURCE_ROOT_LOCK) {
             String sourceRoot = getSourceRoot();
@@ -214,12 +224,14 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
                     ClassPrepareRequestWrapper.addClassFilter (cpr, classFilters [i]);
-                    logger.fine("Set class load request: " + classFilters [i]);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Set class load request: " + classFilters [i]);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
                     ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, classExclusionFilters [i]);
-                    logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
                 }
                 addEventRequest (cpr, ignoreHitCountOnClassLoad);
             }
@@ -230,12 +242,14 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
                     ClassUnloadRequestWrapper.addClassFilter (cur, classFilters [i]);
-                    logger.fine("Set class unload request: " + classFilters [i]);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Set class unload request: " + classFilters [i]);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
                     ClassUnloadRequestWrapper.addClassExclusionFilter (cur, classExclusionFilters [i]);
-                    logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
                 }
                 addEventRequest (cur, false);
             }
@@ -258,6 +272,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         } else {
             i = VirtualMachineWrapper.classesByName0(vm, className).iterator ();
         }
+        List<ReferenceType> loadedClasses = null;
         while (i.hasNext ()) {
             ReferenceType referenceType = (ReferenceType) i.next ();
 //                if (verbose)
@@ -276,8 +291,17 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                             }
                         }
                         if (!excluded) {
-                            logger.fine(" Class loaded: " + referenceType);
-                            classLoaded (referenceType);
+                            if (logger.isLoggable(Level.FINE))
+                                logger.fine(" Class loaded: " + referenceType);
+                            if (loadedClasses == null) {
+                                loadedClasses = Collections.singletonList(referenceType);
+                            } else {
+                                if (loadedClasses.size() == 1) {
+                                    loadedClasses = new ArrayList<ReferenceType>(loadedClasses);
+                                }
+                                loadedClasses.add(referenceType);
+                            }
+                            //classLoaded (referenceType);
                             matched = true;
                         }
                     }
@@ -286,16 +310,30 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 }
             }
         }
+        if (loadedClasses != null && loadedClasses.size() > 0) {
+            ReferenceType preferredType;
+            try {
+                preferredType = JPDAUtils.getPreferredReferenceType(loadedClasses, logger);
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return false;
+            }
+            if (preferredType != null) {
+                loadedClasses = Collections.singletonList(preferredType);
+            }
+            classLoaded(loadedClasses);
+        }
         return matched;
     }
 
     public boolean exec (Event event) {
         try {
             if (event instanceof ClassPrepareEvent) {
-                logger.fine(" Class loaded: " + ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event));
-                classLoaded(ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event));
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine(" Class loaded: " + ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event));
+                classLoaded(Collections.singletonList(ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event)));
             } else if (event instanceof ClassUnloadEvent) {
-                logger.fine(" Class unloaded: " + ClassUnloadEventWrapper.className((ClassUnloadEvent) event));
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine(" Class unloaded: " + ClassUnloadEventWrapper.className((ClassUnloadEvent) event));
                 classUnloaded(ClassUnloadEventWrapper.className((ClassUnloadEvent) event));
             }
         } catch (InternalExceptionWrapper ex) {
@@ -309,7 +347,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     public void removed(EventRequest eventRequest) {
     }
     
-    protected void classLoaded (ReferenceType referenceType) {}
+    protected void classLoaded (List<ReferenceType> referenceTypes) {}
     protected void classUnloaded (String className) {}
     
     

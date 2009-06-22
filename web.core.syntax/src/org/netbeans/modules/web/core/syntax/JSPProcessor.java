@@ -316,6 +316,6 @@ public abstract class JSPProcessor {
             return new String[]{"javax.servlet.*", "javax.servlet.http.*", "javax.servlet.jsp.*"};
         }
         List<String> imports = pi.getImports();
-        return imports.toArray(new String[imports.size()]);
+        return imports == null ? null : imports.toArray(new String[imports.size()]);
     }
 }

@@ -70,7 +70,7 @@ public class BugzillaConfig {
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
-    private Map<String, Icon> iconMap;
+    private Map<String, Icon> priorityIcons;
 
     private BugzillaConfig() { }
 
@@ -229,14 +229,14 @@ public class BugzillaConfig {
     }
 
     public Icon getPriorityIcon(String priority) {
-        if(iconMap == null) {
-            iconMap = new HashMap<String, Icon>();
-            iconMap.put("P1", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p1.png", true));
-            iconMap.put("P2", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p2.png", true));
-            iconMap.put("P3", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p3.png", true));
-            iconMap.put("P4", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p4.png", true));
-            iconMap.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true));
+        if(priorityIcons == null) {
+            priorityIcons = new HashMap<String, Icon>();
+            priorityIcons.put("P1", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p1.png", true)); // NOI18N
+            priorityIcons.put("P2", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p2.png", true)); // NOI18N
+            priorityIcons.put("P3", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p3.png", true)); // NOI18N
+            priorityIcons.put("P4", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p4.png", true)); // NOI18N
+            priorityIcons.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true)); // NOI18N
         }
-        return iconMap.get(priority);
+        return priorityIcons.get(priority);
     }
 }

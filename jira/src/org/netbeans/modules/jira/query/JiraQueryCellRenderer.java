@@ -20,11 +20,14 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.JiraIssueNode;
+import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.SummaryProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.openide.util.ImageUtilities;
@@ -59,7 +62,17 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         fixRowHeightIfNeeded(table, row);
 
         if(!(value instanceof JiraIssueNode.SummaryProperty)) {
-            return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel renderer = (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if(value instanceof PriorityProperty) {
+                PriorityProperty property = (PriorityProperty) value;
+                Priority priority = property.getPriority();
+                Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
+                renderer.setIcon(icon);
+                return renderer;
+            } else {
+                renderer.setIcon(null);
+            }
+            return renderer;
         }
 
         SummaryProperty summaryProperty = (SummaryProperty) value;
@@ -143,6 +156,9 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     }
 
     private void fixRowHeightIfNeeded(JTable table, int row) {
+        if(defaultRowHeight == -1) {
+            return;
+        }
         if (resetRowHeight && table.getRowHeight(row) != defaultRowHeight) {
             table.setRowHeight(defaultRowHeight);
             resetRowHeight = false;

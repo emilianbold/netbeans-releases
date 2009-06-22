@@ -882,7 +882,7 @@ public class NbJiraIssue extends Issue {
                                                   loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
                                                   BugtrackingUtil.getLongestWordWidth(
                                                     loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
-                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                                                    JiraUtils.toStrings(conf.getPriorities()), t, true)),
                 new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                                   loc.getString("CTL_Issue_Status_Title"), // NOI18N
                                                   loc.getString("CTL_Issue_Status_Desc"), // NOI18N

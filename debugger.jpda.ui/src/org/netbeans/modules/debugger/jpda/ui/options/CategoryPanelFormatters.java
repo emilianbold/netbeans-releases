@@ -48,6 +48,7 @@ package org.netbeans.modules.debugger.jpda.ui.options;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -376,8 +377,17 @@ class CategoryPanelFormatters extends StorablePanel {
         fPanel.setValidityObjects(formatterEditDescriptor, notificationSupport, false);
         //formatterEditDescriptor.setValid(false);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(formatterEditDescriptor);
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");   // NOI18N
+        int w = p.getInt("VariableFormatters_AddEdit_WIDTH", -1);                        // NOI18N
+        int h = p.getInt("VariableFormatters_AddEdit_HEIGHT", -1);                       // NOI18N
+        if (w > 0 && h > 0) {
+            dlg.setSize(new Dimension(w, h));
+        }
         dlgPtr[0] = dlg;
         dlg.setVisible(true);
+        Dimension dim = dlg.getSize();
+        p.setInt("VariableFormatters_AddEdit_WIDTH", dim.width);                         // NOI18N
+        p.setInt("VariableFormatters_AddEdit_HEIGHT", dim.height);                       // NOI18N
         if (NotifyDescriptor.OK_OPTION.equals(formatterEditDescriptor.getValue())) {
             fPanel.store(f);
             ((DefaultListModel) formattersList.getModel()).addElement(f);
@@ -449,7 +459,16 @@ class CategoryPanelFormatters extends StorablePanel {
         fPanel.setValidityObjects(formatterEditDescriptor, notificationSupport, true);
         //formatterEditDescriptor.setValid(false);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(formatterEditDescriptor);
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
+        int w = p.getInt("VariableFormatters_AddEdit_WIDTH", -1);                      // NOI18N
+        int h = p.getInt("VariableFormatters_AddEdit_HEIGHT", -1);                     // NOI18N
+        if (w > 0 && h > 0) {
+            dlg.setSize(new Dimension(w, h));
+        }
         dlg.setVisible(true);
+        Dimension dim = dlg.getSize();
+        p.setInt("VariableFormatters_AddEdit_WIDTH", dim.width);                       // NOI18N
+        p.setInt("VariableFormatters_AddEdit_HEIGHT", dim.height);                     // NOI18N
         if (NotifyDescriptor.OK_OPTION.equals(formatterEditDescriptor.getValue())) {
             fPanel.store(f);
             checkBoxComponents.put(f, new JCheckBox(f.getName(), f.isEnabled()));
