@@ -59,14 +59,16 @@ import org.openide.filesystems.FileUtil;
  */
 public class ProviderUtilTest extends NbTestCase {
     
-    private PersistenceUnit persistenceUnit;
+    private PersistenceUnit persistenceUnit1;
+    private PersistenceUnit persistenceUnit2;
     
     public ProviderUtilTest(String testName) {
         super(testName);
     }
     
     protected void setUp() throws Exception {
-        this.persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        this.persistenceUnit1 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+        this.persistenceUnit2 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
     }
     
     protected void tearDown() throws Exception {
@@ -77,91 +79,92 @@ public class ProviderUtilTest extends NbTestCase {
         return suite;
     }
     
-    public void testGetProvider() {
-        persistenceUnit.setProvider(ProviderUtil.HIBERNATE_PROVIDER.getProviderClass());
-        assertEquals(ProviderUtil.HIBERNATE_PROVIDER, ProviderUtil.getProvider(persistenceUnit));
+    public void testGetProvider1() {
+        persistenceUnit1.setProvider(ProviderUtil.HIBERNATE_PROVIDER.getProviderClass());
+        assertEquals(ProviderUtil.HIBERNATE_PROVIDER, ProviderUtil.getProvider(persistenceUnit1));
     }
     
-    public void testSetTableGeneration(){
+
+    public void testSetTableGeneration1(){
         Provider provider = ProviderUtil.TOPLINK_PROVIDER;
-        persistenceUnit.setProvider(provider.getProviderClass());
+        persistenceUnit1.setProvider(provider.getProviderClass());
         
-        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
-        assertPropertyExists(provider.getTableGenerationPropertyName());
-        assertValueExists(provider.getTableGenerationCreateValue());
-        assertNoSuchValue(provider.getTableGenerationDropCreateValue());
+        ProviderUtil.setTableGeneration(persistenceUnit1, Provider.TABLE_GENERATION_CREATE, provider);
+        assertPropertyExists(persistenceUnit1, provider.getTableGenerationPropertyName());
+        assertValueExists(persistenceUnit1, provider.getTableGenerationCreateValue());
+        assertNoSuchValue(persistenceUnit1, provider.getTableGenerationDropCreateValue());
         
-        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_DROPCREATE, provider);
-        assertPropertyExists(provider.getTableGenerationPropertyName());
-        assertValueExists(provider.getTableGenerationDropCreateValue());
-        assertNoSuchValue(provider.getTableGenerationCreateValue());
+        ProviderUtil.setTableGeneration(persistenceUnit1, Provider.TABLE_GENERATION_DROPCREATE, provider);
+        assertPropertyExists(persistenceUnit1, provider.getTableGenerationPropertyName());
+        assertValueExists(persistenceUnit1, provider.getTableGenerationDropCreateValue());
+        assertNoSuchValue(persistenceUnit1, provider.getTableGenerationCreateValue());
         
     }
     
-    public void testSetProvider(){
+    public void testSetProvider1(){
         Provider provider = ProviderUtil.KODO_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, provider, getConnection(), Provider.TABLE_GENERATTION_UNKOWN);
-        assertEquals(provider.getProviderClass(), persistenceUnit.getProvider());
-        assertPropertyExists(provider.getJdbcDriver());
-        assertPropertyExists(provider.getJdbcUrl());
-        assertPropertyExists(provider.getJdbcUsername());
+        ProviderUtil.setProvider(persistenceUnit1, provider, getConnection(), Provider.TABLE_GENERATTION_UNKOWN);
+        assertEquals(provider.getProviderClass(), persistenceUnit1.getProvider());
+        assertPropertyExists(persistenceUnit1, provider.getJdbcDriver());
+        assertPropertyExists(persistenceUnit1, provider.getJdbcUrl());
+        assertPropertyExists(persistenceUnit1, provider.getJdbcUsername());
     }
     
-    public void testChangeProvider(){
+    public void testChangeProvider1(){
         Provider originalProvider = ProviderUtil.HIBERNATE_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
-        assertEquals(originalProvider.getProviderClass(), persistenceUnit.getProvider());
+        ProviderUtil.setProvider(persistenceUnit1, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+        assertEquals(originalProvider.getProviderClass(), persistenceUnit1.getProvider());
         
         Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, newProvider, getConnection(), Provider.TABLE_GENERATION_DROPCREATE);
+        ProviderUtil.setProvider(persistenceUnit1, newProvider, getConnection(), Provider.TABLE_GENERATION_DROPCREATE);
         // assert that old providers properties were removed
-        assertNoSuchProperty(originalProvider.getTableGenerationPropertyName());
-        assertNoSuchProperty(originalProvider.getJdbcDriver());
-        assertNoSuchProperty(originalProvider.getJdbcUrl());
-        assertNoSuchProperty(originalProvider.getJdbcUsername());
+        assertNoSuchProperty(persistenceUnit1, originalProvider.getTableGenerationPropertyName());
+        assertNoSuchProperty(persistenceUnit1, originalProvider.getJdbcDriver());
+        assertNoSuchProperty(persistenceUnit1, originalProvider.getJdbcUrl());
+        assertNoSuchProperty(persistenceUnit1, originalProvider.getJdbcUsername());
         // assert that new providers properties are set
-        assertEquals(newProvider.getProviderClass(), persistenceUnit.getProvider());
-        assertPropertyExists(newProvider.getJdbcDriver());
-        assertPropertyExists(newProvider.getJdbcUrl());
-        assertPropertyExists(newProvider.getJdbcUsername());
-        assertPropertyExists(newProvider.getTableGenerationPropertyName());
+        assertEquals(newProvider.getProviderClass(), persistenceUnit1.getProvider());
+        assertPropertyExists(persistenceUnit1, newProvider.getJdbcDriver());
+        assertPropertyExists(persistenceUnit1, newProvider.getJdbcUrl());
+        assertPropertyExists(persistenceUnit1, newProvider.getJdbcUsername());
+        assertPropertyExists(persistenceUnit1, newProvider.getTableGenerationPropertyName());
     }
     
     /**
      * Tests that changing of provider preserves existing
      * table generation value.
      */
-    public void testTableGenerationPropertyIsPreserved(){
+    public void testTableGenerationPropertyIsPreserved1(){
         Provider originalProvider = ProviderUtil.KODO_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+        ProviderUtil.setProvider(persistenceUnit1, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         
         Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
-        ProviderUtil.setProvider(persistenceUnit, newProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+        ProviderUtil.setProvider(persistenceUnit1, newProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(newProvider.getTableGenerationPropertyName(),
-                ProviderUtil.getProperty(persistenceUnit, newProvider.getTableGenerationPropertyName()).getName());
+                ProviderUtil.getProperty(persistenceUnit1, newProvider.getTableGenerationPropertyName()).getName());
         assertEquals(newProvider.getTableGenerationCreateValue(),
-                ProviderUtil.getProperty(persistenceUnit, newProvider.getTableGenerationPropertyName()).getValue());
+                ProviderUtil.getProperty(persistenceUnit1, newProvider.getTableGenerationPropertyName()).getValue());
         
         
         
     }
     
-    public void testRemoveProviderProperties(){
+    public void testRemoveProviderProperties1(){
         Provider provider = ProviderUtil.KODO_PROVIDER;
         PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         ProviderUtil.setProvider(persistenceUnit, provider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         //        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
         
         ProviderUtil.removeProviderProperties(persistenceUnit);
-        assertNoSuchProperty(provider.getTableGenerationPropertyName());
-        assertNoSuchProperty(provider.getJdbcDriver());
-        assertNoSuchProperty(provider.getJdbcUrl());
-        assertNoSuchProperty(provider.getJdbcUsername());
+        assertNoSuchProperty(persistenceUnit1, provider.getTableGenerationPropertyName());
+        assertNoSuchProperty(persistenceUnit1, provider.getJdbcDriver());
+        assertNoSuchProperty(persistenceUnit1, provider.getJdbcUrl());
+        assertNoSuchProperty(persistenceUnit1, provider.getJdbcUsername());
         
     }
     
     
-    public void testGetPUDataObject() throws Exception{
+    public void testGetPUDataObject1() throws Exception{
         String invalidPersistenceXml = getDataDir().getAbsolutePath() + File.separator + "invalid_persistence.xml";
         FileObject invalidPersistenceFO = FileUtil.toFileObject(new File(invalidPersistenceXml));
         try{
@@ -172,11 +175,96 @@ public class ProviderUtilTest extends NbTestCase {
         }
         
     }
+
+    public void testGetProvider2() {
+        persistenceUnit2.setProvider(ProviderUtil.HIBERNATE_PROVIDER.getProviderClass());
+        assertEquals(ProviderUtil.HIBERNATE_PROVIDER, ProviderUtil.getProvider(persistenceUnit2));
+    }
+
+    public void testSetTableGeneration2(){
+        Provider provider = ProviderUtil.TOPLINK_PROVIDER;
+        persistenceUnit2.setProvider(provider.getProviderClass());
+
+        ProviderUtil.setTableGeneration(persistenceUnit2, Provider.TABLE_GENERATION_CREATE, provider);
+        assertPropertyExists(persistenceUnit2, provider.getTableGenerationPropertyName());
+        assertValueExists(persistenceUnit2, provider.getTableGenerationCreateValue());
+        assertNoSuchValue(persistenceUnit2, provider.getTableGenerationDropCreateValue());
+
+        ProviderUtil.setTableGeneration(persistenceUnit2, Provider.TABLE_GENERATION_DROPCREATE, provider);
+        assertPropertyExists(persistenceUnit2, provider.getTableGenerationPropertyName());
+        assertValueExists(persistenceUnit2, provider.getTableGenerationDropCreateValue());
+        assertNoSuchValue(persistenceUnit2, provider.getTableGenerationCreateValue());
+
+    }
+
+    public void testSetProvider2(){
+        Provider provider = ProviderUtil.KODO_PROVIDER;
+        ProviderUtil.setProvider(persistenceUnit2, provider, getConnection(), Provider.TABLE_GENERATTION_UNKOWN);
+        assertEquals(provider.getProviderClass(), persistenceUnit2.getProvider());
+        assertPropertyExists(persistenceUnit2, provider.getJdbcDriver());
+        assertPropertyExists(persistenceUnit2, provider.getJdbcUrl());
+        assertPropertyExists(persistenceUnit2, provider.getJdbcUsername());
+    }
+
+    public void testChangeProvider2(){
+        Provider originalProvider = ProviderUtil.HIBERNATE_PROVIDER;
+        ProviderUtil.setProvider(persistenceUnit2, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+        assertEquals(originalProvider.getProviderClass(), persistenceUnit2.getProvider());
+
+        Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
+        ProviderUtil.setProvider(persistenceUnit2, newProvider, getConnection(), Provider.TABLE_GENERATION_DROPCREATE);
+        // assert that old providers properties were removed
+        assertNoSuchProperty(persistenceUnit2, originalProvider.getTableGenerationPropertyName());
+        assertNoSuchProperty(persistenceUnit2, originalProvider.getJdbcDriver());
+        assertNoSuchProperty(persistenceUnit2, originalProvider.getJdbcUrl());
+        assertNoSuchProperty(persistenceUnit2, originalProvider.getJdbcUsername());
+        // assert that new providers properties are set
+        assertEquals(newProvider.getProviderClass(), persistenceUnit2.getProvider());
+        assertPropertyExists(persistenceUnit2, newProvider.getJdbcDriver());
+        assertPropertyExists(persistenceUnit2, newProvider.getJdbcUrl());
+        assertPropertyExists(persistenceUnit2, newProvider.getJdbcUsername());
+        assertPropertyExists(persistenceUnit2, newProvider.getTableGenerationPropertyName());
+    }
+
+    /**
+     * Tests that changing of provider preserves existing
+     * table generation value.
+     */
+    public void testTableGenerationPropertyIsPreserved2(){
+        Provider originalProvider = ProviderUtil.KODO_PROVIDER;
+        ProviderUtil.setProvider(persistenceUnit2, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+
+        Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
+        ProviderUtil.setProvider(persistenceUnit2, newProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+        assertEquals(newProvider.getTableGenerationPropertyName(),
+                ProviderUtil.getProperty(persistenceUnit2, newProvider.getTableGenerationPropertyName()).getName());
+        assertEquals(newProvider.getTableGenerationCreateValue(),
+                ProviderUtil.getProperty(persistenceUnit2, newProvider.getTableGenerationPropertyName()).getValue());
+
+
+
+    }
+
+    public void testRemoveProviderProperties2(){
+        Provider provider = ProviderUtil.KODO_PROVIDER;
+        PersistenceUnit persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+        ProviderUtil.setProvider(persistenceUnit, provider, getConnection(), Provider.TABLE_GENERATION_CREATE);
+        //        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
+
+        ProviderUtil.removeProviderProperties(persistenceUnit);
+        assertNoSuchProperty(persistenceUnit1, provider.getTableGenerationPropertyName());
+        assertNoSuchProperty(persistenceUnit1, provider.getJdbcDriver());
+        assertNoSuchProperty(persistenceUnit1, provider.getJdbcUrl());
+        assertNoSuchProperty(persistenceUnit1, provider.getJdbcUsername());
+
+    }
+    
+
     /**
      * Asserts that property with given name exists in persistence unit.
      */
-    protected void assertPropertyExists(String propertyName){
-        if (!propertyExists(propertyName)){
+    protected void assertPropertyExists(PersistenceUnit pu, String propertyName){
+        if (!propertyExists(pu, propertyName)){
             fail("Property " + propertyName + " was not found.");
         }
         assertTrue(true);
@@ -185,22 +273,22 @@ public class ProviderUtilTest extends NbTestCase {
     /**
      * Asserts that no property with given name exists in persistence unit.
      */
-    protected void assertNoSuchProperty(String propertyName){
-        if (propertyExists(propertyName)){
+    protected void assertNoSuchProperty(PersistenceUnit pu, String propertyName){
+        if (propertyExists(pu, propertyName)){
             fail("Property " + propertyName + " was found.");
         }
         assertTrue(true);
     }
     
-    protected void assertNoSuchValue(String value){
-        if (valueExists(value)){
+    protected void assertNoSuchValue(PersistenceUnit pu, String value){
+        if (valueExists(pu, value)){
             fail("Property with value " + value + " was found");
         }
         assertTrue(true);
     }
     
-    protected void assertValueExists(String value){
-        if (!valueExists(value)){
+    protected void assertValueExists(PersistenceUnit pu, String value){
+        if (!valueExists(pu, value)){
             fail("Property with value " + value + " was not found");
         }
         assertTrue(true);
@@ -211,8 +299,8 @@ public class ProviderUtilTest extends NbTestCase {
      * @return true if property with given name exists in persistence unit,
      * false otherwise.
      */
-    protected boolean propertyExists(String propertyName){
-        Property[] properties = ProviderUtil.getProperties(persistenceUnit);
+    protected boolean propertyExists(PersistenceUnit pu, String propertyName){
+        Property[] properties = ProviderUtil.getProperties(pu);
         for (int i = 0; i < properties.length; i++) {
             if (properties[i].getName().equals(propertyName)){
                 return true;
@@ -225,8 +313,8 @@ public class ProviderUtilTest extends NbTestCase {
      * @return true if property with given value exists in persistence unit,
      * false otherwise.
      */
-    protected boolean valueExists(String propertyValue){
-        Property[] properties = ProviderUtil.getProperties(persistenceUnit);
+    protected boolean valueExists(PersistenceUnit pu, String propertyValue){
+        Property[] properties = ProviderUtil.getProperties(pu);
         for (int i = 0; i < properties.length; i++) {
             if (properties[i].getValue().equals(propertyValue)){
                 return true;

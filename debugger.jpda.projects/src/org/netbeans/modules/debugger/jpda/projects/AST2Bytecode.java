@@ -187,6 +187,9 @@ class AST2Bytecode {
                             identifier = ((NewClassTree) node).getIdentifier();
                             methodName = "<init>";
                             TreePath iPath = TreePath.getPath(cu, identifier);
+                            if (iPath == null) {
+                                return null; // No path to the identifier...
+                            }
                             TypeMirror type = trees.getTypeMirror(iPath);
                             if (type.getKind() == TypeKind.ERROR) {
                                 // There are errors, give it up.
@@ -201,6 +204,9 @@ class AST2Bytecode {
                             if (identifier.getKind() == Tree.Kind.IDENTIFIER) {
                                 methodName = ((IdentifierTree) identifier).getName().toString();
                                 TreePath iPath = TreePath.getPath(cu, identifier);
+                                if (iPath == null) {
+                                    return null; // No path to the identifier...
+                                }
                                 TypeElement te = trees.getScope(iPath).getEnclosingClass();
                                 if (te == null) {
                                     // No enclosing class? Some error, give it up.
@@ -212,6 +218,9 @@ class AST2Bytecode {
                                 getStartPosFromMethodLength = true;
                                 ExpressionTree exp = ((MemberSelectTree) identifier).getExpression();
                                 TreePath expPath = TreePath.getPath(cu, exp);
+                                if (expPath == null) {
+                                    return null; // No path to the expression...
+                                }
                                 TypeMirror type = trees.getTypeMirror(expPath);
                                 if (type.getKind() == TypeKind.ERROR) {
                                     // There are errors, give it up.
