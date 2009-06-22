@@ -132,18 +132,23 @@ public final class APTMacroMapSnapshot {
     
     public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
         if (snap != null) {
-            if (snap.parent != null) {
-                addAllMacros(snap.parent, out);
+            LinkedList<APTMacroMapSnapshot> stack = new LinkedList<APTMacroMapSnapshot>();
+            while(snap != null) {
+                stack.add(snap);
+                snap = snap.parent;
             }
-            for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
-                if (cur.getValue() != UNDEFINED_MACRO) {
-                    out.put(cur.getKey(), cur.getValue());
-                } else {
-                    out.remove(cur.getKey());
+            while(!stack.isEmpty()) {
+                snap = stack.removeLast();
+                for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
+                    if (cur.getValue() != UNDEFINED_MACRO) {
+                        out.put(cur.getKey(), cur.getValue());
+                    } else {
+                        out.remove(cur.getKey());
+                    }
                 }
             }
         }
-    }    
+    }
 
     public static int getMacroSize(APTMacroMapSnapshot snap) {
         int size = 0;
