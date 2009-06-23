@@ -53,7 +53,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
@@ -103,21 +105,18 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     }
 
     public FileObject getWsdlFolder(boolean create) throws IOException {
-        //EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        assert ep!=null;
-        String metaInfStr = ep.getProperty("meta.inf.dir"); //NOI18N
-        if (metaInfStr.contains("$")) { 
-            // have no access to property evaluator
-            String srcDir = ep.getProperty("src.dir"); //NOI18N
-            metaInfStr = (srcDir == null ? "src" : srcDir) + "/META-INF"; //NOI18N
+        if (create) {
+            FileObject metaInfDir = PersistenceLocation.createLocation(project);
+            if (metaInfDir != null) {
+                return FileUtil.createFolder(metaInfDir, WSDL_FOLDER);
+            }
+        } else {
+            FileObject metaInfDir = PersistenceLocation.getLocation(project);
+            if (metaInfDir != null) {
+                return metaInfDir.getFileObject(WSDL_FOLDER);
+            }
         }
-        String wsdlFolderStr = metaInfStr + "/" + WSDL_FOLDER; // NOI18N
-        FileObject wsdlFolder = project.getProjectDirectory().getFileObject(wsdlFolderStr);
-        if (wsdlFolder == null && create) {
-            wsdlFolder = FileUtil.createFolder(project.getProjectDirectory(), wsdlFolderStr);
-        }
-        return wsdlFolder;
+        return null;
     }
 
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
