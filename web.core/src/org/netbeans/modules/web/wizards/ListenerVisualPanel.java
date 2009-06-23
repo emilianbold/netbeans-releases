@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.wizards;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -82,9 +83,15 @@ public class ListenerVisualPanel extends javax.swing.JPanel {
         cb4.getAccessibleContext().setAccessibleName(cb4.getText());
         
         // disable request listeners in j2ee1.3
+        // TODO PetrS Remove this once 1.3 is dropped!
         if (WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
             cb5.setEnabled(false);
             cb6.setEnabled(false);
+        }
+
+        Profile profile = Profile.fromPropertiesString(j2eeVersion);
+        if (profile == Profile.JAVA_EE_6_FULL || profile == Profile.JAVA_EE_6_WEB) {
+            jCheckBox1.setSelected(false);
         }
     }
     

@@ -94,6 +94,15 @@ class AnnotationGenerator {
         return list2("initParams", initParams);
     }
 
+    /**
+     * Generate WebListener annotation in form
+     * "@WebListener()"
+     * @return annotation as string
+     */
+    static String webListener() {
+        return "@WebListener()";
+    }
+
     // -------------------------------------------------------------------------
     // Helper functions
     // -------------------------------------------------------------------------
