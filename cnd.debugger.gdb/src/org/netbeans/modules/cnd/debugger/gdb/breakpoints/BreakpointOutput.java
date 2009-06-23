@@ -75,6 +75,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     private static final Pattern fileNamePattern = Pattern.compile("\\{fileName\\}"); // NOI18N
     private static final Pattern functionNamePattern = Pattern.compile("\\{functionName\\}"); // NOI18N
     private static final Pattern lineNumberPattern = Pattern.compile("\\{lineNumber\\}"); // NOI18N
+    private static final Pattern addressPattern = Pattern.compile("\\{address\\}"); // NOI18N
 
     private IOManager               ioManager;
     private GdbDebugger             debugger;
@@ -202,6 +203,10 @@ public class BreakpointOutput extends LazyActionsManagerListener
             FunctionBreakpoint fbp = (FunctionBreakpoint) o;
             String functionName = fbp.getFunctionName();
             printText = functionNamePattern.matcher(printText).replaceAll(functionName);
+        } else if (o instanceof AddressBreakpoint) {
+            AddressBreakpoint abp = (AddressBreakpoint) o;
+            String address = abp.getAddress();
+            printText = addressPattern.matcher(printText).replaceAll(address);
 	}
         Throwable thr = event.getConditionException();
         if (thr != null) {
