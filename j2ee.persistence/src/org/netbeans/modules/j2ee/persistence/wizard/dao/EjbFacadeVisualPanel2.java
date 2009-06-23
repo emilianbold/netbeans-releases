@@ -14,6 +14,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -91,6 +92,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
                 packageComboBoxEditor.setText(targetPackage);
             }
         }
+        updateCheckboxes();
 
     }
     
@@ -273,6 +275,11 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     private javax.swing.JTextField projectTextField;
     private javax.swing.JCheckBox remoteCheckBox;
     // End of variables declaration//GEN-END:variables
+
+    private void updateCheckboxes() {
+        //by default for ejb 3.1 no interfaces will be created
+        localCheckBox.setSelected(!Capabilities.forProject(project).isEJB31Supported());
+    }
     
 }
 
