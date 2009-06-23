@@ -43,13 +43,18 @@ package org.netbeans.modules.j2ee.earproject.test;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -89,6 +94,61 @@ public final class TestUtil {
         FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
         
         Assert.assertNotNull(FileUtil.getConfigFile("J2EE/InstalledServers").toString());
+    }
+
+    public static File getProjectAsFile(NbTestCase test, String projectFolderName) throws IOException {
+        File f = new File(new File(test.getDataDir(), "projects"), projectFolderName);
+        if (!f.exists()) {
+            // maybe it's zipped
+            File archive = new File(new File(test.getDataDir(), "projects"), projectFolderName + ".zip");
+            if (archive.exists() && archive.isFile()) {
+                unZip(archive, test.getWorkDir());
+                f = new File(test.getWorkDir(), projectFolderName);
+            }
+        }
+        NbTestCase.assertTrue("project directory has to exists: " + f, f.exists());
+        FileUtil.refreshFor(f);
+        return f;
+    }
+
+    private static void unZip(File archive, File destination) throws IOException {
+        if (!archive.exists()) {
+            throw new FileNotFoundException(archive + " does not exist.");
+        }
+        ZipFile zipFile = new ZipFile(archive);
+        Enumeration<? extends ZipEntry> all = zipFile.entries();
+        while (all.hasMoreElements()) {
+            extractFile(zipFile, all.nextElement(), destination);
+        }
+    }
+
+    private static void extractFile(ZipFile zipFile, ZipEntry e, File destination) throws IOException {
+        String zipName = e.getName();
+        if (zipName.startsWith("/")) {
+            zipName = zipName.substring(1);
+        }
+        if (zipName.endsWith("/")) {
+            return;
+        }
+        int ix = zipName.lastIndexOf('/');
+        if (ix > 0) {
+            String dirName = zipName.substring(0, ix);
+            File d = new File(destination, dirName);
+            if (!(d.exists() && d.isDirectory())) {
+                if (!d.mkdirs()) {
+                    NbTestCase.fail("Warning: unable to mkdir " + dirName);
+                }
+            }
+        }
+        FileOutputStream os = new FileOutputStream(destination.getAbsolutePath() + "/" + zipName);
+        InputStream is = zipFile.getInputStream(e);
+        int n = 0;
+        byte[] buff = new byte[8192];
+        while ((n = is.read(buff)) > 0) {
+            os.write(buff, 0, n);
+        }
+        is.close();
+        os.close();
     }
     
     private static boolean warned = false;

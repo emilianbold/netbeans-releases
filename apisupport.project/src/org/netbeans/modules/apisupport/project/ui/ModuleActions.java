@@ -110,11 +110,6 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_build"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
-        boolean isNetBeansOrg = Util.getModuleType(project) == NbModuleProvider.NETBEANS_ORG;
-        if (isNetBeansOrg) {
-            String path = project.getPathWithinNetBeansOrg();
-            actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
-        }
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_run"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
@@ -123,6 +118,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
         }
         actions.add(null);
+        boolean isNetBeansOrg = Util.getModuleType(project) == NbModuleProvider.NETBEANS_ORG;
         if (isNetBeansOrg) {
             actions.add(createCheckBundleAction(project, NbBundle.getMessage(ModuleActions.class, "ACTION_unused_bundle_keys")));
             actions.add(null);
@@ -200,10 +196,6 @@ public final class ModuleActions implements ActionProvider {
     
     private static FileObject findBuildXml(NbModuleProject project) {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-    }
-    
-    private static FileObject findMasterBuildXml(NbModuleProject project) {
-        return project.getNbrootFileObject("nbbuild/build.xml"); // NOI18N
     }
     
     public boolean isActionEnabled(String command, Lookup context) {
@@ -582,21 +574,6 @@ public final class ModuleActions implements ActionProvider {
                 }
                 try {
                     ActionUtils.runTarget(findBuildXml(project), targetNames, null);
-                } catch (IOException e) {
-                    Util.err.notify(e);
-                }
-            }
-        };
-    }
-    
-    private static Action createMasterAction(final NbModuleProject project, final String[] targetNames, String displayName) {
-        return new AbstractAction(displayName) {
-            public @Override boolean isEnabled() {
-                return findMasterBuildXml(project) != null;
-            }
-            public void actionPerformed(ActionEvent ignore) {
-                try {
-                    ActionUtils.runTarget(findMasterBuildXml(project), targetNames, null);
                 } catch (IOException e) {
                     Util.err.notify(e);
                 }
