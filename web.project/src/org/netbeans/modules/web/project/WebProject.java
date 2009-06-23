@@ -136,7 +136,7 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
+import org.netbeans.modules.j2ee.common.Capabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -1355,8 +1355,8 @@ public final class WebProject implements Project, AntProjectListener {
                     isArchive = true;
                 }
                 Capabilities projectCap = Capabilities.forProject(project);
-                isEjb30Supported = projectCap.isEJB30Supported();
-                isEJB31Supported = projectCap.isEJB31Supported();
+                isEjb30Supported = projectCap.isEjb30Supported();
+                isEJB31Supported = projectCap.isEjb31Supported();
                 checked = true;
             }
         }
