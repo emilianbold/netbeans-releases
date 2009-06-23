@@ -99,6 +99,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
     private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
+    private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private NbJiraIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
@@ -329,6 +330,7 @@ public class IssuePanel extends javax.swing.JPanel {
             attachmentsPanel.setIssue(issue);
             BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         }
+        updateFieldStatuses();
     }
     private JComponent dummyCancelButton = new JLabel();
     private JComponent dummyActionPanel = new JLabel();
@@ -543,7 +545,34 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void updateFieldStatuses() {
-        // PENDING
+        updateFieldStatus(NbJiraIssue.IssueField.PROJECT, projectLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.TYPE, issueTypeLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.STATUS, statusLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.RESOLUTION, resolutionLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.PRIORITY, priorityLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.DUE, dueLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.ASSIGNEE, assigneeLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.COMPONENT, componentLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.AFFECTSVERSIONS, affectsVersionLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.FIXVERSIONS, fixVersionLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.INITIAL_ESTIMATE, originalEstimateLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.ESTIMATE, remainingEstimateLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.ACTUAL, timeSpentLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.SUMMARY, summaryLabel);
+        updateFieldStatus(NbJiraIssue.IssueField.ENVIRONMENT, environmentLabel);
+    }
+
+    private void updateFieldStatus(NbJiraIssue.IssueField field, JLabel label) {
+        boolean highlight = false;
+        if (!issue.getTaskData().isNew()) {
+            int status = issue.getFieldStatus(field);
+            highlight = (status == NbJiraIssue.FIELD_STATUS_NEW) || (status == NbJiraIssue.FIELD_STATUS_MODIFIED);
+        }
+        label.setOpaque(highlight);
+        if (highlight) {
+            label.setBackground(HIGHLIGHT_COLOR);
+        }
+        label.repaint();
     }
 
     // This is ugly, but I don't see a better way if we want to have a status combo
