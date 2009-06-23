@@ -50,7 +50,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
