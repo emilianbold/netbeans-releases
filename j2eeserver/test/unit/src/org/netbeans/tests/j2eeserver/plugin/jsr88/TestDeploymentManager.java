@@ -41,57 +41,83 @@
 
 package org.netbeans.tests.j2eeserver.plugin.jsr88;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.logging.Level;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.*;
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.spi.exceptions.*;
+import javax.enterprise.deploy.shared.DConfigBeanVersionType;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
+import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
+
 
 /**
  *
  * @author  gfink
  * @author nn136682
  */
-public class DepManager implements DeploymentManager {
-    
+public class TestDeploymentManager implements DeploymentManager {
+
     public static final String PLATFORM_ROOT_PROPERTY = "platform";
-    
+
     public static final String MULTIPLE_TARGETS = "multitargets";
-    
+
     public static final String WORK_DIR = "workdir";
+
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(TestDeploymentManager.class.getName());
     
     private final String url;
 
-    private Targ[] targets;
-    
-    /** Creates a new instance of DepFactory */
-    public DepManager(String url, String user, String password) {
+    private TestTarget[] targets;
+
+    public TestDeploymentManager(String url, String user, String password) {
         this.url = url;
     }
-    public String getName() { return url ; }
-    
+
+    public String getName() {
+        return url;
+    }
+
     public InstanceProperties getInstanceProperties() {
         return InstanceProperties.getInstanceProperties(url);
     }
-    
+
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
         return null;
     }
 
     public ProgressObject distribute(Target[] targets, final File file, File file2) throws java.lang.IllegalStateException {
-        java.util.logging.Logger.getLogger(DepManager.class.getName()).log(java.util.logging.Level.FINEST,"Deploying " + file + " with " + file2);
+        LOGGER.log(java.util.logging.Level.FINEST,"Deploying " + file + " with " + file2);
 
-        final ProgObject po = new ProgObject(this, targets, file, file2);
+        final TestProgressObject po = new TestProgressObject(this, targets, file, file2);
         Runnable r = new Runnable() {
             public void run() {
-                try { Thread.sleep(200); //some latency
-                } catch (Exception e) {}
+                try {
+                    Thread.sleep(200); //some latency
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
                 po.setStatusDistributeRunning("TestPluginDM: distributing "+ file);
-                try { Thread.sleep(500); //super server starting time
-                } catch (Exception e) {}
+                try {
+                    Thread.sleep(500); //super server starting time
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
                 if (getTestBehavior() == DISTRIBUTE_FAILED) {
                     po.setStatusStartFailed("TestPluginDM distribute failed");
                 } else {
@@ -99,21 +125,26 @@ public class DepManager implements DeploymentManager {
                 }
             }
         };
-        
+
         (new Thread(r)).start();
         return po;
     }
 
-    public ProgObject incrementalDeploy(final TargetModuleID target, AppChangeDescriptor desc) throws java.lang.IllegalStateException {
-        System.out.println(desc);
-        final ProgObject po = new ProgObject(this, new TargetModuleID[] { target });
+    public TestProgressObject incrementalDeploy(final TargetModuleID target, AppChangeDescriptor desc) throws java.lang.IllegalStateException {
+        final TestProgressObject po = new TestProgressObject(this, new TargetModuleID[] { target });
         Runnable r = new Runnable() {
             public void run() {
-                try { Thread.sleep(50); //some latency
-                } catch (Exception e) {}
+                try {
+                    Thread.sleep(50); //some latency
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
                 po.setStatusDistributeRunning("TestPluginDM: incrementally deploying "+ target);
-                try { Thread.sleep(500); //super server starting time
-                } catch (Exception e) {}
+                try {
+                    Thread.sleep(500); //super server starting time
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
                 if (getTestBehavior() == DISTRIBUTE_FAILED) {
                     po.setStatusStartFailed("TestPluginDM incremental deploy failed");
                 } else {
@@ -121,94 +152,96 @@ public class DepManager implements DeploymentManager {
                 }
             }
         };
-        
+
         (new Thread(r)).start();
         return po;
     }
-    
+
     public boolean hasDistributed(String id) {
-        for (int i=0; i<getTargets().length; i++) {
-            Targ t = (Targ) getTargets()[i];
-            if (t.getTargetModuleID(id) != null)
+        for (int i = 0; i < getTargets().length; i++) {
+            TestTarget t = (TestTarget) getTargets()[i];
+            if (t.getTargetModuleID(id) != null) {
                 return true;
+            }
         }
         return false;
     }
-    
+
     public ProgressObject distribute(Target[] target, InputStream inputStream, InputStream inputStream2) throws java.lang.IllegalStateException {
-        return new ProgObject(this, target,inputStream,inputStream2);
+        return new TestProgressObject(this, target,inputStream,inputStream2);
     }
-    
+
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
         return distribute(target, inputStream, inputStream0);
     }
-    
+
     public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] target) throws TargetException, java.lang.IllegalStateException {
         List l = new ArrayList();
-        Targ[] mytargets = (Targ[]) getTargets();
+        TestTarget[] mytargets = (TestTarget[]) getTargets();
         HashSet yours = new HashSet(Arrays.asList(target));
-        for (int i=0; i<mytargets.length; i++) {
-            if (yours.contains(mytargets[i]))
+        for (int i = 0; i < mytargets.length; i++) {
+            if (yours.contains(mytargets[i])) {
                 l.addAll(Arrays.asList((mytargets[i]).getTargetModuleIDs()));
+            }
         }
         return (TargetModuleID[]) l.toArray(new TargetModuleID[0]);
     }
-    
+
     public Locale getCurrentLocale() {
         return Locale.getDefault();
     }
-    
+
     public DConfigBeanVersionType getDConfigBeanVersion() {
-        return DConfigBeanVersionType.V1_3; 
+        return DConfigBeanVersionType.V1_3;
     }
-    
+
     public Locale getDefaultLocale() {
         return Locale.getDefault();
     }
-    
+
     public TargetModuleID[] getNonRunningModules(ModuleType moduleType, Target[] target) throws TargetException, java.lang.IllegalStateException {
         return new TargetModuleID[0]; // PENDING see above.
     }
-    
+
     public TargetModuleID[] getRunningModules(ModuleType moduleType, Target[] target) throws TargetException, java.lang.IllegalStateException {
         return new TargetModuleID[0]; // PENDING see above.
     }
-    
+
     public Locale[] getSupportedLocales() {
         return new Locale[] { Locale.getDefault() };
     }
-    
+
     public synchronized Target[] getTargets() throws IllegalStateException {
         if (targets == null) {
             if (getInstanceProperties().getProperty(MULTIPLE_TARGETS) == null
                     || Boolean.parseBoolean(getInstanceProperties().getProperty(MULTIPLE_TARGETS))) {
-                targets = new Targ[] {new Targ("Target 1"), new Targ("Target 2")};
+                targets = new TestTarget[] {new TestTarget("Target 1"), new TestTarget("Target 2")};
             } else {
-                targets = new Targ[] {new Targ("Target")};
+                targets = new TestTarget[] {new TestTarget("Target")};
             }
         }
         return targets;
     }
-    
+
     public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType dConfigBeanVersionType) {
         return true;
     }
-    
+
     public boolean isLocaleSupported(Locale locale) {
         return Locale.getDefault().equals(locale);
     }
-    
+
     public boolean isRedeploySupported() {
         return true; // PENDING use jsr88 redeploy?
     }
-    
+
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws java.lang.UnsupportedOperationException, java.lang.IllegalStateException {
         throw new UnsupportedOperationException();
     }
-    
+
     Set redeployed;
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws java.lang.UnsupportedOperationException, java.lang.IllegalStateException {
-        final ProgObject po = new ProgObject(this, targetModuleID);
+        final TestProgressObject po = new TestProgressObject(this, targetModuleID);
         final java.util.List targetModules = java.util.Arrays.asList(targetModuleID);
         Runnable r = new Runnable() {
             public void run() {
@@ -228,25 +261,25 @@ public class DepManager implements DeploymentManager {
                 }
             }
         };
-        
+
         (new Thread(r)).start();
         return po;
     }
     public boolean hasRedeployed(String id) {
         return redeployed != null && redeployed.contains(id);
     }
-    
+
     public void release() {
     }
-    
+
     public void setDConfigBeanVersion(DConfigBeanVersionType dConfigBeanVersionType) throws DConfigBeanVersionUnsupportedException {
     }
-    
+
     public void setLocale(Locale locale) throws java.lang.UnsupportedOperationException {
     }
-    
+
     public ProgressObject start(TargetModuleID[] targetModuleID) throws java.lang.IllegalStateException {
-        final ProgObject po = new ProgObject(this, targetModuleID);
+        final TestProgressObject po = new TestProgressObject(this, targetModuleID);
         final java.util.List targetModules = java.util.Arrays.asList(targetModuleID);
         Runnable r = new Runnable() {
             public void run() {
@@ -262,13 +295,13 @@ public class DepManager implements DeploymentManager {
                 }
             }
         };
-        
+
         (new Thread(r)).start();
         return po;
     }
-    
+
     public ProgressObject stop(TargetModuleID[] targetModuleID) throws java.lang.IllegalStateException {
-        final ProgObject po = new ProgObject(this, targetModuleID);
+        final TestProgressObject po = new TestProgressObject(this, targetModuleID);
         final java.util.List targetModules = java.util.Arrays.asList(targetModuleID);
         Runnable r = new Runnable() {
             public void run() {
@@ -284,15 +317,15 @@ public class DepManager implements DeploymentManager {
                 }
             }
         };
-        
+
         (new Thread(r)).start();
         return po;
     }
-    
+
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws java.lang.IllegalStateException {
-        return new ProgObject(this, targetModuleID);
+        return new TestProgressObject(this, targetModuleID);
     }
-    
+
     public static final int NORMAL = 0;
     public static final int START_FAILED = 1;
     public static final int STOP_FAILED = 2;
@@ -300,7 +333,7 @@ public class DepManager implements DeploymentManager {
     public static final int STOP_MODULES_FAILED = 4;
     public static final int DISTRIBUTE_FAILED = 5;
     public static final int REDEPLOY_FAILED = 6;
-    
+
     private int testBehavior = NORMAL;
     public void setTestBehavior(int behavior) {
         testBehavior = behavior;
@@ -309,7 +342,7 @@ public class DepManager implements DeploymentManager {
         return testBehavior;
     }
     public ServerProgress createServerProgress() {
-        return new DepManager.TestServerProgress();
+        return new TestDeploymentManager.TestServerProgress();
     }
     public static final int STOPPED = 0;
     public static final int STARTING = 1;
@@ -325,7 +358,7 @@ public class DepManager implements DeploymentManager {
     }
     private class TestServerProgress extends ServerProgress {
         public TestServerProgress() {
-            super(DepManager.this);
+            super(TestDeploymentManager.this);
         }
     }
 }

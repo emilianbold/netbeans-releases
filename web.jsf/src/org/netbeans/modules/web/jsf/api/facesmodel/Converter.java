@@ -75,12 +75,10 @@ public interface Converter  extends FacesConfigElement, DescriptionGroup,
     
     String CONVERTER_EXTENSION = JSFConfigQNames.CONVERTER_EXTENSION.getLocalName();
     
-    String getConverterClass();
     void setConverterClass(String value);
     
     void setConverterForClass(String value);
     
-    String getConverterId();
     void setConverterId(String value);
     
     List<ConverterExtension> getConverterExtensions();

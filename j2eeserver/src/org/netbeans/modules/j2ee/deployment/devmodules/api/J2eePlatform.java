@@ -438,6 +438,7 @@ public final class J2eePlatform {
      * @see Profile
      * @since 1.58
      */
+    // TODO filter out J2EE 1.3 in future
     @NonNull
     public Set<Profile> getSupportedProfiles() {
         return impl.getSupportedProfiles();
@@ -455,6 +456,7 @@ public final class J2eePlatform {
      * @since 1.59
      */
     @NonNull
+    // TODO filter out J2EE 1.3 in future
     public Set<Profile> getSupportedProfiles(@NonNull J2eeModule.Type moduleType) {
         return impl.getSupportedProfiles(moduleType);
     }

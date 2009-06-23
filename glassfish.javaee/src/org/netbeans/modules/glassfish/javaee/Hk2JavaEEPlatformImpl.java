@@ -45,10 +45,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -231,15 +230,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         return new File[0];
     }
 
-    /**
-     * 
-     * @return 
-     */
-    public Set getSupportedSpecVersions() {
-        Logger.getLogger("glassfish-javaee").log(Level.INFO,"programmer calling deprecated API", new Exception("deprectaed API usage")); // NOI18N
-        return pf.getSupportedSpecVersions();
-    }
-
     @Override
     public Set<Profile> getSupportedProfiles() {
         return pf.getSupportedProfiles();
@@ -249,13 +239,12 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Set<Profile> getSupportedProfiles(J2eeModule.Type type) {
         return pf.getSupportedProfiles();
     }
-    /**
-     * 
-     * @return 
-     */
-    public Set getSupportedModuleTypes() {
-        return pf.getSupportedModuleTypes();
+
+    @Override
+    public Set<Type> getSupportedTypes() {
+        return pf.getSupportedTypes();
     }
+
     
     /**
      * 

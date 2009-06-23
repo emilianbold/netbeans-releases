@@ -39,50 +39,52 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.tests.j2eeserver.plugin.jsr88;
 
-package org.netbeans.tests.j2eeserver.plugin.registry;
-
-import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
+import java.util.HashMap;
+import java.util.Map;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.Target;
+
 /**
  *
- * @author  nn136682
+ * @author  gfink
  */
-public class NodeFactory implements org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory {
+public class TestDeploymentFactory implements DeploymentFactory {
+    
+    private Map managers = new HashMap();
 
-    /** Creates a new instance of NodeFactory */
-    public NodeFactory() {
+    /** Creates a new instance of DepFactory */
+    public TestDeploymentFactory() {
     }
 
-    public org.openide.nodes.Node getFactoryNode(org.openide.util.Lookup lookup) {
-        DeploymentFactory depFactory = (DeploymentFactory) lookup.lookup(DeploymentFactory.class);
-        if (depFactory == null || ! (depFactory instanceof TestDeploymentFactory)) {
-            System.out.println("WARNING: getFactoryNode lookup returned "+depFactory);
-            return null;
+    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
+        TestDeploymentManager manager = (TestDeploymentManager) managers.get(str + str1 + str2);
+        if (manager == null){
+            manager = new TestDeploymentManager(str, str1, str2);
+            managers.put(str, manager);
         }
-        System.out.println("INFO: getFactoryNode returning new plugin node");
-        return new PluginNode((TestDeploymentFactory)depFactory);
+        return manager;
     }
     
-    public org.openide.nodes.Node getManagerNode(org.openide.util.Lookup lookup) {
-        DeploymentManager depManager = (DeploymentManager) lookup.lookup(DeploymentManager.class);
-        if (depManager == null || ! (depManager instanceof TestDeploymentManager)) {
-            System.out.println("WARNING: getManagerNode lookup returned "+depManager);
-            return null;
+    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
+        TestDeploymentManager manager = (TestDeploymentManager) managers.get(str);
+        if (manager == null) {
+            manager = new TestDeploymentManager(str,"","");
+            managers.put(str, manager);
         }
-        System.out.println("INFO: getManagerNode returning new Manager node");
-        return new ManagerNode((TestDeploymentManager)depManager);
+        return manager;
     }
     
-    public org.openide.nodes.Node getTargetNode(org.openide.util.Lookup lookup) {
-        Target target = (Target) lookup.lookup(Target.class);
-        if (target == null || ! (target instanceof TestTarget) ) {
-            System.out.println("WARNING: getTargetNode lookup returned "+target);
-            return null;
-        }
-        System.out.println("INFO: getManagerNode returning new Target node");
-        return new TargNode((TestTarget)target);
+    public String getDisplayName() {
+        return "Sample JSR88 plugin";// PENDING parameterize this.
     }
+    
+    public String getProductVersion() {
+        return "0.9";// PENDING version this plugin somehow?
+    }
+    
+    public boolean handlesURI(String str) {
+        return (str != null && str.startsWith("fooservice"));
+    }
+    
 }
