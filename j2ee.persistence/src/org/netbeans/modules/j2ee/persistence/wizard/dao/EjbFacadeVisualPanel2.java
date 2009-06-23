@@ -91,6 +91,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
                 packageComboBoxEditor.setText(targetPackage);
             }
         }
+        updateCheckboxes();
 
     }
     
@@ -273,6 +274,11 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     private javax.swing.JTextField projectTextField;
     private javax.swing.JCheckBox remoteCheckBox;
     // End of variables declaration//GEN-END:variables
+
+    private void updateCheckboxes() {
+        //by default for ejb 3.1 no interfaces will be created
+        localCheckBox.setSelected(true);
+    }
     
 }
 
