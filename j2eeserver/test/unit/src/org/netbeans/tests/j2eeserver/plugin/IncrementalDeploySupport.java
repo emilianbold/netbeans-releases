@@ -41,26 +41,31 @@
 
 package org.netbeans.tests.j2eeserver.plugin;
 
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.shared.*;
-import javax.enterprise.deploy.spi.status.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
-
-import java.io.*;
-import java.util.*;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.ProgObject;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestTargetMoid;
 
 /**
  *
  * @author  nn136682
  */
 public class IncrementalDeploySupport extends IncrementalDeployment {
+    
     private DepManager dm;
+
     private File applicationsDir;
-    private final HashMap moduleDirectories = new HashMap();
 
     /** Creates a new instance of IncrementalDeploySupport */
     public IncrementalDeploySupport(DeploymentManager manager) {
