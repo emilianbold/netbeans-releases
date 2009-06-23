@@ -114,14 +114,6 @@ public abstract class Query implements Comparable<Query> {
      * XXX should this realy be in the spi?
      * @param query
      */
-    public void open() {
-        QueryAction.openQuery(this, getRepository());
-    }
-
-    /**
-     * XXX should this realy be in the spi?
-     * @param query
-     */
     public static void openNew(Repository repository) {
         QueryAction.openQuery(null, repository);
     }
