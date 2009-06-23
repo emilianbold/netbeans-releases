@@ -199,6 +199,9 @@ public abstract class J2eePlatformImpl {
                 set.add(profile);
             }
         }
+        for (Profile profile : getSupportedProfiles()) {
+            set.add(profile);
+        }
         return set;
     }
 

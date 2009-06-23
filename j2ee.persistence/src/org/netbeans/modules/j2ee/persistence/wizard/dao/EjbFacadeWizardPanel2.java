@@ -40,8 +40,16 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     public boolean isValid() {
         getComponent();
         if (!(component.isRemote() || component.isLocal())) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_ChooseInterface")); // NOI18N
-            return false;
+            if(false)
+            {
+                //if it's jee6 project, ejb 3.1 allow to omit any interfaces
+                return true;
+            }
+            else
+            {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_ChooseInterface")); // NOI18N
+                return false;
+            }
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         return true;
