@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
 import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**

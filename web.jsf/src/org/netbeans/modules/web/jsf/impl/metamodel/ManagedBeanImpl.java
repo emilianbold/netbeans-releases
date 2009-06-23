@@ -41,6 +41,7 @@
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -54,6 +55,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Pa
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 
 
 /**
@@ -138,8 +140,22 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
         return myStringScope;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean#getManagedProperties()
+     */
+    public List<ManagedProperty> getManagedProperties() {
+        // TODO take care about field inside class annotated with 
+        // "javax.faces.bean.ManagedProperty" annotation.
+        return null;
+    }
+    
     boolean scopeChanged(){
         return isScopeChanged;
+    }
+    
+    boolean propertyChanged(){
+        // TODO
+        return false;
     }
     
     private void setScope( Map<String, ? extends AnnotationMirror> types, 
@@ -212,5 +228,4 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
     private String myClass;
     private ManagedBean.Scope myScope;
     private String myStringScope;
-
 }

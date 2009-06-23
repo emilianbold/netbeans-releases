@@ -150,7 +150,7 @@ class ObjectProviders {
                     isModified = true;
                 }
                 else {
-                    if ( object.scopeChanged() ){
+                    if ( object.scopeChanged() || object.propertyChanged() ){
                         isModified = true;
                     }
                 }

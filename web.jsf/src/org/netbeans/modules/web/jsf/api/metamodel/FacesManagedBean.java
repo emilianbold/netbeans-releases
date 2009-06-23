@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.jsf.api.metamodel;
 
+import java.util.List;
+
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
@@ -76,4 +78,6 @@ public interface FacesManagedBean extends JsfModelElement {
      * @return
      */
     String getManagedBeanScopeString();
+    
+    List<ManagedProperty> getManagedProperties();
 }
