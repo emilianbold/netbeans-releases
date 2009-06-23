@@ -49,6 +49,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileObject;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleBase;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
@@ -143,6 +145,8 @@ public class J2eeModule {
      * Module version property
      */
     public static final String PROP_MODULE_VERSION = "moduleVersion"; // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(J2eeModule.class.getName());
 
     static {
         J2eeModuleAccessor.setDefault(new J2eeModuleAccessor() {
@@ -369,6 +373,11 @@ public class J2eeModule {
         public static Type fromJsrType(Object type) {
             // be defensive
             if (type instanceof Type) {
+                boolean assertsEnabled = false;
+                assert assertsEnabled = true;
+                if (assertsEnabled) {
+                    LOGGER.log(Level.WARNING, "Redundant call to conversion method", new Exception());
+                }
                 return (Type) type;
             }
             assert type instanceof ModuleType;
