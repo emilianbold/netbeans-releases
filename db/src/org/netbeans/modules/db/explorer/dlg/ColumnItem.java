@@ -237,23 +237,6 @@ public class ColumnItem extends Hashtable {
         return (String)get(DEFVAL);
     }
 
-    public boolean validate()
-    {
-        String name = getName();
-        int size = getSize();
-        int scale = getScale();
-
-        if (size < scale)
-            return false;
-        if (name == null || name.length() == 0)
-            return false;
-
-        // #155142 - check size of default value for VARCHAR
-        if (getType().getName().equals("VARCHAR") && getDefaultValue().length() > getSize()) {  //NOI18N
-            return false;
-        }
-        return true;
-    }
     /** Getter for property scale.
      * @return Value of property scale.
      */

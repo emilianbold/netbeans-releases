@@ -178,12 +178,6 @@ public class DataModel extends AbstractTableModel
         return getValueAt(0,c).getClass();
     }
 
-    @Override
-    public boolean isCellEditable(int row, int col)
-    {
-        return true;
-    }
-
     public boolean isTablePrimaryKey()
     {
         return primaryKeys.size()>1;
@@ -254,5 +248,13 @@ public class DataModel extends AbstractTableModel
         
         
         fireTableRowsDeleted(row, row);
+    }
+
+    /**
+     * Returns ColumnItem with given index.
+     * @param rowIndex The row index of the row to be returned
+     */
+    public ColumnItem getRow(int rowIndex) {
+        return (ColumnItem) data.elementAt(rowIndex);
     }
 }

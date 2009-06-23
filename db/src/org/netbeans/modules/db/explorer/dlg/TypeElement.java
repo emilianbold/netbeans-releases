@@ -78,4 +78,12 @@ class TypeElement
     {
         return tname;
     }
+
+    @Override
+    public boolean equals(Object anObject) {
+        if (anObject instanceof TypeElement) {
+            return tstr.equals(((TypeElement) anObject).tstr);
+        }
+        return false;
+    }
 }
