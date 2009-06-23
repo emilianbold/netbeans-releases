@@ -40,7 +40,9 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -56,6 +58,7 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AdditionalAntBasedTest extends NbTestCase {
+    Logger LOG;
 
     public AdditionalAntBasedTest(String name) {
         super(name);
@@ -78,6 +81,8 @@ public class AdditionalAntBasedTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("org.netbeans.modules.ide.ergonomics.fod." + getName());
+
         URL u = AdditionalAntBasedTest.class.getResource("default.xml");
         assertNotNull("Default layer found", u);
         XMLFileSystem xml = new XMLFileSystem(u);
@@ -89,14 +94,21 @@ public class AdditionalAntBasedTest extends NbTestCase {
         FileObject fo = FileUtil.getConfigFile("Menu/Edit");
         assertNull("Default layer is on and Edit is hidden", fo);
 
+        LOG.info("creating AntBasedType registration on disk");
         FileUtil.createData(FileUtil.getConfigRoot(), 
             "Services/" + AntBasedType.class.getName().replace('.', '-') + ".instance"
         );
+        LOG.info("registration created");
         AntBasedType f = Lookup.getDefault().lookup(AntBasedType.class);
+        LOG.info("looking up the result " + f);
         assertNotNull("Ant found", f);
+        LOG.info("waiting for FoDFileSystem to be updated");
         FoDFileSystem.getInstance().waitFinished();
+        LOG.info("waiting for FoDFileSystem to be waitFinished is over");
 
         fo = FileUtil.getConfigFile("Menu/Edit");
+        LOG.info("Edit found: " + fo);
+        LOG.info("Menu items: " + Arrays.toString(FileUtil.getConfigFile("Menu").getChildren()));
         assertNotNull("Default layer is off and Edit is visible", fo);
     }
 }
