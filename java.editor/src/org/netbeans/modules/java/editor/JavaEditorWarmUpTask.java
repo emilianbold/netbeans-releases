@@ -217,7 +217,7 @@ public class JavaEditorWarmUpTask implements Runnable{
                 }
                 
                 status = STATUS_TRAVERSE_VIEWS;
-                RequestProcessor.getDefault().post(this);
+                SwingUtilities.invokeLater(this);
                 break;
                 
             case STATUS_TRAVERSE_VIEWS:

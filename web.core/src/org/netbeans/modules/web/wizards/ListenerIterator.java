@@ -49,6 +49,8 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource;
@@ -115,21 +117,21 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
         // (return them all in the result of this method), populate file
         // contents on the fly, etc.
        
-        FileObject folder = Templates.getTargetFolder( wiz );
-        DataFolder targetFolder = DataFolder.findFolder( folder );
+        FileObject folder = Templates.getTargetFolder(wiz);
+        DataFolder targetFolder = DataFolder.findFolder(folder);
         
         ClassPath classPath = ClassPath.getClassPath(folder,ClassPath.SOURCE);
         String listenerName = wiz.getTargetName();
-        DataObject result=null;
+        DataObject result = null;
         
-        if (classPath!=null) { //NOI18N
-            DataObject template = wiz.getTemplate ();
-            if (listenerName==null) {
-                // Default name.
-                result = template.createFromTemplate (targetFolder);
-            } else {
-                result = template.createFromTemplate (targetFolder, listenerName);
+        if (classPath != null) {
+            Map<String, String> templateParameters = new HashMap<String, String>();
+            if (!panel.createElementInDD() && Utilities.isJavaEE6(wiz)) {
+                templateParameters.put("classAnnotation", AnnotationGenerator.webListener());
             }
+
+            DataObject template = wiz.getTemplate();
+            result = template.createFromTemplate(targetFolder, listenerName, templateParameters);
             String className = classPath.getResourceName(result.getPrimaryFile(),'.',false);
             if (result!=null && panel.createElementInDD()){
                 FileObject webAppFo=DeployData.getWebAppFor(folder);

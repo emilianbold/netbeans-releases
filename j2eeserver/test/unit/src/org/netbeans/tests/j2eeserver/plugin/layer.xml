@@ -52,8 +52,7 @@ made subject to such option by the copyright holder.
               <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
             </file>
             <file name="Factory.instance">
-                <attr name="instanceClass" 
-                      stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.DepFactory"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
             </file>
             <file name="TestRegistryNodeFactory.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/> 
@@ -93,8 +92,7 @@ made subject to such option by the copyright holder.
               <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
             </file>
             <file name="Factory.instance">
-                <attr name="instanceClass"
-                      stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.DepFactory"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
             </file>
             <file name="TestRegistryNodeFactory.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/>

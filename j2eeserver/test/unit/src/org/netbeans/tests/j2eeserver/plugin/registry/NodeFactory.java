@@ -58,31 +58,31 @@ public class NodeFactory implements org.netbeans.modules.j2ee.deployment.plugins
 
     public org.openide.nodes.Node getFactoryNode(org.openide.util.Lookup lookup) {
         DeploymentFactory depFactory = (DeploymentFactory) lookup.lookup(DeploymentFactory.class);
-        if (depFactory == null || ! (depFactory instanceof DepFactory)) {
+        if (depFactory == null || ! (depFactory instanceof TestDeploymentFactory)) {
             System.out.println("WARNING: getFactoryNode lookup returned "+depFactory);
             return null;
         }
         System.out.println("INFO: getFactoryNode returning new plugin node");
-        return new PluginNode((DepFactory)depFactory);
+        return new PluginNode((TestDeploymentFactory)depFactory);
     }
     
     public org.openide.nodes.Node getManagerNode(org.openide.util.Lookup lookup) {
         DeploymentManager depManager = (DeploymentManager) lookup.lookup(DeploymentManager.class);
-        if (depManager == null || ! (depManager instanceof DepManager)) {
+        if (depManager == null || ! (depManager instanceof TestDeploymentManager)) {
             System.out.println("WARNING: getManagerNode lookup returned "+depManager);
             return null;
         }
         System.out.println("INFO: getManagerNode returning new Manager node");
-        return new ManagerNode((DepManager)depManager);
+        return new ManagerNode((TestDeploymentManager)depManager);
     }
     
     public org.openide.nodes.Node getTargetNode(org.openide.util.Lookup lookup) {
         Target target = (Target) lookup.lookup(Target.class);
-        if (target == null || ! (target instanceof Targ) ) {
+        if (target == null || ! (target instanceof TestTarget) ) {
             System.out.println("WARNING: getTargetNode lookup returned "+target);
             return null;
         }
         System.out.println("INFO: getManagerNode returning new Target node");
-        return new TargNode((Targ)target);
+        return new TargNode((TestTarget)target);
     }
 }

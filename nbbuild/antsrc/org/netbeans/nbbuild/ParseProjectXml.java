@@ -81,6 +81,7 @@ import javax.xml.validation.Validator;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Ant;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.w3c.dom.Document;
@@ -666,9 +667,6 @@ public final class ParseProjectXml extends Task {
         
         private String implementationVersionOf(ModuleListParser modules, String cnb) throws BuildException {
             File jar = computeClasspathModuleLocation(modules, cnb, null, null, false);
-            if (!jar.isFile()) {
-                throw new BuildException("No such classpath entry: " + jar, getLocation());
-            }
             try {
                 JarFile jarFile = new JarFile(jar, false);
                 try {
@@ -849,9 +847,6 @@ public final class ParseProjectXml extends Task {
             File depJar = computeClasspathModuleLocation(modules, cnb, clusterPath, excludedModules, runtime);
             
             Attributes attr;
-            if (!depJar.isFile()) {
-                throw new BuildException("No such classpath entry: " + depJar, getLocation());
-            }
             JarFile jarFile = new JarFile(depJar, false);
             try {
                 attr = jarFile.getManifest().getMainAttributes();
@@ -923,10 +918,6 @@ public final class ParseProjectXml extends Task {
         for (String nextModule : modules.findByCodeNameBase(cnb).getRuntimeDependencies()) {
             log("  Added dep: " + nextModule, Project.MSG_VERBOSE); // NO18N
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
-            
-            if (!depJar.isFile()) {
-                log("No such classpath entry: " + depJar, Project.MSG_WARN);
-            }
 
             if (!additions.contains(depJar)) {
                 additions.add(depJar);
@@ -969,6 +960,22 @@ public final class ParseProjectXml extends Task {
             throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
         }
          */
+        if (!jar.isFile()) {
+            File srcdir = module.getSourceLocation();
+            if (srcdir != null && srcdir.isDirectory()) {
+                log(jar + " missing; will first try to build " + srcdir, Project.MSG_WARN);
+                Ant ant = new Ant();
+                ant.setProject(getProject());
+                ant.setOwningTarget(getOwningTarget());
+                ant.setLocation(getLocation());
+                ant.setInheritAll(false);
+                ant.setDir(srcdir);
+                ant.execute();
+            }
+        }
+        if (!jar.isFile()) {
+            throw new BuildException("No such classpath entry: " + jar, getLocation());
+        }
         return jar;
     }
  

@@ -98,10 +98,9 @@ public class CreateTableAction extends BaseAction {
     private void perform(final BaseNode node) {
         DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
 
-        String name = findSchemaWorkingName(node.getLookup());
-
-        final CreateTableDialog dlg = new CreateTableDialog(connection.getConnector().getDatabaseSpecification(), name);
-        if (dlg.run()) {
+        String schema = findSchemaWorkingName(node.getLookup());
+        boolean tableCreated = CreateTableDialog.showDialogAndCreate(connection.getConnector().getDatabaseSpecification(), schema);
+        if (tableCreated) {
             SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
         }
     }

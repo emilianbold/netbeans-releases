@@ -44,23 +44,22 @@ package org.netbeans.tests.j2eeserver.plugin;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.shared.CommandType;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentManager;
 
 /**
  *
  * @author  nn136682
  */
-public class ServerLifecycle extends StartServer {
+public class TestStartServer extends StartServer {
 
-    private DepManager dm;
+    private TestDeploymentManager dm;
 
-    /** Creates a new instance of StartServer */
-    public ServerLifecycle(DeploymentManager dm) {
-        this.dm = (DepManager)dm;
+    public TestStartServer(DeploymentManager dm) {
+        this.dm = (TestDeploymentManager) dm;
     }
     
     public ServerDebugInfo getDebugInfo(Target target) {
@@ -76,7 +75,7 @@ public class ServerLifecycle extends StartServer {
     }
     
     public boolean isRunning() {
-        return dm.getState() == DepManager.RUNNING;
+        return dm.getState() == TestDeploymentManager.RUNNING;
     }
     
     public boolean needsStartForConfigure() {
@@ -84,7 +83,7 @@ public class ServerLifecycle extends StartServer {
     }
     
     public void setDeploymentManager(DeploymentManager manager) {
-        this.dm = (DepManager) manager;
+        this.dm = (TestDeploymentManager) manager;
     }
     
     public ProgressObject startDebugging(Target target) {
@@ -97,15 +96,15 @@ public class ServerLifecycle extends StartServer {
             public void run() {
                 try { Thread.sleep(500); //latency
                 } catch (Exception e) {}
-                dm.setState(DepManager.STARTING);
+                dm.setState(TestDeploymentManager.STARTING);
                 sp.setStatusStartRunning("TestPluginDM: "+dm.getName()+" is starting.");
                 try { Thread.sleep(2000); //super server starting time
                 } catch (Exception e) {}
-                if (dm.getTestBehavior() == DepManager.START_FAILED) {
-                    dm.setState(DepManager.FAILED);
+                if (dm.getTestBehavior() == TestDeploymentManager.START_FAILED) {
+                    dm.setState(TestDeploymentManager.FAILED);
                     sp.setStatusStartFailed("TestPluginDM: "+dm.getName()+" startup failed");
                 } else {
-                    dm.setState(DepManager.RUNNING);
+                    dm.setState(TestDeploymentManager.RUNNING);
                     sp.setStatusStartCompleted("TestPluginDM "+dm.getName()+" startup finished");
                 }
             }
@@ -121,15 +120,15 @@ public class ServerLifecycle extends StartServer {
             public void run() {
                 try { Thread.sleep(500); //latency
                 } catch (Exception e) {}
-                dm.setState(DepManager.STOPPING);
+                dm.setState(TestDeploymentManager.STOPPING);
                 sp.setStatusStopRunning("TestPluginDM is preparing to stop "+dm.getName()+"...");
                 try { Thread.sleep(2000); //super server stop time
                 } catch (Exception e) {}
-                if (dm.getTestBehavior() == DepManager.STOP_FAILED) {
-                    dm.setState(DepManager.FAILED);
+                if (dm.getTestBehavior() == TestDeploymentManager.STOP_FAILED) {
+                    dm.setState(TestDeploymentManager.FAILED);
                     sp.setStatusStopFailed("TestPluginDM stop "+dm.getName()+" failed");
                 } else {
-                    dm.setState(DepManager.STOPPED);
+                    dm.setState(TestDeploymentManager.STOPPED);
                     sp.setStatusStopCompleted("TestPluginDM startup "+dm.getName()+" finished");
                 }
             }

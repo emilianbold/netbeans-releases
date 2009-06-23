@@ -84,7 +84,7 @@ public interface JSFConfigComponentFactory {
     Others createOthers();
     AbsoluteOrdering createAbsoluteOrdering();
     Factory createFactory();
-    ValidatorId createValidatorId();
+    FacesValidatorId createValidatorId();
     ApplicationFactory createApplicationFactory ();
     ExceptionHandlerFactory createExceptionHandlerFactory();
     ExternalContextFactory createExternalContextFactory( );

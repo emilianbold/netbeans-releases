@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.util;
+package org.netbeans.modules.hudson.spi;
 
-import javax.swing.JTextField;
-import java.awt.Toolkit;
+import java.net.URL;
 
-public class ValidableTextField extends JTextField
-{
-    private TextFieldValidator validator = null;
+/**
+ * Service for supplying an username and password to authorize a user.
+ */
+public interface PasswordAuthorizer {
 
-    static final long serialVersionUID =3686208002682293243L;
-    public ValidableTextField(TextFieldValidator val)
-    {
-        super();
-        setValidator(val);
-    }
+    /**
+     * Possibly ask to authorize a user for a Hudson server.
+     * This method may open a dialog, consult a foreign authentication service, etc.
+     * A standard {@link ConnectionAuthenticator} will log in using a session cookie.
+     * @param home the root URL of the Hudson server
+     * @return a pair of username and password, or null if no authentication is available
+     */
+    String[] authorize(URL home);
 
-    public TextFieldValidator getValidator()
-    {
-        return validator;
-    }
-
-    public void setValidator(TextFieldValidator val)
-    {
-        validator = val;
-    }
-
-    protected void reflectInvalidValue(String oldval, String newval)
-    {
-        setText(oldval);
-        Toolkit.getDefaultToolkit().beep();
-    }
-
-    public void replaceSelection(String s)
-    {
-        String oldText = getText();
-        super.replaceSelection(s);
-        if (validator != null && !validator.accepts(getText())) {
-            reflectInvalidValue(oldText, s);
-        }
-    }
 }
-/*
- * <<Log>>
- *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
- *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

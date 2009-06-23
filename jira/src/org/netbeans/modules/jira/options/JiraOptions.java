@@ -39,39 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.modules.jira.options;
 
-package org.netbeans.tests.j2eeserver.plugin.jsr88;
-
-import javax.enterprise.deploy.spi.*;
-import java.util.*;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author  gfink
+ * @author Tomas Stupka
  */
-public class Targ implements Target {
+public final class JiraOptions extends AdvancedOption {
 
-    String name;
-    public Targ(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return "Description for " + name;
+    public String getDisplayName () {
+        return NbBundle.getMessage (JiraOptions.class, "JiraOptions.displayName");    // NOI18N
     }
 
-    public String getName() {
-        return name;
+    public String getTooltip () {
+        return NbBundle.getMessage (JiraOptions.class, "JiraOptions.toolTip");        // NOI18N
     }
 
-    Map modules = new HashMap();
-    public void add(TargetModuleID tmid) {
-        modules.put(tmid.toString(), tmid);
-    }
-    public TargetModuleID getTargetModuleID(String id) {
-        return (TargetModuleID) modules.get(id);
-    }
-    public TargetModuleID[] getTargetModuleIDs() {
-        return (TargetModuleID[]) modules.values().toArray(new TargetModuleID[0]);
+    public OptionsPanelController create () {
+        return new JiraOptionsController ();
     }
 }
