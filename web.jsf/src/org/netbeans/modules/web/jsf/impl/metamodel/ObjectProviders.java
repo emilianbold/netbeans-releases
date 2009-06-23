@@ -40,10 +40,18 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 
 
@@ -53,163 +61,181 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectPro
  */
 class ObjectProviders {
 
-    static final class ComponentProvider implements ObjectProvider<ComponentImpl> {
+    static final class ComponentProvider extends AbstractProvider<ComponentImpl> 
+        implements ObjectProvider<ComponentImpl> 
+    {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createInitialObjects()
-         */
-        public List<ComponentImpl> createInitialObjects()
-                throws InterruptedException
+        ComponentProvider( AnnotationModelHelper helper )
         {
-            // TODO Auto-generated method stub
-            return null;
+            super(helper, "javax.faces.component.FacesComponent");
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createObjects(javax.lang.model.element.TypeElement)
+         * @see org.netbeans.modules.web.jsf.impl.metamodel.ObjectProviders.AbstractProvider#createObject(org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper, javax.lang.model.element.TypeElement)
          */
-        public List<ComponentImpl> createObjects( TypeElement type ) {
-            // TODO Auto-generated method stub
-            return null;
+        @Override
+        ComponentImpl createObject( AnnotationModelHelper helper,
+                TypeElement typeElement )
+        {
+            return new ComponentImpl( helper , typeElement );
+        }
+
+    }
+    
+    static final class BehaviorProvider extends AbstractProvider<BehaviorImpl> {
+
+        BehaviorProvider( AnnotationModelHelper helper ) {
+            super( helper , "javax.faces.component.behavior.FacesBehavior");
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#modifyObjects(javax.lang.model.element.TypeElement, java.util.List)
+         * @see org.netbeans.modules.web.jsf.impl.metamodel.ObjectProviders.AbstractProvider#createObject(org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper, javax.lang.model.element.TypeElement)
          */
-        public boolean modifyObjects( TypeElement type,
-                List<ComponentImpl> objects )
+        @Override
+        BehaviorImpl createObject( AnnotationModelHelper helper,
+                TypeElement typeElement )
         {
-            // TODO Auto-generated method stub
-            return false;
+            return new BehaviorImpl( helper , typeElement );
         }
         
     }
     
-    static final class BehaviorProvider implements ObjectProvider<BehaviorImpl> {
+    static final class ConverterProvider extends AbstractProvider<ConverterImpl>
+        implements ObjectProvider<ConverterImpl>
+    {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createInitialObjects()
-         */
-        public List<BehaviorImpl> createInitialObjects()
-                throws InterruptedException
+        ConverterProvider( AnnotationModelHelper helper )
         {
-            // TODO Auto-generated method stub
-            return null;
+            super(helper, "javax.faces.convert.FacesConverter");
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createObjects(javax.lang.model.element.TypeElement)
+         * @see org.netbeans.modules.web.jsf.impl.metamodel.ObjectProviders.AbstractProvider#createObject(org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper, javax.lang.model.element.TypeElement)
          */
-        public List<BehaviorImpl> createObjects( TypeElement type ) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#modifyObjects(javax.lang.model.element.TypeElement, java.util.List)
-         */
-        public boolean modifyObjects( TypeElement type,
-                List<BehaviorImpl> objects )
+        @Override
+        ConverterImpl createObject( AnnotationModelHelper helper,
+                TypeElement typeElement )
         {
-            // TODO Auto-generated method stub
-            return false;
+            return new ConverterImpl( helper , typeElement );
         }
+
         
     }
     
-    static final class ConverterProvider implements ObjectProvider<ConverterImpl>{
+    static final class ManagedBeanProvider extends AbstractProvider<ManagedBeanImpl>
+        implements ObjectProvider<ManagedBeanImpl>
+    {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createInitialObjects()
-         */
-        public List<ConverterImpl> createInitialObjects()
-                throws InterruptedException
+        ManagedBeanProvider( AnnotationModelHelper helper)
         {
-            // TODO Auto-generated method stub
-            return null;
+            super(helper, "javax.faces.bean.ManagedBean");
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createObjects(javax.lang.model.element.TypeElement)
+         * @see org.netbeans.modules.web.jsf.impl.metamodel.ObjectProviders.AbstractProvider#createObject(org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper, javax.lang.model.element.TypeElement)
          */
-        public List<ConverterImpl> createObjects( TypeElement type ) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#modifyObjects(javax.lang.model.element.TypeElement, java.util.List)
-         */
-        public boolean modifyObjects( TypeElement type,
-                List<ConverterImpl> objects )
+        @Override
+        ManagedBeanImpl createObject( AnnotationModelHelper helper,
+                TypeElement typeElement )
         {
-            // TODO Auto-generated method stub
-            return false;
+            return new ManagedBeanImpl( helper , typeElement );
         }
         
+        public boolean modifyObjects(TypeElement type, List<ManagedBeanImpl> objects) {
+            boolean isModified = false;
+            for( Iterator<ManagedBeanImpl> iterator = objects.iterator() ; iterator.hasNext();  ){
+                ManagedBeanImpl object = iterator.next();
+                if (!object.refresh(type)) {
+                    iterator.remove();
+                    isModified = true;
+                }
+                else {
+                    if ( object.scopeChanged() ){
+                        isModified = true;
+                    }
+                }
+            }
+            return isModified;
+        }
+
     }
     
-    static final class ManagedBeanProvider implements ObjectProvider<ManagedBeanImpl>{
+    static final class ValidatorProvider extends AbstractProvider<ValidatorImpl> 
+        implements ObjectProvider<ValidatorImpl>
+    {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createInitialObjects()
-         */
-        public List<ManagedBeanImpl> createInitialObjects()
-                throws InterruptedException
+        ValidatorProvider( AnnotationModelHelper helper )
         {
-            // TODO Auto-generated method stub
-            return null;
+            super(helper, "javax.faces.validator.FacesValidator");
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createObjects(javax.lang.model.element.TypeElement)
+         * @see org.netbeans.modules.web.jsf.impl.metamodel.ObjectProviders.AbstractProvider#createObject(org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper, javax.lang.model.element.TypeElement)
          */
-        public List<ManagedBeanImpl> createObjects( TypeElement type ) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#modifyObjects(javax.lang.model.element.TypeElement, java.util.List)
-         */
-        public boolean modifyObjects( TypeElement type,
-                List<ManagedBeanImpl> objects )
+        @Override
+        ValidatorImpl createObject( AnnotationModelHelper helper,
+                TypeElement typeElement )
         {
-            // TODO Auto-generated method stub
-            return false;
+            return new ValidatorImpl( helper , typeElement );
         }
-        
+
     }
     
-    static final class ValidatorProvider implements ObjectProvider<ValidatorImpl>{
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createInitialObjects()
-         */
-        public List<ValidatorImpl> createInitialObjects()
-                throws InterruptedException
-        {
-            // TODO Auto-generated method stub
-            return null;
+    private static abstract class AbstractProvider<T extends Refreshable> 
+        implements ObjectProvider<T>
+    {
+        AbstractProvider(AnnotationModelHelper helper, String annotationName) {
+            myAnnotationName = annotationName;
+            myHelper = helper;
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#createObjects(javax.lang.model.element.TypeElement)
-         */
-        public List<ValidatorImpl> createObjects( TypeElement type ) {
-            // TODO Auto-generated method stub
-            return null;
+        public List<T> createInitialObjects() throws InterruptedException {
+            final List<T> result = new ArrayList<T>();
+            getHelper().getAnnotationScanner().findAnnotations(getAnnotationName(), 
+                    EnumSet.of( ElementKind.CLASS ), 
+                    new AnnotationHandler() {
+                        public void handleAnnotation(TypeElement type, 
+                                Element element, AnnotationMirror annotation) 
+                        {
+                                result.add(createObject(getHelper(), type));
+                        }
+            });
+            return result;
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider#modifyObjects(javax.lang.model.element.TypeElement, java.util.List)
-         */
-        public boolean modifyObjects( TypeElement type,
-                List<ValidatorImpl> objects )
-        {
-            // TODO Auto-generated method stub
-            return false;
+        public List<T> createObjects(TypeElement type) {
+            final List<T> result = new ArrayList<T>();
+            if (getHelper().hasAnnotation(type.getAnnotationMirrors(), 
+                    getAnnotationName())) 
+            {
+                result.add(createObject(getHelper(), type));
+            }
+            return result;
+        }
+
+        public boolean modifyObjects(TypeElement type, List<T> objects) {
+            boolean isModified = false;
+            for( Iterator<T> iterator = objects.iterator() ; iterator.hasNext();  ){
+                T object = iterator.next();
+                if (!object.refresh(type)) {
+                    iterator.remove();
+                    isModified = true;
+                }
+            }
+            return isModified;
+        }
+
+        abstract T createObject(AnnotationModelHelper helper, TypeElement typeElement);
+        
+        private AnnotationModelHelper getHelper(){
+            return myHelper;
         }
         
+        private String getAnnotationName(){
+            return myAnnotationName;
+        }
+        
+        private String myAnnotationName;
+        private AnnotationModelHelper myHelper;
     }
 }
