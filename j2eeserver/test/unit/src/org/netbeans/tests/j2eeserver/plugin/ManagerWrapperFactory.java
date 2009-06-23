@@ -68,7 +68,7 @@ public class ManagerWrapperFactory extends OptionalDeploymentManagerFactory {
     }
 
     public IncrementalDeployment getIncrementalDeployment(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return new IncrementalDeploySupport(dm);
+        return new TestIncrementalDeployment(dm);
     }
     
     public StartServer getStartServer(javax.enterprise.deploy.spi.DeploymentManager dm) {

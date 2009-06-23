@@ -49,27 +49,27 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
  *
  * @author  gfink
  */
-public class DepFactory implements DeploymentFactory {
+public class TestDeploymentFactory implements DeploymentFactory {
     
     private Map managers = new HashMap();
 
     /** Creates a new instance of DepFactory */
-    public DepFactory() {
+    public TestDeploymentFactory() {
     }
 
     public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str + str1 + str2);
+        TestDeploymentManager manager = (TestDeploymentManager) managers.get(str + str1 + str2);
         if (manager == null){
-            manager = new DepManager(str, str1, str2);
+            manager = new TestDeploymentManager(str, str1, str2);
             managers.put(str, manager);
         }
         return manager;
     }
     
     public synchronized javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str);
+        TestDeploymentManager manager = (TestDeploymentManager) managers.get(str);
         if (manager == null) {
-            manager = new DepManager(str,"","");
+            manager = new TestDeploymentManager(str,"","");
             managers.put(str, manager);
         }
         return manager;

@@ -42,36 +42,65 @@
 
 package org.netbeans.tests.j2eeserver.plugin.jsr88;
 
-import javax.enterprise.deploy.spi.*;
-import java.util.*;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
  *
- * @author  gfink
+ * @author  nn136682
  */
-public class Targ implements Target {
+public class TestTargetModuleID implements TargetModuleID {
 
-    String name;
-    public Targ(String name) {
-        this.name = name;
+    private final Target target;
+
+    private final String moduleID;
+
+    private final  ModuleType type;
+
+    private TestTargetModuleID parent;
+
+    private TestTargetModuleID[] children;
+
+    public TestTargetModuleID(Target target, String module, ModuleType type) {
+        this.target = target;
+        this.moduleID = module.replace('.', '_');
+        this.type = type;
+    }
+    public TargetModuleID[] getChildTargetModuleID() {
+        return children;
     }
 
-    public String getDescription() {
-        return "Description for " + name;
+    public ModuleType getModuleType() {
+        return type;
     }
 
-    public String getName() {
-        return name;
+    public String getModuleID() {
+        return moduleID;
     }
 
-    Map modules = new HashMap();
-    public void add(TargetModuleID tmid) {
-        modules.put(tmid.toString(), tmid);
+    public TargetModuleID getParentTargetModuleID() {
+        return parent;
     }
-    public TargetModuleID getTargetModuleID(String id) {
-        return (TargetModuleID) modules.get(id);
+
+    public Target getTarget() {
+        return target;
     }
-    public TargetModuleID[] getTargetModuleIDs() {
-        return (TargetModuleID[]) modules.values().toArray(new TargetModuleID[0]);
+
+    public String getWebURL() {
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "TestPlugin:" + target.getName() + ":" + moduleID;
+    }
+
+    public TestTargetModuleID getParent() {
+        return parent;
+    }
+
+    public String getModuleUrl() {
+        return moduleID;
     }
 }
