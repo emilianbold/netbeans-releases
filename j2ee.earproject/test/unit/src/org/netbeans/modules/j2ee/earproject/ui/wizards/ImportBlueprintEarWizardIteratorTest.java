@@ -53,7 +53,6 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -66,7 +65,6 @@ import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.netbeans.modules.j2ee.earproject.test.EarTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
-import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -104,10 +102,10 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
     private void setDefaultValues() {
         name = "Test EnterpriseApplication";
         j2eeProfile = Profile.JAVA_EE_5;
-        warName = "testEA-war";
-        jarName = "testEA-ejb";
-        carName = "testEA-app-client";
-        mainClass = "testEA.app.client.Main";
+        warName = "TestEAR-war";
+        jarName = "TestEAR-ejb";
+        carName = "TestEAR-app-client";
+        mainClass = "testear.Main";
         platformName = null;
         sourceLevel = "1.5";
     }
@@ -122,13 +120,13 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         
         assertTrue("wrong dialog displayer", DialogDisplayer.getDefault() instanceof SilentDialogDisplayer);
         // default project dir
-        prjDirF = new File(getWorkDir(), "testEA");
+        prjDirF = new File(getWorkDir(), "TestEAR");
     }
     
     public void testTestableInstantiateBasics() throws Exception {
         j2eeProfile = Profile.JAVA_EE_5;
         generateJ2EEApplication(false);
-        File importedDir = new File(getWorkDir(), "testEA-imported");
+        File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
                 Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
@@ -136,7 +134,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         FileObject fo = FileUtil.toFileObject(importedDir);
         EarProject project = (EarProject) ProjectManager.getDefault().findProject(fo);
         EditableProperties props = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        assertEquals("j2ee.platform was set to 1.5", J2eeModule.JAVA_EE_5, props.getProperty("j2ee.platform")); // #76874
+        assertEquals("j2ee.platform was set to 1.5", Profile.JAVA_EE_5, Profile.fromPropertiesString(props.getProperty("j2ee.platform"))); // #76874
     }
     
     public void testTestableInstantiateWitoutDD() throws Exception {
@@ -150,7 +148,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         userModules.put(prjDirFO.getFileObject(warName), ModuleType.WEB);
         userModules.put(prjDirFO.getFileObject(jarName), ModuleType.EJB);
         userModules.put(prjDirFO.getFileObject(carName), ModuleType.CLIENT);
-        File importedDir = new File(getWorkDir(), "testEA-imported");
+        File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name, userModules, null, null, null);
         
@@ -168,7 +166,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         j2eeProfile = Profile.J2EE_14;
         FileObject prjDirFO = generateJ2EEApplication(true);
         
-        File importedDir = new File(getWorkDir(), "testEA-imported");
+        File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
                 Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
@@ -184,8 +182,8 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         EarProjectTest.validate(ddFO);
         assertSame("three modules", 3, app.getModule().length);
         NewEarProjectWizardIteratorTest.doTestThatEJBWasAddedToWebAndAC( // #66546 and #74123
-                importedDirFO.getFileObject("testEA-war"),
-                importedDirFO.getFileObject("testEA-app-client"));
+                importedDirFO.getFileObject("TestEAR-war"),
+                importedDirFO.getFileObject("TestEAR-app-client"));
     }
     
     // temporarily(?) turned off
@@ -193,7 +191,7 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
         this.j2eeProfile = Profile.J2EE_14;
         generateJ2EEApplicationWithWeb();
         
-        File importedDir = new File(getWorkDir(), "testEA-imported");
+        File importedDir = new File(getWorkDir(), "TestEAR-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeProfile, importedDir, prjDirF, TestUtil.SERVER_URL, name,
                 Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
@@ -218,41 +216,8 @@ public class ImportBlueprintEarWizardIteratorTest extends EarTestCase {
     
     private FileObject generateJ2EEApplication() throws Exception {
         // creates a project we will use for the import
-        NewEarProjectWizardIteratorTest.generateEARProject(
-                prjDirF, name, j2eeProfile, TestUtil.SERVER_URL,
-                warName, jarName, carName, mainClass, platformName, sourceLevel);
-        
-        // Workaround. Set the context root which should be set automatically.
-        // Do not know how to do it. Probably by getting somehow "Sun J2EE DD GUI"
-        // loader into the game.
-        FileObject ddFO = FileUtil.toFileObject(prjDirF).getFileObject("src/conf/application.xml");
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
-        EarProject earProject = project.getLookup().lookup(EarProject.class);
-        Application app = earProject.getAppModule().getApplication();
-        for (Module module : app.getModule()) {
-            Web web = module.getWeb();
-            if (web != null) {
-                web.setContextRoot("/my-context-root");
-                if (EarProjectUtil.isDDWritable(earProject)) {
-                    app.write(ddFO);
-                }
-                break;
-            }
-        }
-        
-        // clean-up NB specific metadata
-        FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
-        prjDirFO.getFileObject("nbproject").delete();
-        if (warName != null) {
-            prjDirFO.getFileObject("testEA-war/nbproject").delete();
-        }
-        if (jarName != null) {
-            prjDirFO.getFileObject("testEA-ejb/nbproject").delete();
-        }
-        if (carName != null) {
-            prjDirFO.getFileObject("testEA-app-client/nbproject").delete();
-        }
-        return prjDirFO;
+        File file = TestUtil.getProjectAsFile(this, "TestEAR");
+        return FileUtil.toFileObject(FileUtil.normalizeFile(file));
     }
     
     private FileObject generateJ2EEApplication(boolean withSubModules) throws Exception {

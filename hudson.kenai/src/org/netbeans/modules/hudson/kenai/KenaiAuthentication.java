@@ -41,15 +41,15 @@ package org.netbeans.modules.hudson.kenai;
 
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import org.netbeans.modules.hudson.spi.AcegiAuthorizer;
+import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Logs in user on kenai.com automatically.
  */
-@ServiceProvider(service=AcegiAuthorizer.class, position=100)
-public class KenaiAuthentication implements AcegiAuthorizer {
+@ServiceProvider(service=PasswordAuthorizer.class, position=100)
+public class KenaiAuthentication implements PasswordAuthorizer {
 
     public String[] authorize(URL home) {
         if (home.toString().matches("https?://(test)?kenai\\.com/hudson/[^/]+/")) { // NOI18N

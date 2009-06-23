@@ -108,9 +108,6 @@ made subject to such option by the copyright holder.
     <taskdef name="convertimport"
          classname="org.netbeans.nbbuild.ConvertImport"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="convertclusterpath"
-         classname="org.netbeans.nbbuild.ConvertClusterPath"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
@@ -135,13 +132,18 @@ made subject to such option by the copyright holder.
     <property name="${module.name}.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>
 
     <!-- netbeans.dest.dir -> cluster.path.id translation for NB.org modules -->
-    <!-- XXX Does not preserve order of clusters specified in etc/netbeans.clusters -->
-    <pathconvert property="cluster.path.evaluated">
-        <path>
-            <dirset dir="${netbeans.dest.dir}" includesfile="${nb_all}/ide/launcher/netbeans.clusters"/>
-        </path>
-    </pathconvert>
-    <convertclusterpath from="${cluster.path.evaluated}" to="cluster.path.final" id="cluster.path.id"/>
+    <!-- XXX should use cluster.properties rather than relying on this file -->
+    <loadfile property="cluster.path.evaluated" srcfile="${nb_all}/ide/launcher/netbeans.clusters">
+        <filterchain>
+            <striplinecomments>
+                <comment value="#"/>
+            </striplinecomments>
+            <prefixlines prefix="${path.separator}${netbeans.dest.dir}${file.separator}"/>
+            <striplinebreaks/>
+        </filterchain>
+    </loadfile>
+    <path id="cluster.path.id" path="${cluster.path.evaluated}"/>
+    <property name="cluster.path.final" refid="cluster.path.id"/>
   </target>
   
 </project>
