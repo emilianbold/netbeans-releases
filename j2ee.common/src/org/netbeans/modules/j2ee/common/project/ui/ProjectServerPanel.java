@@ -419,6 +419,11 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             Set<Profile> profiles = new TreeSet<Profile>(Profile.REVERSE_COMPARATOR);
             profiles.addAll(j2eePlatform.getSupportedProfiles(j2eeModuleType));
             for (Profile profile : profiles) {
+                // j2ee 1.3 is not supported anymore
+                if (Profile.J2EE_13.equals(profile)) {
+                    continue;
+                }
+
                 j2eeSpecComboBox.addItem(new ProfileItem(profile));
             }
             if (prevSelectedItem != null) {

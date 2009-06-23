@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,15 +41,24 @@
 
 package org.netbeans.modules.web.wizards;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.TemplateWizard;
 
 /**
  *
  * @author  mkuchtiak
+ * @author Petr Slechta
  */
 public class Utilities {
+
+    private Utilities() {
+    }
+
     /** Checks if the given file name can be created in the target folder.
      *
      * @param dir target directory
@@ -57,7 +66,7 @@ public class Utilities {
      * @param extension extension of created file
      * @return localized error message or null if all right
      */
-    final public static String canUseFileName (java.io.File dir, String relativePath, String objectName, String extension) {
+    public static String canUseFileName (java.io.File dir, String relativePath, String objectName, String extension) {
         String newObjectName=objectName;
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();
@@ -152,5 +161,15 @@ public class Utilities {
             }
         }
         return res;
+    }
+
+    static boolean isJavaEE6(TemplateWizard wizard) {
+        FileObject dir = Templates.getTargetFolder(wizard);
+        WebModule wm = WebModule.getWebModule(dir);
+        if (wm != null) {
+            Profile profile = Profile.fromPropertiesString(wm.getJ2eePlatformVersion());
+            return (profile == Profile.JAVA_EE_6_FULL || profile == Profile.JAVA_EE_6_WEB);
+        }
+        return false;
     }
 }
