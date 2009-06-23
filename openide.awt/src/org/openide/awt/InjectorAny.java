@@ -67,7 +67,7 @@ final class InjectorAny implements ContextActionPerformer<Object> {
         }
         try {
             Class<?> clazzC = Class.forName(clazz, true, l);
-            Constructor c = clazzC.getConstructor(Collection.class);
+            Constructor c = clazzC.getConstructor(List.class);
             ActionListener action = (ActionListener) c.newInstance(data);
             action.actionPerformed(ev);
         } catch (Exception ex) {

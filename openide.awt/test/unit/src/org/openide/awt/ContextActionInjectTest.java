@@ -42,6 +42,7 @@ package org.openide.awt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -107,9 +108,9 @@ public class ContextActionInjectTest extends NbTestCase {
     }
 
     public static final class MultiContext implements ActionListener {
-        private final Collection<Number> context;
+        private final List<Number> context;
 
-        public MultiContext(Collection<Number> context) {
+        public MultiContext(List<Number> context) {
             this.context = context;
         }
 
