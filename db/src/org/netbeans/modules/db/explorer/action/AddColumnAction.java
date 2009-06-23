@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
+import org.netbeans.modules.db.explorer.dlg.ColumnItem;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -80,9 +81,9 @@ public class AddColumnAction extends BaseAction {
                     final DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
 
                     try {
-                        final AddTableColumnDialog dlg = new AddTableColumnDialog(connection.getConnector().getDatabaseSpecification(), node);
-                        if (dlg.run()) {
-                            SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
+                        boolean columnAdded = AddTableColumnDialog.showDialogAndCreate(connection.getConnector().getDatabaseSpecification(), node);
+                        if (columnAdded) {
+                            SystemAction.get(RefreshAction.class).performAction(new Node[]{node});
                         }
                     } catch(Exception exc) {
                         LOGGER.log(Level.WARNING, null, exc);

@@ -167,6 +167,7 @@ public final class ServerRegistry implements java.io.Serializable {
         init();
         return instances;
     }
+
     private void addPlugin(FileObject fo) {
         String name = ""; //NOI18N
         try {

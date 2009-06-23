@@ -44,22 +44,22 @@ package org.netbeans.tests.j2eeserver.plugin;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.shared.CommandType;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
 
 /**
  *
  * @author  nn136682
  */
-public class ServerLifecycle extends StartServer {
+public class TestStartServer extends StartServer {
 
     private DepManager dm;
 
     /** Creates a new instance of StartServer */
-    public ServerLifecycle(DeploymentManager dm) {
+    public TestStartServer(DeploymentManager dm) {
         this.dm = (DepManager)dm;
     }
     
