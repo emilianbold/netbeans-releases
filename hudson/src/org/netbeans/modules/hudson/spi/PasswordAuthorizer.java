@@ -42,9 +42,9 @@ package org.netbeans.modules.hudson.spi;
 import java.net.URL;
 
 /**
- * Service for supplying an ACEGI-style username and password to authorize a user.
+ * Service for supplying an username and password to authorize a user.
  */
-public interface AcegiAuthorizer {
+public interface PasswordAuthorizer {
 
     /**
      * Possibly ask to authorize a user for a Hudson server.
