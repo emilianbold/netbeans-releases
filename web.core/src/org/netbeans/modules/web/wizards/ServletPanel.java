@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.wizards;
 
 import java.awt.Component;
@@ -60,60 +59,61 @@ import org.openide.util.HelpCtx;
  * @author Ana von Klopp, Milan Kuchtiak
  */
 public class ServletPanel implements WizardDescriptor.FinishablePanel {
-    
+
     /** The visual component that displays this panel.
      * If you need to access the component from this class,
      * just use getComponent().
      */
     private transient BaseWizardPanel wizardPanel;
-    private transient TemplateWizard wizard; 
+    private transient TemplateWizard wizard;
     /** listener to changes in the wizard */
     private ChangeListener listener;
     private DeployData deployData;
     private transient TargetEvaluator evaluator;
 
     /** Create the wizard panel descriptor. */
-    private ServletPanel(TargetEvaluator evaluator, TemplateWizard wizard, 
-			 boolean first) {
-        this.evaluator=evaluator;                   
-	this.wizard = wizard; 
-	this.deployData = evaluator.getDeployData(); 
-	if(first) 
-	    this.wizardPanel = new DeployDataPanel(evaluator, wizard);
-	else 
-	    this.wizardPanel = new DeployDataExtraPanel(evaluator, wizard);
+    private ServletPanel(TargetEvaluator evaluator, TemplateWizard wizard,
+            boolean first) {
+        this.evaluator = evaluator;
+        this.wizard = wizard;
+        this.deployData = evaluator.getDeployData();
+        if (first) {
+            this.wizardPanel = new DeployDataPanel(evaluator, wizard);
+        } else {
+            this.wizardPanel = new DeployDataExtraPanel(evaluator, wizard);
+        }
     }
 
     public boolean isFinishPanel() {
         return true;
     }
-    
+
     /** Create the wizard panel descriptor. */
-    public static ServletPanel createServletPanel(TargetEvaluator evaluator, 
-						  TemplateWizard wizard) { 
-	return new ServletPanel(evaluator, wizard, true); 
+    public static ServletPanel createServletPanel(TargetEvaluator evaluator,
+            TemplateWizard wizard) {
+        return new ServletPanel(evaluator, wizard, true);
     }
 
     /** Create the wizard panel descriptor. */
-    public static ServletPanel createFilterPanel(TargetEvaluator evaluator, 
-						  TemplateWizard wizard) {
-	return new ServletPanel(evaluator, wizard, false); 
+    public static ServletPanel createFilterPanel(TargetEvaluator evaluator,
+            TemplateWizard wizard) {
+        return new ServletPanel(evaluator, wizard, false);
     }
-    
-    public Component getComponent () {
-        return wizardPanel; 
+
+    public Component getComponent() {
+        return wizardPanel;
     }
 
     public boolean isValid() {
-	if(deployData.isValid()) { 
-	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-	    return true;
-	}
-	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-			   deployData.getErrorMessage()); 
-	return false; 
-    } 
-    
+        if (deployData.isValid()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+            return true;
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
+                deployData.getErrorMessage());
+        return false;
+    }
+
     public HelpCtx getHelp() {
         // #114487
         if (evaluator.getFileType() == FileType.SERVLET) {
@@ -121,54 +121,61 @@ public class ServletPanel implements WizardDescriptor.FinishablePanel {
         }
         return null;
     }
-    
+
     /** Add a listener to changes of the panel's validity.
-    * @param l the listener to add
-    * @see #isValid
-    */
-    public void addChangeListener (ChangeListener l) {
-        if (listener != null) throw new IllegalStateException ();
-        if (wizardPanel != null)
-	    wizardPanel.addChangeListener (l);
+     * @param l the listener to add
+     * @see #isValid
+     */
+    public void addChangeListener(ChangeListener l) {
+        if (listener != null) {
+            throw new IllegalStateException();
+        }
+        if (wizardPanel != null) {
+            wizardPanel.addChangeListener(l);
+        }
         listener = l;
     }
 
     /** Remove a listener to changes of the panel's validity.
-    * @param l the listener to remove
-    */
-    public void removeChangeListener (ChangeListener l) {
+     * @param l the listener to remove
+     */
+    public void removeChangeListener(ChangeListener l) {
         listener = null;
-        if (wizardPanel != null)
-	    wizardPanel.removeChangeListener (l);
+        if (wizardPanel != null) {
+            wizardPanel.removeChangeListener(l);
+        }
     }
-    
-    public void readSettings (Object settings) {
-        if(settings instanceof TemplateWizard) {
-            TemplateWizard w = (TemplateWizard)settings;
+
+    public void readSettings(Object settings) {
+        if (settings instanceof TemplateWizard) {
+            TemplateWizard w = (TemplateWizard) settings;
             //Project project = Templates.getProject(w);
             String targetName = w.getTargetName();
             org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(w);
-            Project project = Templates.getProject( w );
+            Project project = Templates.getProject(w);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             String packageName = null;
             for (int i = 0; i < groups.length && packageName == null; i++) {
-                if (WebModule.getWebModule (groups [i].getRootFolder ()) != null) {
-                    packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
+                if (WebModule.getWebModule(groups[i].getRootFolder()) != null) {
+                    packageName = org.openide.filesystems.FileUtil.getRelativePath(groups[i].getRootFolder(), targetFolder);
                 }
             }
-            if (packageName!=null)
-                packageName = packageName.replace('/','.');
-            else packageName="";
-            if (targetName==null)
-                evaluator.setClassName(w.getTemplate().getName(),packageName);
-            else 
-                evaluator.setClassName(targetName,packageName);
+            if (packageName != null) {
+                packageName = packageName.replace('/', '.');
+            } else {
+                packageName = "";
+            }
+            if (targetName == null) {
+                evaluator.setClassName(w.getTemplate().getName(), packageName);
+            } else {
+                evaluator.setClassName(targetName, packageName);
+            }
         }
-	wizardPanel.setData(); 
+        wizardPanel.setData();
     }
-    
-    public void storeSettings (Object settings) {
-	// do nothing
+
+    public void storeSettings(Object settings) {
+        // do nothing
     }
 }
