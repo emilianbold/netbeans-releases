@@ -1218,6 +1218,22 @@ final class XMLMapAttr implements Map {
             throw new UnsupportedOperationException();
         }
         
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FileMap) {
+                if (fo.equals(((FileMap)obj).fo)) {
+                    return true;
+                }
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + (this.fo != null ? this.fo.hashCode() : 0);
+            return hash;
+        }
     }
     private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {
         private FileObject fo;
@@ -1261,7 +1277,6 @@ final class XMLMapAttr implements Map {
             throw new UnsupportedOperationException();
         }
     } // end of AttrFileSet
-    
     private static final class FOEntry implements Map.Entry<String, Object> {
         private FileObject fo;
         private String attr;
