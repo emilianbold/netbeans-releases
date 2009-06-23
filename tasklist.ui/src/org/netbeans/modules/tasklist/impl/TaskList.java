@@ -165,6 +165,7 @@ public class TaskList {
         List<Task> tasks = pushScanner2tasks.get( scanner );
         if( null != tasks ) {
             if( null == resource ) {
+                toRemove = new LinkedList<Task>();
                 toRemove.addAll(tasks);
             } else {
                 for( Task t : tasks ) {
