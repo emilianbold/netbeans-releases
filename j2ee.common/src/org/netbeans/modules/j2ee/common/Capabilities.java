@@ -37,11 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.deployment.devmodules.api;
+package org.netbeans.modules.j2ee.common;
 
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
@@ -67,25 +72,13 @@ public final class Capabilities {
         return new Capabilities(provider);
     }
 
-    public boolean isEJB20Supported() {
-        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        // TODO consider additional capabilities not matching the Profile (?)
-        return isProfileSupported(moduleType, Profile.J2EE_13);
-    }
-
-    public boolean isEJB21Supported() {
-        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        // TODO consider additional capabilities not matching the Profile (?)
-        return isProfileSupported(moduleType, Profile.J2EE_14);
-    }
-
-    public boolean isEJB30Supported() {
+    public boolean isEjb30Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.JAVA_EE_5);
     }
 
-    public boolean isEJB31Supported() {
+    public boolean isEjb31Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // TODO consider additional capabilities not matching the Profile (?)
         return isProfileSupported(moduleType, Profile.JAVA_EE_6_FULL);
