@@ -55,6 +55,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
@@ -69,6 +70,12 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class ActionsTest extends JellyTestCase {
 
+
+    public static final String[] tests = new String[] {
+        "testCheckEnabledActions",
+        "testCheckEnabledActionsDebugging"
+    };
+
     public ActionsTest(String name) {
         super(name);
     }
@@ -78,11 +85,7 @@ public class ActionsTest extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(ActionsTest.class).addTest(
-            "testCheckEnabledActions",
-            "testCheckEnabledActionsDebugging"
-            ).enableModules(".*").clusters(".*"));
+        return createModuleTest(ActionsTest.class, tests);
     }
 
     /** setUp method  */
@@ -204,7 +207,7 @@ public class ActionsTest extends JellyTestCase {
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 104);
             //start debugging
-            new DebugProjectAction().perform(projectNode);
+            new DebugJavaFileAction().perform(beanNode);
             Utilities.getDebugToolbar().waitComponentVisible(true);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");

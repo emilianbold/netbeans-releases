@@ -110,7 +110,7 @@ public class MemoryView extends Helper {
     }
 
 
-    public static void main(java.lang.String[] args) {
+    public static void main(String[] args) {
         MemoryView mv = new MemoryView ();
         mv.inner();
         mv.test();
