@@ -394,7 +394,7 @@ public class IDEValidation extends JellyTestCase {
         String addDriverItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddNewDriver");
         // open a dialog to add a new JDBC driver
         new ActionNoBlock(null, addDriverItem).perform(driversNode);
-        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "AddDriverDialogTitle");
+        String addDriverTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "AddDriverDialogTitle");
         new NbDialogOperator(addDriverTitle).cancel();
         
         // wait until the wait node dismiss and after that start waiting for JDBC_ODBC Bridge node
