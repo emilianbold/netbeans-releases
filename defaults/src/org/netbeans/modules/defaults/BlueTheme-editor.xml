@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="highlight-search" bgColor="38566F"/>
     <fontcolor name="inc-search" bgColor="38566F"/>
-    <fontcolor name="line-number" foreColor="white"/>
+    <fontcolor name="line-number" foreColor="white" bgColor="121e31"/>
     <fontcolor name="selection" bgColor="ff685d9c"/>
     <fontcolor name="status-bar"/>
     <fontcolor name="status-bar-bold" foreColor="red"/>
