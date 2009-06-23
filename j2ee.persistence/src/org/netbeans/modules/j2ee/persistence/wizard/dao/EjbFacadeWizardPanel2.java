@@ -4,8 +4,6 @@ import java.awt.Component;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -42,7 +40,7 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     public boolean isValid() {
         getComponent();
         if (!(component.isRemote() || component.isLocal())) {
-            if(Capabilities.forProject(project).isEJB31Supported())
+            if(false)
             {
                 //if it's jee6 project, ejb 3.1 allow to omit any interfaces
                 return true;
