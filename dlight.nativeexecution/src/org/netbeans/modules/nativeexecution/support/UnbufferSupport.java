@@ -160,6 +160,11 @@ public class UnbufferSupport {
                             new File(unbufferPath, unbufferLib).getAbsolutePath(); // NOI18N
 
                     ldPreload = CommandLineHelper.getInstance(execEnv).toShellPaths(ldPreload);
+
+                    // HotFix: 167551 - Can not run application in Output Window using cygwin tool
+                    // The problem is that it is wrong to escape path here...
+                    // The hot fix is to "unescape" it back...
+                    ldPreload = ldPreload.replaceAll("\\\\ ", " "); // NOI18N
                 } else if (isMacOS) {
                     // TODO: FIXME (?) For Mac and Windows just put unbuffer
                     // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
