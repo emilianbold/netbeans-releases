@@ -111,13 +111,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
     private CharSequence getCurPath() {
         assert (inclStack != null);
-        IncludeInfo info = inclStack.peek();
+        IncludeInfo info = inclStack.getLast();
         return info.getIncludedPath();
     }
     
     private int getCurDirIndex() {
         if (inclStack != null && !inclStack.isEmpty()) {
-            IncludeInfo info = inclStack.peek();
+            IncludeInfo info = inclStack.getLast();
             return info.getIncludedDirIndex();
         } else {
             return 0;
