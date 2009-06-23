@@ -193,7 +193,7 @@ public final class Context {
      *
      * @return <code>true</code> if indexing sources for binary root.
      *
-     * @since 1.6
+     * @since 1.17
      */
     public boolean isSourceForBinaryRootIndexing() {
         return sourceForBinaryRoot;
