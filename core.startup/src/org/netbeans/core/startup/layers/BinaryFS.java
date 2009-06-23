@@ -967,8 +967,22 @@ final class BinaryFS extends FileSystem {
         public Object put(String key, Object value) {
             throw new UnsupportedOperationException();
         }
-
-    }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FileMap) {
+                if (fo.equals(((FileMap)obj).fo)) {
+                    return true;
+                }
+            }
+            return super.equals(obj);
+        }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + (this.fo != null ? this.fo.hashCode() : 0);
+            return hash;
+        }
+    } // end of FileMap
     private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {
         private FileObject fo;
 

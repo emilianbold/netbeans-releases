@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,57 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.jsf.api.facesmodel;
 
+import org.netbeans.modules.web.jsf.api.metamodel.ValidatorId;
 
-package org.netbeans.tests.j2eeserver.plugin.jsr88;
-
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.shared.*;
-import javax.enterprise.deploy.model.*;
 
 /**
+ * @author ads
  *
- * @author  nn136682
  */
-public class TestTargetMoid implements TargetModuleID {
-    Target target;
-    String moduleID;
-    TestTargetMoid parent;
-    TestTargetMoid[] children;
-    ModuleType type;
+public interface FacesValidatorId extends TextJsfComponent, ValidatorId {
 
-    /** Creates a new instance of TestTargetMoid */
-    public TestTargetMoid(Target target, String module, ModuleType type) {
-        this.target = target;
-        this.moduleID = module.replace('.', '_');
-        this.type = type; 
-    }
-    public TargetModuleID[] getChildTargetModuleID() {
-        return children;
-    }
-    
-    public ModuleType getModuleType() { return type; }
-    
-    public String getModuleID() {
-        return moduleID;
-    }
-    
-    public TargetModuleID getParentTargetModuleID() {
-        return parent;
-    }
-    
-    public Target getTarget() {
-        return target;
-    }
-    
-    public String getWebURL() {
-        return null;
-    }
-    
-    public String toString() {
-        return "TestPlugin:"+target.getName()+":"+moduleID;
-    }
-    
-    public TestTargetMoid getParent() { return parent; }
-    public String getModuleUrl() { return moduleID; }
 }

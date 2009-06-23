@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,53 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.jsf.impl.metamodel;
 
-package org.netbeans.tests.j2eeserver.plugin.jsr88;
+import javax.lang.model.element.TypeElement;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 
 /**
+ * @author ads
  *
- * @author  gfink
  */
-public class DepFactory implements DeploymentFactory {
+public interface Refreshable {
     
-    private Map managers = new HashMap();
+    boolean refresh( TypeElement type );
 
-    /** Creates a new instance of DepFactory */
-    public DepFactory() {
-    }
-
-    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str + str1 + str2);
-        if (manager == null){
-            manager = new DepManager(str, str1, str2);
-            managers.put(str, manager);
-        }
-        return manager;
-    }
-    
-    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str);
-        if (manager == null) {
-            manager = new DepManager(str,"","");
-            managers.put(str, manager);
-        }
-        return manager;
-    }
-    
-    public String getDisplayName() {
-        return "Sample JSR88 plugin";// PENDING parameterize this.
-    }
-    
-    public String getProductVersion() {
-        return "0.9";// PENDING version this plugin somehow?
-    }
-    
-    public boolean handlesURI(String str) {
-        return (str != null && str.startsWith("fooservice"));
-    }
-    
 }

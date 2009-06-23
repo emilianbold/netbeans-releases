@@ -216,7 +216,7 @@ do
 		found=true
 		break
 	    fi
-	j=$((j+1)); done
+	j=`expr $j + 1`; done
 	if [ -z "$found" ]
 	then
 	    cset[$i]=$line
