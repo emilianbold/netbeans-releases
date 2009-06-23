@@ -79,7 +79,6 @@ class ServletData extends DeployData {
     private boolean paramOK = true; 
     private String duplicitParam = null;
     private FileType fileType = null; 
-    private boolean addToDD=true;
 
     ServletData(FileType fileType) {
 	this.fileType = fileType; 
@@ -318,7 +317,7 @@ class ServletData extends DeployData {
     boolean isValid() {
 	errorMessage = new String(); 
 	if(webApp == null) return true;
-        if (!isAddToDD()) return true;
+        //if (!makeEntry()) return true;
 
 	if(getName().length() == 0) {
 	    errorMessage = NbBundle.getMessage(ServletData.class, "MSG_no_name"); 
@@ -581,15 +580,6 @@ class ServletData extends DeployData {
 	    }
 	}
 	webApp.setFilterMapping(fm);
-    }
-    
-    
-    void setAddToDD(boolean addToDD){
-        this.addToDD=addToDD;
-    }
-    
-    boolean isAddToDD() {
-        return addToDD;
     }
 
     String getErrorMessage() {

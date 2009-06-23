@@ -45,6 +45,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
@@ -57,10 +58,12 @@ class DeployDataExtraPanel extends BaseWizardPanel {
     private ServletData deployData;
     private JLabel jLinstruction;
     private InitParamPanel paramPanel;
+    private TemplateWizard wizard;
 
     private static final long serialVersionUID = -2720213209076965116L;
 
-    DeployDataExtraPanel(TargetEvaluator evaluator) { 
+    DeployDataExtraPanel(TargetEvaluator evaluator, TemplateWizard wizard) {
+        this.wizard = wizard;
 	deployData = (ServletData)(evaluator.getDeployData()); 
 	setName(NbBundle.getMessage(DeployDataExtraPanel.class, 
 				    "TITLE_ddpanel_filter_2")); 
@@ -109,7 +112,7 @@ class DeployDataExtraPanel extends BaseWizardPanel {
 	this.add(jLinstruction, fullRowC); 
 
 	// 2. Init param table 
-	paramPanel = new InitParamPanel(deployData, this); 
+	paramPanel = new InitParamPanel(deployData, this, wizard);
 	this.add(paramPanel, tablePanelC); 
 
 	// 3. Add vertical filler at the bottom

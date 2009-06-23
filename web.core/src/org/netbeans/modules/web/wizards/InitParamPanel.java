@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,13 +74,15 @@ class InitParamPanel extends JPanel implements ActionListener,
     private JButton jBnew; 
     private JButton jBedit; 
     private JButton jBdelete; 
-    private JScrollPane scrollP; 
+    private JScrollPane scrollP;
+    private TemplateWizard wizard;
 
     private static final long serialVersionUID = -5803905591685582710L;
     
-    public InitParamPanel(ServletData deployData, BaseWizardPanel parent) { 
+    public InitParamPanel(ServletData deployData, BaseWizardPanel parent, TemplateWizard wizard) {
 	this.deployData = deployData; 
-	this.parent = parent; 
+	this.parent = parent;
+    this.wizard = wizard;
 	initComponents ();
     }
 
@@ -183,7 +186,7 @@ class InitParamPanel extends JPanel implements ActionListener,
     }
 
     public void setEnabled() { 
-	boolean enable = deployData.makeEntry(); 
+	boolean enable = deployData.makeEntry() || Utilities.isJavaEE6(wizard);
     
 	jLinitparams.setEnabled(enable);
 	jBnew.setEnabled(enable); 
@@ -248,7 +251,7 @@ class InitParamPanel extends JPanel implements ActionListener,
     } 
 
     private void updateInitParams() { 
-	if(deployData.makeEntry()) { 
+	if(deployData.makeEntry() || Utilities.isJavaEE6(wizard)) {
 	    int numInitParams = table.getRowCount(); 
 	    String[][] param = new String[numInitParams][2]; 
 	    boolean isOK = true; 

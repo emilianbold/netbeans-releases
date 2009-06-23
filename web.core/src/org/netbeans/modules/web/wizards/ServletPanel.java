@@ -79,9 +79,9 @@ public class ServletPanel implements WizardDescriptor.FinishablePanel {
 	this.wizard = wizard; 
 	this.deployData = evaluator.getDeployData(); 
 	if(first) 
-	    this.wizardPanel = new DeployDataPanel(evaluator); 
+	    this.wizardPanel = new DeployDataPanel(evaluator, wizard);
 	else 
-	    this.wizardPanel = new DeployDataExtraPanel(evaluator); 
+	    this.wizardPanel = new DeployDataExtraPanel(evaluator, wizard);
     }
 
     public boolean isFinishPanel() {

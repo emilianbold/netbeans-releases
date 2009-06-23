@@ -115,8 +115,6 @@ abstract class DeployData {
     // This must invoke write changes at the end 
     abstract void createDDEntries(); 
     abstract String getErrorMessage(); 
-    abstract void setAddToDD(boolean addToDD);
-    abstract boolean isAddToDD();
     
     public static FileObject getWebAppFor(FileObject folder) {
         if (folder==null) return null;
