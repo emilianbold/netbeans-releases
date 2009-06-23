@@ -476,7 +476,7 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetFeaturesGolden() throws KenaiException {
         BufferedReader br = null;
-        boolean doAsserts = false; //set false to list all features returned by json to stdout
+        boolean doAsserts = true; //set false to list all features returned by json to stdout
         try {
             System.out.println("testGetFeatures");
             String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-golden.data";
