@@ -84,6 +84,10 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.netbeans.api.actions.Closable;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -444,6 +448,41 @@ public class Actions extends Object {
             return new InjectorAny(fo);
         }
         throw new IllegalStateException("no selectionType parameter in " + fo); // NOI18N
+    }
+    static ContextActionPerformer<?> performer(final Map fo) {
+        String type = (String)fo.get("type");
+        if (type.equals(Openable.class.getName())) {
+            return new DefaultPerfomer(0);
+        }
+        if (type.equals(Viewable.class.getName())) {
+            return new DefaultPerfomer(1);
+        }
+        if (type.equals(Editable.class.getName())) {
+            return new DefaultPerfomer(2);
+        }
+        if (type.equals(Closable.class.getName())) {
+            return new DefaultPerfomer(3);
+        }
+        throw new IllegalStateException(type);
+    }
+    private static final class DefaultPerfomer implements ContextActionPerformer<Object> {
+        final int type;
+
+        public DefaultPerfomer(int type) {
+            this.type = type;
+        }
+
+        public void actionPerformed(ActionEvent ev, List<? extends Object> data) {
+            for (Object o : data) {
+                switch (type) {
+                    case 0: ((Openable)o).open(); break;
+                    case 1: ((Viewable)o).view(); break;
+                    case 2: ((Editable)o).edit(); break;
+                    case 3: ((Closable)o).close(); break;
+                    default: assert false: "Wrong type: " + type;
+                }
+            }
+        }
     }
 
     

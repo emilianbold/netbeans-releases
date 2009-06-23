@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
+package org.netbeans.api.actions;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
-
-
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** A context interface representing ability of an object to be closed.
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 7.10
+ */
+public interface Closable {
+    /** Closes the object if it is open.
+    * @return <code>true</code> if it was really closed; <code>false</code> if the user cancelled the request
+    */
+    public boolean close();
 }
