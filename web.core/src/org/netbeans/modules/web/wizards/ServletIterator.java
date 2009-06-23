@@ -108,7 +108,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             evaluator = new TargetEvaluator(fileType, deployData);
         }
 
-        Project project = Templates.getProject( wizard );
+        Project project = Templates.getProject(wizard);
         DataFolder targetFolder=null;
         try {
             targetFolder = wizard.getTargetFolder();
@@ -118,7 +118,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         }
         evaluator.setInitialFolder(targetFolder,project); 
         
-	if(fileType == FileType.SERVLET) { 
+	if (fileType == FileType.SERVLET) {
 	    panels = new WizardDescriptor.Panel[] {
                 new FinishableProxyWizardPanel(
                         createPackageChooserPanel(wizard,null),
@@ -126,7 +126,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
 		ServletPanel.createServletPanel((TargetEvaluator)evaluator, wizard) 
 	    };
 	}
-	else if(fileType == FileType.FILTER) {
+	else if (fileType == FileType.FILTER) {
             customPanel = new WrapperSelection(wizard);
 	    panels = new WizardDescriptor.Panel[] {
                 createPackageChooserPanel(wizard,customPanel),
