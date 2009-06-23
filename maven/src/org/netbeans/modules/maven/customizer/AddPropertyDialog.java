@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -55,6 +54,7 @@ import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.text.html.HTMLEditorKit;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
@@ -188,9 +188,6 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         public void run() {
             Children.Array rootChilds = new Children.Array();
 
-            //groupId | artifactId | mojo
-            Set<String> pluginKeys = new TreeSet<String>();
-
             String[] goals = StringUtils.split(goalsText, " "); //NOI18N
             for (String goal : goals) {
                 String groupId = null;
@@ -209,10 +206,22 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
                         String prefix = m2.group(1);
                         try {
                             Set<String> plgs = PluginIndexManager.getPluginsForGoalPrefix(prefix);
-                            if (plgs != null) {
+                            if (plgs != null && plgs.size() > 0) {
                                 mojo = m2.group(2);
+                                DefaultArtifactVersion latest = null;
+                                String[] latestP = null;
                                 for (String plg : plgs) {
-                                    pluginKeys.add(plg + "|" + mojo); //NOI18N
+                                    String[] p = StringUtils.split(plg, "|"); //NOI18N
+                                    DefaultArtifactVersion current = new DefaultArtifactVersion(p[2]);
+                                    if (latest == null || current.compareTo(latest) > 0) {
+                                        latest = current;
+                                        latestP = p;
+                                    }
+                                }
+                                if (latestP != null) {
+                                    groupId = latestP[0];
+                                    artifactid = latestP[1];
+                                    version = latestP[2];
                                 }
                             }
                         } catch (Exception ex) {
