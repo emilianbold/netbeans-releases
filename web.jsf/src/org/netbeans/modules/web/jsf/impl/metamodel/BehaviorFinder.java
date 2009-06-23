@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesBehavior;
@@ -57,8 +59,9 @@ class BehaviorFinder implements ElementFinder<Behavior> {
      * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
      */
     public List<Behavior> getAnnotations(  JsfModelImpl model) {
-        // TODO Auto-generated method stub
-        return null;
+        Collection<BehaviorImpl> collection = model.getBeahviorManager().getObjects();
+        List<Behavior> result = new ArrayList<Behavior>( collection );
+        return result;
     }
 
     /* (non-Javadoc)

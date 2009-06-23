@@ -38,51 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
+import javax.lang.model.element.TypeElement;
 
-import java.util.List;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 
-import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- * The "converter" element represents a concrete Converter
- * implementation class that should be registered under the
- * specified converter identifier.  Converter identifiers must
- * be unique within the entire web application.
- * 
- * Nested "attribute" elements identify generic attributes that
- * may be configured on the corresponding UIComponent in order
- * to affect the operation of the Converter.  Nested "property"
- * elements identify JavaBeans properties of the Converter
- * implementation class that may be configured to affect the
- * operation of the Converter.  "attribute" and "property"
- * elements are intended to allow component developers to
- * more completely describe their components to tools and users.
- * These elements have no required runtime semantics.
- * @author Petr Pisl, ads
+ * @author ads
+ *
  */
-public interface Converter  extends FacesConfigElement, DescriptionGroup, 
-    FacesConverter, IdentifiableElement , AttributeContainer, PropertyContainer
-{
+public abstract class FacesValidatorImpl extends PersistentObject {
 
-    String CONVERTER_CLASS = JSFConfigQNames.CONVERTER_CLASS.getLocalName();
+    protected FacesValidatorImpl( AnnotationModelHelper helper,
+            TypeElement typeElement )
+    {
+        super(helper, typeElement);
+    }
     
-    String CONVERTER_FOR_CLASS = JSFConfigQNames.CONVERTER_FOR_CLASS.getLocalName();
-    
-    String CONVERTER_ID = JSFConfigQNames.CONVERTER_ID.getLocalName();
-    
-    String CONVERTER_EXTENSION = JSFConfigQNames.CONVERTER_EXTENSION.getLocalName();
-    
-    void setConverterClass(String value);
-    
-    void setConverterForClass(String value);
-    
-    void setConverterId(String value);
-    
-    List<ConverterExtension> getConverterExtensions();
-    void addConverterExtension( ConverterExtension extension );
-    void addConverterExtension( int index, ConverterExtension extension );
-    void removeConverterExtension( ConverterExtension extension );
+    protected abstract boolean isDefault() ;
+
 }

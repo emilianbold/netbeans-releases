@@ -54,15 +54,15 @@ abstract class JsfModelManagers extends AbstractJsfModel {
     JsfModelManagers( AnnotationModelHelper helper ) {
         myHelper = helper;
         myBehaviorManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.BehaviorProvider() );
+                new ObjectProviders.BehaviorProvider( myHelper) );
         myComponentManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ComponentProvider() );
+                new ObjectProviders.ComponentProvider( myHelper) );
         myConverterManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ConverterProvider() );
+                new ObjectProviders.ConverterProvider( myHelper) );
         myManagedBeanManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ManagedBeanProvider() );
+                new ObjectProviders.ManagedBeanProvider( myHelper) );
         myValidatorManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ValidatorProvider() );
+                new ObjectProviders.ValidatorProvider( myHelper) );
     }
     
     PersistentObjectManager<BehaviorImpl> getBeahviorManager(){

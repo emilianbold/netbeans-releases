@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
@@ -57,8 +59,8 @@ class ComponentFinder implements ElementFinder<Component> {
      * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
      */
     public List<Component> getAnnotations( JsfModelImpl model  ) {
-        // TODO Auto-generated method stub
-        return null;
+        Collection<ComponentImpl> collection = model.getComponentManager().getObjects();
+        return new ArrayList<Component>( collection );
     }
 
     /* (non-Javadoc)
