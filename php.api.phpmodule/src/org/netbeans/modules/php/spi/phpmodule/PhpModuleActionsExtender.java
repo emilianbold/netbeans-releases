@@ -58,6 +58,7 @@ public abstract class PhpModuleActionsExtender {
 
     /**
      * Get the list of actions for the given framework that will be displayed in the project's menu.
+     * All <code>null</code> values are replaced by a separator.
      * @return list of actions, can be empty but never <code>null</code>.
      */
     public abstract List<? extends Action> getActions();
