@@ -107,8 +107,62 @@
   </xsd:annotation>
 
   <xsd:include schemaLocation="javaee_5.xsd"/>
-  <xsd:include schemaLocation="jsp_2_1.xsd"/>
+  <xsd:include schemaLocation="jsp_2_2.xsd"/>
 
+  <xsd:attributeGroup name="web-common-attributes">
+    <xsd:attribute name="version"
+		   use="required"/>
+    <xsd:attribute name="id" type="xsd:ID"/>
+
+    <xsd:attribute name="metadata-complete" type="xsd:boolean">
+      <xsd:annotation>
+	<xsd:documentation>
+
+	  The metadata-complete attribute defines whether this
+	  deployment descriptor and other related deployment
+	  descriptors for this module (e.g., web service
+	  descriptors) are complete, or whether the class
+	  files available to this module and packaged with
+	  this application should be examined for annotations
+	  that specify deployment information.
+
+	  If metadata-complete is set to "true", the deployment
+	  tool must ignore any annotations that specify deployment
+	  information, which might be present in the class files
+	  of the application.
+
+	  If metadata-complete is not specified or is set to
+	  "false", the deployment tool must examine the class
+	  files of the application for annotations, as
+	  specified by the specifications.
+
+	</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+
+
+<!-- **************************************************** -->
+
+   <xsd:complexType name="absoluteOrderingType">
+   <xsd:annotation>
+     <xsd:documentation>
+
+       Please see section 8.2.2 of the specification for details.
+
+     </xsd:documentation>
+   </xsd:annotation>
+   <xsd:choice minOccurs="0" maxOccurs="unbounded">
+     <xsd:element name="name"
+                  type="javaee:java-identifierType"
+                  minOccurs="0"
+                  maxOccurs="unbounded"/>
+     <xsd:element name="others"
+                  type="javaee:ordering-othersType"
+                  minOccurs="0"
+                  maxOccurs="1" />
+   </xsd:choice>
+ </xsd:complexType>
 
 <!-- **************************************************** -->
 
@@ -169,20 +223,211 @@
 
 <!-- **************************************************** -->
 
+  <xsd:complexType name="cookie-commentType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The comment that will be assigned to any session tracking
+        cookies created by this web application.
+
+	Used in: cookie-config
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:simpleContent>
+      <xsd:extension base="javaee:nonEmptyStringType"/>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="cookie-configType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The cookie-configType defines the configuration for the
+        session tracking cookies of this web application.
+
+        Used in: session-config
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:sequence>
+      <xsd:element name="name"
+                   type="javaee:cookie-nameType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The name that will be assigned to any session tracking
+            cookies created by this web application.
+            The default is JSESSIONID
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="domain"
+                   type="javaee:cookie-domainType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The domain name that will be assigned to any session tracking
+            cookies created by this web application.
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="path"
+                   type="javaee:cookie-pathType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The path that will be assigned to any session tracking
+            cookies created by this web application.
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="comment"
+                   type="javaee:cookie-commentType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The comment that will be assigned to any session tracking
+            cookies created by this web application.
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="http-only"
+                   type="javaee:true-falseType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            Specifies whether any session tracking cookies created
+            by this web application will be marked as HttpOnly
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="secure"
+                   type="javaee:true-falseType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            Specifies whether any session tracking cookies created
+            by this web application will be marked as secure
+            even if the request that initiated the corresponding session
+            is using plain HTTP instead of HTTPS
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="max-age"
+                   type="javaee:xsdIntegerType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The lifetime (in seconds) that will be assigned to any
+            session tracking cookies created by this web application.
+            Default is -1
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="cookie-domainType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The domain name that will be assigned to any session tracking
+        cookies created by this web application.
+
+        Used in: cookie-config
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:simpleContent>
+      <xsd:extension base="javaee:nonEmptyStringType"/>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="cookie-nameType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The name that will be assigned to any session tracking
+        cookies created by this web application.
+        The default is JSESSIONID
+
+        Used in: cookie-config
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:simpleContent>
+      <xsd:extension base="javaee:nonEmptyStringType"/>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="cookie-pathType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The path that will be assigned to any session tracking
+        cookies created by this web application.
+
+	Used in: cookie-config
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:simpleContent>
+      <xsd:extension base="javaee:nonEmptyStringType"/>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
   <xsd:complexType name="dispatcherType">
     <xsd:annotation>
       <xsd:documentation>
 
-	The dispatcher has four legal values: FORWARD, REQUEST, INCLUDE,
-	and ERROR. A value of FORWARD means the Filter will be applied
-	under RequestDispatcher.forward() calls.  A value of REQUEST
-	means the Filter will be applied under ordinary client calls to
-	the path or servlet. A value of INCLUDE means the Filter will be
-	applied under RequestDispatcher.include() calls.  A value of
-	ERROR means the Filter will be applied under the error page
-	mechanism.  The absence of any dispatcher elements in a
-	filter-mapping indicates a default of applying filters only under
-	ordinary client calls to the path or servlet.
+        The dispatcher has five legal values: FORWARD, REQUEST,
+        INCLUDE, ASYNC, and ERROR.
+
+        A value of FORWARD means the Filter will be applied under
+        RequestDispatcher.forward() calls.
+        A value of REQUEST means the Filter will be applied under
+        ordinary client calls to the path or servlet.
+        A value of INCLUDE means the Filter will be applied under
+        RequestDispatcher.include() calls.
+        A value of ASYNC means the Filter will be applied under
+        calls dispatched from an AsyncContext.
+        A value of ERROR means the Filter will be applied under the
+        error page mechanism.
+
+        The absence of any dispatcher elements in a filter-mapping
+        indicates a default of applying filters only under ordinary
+        client calls to the path or servlet.
 
       </xsd:documentation>
     </xsd:annotation>
@@ -192,6 +437,7 @@
 	<xsd:enumeration value="FORWARD"/>
 	<xsd:enumeration value="INCLUDE"/>
 	<xsd:enumeration value="REQUEST"/>
+	<xsd:enumeration value="ASYNC"/>
 	<xsd:enumeration value="ERROR"/>
       </xsd:restriction>
     </xsd:simpleContent>
@@ -240,17 +486,23 @@
     <xsd:annotation>
       <xsd:documentation>
 
-	The error-pageType contains a mapping between an error code
-	or exception type to the path of a resource in the web
-	application.
+        The error-pageType contains a mapping between an error code
+        or exception type to the path of a resource in the web
+        application.
 
-	Used in: web-app
+        Error-page declarations using the exception-type element in
+        the deployment descriptor must be unique up to the class name of
+        the exception-type. Similarly, error-page declarations using the
+        status-code element must be unique in the deployment descriptor
+        up to the status code.
+
+        Used in: web-app
 
       </xsd:documentation>
     </xsd:annotation>
 
     <xsd:sequence>
-      <xsd:choice>
+      <xsd:choice minOccurs="0" maxOccurs="1">
 	<xsd:element name="error-code"
 		     type="javaee:error-codeType"/>
 
@@ -320,7 +572,7 @@
       </xsd:choice>
       <xsd:element name="dispatcher"
 		   type="javaee:dispatcherType"
-		   minOccurs="0" maxOccurs="4"/>
+		   minOccurs="0" maxOccurs="5"/>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:ID"/>
   </xsd:complexType>
@@ -378,12 +630,8 @@
 	  </xsd:documentation>
 	</xsd:annotation>
       </xsd:element>
-
-      <xsd:element name="async-support"
-		   type="javaee:generic-booleanType"
-		   minOccurs="0"/>
-      <xsd:element name="async-timeout"
-		   type="javaee:xsdIntegerType"
+      <xsd:element name="async-supported"
+		   type="javaee:true-falseType"
 		   minOccurs="0"/>
 
       <xsd:element name="init-param"
@@ -655,6 +903,73 @@
 
 <!-- **************************************************** -->
 
+ <xsd:complexType name="ordering-orderingType">
+   <xsd:annotation>
+     <xsd:documentation>
+
+       This element contains a sequence of "name" elements, each of
+which
+       refers to an application configuration resource by the "name"
+       declared on its web.xml fragment.  This element can also contain
+       a single "others" element which specifies that this document
+comes
+       before or after other documents within the application.
+       See section 8.2.2 of the specification for details.
+
+     </xsd:documentation>
+   </xsd:annotation>
+   <xsd:sequence>
+     <xsd:element name="name"
+                  type="javaee:java-identifierType"
+                  minOccurs="0"
+                  maxOccurs="unbounded"/>
+     <xsd:element name="others"
+                  type="javaee:ordering-othersType"
+                  minOccurs="0" maxOccurs="1" />
+   </xsd:sequence>
+ </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="ordering-othersType">
+   <xsd:annotation>
+     <xsd:documentation>
+
+       This element indicates that the ordering sub-element in which
+       it was placed should take special action regarding the ordering
+       of this application resource relative to other application
+       configuration resources.
+       See section 8.2.2 of the specification for details.
+
+     </xsd:documentation>
+   </xsd:annotation>
+   <xsd:attribute name="id" type="xsd:ID"/>
+ </xsd:complexType>
+
+<!-- **************************************************** -->
+
+ <xsd:complexType name="orderingType">
+   <xsd:annotation>
+     <xsd:documentation>
+
+       Please see section 8.2.2 of the specification for details.
+
+     </xsd:documentation>
+   </xsd:annotation>
+   <xsd:sequence>
+     <xsd:element name="after"
+                  type="javaee:ordering-orderingType"
+                  minOccurs="0"
+                  maxOccurs="1"/>
+     <xsd:element name="before"
+                  type="javaee:ordering-orderingType"
+                  minOccurs="0"
+                  maxOccurs="1"/>
+   </xsd:sequence>
+ </xsd:complexType>
+
+<!-- **************************************************** -->
+
   <xsd:complexType name="security-constraintType">
     <xsd:annotation>
       <xsd:documentation>
@@ -797,13 +1112,10 @@
 	</xsd:annotation>
       </xsd:element>
       <xsd:element name="enabled"
-		   type="javaee:generic-booleanType"
+		   type="javaee:true-falseType"
 		   minOccurs="0"/>
-      <xsd:element name="async-support"
-		   type="javaee:generic-booleanType"
-		   minOccurs="0"/>
-      <xsd:element name="async-timeout"
-		   type="javaee:xsdIntegerType"
+      <xsd:element name="async-supported"
+		   type="javaee:true-falseType"
 		   minOccurs="0"/>
       <xsd:element name="run-as"
 		   type="javaee:run-asType"
@@ -821,8 +1133,8 @@
     <xsd:annotation>
       <xsd:documentation>
 
-	The session-configType defines the session parameters
-	for this web application.
+        The session-configType defines the session parameters
+        for this web application.
 
 	Used in: web-app
 
@@ -848,8 +1160,55 @@
 	  </xsd:documentation>
 	</xsd:annotation>
       </xsd:element>
+      <xsd:element name="cookie-config"
+                   type="javaee:cookie-configType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The cookie-config element defines the configuration of the
+            session tracking cookies created by this web application.
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tracking-mode"
+		   type="javaee:tracking-modeType"
+		   minOccurs="0" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The tracking-mode element defines the tracking modes
+            for sessions created by this web application
+
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="tracking-modeType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The tracking modes for sessions created by this web
+        application
+
+        Used in: session-config
+
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:simpleContent>
+      <xsd:restriction base="javaee:string">
+	<xsd:enumeration value="COOKIE"/>
+	<xsd:enumeration value="URL"/>
+	<xsd:enumeration value="SSL"/>
+      </xsd:restriction>
+    </xsd:simpleContent>
   </xsd:complexType>
 
 <!-- **************************************************** -->
@@ -950,15 +1309,28 @@
 <!-- **************************************************** -->
 
   <xsd:complexType name="web-appType">
-
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:group ref="javaee:web-commonType"/>
+      <xsd:element name="absolute-ordering"
+                         type="javaee:absoluteOrderingType"/>
+    </xsd:choice>
+    <xsd:attributeGroup ref="javaee:web-common-attributes"/>
+  </xsd:complexType>
+
+<!-- **************************************************** -->
+
+  <xsd:group name="web-commonType">
+
+    <xsd:choice>
       <xsd:group ref="javaee:descriptionGroup"/>
+      <xsd:element name="name"
+                   type="javaee:java-identifierType"/>
       <xsd:element name="distributable"
 		   type="javaee:emptyType"/>
       <xsd:element name="context-param"
 		   type="javaee:param-valueType">
 
-	<xsd:annotation>
+        <xsd:annotation>
 	  <xsd:documentation>
 
 	    The context-param element contains the declaration
@@ -1002,37 +1374,17 @@
 		   type="javaee:locale-encoding-mapping-listType"/>
     </xsd:choice>
 
-    <xsd:attribute name="version"
-		   type="javaee:web-app-versionType"
-		   use="required"/>
-    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:group>
 
-    <xsd:attribute name="metadata-complete" type="xsd:boolean">
-      <xsd:annotation>
-	<xsd:documentation>
+<!-- **************************************************** -->
 
-	  The metadata-complete attribute defines whether this
-	  deployment descriptor and other related deployment
-	  descriptors for this module (e.g., web service
-	  descriptors) are complete, or whether the class
-	  files available to this module and packaged with
-	  this application should be examined for annotations
-	  that specify deployment information.
-
-	  If metadata-complete is set to "true", the deployment
-	  tool must ignore any annotations that specify deployment
-	  information, which might be present in the class files
-	  of the application.
-
-	  If metadata-complete is not specified or is set to
-	  "false", the deployment tool must examine the class
-	  files of the application for annotations, as
-	  specified by the specifications.
-
-	</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-
+  <xsd:complexType name="web-fragmentType">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:group ref="javaee:web-commonType"/>
+      <xsd:element name="ordering"
+                         type="javaee:orderingType"/>
+    </xsd:choice>
+    <xsd:attributeGroup ref="javaee:web-common-attributes"/>
   </xsd:complexType>
 
 <!-- **************************************************** -->
@@ -1041,13 +1393,17 @@
     <xsd:annotation>
       <xsd:documentation>
 
-	The web-resource-collectionType is used to identify a subset
-	of the resources and HTTP methods on those resources within
-	a web application to which a security constraint applies. If
-	no HTTP methods are specified, then the security constraint
-	applies to all HTTP methods.
+        The web-resource-collectionType is used to identify the
+        resources and HTTP methods on those resources to which a
+        security constraint applies. If no HTTP methods are specified,
+        then the security constraint applies to all HTTP methods.
+        If HTTP methods are specified by http-method-omission
+        elements, the security constraint applies to all methods
+        except those identified in the collection.
+        http-method-omission and http-method elements are never
+        mixed in the same collection.
 
-	Used in: security-constraint
+        Used in: security-constraint
 
       </xsd:documentation>
     </xsd:annotation>
@@ -1071,9 +1427,28 @@
       <xsd:element name="url-pattern"
 		   type="javaee:url-patternType"
 		   maxOccurs="unbounded"/>
-      <xsd:element name="http-method"
-		   type="javaee:http-methodType"
-		   minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:choice minOccurs="0" maxOccurs="1">
+        <xsd:element name="http-method"
+                     type="javaee:http-methodType"
+                     minOccurs="1" maxOccurs="unbounded">
+          <xsd:annotation>
+            <xsd:documentation>
+              Each http-method names an HTTP method to which the
+              constraint applies.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="http-method-omission"
+                     type="javaee:http-methodType"
+                     minOccurs="1" maxOccurs="unbounded">
+          <xsd:annotation>
+            <xsd:documentation>
+              Each http-method-omission names an HTTP method to
+              which the constraint does not apply.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:ID"/>
   </xsd:complexType>
