@@ -29,7 +29,7 @@ if [ $HEADS = 2 ]; then
     hg merge || exit 8
     hg ci -u "$push_username" -m "Automated merge with main-silver"
 else
-    if [ $HEADS -qt 2 ]; then
+    if [ $HEADS -gt 2 ]; then
         echo "$HEADS heads, here is some diagnostic"
         hg heads
     fi
