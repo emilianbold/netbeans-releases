@@ -64,10 +64,10 @@ import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewJavaFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -79,7 +79,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.AttachWindowAction;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.CutAction;
 import org.netbeans.jellytools.actions.DeleteAction;
@@ -87,7 +87,7 @@ import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.actions.PasteAction;
 import org.netbeans.jellytools.actions.ViewAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
-import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -195,7 +195,7 @@ public class IDEValidation extends JellyTestCase {
         String javaApplicationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
         npwo.selectProject(javaApplicationLabel);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.btFinish().pushNoBlock();
@@ -263,13 +263,13 @@ public class IDEValidation extends JellyTestCase {
         // "Java Main Class"
         String mainClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Main.java"); // NOI18N
         NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE1_CLASS_NAME);
         nameStepOper.finish();
         // check class is opened in Editor
         new EditorOperator(SAMPLE1_FILE_NAME);
         NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
-        nameStepOper = new NewFileNameLocationStepOperator();
+        nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE2_CLASS_NAME);
         nameStepOper.finish();
         // check class is opened in Editor and then close all documents
@@ -666,7 +666,7 @@ public class IDEValidation extends JellyTestCase {
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         // call Build|Compile main menu item
-        new CompileAction().perform(sampleClass1Node);
+        new CompileJavaAction().perform(sampleClass1Node);
         // "SampleProject (compile-single)"
         String compileSingleTarget = Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle",
@@ -985,7 +985,7 @@ public class IDEValidation extends JellyTestCase {
             stt.start();
             debuggerStarted = true;
             // start debugging
-            new DebugAction().performMenu(sampleClass1Node);
+            new DebugJavaFileAction().performMenu(sampleClass1Node);
             // check the first breakpoint reached
             // wait status text "Thread main stopped at SampleClass1.java:"
             // increase timeout to 60 seconds
@@ -1080,7 +1080,7 @@ public class IDEValidation extends JellyTestCase {
       * - set Wrap Lines to "false"
       * - close Options window
       */
-    public void testOptionsClassicView() {
+/*    public void testOptionsClassicView() {
         OptionsOperator optionsOper = OptionsOperator.invoke();
         optionsOper.switchToClassicView();
         // set exact comparator because in Japanese there is conflict with Filesystem settings
@@ -1104,7 +1104,7 @@ public class IDEValidation extends JellyTestCase {
         new Property(pso, wrapLinesLabel).setValue("false");
         optionsOper.close();
     }
-    
+*/
     /** Test CVS Lite
      * - from main menu invoke "Versioning|CVS|Checkout"
      * - wait for Checkout dialog and close it
@@ -1189,7 +1189,7 @@ public class IDEValidation extends JellyTestCase {
         // "XML Document"
         String xmlDocument = Bundle.getString("org.netbeans.modules.xml.resources.Bundle", "Templates/XML/XMLDocument.xml");
         NewFileWizardOperator.invoke(xmlNode, xmlCategory, xmlDocument);
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName("XMLDocument");  // NOI18N
         nameStepOper.next();
         nameStepOper.finish();
