@@ -62,6 +62,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -136,7 +137,12 @@ public class SourcesNodeFactory implements NodeFactory {
         }
 
         public void stateChanged(ChangeEvent arg0) {
-            fireChange();
+            //#167372 break the stack trace chain to prevent deadlocks.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fireChange();
+                }
+            });
         }
     }
 }
