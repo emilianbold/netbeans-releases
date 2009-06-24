@@ -27,7 +27,7 @@ HEADS=`hg heads --template "{node}\n" | wc -l`
 if [ $HEADS = 2 ]; then
     echo "2 heads, Need to merge"
     hg merge || exit 8
-    hg ci -u "$push_username" -m "Automated merge with main-silver"
+    hg ci -u "$push_username"@netbeans.org -m "Automated merge with main-silver"
 else
     if [ $HEADS -gt 2 ]; then
         echo "$HEADS heads, here is some diagnostic"
