@@ -196,7 +196,10 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         templateParameters.put("servletEditorFold", NbBundle.getMessage(ServletIterator.class, "MSG_ServletEditorFold")); //NOI18N
 
         if (!deployData.makeEntry() && Utilities.isJavaEE6(wizard)) {
-            templateParameters.put("classAnnotation", AnnotationGenerator.webServlet((ServletData)deployData));
+            if (fileType == FileType.SERVLET)
+                templateParameters.put("classAnnotation", AnnotationGenerator.webServlet((ServletData)deployData));
+            if (fileType == FileType.FILTER)
+                templateParameters.put("classAnnotation", AnnotationGenerator.webFilter((ServletData)deployData));
         }
 
         DataObject dTemplate = DataObject.find(template);                
