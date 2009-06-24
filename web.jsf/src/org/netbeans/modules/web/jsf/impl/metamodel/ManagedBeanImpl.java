@@ -100,6 +100,9 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectPrimitive("eager", Boolean.class,                   // NOI18N
+                AnnotationParser.defaultValue( Boolean.FALSE));
+        parser.expectString("name", null);                               // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
         Boolean eagerAttr = parseResult.get( "eager" , Boolean.class );  // NOI18N
         if ( eagerAttr == null ){
@@ -149,25 +152,16 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
         return null;
     }
     
-    boolean scopeChanged(){
-        return isScopeChanged;
-    }
-    
-    boolean propertyChanged(){
-        // TODO
-        return false;
-    }
-    
     private void setScope( Map<String, ? extends AnnotationMirror> types, 
             TypeElement type ) 
     {
-        isScopeChanged = false;
         boolean isCustom = getHelper().hasAnnotation(type.getAnnotationMirrors(), 
                 "javax.faces.bean.CustomScoped");           // NOI18N
         if ( isCustom ){
             AnnotationMirror annotationMirror = types
                     .get("javax.faces.bean.CustomScoped"); // NOI18N
             AnnotationParser parser = AnnotationParser.create(getHelper());
+            parser.expectString("value", AnnotationParser.defaultValue(""));
             ParseResult parseResult = parser.parse(annotationMirror);
             String value = parseResult.get("value", String.class);
             if (value == null) {
@@ -175,10 +169,6 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
             }
             if ( myScope != null ){
                 myScope = null;
-                isScopeChanged = true;
-            }
-            else {
-                isScopeChanged = value.equals(myStringScope);
             }
             myStringScope = value;
         }
@@ -195,12 +185,10 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
                 }
             }
             if ( found == null){
-                isScopeChanged = myStringScope != null;
                 myScope = null;
                 myStringScope = null;
             }
             else {
-                isScopeChanged = found.equals( myScope );
                 myScope = found;
                 myStringScope = myScope.toString();
             }
@@ -222,7 +210,6 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
                 ManagedBean.Scope.VIEW);
     }
     
-    private boolean isScopeChanged;
     private Boolean eager;
     private String myName;
     private String myClass;

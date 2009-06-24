@@ -91,8 +91,9 @@ class BehaviorImpl extends PersistentObject implements Behavior, Refreshable {
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectString( "value", null);                            // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
-        myId = parseResult.get( "value" , String.class );       // NOI18N
+        myId = parseResult.get( "value" , String.class );               // NOI18N
         myClass = type.getQualifiedName().toString();
         return true;
     }
