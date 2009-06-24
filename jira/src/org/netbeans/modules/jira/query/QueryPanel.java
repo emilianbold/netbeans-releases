@@ -175,7 +175,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         tableSummaryLabel.addFocusListener(this);
         webButton.addFocusListener(this);
 
-
+        summaryCheckBox.setOpaque(false);
+        descriptionCheckBox.setOpaque(false);
+        commentsCheckBox.setOpaque(false);
+        environmentCheckBox.setOpaque(false);
         
         lblIssueKeyWarning.setVisible(false);
         warningLabel.setVisible(false);

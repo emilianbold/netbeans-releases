@@ -86,11 +86,12 @@ class ComponentImpl extends PersistentObject implements Component,  Refreshable 
         Map<String, ? extends AnnotationMirror> types = 
             getHelper().getAnnotationsByType(type.getAnnotationMirrors());
         AnnotationMirror annotationMirror = types.get(
-                "javax.faces.component.FacesComponent");        // NOI18N
+                "javax.faces.component.FacesComponent");          // NOI18N
         if (annotationMirror == null) {
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectString( "value", null );                     // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
         myType = parseResult.get( "value" , String.class );       // NOI18N
         myClass = type.getQualifiedName().toString();

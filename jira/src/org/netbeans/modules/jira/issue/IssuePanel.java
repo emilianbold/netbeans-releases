@@ -61,9 +61,11 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
@@ -268,6 +270,7 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
+            fixPrefSize(statusField);
         } else {
             ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
             // Header label
@@ -280,6 +283,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
+            fixPrefSize(createdField);
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
             Project project = config.getProjectById(projectId);
             reloadField(projectCombo, project, NbJiraIssue.IssueField.PROJECT);
@@ -296,11 +300,13 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
             Resolution resolution = config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION));
             reloadField(resolutionField, (resolution==null) ? "" : resolution.getName(), NbJiraIssue.IssueField.RESOLUTION); // NOI18N
+            fixPrefSize(resolutionField);
             reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
             reloadField(assigneeField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE)).getFullName(), NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
             reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
-            reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false), NbJiraIssue.IssueField.DUE);
+            fixPrefSize(updatedField);
+            reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
 
             // Work-log
             String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
@@ -314,6 +320,9 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(originalEstimateField, workBySeconds(originalEstimate, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
             reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true), NbJiraIssue.IssueField.ESTIMATE);
             reloadField(timeSpentField, workBySeconds(timeSpent, false), NbJiraIssue.IssueField.ACTUAL);
+            fixPrefSize(originalEstimateField);
+            fixPrefSize(remainingEstimateField);
+            fixPrefSize(timeSpentField);
             int scale = Math.max(originalEstimate, timeSpent);
             setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
             setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
@@ -338,6 +347,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private void reloadField(JComponent fieldComponent, Object fieldValue, NbJiraIssue.IssueField field) {
         if (fieldComponent instanceof JComboBox) {
             ((JComboBox)fieldComponent).setSelectedItem(fieldValue);
+        } else if (fieldComponent instanceof JFormattedTextField) {
+            ((JFormattedTextField)fieldComponent).setValue(fieldValue);
         } else if (fieldComponent instanceof JTextComponent) {
             ((JTextComponent)fieldComponent).setText(fieldValue.toString());
         } else if (fieldComponent instanceof JList) {
@@ -383,6 +394,11 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         storeFieldValue(field, keys);
+    }
+
+    private void storeFieldValue(NbJiraIssue.IssueField field, JFormattedTextField formattedField) {
+        Object value = formattedField.getValue();
+        storeFieldValue(field, (value == null) ? "" : ((Date)value).getTime()+""); // NOI18N
     }
 
     private void storeFieldValue(NbJiraIssue.IssueField field, JTextComponent textComponent) {
@@ -487,6 +503,18 @@ public class IssuePanel extends javax.swing.JPanel {
         return ""; // NOI18N
     }
 
+    private Date dateByMillis(String text) {
+        if (text.trim().length() > 0) {
+            try {
+                long millis = Long.parseLong(text);
+                return new Date(millis);
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     private int toInt(String text) {
         if (text.trim().length() > 0) {
             try {
@@ -542,6 +570,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    private static void fixPrefSize(JTextField textField) {
+        // The preferred size of JTextField on (Classic) Windows look and feel
+        // is one pixel shorter. The following code is a workaround.
+        textField.setPreferredSize(null);
+        Dimension dim = textField.getPreferredSize();
+        Dimension fixedDim = new Dimension(dim.width+1, dim.height);
+        textField.setPreferredSize(fixedDim);
     }
 
     private void updateFieldStatuses() {
@@ -636,7 +673,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updatedLabel = new javax.swing.JLabel();
         updatedField = new javax.swing.JTextField();
         dueLabel = new javax.swing.JLabel();
-        dueField = new javax.swing.JTextField();
+        dueField = new javax.swing.JFormattedTextField();
         assigneeLabel = new javax.swing.JLabel();
         assigneeField = new javax.swing.JTextField();
         componentLabel = new javax.swing.JLabel();
@@ -727,7 +764,14 @@ public class IssuePanel extends javax.swing.JPanel {
 
         dueLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueLabel.text")); // NOI18N
 
-        dueField.setColumns(15);
+        dueField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter() {
+            public Object stringToValue(String text) throws java.text.ParseException {
+                if (text == null || text.trim().length() == 0) {
+                    return null;
+                }
+                return super.stringToValue(text);
+            }
+        }));
 
         assigneeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assigneeLabel.text")); // NOI18N
 
@@ -971,6 +1015,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
+        layout.linkSize(new java.awt.Component[] {assigneeField, dueField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -1145,6 +1191,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(NbJiraIssue.IssueField.FIXVERSIONS, fixVersionList);
         storeFieldValue(NbJiraIssue.IssueField.SUMMARY, summaryField);
         storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
+        storeFieldValue(NbJiraIssue.IssueField.DUE, dueField);
         String submitMessage;
         if (isNew) {
             storeFieldValue(NbJiraIssue.IssueField.DESCRIPTION, addCommentArea);
@@ -1230,7 +1277,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private org.netbeans.modules.bugtracking.util.LinkButton createSubtaskButton;
     private javax.swing.JTextField createdField;
     private javax.swing.JLabel createdLabel;
-    private javax.swing.JTextField dueField;
+    private javax.swing.JFormattedTextField dueField;
     private javax.swing.JLabel dueLabel;
     private javax.swing.JPanel dummyAttachmentPanel;
     private javax.swing.JPanel dummyCommentPanel;

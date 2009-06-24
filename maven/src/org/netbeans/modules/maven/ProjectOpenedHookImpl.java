@@ -108,6 +108,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
+        //#167572 in the unlikely event that generated sources are located outside of
+        // the project root.
+        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots()));
         URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
         File rootDir = new File(rootUri);
         for (URI uri : uris) {
