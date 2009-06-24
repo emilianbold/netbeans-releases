@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.wizards;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -164,8 +165,8 @@ public class Utilities {
     }
 
     static boolean isJavaEE6(TemplateWizard wizard) {
-        FileObject dir = Templates.getTargetFolder(wizard);
-        WebModule wm = WebModule.getWebModule(dir);
+        Project project = Templates.getProject(wizard);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             Profile profile = Profile.fromPropertiesString(wm.getJ2eePlatformVersion());
             return (profile == Profile.JAVA_EE_6_FULL || profile == Profile.JAVA_EE_6_WEB);

@@ -106,9 +106,9 @@ class AnnotationGenerator {
      * @return annotation as string
      */
     static String webFilter(ServletData data) {
-        return "@WebFilter("+
-                join(generFilterName(data.getName()), generMappings(data.getFilterMappings()), generInitParams(data.getInitParams()))+
-                ")";
+        return "@WebFilter("+join(generFilterName(data.getName()),
+                generMappings(data.getName(), data.getFilterMappings()),
+                generInitParams(data.getInitParams()))+")";
     }
 
     // -------------------------------------------------------------------------
@@ -117,26 +117,31 @@ class AnnotationGenerator {
     }
 
     // -------------------------------------------------------------------------
-    private static String generMappings(List<FilterMappingData> mappings) {
+    private static String generMappings(String filterName, List<FilterMappingData> mappings) {
         // Let's compute union of all specified dispatchers -- annotation is more
         // restrictive then DD and only one set of disoatchers may be specified.
         Set<String> dispatchers = new HashSet<String>();
         List<String> urlPatterns = new ArrayList<String>();
         List<String> servletNames = new ArrayList<String>();
         for (FilterMappingData item : mappings) {
-            if (item.getType() == FilterMappingData.Type.URL) {
-                urlPatterns.add(item.getPattern());
-            }
-            else if (item.getType() == FilterMappingData.Type.SERVLET) {
-                servletNames.add(item.getPattern());
-            }
-            for (Dispatcher d : item.getDispatcher()) {
-                if (d != Dispatcher.BLANK)
-                    dispatchers.add(d.toString());
+            if (item.getName().equals(filterName)) {
+                if (item.getType() == FilterMappingData.Type.URL) {
+                    urlPatterns.add(item.getPattern());
+                }
+                else if (item.getType() == FilterMappingData.Type.SERVLET) {
+                    servletNames.add(item.getPattern());
+                }
+                for (Dispatcher d : item.getDispatcher()) {
+                    if (d != Dispatcher.BLANK)
+                        dispatchers.add(d.toString());
+                }
             }
         }
-        return join(list("urlPatterns", urlPatterns), list("servletNames", servletNames),
-                "dispatcherTypes={"+join(dispatchers, "DispatcherType.", "")+"}");
+        String resDispatchers = dispatchers.isEmpty() ? null :
+            "dispatcherTypes={"+join(dispatchers, "DispatcherType.", "")+"}";
+        String resUrlPatterns = urlPatterns.isEmpty() ? null : list("urlPatterns", urlPatterns);
+        String resServltets = servletNames.isEmpty() ? null : list("servletNames", servletNames);
+        return join(resUrlPatterns, resServltets, resDispatchers);
     }
 
     /**
@@ -155,7 +160,7 @@ class AnnotationGenerator {
         boolean first = true;
         StringBuilder res = new StringBuilder();
         for (String s : params) {
-            if (s == null)
+            if (s == null || s.length() < 1)
                 continue;
             if (!first)
                 res.append(", ");
@@ -170,7 +175,7 @@ class AnnotationGenerator {
         boolean first = true;
         StringBuilder res = new StringBuilder();
         for (String s : params) {
-            if (s == null)
+            if (s == null || s.length() < 1)
                 continue;
             if (!first)
                 res.append(", ");
