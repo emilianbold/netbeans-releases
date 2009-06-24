@@ -135,4 +135,13 @@ public abstract class PhpFrameworkProvider {
      * @return new PHP module properties
      */
     public abstract PhpModuleProperties getPhpModuleProperties(PhpModule phpModule);
+
+    /**
+     * Creates a {@link PhpModuleActionsExtender PHP module actions extender} for this framework
+     * and the given PHP module.
+     *
+     * @param  phpModule the PHP module which actions are going to be extended
+     * @return a new PHP module actions extender, never <code>null</code>.
+     */
+    public abstract PhpModuleActionsExtender createActionsProvider(PhpModule phpModule);
 }

@@ -63,6 +63,27 @@ public final class UiUtils {
     }
 
     /**
+     * Display a dialog with the message and then open IDE PHP options.
+     * @param message message to display before IDE options are opened
+     * @see #invalidScriptProvided(String, String)
+     */
+    public static void invalidScriptProvided(String message) {
+        invalidScriptProvided(message, null);
+    }
+
+    /**
+     * Display a dialog with the message and then open IDE options.
+     * @param message message to display before IDE options are opened
+     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks)
+     * @see #invalidScriptProvided(String)
+     */
+    public static void invalidScriptProvided(String message, String optionsSubcategory) {
+        Parameters.notNull("message", message);
+
+        informAndOpenOptions(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE), optionsSubcategory);
+    }
+
+    /**
      * Show a dialog that informs user about exception during running an external process.
      * Opens IDE options, PHP General category.
      * @param exc {@link ExecutionException} thrown
@@ -76,25 +97,31 @@ public final class UiUtils {
      * Show a dialog that informs user about exception during running an external process.
      * Opens IDE options, PHP &lt;subcategory> category or General category if no <code>subcategory</code> given.
      * @param exc {@link ExecutionException} thrown
-     * @param subcategory subcategory to open (suitable e.g. for frameworks)
+     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks)
      * @see #processExecutionException(ExecutionException)
      */
-    public static void processExecutionException(ExecutionException exc, final String subcategory) {
+    public static void processExecutionException(ExecutionException exc, final String optionsSubcategory) {
         Parameters.notNull("exc", exc);
 
         final Throwable cause = exc.getCause();
         assert cause != null;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(
-                        cause, NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())));
-                String path = OPTIONS_PATH;
-                if (StringUtils.hasText(subcategory)) {
-                    path += "/" + subcategory; // NOI18N
-                }
-                OptionsDisplayer.getDefault().open(path);
+                informAndOpenOptions(new NotifyDescriptor.Exception(
+                        cause, NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())), optionsSubcategory);
             }
         });
+    }
+
+    private static void informAndOpenOptions(NotifyDescriptor descriptor, String optionsSubcategory) {
+        assert descriptor != null;
+
+        DialogDisplayer.getDefault().notify(descriptor);
+        String path = OPTIONS_PATH;
+        if (StringUtils.hasText(optionsSubcategory)) {
+            path += "/" + optionsSubcategory; // NOI18N
+        }
+        OptionsDisplayer.getDefault().open(path);
     }
 
     /**
