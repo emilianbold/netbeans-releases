@@ -396,6 +396,11 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(field, keys);
     }
 
+    private void storeFieldValue(NbJiraIssue.IssueField field, JFormattedTextField formattedField) {
+        Object value = formattedField.getValue();
+        storeFieldValue(field, (value == null) ? "" : ((Date)value).getTime()+""); // NOI18N
+    }
+
     private void storeFieldValue(NbJiraIssue.IssueField field, JTextComponent textComponent) {
         storeFieldValue(field, textComponent.getText());
     }
@@ -1179,6 +1184,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(NbJiraIssue.IssueField.FIXVERSIONS, fixVersionList);
         storeFieldValue(NbJiraIssue.IssueField.SUMMARY, summaryField);
         storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
+        storeFieldValue(NbJiraIssue.IssueField.DUE, dueField);
         String submitMessage;
         if (isNew) {
             storeFieldValue(NbJiraIssue.IssueField.DESCRIPTION, addCommentArea);
