@@ -46,10 +46,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -66,6 +69,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -218,6 +222,21 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
+
+            // frameworks
+            // XXX: improve performance
+            PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+            assert phpModule != null;
+            for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+                if (frameworkProvider.isInPhpModule(phpModule)) {
+                    List<? extends CallableSystemAction> frameworkActions = frameworkProvider.createActionsProvider(phpModule).getActions();
+                    if (!frameworkActions.isEmpty()) {
+                        actions.add(null);
+                        actions.addAll(frameworkActions);
+                    }
+                }
+            }
+
             // honor 57874 contact
             actions.add(null);
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N

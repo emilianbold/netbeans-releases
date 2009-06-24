@@ -46,7 +46,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Tomas Mysik
  */
-public class PhpModuleImpl implements PhpModule {
+public class PhpModuleImpl extends PhpModule {
     private final PhpProject phpProject;
 
     public PhpModuleImpl(PhpProject phpProject) {
