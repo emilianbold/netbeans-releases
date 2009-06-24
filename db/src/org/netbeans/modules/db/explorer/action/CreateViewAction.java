@@ -116,10 +116,9 @@ public class CreateViewAction extends BaseAction {
 
             Specification spec = connection.getConnector().getDatabaseSpecification();
 
-            // Create and execute command
-            AddViewDialog dlg = new AddViewDialog(spec, schemaName);
-            if (dlg.run()) {
-                SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
+            boolean viewAdded = AddViewDialog.showDialogAndCreate(spec, schemaName);
+            if (viewAdded) {
+                SystemAction.get(RefreshAction.class).performAction(new Node[]{node});
             }
         } catch(Exception exc) {
             DbUtilities.reportError(NbBundle.getMessage (CreateViewAction.class, "ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
