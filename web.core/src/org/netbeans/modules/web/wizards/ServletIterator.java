@@ -99,7 +99,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         return new ServletIterator(FileType.FILTER);
     }
 
-    public void initialize (WizardDescriptor wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this.wizard = (TemplateWizard) wiz;
         index = 0;
 
@@ -118,22 +118,21 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         }
         evaluator.setInitialFolder(targetFolder,project); 
         
-	if (fileType == FileType.SERVLET) {
-	    panels = new WizardDescriptor.Panel[] {
-                new FinishableProxyWizardPanel(
-                        createPackageChooserPanel(wizard,null),
-                        new HelpCtx(ServletIterator.class.getName() + "." + fileType)),    // #114487
-		ServletPanel.createServletPanel((TargetEvaluator)evaluator, wizard) 
-	    };
-	}
-	else if (fileType == FileType.FILTER) {
+        if (fileType == FileType.SERVLET) {
+            panels = new WizardDescriptor.Panel[]{
+                        new FinishableProxyWizardPanel(
+                        createPackageChooserPanel(wizard, null),
+                        new HelpCtx(ServletIterator.class.getName() + "." + fileType)), // #114487
+                        ServletPanel.createServletPanel((TargetEvaluator) evaluator, wizard)
+                    };
+        } else if (fileType == FileType.FILTER) {
             customPanel = new WrapperSelection(wizard);
-	    panels = new WizardDescriptor.Panel[] {
-                createPackageChooserPanel(wizard,customPanel),
-		ServletPanel.createServletPanel((TargetEvaluator)evaluator, wizard), 
-		ServletPanel.createFilterPanel((TargetEvaluator)evaluator, wizard)
-	    };
-	}
+            panels = new WizardDescriptor.Panel[]{
+                        createPackageChooserPanel(wizard, customPanel),
+                        ServletPanel.createServletPanel((TargetEvaluator) evaluator, wizard),
+                        ServletPanel.createFilterPanel((TargetEvaluator) evaluator, wizard)
+                    };
+        }
         
         // Creating steps.
         Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
@@ -141,19 +140,18 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
-        String[] steps = Utilities.createSteps (beforeSteps, panels);
+        String[] steps = Utilities.createSteps(beforeSteps, panels);
         
         for (int i = 0; i < panels.length; i++) { 
-            JComponent jc = (JComponent)panels[i].getComponent ();
+            JComponent jc = (JComponent)panels[i].getComponent();
             if (steps[i] == null) {
                 // Default step name to component name of panel.
                 // Mainly useful for getting the name of the target
                 // chooser to appear in the list of steps.
-                steps[i] = jc.getName ();
+                steps[i] = jc.getName();
             }
-	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
-				  new Integer (i)); 
-	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+	    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i));
+	    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
 	}	
     }
 
@@ -214,11 +212,11 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             });
         }
 
-	// If the user does not want to add the file to the
-	// deployment descriptor, return
-	if(!deployData.makeEntry()) { 
-	    return Collections.singleton(dobj);
-	} 
+	    // If the user does not want to add the file to the
+        // deployment descriptor, return
+        if (!deployData.makeEntry()) {
+            return Collections.singleton(dobj);
+        }
 
         // needed to be able to finish ServletWizard from the second panel
         if (deployData.getClassName().length()==0) {
@@ -247,14 +245,14 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     } 
 
 
-    public void uninitialize (WizardDescriptor wizard) {
+    public void uninitialize(WizardDescriptor wizard) {
         this.wizard = null;
         panels = null;
     }
 
     // --- WizardDescriptor.Iterator METHODS: ---
     
-    public String name () {
+    public String name() {
         return NbBundle.getMessage (ServletIterator.class, "TITLE_x_of_y",
         new Integer (index + 1), new Integer (panels.length));
     }
@@ -262,22 +260,22 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     // If the user has elected to place the file in a regular
     // directory (not a web module) then we don't show the DD info
     // panel. 
-    public boolean hasNext () {
-        return index < panels.length - 1 && deployData.hasDD();
+    public boolean hasNext() {
+        return index < panels.length - 1 && (deployData.hasDD() || Utilities.isJavaEE6(wizard));
     }
     
-    public boolean hasPrevious () {
+    public boolean hasPrevious() {
         return index > 0;
     }
-    public void nextPanel () {
-        if (! hasNext ()) throw new NoSuchElementException ();
+    public void nextPanel() {
+        if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
-    public void previousPanel () {
-        if (! hasPrevious ()) throw new NoSuchElementException ();
+    public void previousPanel() {
+        if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
-    public WizardDescriptor.Panel current () {
+    public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
@@ -288,7 +286,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     //    DD entry, disable second DD panel for Filters. 
 
     // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener (ChangeListener l) {}
-    public final void removeChangeListener (ChangeListener l) {}
+    public final void addChangeListener(ChangeListener l) {}
+    public final void removeChangeListener(ChangeListener l) {}
 
 }
