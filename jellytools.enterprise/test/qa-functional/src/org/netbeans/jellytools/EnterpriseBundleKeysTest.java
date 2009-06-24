@@ -39,59 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.jellytools.modules.db.nodes;
+package org.netbeans.jellytools;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.modules.db.actions.DisableDebugAction;
-import org.netbeans.jellytools.modules.db.actions.EnableDebugAction;
-import org.netbeans.jellytools.nodes.Node;
+import junit.framework.Test;
 
-/** Node representing "Databases" node in Services tab.
- * <p>
- * Usage:<br>
- * <pre>
- *      DatabasesNode databases = DatabasesNode.invoke();
- *      databases.enableDebug();
- *      ....
- * </pre>
- *
- * @author Martin.Schovanek@sun.com
- */
-public class DatabasesNode extends Node {
-    static final String TREE_PATH = Bundle.getStringTrimmed(
-            "org.netbeans.modules.db.explorer.node.Bundle",
-            "RootNode_DISPLAYNAME");
-    private static final Action enableDebugAction = new EnableDebugAction();
-    private static final Action disableDebugAction = new DisableDebugAction();
-    
-    public DatabasesNode() {
-        super(new RuntimeTabOperator().getRootNode(), TREE_PATH);
+
+public class EnterpriseBundleKeysTest extends TestBundleKeys
+{
+
+    public static String propertiesName = "org/netbeans/jellytools/EnterpriseBundleKeysTest.properties";
+
+
+    public EnterpriseBundleKeysTest(String isBundleName) {
+        this(isBundleName, null);
     }
-    
-    /** Finds "Databases" node in Runtime tab
+
+    /** Constructor required by JUnit.
+     * @param testName method name to be used as testcase
      */
-    public static DatabasesNode invoke() {
-        RuntimeTabOperator.invoke();
-        return new DatabasesNode();
+    public EnterpriseBundleKeysTest(String bundleName, String keys) {
+        super(bundleName);
+        this.keys=keys;
+    }
+
+    protected ClassLoader getDescendantClassLoader()
+    {
+        return EnterpriseBundleKeysTest.class.getClassLoader();
+    }
+
+    /*
+     * Overriden for the use in the non-static part of this class.
+     */
+    public String getPropertiesName()
+    {
+        return propertiesName;
+    }
+
+    /** Method used for explicit testsuite definition
+     * @return  created suite
+     */
+    public static Test suite() {
+       return prepareSuite(EnterpriseBundleKeysTest.class, propertiesName);
+    }
+
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
     
-    /** performs EnableDebugAction with this node */
-    public void enableDebug() {
-        enableDebugAction.perform(this);
-    }
-    
-    /** performs DisableDebugAction with this node */
-    public void disableDebug() {
-        disableDebugAction.perform(this);
-    }
-    
-    /** tests popup menu items for presence */
-    public void verifyPopup() {
-        verifyPopup(new Action[]{
-            enableDebugAction,
-            disableDebugAction,
-        });
-    }
 }
