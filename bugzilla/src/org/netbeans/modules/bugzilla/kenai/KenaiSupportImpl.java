@@ -61,7 +61,6 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -112,7 +111,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 if (idxProductStart <= 0) {
                     Bugzilla.LOG.warning("can't get issue tracker product from [" + project.getName() + ", " + location + "]"); // NOI18N
                 } else {
-                    int idxProductEnd = location.indexOf("&", idxProductStart);
+                    int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
                     if(idxProductEnd > -1) {
                         productParamUrl = location.substring(idxProductStart, idxProductEnd);
                         product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
