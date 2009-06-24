@@ -38,22 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.metamodel;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
+import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
 
 
 /**
  * @author ads
  *
  */
-public interface Renderer {
-    String RENDERER_TYPE = JSFConfigQNames.RENDERER_TYPE.getLocalName();
-    String RENDERER_CLASS = JSFConfigQNames.RENDERER_CLASS.getLocalName();
+class SystemEventListenerAnnotation implements SystemEventListener {
     
-    String getRendererType();
+    SystemEventListenerAnnotation( String clazz, String sourceClass , 
+            String eventClass )
+    {
+        myClass = clazz;
+        mySourceClass = sourceClass;
+        myEventClass = eventClass;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSourceClass()
+     */
+    public String getSourceClass() {
+        return mySourceClass;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventClass()
+     */
+    public String getSystemEventClass() {
+        return myEventClass;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventListenerClass()
+     */
+    public String getSystemEventListenerClass() {
+        return myClass;
+    }
     
-    String getRendererClass();
-    
-    String getComponentFamily();
+    private String myClass;
+    private String mySourceClass;
+    private String myEventClass;
+
 }

@@ -46,19 +46,21 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.jsf.api.metamodel.Component;
+import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationBehaviorRenderer;
 
 
 /**
  * @author ads
  *
  */
-class ComponentImpl extends PersistentObject implements Component,  Refreshable {
+class ClientBehaviorRendererImpl extends AnnotationBehaviorRenderer 
+    implements Refreshable
+{
 
-    ComponentImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    ClientBehaviorRendererImpl( AnnotationModelHelper helper,
+            TypeElement typeElement )
     {
         super(helper, typeElement);
         boolean valid = refresh(typeElement);
@@ -66,16 +68,24 @@ class ComponentImpl extends PersistentObject implements Component,  Refreshable 
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
+     * @see org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationBehaviorRenderer#getRenderKitId()
      */
-    public String getComponentClass() {
+    @Override
+    protected String getRenderKitId() {
+        return myKitId;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.ClientBehaviorRenderer#getClientBehaviorRendererClass()
+     */
+    public String getClientBehaviorRendererClass() {
         return myClass;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
+     * @see org.netbeans.modules.web.jsf.api.metamodel.ClientBehaviorRenderer#getClientBehaviorRendererType()
      */
-    public String getComponentType() {
+    public String getClientBehaviorRendererType() {
         return myType;
     }
 
@@ -86,19 +96,23 @@ class ComponentImpl extends PersistentObject implements Component,  Refreshable 
         Map<String, ? extends AnnotationMirror> types = 
             getHelper().getAnnotationsByType(type.getAnnotationMirrors());
         AnnotationMirror annotationMirror = types.get(
-                "javax.faces.component.FacesComponent");          // NOI18N
+                "javax.faces.render.FacesBehaviorRenderer");            // NOI18N
         if (annotationMirror == null) {
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString( "value", null );                     // NOI18N
+        parser.expectString("renderKitId", 
+                AnnotationParser.defaultValue("HTML_BASIC"));          // NOI18N
+        parser.expectString("rendererType", null);                     // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
-        myType = parseResult.get( "value" , String.class );       // NOI18N
+        myKitId = parseResult.get( "renderKitId" , String.class );     // NOI18N
+        myType = parseResult.get( "rendererType" , String.class );     // NOI18N
         myClass = type.getQualifiedName().toString();
         return true;
     }
     
-    private String myType;
     private String myClass;
+    private String myKitId;
+    private String myType;
 
 }

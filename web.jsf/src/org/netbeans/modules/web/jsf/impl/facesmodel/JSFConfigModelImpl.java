@@ -130,13 +130,6 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
         return JSFConfigQNames.getMappedQNames(getVersion());
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel#getMetaModel()
-     */
-    public JsfModel getMetaModel() {
-        return myMetaModel;
-    }
-    
     private boolean checkJSF20SchemaLocation( Element element ) {
         NamedNodeMap map = element.getAttributes();
         String prefix = null;

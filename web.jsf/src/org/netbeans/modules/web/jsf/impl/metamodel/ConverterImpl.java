@@ -84,19 +84,12 @@ class ConverterImpl extends PersistentObject implements FacesConverter, Refresha
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectString("value", AnnotationParser.defaultValue(""));// NOI18N
+        parser.expectClass( "forClass",                             // NOI18N
+                    AnnotationParser.defaultValue(Object.class.getCanonicalName()));
         ParseResult parseResult = parser.parse(annotationMirror);
         myId = parseResult.get( "value" , String.class );           // NOI18N
-        if ( myId == null ){
-            myId = "";
-        }
-        myForClass = parseResult.get( "forClass" , Class.class ).   // NOI18N   
-            getCanonicalName() ;
-        if ( myForClass == null ){
-            myForClass = "java.lang.Object";                  // NOI18N
-        }
-        /*else {
-            myForClass = myForClass+".class" ;                      // NOI18N
-        }*/
+        myForClass = parseResult.get( "forClass" , String.class );  // NOI18N   
         myClass = type.getQualifiedName().toString();
         return true;
     }

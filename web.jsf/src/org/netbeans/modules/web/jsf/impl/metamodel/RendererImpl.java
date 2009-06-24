@@ -46,19 +46,18 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.jsf.api.metamodel.Component;
+import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationRenderer;
 
 
 /**
  * @author ads
  *
  */
-class ComponentImpl extends PersistentObject implements Component,  Refreshable {
+class RendererImpl extends AnnotationRenderer implements Refreshable {
 
-    ComponentImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    RendererImpl( AnnotationModelHelper helper, TypeElement typeElement )
     {
         super(helper, typeElement);
         boolean valid = refresh(typeElement);
@@ -66,17 +65,11 @@ class ComponentImpl extends PersistentObject implements Component,  Refreshable 
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
+     * @see org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationRenderer#getRenderKitId()
      */
-    public String getComponentClass() {
-        return myClass;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
-     */
-    public String getComponentType() {
-        return myType;
+    @Override
+    protected String getRenderKitId() {
+        return myKitId;
     }
 
     /* (non-Javadoc)
@@ -86,19 +79,48 @@ class ComponentImpl extends PersistentObject implements Component,  Refreshable 
         Map<String, ? extends AnnotationMirror> types = 
             getHelper().getAnnotationsByType(type.getAnnotationMirrors());
         AnnotationMirror annotationMirror = types.get(
-                "javax.faces.component.FacesComponent");          // NOI18N
+                "javax.faces.render.FacesRenderer");                     // NOI18N
         if (annotationMirror == null) {
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString( "value", null );                     // NOI18N
+        parser.expectString( "renderKitId",                              // NOI18N
+                AnnotationParser.defaultValue("HTML_BASIC"));            // NOI18N
+        parser.expectString("rendererType", null);                       // NOI18N
+        parser.expectString("componentFamily", null);                    // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
-        myType = parseResult.get( "value" , String.class );       // NOI18N
+        myKitId = parseResult.get( "renderKitId" , String.class );       // NOI18N
         myClass = type.getQualifiedName().toString();
+        myType = parseResult.get( "rendererType" , String.class );       // NOI18N
+        myComponentFamily = parseResult.get( "componentFamily" ,         // NOI18N
+                String.class );       
         return true;
     }
-    
-    private String myType;
-    private String myClass;
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Renderer#getRendererClass()
+     */
+    public String getRendererClass() {
+        return myClass;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Renderer#getRendererType()
+     */
+    public String getRendererType() {
+        return myType;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.Renderer#getComponentFamily()
+     */
+    public String getComponentFamily() {
+        return myComponentFamily;
+    }
+
+    private String myClass;
+    private String myType;
+    private String myKitId;
+    private String myComponentFamily;
+   
 }
