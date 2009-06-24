@@ -428,7 +428,8 @@ public class Installer implements FinishHandler {
                         LOCK_FILE_EXISTS_DIALOG_TITLE_KEY);
                 final String dialogText = ResourceUtils.getString(
                         Installer.class,
-                        LOCK_FILE_EXISTS_DIALOG_TEXT_KEY);
+                        LOCK_FILE_EXISTS_DIALOG_TEXT_KEY,
+                        lock.getAbsolutePath());
                 if(!UiUtils.showYesNoDialog(dialogTitle, dialogText)) {
                     cancel();
                 }
