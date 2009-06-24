@@ -408,6 +408,20 @@ public class JellyTestCase extends NbTestCase {
      * @throws IOException
      */
     public void openDataProjects(String... projects) throws IOException {
+        
+        //TODO: find a better solution!!! THIS ONE IS TEMPORARY
+        //wait for the main window to be fully loaded
+        //otherwise the openProjects method may fail/freeze
+        //apparently it helps when an action is performed before calling openProjects()
+        new org.netbeans.jellytools.actions.Action(Bundle.getStringTrimmed(
+            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+        try
+        {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e)
+        {}
+
         String[] fullPaths = new String[projects.length];
         for (int i = 0; i < projects.length; i++) {
             fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];            
