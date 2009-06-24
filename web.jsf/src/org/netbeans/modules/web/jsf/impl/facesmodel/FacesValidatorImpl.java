@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,21 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-package org.netbeans.modules.db.util;
+import javax.lang.model.element.TypeElement;
 
-public abstract class TextFieldValidator
-{
-    public abstract boolean accepts(String value);
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 
-    public static final class integer extends TextFieldValidator
+
+/**
+ * @author ads
+ *
+ */
+public abstract class FacesValidatorImpl extends PersistentObject {
+
+    protected FacesValidatorImpl( AnnotationModelHelper helper,
+            TypeElement typeElement )
     {
-        public boolean accepts(String value) {
-            try {
-                Integer intval = new Integer(value);
-            } catch (NumberFormatException e) { return false; }
-            return true;
-        }
+        super(helper, typeElement);
     }
-}
+    
+    protected abstract boolean isDefault() ;
 
+}

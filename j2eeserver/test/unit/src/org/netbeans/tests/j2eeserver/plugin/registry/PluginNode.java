@@ -55,7 +55,7 @@ public class PluginNode extends AbstractNode {
     static java.util.Collection bogusNodes = java.util.Arrays.asList(new Node[] { Node.EMPTY, Node.EMPTY });
 
     // PENDING use Children.Keys()
-    public PluginNode(DepFactory factory) {
+    public PluginNode(TestDeploymentFactory factory) {
         super(new MyChildren(bogusNodes));
         setDisplayName("Original:"+factory.getDisplayName());
         setIconBase("org/netbeans/tests/j2eeserver/plugin/registry/plugin");

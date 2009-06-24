@@ -41,7 +41,7 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
-import org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
 import org.w3c.dom.Element;
 
 
@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-class ValidatorIdImpl extends TextComponentImpl implements ValidatorId {
+class ValidatorIdImpl extends TextComponentImpl implements FacesValidatorId {
 
     ValidatorIdImpl( JSFConfigModelImpl model, Element element ) {
         super(model, element);

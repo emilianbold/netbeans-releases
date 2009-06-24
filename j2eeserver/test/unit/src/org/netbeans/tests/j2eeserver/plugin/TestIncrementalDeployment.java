@@ -41,46 +41,51 @@
 
 package org.netbeans.tests.j2eeserver.plugin;
 
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.shared.*;
-import javax.enterprise.deploy.spi.status.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
-
-import java.io.*;
-import java.util.*;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentManager;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestProgressObject;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestTargetModuleID;
 
 /**
  *
  * @author  nn136682
  */
-public class IncrementalDeploySupport extends IncrementalDeployment {
-    private DepManager dm;
-    private File applicationsDir;
-    private final HashMap moduleDirectories = new HashMap();
+public class TestIncrementalDeployment extends IncrementalDeployment {
 
-    /** Creates a new instance of IncrementalDeploySupport */
-    public IncrementalDeploySupport(DeploymentManager manager) {
+    private TestDeploymentManager dm;
+
+    private File applicationsDir;
+
+    public TestIncrementalDeployment(DeploymentManager manager) {
         assert manager != null;
-        this.dm = (DepManager) manager;
+        this.dm = (TestDeploymentManager) manager;
     }
 
     public void setDeploymentManager(DeploymentManager manager) {
-        if (manager instanceof DepManager) {
-            dm = (DepManager) manager;
+        if (manager instanceof TestDeploymentManager) {
+            dm = (TestDeploymentManager) manager;
         } else {
             throw new IllegalArgumentException("setDeploymentManager: Invalid manager type");
         }
     }
 
     File getApplicationsDir() {
-        if (applicationsDir != null)
+        if (applicationsDir != null) {
             return applicationsDir;
+        }
 
-        String workDir = dm.getInstanceProperties().getProperty(DepManager.WORK_DIR);
+        String workDir = dm.getInstanceProperties().getProperty(TestDeploymentManager.WORK_DIR);
         if (workDir == null) {
             workDir = System.getProperty("java.io.tmpdir");
         }
@@ -100,14 +105,14 @@ public class IncrementalDeploySupport extends IncrementalDeployment {
     }
 
     public File getDirectoryForModule (TargetModuleID module) {
-        File appDir = new File(getApplicationsDir(), getModuleRelativePath((TestTargetMoid)module));
+        File appDir = new File(getApplicationsDir(), getModuleRelativePath((TestTargetModuleID)module));
         if (! appDir.exists())
             appDir.mkdirs();
         System.out.println("getDirectoryForModule("+module+") returned: "+appDir);
         return appDir;
     }
 
-    String getModuleRelativePath(TestTargetMoid module) {
+    String getModuleRelativePath(TestTargetModuleID module) {
         File path;
         if (module.getParent() != null)
             path = new File(module.getParent().getModuleID(), module.getModuleID());
@@ -117,7 +122,7 @@ public class IncrementalDeploySupport extends IncrementalDeployment {
     }
 
     public String getModuleUrl(TargetModuleID module) {
-        return ((TestTargetMoid)module).getModuleUrl();
+        return ((TestTargetModuleID)module).getModuleUrl();
     }
 
 
@@ -139,11 +144,11 @@ public class IncrementalDeploySupport extends IncrementalDeployment {
 
     public ProgressObject initialDeploy (Target target, J2eeModule app, ModuleConfiguration configuration, final File dir) {
         File webInf = new File(dir, "WEB-INF");
-        final ProgObject po;
+        final TestProgressObject po;
         if (webInf.exists() && webInf.isDirectory()) {
-            po = new ProgObject(dm, new Target[] {target}, dir, null, ModuleType.WAR);
+            po = new TestProgressObject(dm, new Target[] {target}, dir, null, ModuleType.WAR);
         } else {
-            po = new ProgObject(dm, new Target[] {target}, dir, null);
+            po = new TestProgressObject(dm, new Target[] {target}, dir, null);
         }
 
         Runnable r = new Runnable() {

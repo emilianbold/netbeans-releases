@@ -39,53 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.util;
+package org.netbeans.modules.jira.options;
 
-import javax.swing.JTextField;
-import java.awt.Toolkit;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
-public class ValidableTextField extends JTextField
-{
-    private TextFieldValidator validator = null;
+/**
+ *
+ * @author Tomas Stupka
+ */
+public final class JiraOptions extends AdvancedOption {
 
-    static final long serialVersionUID =3686208002682293243L;
-    public ValidableTextField(TextFieldValidator val)
-    {
-        super();
-        setValidator(val);
+    public String getDisplayName () {
+        return NbBundle.getMessage (JiraOptions.class, "JiraOptions.displayName");    // NOI18N
     }
 
-    public TextFieldValidator getValidator()
-    {
-        return validator;
+    public String getTooltip () {
+        return NbBundle.getMessage (JiraOptions.class, "JiraOptions.toolTip");        // NOI18N
     }
 
-    public void setValidator(TextFieldValidator val)
-    {
-        validator = val;
-    }
-
-    protected void reflectInvalidValue(String oldval, String newval)
-    {
-        setText(oldval);
-        Toolkit.getDefaultToolkit().beep();
-    }
-
-    public void replaceSelection(String s)
-    {
-        String oldText = getText();
-        super.replaceSelection(s);
-        if (validator != null && !validator.accepts(getText())) {
-            reflectInvalidValue(oldText, s);
-        }
+    public OptionsPanelController create () {
+        return new JiraOptionsController ();
     }
 }
-/*
- * <<Log>>
- *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
- *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

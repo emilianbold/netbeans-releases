@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,40 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.jsf.impl.metamodel;
 
+import javax.lang.model.element.TypeElement;
 
-package org.netbeans.tests.j2eeserver.plugin.jsr88;
-
-import javax.enterprise.deploy.spi.*;
-import java.util.*;
 
 /**
+ * @author ads
  *
- * @author  gfink
  */
-public class Targ implements Target {
+public interface Refreshable {
+    
+    boolean refresh( TypeElement type );
 
-    String name;
-    public Targ(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return "Description for " + name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    Map modules = new HashMap();
-    public void add(TargetModuleID tmid) {
-        modules.put(tmid.toString(), tmid);
-    }
-    public TargetModuleID getTargetModuleID(String id) {
-        return (TargetModuleID) modules.get(id);
-    }
-    public TargetModuleID[] getTargetModuleIDs() {
-        return (TargetModuleID[]) modules.values().toArray(new TargetModuleID[0]);
-    }
 }

@@ -39,52 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
+
 package org.netbeans.tests.j2eeserver.plugin.jsr88;
+
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
  *
  * @author  gfink
  */
-public class DepFactory implements DeploymentFactory {
-    
-    private Map managers = new HashMap();
+public class TestTarget implements Target {
 
-    /** Creates a new instance of DepFactory */
-    public DepFactory() {
+    private final String name;
+
+    private final Map modules = new HashMap();
+
+    public TestTarget(String name) {
+        this.name = name;
     }
 
-    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str + str1 + str2);
-        if (manager == null){
-            manager = new DepManager(str, str1, str2);
-            managers.put(str, manager);
-        }
-        return manager;
+    public String getDescription() {
+        return "Description for " + name;
     }
-    
-    public synchronized javax.enterprise.deploy.spi.DeploymentManager getDisconnectedDeploymentManager(String str) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str);
-        if (manager == null) {
-            manager = new DepManager(str,"","");
-            managers.put(str, manager);
-        }
-        return manager;
+
+    public String getName() {
+        return name;
     }
-    
-    public String getDisplayName() {
-        return "Sample JSR88 plugin";// PENDING parameterize this.
+
+    public void add(TargetModuleID tmid) {
+        modules.put(tmid.toString(), tmid);
     }
-    
-    public String getProductVersion() {
-        return "0.9";// PENDING version this plugin somehow?
+
+    public TargetModuleID getTargetModuleID(String id) {
+        return (TargetModuleID) modules.get(id);
     }
-    
-    public boolean handlesURI(String str) {
-        return (str != null && str.startsWith("fooservice"));
+
+    public TargetModuleID[] getTargetModuleIDs() {
+        return (TargetModuleID[]) modules.values().toArray(new TargetModuleID[0]);
     }
-    
 }
