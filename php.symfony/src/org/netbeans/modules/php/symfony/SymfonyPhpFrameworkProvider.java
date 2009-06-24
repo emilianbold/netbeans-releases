@@ -53,7 +53,8 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
+public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
+    private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
     private static final List<String> SYMFONY_FILES = Arrays.asList(
             "apps",      // NOI18N
             "cache",     // NOI18N
@@ -63,7 +64,11 @@ public class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
             "web",       // NOI18N
             "symfony");  // NOI18N
 
-    public SymfonyPhpFrameworkProvider() {
+    public static SymfonyPhpFrameworkProvider getInstance() {
+        return INSTANCE;
+    }
+
+    private SymfonyPhpFrameworkProvider() {
         super(NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
     }
 

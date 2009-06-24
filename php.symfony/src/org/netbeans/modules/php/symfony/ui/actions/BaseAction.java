@@ -42,7 +42,6 @@ package org.netbeans.modules.php.symfony.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
@@ -50,8 +49,6 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public abstract class BaseAction extends AbstractAction {
-    // XXX ugly
-    private static final PhpFrameworkProvider SYMFONY_FRAMEWORK_PROVIDER = new SymfonyPhpFrameworkProvider();
 
     public BaseAction() {
         putValue("noIconInMenu", true); // NOI18N
@@ -65,7 +62,7 @@ public abstract class BaseAction extends AbstractAction {
         if (phpModule == null) {
             return;
         }
-        if (!SYMFONY_FRAMEWORK_PROVIDER.isInPhpModule(phpModule)) {
+        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
             return;
         }
         actionPerformedInternal(phpModule);
