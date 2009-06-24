@@ -48,7 +48,11 @@ import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
+import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /** Represents a DD object in the Repository.
  * Based on DDDataObject class.
@@ -112,9 +116,17 @@ public class DDFragmentDataObject extends DDDataObject {
 
     @Override
     protected void validateDocument() throws IOException {
-        // TODO PetrS Implement validation
+        InputSource is = new InputSource(createReader());
+        try {
+            SAXParseException error = WebParseUtils.parse(is);
+            if (error != null)
+                throw error;
+        }
+        catch (SAXException ex) {
+            LOG.log(Level.SEVERE, "Parsing failed!", ex);
+            throw new IOException("Parsing failed: "+ex);
+        }
     }
-
 
     @Override
     protected DesignMultiViewDesc[] getMultiViewDesc() {
