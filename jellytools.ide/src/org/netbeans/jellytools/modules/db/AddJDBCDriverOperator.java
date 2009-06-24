@@ -72,7 +72,7 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public AddJDBCDriverOperator() {
         // "New JDBC Driver"
         super(Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.explorer.action.Bundle",
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
                 "AddDriverDialogTitle"));
     }
 

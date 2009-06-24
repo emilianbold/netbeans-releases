@@ -38,11 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools;
+package org.netbeans.test.php.operatortests;
 
 import java.io.File;
 import junit.framework.Test;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.test.php.operators.NewPHPProjectNameLocationStepOperator;
 
 /**
  * Test of org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator
