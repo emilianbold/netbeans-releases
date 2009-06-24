@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -59,9 +61,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
-
-    private boolean done = false;
-    private int build_rc = -1;
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
@@ -131,6 +130,19 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     public void testSample(String projectName, String sample, String target) throws IOException {
+        final CountDownLatch done = new CountDownLatch(1);
+        final AtomicInteger build_rc = new AtomicInteger(-1);
+        class MyExecutionListener implements ExecutionListener {
+
+            public void executionFinished(int rc) {
+                build_rc.set(rc);
+                done.countDown();
+            }
+
+            public void executionStarted() {
+            }
+        }
+
         File workDir = getWorkDir();//new File("/tmp");
         File projectDir = new File(workDir, projectName);
         instantiateSample(sample, projectDir);
@@ -156,28 +168,13 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         assertTrue("ses == null", ses != null);
 
         MakeAction makeAction = new MakeAction();
-        build_rc = -1;
-        done = false;
         makeAction.execute(node, target, new MyExecutionListener(), null, null, null);
 
-        while (!done) {
-            try {
-                Thread.currentThread().sleep(1000);
-            } catch (Exception e) {
-            }
-        }
-        assertTrue("build failed - rc = " + build_rc, build_rc == 0);
-    }
-
-    class MyExecutionListener implements ExecutionListener {
-
-        public void executionFinished(int rc) {
-            build_rc = rc;
-            done = true;
+        try {
+            done.await();
+        } catch (InterruptedException ir) {
         }
 
-        public void executionStarted() {
-            done = false;
-        }
+        assertTrue("build failed - rc = " + build_rc.intValue(), build_rc.intValue() == 0);
     }
 }
