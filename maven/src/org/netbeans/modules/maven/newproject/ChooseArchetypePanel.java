@@ -308,9 +308,6 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         Lookup.Result<ArchetypeProvider> res = Lookup.getDefault().lookup(new Lookup.Template<ArchetypeProvider>(ArchetypeProvider.class));
         List<Archetype> archetypes = new ArrayList<Archetype>();
         for (ArchetypeProvider provider : res.allInstances()) {
-            if (provider instanceof LocalRepoProvider) {
-                continue;
-            }
             for (Archetype ar : provider.getArchetypes()) {
                 if (!archetypes.contains(ar)) {
                     archetypes.add(ar);
