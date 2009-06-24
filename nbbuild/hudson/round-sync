@@ -28,9 +28,11 @@ if [ $HEADS = 2 ]; then
     echo "2 heads, Need to merge"
     hg merge || exit 8
     hg ci -u "$push_username" -m "Automated merge with main-silver"
-else if [ $HEADS -qt 2 ]; then
-   echo "$HEADS heads, here is some diagnostic"
-   hg heads
+else
+    if [ $HEADS -qt 2 ]; then
+        echo "$HEADS heads, here is some diagnostic"
+        hg heads
+    fi
 fi
 
 hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
