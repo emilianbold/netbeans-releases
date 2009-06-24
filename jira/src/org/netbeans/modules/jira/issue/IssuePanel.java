@@ -64,6 +64,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
@@ -268,6 +269,7 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
+            fixPrefSize(statusField);
         } else {
             ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
             // Header label
@@ -280,6 +282,7 @@ public class IssuePanel extends javax.swing.JPanel {
             String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
+            fixPrefSize(createdField);
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
             Project project = config.getProjectById(projectId);
             reloadField(projectCombo, project, NbJiraIssue.IssueField.PROJECT);
@@ -296,10 +299,12 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
             Resolution resolution = config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION));
             reloadField(resolutionField, (resolution==null) ? "" : resolution.getName(), NbJiraIssue.IssueField.RESOLUTION); // NOI18N
+            fixPrefSize(resolutionField);
             reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)), NbJiraIssue.IssueField.STATUS);
             reloadField(assigneeField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE)).getFullName(), NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
             reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
+            fixPrefSize(updatedField);
             reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false), NbJiraIssue.IssueField.DUE);
 
             // Work-log
@@ -314,6 +319,9 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(originalEstimateField, workBySeconds(originalEstimate, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
             reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true), NbJiraIssue.IssueField.ESTIMATE);
             reloadField(timeSpentField, workBySeconds(timeSpent, false), NbJiraIssue.IssueField.ACTUAL);
+            fixPrefSize(originalEstimateField);
+            fixPrefSize(remainingEstimateField);
+            fixPrefSize(timeSpentField);
             int scale = Math.max(originalEstimate, timeSpent);
             setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
             setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
@@ -542,6 +550,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    private static void fixPrefSize(JTextField textField) {
+        // The preferred size of JTextField on (Classic) Windows look and feel
+        // is one pixel shorter. The following code is a workaround.
+        textField.setPreferredSize(null);
+        Dimension dim = textField.getPreferredSize();
+        Dimension fixedDim = new Dimension(dim.width+1, dim.height);
+        textField.setPreferredSize(fixedDim);
     }
 
     private void updateFieldStatuses() {
