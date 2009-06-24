@@ -98,7 +98,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         
         // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
-        boolean isSimplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
+        boolean isSimplified = Profile.fromPropertiesString(ejbModule.getJ2eePlatformVersion()).compareTo(Profile.JAVA_EE_5) >= 0;
         MessageGenerator generator = MessageGenerator.create(
                 Templates.getTargetName(wiz),
                 pkg,
