@@ -107,6 +107,10 @@ public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTes
     public void testConditionalInexistentKey() {
     }
 
+    @Conditional(key="inexistent", section="inexistent", defaultValue=false)
+        public void testConditionalDefault() {
+    }
+    
     public static junit.framework.Test suite() {
         Class testClass = NativeExecutionTestFrameworkTestCase.class;
         return new NativeExecutionBaseTestSuite(
