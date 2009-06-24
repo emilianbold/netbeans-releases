@@ -110,7 +110,6 @@ final class OnePassCompileWorker extends CompileWorker {
                     if (jt == null) {
                         jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, null);
                     }
-                    
                     for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                         if (units != null)
                             units.add(Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple));
@@ -201,7 +200,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);
             } catch (CouplingAbort ca) {
                 //Coupling error
-                TreeLoader.dumpCouplingAbort(ca, active.jfo);
+                TreeLoader.dumpCouplingAbort(ca, null);
             } catch (OutputFileManager.InvalidSourcePath isp) {
                 //Deleted project - log & ignore
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
