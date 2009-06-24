@@ -63,4 +63,6 @@ public @interface Conditional {
     String section();
     /** Gets flag key */
     String key();
+    /** Gets the default value */
+    boolean defaultValue() default false;
 }
