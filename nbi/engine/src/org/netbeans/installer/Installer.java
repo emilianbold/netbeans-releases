@@ -420,14 +420,16 @@ public class Installer implements FinishHandler {
             final File lock = new File(getLocalDirectory(), LOCK_FILE_NAME);
             
             if (lock.exists()) {
-                LogManager.log("... lock file already exists"); // NOI18N
+                LogManager.log("... lock file already exists at " + lock); // NOI18N
+                LogManager.log("... to skip lock file check run installer with " + IgnoreLockOption.IGNORE_LOCK_ARG + " argument"); // NOI18N
                 
                 final String dialogTitle = ResourceUtils.getString(
                         Installer.class,
                         LOCK_FILE_EXISTS_DIALOG_TITLE_KEY);
                 final String dialogText = ResourceUtils.getString(
                         Installer.class,
-                        LOCK_FILE_EXISTS_DIALOG_TEXT_KEY);
+                        LOCK_FILE_EXISTS_DIALOG_TEXT_KEY,
+                        lock.getAbsolutePath());
                 if(!UiUtils.showYesNoDialog(dialogTitle, dialogText)) {
                     cancel();
                 }
