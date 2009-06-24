@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
@@ -72,7 +73,8 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
              RemoteUtilTestCase.class,
              ServerListTestCase.class,
              ScpSyncWorkerTestCase.class,
-             HostSetupTestCase.class);
+             HostSetupTestCase.class,
+             RemoteFileTestCase.class);
     }
 
 
