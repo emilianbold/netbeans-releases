@@ -41,9 +41,10 @@ package org.netbeans.modules.php.symfony;
 
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.symfony.ui.actions.RunCommandAction;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -52,7 +53,12 @@ import org.openide.util.actions.SystemAction;
 public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
 
     @Override
-    public List<? extends CallableSystemAction> getActions() {
+    public String getMenuName() {
+        return NbBundle.getMessage(SymfonyPhpModuleActionsExtender.class, "LBL_MenuName");
+    }
+
+    @Override
+    public List<? extends Action> getActions() {
         return Collections.singletonList(SystemAction.get(RunCommandAction.class));
     }
 }

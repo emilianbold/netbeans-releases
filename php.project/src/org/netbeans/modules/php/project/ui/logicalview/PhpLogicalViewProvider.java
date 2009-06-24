@@ -38,10 +38,15 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -53,11 +58,13 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.actions.FindAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -69,7 +76,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -229,10 +236,10 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             assert phpModule != null;
             for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
                 if (frameworkProvider.isInPhpModule(phpModule)) {
-                    List<? extends CallableSystemAction> frameworkActions = frameworkProvider.createActionsProvider(phpModule).getActions();
+                    PhpModuleActionsExtender actionsProvider = frameworkProvider.createActionsProvider(phpModule);
+                    List<? extends Action> frameworkActions = actionsProvider.getActions();
                     if (!frameworkActions.isEmpty()) {
-                        actions.add(null);
-                        actions.addAll(frameworkActions);
+                        actions.add(new FrameworkMenu(actionsProvider.getMenuName(), frameworkActions));
                     }
                 }
             }
@@ -261,6 +268,55 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private static Children createChildren(PhpProject project) {
            return NodeFactorySupport.createCompositeChildren(project,
                     "Projects/org-netbeans-modules-php-project/Nodes");//NOI18N
+        }
+
+        private static class FrameworkMenu extends AbstractAction implements Presenter.Popup {
+            private static final long serialVersionUID = -238674120253122435L;
+
+            private final String name;
+            private final List<? extends Action> frameworkActions;
+
+            public FrameworkMenu(String name, List<? extends Action> frameworkActions) {
+                super(name, null);
+                assert name != null;
+                assert frameworkActions != null;
+
+                this.name = name;
+                this.frameworkActions = frameworkActions;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                assert false;
+            }
+
+            public JMenuItem getPopupPresenter() {
+                return new FrameworkSubMenu(name, frameworkActions);
+            }
+        }
+
+        private static class FrameworkSubMenu extends JMenu implements DynamicMenuContent {
+            private static final long serialVersionUID = 9043114612433517414L;
+            private final List<? extends Action> frameworkActions;
+
+            public FrameworkSubMenu(String name, List<? extends Action> frameworkActions) {
+                super(name);
+                assert name != null;
+                assert frameworkActions != null;
+
+                this.frameworkActions = frameworkActions;
+            }
+
+            public JComponent[] getMenuPresenters() {
+                removeAll();
+                for (Action action : frameworkActions) {
+                    add(action);
+                }
+                return new JComponent[] {this};
+            }
+
+            public JComponent[] synchMenuPresenters(JComponent[] items) {
+                return getMenuPresenters();
+            }
         }
     }
 }

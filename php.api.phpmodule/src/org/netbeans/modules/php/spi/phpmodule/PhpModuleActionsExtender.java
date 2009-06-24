@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.spi.phpmodule;
 
 import java.util.List;
-import org.openide.util.actions.CallableSystemAction;
+import javax.swing.Action;
 
 /**
  * Provides support for extending a PHP module with a PHP framework's actions, that is,
@@ -51,8 +51,14 @@ import org.openide.util.actions.CallableSystemAction;
 public abstract class PhpModuleActionsExtender {
 
     /**
+     * Get the name of the menu, typically the name of the framework.
+     * @return
+     */
+    public abstract String getMenuName();
+
+    /**
      * Get the list of actions for the given framework that will be displayed in the project's menu.
      * @return list of actions, can be empty but never <code>null</code>.
      */
-    public abstract List<? extends CallableSystemAction> getActions();
+    public abstract List<? extends Action> getActions();
 }
