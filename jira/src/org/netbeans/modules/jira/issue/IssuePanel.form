@@ -382,8 +382,8 @@
     </Component>
     <Component class="javax.swing.JFormattedTextField" name="dueField">
       <Properties>
-        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
-          <Format subtype="0" type="1"/>
+        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter() {&#xa;    public Object stringToValue(String text) throws java.text.ParseException {&#xa;        if (text == null || text.trim().length() == 0) {&#xa;            return null;&#xa;        }&#xa;        return super.stringToValue(text);&#xa;    }&#xa;})" type="code"/>
         </Property>
       </Properties>
     </Component>
