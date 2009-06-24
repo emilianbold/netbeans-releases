@@ -210,12 +210,13 @@ class MappingPanel extends JPanel implements ActionListener,
         table.setFilterName(deployData.getName());
 
         if (!edited) {
-            if (!deployData.makeEntry()) {
+            if (!deployData.makeEntry() && !Utilities.isJavaEE6(wizard)) {
                 this.setEnabled(false);
                 return;
             }
 
-            table.setRowSelectionInterval(0, 0);
+            if (table.getRowCount() > 0)
+                table.setRowSelectionInterval(0, 0);
             edited = true;
         }
     }

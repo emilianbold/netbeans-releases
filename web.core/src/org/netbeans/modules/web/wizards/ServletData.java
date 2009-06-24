@@ -127,11 +127,11 @@ class ServletData extends DeployData {
     }
 
     List<FilterMappingData> getFilterMappings() {
-        if (webApp == null) {
-            return Collections.emptyList();
-        }
         if (filterMappings != null) {
             return filterMappings;
+        }
+        if (webApp == null) {
+            return new ArrayList<FilterMappingData>();
         }
 
         LOG.finer("Creating the filter mapping list"); //NOI18N
