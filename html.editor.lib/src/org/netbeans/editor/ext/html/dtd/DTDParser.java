@@ -1889,11 +1889,12 @@ class DTDParser extends Object {
                 }
                 
                 return null; // Doesn't match at all                
-            } else { // only '&' remains: if( type == '&' ) {
+            } else if(type == '&') {
                 for( int index = 0; index < content.length; index++ ) {
                     DTD.Content sub = content[index].reduce( elementName );
                     if( sub == EMPTY_CONTENT ) {
                         int newLen = content.length - 1;
+                        assert newLen > 0 : "Missing group element after '&' operator.";
                         if( newLen > 1 ) {
                             DTD.Content[] newSub = new DTD.Content[ newLen ];
                             System.arraycopy( content, 0, newSub, 0, index );
@@ -1909,6 +1910,7 @@ class DTDParser extends Object {
                         DTD.Content right;
                         if( content.length > 1 ) {
                             int newLen = content.length - 1;
+                            assert newLen > 0 : "Missing group element after '&' operator.";
                             DTD.Content[] newSub = new DTD.Content[ newLen ];
                             System.arraycopy( content, 0, newSub, 0, index );
                             if( index < newSub.length ) {
@@ -1923,7 +1925,13 @@ class DTDParser extends Object {
                 }
                 return null;
                 
+            } else {
+                //unknown operator
+                assert false : "Unknown operator '" + type + "' found in the DTD file when trying to reduce " + elementName;
             }
+
+            return null;
+            
         }
 
         public Set getPossibleElements() {
