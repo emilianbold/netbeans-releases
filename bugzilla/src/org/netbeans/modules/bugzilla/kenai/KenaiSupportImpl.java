@@ -85,43 +85,11 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 if (!KenaiService.Names.BUGZILLA.equals(f.getService())) {
                     return null;
                 }
-                final URL loc;
-                try {
-                    loc = new URL(f.getLocation());
-                } catch (MalformedURLException ex) {
-                    Bugzilla.LOG.log(Level.WARNING, null, ex);
+
+                KenaiRepository repo = createKenaiRepository(project.getDisplayName(), f.getLocation());
+                if(repo == null) {
                     return null;
                 }
-
-                String host = loc.getHost();
-                String location = f.getLocation();
-                int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
-                if (idx <= 0) {
-                    Bugzilla.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
-                    return null;
-                }
-                String url = location.substring(0, idx);
-                if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
-                    url = "https" + url.substring(4);                           // NOI18N
-                }
-                String productParamUrl = null;
-                String productAttribute = "product=";                           // NOI18N
-                String product = null;
-                int idxProductStart = location.indexOf(productAttribute);
-                if (idxProductStart <= 0) {
-                    Bugzilla.LOG.warning("can't get issue tracker product from [" + project.getName() + ", " + location + "]"); // NOI18N
-                } else {
-                    int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
-                    if(idxProductEnd > -1) {
-                        productParamUrl = location.substring(idxProductStart, idxProductEnd);
-                        product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
-                    } else {
-                        productParamUrl = location.substring(idxProductStart);
-                        product = location.substring(idxProductStart + productAttribute.length());
-                    }
-                }
-
-                KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, productParamUrl, product);
                 synchronized (repositories) {
                     repositories.add(repo);
                 }
@@ -173,6 +141,46 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             BugzillaQuery bq = (BugzillaQuery) query;
             bq.setFilter(filter);
         }
+    }
+
+    private KenaiRepository createKenaiRepository(String displayName, String location) {
+        final URL loc;
+        try {
+            loc = new URL(location);
+        } catch (MalformedURLException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
+
+        String host = loc.getHost();
+        int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
+        if (idx <= 0) {
+            Bugzilla.LOG.warning("can't get issue tracker url from [" + displayName + ", " + location + "]"); // NOI18N
+            return null;
+        }
+        String url = location.substring(0, idx);
+        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+            url = "https" + url.substring(4);                           // NOI18N
+        }
+        String productParamUrl = null;
+        String productAttribute = "product=";                           // NOI18N
+        String product = null;
+        int idxProductStart = location.indexOf(productAttribute);
+        if (idxProductStart <= 0) {
+            Bugzilla.LOG.warning("can't get issue tracker product from [" + displayName + ", " + location + "]"); // NOI18N
+            return null;
+        } else {
+            int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
+            if(idxProductEnd > -1) {
+                productParamUrl = location.substring(idxProductStart, idxProductEnd);
+                product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
+            } else {
+                productParamUrl = location.substring(idxProductStart);
+                product = location.substring(idxProductStart + productAttribute.length());
+            }
+        }
+
+        return new KenaiRepository(displayName, url, host, productParamUrl, product);
     }
 }
 
