@@ -105,7 +105,7 @@ public class TaskTest extends NbTestCase {
         assertEquals( lineNo, t.getLine() );
         assertEquals( resource.getURL(), t.getResource() );
         assertEquals( TaskGroupFactory.getDefault().getGroup( TASK_GROUP_NAME), t.getGroup() );
-        assertNull( t.getActionListener() );
+        assertNull( t.getDefaultAction() );
         
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -119,7 +119,7 @@ public class TaskTest extends NbTestCase {
         assertEquals( -1, t.getLine() );
         assertEquals( resource.getURL(), t.getResource() );
         assertEquals( TaskGroupFactory.getDefault().getGroup( TASK_GROUP_NAME), t.getGroup() );
-        assertEquals( al, t.getActionListener() );
+        assertEquals( al, t.getDefaultAction() );
     }
 
     public void testNullValues() {

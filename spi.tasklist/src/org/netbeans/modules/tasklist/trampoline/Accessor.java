@@ -44,6 +44,7 @@ package org.netbeans.modules.tasklist.trampoline;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import javax.swing.Action;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
@@ -82,7 +83,9 @@ public abstract class Accessor {
     
     public abstract int getLine( Task t );
     
-    public abstract ActionListener getActionListener( Task t );
+    public abstract ActionListener getDefaultAction( Task t );
+
+    public abstract Action[] getActions( Task t );
     
     
     public abstract String getDisplayName( TaskScanningScope scope );

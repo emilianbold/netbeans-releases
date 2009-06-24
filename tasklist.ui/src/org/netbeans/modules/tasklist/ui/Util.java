@@ -50,7 +50,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.NbBundle;
@@ -81,6 +80,20 @@ class Util {
         if( null != t ) {
             popup.add( getDefaultAction(t) );
             popup.addSeparator();
+            //task's custom actions
+            Action[] actions = Accessor.getActions(t);
+            if( null != actions ) {
+                for( Action a : actions ) {
+                    if( null != a ) {
+                        popup.add(a);
+                    } else {
+                        popup.addSeparator();
+                    }
+                }
+                if( actions.length > 0  && actions[actions.length-1] != null ) {
+                    popup.addSeparator();
+                }
+            }
         }
         //scope
         JMenu scopeMenu = new JMenu( NbBundle.getMessage( Util.class, "LBL_Scope" ) ); //NOI18N

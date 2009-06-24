@@ -77,7 +77,7 @@ public class OpenTaskAction extends AbstractAction {
         if( !canOpenTask() )
             return;
         
-        ActionListener al = Accessor.getActionListener( task );
+        ActionListener al = Accessor.getDefaultAction( task );
         if( null != al ) {
             al.actionPerformed( e );
             return;
@@ -141,7 +141,7 @@ public class OpenTaskAction extends AbstractAction {
     }
 
     private boolean canOpenTask() {
-        if( null != Accessor.getActionListener( task ) )
+        if( null != Accessor.getDefaultAction( task ) )
             return true;
         
         URL url = Accessor.getURL( task );

@@ -44,6 +44,7 @@ package org.netbeans.spi.tasklist;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import javax.swing.Action;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
@@ -76,8 +77,12 @@ class AccessorImpl extends Accessor {
         return t.getLine();
     }
     
-    public ActionListener getActionListener(Task t) {
-        return t.getActionListener();
+    public ActionListener getDefaultAction(Task t) {
+        return t.getDefaultAction();
+    }
+
+    public Action[] getActions(Task t) {
+        return t.getActions();
     }
 
     public String getDisplayName(TaskScanningScope scope) {

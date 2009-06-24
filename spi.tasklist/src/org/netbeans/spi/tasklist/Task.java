@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.openide.filesystems.FileObject;
@@ -61,12 +62,13 @@ import org.openide.util.NbBundle;
  */
 public final class Task {
     
-    private URL url;
-    private FileObject file;
-    private TaskGroup group;
-    private String description;
-    private int line;
-    private ActionListener al;
+    private final URL url;
+    private final FileObject file;
+    private final TaskGroup group;
+    private final String description;
+    private final int line;
+    private final ActionListener defaultAction;
+    private final Action[] actions;
     
     static {
         Accessor.DEFAULT = new AccessorImpl();
@@ -83,7 +85,7 @@ public final class Task {
      * @return New task.
      */
     public static Task create( URL resource, String groupName, String description ) {
-        return new Task( null, resource, getTaskGroup( groupName ), description, -1, null );
+        return new Task( null, resource, getTaskGroup( groupName ), description, -1, null, null );
     }
 
     /**
@@ -92,12 +94,12 @@ public final class Task {
      * @param resource Resource which the Task applies to, cannot be null.
      * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
      * @param description A brief summary of the task (one line if possible), cannot be null.
-     * @param al Task's default action, e.g. double-click or Enter key in the Task List window.
+     * @param actions Actions to show in task's popup menu.
      *
      * @return New task.
      */
-    public static Task create( URL resource, String groupName, String description, ActionListener al ) {
-        return new Task( null, resource, getTaskGroup( groupName ), description, -1, al );
+    public static Task create( URL resource, String groupName, String description, Action[] actions ) {
+        return new Task( null, resource, getTaskGroup( groupName ), description, -1, null, actions );
     }
 
     /**
@@ -112,7 +114,7 @@ public final class Task {
      */
     public static Task create( FileObject resource, String groupName, String description, int line ) {
         assert null != resource;
-        return new Task(resource, null, getTaskGroup(groupName), description, line, null);
+        return new Task(resource, null, getTaskGroup(groupName), description, line, null, null);
     }
     
     /**
@@ -133,11 +135,11 @@ public final class Task {
      */
     public static Task create( FileObject resource, String groupName, String description, ActionListener al ) {
         assert null != resource;
-        return new Task(resource, null, getTaskGroup(groupName), description, -1, al);
+        return new Task(resource, null, getTaskGroup(groupName), description, -1, al, null);
     }
     
     /** Creates a new instance of Task */
-    private Task( FileObject file, URL url, TaskGroup group, String description, int line, ActionListener al ) {
+    private Task( FileObject file, URL url, TaskGroup group, String description, int line, ActionListener defaultAction, Action[] actions ) {
         assert null != group;
         assert null != description;
         assert null == file || null == url;
@@ -147,7 +149,8 @@ public final class Task {
         this.group = group;
         this.description = description;
         this.line = line;
-        this.al = al;
+        this.defaultAction = defaultAction;
+        this.actions = actions;
     }
 
     /**
@@ -194,8 +197,12 @@ public final class Task {
      * Action to be invoked when user double-clicks the task in the Task List window.
      * @return Task's default action or null if not available.
      */
-    ActionListener getActionListener() {
-        return al;
+    ActionListener getDefaultAction() {
+        return defaultAction;
+    }
+
+    Action[] getActions() {
+        return actions;
     }
     
     /**

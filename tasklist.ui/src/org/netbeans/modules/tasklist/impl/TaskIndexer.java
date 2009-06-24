@@ -40,6 +40,8 @@
 package org.netbeans.modules.tasklist.impl;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,6 +57,7 @@ import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Called from Indexing API framework. Simply asks all registered and active
@@ -143,19 +146,43 @@ public class TaskIndexer extends CustomIndexer {
     }
 
     private static String encode( Task t ) {
-        int line = Accessor.DEFAULT.getLine(t);
-        String group = Accessor.DEFAULT.getGroup(t).getName();
-        String description = Accessor.DEFAULT.getDescription(t);
-        return String.valueOf(line) + "\n" + group + "\n" + description;
+        StringBuffer res = new StringBuffer();
+        URL url = Accessor.DEFAULT.getURL(t);
+        if( null == url )
+            res.append("-");
+        else
+            res.append(url.toExternalForm());
+        res.append("\n");
+        res.append( Accessor.DEFAULT.getLine(t) );
+        res.append("\n");
+        res.append( Accessor.DEFAULT.getGroup(t).getName() );
+        res.append("\n");
+        res.append( Accessor.DEFAULT.getDescription(t) );
+        return res.toString();
     }
 
     public static Task decode( FileObject fo, String encodedTask ) {
         int delimIndex = encodedTask.indexOf("\n");
+        String strUrl = encodedTask.substring(0, delimIndex);
+        URL url = null;
+        if( !"-".equals(strUrl) ) {
+            try {
+                url = new URL(strUrl);
+            } catch( MalformedURLException ex ) {
+                //ignore
+            }
+        }
+        encodedTask = encodedTask.substring(delimIndex+1);
+        delimIndex = encodedTask.indexOf("\n");
+
         int lineNumber = Integer.valueOf(encodedTask.substring(0, delimIndex));
         encodedTask = encodedTask.substring(delimIndex+1);
         delimIndex = encodedTask.indexOf("\n");
+
         String groupName = encodedTask.substring(0, delimIndex);
         String description = encodedTask.substring(delimIndex+1);
+        if( null != url )
+            return Task.create(url, groupName, description);
         return Task.create(fo, groupName, description, lineNumber);
     }
 }
