@@ -136,7 +136,6 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
-import org.netbeans.modules.j2ee.common.Capabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -1313,8 +1312,8 @@ public final class WebProject implements Project, AntProjectListener {
             this.project = project;
         }
         
-        private boolean isEjb30Supported = false;
-        private boolean isEJB31Supported = false;
+        private boolean isEE5 = false;
+        private boolean isEE6 = false;
         private boolean checked = false;
         private boolean isArchive = false;
 
@@ -1323,7 +1322,7 @@ public final class WebProject implements Project, AntProjectListener {
             checkEnvironment();
             if (isArchive) {
                 retVal = TYPES_ARCHIVE;
-            } else if (isEJB31Supported){
+            } else if (isEE6){
                 retVal = JAVAEE6_TYPES;
             }else{
                 retVal = TYPES;
@@ -1338,7 +1337,7 @@ public final class WebProject implements Project, AntProjectListener {
             if (isArchive) {
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                if (isEjb30Supported) {
+                if (isEE5) {
                     retVal = getPrivilegedTemplatesEE5();
                 } else {
                     retVal = WebProject.this.getPrivilegedTemplates();
@@ -1354,9 +1353,11 @@ public final class WebProject implements Project, AntProjectListener {
                 if ("false".equals(srcType)) {
                     isArchive = true;
                 }
-                Capabilities projectCap = Capabilities.forProject(project);
-                isEjb30Supported = projectCap.isEjb30Supported();
-                isEJB31Supported = projectCap.isEjb31Supported();
+
+                Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
+                isEE6 = profile == Profile.JAVA_EE_6_FULL;
+                isEE5 = profile == Profile.JAVA_EE_5;
+                
                 checked = true;
             }
         }

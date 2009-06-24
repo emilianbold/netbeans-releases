@@ -75,7 +75,7 @@ public class AttrTableModel extends AbstractTableModel {
     
     @Override
     public String getColumnName(int col) { 
-        String key = "LBL_".concat(colheaders[col]); //NOI18N
+        String key = "LBL_"+colheaders[col]; //NOI18N
         return NbBundle.getMessage(AttrTableModel.class, key); 
     }
 

@@ -260,7 +260,7 @@ class DDTable extends JTable implements KeyListener {
 
         @Override
         public String getColumnName(int col) {
-            String key = "LBL_".concat(colheaders[col]);
+            String key = "LBL_"+colheaders[col];
             return NbBundle.getMessage(DDTable.class, key);
         }
 
