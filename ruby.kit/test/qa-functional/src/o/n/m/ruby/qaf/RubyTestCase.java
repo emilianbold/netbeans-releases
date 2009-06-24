@@ -50,11 +50,11 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.modules.ruby.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.NewRubyProjectNameLocationStepOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.modules.ruby.actions.BuildGemAction;
+import org.netbeans.jellytools.actions.BuildGemAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
@@ -254,10 +254,10 @@ public abstract class RubyTestCase extends JellyTestCase {
         }
         npwo.next();
         // project name & location selection step
-        NewProjectNameLocationStepOperator op = new NewProjectNameLocationStepOperator();
+        NewRubyProjectNameLocationStepOperator op = new NewRubyProjectNameLocationStepOperator();
         op.txtProjectName().setText(name);
         if (ProjectType.RR_SAMPLE.equals(getProjectType())) {
-            op.txtLocation().setText(getWorkDirPath());
+            op.txtProjectLocation().setText(getWorkDirPath());
         } else {
             File projectLocation = null;
             projectLocation = getProjectsRootDir();
