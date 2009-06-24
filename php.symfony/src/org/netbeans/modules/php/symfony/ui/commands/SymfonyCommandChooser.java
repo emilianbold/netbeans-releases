@@ -76,6 +76,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class SymfonyCommandChooser extends JPanel {
     private static final long serialVersionUID = 2405531380316402L;
@@ -246,12 +247,15 @@ public final class SymfonyCommandChooser extends JPanel {
     public static class CommandDescriptor {
 
         private final SymfonyCommand task;
-        private final String params;
+        private final String[] params;
         private final boolean debug;
 
         private CommandDescriptor(SymfonyCommand task, String params, boolean debug) {
+            assert task != null;
+            assert params != null;
+
             this.task = task;
-            this.params = params.length() == 0 ? null : params;
+            this.params = Utilities.parseParameters(params.trim());
             this.debug = debug;
         }
 
@@ -259,7 +263,7 @@ public final class SymfonyCommandChooser extends JPanel {
             return task;
         }
 
-        public String getCommandParams() {
+        public String[] getCommandParams() {
             return params;
         }
 

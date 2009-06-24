@@ -68,21 +68,9 @@ public class RunCommandAction extends CallableSystemAction {
         }
 
         String displayName = phpModule.getDisplayName() + " (" + commandDescriptor.getSymfonyCommand().getCommand() + ")"; // NOI18N
-        final String[] params;
-        // FIXME all parameters in one String should we split it ?
-        if (commandDescriptor.getCommandParams() != null && !"".equals(commandDescriptor.getCommandParams().trim())) { // NOI18N
-            params = new String[] {commandDescriptor.getCommandParams()};
-        } else {
-            params = new String[] {};
-        }
-
-
-        Callable<Process> callable;
-        ExecutionDescriptor descriptor;
-
-        callable = SymfonyCommandSupport.getForPhpModule(phpModule).createCommand(
-                commandDescriptor.getSymfonyCommand().getCommand(), phpModule, params);
-        descriptor = SymfonyCommandSupport.getForPhpModule(phpModule).getDescriptor(commandDescriptor.getSymfonyCommand().getCommand());
+        Callable<Process> callable = SymfonyCommandSupport.getForPhpModule(phpModule).createCommand(
+                commandDescriptor.getSymfonyCommand().getCommand(), phpModule, commandDescriptor.getCommandParams());
+        ExecutionDescriptor descriptor = SymfonyCommandSupport.getForPhpModule(phpModule).getDescriptor(commandDescriptor.getSymfonyCommand().getCommand());
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
