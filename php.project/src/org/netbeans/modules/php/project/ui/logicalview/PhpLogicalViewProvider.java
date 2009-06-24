@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -64,7 +63,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.actions.FindAction;
-import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -294,28 +293,32 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-        private static class FrameworkSubMenu extends JMenu implements DynamicMenuContent {
+        private static class FrameworkSubMenu extends JMenu {
             private static final long serialVersionUID = 9043114612433517414L;
-            private final List<? extends Action> frameworkActions;
 
             public FrameworkSubMenu(String name, List<? extends Action> frameworkActions) {
                 super(name);
                 assert name != null;
                 assert frameworkActions != null;
 
-                this.frameworkActions = frameworkActions;
-            }
-
-            public JComponent[] getMenuPresenters() {
-                removeAll();
                 for (Action action : frameworkActions) {
-                    add(action);
+                    if (action != null) {
+                        add(toMenuItem(action));
+                    } else {
+                        addSeparator();
+                    }
                 }
-                return new JComponent[] {this};
             }
 
-            public JComponent[] synchMenuPresenters(JComponent[] items) {
-                return getMenuPresenters();
+            private static JMenuItem toMenuItem(Action action) {
+                JMenuItem item;
+                if (action instanceof Presenter.Menu) {
+                    item = ((Presenter.Menu) action).getMenuPresenter();
+                } else {
+                    item = new JMenuItem();
+                    Actions.connect(item, action, false);
+                }
+                return item;
             }
         }
     }
