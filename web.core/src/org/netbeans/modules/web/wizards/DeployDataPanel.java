@@ -247,7 +247,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
             paramPanel = new InitParamPanel(deployData, this, wizard);
             this.add(paramPanel, tablePanelC);
         } else if (fileType == FileType.FILTER) {
-            mappingPanel = new MappingPanel(deployData, this);
+            mappingPanel = new MappingPanel(deployData, this, wizard);
             this.add(mappingPanel, tablePanelC);
         }
 
