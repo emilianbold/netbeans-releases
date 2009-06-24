@@ -40,8 +40,12 @@
 package org.netbeans.modules.web.wizards;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.web.wizards.FilterMappingData.Dispatcher;
 
 /**
  * Helper class for generation of annotations (WebServlet, WebFilter, WebListener, ...)
@@ -95,6 +99,47 @@ class AnnotationGenerator {
     }
 
     /**
+     * Generate WebFilter annotation in form
+     * "@WebFilter(filterName="abc", urlPatterns={"/aaa"}, dispatcherTypes={DispatcherType.ERROR}, initParams={@WebInitParam(name="a", value="1")})"
+     * or
+     * "@WebFilter(filterName="abc", servletNames={"xyz"}, dispatcherTypes={DispatcherType.ERROR}, initParams={@WebInitParam(name="a", value="1")})"
+     * @return annotation as string
+     */
+    static String webFilter(ServletData data) {
+        return "@WebFilter("+
+                join(generFilterName(data.getName()), generMappings(data.getFilterMappings()), generInitParams(data.getInitParams()))+
+                ")";
+    }
+
+    // -------------------------------------------------------------------------
+    private static String generFilterName(String name) {
+        return name == null ? null : "filterName=\""+name+"\"";
+    }
+
+    // -------------------------------------------------------------------------
+    private static String generMappings(List<FilterMappingData> mappings) {
+        // Let's compute union of all specified dispatchers -- annotation is more
+        // restrictive then DD and only one set of disoatchers may be specified.
+        Set<String> dispatchers = new HashSet<String>();
+        List<String> urlPatterns = new ArrayList<String>();
+        List<String> servletNames = new ArrayList<String>();
+        for (FilterMappingData item : mappings) {
+            if (item.getType() == FilterMappingData.Type.URL) {
+                urlPatterns.add(item.getPattern());
+            }
+            else if (item.getType() == FilterMappingData.Type.SERVLET) {
+                servletNames.add(item.getPattern());
+            }
+            for (Dispatcher d : item.getDispatcher()) {
+                if (d != Dispatcher.BLANK)
+                    dispatchers.add(d.toString());
+            }
+        }
+        return join(list("urlPatterns", urlPatterns), list("servletNames", servletNames),
+                "dispatcherTypes={"+join(dispatchers, "DispatcherType.", "")+"}");
+    }
+
+    /**
      * Generate WebListener annotation in form
      * "@WebListener()"
      * @return annotation as string
@@ -121,7 +166,7 @@ class AnnotationGenerator {
     }
 
     // -------------------------------------------------------------------------
-    private static String join(List<String> params, String left, String right) {
+    private static String join(Collection<String> params, String left, String right) {
         boolean first = true;
         StringBuilder res = new StringBuilder();
         for (String s : params) {

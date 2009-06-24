@@ -414,6 +414,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <package>org.netbeans.modules.j2ee.persistence.action</package>
                 <package>org.netbeans.modules.j2ee.persistence.api.entity.generator</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.common</package>
@@ -427,9 +428,11 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
+                <package>org.netbeans.modules.j2ee.persistence.util</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.fromdb</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.jpacontroller</package>
+                <package>org.netbeans.modules.j2ee.persistence.wizard.unit</package>
             </friend-packages>
         </data>
     </configuration>
