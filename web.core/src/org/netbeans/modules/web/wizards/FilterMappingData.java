@@ -159,7 +159,6 @@ class FilterMappingData {
     }
 
     static class Type {
-
         private String name;
 
         private Type(String name) {
@@ -175,7 +174,6 @@ class FilterMappingData {
     }
 
     static class Dispatcher {
-
         private String name;
 
         private Dispatcher(String name) {
