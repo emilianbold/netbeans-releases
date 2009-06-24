@@ -39,65 +39,20 @@
 
 package org.netbeans.modules.php.symfony;
 
-import java.io.File;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.symfony.ui.actions.RunCommandAction;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
-    private static final List<String> SYMFONY_FILES = Arrays.asList(
-            "apps",      // NOI18N
-            "cache",     // NOI18N
-            "config",    // NOI18N
-            "data",      // NOI18N
-            "test",      // NOI18N
-            "web",       // NOI18N
-            "symfony");  // NOI18N
-
-    public SymfonyPhpFrameworkProvider() {
-        super(NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
-    }
+public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
 
     @Override
-    public boolean isInPhpModule(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        for (String file : SYMFONY_FILES) {
-            if (sourceDirectory.getFileObject(file) == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
-    }
-
-    @Override
-    public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        return new SymfonyPhpModuleExtender();
-    }
-
-    @Override
-    public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        return new PhpModuleProperties()
-                .setWebRoot(sourceDirectory.getFileObject("web")) // NOI18N
-                .setTests(sourceDirectory.getFileObject("test/unit")); // NOI18N
-    }
-
-    @Override
-    public PhpModuleActionsExtender createActionsProvider(PhpModule phpModule) {
-        return new SymfonyPhpModuleActionsExtender();
+    public List<? extends CallableSystemAction> getActions() {
+        return Collections.singletonList(SystemAction.get(RunCommandAction.class));
     }
 }

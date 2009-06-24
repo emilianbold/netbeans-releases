@@ -147,7 +147,7 @@ public class SymfonyScript extends PhpProgram {
                 .optionsPath(getOptionsPath())
                 .frontWindow(true)
                 .showProgress(true);
-        String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName);
+        String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
         final ExecutionService service = ExecutionService.newService(
                 processBuilder,
                 executionDescriptor,
@@ -160,20 +160,6 @@ public class SymfonyScript extends PhpProgram {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    /**
-     * Currently, just trying to detect "any" symfony version
-     * (if not detected, probably not symfony script?).
-     * @return <code>true</code> if Symfony script was detected
-     */
-    public boolean supportedVersionFound() {
-        if (!super.isValid()) {
-            return false;
-        }
-        getVersion();
-        return version != null
-                && version != UNKNOWN_VERSION;
     }
 
     private int[] getVersion() {
