@@ -52,10 +52,12 @@ class SlownessData {
 
     private final long time;
     private final byte[] npsContent;
+    private final String latestActionName;
 
-    public SlownessData(long time, byte[] npsContent) {
+    public SlownessData(long time, byte[] npsContent, String latestActionClassName) {
         this.time = time;
         this.npsContent = npsContent;
+        this.latestActionName = latestActionClassName;
     }
 
     /**
@@ -76,5 +78,12 @@ class SlownessData {
         LogRecord rec = new LogRecord(Level.CONFIG, SLOWNESS_DATA);
         rec.setParameters(new Object[]{new Long(time)});
         return rec;
+    }
+
+    /**
+     * @return the latestActionClassName
+     */
+    public String getLatestActionName() {
+        return latestActionName;
     }
 }

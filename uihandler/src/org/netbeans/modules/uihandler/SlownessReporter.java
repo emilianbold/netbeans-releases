@@ -47,7 +47,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Queue;
+import java.util.logging.LogRecord;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -73,13 +78,50 @@ import org.openide.util.lookup.Lookups;
  */
 class SlownessReporter {
     private final Queue<NotifySnapshot> pending;
-
+    private static final String UI_ACTION_BUTTON_PRESS = "UI_ACTION_BUTTON_PRESS";  //NOI18N
+    private static final String UI_ACTION_EDITOR = "UI_ACTION_EDITOR";  //NOI18N
+    private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
+    private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
     }
 
+    private String getParam(LogRecord rec, int index){
+        if (rec.getParameters() != null && rec.getParameters().length > index){
+            return rec.getParameters()[index].toString();
+        }else{
+            assert rec.getParameters() != null;
+            assert rec.getParameters().length > index : Integer.toString(rec.getParameters().length);
+        }
+        return null;
+    }
+
     void notifySlowness(byte[] nps, long time){
-        pending.add(new NotifySnapshot(new SlownessData(time, nps)));
+        List<LogRecord> recs = Installer.getLogs();
+        ListIterator<LogRecord> it = recs.listIterator(recs.size());
+        String latestActionClassName = null;
+        while (it.hasPrevious()){
+            LogRecord rec = it.previous();
+            if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
+                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage()))){
+                latestActionClassName = getParam(rec, 4);
+            } else if (UI_ACTION_KEY_PRESS.equals(rec.getMessage())){
+                latestActionClassName = getParam(rec, 2);
+            } else if (Installer.IDE_STARTUP.equals(rec.getMessage())){
+                latestActionClassName = NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP");
+            }
+            if (latestActionClassName != null){
+                latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N
+                Pattern p  = Pattern.compile(DELEGATE_PATTERN);
+                Matcher m = p.matcher(latestActionClassName);
+                if (m.find()){
+                    String delegate = m.group();
+                    latestActionClassName = delegate.substring(9, delegate.length() - 1);
+                }
+                break;
+            }
+        }
+        pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionClassName)));
         if (pending.size() > 5) {
             pending.remove().clear();
         }

@@ -142,6 +142,7 @@ import org.xml.sax.SAXException;
  * Registers and unregisters loggers.
  */
 public class Installer extends ModuleInstall implements Runnable {
+    static final String IDE_STARTUP = "IDE_STARTUP";
     static final long serialVersionUID = 1L;
 
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
@@ -291,6 +292,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         EarlyHandler.disable();
         ScreenSize.logScreenSize();
+        logIdeStartup();
 
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
@@ -301,6 +303,10 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
     
+    private void logIdeStartup() {
+        Logger.getLogger("org.netbeans.ui").log(new LogRecord(Level.CONFIG, IDE_STARTUP));
+    }
+
     private void usageStatisticsReminder () {
         //Increment number of IDE starts, stop at 4 because we are interested at second start
         long nbOfIdeStarts = corePref.getLong(USAGE_STATISTICS_NB_OF_IDE_STARTS, 0);
@@ -936,7 +942,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null);
     }
 
-    public static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, SlownessData slownessData) {
+    static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, SlownessData slownessData) {
         return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, slownessData);
     }
 
@@ -1827,9 +1833,14 @@ public class Installer extends ModuleInstall implements Runnable {
             if (reportPanel==null) {
                 reportPanel = new ReportPanel();
             }
-            Throwable t = getThrown(recs);
-            if (t != null){
-                reportPanel.setSummary(createMessage(t));
+            if (slownData != null) {
+                String message = NbBundle.getMessage(Installer.class, "Summary_MSG", slownData.getLatestActionName(), slownData.getTime());
+                reportPanel.setSummary(message);
+            } else {
+                Throwable t = getThrown(recs);
+                if (t != null) {
+                    reportPanel.setSummary(createMessage(t));
+                }
             }
             if ("ERROR_URL".equals(msg)) {
                 dim = new Dimension(470, 450);
