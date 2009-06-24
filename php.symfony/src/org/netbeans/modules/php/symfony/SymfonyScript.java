@@ -79,7 +79,8 @@ public class SymfonyScript extends PhpProgram {
      */
     static volatile int[] version = null;
 
-    private static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
+    public static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
+    public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
 
     public SymfonyScript(String command) {
         super(command);

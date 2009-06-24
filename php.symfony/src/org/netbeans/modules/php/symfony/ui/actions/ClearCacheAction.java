@@ -37,38 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony;
+package org.netbeans.modules.php.symfony.ui.actions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction;
-import org.netbeans.modules.php.symfony.ui.actions.RunCommandAction;
+import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.netbeans.modules.php.symfony.ui.commands.SymfonyCommandSupport;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS;
+public class ClearCacheAction extends BaseAction {
+    private static final long serialVersionUID = 36068831502227572L;
 
-    static {
-        List<Action> actions = new ArrayList<Action>(3);
-        actions.add(new RunCommandAction());
-        actions.add(null);
-        actions.add(new ClearCacheAction());
-        ACTIONS = Collections.unmodifiableList(actions);
+    @Override
+    public void actionPerformedInternal(PhpModule phpModule) {
+        SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forPhpModule(phpModule);
+        Callable<Process> callable = commandSupport.createCommand(SymfonyScript.CMD_CLEAR_CACHE);
+        ExecutionDescriptor descriptor = commandSupport.getDescriptor();
+        String displayName = commandSupport.getOutputTitle(SymfonyScript.CMD_CLEAR_CACHE);
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
+        service.run();
     }
 
     @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(SymfonyPhpModuleActionsExtender.class, "LBL_MenuName");
-    }
-
-    @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    protected String getPureName() {
+        return NbBundle.getMessage(ClearCacheAction.class, "LBL_ClearCache");
     }
 }

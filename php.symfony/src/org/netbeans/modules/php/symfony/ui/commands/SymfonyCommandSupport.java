@@ -192,6 +192,23 @@ public final class SymfonyCommandSupport {
         return createCommandInternal(command, arguments, false);
     }
 
+    public String getOutputTitle(SymfonyCommandChooser.CommandDescriptor commandDescriptor) {
+        return getOutputTitle(commandDescriptor.getSymfonyCommand().getCommand(), commandDescriptor.getCommandParams());
+    }
+
+    public String getOutputTitle(String command, String... params) {
+        StringBuilder title = new StringBuilder(200);
+        title.append(phpModule.getDisplayName());
+        title.append(" ("); // NOI18N
+        title.append(command);
+        for (String param : params) {
+            title.append(" "); // NOI18N
+            title.append(param);
+        }
+        title.append(")"); // NOI18N
+        return title.toString();
+    }
+
     private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
         ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser).addArgument(command);
         for (String arg : arguments) {

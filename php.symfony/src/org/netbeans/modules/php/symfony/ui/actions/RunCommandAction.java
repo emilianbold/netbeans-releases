@@ -45,48 +45,31 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.symfony.ui.commands.SymfonyCommandChooser;
 import org.netbeans.modules.php.symfony.ui.commands.SymfonyCommandSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 /**
  * @author Tomas Mysik
  */
-public class RunCommandAction extends CallableSystemAction {
+public class RunCommandAction extends BaseAction {
     private static final long serialVersionUID = -22735302227232842L;
 
     @Override
-    public void performAction() {
-        PhpModule phpModule = PhpModule.inferPhpModule();
-        if (phpModule == null) {
-            return;
-        }
-
+    public void actionPerformedInternal(PhpModule phpModule) {
         SymfonyCommandChooser.CommandDescriptor commandDescriptor = SymfonyCommandChooser.select(phpModule);
         if (commandDescriptor == null) {
             return;
         }
 
-        String displayName = phpModule.getDisplayName() + " (" + commandDescriptor.getSymfonyCommand().getCommand() + ")"; // NOI18N
         SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forPhpModule(phpModule);
         Callable<Process> callable = commandSupport.createCommand(commandDescriptor.getSymfonyCommand().getCommand(), commandDescriptor.getCommandParams());
         ExecutionDescriptor descriptor = commandSupport.getDescriptor();
+        String displayName = commandSupport.getOutputTitle(commandDescriptor);
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
 
     @Override
-    public String getName() {
+    protected String getPureName() {
         return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
     }
 }

@@ -37,38 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony;
+package org.netbeans.modules.php.symfony.ui.actions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction;
-import org.netbeans.modules.php.symfony.ui.actions.RunCommandAction;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS;
+public abstract class BaseAction extends AbstractAction {
+    // XXX ugly
+    private static final PhpFrameworkProvider SYMFONY_FRAMEWORK_PROVIDER = new SymfonyPhpFrameworkProvider();
 
-    static {
-        List<Action> actions = new ArrayList<Action>(3);
-        actions.add(new RunCommandAction());
-        actions.add(null);
-        actions.add(new ClearCacheAction());
-        ACTIONS = Collections.unmodifiableList(actions);
+    public BaseAction() {
+        putValue("noIconInMenu", true); // NOI18N
+        putValue(NAME, getFullName());
+        putValue("menuText", getPureName()); // NOI18N
     }
 
     @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(SymfonyPhpModuleActionsExtender.class, "LBL_MenuName");
+    public void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+        if (phpModule == null) {
+            return;
+        }
+        if (!SYMFONY_FRAMEWORK_PROVIDER.isInPhpModule(phpModule)) {
+            return;
+        }
+        actionPerformedInternal(phpModule);
     }
 
-    @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    protected String getFullName() {
+        return NbBundle.getMessage(BaseAction.class, "LBL_SymfonyAction", getPureName());
     }
+
+    protected abstract String getPureName();
+    protected abstract void actionPerformedInternal(PhpModule phpModule);
 }
