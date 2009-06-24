@@ -55,8 +55,8 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.symfony.ui.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -139,14 +139,10 @@ public class SymfonyScript extends PhpProgram {
 
     public void initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getProgram())
-                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .addArgument(CMD_INIT_PROJECT)
-                .addArgument(projectName);
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .optionsPath(getOptionsPath())
-                .frontWindow(true)
-                .showProgress(true);
+        SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forPhpModule(phpModule);
+        ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_PROJECT, projectName);
+        assert processBuilder != null;
+        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
         String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
         final ExecutionService service = ExecutionService.newService(
                 processBuilder,

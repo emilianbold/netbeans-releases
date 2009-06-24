@@ -68,9 +68,9 @@ public class RunCommandAction extends CallableSystemAction {
         }
 
         String displayName = phpModule.getDisplayName() + " (" + commandDescriptor.getSymfonyCommand().getCommand() + ")"; // NOI18N
-        Callable<Process> callable = SymfonyCommandSupport.getForPhpModule(phpModule).createCommand(
-                commandDescriptor.getSymfonyCommand().getCommand(), phpModule, commandDescriptor.getCommandParams());
-        ExecutionDescriptor descriptor = SymfonyCommandSupport.getForPhpModule(phpModule).getDescriptor(commandDescriptor.getSymfonyCommand().getCommand());
+        SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forPhpModule(phpModule);
+        Callable<Process> callable = commandSupport.createCommand(commandDescriptor.getSymfonyCommand().getCommand(), commandDescriptor.getCommandParams());
+        ExecutionDescriptor descriptor = commandSupport.getDescriptor();
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }

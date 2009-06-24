@@ -326,7 +326,7 @@ public final class SymfonyCommandChooser extends JPanel {
     /** Reloads all tasks for the current project. */
     private boolean reloadAllTasks() {
         allTasks.clear();
-        List<SymfonyCommand> commands = SymfonyCommandSupport.getForPhpModule(phpModule).getSymfonyCommands();
+        List<SymfonyCommand> commands = SymfonyCommandSupport.forPhpModule(phpModule).getSymfonyCommands();
         if (commands != null) {
             allTasks.addAll(commands);
             return false;
@@ -361,7 +361,7 @@ public final class SymfonyCommandChooser extends JPanel {
         setEnabled(comps, false);
         matchingTaskList.setListData(new Object[]{getMessage("SymfonyCommandChooser.reloading.tasks")});
 
-        SymfonyCommandSupport.getForPhpModule(phpModule).refreshSymfonyCommandsLater(new Runnable() {
+        SymfonyCommandSupport.forPhpModule(phpModule).refreshSymfonyCommandsLater(new Runnable() {
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {

@@ -97,7 +97,7 @@ public final class SymfonyCommandSupport {
     // @GuardedBy(this)
     private List<SymfonyCommand> commands;
 
-    public static synchronized SymfonyCommandSupport getForPhpModule(PhpModule phpModule) {
+    public static synchronized SymfonyCommandSupport forPhpModule(PhpModule phpModule) {
         assert phpModule != null;
         SymfonyCommandSupport commandSupport = CACHE.get(phpModule);
         if (commandSupport == null) {
@@ -116,15 +116,11 @@ public final class SymfonyCommandSupport {
         return commands;
     }
 
-    public ExecutionDescriptor getDescriptor(String command) {
-        return getDescriptor(command, null, false);
+    public ExecutionDescriptor getDescriptor() {
+        return getDescriptor(null);
     }
 
-    public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory) {
-        return getDescriptor(command, outFactory, false);
-    }
-
-    public ExecutionDescriptor getDescriptor(String command, InputProcessorFactory outFactory, final boolean debug) {
+    public ExecutionDescriptor getDescriptor(InputProcessorFactory outFactory) {
         ExecutionDescriptor descriptor = SYMFONY_DESCRIPTOR.postExecution(new RefreshPhpModuleRunnable(phpModule))
                 .errProcessorFactory(ANSI_STRIPPING);
         if (outFactory != null) {
@@ -136,7 +132,7 @@ public final class SymfonyCommandSupport {
     }
 
     public void refreshSymfonyCommands() {
-        ExternalProcessBuilder processBuilder = createSilentCommand("list", phpModule); // NOI18N
+        ExternalProcessBuilder processBuilder = createSilentCommand("list"); // NOI18N
         if (processBuilder == null) {
             return;
         }
@@ -185,26 +181,26 @@ public final class SymfonyCommandSupport {
         });
     }
 
-    public ExternalProcessBuilder createCommand(final String command, final PhpModule phpModule, final String... arguments) {
-        return createCommandInternal(command, phpModule, arguments, true);
+    public ExternalProcessBuilder createCommand(final String command, final String... arguments) {
+        return createCommandInternal(command, arguments, true);
     }
 
     /**
      * No error dialog is displayed if Symfony script is invalid.
      */
-    public ExternalProcessBuilder createSilentCommand(final String command, final PhpModule phpModule, final String... arguments) {
-        return createCommandInternal(command, phpModule, arguments, false);
+    public ExternalProcessBuilder createSilentCommand(final String command, final String... arguments) {
+        return createCommandInternal(command, arguments, false);
     }
 
-    private ExternalProcessBuilder createCommandInternal(final String command, final PhpModule phpModule, final String[] arguments, boolean warnUser) {
-        ExternalProcessBuilder processBuilder = getProcessBuilder(phpModule, warnUser).addArgument(command);
+    private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
+        ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser).addArgument(command);
         for (String arg : arguments) {
             processBuilder = processBuilder.addArgument(arg);
         }
         return processBuilder;
     }
 
-    private ExternalProcessBuilder getProcessBuilder(PhpModule phpModule, boolean warnUser) {
+    private ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
         SymfonyScript symfonyScript = SymfonyScript.getDefault();
         if (!symfonyScript.isValid()) {
             if (warnUser) {
