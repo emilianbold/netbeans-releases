@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.TreeSet;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
@@ -280,10 +279,4 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     public void compareReferenceFiles() {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
     }
-
-    @Deprecated
-    protected boolean canTestRemote() throws CancellationException, IOException  {
-        return getTestExecutionEnvironment() != null;
-    }
 }
-
