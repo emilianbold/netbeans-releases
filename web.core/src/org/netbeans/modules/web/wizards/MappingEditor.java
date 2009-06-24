@@ -230,7 +230,7 @@ public class MappingEditor extends JPanel implements ActionListener {
             dispatcher = FilterMappingData.Dispatcher.getAll()[i].toString();
             cb[i] = new JCheckBox(dispatcher);
             cb[i].setMnemonic(dispatcher.charAt(0));
-            cb[i].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MappingEditor.class, "ACSD_dispatcher_".concat(dispatcher)));
+            cb[i].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MappingEditor.class, "ACSD_dispatcher_"+dispatcher));
             p0.add(cb[i]);
         }
 

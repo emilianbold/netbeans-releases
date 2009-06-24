@@ -76,7 +76,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         this.wizard = wizard;
         fileType = evaluator.getFileType();
         deployData = (ServletData) (evaluator.getDeployData());
-        setName(NbBundle.getMessage(DeployDataPanel.class, "TITLE_ddpanel_".concat(fileType.toString())));
+        setName(NbBundle.getMessage(DeployDataPanel.class, "TITLE_ddpanel_"+fileType));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class, "ACSD_deployment"));
         initComponents();
         fireChangeEvent();
@@ -135,7 +135,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
 
         // Component Initialization by row
         // 1. Instruction
-        jLinstruction = new JLabel(NbBundle.getMessage(DeployDataPanel.class, "LBL_dd_".concat(fileType.toString())));
+        jLinstruction = new JLabel(NbBundle.getMessage(DeployDataPanel.class, "LBL_dd_"+fileType));
         this.add(jLinstruction, fullRowC);
 
         // 2. Checkbox row - add this?
@@ -164,7 +164,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         // 4. Servlet or filter name
         tfC.gridy++;
         jTFname = new JTextField(25);
-        jTFname.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class, "ACSD_name_".concat(fileType.toString())));
+        jTFname.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class, "ACSD_name_"+fileType));
         jTFname.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 changedUpdate(e);
@@ -194,9 +194,9 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
             }
         });
 
-        jLname = new JLabel(NbBundle.getMessage(DeployDataPanel.class, "LBL_name_".concat(fileType.toString())));
+        jLname = new JLabel(NbBundle.getMessage(DeployDataPanel.class, "LBL_name_"+fileType));
         jLname.setLabelFor(jTFname);
-        jLname.setDisplayedMnemonic(NbBundle.getMessage(DeployDataPanel.class, "LBL_name_".concat(fileType.toString()).concat("_mnem")).charAt(0));
+        jLname.setDisplayedMnemonic(NbBundle.getMessage(DeployDataPanel.class, "LBL_name_"+fileType+"_mnem").charAt(0));
         this.add(jLname, firstC);
         this.add(jTFname, tfC);
 
