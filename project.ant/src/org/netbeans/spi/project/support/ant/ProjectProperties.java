@@ -223,7 +223,9 @@ final class ProjectProperties {
             dir().getFileSystem().runAtomicAction(action);
         }
         public FileLock write() throws IOException {
-            assert loaded;
+            if (!loaded) {
+                throw new IOException("In-memory data for " + path + " in " + dir() + " clobbered by changes on disk"); // #137947?
+            }
             final FileObject f = dir().getFileObject(path);
             final FileLock[] _lock = new FileLock[1];
             try {
@@ -356,7 +358,6 @@ final class ProjectProperties {
         }
         
         private void diskChange(FileEvent fe) {
-            // XXX should check for a possible clobber from in-memory data
             boolean writing = false;
             if (fe != null) {
                 synchronized (saveActions) {
