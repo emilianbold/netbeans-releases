@@ -764,7 +764,14 @@ public class IssuePanel extends javax.swing.JPanel {
 
         dueLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueLabel.text")); // NOI18N
 
-        dueField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter()));
+        dueField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter() {
+            public Object stringToValue(String text) throws java.text.ParseException {
+                if (text == null || text.trim().length() == 0) {
+                    return null;
+                }
+                return super.stringToValue(text);
+            }
+        }));
 
         assigneeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assigneeLabel.text")); // NOI18N
 
