@@ -144,8 +144,8 @@ public class FileObj extends BaseFileObj {
         
         try {
             if (Utilities.isWindows()) {
-                // #157056 - don't try to open locked windows files
-                if (getName().toLowerCase().contains("ntuser")) {  //NOI18N
+                // #157056 - don't try to open locked windows files (ntuser.dat, ntuser.dat.log1, ...)
+                if (getNameExt().toLowerCase().startsWith("ntuser.dat")) {  //NOI18N
                     return new ByteArrayInputStream(new byte[] {});
                 }
             } else if (!f.isFile()) {
