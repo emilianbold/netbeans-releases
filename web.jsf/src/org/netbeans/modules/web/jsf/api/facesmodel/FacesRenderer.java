@@ -60,7 +60,6 @@ public interface FacesRenderer extends DescriptionGroup, Renderer,
     
     void setRendererClass(String clazz);
     
-    String getComponentFamily();
     void setComponentFamily( String family );
     
     List<Facet> getFacets();
