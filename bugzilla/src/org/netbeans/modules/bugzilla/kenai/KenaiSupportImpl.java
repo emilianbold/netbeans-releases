@@ -90,7 +90,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 try {
                     loc = new URL(f.getLocation());
                 } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Bugzilla.LOG.log(Level.WARNING, null, ex);
                     return null;
                 }
 
@@ -108,12 +108,18 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 String productParamUrl = null;
                 String productAttribute = "product=";                           // NOI18N
                 String product = null;
-                idx = location.indexOf(productAttribute);
-                if (idx <= 0) {
+                int idxProductStart = location.indexOf(productAttribute);
+                if (idxProductStart <= 0) {
                     Bugzilla.LOG.warning("can't get issue tracker product from [" + project.getName() + ", " + location + "]"); // NOI18N
                 } else {
-                    productParamUrl = location.substring(idx);
-                    product = location.substring(idx + productAttribute.length());
+                    int idxProductEnd = location.indexOf("&", idxProductStart);
+                    if(idxProductEnd > -1) {
+                        productParamUrl = location.substring(idxProductStart, idxProductEnd);
+                        product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
+                    } else {
+                        productParamUrl = location.substring(idxProductStart);
+                        product = location.substring(idxProductStart + productAttribute.length());
+                    }
                 }
 
                 KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, productParamUrl, product);
