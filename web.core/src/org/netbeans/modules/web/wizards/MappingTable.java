@@ -82,7 +82,7 @@ class MappingTable extends JTable {
         // URL or Servlet
         tcm.getColumn(1).setPreferredWidth(72);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        setColors(false);
+        //setColors(false);
         setIntercellSpacing(new Dimension(margin, margin));
     }
 

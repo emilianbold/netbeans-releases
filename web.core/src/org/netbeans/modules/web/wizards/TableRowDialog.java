@@ -145,7 +145,7 @@ public class TableRowDialog extends javax.swing.JPanel {
 
         String text = NbBundle.getMessage(TableRowDialog.class,
                 "LBL_paramname");
-        text = text.concat(": "); //NOI18N
+        text = text+": "; //NOI18N
 
         if (editable == Editable.BOTH) {
             final JTextField nameText = new JTextField(25);
@@ -168,12 +168,12 @@ public class TableRowDialog extends javax.swing.JPanel {
             this.add(nameText, tfC);
         } else {
             this.add(nameLabel, labelC);
-            text = text.concat(name);
+            text = text+name;
         }
         nameLabel.setText(text);
 
         JLabel valueLabel = new JLabel();
-        valueLabel.setText(NbBundle.getMessage(TableRowDialog.class, "LBL_paramvalue").concat(":"));
+        valueLabel.setText(NbBundle.getMessage(TableRowDialog.class, "LBL_paramvalue")+":");
         valueLabel.setDisplayedMnemonic(NbBundle.getMessage(TableRowDialog.class, "LBL_paramvalue_mnemonic").charAt(0));
         valueLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TableRowDialog.class, "ACSD_paramvalue"));
         firstC.gridy++;

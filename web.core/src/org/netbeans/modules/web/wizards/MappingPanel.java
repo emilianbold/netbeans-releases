@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,8 +62,7 @@ import org.openide.util.NbBundle;
  * @author Ana von Klopp 
  */
 class MappingPanel extends JPanel implements ActionListener,
-        TableModelListener,
-        ListSelectionListener {
+        TableModelListener, ListSelectionListener {
 
     private final static String ADD = "add";
     private final static String EDIT = "edit";
@@ -79,10 +79,12 @@ class MappingPanel extends JPanel implements ActionListener,
     private BaseWizardPanel parent;
     private boolean edited = false;
     private static final long serialVersionUID = 6540270797782597645L;
+    private TemplateWizard wizard;
 
-    public MappingPanel(ServletData deployData, BaseWizardPanel parent) {
+    public MappingPanel(ServletData deployData, BaseWizardPanel parent, TemplateWizard wizard) {
         this.deployData = deployData;
         this.parent = parent;
+        this.wizard = wizard;
         initComponents();
     }
 
@@ -208,12 +210,13 @@ class MappingPanel extends JPanel implements ActionListener,
         table.setFilterName(deployData.getName());
 
         if (!edited) {
-            if (!deployData.makeEntry()) {
+            if (!deployData.makeEntry() && !Utilities.isJavaEE6(wizard)) {
                 this.setEnabled(false);
                 return;
             }
 
-            table.setRowSelectionInterval(0, 0);
+            if (table.getRowCount() > 0)
+                table.setRowSelectionInterval(0, 0);
             edited = true;
         }
     }
@@ -222,9 +225,7 @@ class MappingPanel extends JPanel implements ActionListener,
         if (evt.getSource() instanceof JButton) {
             if (evt.getActionCommand() == ADD) {
                 FilterMappingData fmd = new FilterMappingData(deployData.getName());
-
-                MappingEditor editor =
-                        new MappingEditor(fmd, deployData.getServletNames());
+                MappingEditor editor = new MappingEditor(fmd, deployData.getServletNames());
                 editor.showEditor();
                 if (editor.isOK()) {
                     table.addRow(0, fmd);
@@ -234,8 +235,7 @@ class MappingPanel extends JPanel implements ActionListener,
                 FilterMappingData fmd, fmd2;
                 fmd = table.getRow(index);
                 fmd2 = (FilterMappingData) (fmd.clone());
-                MappingEditor editor =
-                        new MappingEditor(fmd2, deployData.getServletNames());
+                MappingEditor editor = new MappingEditor(fmd2, deployData.getServletNames());
                 editor.showEditor();
                 if (editor.isOK()) {
                     table.setRow(index, fmd2);
@@ -272,7 +272,7 @@ class MappingPanel extends JPanel implements ActionListener,
         if (e.getValueIsAdjusting()) {
             return;
         }
-        this.setEnabled(deployData.makeEntry());
+        this.setEnabled(deployData.makeEntry() || Utilities.isJavaEE6(wizard));
     }
 
     @Override
