@@ -222,7 +222,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     state  = 0;
                 } catch (CouplingAbort ca) {
                     //Coupling error
-                    TreeLoader.dumpCouplingAbort(ca, active.jfo);
+                    TreeLoader.dumpCouplingAbort(ca, null);
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
                     state = 0;

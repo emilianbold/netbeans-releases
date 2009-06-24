@@ -150,7 +150,7 @@ public class TreeLoader extends LazyTreeLoader {
                         return true;
                     } finally {
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
-                            logCouplingError(e.getKey(), e.getValue().toString());
+                            dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());
                         }
                         couplingErrors = oldCouplingErrors;
                     }
@@ -176,34 +176,16 @@ public class TreeLoader extends LazyTreeLoader {
     @Override
     public void couplingError(ClassSymbol clazz, Tree t) {
         if (this.partialReparse) {
-            throw new CouplingAbort(clazz.classfile, t);
-        }
-        StringBuilder info = new StringBuilder("\n"); //NOI18N
-        switch (t.getKind()) {
-            case CLASS:
-                info.append("CLASS: ").append(((ClassTree)t).getSimpleName().toString()); //NOI18N
-                break;
-            case VARIABLE:
-                info.append("VARIABLE: ").append(((VariableTree)t).getName().toString()); //NOI18N
-                break;
-            case METHOD:
-                info.append("METHOD: ").append(((MethodTree)t).getName().toString()); //NOI18N
-                break;
-            case TYPE_PARAMETER:
-                info.append("TYPE_PARAMETER: ").append(((TypeParameterTree)t).getName().toString()); //NOI18N
-                break;
-            default:
-                info.append("TREE: <unknown>"); //NOI18N
-                break;
+            super.couplingError(clazz, t);
         }
         if (clazz != null && couplingErrors != null) {
             StringBuilder sb = couplingErrors.get(clazz);            
             if (sb != null)
-                sb.append(info);
+                sb.append(getTreeInfo(t));
             else
-                couplingErrors.put(clazz, info);
+                couplingErrors.put(clazz, getTreeInfo(t));
         } else {
-            logCouplingError(clazz, info.toString());
+            dumpCouplingAbort(new CouplingAbort(clazz, t), null);
         }
     }
     
@@ -277,11 +259,15 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
 
-    public static void dumpCouplingAbort(CouplingAbort a, JavaFileObject source) {
+    public static void dumpCouplingAbort(CouplingAbort couplingAbort, String treeInfo) {
+        if (treeInfo == null)
+            treeInfo = getTreeInfo(couplingAbort.getTree()).toString();
         String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
-        JavaFileObject classSource = a.getClassFile();
-        String uri = classSource != null ? classSource.toUri().toASCIIString() : "<unknown>"; //NOI18N
-        String origName = classSource != null ? classSource.getName() : "unknown"; //NOI18N
+        JavaFileObject classFile = couplingAbort.getClassFile();
+        String cfURI = classFile != null ? classFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        JavaFileObject sourceFile = couplingAbort.getSourceFile();
+        String sfURI = sourceFile != null ? sourceFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        String origName = classFile != null ? classFile.getName() : "unknown"; //NOI18N
         File f = new File(dumpDir + origName + ".dump"); // NOI18N
         boolean dumpSucceeded = false;
         int i = 1;
@@ -296,34 +282,25 @@ public class TreeLoader extends LazyTreeLoader {
                 OutputStream os = new FileOutputStream(f);
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
                 try {
-                    writer.println(String.format("Coupling error: class file %s, source file %s", uri, source.toUri().toASCIIString())); //NOI18N
-                    writer.println("----- Sig file content: -------------------------------------------"); // NOI18N
-                    if (classSource == null) {
-                        writer.println("no content"); //NOI18N
-                    } else {
-                        if (classSource.getName().toLowerCase().endsWith('.'+FileObjects.SIG)) {
-                            writer.println(classSource.getCharContent(true));
-                        } else {
-                            writer.println("not a sig file"); // NOI18N
-                        }
-                    }
+                    writer.println("Coupling error:"); //NOI18N
+                    writer.println(String.format("class file %s", cfURI)); //NOI18N
+                    writer.println(String.format("source file %s", sfURI)); //NOI18N
                     writer.println("----- Source file content: ----------------------------------------"); // NOI18N
-                    writer.println(source.getCharContent(true));
-                    writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
-                    writer.println(a.getTree().toString());
-                    writer.println("----- Coupling Error: ---------------------------------------------"); // NOI18N
-                    a.printStackTrace(writer);
+                    writer.println(sourceFile.getCharContent(true));
+                    writer.print("----- Trees: -------------------------------------------------------"); // NOI18N
+                    writer.println(treeInfo);
+                    writer.println("----- Stack trace: ---------------------------------------------"); // NOI18N
+                    couplingAbort.printStackTrace(writer);
                 } finally {
                     writer.close();
                     dumpSucceeded = true;
                 }
             } catch (IOException ioe) {
-                LOGGER.log(Level.INFO, "Error when writing coupling dump file!", ioe); // NOI18N
+                LOGGER.log(Level.INFO, "Error when writing coupling error dump file!", ioe); // NOI18N
             }
         }
-        if (dumpSucceeded) {
-            LOGGER.log(Level.SEVERE, "Coupling error: class file {0}, source file {1}", new Object[] {uri, source.toUri().toASCIIString()}); //NOI18N
-        } else {
+        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, treeInfo});
+        if (!dumpSucceeded) {
             LOGGER.log(Level.WARNING,
                     "Dump could not be written. Either dump file could not " + // NOI18N
                     "be created or all dump files were already used. Please " + // NOI18N
@@ -332,12 +309,28 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
 
-    private void logCouplingError(ClassSymbol clazz, String info) {
-        JavaFileObject classFile = clazz != null ? clazz.classfile : null;
-        String cfURI = classFile != null ? classFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
-        JavaFileObject sourceFile = clazz != null ? clazz.sourcefile : null;
-        String sfURI = classFile != null ? sourceFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
-        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, info});
+    private static StringBuilder getTreeInfo(Tree t) {
+        StringBuilder info = new StringBuilder("\n"); //NOI18N
+        if (t != null) {
+            switch (t.getKind()) {
+                case CLASS:
+                    info.append("CLASS: ").append(((ClassTree) t).getSimpleName().toString()); //NOI18N
+                    break;
+                case VARIABLE:
+                    info.append("VARIABLE: ").append(((VariableTree) t).getName().toString()); //NOI18N
+                    break;
+                case METHOD:
+                    info.append("METHOD: ").append(((MethodTree) t).getName().toString()); //NOI18N
+                    break;
+                case TYPE_PARAMETER:
+                    info.append("TYPE_PARAMETER: ").append(((TypeParameterTree) t).getName().toString()); //NOI18N
+                    break;
+                default:
+                    info.append("TREE: <unknown>"); //NOI18N
+                    break;
+            }
+        }
+        return info;
     }
 
     private boolean getParamNamesFromJavadocText(final URL url, final ClassSymbol clazz) {
