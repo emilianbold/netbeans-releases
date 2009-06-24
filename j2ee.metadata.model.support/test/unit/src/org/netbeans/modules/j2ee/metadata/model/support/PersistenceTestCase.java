@@ -67,9 +67,13 @@ public class PersistenceTestCase extends JavaSourceTestCase {
         System.out.println("Protection domain: " + domain);
         CodeSource source = domain.getCodeSource();
         System.out.println("Code source: " + source);
-        URL location = source.getLocation();
-        System.out.println("Location: " + location);
-        URL resourceUrl = FileUtil.getArchiveRoot(location);
-        addCompileRoots(Arrays.asList(persistenceProviderUrl, resourceUrl));
+        if (source != null) {
+            URL location = source.getLocation();
+            System.out.println("Location: " + location);
+            URL resourceUrl = FileUtil.getArchiveRoot(location);
+            addCompileRoots(Arrays.asList(persistenceProviderUrl, resourceUrl));
+        } else {
+            addCompileRoots(Arrays.asList(persistenceProviderUrl));
+        }
     }
 }
