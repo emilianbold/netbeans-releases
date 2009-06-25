@@ -93,27 +93,25 @@ final class OnePassCompileWorker extends CompileWorker {
 
         try {
             final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
-            final LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
+            LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
             JavacTaskImpl jt = null;
-            boolean stopAfterParse = false;
 
             for (CompileTuple tuple : files) {
                 try {
                     if (mem.isLowMemory()) {
-                        stopAfterParse = true;
                         jt = null;
-                        units.clear();
+                        units = null;
+                        dc.cleanDiagnostics();
                         System.gc();
                     }
                     if (jt == null) {
                         jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, null);
                     }
                     for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
-                        if (!stopAfterParse)
+                        if (units != null)
                             units.add(Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple));
                         computeFQNs(file2FQNs, cut, tuple.jfo);
                     }
-                    
                     Log.instance(jt.getContext()).nerrors = 0;
                 } catch (Throwable t) {
                     if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
@@ -133,15 +131,15 @@ final class OnePassCompileWorker extends CompileWorker {
                         throw (ThreadDeath) t;
                     }
                     else {
-                        stopAfterParse = true;
                         jt = null;
-                        units.clear();
+                        units = null;
+                        dc.cleanDiagnostics();
                         System.gc();
                     }
                 }
             }
 
-            if (stopAfterParse) {
+            if (units == null) {
                 return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
             }
 
@@ -150,16 +148,19 @@ final class OnePassCompileWorker extends CompileWorker {
                 for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
                     active = unit.second;
                     if (mem.isLowMemory()) {
+                        units = null;
                         System.gc();
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
                     }
                     Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first));
                     if (mem.isLowMemory()) {
+                        units = null;
                         System.gc();
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
                     }
                     jt.analyze(types);
                     if (mem.isLowMemory()) {
+                        units = null;
                         System.gc();
                         return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
                     }
