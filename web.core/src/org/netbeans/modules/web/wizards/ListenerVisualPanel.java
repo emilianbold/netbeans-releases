@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.web.wizards;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import org.netbeans.api.j2ee.core.Profile;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
