@@ -179,6 +179,10 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
     }
 
+    public StateKey getStateKey() {
+        return new StateKey(crc1, crc2);
+    }
+
     public static class FileStateImpl extends StateImpl {
         private final APTMacroMap sysMacroMap;
         private final int crc1;
