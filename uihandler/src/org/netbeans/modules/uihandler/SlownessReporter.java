@@ -82,6 +82,8 @@ class SlownessReporter {
     private static final String UI_ACTION_EDITOR = "UI_ACTION_EDITOR";  //NOI18N
     private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
+    private static final long LATEST_ACTION_LIMIT = 200;//ms
+    
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
     }
@@ -96,12 +98,15 @@ class SlownessReporter {
         return null;
     }
 
-    void notifySlowness(byte[] nps, long time){
-        List<LogRecord> recs = Installer.getLogs();
+    String getLatestAction(List<LogRecord> recs, byte[] nps, long time){
+        long now = System.currentTimeMillis();
         ListIterator<LogRecord> it = recs.listIterator(recs.size());
         String latestActionClassName = null;
         while (it.hasPrevious()){
             LogRecord rec = it.previous();
+            if (now - rec.getMillis() - time  > LATEST_ACTION_LIMIT){
+                break;
+            }
             if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
                     (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage()))){
                 latestActionClassName = getParam(rec, 4);
@@ -121,7 +126,12 @@ class SlownessReporter {
                 break;
             }
         }
-        pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionClassName)));
+        return latestActionClassName;
+    }
+    
+    void notifySlowness(List<LogRecord> recs, byte[] nps, long time){
+        String latestActionName = getLatestAction(recs, nps, time);
+        pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionName)));
         if (pending.size() > 5) {
             pending.remove().clear();
         }

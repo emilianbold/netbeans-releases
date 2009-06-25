@@ -103,7 +103,7 @@ implements ActionListener, Runnable, Callable<JButton> {
             if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
                 byte[] nps = (byte[]) record.getParameters()[0];
                 long time = (Long) record.getParameters()[1];
-                reporter.notifySlowness(nps, time);
+                reporter.notifySlowness(Installer.getLogs(), nps, time);
                 return;
             }
         }

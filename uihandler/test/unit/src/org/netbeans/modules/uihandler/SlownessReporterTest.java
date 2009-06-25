@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,53 +31,70 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.uihandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.junit.Before;
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jindrich Sedek
  */
-class SlownessData {
-    private static final String SLOWNESS_DATA = "SlownessData";
+public class SlownessReporterTest extends NbTestCase {
 
-    private final long time;
-    private final byte[] npsContent;
-    private final String latestActionName;
-
-    public SlownessData(long time, byte[] npsContent, String latestActionClassName) {
-        this.time = time;
-        this.npsContent = npsContent;
-        this.latestActionName = latestActionClassName;
+    private List<LogRecord> logs;
+    public SlownessReporterTest(String name) {
+        super(name);
     }
 
-    /**
-     * @return the time
-     */
-    public long getTime() {
-        return time;
+    @Override
+    @Before
+    protected void setUp() throws Exception {
+        super.setUp();
+        long now = System.currentTimeMillis();
+        logs = new ArrayList<LogRecord>();
+        LogRecord rec = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
+        Object[] params = new Object[]{null, null, null, null, "undo"};
+        rec.setMillis(now - 20);
+        rec.setParameters(params);
+        logs.add(rec);
+        LogRecord rec2 = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
+        params = new Object[]{null, null, null, null, "redo"};
+        rec2.setMillis(now - 10);
+        rec2.setParameters(params);
+        logs.add(rec2);
+        LogRecord rec3 = new LogRecord(Level.FINE, "SOME OTHER LOG");
+        params = new Object[]{null, null, null, null, "redo"};
+        rec3.setMillis(now - 1);
+        rec3.setParameters(params);
+        logs.add(rec3);
     }
 
-    /**
-     * @return the npsContent
-     */
-    public byte[] getNpsContent() {
-        return npsContent;
+    @Test
+    public void testGetLatestAction() {
+        SlownessReporter reporter = new SlownessReporter();
+        String latestAction = reporter.getLatestAction(logs, new byte[0], 10L);
+        assertEquals("redo", latestAction);
     }
 
-    public LogRecord getLogRec(){
-        LogRecord rec = new LogRecord(Level.CONFIG, SLOWNESS_DATA);
-        rec.setParameters(new Object[]{new Long(time), latestActionName});
-        return rec;
-    }
-
-    /**
-     * @return the latestActionClassName
-     */
-    public String getLatestActionName() {
-        return latestActionName;
+    @Test
+    public void testIgnoreOldActions() {
+        SlownessReporter reporter = new SlownessReporter();
+        for (LogRecord logRecord : logs) {
+            logRecord.setMillis(logRecord.getMillis() - 500);
+        }
+        String latestAction = reporter.getLatestAction(logs, new byte[0], 10L);
+        assertNull(latestAction);
     }
 }
+

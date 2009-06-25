@@ -1086,7 +1086,8 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private static URL uLogs
-    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport, SlownessData slownData) throws IOException {
+    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs,
+            DataType dataType, boolean isErrorReport, SlownessData slownData) throws IOException {
         if (dataType != DataType.DATA_METRICS) {
             h.start(100 + recs.size());
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
@@ -1572,13 +1573,14 @@ public class Installer extends ModuleInstall implements Runnable {
                             if (thrownLog != null) {
                                 recs.add(thrownLog);//exception selected by user
                             }
-                            recs.add(TimeToFailure.logFailure());
                             recs.add(BuildInfo.logBuildInfoRec());
-                            recs.add(userData);
                             SlownessData sd = getSlownessData();
                             if (sd != null){
                                 recs.add(sd.getLogRec());
+                            } else {
+                                recs.add(TimeToFailure.logFailure());
                             }
+                            recs.add(userData);
                             if ((report) && (!reportPanel.asAGuest())) {
                                 if (!checkUserName(reportPanel)) {
                                     EventQueue.invokeLater(new Runnable(){
@@ -1834,7 +1836,12 @@ public class Installer extends ModuleInstall implements Runnable {
                 reportPanel = new ReportPanel();
             }
             if (slownData != null) {
-                String message = NbBundle.getMessage(Installer.class, "Summary_MSG", slownData.getLatestActionName(), slownData.getTime());
+                String message;
+                if (slownData.getLatestActionName() == null) {
+                    message = NbBundle.getMessage(Installer.class, "Summary_MSG_No_Action", slownData.getTime());
+                } else {
+                    message = NbBundle.getMessage(Installer.class, "Summary_MSG", slownData.getLatestActionName(), slownData.getTime());
+                }
                 reportPanel.setSummary(message);
             } else {
                 Throwable t = getThrown(recs);
