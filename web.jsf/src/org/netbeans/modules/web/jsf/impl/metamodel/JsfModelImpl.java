@@ -55,6 +55,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
@@ -109,14 +112,18 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     public <T extends JsfModelElement> List<T> getElements( Class<T> clazz ) {
         refreshModels();
         ElementFinder<T> finder = getFinder(clazz);
-        Class<? extends JSFConfigComponent> type = finder.getConfigType();
+        Class<? extends JSFConfigComponent> type = 
+            (finder == null )? (Class)clazz : finder.getConfigType();
         List<T> result = new LinkedList<T>();
         for ( FacesConfig config : myFacesConfigs ){
-            List<? extends JSFConfigComponent> children = config.getChildren(type);
-            result.addAll( (List)children );
+            if ( config != null ){
+                List<? extends JSFConfigComponent> children = config.getChildren(type);
+                result.addAll( (List)children );
+            }
         }
         
-        if ( myMainModel != null && myMainModel.getRootComponent()!= null &&
+        if ( finder != null && myMainModel != null && 
+                myMainModel.getRootComponent()!= null &&
                 !myMainModel.getRootComponent().isMetaDataComplete() )
         {
             result.addAll( finder.getAnnotations( this  ));
@@ -241,7 +248,13 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         myModifiedModels.clear();*/
         for ( JSFConfigModel model : myModels ){
             try {
+                boolean nullRoot = model.getRootComponent() == null;
                 model.sync();
+                if ( nullRoot ){
+                    if ( model.getRootComponent()!= null ){
+                        myFacesConfigs.add( model.getRootComponent() );
+                    }
+                }
             }
             catch (IOException e) {
                 LOG.log(Level.SEVERE, "Error during faces-config.xml parsing! " +
@@ -253,11 +266,13 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     
     private void initModels() {
         List<JSFConfigModel> models = new LinkedList<JSFConfigModel>();
-        myMainModel = JSFConfigModelFactory.getInstance().
-            getModel( getModelSource(getUnit().getMainFacesConfig(), true) );
+        if (getUnit().getMainFacesConfig() != null) {
+            myMainModel = JSFConfigModelFactory.getInstance().getModel(
+                    getModelSource(getUnit().getMainFacesConfig(), true));
+        }
         
         for ( FileObject fileObject : getUnit().getConfigFiles()){
-            if ( fileObject.equals( getMainConfig())){
+            if ( fileObject.equals( myMainModel )){
                 models.add( myMainModel );
             }
             else {
@@ -278,7 +293,9 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         myModels = new CopyOnWriteArrayList<JSFConfigModel>( models );
         List<FacesConfig> list = new ArrayList<FacesConfig>( myModels.size() );
         for ( JSFConfigModel model : myModels ){
-            list.add( model.getRootComponent() );
+            if ( model.getRootComponent() != null ){
+                list.add( model.getRootComponent() );
+            }
         }
         myFacesConfigs = new CopyOnWriteArrayList<FacesConfig>( list );
     }
@@ -367,7 +384,9 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                     //myModifiedModels.addAll( newModels );
                     // TODO : notify via property change event about model creation
                     for ( JSFConfigModel model : newModels ){
-                        myFacesConfigs.add( model.getRootComponent());
+                        if ( model.getRootComponent() != null ){
+                            myFacesConfigs.add( model.getRootComponent());
+                        }
                     }
                 }
             }
@@ -414,15 +433,20 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                     JSFConfigModel model = JSFConfigModelFactory.getInstance().
                         getModel( source );
                     myModels.add( model );
+                    if ( file.equals( getUnit().getMainFacesConfig())){
+                        myMainModel = model;
+                    }
                     //myModifiedModels.add( model );
-                    myFacesConfigs.add( model.getRootComponent() );
+                    if ( model.getRootComponent() != null ){
+                        myFacesConfigs.add( model.getRootComponent() );
+                    }
                     // TODO : notify via property listener event about model creation
                 }
             }
 
             public void fileDeleted( FileEvent event ) {
                 FileObject file = event.getFile();
-                if ( !checkConfigFile(file)){
+                if ( !wasConfigFile(file)){
                     return;
                 }
                 JSFConfigModel model = null;
@@ -436,8 +460,13 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                 }
                 if (model != null) {
                     myModels.remove(model);
+                    if ( myMainModel == model ){
+                        myMainModel = null;
+                    }
                     //myModifiedModels.remove(model);
-                    myFacesConfigs.remove(model.getRootComponent());
+                    if ( model.getRootComponent() != null ){
+                        myFacesConfigs.remove(model.getRootComponent());
+                    }
                     // TOFO : notify via property change event about model removal
                 }
             }
@@ -465,14 +494,32 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                 return false;
             }
             
+            private boolean wasConfigFile( FileObject fileObject ){
+                if ( fileObject == null){
+                    return false;
+                }
+                if ( fileObject.equals( getUnit().getMainFacesConfig())){
+                    return true;
+                }
+                String name = fileObject.getNameExt();
+                if ( name.equals( ModelUnit.FACES_CONFIG) || name.endsWith(
+                        "." + ModelUnit.FACES_CONFIG))
+                {
+                    FileObject parent = fileObject.getParent();
+                    if ( !parent.getName().equals( ModelUnit.META_INF )){
+                        return false;
+                    }
+                    for ( FileObject root : getUnit().getSourcePath().getRoots()){
+                        if ( parent.equals(root.getFileObject(ModelUnit.META_INF))){
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            
         };
-        for (FileObject fileObject : fileObjects) {
-            // listeners are weakly registered, so there is no problem 
-            FileUtil.addFileChangeListener( myListener , 
-                    FileUtil.toFile(fileObject));
-        }
-        
-        
+        FileUtil.addFileChangeListener( myListener );
     }
     
     private final static Map<Class<? extends JsfModelElement>, 
