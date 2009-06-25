@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -67,7 +68,10 @@ import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelElement;
 import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
+import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
+import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationBehaviorRenderer;
+import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationRenderer;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -102,7 +106,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.metamodel.JsfModel#getElement(java.lang.Class)
      */
-    public <T extends JsfModelElement> List<T> getElement( Class<T> clazz ) {
+    public <T extends JsfModelElement> List<T> getElements( Class<T> clazz ) {
         refreshModels();
         ElementFinder<T> finder = getFinder(clazz);
         Class<? extends JSFConfigComponent> type = finder.getConfigType();
@@ -112,7 +116,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
             result.addAll( (List)children );
         }
         
-        if ( myMainModel != null && 
+        if ( myMainModel != null && myMainModel.getRootComponent()!= null &&
                 !myMainModel.getRootComponent().isMetaDataComplete() )
         {
             result.addAll( finder.getAnnotations( this  ));
@@ -159,6 +163,70 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     {
         getChangeSupport().removePropertyChangeListener(listener);
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.facesmodel.AbstractJsfModel#getClientBehaviorRenderer(java.lang.String)
+     */
+    @Override
+    protected List<AnnotationBehaviorRenderer> getClientBehaviorRenderers(
+            String renderKitId )
+    {
+        if ( getMainConfig()!= null && getMainConfig().isMetaDataComplete()){
+            return Collections.emptyList();
+        }
+        Collection<ClientBehaviorRendererImpl> collection =  
+            getClientBehaviorManager().getObjects();
+        List<AnnotationBehaviorRenderer> result = 
+            new ArrayList<AnnotationBehaviorRenderer>( collection.size());
+        for ( ClientBehaviorRendererImpl renderer : collection ){
+            String id = renderer.getRenderKitId();
+            if ( renderKitId.equals( id )){
+                result.add( renderer );
+            }
+        }
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.facesmodel.AbstractJsfModel#getRenderers(java.lang.String)
+     */
+    @Override
+    protected List<AnnotationRenderer> getRenderers( String renderKitId ) {
+        if ( getMainConfig()!= null && getMainConfig().isMetaDataComplete()){
+            return Collections.emptyList();
+        }
+        Collection<RendererImpl> collection =  
+            getRendererManager().getObjects();
+        List<AnnotationRenderer> result = 
+            new ArrayList<AnnotationRenderer>( collection.size());
+        for ( RendererImpl renderer : collection ){
+            String id = renderer.getRenderKitId();
+            if ( renderKitId.equals( id )){
+                result.add( renderer );
+            }
+        }
+        return result;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.impl.facesmodel.AbstractJsfModel#getSystemEventListeners()
+     */
+    @Override
+    protected List<SystemEventListener> getSystemEventListeners() {
+        // TODO : scan for @ListenersFor annotation.
+        // Notion : one don't need to check metadata-complete attribute. 
+        // Listeners annotations works in any case. 
+        Collection<SystemEventListenerImpl> collection =  
+            getSystemEventManager().getObjects();
+        List<SystemEventListener> listeners = ObjectProviders.
+                    findApplicationSystemEventListeners( getHelper() );
+        List<SystemEventListener> result = new ArrayList<SystemEventListener>(
+                collection.size() + listeners.size());
+        result.addAll( collection );
+        result.addAll( listeners );
+        return result;
+    }
+
     
     private PropertyChangeSupport getChangeSupport(){
         return mySupport;
@@ -428,4 +496,5 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     //private List<JSFConfigModel> myModifiedModels;
     private FileChangeListener myListener;
     private static final Logger LOG = Logger.getLogger(JsfModelImpl.class.getName());
+
 }

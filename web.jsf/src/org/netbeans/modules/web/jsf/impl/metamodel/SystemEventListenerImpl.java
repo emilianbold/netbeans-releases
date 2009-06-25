@@ -49,56 +49,73 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.jsf.api.metamodel.Component;
+import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
 
 
 /**
  * @author ads
  *
  */
-class ComponentImpl extends PersistentObject implements Component,  Refreshable {
+class SystemEventListenerImpl extends PersistentObject implements
+        Refreshable, SystemEventListener
+{
 
-    ComponentImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    SystemEventListenerImpl( AnnotationModelHelper helper,
+            TypeElement typeElement )
     {
         super(helper, typeElement);
         boolean valid = refresh(typeElement);
         assert valid;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
-     */
-    public String getComponentClass() {
-        return myClass;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
-     */
-    public String getComponentType() {
-        return myType;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.Refreshable#refresh(javax.lang.model.element.TypeElement)
-     */
     public boolean refresh( TypeElement type ) {
         Map<String, ? extends AnnotationMirror> types = 
             getHelper().getAnnotationsByType(type.getAnnotationMirrors());
         AnnotationMirror annotationMirror = types.get(
-                "javax.faces.component.FacesComponent");          // NOI18N
-        if (annotationMirror == null) {
+                "javax.faces.event.ListenerFor");                       // NOI18N
+        if (annotationMirror == null || 
+                !ObjectProviders.SystemEventListenerProvider.
+                isApplicationSystemEventListener(type)) 
+        {
             return false;
         }
+        
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString( "value", null );                     // NOI18N
+        parser.expectClass( "systemEventClass", null);                  // NOI18N
+        parser.expectClass("sourceClass", AnnotationParser.defaultValue(// NOI18N
+                Void.class.getCanonicalName()));
         ParseResult parseResult = parser.parse(annotationMirror);
-        myType = parseResult.get( "value" , String.class );       // NOI18N
+        myEventClass = parseResult.get( "systemEventClass" ,            // NOI18N 
+                String.class );
+        mySourceClass = parseResult.get( "sourceClass" ,                // NOI18N 
+                String.class );
         myClass = type.getQualifiedName().toString();
         return true;
     }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSourceClass()
+     */
+    public String getSourceClass() {
+        return mySourceClass;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventClass()
+     */
+    public String getSystemEventClass() {
+        return myEventClass;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventListenerClass()
+     */
+    public String getSystemEventListenerClass() {
+        return myClass;
+    }
     
-    private String myType;
     private String myClass;
+    private String myEventClass;
+    private String mySourceClass;
 
 }

@@ -91,6 +91,9 @@ class ValidatorImpl extends FacesValidatorImpl implements Validator, Refreshable
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
+        parser.expectString("value", null);                     // NOI18N
+        parser.expectPrimitive( "isDefault", Boolean.class,     // NOI18N
+                AnnotationParser.defaultValue(Boolean.TRUE));
         ParseResult parseResult = parser.parse(annotationMirror);
         myId = parseResult.get( "value" , String.class );       // NOI18N
         Boolean def = parseResult.get("isDefault" ,             // NOI18N

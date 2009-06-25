@@ -140,7 +140,7 @@ public class SearchEngine {
 
                 String contentType = item.getString(CONTENT_TYPE_ATTR);
 
-                if (contentType.equals(WADL_CONTENT_TYPE) || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
+                if (contentType.equals(WADL_CONTENT_TYPE)) { // || contentType.equals(JAVA_SERVICE_CONTENT_TYPE)) {
                     svc.setPrependWeb(true);
                 }
 
