@@ -711,6 +711,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     private void ConfigurationProjectXMLWriter() {
         // And save the project
+        if (getProject() == null) {
+            return;
+        }
         try {
             AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
             Element data = helper.getPrimaryConfigurationData(true);
