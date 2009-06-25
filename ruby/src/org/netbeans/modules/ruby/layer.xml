@@ -11,6 +11,10 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-ruby-RubyBracesMatcherFactory.instance" />
+                </folder>
+                
                 <folder name="Actions">
                     <file name="org-netbeans-modules-ruby-ReflowParagraphAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-ruby-ReflowParagraphAction.instance"/>
