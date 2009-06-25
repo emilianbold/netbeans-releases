@@ -60,6 +60,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
@@ -172,6 +173,7 @@ public final class UIUtils {
         }
         String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
         try {
+            KenaiConnection.getDefault();
             Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray());
         } catch (KenaiException ex) {
             return false;
@@ -202,6 +204,7 @@ public final class UIUtils {
 
                             public void run() {
                                 try {
+                                    KenaiConnection.getDefault();
                                     Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
                                     SwingUtilities.invokeLater(new Runnable() {
 
