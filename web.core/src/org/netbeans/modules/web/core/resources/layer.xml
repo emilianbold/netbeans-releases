@@ -211,12 +211,20 @@ made subject to such option by the copyright holder.
         <attr name="position" intvalue="9797"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/webXml.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
-        <!-- <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.dd.WebXmlWizardIterator"/> -->
         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebXmlWizardIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
       </file>
 
+      <file name="web-fragment.xml">
+        <attr name="template" boolvalue="true"/>
+        <attr name="position" intvalue="9798"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/webFragmentXml.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebFragmentXmlWizardIterator"/>
+        <attr name="templateCategory" stringvalue="web-types"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
+      </file>
     </folder>
 </folder>
 
