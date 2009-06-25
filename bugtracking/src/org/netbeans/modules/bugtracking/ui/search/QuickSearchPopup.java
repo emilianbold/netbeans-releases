@@ -169,13 +169,11 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     public void clearModel () {
-        System.out.println("clear model");
         rModel.setContent(null);
     }
 
     public void cancel () {
         cancelTask();
-        System.out.println("cancel");
         rModel.setContent(null);
     }
 
