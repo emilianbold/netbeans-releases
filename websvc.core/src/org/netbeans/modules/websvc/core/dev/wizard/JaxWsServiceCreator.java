@@ -245,7 +245,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
 
-        if (projectType == ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
+        if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) { //EJB Web Service
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
         }
@@ -402,7 +402,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DataFolder df = DataFolder.findFolder(pkg);
                 FileObject template = Templates.getTemplate(wiz);
 
-                if (projectType == ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
+                if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) { //EJB Web Service
                     FileObject templateParent = template.getParent();
                     template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
                 }

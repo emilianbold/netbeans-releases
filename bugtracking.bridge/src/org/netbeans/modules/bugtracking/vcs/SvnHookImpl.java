@@ -138,6 +138,11 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public void afterCommit(SvnHookContext context) {
+        VCSHooksConfig.getInstance().setSvnAddMsg(panel.addCommentCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setSvnAddIssue(panel.addIssueCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setSvnAddRev(panel.addRevisionCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setSvnResolve(panel.resolveCheckBox.isSelected());
+
         if(context.getFiles().length == 0) {
             LOG.warning("calling svn afterCommit for zero files");              // NOI18N
             return;
@@ -206,7 +211,15 @@ public class SvnHookImpl extends SvnHook {
         } else {
             referenceFile = context.getFiles()[0];
         }
+
         panel = new HookPanel();
+        panel.addCommentCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnAddMsg());
+        panel.addIssueCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnAddIssue());
+        panel.addRevisionCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnAddRev());
+        panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnResolve());
+        panel.commitRadioButton.setSelected(false);
+
+
         RepositorySelector.setup(panel, referenceFile);
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);

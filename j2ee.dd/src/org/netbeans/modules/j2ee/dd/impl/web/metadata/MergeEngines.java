@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -190,12 +191,12 @@ public class MergeEngines {
     private static class ResourceRefsEngine extends MergeEngine<ResourceRef> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            addAll(webXml.getResourceRef());
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            addAll(webFragment.getResourceRef());
         }
 
         @Override
@@ -211,12 +212,12 @@ public class MergeEngines {
     private static class ResourceEnvRefsEngine extends MergeEngine<ResourceEnvRef> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            addAll(webXml.getResourceEnvRef());
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            addAll(webFragment.getResourceEnvRef());
         }
 
         @Override
@@ -231,12 +232,12 @@ public class MergeEngines {
     private static class ResourceEnvEntriesEngine extends MergeEngine<EnvEntry> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            addAll(webXml.getEnvEntry());
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            addAll(webFragment.getEnvEntry());
         }
 
         @Override
@@ -251,12 +252,20 @@ public class MergeEngines {
     private static class ResourceMsgDestsEngine extends MergeEngine<MessageDestinationRef> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            try {
+                addAll(webXml.getMessageDestinationRef());
+            }
+            catch (VersionNotSupportedException ex) {
+            }
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            try {
+                addAll(webFragment.getMessageDestinationRef());
+            }
+            catch (VersionNotSupportedException ex) {
+            }
         }
 
         @Override
@@ -271,12 +280,20 @@ public class MergeEngines {
     private static class ResourceServicesEngine extends MergeEngine<ServiceRef> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            try {
+                addAll(webXml.getServiceRef());
+            }
+            catch (VersionNotSupportedException ex) {
+            }
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            try {
+                addAll(webFragment.getServiceRef());
+            }
+            catch (VersionNotSupportedException ex) {
+            }
         }
 
         @Override
@@ -292,12 +309,12 @@ public class MergeEngines {
     private static class EjbLocalRefsEngine extends MergeEngine<EjbLocalRef> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            addAll(webXml.getEjbLocalRef());
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            addAll(webFragment.getEjbLocalRef());
         }
 
         @Override
@@ -312,12 +329,12 @@ public class MergeEngines {
     private static class EjbRefsEngine extends MergeEngine<EjbRef> {
         @Override
         void addItems(WebApp webXml) {
-            // TODO PetrS implement this
+            addAll(webXml.getEjbRef());
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            // TODO PetrS implement this
+            addAll(webFragment.getEjbRef());
         }
 
         @Override
