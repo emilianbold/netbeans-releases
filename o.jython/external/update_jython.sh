@@ -16,7 +16,9 @@
 # Location to fetch Jython sources from:
 #repository=https://jython.svn.sourceforge.net/svnroot/jython/tags/Release_2_5beta0/jython
 #repository=https://jython.svn.sourceforge.net/svnroot/jython/trunk/jython
-repository=https://jython.svn.sourceforge.net/svnroot/jython/trunk/sandbox/wierzbicki/grammar26
+#repository=https://jython.svn.sourceforge.net/svnroot/jython/trunk/sandbox/wierzbicki/grammar26
+#repository=https://jython.svn.sourceforge.net/svnroot/jython/tags/Release_2_5rc2/jython
+repository=https://jython.svn.sourceforge.net/svnroot/jython/branches/jy26
 
 # Name of jar file we're creating from the jython.jar
 target=jython-parser.jar
@@ -28,9 +30,12 @@ rm -rf "$location"
 echo "Svn checkout from $repository to $location"
 svn export "$repository" "$location"
 cd "$location"
+echo "Applying Frank's patch to update $location/src/org/python/core/util/FileUtil.java"
+patch -p0 < isatty.diff
 echo "Building bits"
-ant developer-build
-cp dist/jython-dev.jar ../$target
+ant jar-complete
+#cp dist/jython-dev.jar ../$target
+cp dist/jython.jar ../$target
 cd ..
 echo "Updating binaries-list"
 echo `openssl dgst -sha1 $target | awk '{ print toupper($2) }'` $target > binaries-list

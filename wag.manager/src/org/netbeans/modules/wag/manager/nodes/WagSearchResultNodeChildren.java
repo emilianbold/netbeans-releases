@@ -43,15 +43,21 @@ package org.netbeans.modules.wag.manager.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.model.WagSearchResult;
+import org.netbeans.modules.wag.manager.model.WagSearchResult.State;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 public class WagSearchResultNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
+
+    private static final String SEARCHING_KEY = "Searching";    //NOI18N
 
     private WagSearchResult searchResult;
 
@@ -67,16 +73,26 @@ public class WagSearchResultNodeChildren extends Children.Keys<Object> implement
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == searchResult) {
-            updateKeys();
-        }
+        updateKeys();
     }
 
     protected void updateKeys() {
-        ArrayList<Object> keys = new ArrayList<Object>();
-        Collection<WagService> services = searchResult.getServices();
-        keys.addAll(services);
-        setKeys(keys);
+        switch (searchResult.getState()) {
+            case UNINITIALIZED:
+                searchResult.refresh();
+                break;
+            case SEARCHING:
+                setKeys(Arrays.asList(SEARCHING_KEY));
+                break;
+            case FOUND:
+                ArrayList<Object> keys = new ArrayList<Object>();
+                Collection<WagService> services = searchResult.getServices();
+                keys.addAll(services);
+                setKeys(keys);
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -89,9 +105,19 @@ public class WagSearchResultNodeChildren extends Children.Keys<Object> implement
     protected Node[] createNodes(Object key) {
         if (key instanceof WagService) {
             WagService svc = (WagService) key;
-
             return new Node[] {new WagServiceNode(svc)};
+        } else if (key instanceof String) {
+            if (key.equals(SEARCHING_KEY)) {
+                return getSearchingNode();
+            }
         }
         return new Node[0];
+    }
+
+    private Node[] getSearchingNode() {
+        AbstractNode node = new AbstractNode(Children.LEAF);
+        node.setName(NbBundle.getMessage(WagSearchResultNodeChildren.class, "Searching"));
+        node.setIconBaseWithExtension("org/netbeans/modules/wag/manager/resources/wait.gif"); // NOI18N
+        return new Node[] { node };
     }
 }
