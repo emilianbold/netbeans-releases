@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -245,7 +246,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 return isCancelled();
             }
         };
-        RequestProcessor rp = new RequestProcessor("FindUsagesQuery", Runtime.getRuntime().availableProcessors() + 1); // NOI18N
+        RequestProcessor rp = new RequestProcessor("FindUsagesQuery", CndUtils.getNumberCndWorkerThreads() + 1); // NOI18N
         final CountDownLatch waitFinished = new CountDownLatch(files.size());
         for (final CsmFile file : files) {
             Runnable task = new Runnable() {

@@ -92,6 +92,12 @@ public class CndUtils {
         }
     }
 
+    public static int getNumberCndWorkerThreads() {
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
+                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
+        return Math.max(threadCount, 1);
+    }
+    
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
            assertTrue(!value, "Assertion error"); //NOI18N
