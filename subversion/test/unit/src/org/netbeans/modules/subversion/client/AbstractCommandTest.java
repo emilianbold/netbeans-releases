@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client;
@@ -62,8 +62,10 @@ import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 //import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
@@ -248,6 +250,83 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
         File file = new File(getWC(), name);
         file.createNewFile();
         return file;
+    }
+
+    protected static String renameFile(String path, String requestedName) {
+        File currentFile = new File(path);
+        File parentDir = currentFile.getParentFile();
+        File renamedFile = (parentDir == null) ? new File(requestedName)
+                                               : new File(parentDir, requestedName);
+        return renamedFile.getPath();
+    }
+
+    protected void createAndAddParentFolders(String path) throws Exception {
+        checkIsRelativePath(path);
+        File parentFolder = new File(path).getParentFile();
+        if (parentFolder != null) {
+            createAndAddFolder(parentFolder);
+        }
+    }
+
+    private void createAndAddFolder(File folder) throws Exception {
+        File parent = folder.getParentFile();
+        if (parent != null) {
+            createAndAddFolder(parent);
+        }
+
+        File absFolder = createFolder(folder.getPath());
+
+        if (!isVersioned(absFolder)) {
+            getNbClient().addDirectory(absFolder, false);
+        }
+    }
+
+    protected void createAndCommitParentFolders(String path) throws Exception {
+        checkIsRelativePath(path);
+        File parentFolder = new File(path).getParentFile();
+        if (parentFolder != null) {
+            createAndCommitFolder(parentFolder);
+        }
+    }
+
+    private void createAndCommitFolder(File folder) throws Exception {
+        File parent = folder.getParentFile();
+        if (parent != null) {
+            createAndCommitFolder(parent);
+        }
+
+        File absFolder = createFolder(folder.getPath());
+
+        if (!isVersioned(absFolder)) {
+            getReferenceClient().addDirectory(absFolder, false);
+        }
+
+        if (!isCommitted(absFolder)) {
+            getReferenceClient().commit(new File[] {absFolder},
+                                 "added directory " + absFolder.getPath(),
+                                 false);
+        }
+    }
+
+    private boolean isVersioned(File file) throws Exception {
+        ISVNStatus[] statusValues = getFullWorkingClient().getStatus(new File[]{file});
+        return !((statusValues.length == 1)
+               && (statusValues[0].getTextStatus() == SVNStatusKind.UNVERSIONED));
+    }
+
+    private boolean isCommitted(File file) throws Exception {
+        ISVNStatus[] statusValues = getFullWorkingClient().getStatus(new File[]{file});
+        if (statusValues.length == 1) {
+            if (statusValues[0].getTextStatus() == SVNStatusKind.ADDED) {
+                return false;
+            }
+            if (statusValues[0].getTextStatus() == SVNStatusKind.NORMAL) {
+                return true;
+            }
+        }
+
+        throw new IllegalStateException("Unexpected state of file " + file
+                                        + ": " + statusValues);
     }
 
     protected ISVNClientAdapter getNbClient() throws Exception {        
