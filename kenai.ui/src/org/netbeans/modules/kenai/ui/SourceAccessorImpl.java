@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
@@ -65,7 +66,9 @@ import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -210,6 +213,29 @@ public class SourceAccessorImpl extends SourceAccessor {
             }
         };
     }
+
+    @Override
+    public ActionListener getOpenFavorites(final SourceHandle src) {
+
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                WindowManager.getDefault().findTopComponent("favorites").requestActive();
+                try {
+                    FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
+                    if (Favorites.getDefault().isInFavorites(fo))
+                       Favorites.getDefault().remove(new FileObject[]{fo});
+                    Favorites.getDefault().add(new FileObject[]{fo},true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (NullPointerException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+             }
+        };
+    }
+
 
     public static class ProjectAndFeature {
 
