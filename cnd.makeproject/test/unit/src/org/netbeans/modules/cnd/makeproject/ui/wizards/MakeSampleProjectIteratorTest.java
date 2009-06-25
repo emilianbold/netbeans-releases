@@ -116,6 +116,11 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         testSample("MP", "MP", "all");
     }
 
+    @Test
+    public void testSubProjects() throws IOException {
+        testSample("SubProjects", "SubProjects", "all");
+    }
+
     private static Set<DataObject> instantiateSample(String name, File destdir) throws IOException {
         FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
@@ -146,18 +151,22 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         File workDir = getWorkDir();//new File("/tmp");
         File projectDir = new File(workDir, projectName);
+        File mainProjectDir = null;
         Set<DataObject> projectDataObjects;
 
         projectDataObjects = instantiateSample(sample, projectDir);
 
         for (DataObject projectDataObject : projectDataObjects) {
             FileObject projectDirFO = projectDataObject.getPrimaryFile();
+            if (mainProjectDir == null) {
+                mainProjectDir = FileUtil.toFile(projectDirFO);
+            }
             ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
             MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
             descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         }
 
-        File makefile = new File(projectDir, "Makefile");
+        File makefile = new File(mainProjectDir, "Makefile");
         FileObject makefileFileObject = FileUtil.toFileObject(makefile);
         assertTrue("makefileFileObject == null", makefileFileObject != null);
         DataObject dObj = null;
