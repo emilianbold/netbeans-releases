@@ -222,9 +222,7 @@ public class SourceAccessorImpl extends SourceAccessor {
                 WindowManager.getDefault().findTopComponent("favorites").requestActive();
                 try {
                     FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
-                    if (Favorites.getDefault().isInFavorites(fo))
-                       Favorites.getDefault().remove(new FileObject[]{fo});
-                    Favorites.getDefault().add(new FileObject[]{fo},true);
+                    Favorites.getDefault().selectWithAddition(fo);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
