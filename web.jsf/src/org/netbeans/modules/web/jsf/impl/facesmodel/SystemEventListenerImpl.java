@@ -95,7 +95,6 @@ class SystemEventListenerImpl extends IdentifiableComponentImpl implements
      * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSourceClass()
      */
     public String getSourceClass() {
-        // TODO : add possible annotation information via JsfModel
         return getChildElementText(
                 JSFConfigQNames.SOURCE_CLASS.getQName(getNamespaceURI()));
     }
@@ -104,7 +103,6 @@ class SystemEventListenerImpl extends IdentifiableComponentImpl implements
      * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventClass()
      */
     public String getSystemEventClass() {
-        // TODO add possible annotation information via JsfModel
         return getChildElementText(
                 JSFConfigQNames.SYSTEM_EVENT_CLASS.getQName(getNamespaceURI()));
     }
@@ -113,7 +111,6 @@ class SystemEventListenerImpl extends IdentifiableComponentImpl implements
      * @see org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener#getSystemEventListenerClass()
      */
     public String getSystemEventListenerClass() {
-        // TODO add possible annotation information via JsfModel
         return getChildElementText(
                 JSFConfigQNames.SYSTEM_EVENT_LISTENER_CLASS.getQName(getNamespaceURI()));
     }
