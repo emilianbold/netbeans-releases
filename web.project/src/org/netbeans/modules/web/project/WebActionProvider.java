@@ -56,7 +56,6 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -1220,18 +1219,14 @@ class WebActionProvider implements ActionProvider {
     }
 
     private boolean isEjbRefAndNoJ2eeApp(Project p) {
-
         WebModule wmod = WebModule.getWebModule(p.getProjectDirectory());
         if (wmod != null) {
             boolean hasEjbLocalRefs = false;
             try {
                 wmod.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Boolean>() {
-
-                    public Boolean run(
-                            WebAppMetadata metadata) {
+                    public Boolean run(WebAppMetadata metadata) {
                         // return true if there is an ejb reference in this module
-                        EjbLocalRef[] ejbLocalRefs = metadata.getRoot().getEjbLocalRef();
-                        return ejbLocalRefs != null && ejbLocalRefs.length > 0;
+                        return !metadata.getEjbLocalRefs().isEmpty();
                     }
                 });
             } catch (IOException e) {
@@ -1240,7 +1235,6 @@ class WebActionProvider implements ActionProvider {
             if (hasEjbLocalRefs && !isInJ2eeApp(p)) {
                 return true;
             }
-
         }
         return false;
     }
@@ -1253,13 +1247,6 @@ class WebActionProvider implements ActionProvider {
             Project project = FileOwnerQuery.getOwner(sourceRoot);
             if (project != null) {
                 Object j2eeApplicationProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
-
-
-
-
-
-
-
                 if (j2eeApplicationProvider != null) { // == it is j2ee app
                     J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider) j2eeApplicationProvider;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
@@ -1274,10 +1261,7 @@ class WebActionProvider implements ActionProvider {
                     }
                 }
             }
-
         }
-
-
         return false;
     }
 
@@ -1329,12 +1313,6 @@ class WebActionProvider implements ActionProvider {
         if (instance != null) {
             J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
-
-
-
-
-
-
             if (sdi != null) {
                 String id = Deployment.getDefault().getServerID(sdi);
                 if (id != null) {

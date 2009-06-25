@@ -236,10 +236,10 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
             if ((NbMavenProject.TYPE_JAR.equals(
                     config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
                     (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName)) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName))) ||
                     RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName))) {
-                long stamp = getLastCoSLastTouch(config, true);
+                    DEBUG_MAIN.equals(actionName)) {
+                long stamp = getLastCoSLastTouch(config, false);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
                 if (checkImportantFiles(stamp, config)) {

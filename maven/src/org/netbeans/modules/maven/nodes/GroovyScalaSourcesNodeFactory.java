@@ -52,6 +52,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -105,7 +106,12 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
         }
 
         public void stateChanged(ChangeEvent arg0) {
-            fireChange();
+            //#167372 break the stack trace chain to prevent deadlocks.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fireChange();
+                }
+            });
         }
     }
 }
