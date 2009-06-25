@@ -244,6 +244,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         jTextFieldPort = new javax.swing.JTextField();
         jButtonBrowsePort = new javax.swing.JButton();
         useProviderBtn = new javax.swing.JCheckBox();
+        jCheckBox1 = new javax.swing.JCheckBox();
 
         jLabelWSDLFile.setLabelFor(jTextFieldWSDLFile);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLFile, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WSDL_File")); // NOI18N
@@ -276,6 +277,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
 
         org.openide.awt.Mnemonics.setLocalizedText(useProviderBtn, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_UseProvider")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WsAsSessionBean")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -285,8 +288,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     .add(jLabelWSDLFile)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
-                            .add(jLabelPortDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
+                            .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 766, Short.MAX_VALUE)
+                            .add(jLabelPortDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 766, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jLabelPort)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -297,7 +300,10 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonBrowsePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(useProviderBtn)))
+                        .add(useProviderBtn))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jCheckBox1)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -317,7 +323,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     .add(jTextFieldPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(57, 57, 57)
                 .add(useProviderBtn)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(105, Short.MAX_VALUE))
         );
 
         jTextFieldWSDLFile.getAccessibleContext().setAccessibleDescription("null");
@@ -377,6 +385,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonBrowsePort;
     private javax.swing.JButton jButtonWSDLFileBrowse;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabelPort;
     private javax.swing.JLabel jLabelPortDescription;
     private javax.swing.JLabel jLabelWSDLFile;
