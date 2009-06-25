@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -55,9 +55,30 @@ public class AddTest extends AbstractCommandTest {
     public AddTest(String testName) throws Exception {
         super(testName);
     }
-    
+
     public void testAddFile() throws Exception {
-        File file = createFile("file");
+        testAddFile("file");
+    }
+
+    public void testAddFileWithAtSign() throws Exception {
+        testAddFile("@file");
+        testAddFile("fi@le");
+        testAddFile("file@");
+    }
+
+    public void testAddFileInDir() throws Exception {
+        testAddFile("dir/file");
+    }
+
+    public void testAddFileInDirWithAtSign() throws Exception {
+        testAddFile("dir/@file");
+        testAddFile("dir/fi@le");
+        testAddFile("dir/file@");
+    }
+
+    private void testAddFile(String path) throws Exception {
+        createAndAddParentFolders(path);
+        File file = createFile(path);
         assertStatus(SVNStatusKind.UNVERSIONED, file);
 
         ISVNClientAdapter c = getNbClient();

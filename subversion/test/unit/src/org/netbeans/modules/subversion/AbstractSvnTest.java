@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion;
@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
@@ -475,9 +476,41 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected SVNUrl getTestUrl() {
         return repoUrl.appendPath(getName());
     }
-    
+
     protected SVNUrl getFileUrl(File file) {
-        return getTestUrl().appendPath(getWC().getName()).appendPath(file.getName());
+        if (file.isAbsolute()) {
+            return getFileUrl(getPathRelativeToWC(file));
+        } else {
+            return getFileUrl(file.getPath());
+        }
+    }
+
+    protected SVNUrl getFileUrl(String relativePath) {
+        checkIsRelativePath(relativePath);
+        return getTestUrl().appendPath(getWC().getName()).appendPath(relativePath);
+    }
+
+    protected String getPathRelativeToWC(File file) {
+        URI wcURI = getWC().toURI();
+        URI fileURI = file.toURI();
+        URI relativePathURI = wcURI.relativize(fileURI);
+        if (relativePathURI == fileURI) {
+            throw new IllegalArgumentException(
+                    "The given file is not in the working directory.");
+        }
+        return relativePathURI.getPath();
+    }
+
+    protected void checkIsRelativePath(String path) {
+        checkIsRelativePath(new File(path));
+    }
+
+    protected void checkIsRelativePath(File file) {
+        if (file.isAbsolute()) {
+            throw new IllegalArgumentException(
+                    "Only relative path is legal, but an absolute path was passed ("
+                    + file.getPath() + ')');
+        }
     }
 
     protected boolean isJavahl () {

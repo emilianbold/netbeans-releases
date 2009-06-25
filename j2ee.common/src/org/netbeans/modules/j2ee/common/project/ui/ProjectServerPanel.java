@@ -416,7 +416,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         j2eeSpecComboBox.removeAllItems();
         if (serverInstanceWrapper != null) {
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
-            Set<Profile> profiles = new TreeSet<Profile>(Profile.REVERSE_COMPARATOR);
+            Set<Profile> profiles = new TreeSet<Profile>(Profile.PROFILE_UI_COMPARATOR);
             profiles.addAll(j2eePlatform.getSupportedProfiles(j2eeModuleType));
             for (Profile profile : profiles) {
                 // j2ee 1.3 is not supported anymore
