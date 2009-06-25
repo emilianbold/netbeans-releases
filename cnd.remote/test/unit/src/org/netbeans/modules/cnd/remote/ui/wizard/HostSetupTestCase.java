@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import junit.framework.Test;
@@ -47,7 +46,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -66,11 +64,7 @@ public class HostSetupTestCase extends RemoteTestBase {
     @ForAllEnvironments
     public void testHostSetup() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        ToolsCacheManager tcm = new ToolsCacheManager();
-        HostValidatorImpl validator = new HostValidatorImpl(tcm);
-        boolean ok = validator.validate(execEnv, null, false, new PrintWriter (System.out));
-        assertTrue(ok);
-        tcm.applyChanges();
+        setupHost(execEnv);
         CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
         final List<CompilerSet> compilerSets = csm.getCompilerSets();
         dumpCompilerSets(execEnv, compilerSets);
