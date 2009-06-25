@@ -1208,7 +1208,8 @@ public final class WebProject implements Project, AntProjectListener {
         
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
-        "ejb-types_3_0"         // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
     };
 
     private static final String[] TYPES_ARCHIVE = new String[] { 
