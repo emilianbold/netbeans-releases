@@ -91,8 +91,6 @@ public abstract class EnclosingBean extends BaseBean implements CommonDDBean, Cr
     
     private String getPackagePostfix() {
         String pack = getClass().getPackage().getName();
-//        if (pack.endsWith(CommonDDAccess.SERVLET_2_4)) return CommonDDAccess.SERVLET_2_4;
-//        else if (pack.endsWith(CommonDDAccess.SERVLET_2_3)) return CommonDDAccess.SERVLET_2_3;
         return pack;
     }
     

@@ -135,7 +135,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private void join(MultiUserChat chat) {
         try {
-            chat.addParticipantListener(PresenceIndicator.getDefault().new PresenceListener());
+            chat.addParticipantListener(new PresenceListener());
             chat.join(getUserName());
         } catch (XMPPException ex) {
             XMPPLOG.log(Level.INFO, "Cannot join "  + chat.getRoom(), ex);
