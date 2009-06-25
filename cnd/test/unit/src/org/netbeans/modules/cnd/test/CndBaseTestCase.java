@@ -178,13 +178,17 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
             list.add(cls);
         }
         MockServices.setServices(list.toArray(new Class[list.size()]));
-        MimePath mimePath = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE); 
+        setUpMime();
+    }
+
+    protected void setUpMime() {
+        MimePath mimePath = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
         MockMimeLookup.setInstances(mimePath, new CCKit());
         mimePath = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
         MockMimeLookup.setInstances(mimePath, new HKit());
-        mimePath = MimePath.parse(MIMENames.C_MIME_TYPE); 
+        mimePath = MimePath.parse(MIMENames.C_MIME_TYPE);
         MockMimeLookup.setInstances(mimePath, new CKit());
-        mimePath = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE); 
+        mimePath = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
         MockMimeLookup.setInstances(mimePath, new FKit());
     }
 

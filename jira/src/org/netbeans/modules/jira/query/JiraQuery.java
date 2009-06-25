@@ -182,13 +182,13 @@ public class JiraQuery extends Query {
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
                     if(!ret[0]) {
-                        return;
+                       return;
                     }
 
                     // only issues not returned by the query are archived
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
-                        // ... and store teh actuall state
+                        // ... and store the actuall state
                         repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
                         repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }

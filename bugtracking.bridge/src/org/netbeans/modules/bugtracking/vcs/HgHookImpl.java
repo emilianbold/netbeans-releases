@@ -133,6 +133,12 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public void afterCommit(HgHookContext context) {
+        VCSHooksConfig.getInstance().setHgAddMsg(panel.addCommentCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setHgAddIssue(panel.addIssueCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setHgAddRev(panel.addRevisionCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setHgResolve(panel.resolveCheckBox.isSelected());
+        VCSHooksConfig.getInstance().setHgAfterCommit(panel.commitRadioButton.isSelected());
+
         if(context.getFiles().length == 0) {
             LOG.warning("calling hg afterCommit for zero files");               // NOI18N
             return;
@@ -245,7 +251,16 @@ public class HgHookImpl extends HgHook {
         } else {
             referenceFile = context.getFiles()[0];
         }
+        
         panel = new HookPanel();
+        panel.addCommentCheckBox.setSelected(VCSHooksConfig.getInstance().getHgAddMsg());
+        panel.addIssueCheckBox.setSelected(VCSHooksConfig.getInstance().getHgAddIssue());
+        panel.addRevisionCheckBox.setSelected(VCSHooksConfig.getInstance().getHgAddRev());
+        panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getHgResolve());
+        boolean commit = VCSHooksConfig.getInstance().getHgAfterCommit();
+        panel.commitRadioButton.setSelected(commit);
+        panel.pushRadioButton.setSelected(!commit);
+        
         RepositorySelector.setup(panel, referenceFile);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
