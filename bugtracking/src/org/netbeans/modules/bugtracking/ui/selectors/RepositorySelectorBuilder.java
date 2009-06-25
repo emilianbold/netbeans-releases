@@ -288,7 +288,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         if (!comboVisible
                 && (repositoryFormsPanel == null)
                 && (repoToPreselect != null)) {
-            displayRepositoryForm(repoToPreselect);
+            displayRepositoryForm(repoToPreselect, initialErrorMessage);
         }
     }
 
@@ -546,11 +546,15 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     public void displayRepositoryForm(Repository repository) {
+        displayRepositoryForm(repository, null);
+    }
+
+    public void displayRepositoryForm(Repository repository, String initialErrMsg) {
         makeSureRepositoryFormsPanelExists();
 
         boolean wasRepositoryFormVisible = repositoryFormVisible;
 
-        boolean firstUsed = repositoryFormsPanel.displayForm(repository);
+        boolean firstUsed = repositoryFormsPanel.displayForm(repository, initialErrMsg);
         ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, NEW_REPO_PANEL);
 
         if (!wasRepositoryFormVisible) {
