@@ -84,16 +84,29 @@ import org.openide.util.RequestProcessor;
  */
 public class ChooseArchetypePanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
 
+    private static File getLocalCatalogFile() {
+        return new File(new File(System.getProperty("user.home"), ".m2"), "archetype-catalog.xml"); //NOI18N
+    }
+
     private ExplorerManager manager;
     private ChooseWizardPanel wizardPanel;
     static final String PROP_ARCHETYPE = "archetype"; //NOI18N
     TreeView tv;
     private static Archetype REMOTE_PLACEHOLDER = new Archetype();
+    private static Archetype CATALOGS_PLACEHOLDER = new Archetype();
+    private static Archetype LOCAL_PLACEHOLDER = new Archetype();
     private static Archetype LOADING_ARCHETYPE = new Archetype();
+    private static List<Archetype> prohibited = new ArrayList<Archetype>();
     static {
         //prevent equals..
         REMOTE_PLACEHOLDER.setGroupId("R"); //NOI18N
         LOADING_ARCHETYPE.setGroupId("L"); //NOI18N
+        LOCAL_PLACEHOLDER.setGroupId("X"); //NOI18N
+        CATALOGS_PLACEHOLDER.setGroupId("@"); //NOI18N
+        prohibited.add(REMOTE_PLACEHOLDER);
+        prohibited.add(LOCAL_PLACEHOLDER);
+        prohibited.add(LOADING_ARCHETYPE);
+        prohibited.add(CATALOGS_PLACEHOLDER);
     }
 
     /** Creates new form ChooseArchetypePanel */
@@ -305,32 +318,17 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     public void run() {
         Lookup.Result<ArchetypeProvider> res = Lookup.getDefault().lookup(new Lookup.Template<ArchetypeProvider>(ArchetypeProvider.class));
         List<Archetype> archetypes = new ArrayList<Archetype>();
-        ArchetypeProvider local = null;
         for (ArchetypeProvider provider : res.allInstances()) {
-            if (provider instanceof LocalRepoProvider) {
-                local = provider;
-                continue;
-            }
             for (Archetype ar : provider.getArchetypes()) {
                 if (!archetypes.contains(ar)) {
                     archetypes.add(ar);
                 }
             }
         }
-        archetypes.add(LOADING_ARCHETYPE);
+        archetypes.add(CATALOGS_PLACEHOLDER);
+        archetypes.add(LOCAL_PLACEHOLDER);
         archetypes.add(REMOTE_PLACEHOLDER);
         Childs childs = (Childs)manager.getRootContext().getChildren();
-        childs.setArchetypes(archetypes);
-        if (local != null) {
-            for (Archetype ar : local.getArchetypes()) {
-                if (!archetypes.contains(ar)) {
-                    archetypes.add(ar);
-                }
-            }
-        }
-        archetypes.remove(LOADING_ARCHETYPE);
-        archetypes.remove(REMOTE_PLACEHOLDER);
-        archetypes.add(REMOTE_PLACEHOLDER);
         childs.setArchetypes(archetypes);
 
         try {
@@ -355,7 +353,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         boolean isSelected = manager.getSelectedNodes().length > 0;
         if (isSelected) {
             Archetype arch = (Archetype)((AbstractNode)manager.getSelectedNodes()[0]).getValue(PROP_ARCHETYPE);
-            isSelected = arch != null && arch != LOADING_ARCHETYPE && arch != REMOTE_PLACEHOLDER;
+            isSelected = arch != null && !prohibited.contains(arch);
         }
         return isSelected;
     }
@@ -363,7 +361,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         Node[] nds = manager.getSelectedNodes();
         if (nds.length > 0) {
             Archetype arch = (Archetype)((AbstractNode)nds[0]).getValue(PROP_ARCHETYPE);
-            if (arch != null && arch != LOADING_ARCHETYPE && arch != REMOTE_PLACEHOLDER) {
+            if (arch != null && !prohibited.contains(arch)) {
                 if (arch.getRepository() != null) {
                     taDescription.setText(NbBundle.getMessage(ChooseArchetypePanel.class, "MSG_Description2", 
                         new Object[] {
@@ -438,7 +436,19 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
         public Node[] createNodes(Archetype arch) {
             if (arch == REMOTE_PLACEHOLDER) {
-                return new Node[] { new RemoteRepoNode() };
+                return new Node[] { createRemoteRepoNode() };
+            }
+            if (arch == LOCAL_PLACEHOLDER) {
+                return new Node[] { createLocalRepoNode() };
+            }
+            if (arch == CATALOGS_PLACEHOLDER) {
+                Node nd = createLocalCatalogNode();
+                if (nd != null) {
+                    return new Node[] {nd};
+                } else {
+                    return new Node[0];
+                }
+                //TODO add more catalogs here..
             }
             return ChooseArchetypePanel.createNodes(arch, Children.LEAF);
         }
@@ -455,22 +465,43 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             refresh();
         }
     }
-    
-    private static class RemoteRepoNode extends AbstractNode {
-        public RemoteRepoNode() {
-            super(new RemoteRepoChildren());
-            setName("remote-repo-content"); //NOI18N
-            setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Remote"));
-            setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
-        }
+
+    private static Node createRemoteRepoNode() {
+        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new RemoteRepoProvider()));
+        nd.setName("remote-repo-content"); //NOI18N
+        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Remote"));
+        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
+        return nd;
     }
     
-    private static class RemoteRepoChildren extends Children.Keys<Archetype> implements Runnable {
+    private static Node createLocalRepoNode() {
+        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new LocalRepoProvider()));
+        nd.setName("local-repo-content"); //NOI18N
+        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Local"));
+        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
+        return nd;
+    }
+    
+    private static Node createLocalCatalogNode() {
+        File fil = getLocalCatalogFile();
+        if (!fil.exists()) {
+            return null;
+        }
+        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider(fil)));
+        nd.setName("local-catalog-content"); //NOI18N
+        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_LocalCatalog"));
+        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
+        return nd;
+    }
+
+    private static class RepoProviderChildren extends Children.Keys<Archetype> implements Runnable {
         private List<Archetype> keys;
         private TreeMap<String, TreeMap<DefaultArtifactVersion, Archetype>> res = new TreeMap<String, TreeMap<DefaultArtifactVersion, Archetype>>();
+        private final ArchetypeProvider provider;
 
-        private RemoteRepoChildren() {
+        private RepoProviderChildren(ArchetypeProvider prov) {
             keys = new ArrayList<Archetype>();
+            this.provider = prov;
         }
         
         @Override
@@ -505,7 +536,6 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
 
         public void run() {
-            RemoteRepoProvider provider = new RemoteRepoProvider();
             for (Archetype ar : provider.getArchetypes()) {
                 String key = ar.getGroupId() + "|" + ar.getArtifactId(); //NOI18N
                 TreeMap<DefaultArtifactVersion, Archetype> archs = res.get(key);

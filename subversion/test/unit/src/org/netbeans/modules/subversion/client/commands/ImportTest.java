@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -58,13 +58,33 @@ public class ImportTest extends AbstractCommandTest {
         super(testName);
     }
     
-    public void testImportFile() throws Exception {                                        
-        File file = createFile("file");
+    public void testImportFile() throws Exception {
+        testImportFile("file", "targetdir");
+    }
+
+    public void testImportFileWithAtSign() throws Exception {
+        testImportFile("@file", "targedir");
+        testImportFile("fi@le", "targedir");
+        testImportFile("file@", "targedir");
+    }
+
+    public void testImportFileToUrlWithAtSign() throws Exception {
+        testImportFile("file", "@targetdir");
+        testImportFile("file", "target@dir");
+        testImportFile("file", "targetdir@");
+    }
+
+    public void testImportFileWithAtSignToUrlWithAtSign() throws Exception {
+        testImportFile("@file", "@targetdir");
+    }
+
+    public void testImportFile(String fileToImport, String lastUrlPart) throws Exception {
+        File file = createFile(fileToImport);
                 
         assertTrue(file.exists());
         
         ISVNClientAdapter c = getNbClient();
-        SVNUrl url = getRepoUrl().appendPath(getName()).appendPath(file.getName());
+        SVNUrl url = getRepoUrl().appendPath(getName()).appendPath(lastUrlPart);
         c.doImport(file, url, "imprd", false);
 
         assertTrue(file.exists());

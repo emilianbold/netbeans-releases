@@ -169,6 +169,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Represents one plain Web project.
@@ -478,7 +479,7 @@ public final class WebProject implements Project, AntProjectListener {
         WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
-        List base = new ArrayList(Arrays.asList(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
@@ -529,15 +530,16 @@ public final class WebProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-        }));
+        });
 
-        Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
-        if (profile == Profile.JAVA_EE_6_FULL){
-            base.add(EjbJarSupport.createEjbJarProvider(this, apiEjbJar));
-            base.add(EjbJarSupport.createEjbJarsInProject(apiEjbJar));
-        }
+        Lookup ee6 = Lookups.fixed(new Object[]{
+            EjbJarSupport.createEjbJarProvider(this, apiEjbJar),
+            EjbJarSupport.createEjbJarsInProject(apiEjbJar)
+        });
 
-        lookup = Lookups.fixed(base.toArray());
+        WebProjectLookup wpl = new WebProjectLookup(this, base, ee6);
+        eval.addPropertyChangeListener(wpl);
+        lookup = wpl;
         return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     
@@ -1208,7 +1210,8 @@ public final class WebProject implements Project, AntProjectListener {
         
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
-        "ejb-types_3_0"         // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
     };
 
     private static final String[] TYPES_ARCHIVE = new String[] { 
@@ -1920,6 +1923,34 @@ public final class WebProject implements Project, AntProjectListener {
 
                 cs.fireChange();
 
+            }
+        }
+    }
+
+    private class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
+        Lookup base, ee6;
+        WebProject project;
+
+        public WebProjectLookup(WebProject project, Lookup base, Lookup ee6) {
+            super(base);
+            this.project = project;
+            this.base = base;
+            this.ee6 = ee6;
+            updateLookup();
+        }
+
+        private void updateLookup(){
+            Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
+            if (Profile.JAVA_EE_6_FULL.equals(profile)){
+                setLookups(base, ee6);
+            }else{
+                setLookups(base);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(WebProjectProperties.J2EE_PLATFORM)){
+                updateLookup();
             }
         }
     }
