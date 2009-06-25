@@ -38,22 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.jsf.api.metamodel.Renderer;
 
 
 /**
  * @author ads
  *
  */
-public interface Renderer {
-    String RENDERER_TYPE = JSFConfigQNames.RENDERER_TYPE.getLocalName();
-    String RENDERER_CLASS = JSFConfigQNames.RENDERER_CLASS.getLocalName();
+public abstract class AnnotationRenderer extends PersistentObject implements Renderer {
+
+    protected AnnotationRenderer( AnnotationModelHelper helper,
+            TypeElement typeElement )
+    {
+        super(helper, typeElement);
+    }
     
-    String getRendererType();
-    
-    String getRendererClass();
-    
-    String getComponentFamily();
+    protected abstract String getRenderKitId();
+
 }

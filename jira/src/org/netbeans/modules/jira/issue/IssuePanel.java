@@ -396,6 +396,11 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(field, keys);
     }
 
+    private void storeFieldValue(NbJiraIssue.IssueField field, JFormattedTextField formattedField) {
+        Object value = formattedField.getValue();
+        storeFieldValue(field, (value == null) ? "" : ((Date)value).getTime()+""); // NOI18N
+    }
+
     private void storeFieldValue(NbJiraIssue.IssueField field, JTextComponent textComponent) {
         storeFieldValue(field, textComponent.getText());
     }
@@ -759,7 +764,14 @@ public class IssuePanel extends javax.swing.JPanel {
 
         dueLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueLabel.text")); // NOI18N
 
-        dueField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter()));
+        dueField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter() {
+            public Object stringToValue(String text) throws java.text.ParseException {
+                if (text == null || text.trim().length() == 0) {
+                    return null;
+                }
+                return super.stringToValue(text);
+            }
+        }));
 
         assigneeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assigneeLabel.text")); // NOI18N
 
@@ -1179,6 +1191,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(NbJiraIssue.IssueField.FIXVERSIONS, fixVersionList);
         storeFieldValue(NbJiraIssue.IssueField.SUMMARY, summaryField);
         storeFieldValue(NbJiraIssue.IssueField.ENVIRONMENT, environmentArea);
+        storeFieldValue(NbJiraIssue.IssueField.DUE, dueField);
         String submitMessage;
         if (isNew) {
             storeFieldValue(NbJiraIssue.IssueField.DESCRIPTION, addCommentArea);

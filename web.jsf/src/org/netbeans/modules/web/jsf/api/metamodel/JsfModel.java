@@ -76,7 +76,7 @@ public interface JsfModel {
      * @param clazz
      * @return list of all elements in merged model.
      */
-    <T extends JsfModelElement> List<T> getElement( Class<T> clazz);
+    <T extends JsfModelElement> List<T> getElements( Class<T> clazz);
     
     /**
      * Register change listener on model elements.
