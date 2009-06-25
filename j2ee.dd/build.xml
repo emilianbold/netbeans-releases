@@ -184,6 +184,72 @@ made subject to such option by the copyright holder.
         <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
     </replace>
 
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setDescription(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setDisplayName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setIcon(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setContextParam(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setFilter(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setFilterMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setListener(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setServlet(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setServletMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setSessionConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setMimeMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setWelcomeFileList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setErrorPage(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setJspConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setSecurityConstraint(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setLoginConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setSecurityRole(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setEnvEntry(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setEjbRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setEjbLocalRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setServiceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setResourceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setResourceEnvRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setMessageDestinationRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPersistenceContextRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPersistenceUnitRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPostConstruct(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPreDestroy(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setMessageDestination(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setLocaleEncodingMappingList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setDistributable(null);</replacetoken><replacevalue></replacevalue></replace>
+
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setDescription(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setDisplayName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setIcon(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setContextParam(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setFilter(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setFilterMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setListener(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setServlet(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setServletMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setSessionConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setMimeMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setWelcomeFileList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setErrorPage(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setJspConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setSecurityConstraint(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setLoginConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setSecurityRole(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setEnvEntry(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setEjbRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setEjbLocalRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setServiceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setResourceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setResourceEnvRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setMessageDestinationRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setPersistenceContextRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setPersistenceUnitRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setPostConstruct(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setPreDestroy(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setMessageDestination(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setLocaleEncodingMappingList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true"><replacetoken>setDistributable(null);</replacetoken><replacevalue></replacevalue></replace>
+
 	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
  	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_1_1"

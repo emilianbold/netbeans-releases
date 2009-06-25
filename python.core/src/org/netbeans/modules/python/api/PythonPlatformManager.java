@@ -87,7 +87,7 @@ public class PythonPlatformManager implements Serializable{
         // % cd o.jython && ant
         // % ./release/jython-2.5/bin/jython ../python.core/release/platform_info.py
         // and then updating properties below
-        platform.setName("Jython 2.5b0+"); // NOI18N
+        platform.setName("Jython 2.5"); // NOI18N
         String jythonInstallDir = jythonInstall.getPath();
         platform.addPythonPath(new String[] { jythonInstallDir + File.separator + "Lib",
            jythonInstallDir + File.separator + "Lib" + File.separator + "site-packages" });

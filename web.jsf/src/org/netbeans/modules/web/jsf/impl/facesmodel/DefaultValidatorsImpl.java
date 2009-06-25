@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.DefaultValidators;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
+import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.jsf.api.metamodel.ValidatorId;
 import org.w3c.dom.Element;
 
@@ -83,7 +84,17 @@ class DefaultValidatorsImpl extends IdentifiableComponentImpl implements
     public List<ValidatorId> getValidatorIds() {
         List<FacesValidatorId> list = getChildren( FacesValidatorId.class );
         List<ValidatorId> result = new ArrayList<ValidatorId>( list );
-        // add here validator id from annotations 
+        AbstractJsfModel model = getModel().getModelSource().getLookup().lookup(
+                AbstractJsfModel.class);
+        List<Validator> validators = model.getElements( Validator.class );
+        for (Validator validator : validators) {
+            if ( validator instanceof FacesValidatorImpl){
+                if ( ((FacesValidatorImpl)validator).isDefault() ){
+                    result.add( new AnnotationValidatorId( 
+                            validator.getValidatorId() ));
+                }
+            }
+        }
         return result;
     }
 

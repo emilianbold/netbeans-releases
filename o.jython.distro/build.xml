@@ -5,9 +5,6 @@
 <project name="o.jython.distro" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.jython.distro</description>
     <import file="../nbbuild/templates/projectized.xml"/>
-    <!--
-    <propertyfile file="../o.jython/nbproject/project.properties"/>
--->
 
     <target name="files-init" depends="projectized-common.files-init">
         <!-- Override module.files definition performed by parent, used for NBMs etc. -->
@@ -24,29 +21,10 @@
         </patternset>
     </target>    
 
-    <target name="build-jython-bin">
-        <echo>Build Jython binary distribution from source</echo>
-        <delete dir="${jython_build}"/>
-        <mkdir dir="${jython_build}"/>
-        <unzip dest="${jython_build}">
-            <fileset dir="external/">
-                <include name="jython-${jython_src_version}.zip"/>
-            </fileset>
-        </unzip>
-        <!-- Apply patched build.xml which handles non-clean builds; shouldn't be necessary after next Jython snapshot update -->
-        <copy tofile="${jython_build}/jython/build.xml" file="jython-build.xml" />
-        <!-- Run target in Jython's own build.xml file to build distro -->
-        <ant dir="${jython_build}/jython" target="developer-build" inheritall="false" inheritrefs="false">
-            <property name="dist.dir" value="${cluster}/jython-${jython_src_version}"/>
-        </ant>
-        <copy tofile="build/license" file="external/jython-2.5-license.txt"/>
-    </target>
-
     <target name="release" depends="init">
         <property name="jython_dir" location="${cluster}/jython-${jython_src_version}"/>
     
-        <!-- Build Jython from source (using its own build files -->
-        <antcall target="build-jython-bin"/>
+        <unzip dest="${cluster}" src="external/jython-2.5.zip"/>
 
         <chmod perm="ugo+x">
           <fileset dir="${jython_dir}/">

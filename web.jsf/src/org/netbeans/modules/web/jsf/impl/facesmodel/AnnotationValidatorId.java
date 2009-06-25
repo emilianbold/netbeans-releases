@@ -38,22 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
+import org.netbeans.modules.web.jsf.api.metamodel.ValidatorId;
 
 
 /**
  * @author ads
  *
  */
-public interface Renderer {
-    String RENDERER_TYPE = JSFConfigQNames.RENDERER_TYPE.getLocalName();
-    String RENDERER_CLASS = JSFConfigQNames.RENDERER_CLASS.getLocalName();
+class AnnotationValidatorId implements ValidatorId {
     
-    String getRendererType();
+    AnnotationValidatorId( String text){
+        myText = text;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.metamodel.ValidatorId#getText()
+     */
+    public String getText() {
+        return myText;
+    }
     
-    String getRendererClass();
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals( Object object ) {
+        if ( object instanceof AnnotationValidatorId){
+            String text = ((AnnotationValidatorId)object).myText;
+            if ( text == null ){
+                return myText == null;
+            }
+            else {
+                return text.equals( myText );
+            }
+        }
+        else {
+            return false;
+        }
+    }
     
-    String getComponentFamily();
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        if ( myText == null ){
+            return 0;
+        }
+        else {
+            return myText.hashCode();
+        }
+    }
+
+    private String myText;
 }
