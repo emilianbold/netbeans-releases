@@ -47,8 +47,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -251,4 +254,25 @@ public final class UIUtils {
 
         return loginPanel.getClientProperty("cancel")==null; // NOI18N
     }
+
+    public static JLabel createUserWidget(String user) {
+        return createUserWidget(KenaiUser.forName(user));
+    }
+
+    static JLabel createUserWidget(final KenaiUser u) {
+        final JLabel result = new JLabel(u.getUser());
+        result.setIcon(u.getIcon());
+        u.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
+                    result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                    result.repaint();
+                }
+            }
+        });
+        return result;
+    }
+
 }
+
