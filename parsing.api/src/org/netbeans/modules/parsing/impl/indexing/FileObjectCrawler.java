@@ -42,7 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -138,7 +138,7 @@ public final class FileObjectCrawler extends Crawler {
                 if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
                     Collection<Indexable> indexable = cache.get(mime);
                     if (indexable == null) {
-                        indexable = new HashSet<Indexable>();
+                        indexable = new LinkedHashSet<Indexable>();
                         cache.put(mime, indexable);
                     }
 
