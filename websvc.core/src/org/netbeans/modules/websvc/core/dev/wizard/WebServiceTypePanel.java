@@ -319,6 +319,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         d.putProperty(WizardProperties.WEB_SERVICE_TYPE, Integer.valueOf(getServiceType()));
         if (getServiceType() == WizardProperties.ENCAPSULATE_SESSION_BEAN)
             d.putProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN, sessionBeanNodes);
+        d.putProperty(WizardProperties.IS_STATELESS_BEAN, Boolean.valueOf(sessionBeanCB.isSelected()));
     }
     
     void read(WizardDescriptor wizardDescriptor) {
