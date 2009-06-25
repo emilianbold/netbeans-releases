@@ -62,17 +62,6 @@ public class BlameTest extends AbstractCommandTest {
         super(testName);
     }
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new BlameTest("testBlameUrlWithAtSign") {
-            @Override
-            protected void runTest() throws Throwable {
-                testBlameUrlWithAtSign();
-            }
-        });
-        return suite;
-    }
-
     @Override
     protected void setUp() throws Exception {
         if(getName().equals("testBlameFileNullAuthor") || 
