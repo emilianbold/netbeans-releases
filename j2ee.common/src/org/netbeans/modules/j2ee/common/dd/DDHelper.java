@@ -100,8 +100,39 @@ public class DDHelper {
         return webXML;
     }
 
+    /**
+     * Creates web-fragment.xml deployment descriptor.
+     * @param j2eeProfile Java EE profile to specify which version of web-fragment.xml should be created
+     * @param dir Directory where web-fragment.xml should be created
+     * @return web-fragment.xml file as FileObject
+     * @throws java.io.IOException
+     */
+    public static FileObject createWebFragmentXml(Profile j2eeProfile, FileObject dir) throws IOException {
+        String webXmlTemplate = null;
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            webXmlTemplate = "web-fragment-3.0.xml"; //NOI18N
+        }
+
+        if (webXmlTemplate == null)
+            return null;
+
+        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
+        FileObject webXML = FileUtil.createData(dir, "web-fragment.xml"); //NOI18N
+        String webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + webXmlTemplate));
+        if (webXMLContent != null) {
+            FileLock lock = webXML.lock();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
+            try {
+                bw.write(webXMLContent);
+            } finally {
+                bw.close();
+                lock.releaseLock();
+            }
+        }
+        return webXML;
+    }
+
     private static String readResource(InputStream is) throws IOException {
-        // read the config from resource first
         StringBuilder sb = new StringBuilder();
         String lineSep = System.getProperty("line.separator"); // NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is));

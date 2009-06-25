@@ -60,13 +60,13 @@ import org.openide.util.NbBundle;
 /**
  * @author Petr Slechta
  */
-public class WebXmlWizardPanel1 implements WizardDescriptor.Panel {
+public class WebFragmentXmlWizardPanel1 implements WizardDescriptor.Panel {
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    private final WebXmlVisualPanel1 component = new WebXmlVisualPanel1();
+    private final WebFragmentXmlVisualPanel1 component = new WebFragmentXmlVisualPanel1();
     private WizardDescriptor wizardDescriptor;
     private Project project;
 
-    public WebXmlWizardPanel1() {
+    public WebFragmentXmlWizardPanel1() {
         component.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 fireChangeEvent();
@@ -102,7 +102,7 @@ public class WebXmlWizardPanel1 implements WizardDescriptor.Panel {
                 || component.getCreatedFile().canRead())
         {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(WebXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
+                    NbBundle.getMessage(WebFragmentXmlWizardPanel1.class,"ERR_WebFragmentExistsOrNoValidLocation")); //NOI18N
             return false;
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
@@ -139,7 +139,7 @@ public class WebXmlWizardPanel1 implements WizardDescriptor.Panel {
             component.setProject(project);
         }
         wizardDescriptor.putProperty("NewFileWizard_Title", // NOI18N
-            NbBundle.getMessage(WebXmlWizardPanel1.class, "TITLE_webXmlFile")); // NOI18N
+            NbBundle.getMessage(WebFragmentXmlWizardPanel1.class, "TITLE_webFragmentXmlFile")); // NOI18N
     }
 
     public void storeSettings(Object settings) {
