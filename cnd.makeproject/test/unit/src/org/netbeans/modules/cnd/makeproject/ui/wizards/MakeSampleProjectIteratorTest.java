@@ -167,8 +167,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
         assertTrue("ses == null", ses != null);
 
-        MakeAction makeAction = new MakeAction();
-        makeAction.execute(node, target, new MyExecutionListener(), null, null, null);
+        MakeAction.execute(node, target, new MyExecutionListener(), null, null, null);
 
         try {
             done.await();
