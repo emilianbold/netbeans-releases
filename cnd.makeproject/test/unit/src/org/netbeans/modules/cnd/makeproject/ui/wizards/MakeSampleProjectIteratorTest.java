@@ -86,12 +86,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         testSample("Quote", "Quote", "all");
     }
 
-    @Test
-    public void testPi() throws IOException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample("Pi", "Pi", "all");
-        }
-    }
+//    @Test
+//    public void testPi() throws IOException {
+//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//            testSample("Pi", "Pi", "all");
+//        }
+//    }
 
     @Test
     public void testFreeway() throws IOException {
