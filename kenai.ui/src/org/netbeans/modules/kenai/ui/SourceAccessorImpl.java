@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -107,7 +106,7 @@ public class SourceAccessorImpl extends SourceAccessor {
             handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
         }
 
-        return handlesList.isEmpty() ? Collections.EMPTY_LIST : handlesList;
+        return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
 
     }
 
@@ -171,7 +170,7 @@ public class SourceAccessorImpl extends SourceAccessor {
 
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ProjectChooser.setProjectsFolder(((SourceHandleImpl) src).getWorkingDirectory());
+                ProjectChooser.setProjectsFolder(src.getWorkingDirectory());
                 JFileChooser chooser = ProjectChooser.projectChooser();
                 chooser.setMultiSelectionEnabled(true);
 
