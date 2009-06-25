@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,6 +59,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
@@ -69,56 +72,70 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Test
     public void testArguments() throws IOException {
-        testSample("Arguments", "Arguments", "all");
+        testSample("Arguments", "all");
     }
 
     @Test
     public void testInputOutput() throws IOException {
-        testSample("InputOutput", "InputOutput", "all");
+        testSample("InputOutput", "all");
     }
 
     @Test
     public void testWelcome() throws IOException {
-        testSample("Welcome", "Welcome", "all");
+        testSample("Welcome", "all");
     }
 
     @Test
     public void testQuote() throws IOException {
-        testSample("Quote", "Quote", "all");
+        testSample("Quote", "all");
     }
 
-//    @Test
-//    public void testPi() throws IOException {
-//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-//            testSample("Pi", "Pi", "all");
-//        }
-//    }
+    @Test
+    public void testPi() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            setDefaultCompilerSet("SunStudio");
+            testSample("Pi", "all");
+        }
+    }
 
     @Test
     public void testFreeway() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample("Freeway", "Freeway", "all");
+            setDefaultCompilerSet("SunStudio");
+            testSample("Freeway", "all");
+            setDefaultCompilerSet("GNU");
+            testSample("Freeway", "all");
         }
     }
 
     @Test
     public void testFractal() throws IOException {
-        testSample("Fractal", "Fractal", "all");
+        testSample("Fractal", "all");
     }
 
     @Test
     public void testLexYacc() throws IOException {
-        testSample("LexYacc", "LexYacc", "all");
+        testSample("LexYacc", "all");
     }
 
     @Test
     public void testMP() throws IOException {
-        testSample("MP", "MP", "all");
+        testSample("MP", "all");
     }
 
     @Test
     public void testSubProjects() throws IOException {
-        testSample("SubProjects", "SubProjects", "all");
+        testSample("SubProjects", "all");
+    }
+
+    private void setDefaultCompilerSet(String setName) {
+        List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
+        for (CompilerSet set : sets) {
+            if (set.getName().equals(setName)) {
+                CompilerSetManager.getDefault().setDefault(set);
+                break;
+            }
+        }
     }
 
     private static Set<DataObject> instantiateSample(String name, File destdir) throws IOException {
@@ -135,7 +152,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         return projectCreator.instantiate(wiz);
     }
 
-    public void testSample(String projectName, String sample, String target) throws IOException {
+    public void testSample(String sample, String target) throws IOException {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
         class MyExecutionListener implements ExecutionListener {
@@ -150,7 +167,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         }
 
         File workDir = getWorkDir();//new File("/tmp");
-        File projectDir = new File(workDir, projectName);
+        File projectDir = new File(workDir, sample);
         File mainProjectDir = null;
         Set<DataObject> projectDataObjects;
 

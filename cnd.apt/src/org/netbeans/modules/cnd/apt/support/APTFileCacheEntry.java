@@ -103,6 +103,7 @@ public final class APTFileCacheEntry {
     /** must be called under lock */
     /*package*/ void setPostIncludeMacroState(APTInclude node, APTMacroMap.State state) {
         IncludeData data = getIncludeData(node);
+        assert data.postIncludeMacroState == null;
         data.postIncludeMacroState = state;
     }
 

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +52,9 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
@@ -79,6 +82,14 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
             // the password should be stored in the initialization phase
             ConnectionManager.getInstance().connectTo(env);
         }
+    }
+
+    protected static void setupHost(ExecutionEnvironment execEnv) {
+        ToolsCacheManager tcm = new ToolsCacheManager();
+        HostValidatorImpl validator = new HostValidatorImpl(tcm);
+        boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
+        assertTrue(ok);
+        tcm.applyChanges();
     }
 
     public static class FakeCompilerSet extends CompilerSet {

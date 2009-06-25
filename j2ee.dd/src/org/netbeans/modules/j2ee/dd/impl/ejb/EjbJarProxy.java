@@ -123,10 +123,7 @@ public class EjbJarProxy implements EjbJar {
         }
         if (ejbJar!=null) {
             org.w3c.dom.Document document = null;
-            if (ejbJar instanceof org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar) {
-                document =
-                    ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar)ejbJar).graphManager().getXmlDocument();
-            } else if (ejbJar instanceof org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar){
+            if (ejbJar instanceof org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar){
                 document =
                     ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar)ejbJar).graphManager().getXmlDocument();
                 
@@ -428,16 +425,15 @@ public class EjbJarProxy implements EjbJar {
         else {
             EjbJar clonedEjbJar=(EjbJar)ejbJar.clone();
             proxy = new EjbJarProxy(clonedEjbJar,version);
-            if (EjbJar.VERSION_1_1.equals(version)) {
-                ((org.netbeans.modules.schema2beans.BaseBean)clonedEjbJar).changeDocType
-                    ("-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.0//EN","http://java.sun.com/dtd/ejb-jar_1.1.dtd");
-            } else if (EjbJar.VERSION_2_0.equals(version)) {
-                ((org.netbeans.modules.schema2beans.BaseBean)clonedEjbJar).changeDocType
-                    ("-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN","http://java.sun.com/dtd/ejb-jar_2_0.dtd");
-            } else {
+            if (EjbJar.VERSION_2_1.equals(version)) {
                 ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar)clonedEjbJar)._setSchemaLocation
                     ("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd");
                 clonedEjbJar.setVersion(new java.math.BigDecimal(EjbJar.VERSION_2_1));
+            }
+            else if (EjbJar.VERSION_3_0.equals(version)) {
+                ((org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.EjbJar)clonedEjbJar)._setSchemaLocation
+                    ("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_3_0.xsd");
+                clonedEjbJar.setVersion(new java.math.BigDecimal(EjbJar.VERSION_3_0));
             }
         }
         proxy.setError(error);
