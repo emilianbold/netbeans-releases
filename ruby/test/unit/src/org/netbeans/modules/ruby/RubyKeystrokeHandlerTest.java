@@ -67,11 +67,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public RubyKeystrokeHandlerTest(String testName) {
         super(testName);
     }
-
-    private void match(String original) throws BadLocationException {
-        super.assertMatches(original);
-    }
-
+    
     private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
@@ -382,28 +378,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
     public void testHeredoc2() throws Exception {
         insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
     }
-
-    public void testFindMatching1() throws Exception {
-        match("^if true\n^end");
-    }
-
-    public void testFindMatching2() throws Exception {
-        match("x=^(true^)\ny=5");
-    }
-
-    public void testFindMatching3() throws Exception {
-        match("x=^(true || (false)^)\ny=5");
-    }
-
-    public void testFindMatching4() throws Exception {
-        match("^def foo\nif true\nend\n^end\nend");
-    }
-
-    public void testFindMatching5() throws Exception {
-        // Test heredocs
-        match("x=f(^<<ABC,\"hello\")\nfoo\nbar\n^ABC\n");
-    }
-
+    
     public void testBackspace1() throws Exception {
         deleteChar("x^", "^");
     }
@@ -574,17 +549,7 @@ public class RubyKeystrokeHandlerTest extends RubyTestBase {
         deleteChar("#^", "^");
         deleteChar("puts '# ^'", "puts '#^'");
     }
-
-    public void testFindMatching6() throws Exception {
-        // Test heredocs
-        match("x=f(^<<ABC,'hello',<<-DEF,'bye')\nfoo\nbar\n^ABC\nbaz\n  DEF\nwhatever");
-    }
-
-    public void testFindMatching7() throws Exception {
-        // Test heredocs
-        match("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
-    }
-
+    
 //    public void testFreakOutEditor1() throws Exception {
 //        String before = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp/^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
 //        String  after = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
