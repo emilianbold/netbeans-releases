@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.actions.MakeAction;
@@ -115,7 +116,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         testSample("MP", "MP", "all");
     }
 
-    private static void instantiateSample(String name, File destdir) throws IOException {
+    @Test
+    public void testSubProjects() throws IOException {
+        testSample("SubProjects", "SubProjects", "all");
+    }
+
+    private static Set<DataObject> instantiateSample(String name, File destdir) throws IOException {
         FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         DataObject templateDO = DataObject.find(templateFO);
@@ -126,7 +132,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         projectCreator.initialize(wiz);
         wiz.putProperty("name", destdir.getName());
         wiz.putProperty("projdir", destdir);
-        projectCreator.instantiate(wiz);
+        return projectCreator.instantiate(wiz);
     }
 
     public void testSample(String projectName, String sample, String target) throws IOException {
@@ -145,14 +151,22 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         File workDir = getWorkDir();//new File("/tmp");
         File projectDir = new File(workDir, projectName);
-        instantiateSample(sample, projectDir);
+        File mainProjectDir = null;
+        Set<DataObject> projectDataObjects;
 
-        FileObject projectDirFO = FileUtil.toFileObject(projectDir);
-        ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
-        MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
-        descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
+        projectDataObjects = instantiateSample(sample, projectDir);
 
-        File makefile = new File(projectDir, "Makefile");
+        for (DataObject projectDataObject : projectDataObjects) {
+            FileObject projectDirFO = projectDataObject.getPrimaryFile();
+            if (mainProjectDir == null) {
+                mainProjectDir = FileUtil.toFile(projectDirFO);
+            }
+            ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
+            MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
+            descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
+        }
+
+        File makefile = new File(mainProjectDir, "Makefile");
         FileObject makefileFileObject = FileUtil.toFileObject(makefile);
         assertTrue("makefileFileObject == null", makefileFileObject != null);
         DataObject dObj = null;
@@ -167,8 +181,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
         assertTrue("ses == null", ses != null);
 
-        MakeAction makeAction = new MakeAction();
-        makeAction.execute(node, target, new MyExecutionListener(), null, null, null);
+        MakeAction.execute(node, target, new MyExecutionListener(), null, null, null);
 
         try {
             done.await();
