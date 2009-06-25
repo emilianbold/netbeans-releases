@@ -44,7 +44,8 @@ import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.State;
+import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 
 /**
  *
@@ -55,23 +56,23 @@ public final class APTFileCacheManager {
     private APTFileCacheManager() {
     }
 
-    private static Reference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(null);
-    private static ConcurrentMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>();
+    private static Reference<ConcurrentMap<CharSequence, ConcurrentMap<StateKey, APTFileCacheEntry>>> refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<StateKey, APTFileCacheEntry>>>(null);
+    private static ConcurrentMap<CharSequence, Reference<ConcurrentMap<StateKey, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<StateKey, APTFileCacheEntry>>>();
     private static final Object aptCachesLock = new Object();
 
-    private static ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(CharSequence file, Boolean createAndClean) {
+    private static ConcurrentMap<StateKey, APTFileCacheEntry> getAPTCache(CharSequence file, Boolean createAndClean) {
         if (createAndClean == null) {
-            Reference<ConcurrentMap<State, APTFileCacheEntry>> removed = file2AptCacheRef.remove(file);
+            Reference<ConcurrentMap<StateKey, APTFileCacheEntry>> removed = file2AptCacheRef.remove(file);
             return null;
         }
-        Reference<ConcurrentMap<State, APTFileCacheEntry>> ref2fileCache = file2AptCacheRef.get(file);
-        ConcurrentMap<State, APTFileCacheEntry> out = ref2fileCache == null ? null : ref2fileCache.get();
+        Reference<ConcurrentMap<StateKey, APTFileCacheEntry>> ref2fileCache = file2AptCacheRef.get(file);
+        ConcurrentMap<StateKey, APTFileCacheEntry> out = ref2fileCache == null ? null : ref2fileCache.get();
         if (out == null) {
-            out = new ConcurrentHashMap<State, APTFileCacheEntry>();
-            ref2fileCache = new SoftReference<ConcurrentMap<State, APTFileCacheEntry>>(out);
-            Reference<ConcurrentMap<State, APTFileCacheEntry>> prev = file2AptCacheRef.putIfAbsent(file, ref2fileCache);
+            out = new ConcurrentHashMap<StateKey, APTFileCacheEntry>();
+            ref2fileCache = new SoftReference<ConcurrentMap<StateKey, APTFileCacheEntry>>(out);
+            Reference<ConcurrentMap<StateKey, APTFileCacheEntry>> prev = file2AptCacheRef.putIfAbsent(file, ref2fileCache);
             if (prev != null) {
-                ConcurrentMap<State, APTFileCacheEntry> prevCache = prev.get();
+                ConcurrentMap<StateKey, APTFileCacheEntry> prevCache = prev.get();
                 if (prevCache != null) {
                     out = prevCache;
                 } else {
@@ -101,19 +102,19 @@ public final class APTFileCacheManager {
         return out;
     }
     
-    private static ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache2(CharSequence file, boolean clean) {
-        ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>> cache;
+    private static ConcurrentMap<StateKey, APTFileCacheEntry> getAPTCache2(CharSequence file, boolean clean) {
+        ConcurrentMap<CharSequence, ConcurrentMap<StateKey, APTFileCacheEntry>> cache;
         synchronized (aptCachesLock) {
             cache = refAptCaches.get();
             if (cache == null || clean) {
-                cache = new ConcurrentHashMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>();
-                refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(cache);
+                cache = new ConcurrentHashMap<CharSequence, ConcurrentMap<StateKey, APTFileCacheEntry>>();
+                refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<StateKey, APTFileCacheEntry>>>(cache);
             }
         }
-        ConcurrentMap<State, APTFileCacheEntry> out = cache.get(file);
+        ConcurrentMap<StateKey, APTFileCacheEntry> out = cache.get(file);
         if (out == null) {
-            out = new ConcurrentHashMap<State, APTFileCacheEntry>();
-            ConcurrentMap<State, APTFileCacheEntry> prev = cache.putIfAbsent(file, out);
+            out = new ConcurrentHashMap<StateKey, APTFileCacheEntry>();
+            ConcurrentMap<StateKey, APTFileCacheEntry> prev = cache.putIfAbsent(file, out);
             if (prev != null) {
                 out = prev;
             }
@@ -134,8 +135,8 @@ public final class APTFileCacheManager {
      * @return
      */
     public static APTFileCacheEntry getEntry(CharSequence file, APTPreprocHandler preprocHandler, Boolean createExclusiveIfAbsent) {
-        APTIncludeHandler.State key = getKey(preprocHandler);
-        ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(file, Boolean.FALSE);
+        StateKey key = getKey(preprocHandler);
+        ConcurrentMap<StateKey, APTFileCacheEntry> cache = getAPTCache(file, Boolean.FALSE);
         APTFileCacheEntry out = cache.get(key);
         if (createExclusiveIfAbsent != null) {
             if (out == null) {
@@ -161,14 +162,14 @@ public final class APTFileCacheManager {
 
     public static void setAPTCacheEntry(CharSequence file, APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
         if (entry != null) {
-            ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(file, cleanOthers ? Boolean.TRUE : Boolean.FALSE);
-            APTIncludeHandler.State key = getKey(preprocHandler);
+            ConcurrentMap<StateKey, APTFileCacheEntry> cache = getAPTCache(file, cleanOthers ? Boolean.TRUE : Boolean.FALSE);
+            StateKey key = getKey(preprocHandler);
             cache.put(key, APTFileCacheEntry.toSerial(entry));
         }
     }
 
     public static void invalidate(APTFileBuffer buffer) {
-        ConcurrentMap<State, APTFileCacheEntry> fileEntry = getAPTCache(buffer.getAbsolutePath(), null);
+        ConcurrentMap<StateKey, APTFileCacheEntry> fileEntry = getAPTCache(buffer.getAbsolutePath(), null);
         if (fileEntry != null) {
             fileEntry.clear();
         }
@@ -182,7 +183,7 @@ public final class APTFileCacheManager {
         file2AptCacheRef.clear();
     }
 
-    private static State getKey(APTPreprocHandler preprocHandler) {
-        return preprocHandler.getIncludeHandler().getState();
+    private static StateKey getKey(APTPreprocHandler preprocHandler) {
+        return ((APTFileMacroMap)preprocHandler.getMacroMap()).getStateKey();
     }
 }
