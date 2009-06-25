@@ -79,8 +79,10 @@ public class APTSelfWalker extends APTAbstractWalker {
             } finally {
                 getIncludeHandler().popInclude();
             }
+            return postIncludeState == null;
+        } else {
+            return false;
         }
-        return postIncludeState == null;
     }
     
     protected APTWalker createIncludeWalker(APTFile apt, APTSelfWalker parent, CharSequence includePath, APTFileCacheEntry cache) {

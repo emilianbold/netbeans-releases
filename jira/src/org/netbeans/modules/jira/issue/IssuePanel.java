@@ -415,7 +415,7 @@ public class IssuePanel extends javax.swing.JPanel {
         Object initValue = initialValues.get(field);
         boolean identical = false;
         if (initValue instanceof List) {
-            List initValues = (List)initValue;
+            List<?> initValues = (List<?>)initValue;
             identical = values.containsAll(initValues) && initValues.containsAll(values);
         }
         if (issue.getTaskData().isNew() || !identical) {
@@ -474,7 +474,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private List<org.eclipse.mylyn.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        List<org.eclipse.mylyn.internal.jira.core.model.Component> components = new ArrayList(componentIds.size());
+        List<org.eclipse.mylyn.internal.jira.core.model.Component> components = new ArrayList<org.eclipse.mylyn.internal.jira.core.model.Component>(componentIds.size());
         for (String id : componentIds) {
             components.add(config.getComponentById(projectId, id));
         }
@@ -483,7 +483,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private List<Version> versionsByIds(String projectId, List<String> versionIds) {
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        List<Version> versions = new ArrayList(versionIds.size());
+        List<Version> versions = new ArrayList<Version>(versionIds.size());
         for (String id : versionIds) {
             versions.add(config.getVersionById(projectId, id));
         }
