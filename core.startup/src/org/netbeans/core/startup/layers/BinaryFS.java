@@ -886,11 +886,10 @@ final class BinaryFS extends FileSystem {
             initialize();
             // 145775 - workaround of JDK 1.5 bug 6377302 (toArray is not thread safe)
             // When JDK 1.6 is only supported, use just "return childrenMap.values().toArray(NO_CHILDREN);" instead
-            List<FileObject> list = new ArrayList<FileObject>(childrenMap.values().size());
-            for (FileObject fo : childrenMap.values()) {
-                list.add(fo);
+            // and remove synchronized in doInitialize.
+            synchronized (this) {
+                return childrenMap.values().toArray(NO_CHILDREN);
             }
-            return list.toArray(NO_CHILDREN);
         }
 
         /** Retrieve file or folder contained in this folder by name. */
@@ -911,15 +910,17 @@ final class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
-                for (int i=0; i<files; i++) { //read file desc:
-                    String nm = getString(sub);   // String name
-                    byte isFolder = sub.get();      // boolean isFolder
-                    int off = sub.getInt();          // int contentRef
-                    childrenMap.put(nm, isFolder == 0 ?
-                        new BFSFile(nm, this, off) :
-                        new BFSFolder(nm, this, off));
-                }
+                synchronized (this) {  // 145775
+                    childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
+                    for (int i=0; i<files; i++) { //read file desc:
+                        String nm = getString(sub);   // String name
+                        byte isFolder = sub.get();      // boolean isFolder
+                        int off = sub.getInt();          // int contentRef
+                        childrenMap.put(nm, isFolder == 0 ?
+                            new BFSFile(nm, this, off) :
+                            new BFSFolder(nm, this, off));
+                    }
+                }  // 145775
                 if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
                     LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }
