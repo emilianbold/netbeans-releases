@@ -103,6 +103,7 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -123,6 +124,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.websvc.core.dev.wizard.WizardProperties;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -177,18 +179,21 @@ public class JaxWsUtils {
             if (wsdlPort.isProvider()/*from customization*/ || service.isUseProvider() /*from ws creation wizard*/) {
                 generateProviderImplClass(project, targetFolder, null, targetName, wsdlService, wsdlPort, serviceID);
             } else {
-                generateJaxWsImplClass(project, targetFolder, targetName, null, wsdlService, wsdlPort, false, serviceID);
+                initProjectInfo(project);
+                boolean isStatelessSB = (projectType == ProjectInfo.EJB_PROJECT_TYPE);
+                generateJaxWsImplClass(project, targetFolder, targetName, null, wsdlService, wsdlPort, false, serviceID, isStatelessSB);
             }
         }
     }
 
     /** This method is called from Create Web Service from WSDL wizard
      */
-    public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port, boolean useProvider) throws Exception {
+    public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port, boolean useProvider, boolean isStatelessSB) throws Exception {
         if (useProvider) {
             generateJaxWsProvider(project, targetFolder, targetName, wsdlURL, service, port);
         } else {
-            generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
+            initProjectInfo(project);
+            generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null, isStatelessSB);
         }
     }
 
@@ -337,8 +342,7 @@ public class JaxWsUtils {
 
     }
 
-    private static void generateJaxWsImplClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port, boolean addService, String serviceID) throws Exception {
-        initProjectInfo(project);
+    private static void generateJaxWsImplClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port, boolean addService, String serviceID, final boolean isStatelessSB) throws Exception {
 
         // Use Progress API to display generator messages.
         //ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JaxWsUtils.class, "TXT_WebServiceGeneration")); //NOI18N
@@ -412,7 +416,7 @@ public class JaxWsUtils {
                     }
 
                     // add @Stateless annotation
-                    if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {//EJB project
+                    if (isStatelessSB) {//EJB project
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
