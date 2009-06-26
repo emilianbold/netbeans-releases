@@ -930,6 +930,7 @@ public final class NbMavenProjectImpl implements Project {
                     new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
+                    CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
                     new TestSkippingChecker(),
