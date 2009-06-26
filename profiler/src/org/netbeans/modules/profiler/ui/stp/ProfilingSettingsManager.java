@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler.ui.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.modules.profiler.utils.IDEUtils;
@@ -118,16 +117,15 @@ public class ProfilingSettingsManager {
         return defaultInstance;
     }
 
-    public ProfilingSettingsDescriptor getProfilingSettings(Project project) {
+    public ProfilingSettingsDescriptor getProfilingSettings() {
         final List<ProfilingSettings> profilingSettings = new LinkedList();
         final int[] lastSelectedProfilingSettingsIndex = new int[] { -1 };
 
         try {
             // get settings folder used for resolving filesystem for atomic action
-            FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(project, false);
+            FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(false);
             if (settingsStorage != null) {
                 // make final copies for atomic action
-                final Project projectF = project;
 //                final ProfilingSettings[] profilingSettingsF = profilingSettings;
 //                final ProfilingSettings lastSelectedProfilingSettingsF = lastSelectedProfilingSettings;
                 
@@ -135,7 +133,7 @@ public class ProfilingSettingsManager {
                 FileSystem fs = settingsStorage.getFileSystem();
                 fs.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
-                        final FileObject profilingSettingsStorage = getProfilingSettingsStorage(projectF);
+                        final FileObject profilingSettingsStorage = getProfilingSettingsStorage();
 
                         if (profilingSettingsStorage != null) {
                             Properties properties = loadSettings(profilingSettingsStorage);
@@ -160,7 +158,7 @@ public class ProfilingSettingsManager {
                             } catch (Exception e) {
                             }
 
-                            SelectProfilingTask.SettingsConfigurator configurator = Utils.getSettingsConfigurator(projectF);
+                            SelectProfilingTask.SettingsConfigurator configurator = Utils.getSettingsConfigurator();
 
                             if (configurator != null) {
                                 configurator.loadCustomSettings(properties);
@@ -204,8 +202,8 @@ public class ProfilingSettingsManager {
         return NewCustomConfiguration.renameConfiguration(originalSettings, availableConfigurations);
     }
 
-    public void storeProfilingSettings(ProfilingSettings[] profilingSettings, ProfilingSettings lastSelectedProfilingSettings,
-                                       Project project) {
+    public void storeProfilingSettings(ProfilingSettings[] profilingSettings, ProfilingSettings lastSelectedProfilingSettings
+                                       ) {
         try {
             // ensure that default settings will be saved, should not happen
             if ((profilingSettings == null) || (profilingSettings.length < DEFAULT_SETTINGS_COUNT)) {
@@ -218,15 +216,14 @@ public class ProfilingSettingsManager {
             }
             
             // get settings folder used for resolving filesystem for atomic action
-            FileObject settingsStorage = IDEUtils.getProjectSettingsFolder(project, true);
+            FileObject settingsStorage = IDEUtils.getProjectSettingsFolder( true);
             if (settingsStorage == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "Cannot create project settings folder for " // NOI18N
-                                              + project + ", settings cannot be saved."); // NOI18N
+                                              + ", settings cannot be saved."); // NOI18N
                 return;
             }
 
             // make final copies for atomic action
-            final Project projectF = project;
             final ProfilingSettings[] profilingSettingsF = profilingSettings;
             final ProfilingSettings lastSelectedProfilingSettingsF = lastSelectedProfilingSettings;
             
@@ -235,10 +232,10 @@ public class ProfilingSettingsManager {
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     // store all settings in one file, add information about lastSelectedProfilingSettings
-                    FileObject profilingSettingsStorage = getProfilingSettingsStorage(projectF);
+                    FileObject profilingSettingsStorage = getProfilingSettingsStorage();
 
                     if (profilingSettingsStorage == null) {
-                        profilingSettingsStorage = createProfilingSettingsStorage(projectF);
+                        profilingSettingsStorage = createProfilingSettingsStorage();
                     }
 
                     if (profilingSettingsStorage != null) { // should not happen
@@ -258,7 +255,7 @@ public class ProfilingSettingsManager {
 
                         properties.put(PROP_LAST_SELECTED_SETTINGS_INDEX, Integer.toString(lastSelectedProfilingSettingsIndex));
 
-                        SelectProfilingTask.SettingsConfigurator configurator = Utils.getSettingsConfigurator(projectF);
+                        SelectProfilingTask.SettingsConfigurator configurator = Utils.getSettingsConfigurator();
 
                         if (configurator != null) {
                             configurator.storeCustomSettings(properties);
@@ -273,9 +270,9 @@ public class ProfilingSettingsManager {
         }
     }
 
-    private FileObject getProfilingSettingsStorage(Project project)
+    private FileObject getProfilingSettingsStorage()
                                             throws IOException {
-        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(project, true);
+        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(true);
         FileObject profilingSettingsStorage = projectSettingsFolder.getFileObject(PROFILING_SETTINGS_STORAGE_FILENAME,
                                                                                   PROFILING_SETTINGS_STORAGE_FILEEXT);
 
@@ -289,9 +286,9 @@ public class ProfilingSettingsManager {
                };
     }
 
-    private FileObject createProfilingSettingsStorage(Project project)
+    private FileObject createProfilingSettingsStorage()
                                                throws IOException {
-        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(project, true);
+        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(true);
         FileObject profilingSettingsStorage = projectSettingsFolder.createData(PROFILING_SETTINGS_STORAGE_FILENAME,
                                                                                PROFILING_SETTINGS_STORAGE_FILEEXT);
 

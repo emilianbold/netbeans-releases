@@ -45,13 +45,11 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.utils.MiscUtils;
 import org.netbeans.modules.profiler.actions.ResetResultsAction;
 import org.netbeans.modules.profiler.heapwalk.HeapWalkerManager;
-import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 import javax.swing.*;
-import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsWindow;
 
 
 /**
@@ -112,8 +110,6 @@ public final class ProfilerModule extends ModuleInstall {
             return false;
         }
 
-        ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
-
         // cleanup before exiting the IDE, always returns true
         if (LiveResultsWindow.hasDefault()) {
             LiveResultsWindow.getDefault().ideClosing();
@@ -171,13 +167,11 @@ public final class ProfilerModule extends ModuleInstall {
                         // force closing of all windows
                         ProfilerControlPanel2.closeIfOpened();
                         TelemetryOverviewPanel.closeIfOpened();
-                        DrillDownWindow.closeIfOpened();
                         LiveResultsWindow.closeIfOpened();
                         TelemetryWindow.closeIfOpened();
                         ThreadsWindow.closeIfOpened();
                         SnapshotResultsWindow.closeAllWindows();
                         HeapWalkerManager.getDefault().closeAllHeapWalkers();
-                        ProfilingPointsWindow.closeIfOpened();
 
                         // perform any shutdown
                         ((NetBeansProfiler) Profiler.getDefault()).shutdown();

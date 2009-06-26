@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler.actions;
 
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
@@ -119,29 +118,29 @@ public final class RunCalibrationAction extends AbstractAction {
         final boolean doDetach = detach;
         final boolean doStop = terminate;
 
-        JavaPlatform platform = JavaPlatformSelector.getDefault().selectPlatformForCalibration();
-
-        if (platform == null) {
-            return;
-        }
-
-        final JavaPlatform calibratePlatform = platform;
-        IDEUtils.getProfilerRequestProcessor().post(new Runnable() {
-                public void run() {
-                    if (doDetach) {
-                        Profiler.getDefault().detachFromApp();
-                    } else if (doStop) {
-                        Profiler.getDefault().stopApp();
-                    }
-
-                    if (!Profiler.getDefault()
-                                     .runCalibration(false, IDEUtils.getPlatformJavaFile(calibratePlatform),
-                                                         IDEUtils.getPlatformJDKVersion(calibratePlatform),
-                                                         IDEUtils.getPlatformArchitecture(calibratePlatform))) {
-                        Profiler.getDefault()
-                                .displayError(NbBundle.getMessage(RunCalibrationAction.class, "MSG_CalibrationFailed")); //NOI18N
-                    }
-                }
-            }, 0, Thread.MAX_PRIORITY);
+//        JavaPlatform platform = JavaPlatformSelector.getDefault().selectPlatformForCalibration();
+//
+//        if (platform == null) {
+//            return;
+//        }
+//
+//        final JavaPlatform calibratePlatform = platform;
+//        IDEUtils.getProfilerRequestProcessor().post(new Runnable() {
+//                public void run() {
+//                    if (doDetach) {
+//                        Profiler.getDefault().detachFromApp();
+//                    } else if (doStop) {
+//                        Profiler.getDefault().stopApp();
+//                    }
+//
+//                    if (!Profiler.getDefault()
+//                                     .runCalibration(false, IDEUtils.getPlatformJavaFile(calibratePlatform),
+//                                                         IDEUtils.getPlatformJDKVersion(calibratePlatform),
+//                                                         IDEUtils.getPlatformArchitecture(calibratePlatform))) {
+//                        Profiler.getDefault()
+//                                .displayError(NbBundle.getMessage(RunCalibrationAction.class, "MSG_CalibrationFailed")); //NOI18N
+//                    }
+//                }
+//            }, 0, Thread.MAX_PRIORITY);
     }
 }
