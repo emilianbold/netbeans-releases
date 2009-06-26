@@ -45,7 +45,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.spi.project.ui.LogicalViewProvider;

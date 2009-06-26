@@ -51,7 +51,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.TestPlatformProvider;
