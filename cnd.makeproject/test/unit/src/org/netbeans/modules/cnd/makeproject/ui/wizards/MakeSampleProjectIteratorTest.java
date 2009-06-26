@@ -110,7 +110,11 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Test
     public void testFractal() throws IOException {
-        testSample("Fractal", "all");
+        testSample("Fractal", "CONF=Debug");
+        testSample("Fractal", "CONF=PerformanceDebug");
+        testSample("Fractal", "CONF=DianogsableRelease");
+        testSample("Fractal", "CONF=Release");
+        testSample("Fractal", "CONF=PerformanceRelease");
     }
 
     @Test
