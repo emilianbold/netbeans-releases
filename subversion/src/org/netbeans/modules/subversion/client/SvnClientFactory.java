@@ -542,7 +542,7 @@ public class SvnClientFactory {
         return SvnClientAdapterFactory.getInstance().isSupportedJavahlVersion();
     }
 
-    private ISVNClientAdapter setConfigDir (ISVNClientAdapter client) {
+    private void setConfigDir (ISVNClientAdapter client) {
         if (client != null) {
             File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
             try {
@@ -552,7 +552,6 @@ public class SvnClientFactory {
                 LOG.log(Level.INFO, null, ex);
             }
         }
-        return client;
     }
 
     private abstract class ClientAdapterFactory {
@@ -564,7 +563,9 @@ public class SvnClientFactory {
 
         SvnClient createSvnClient() {
             SvnClientInvocationHandler handler = getInvocationHandler(createAdapter(), createDescriptor(null), null, -1);
-            return (SvnClient) setConfigDir(createSvnClient(handler));
+            SvnClient client = createSvnClient(handler);
+            setConfigDir(client);
+            return client;
         }
 
         /**
