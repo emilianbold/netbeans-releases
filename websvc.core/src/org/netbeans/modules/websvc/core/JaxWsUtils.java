@@ -176,11 +176,11 @@ public class JaxWsUtils {
         }
         if (wsdlService != null && wsdlPort != null) {
             String serviceID = service.getName();
+            initProjectInfo(project);
+            boolean isStatelessSB = (projectType == ProjectInfo.EJB_PROJECT_TYPE);
             if (wsdlPort.isProvider()/*from customization*/ || service.isUseProvider() /*from ws creation wizard*/) {
-                generateProviderImplClass(project, targetFolder, null, targetName, wsdlService, wsdlPort, serviceID);
+                generateProviderImplClass(project, targetFolder, null, targetName, wsdlService, wsdlPort, serviceID, isStatelessSB);
             } else {
-                initProjectInfo(project);
-                boolean isStatelessSB = (projectType == ProjectInfo.EJB_PROJECT_TYPE);
                 generateJaxWsImplClass(project, targetFolder, targetName, null, wsdlService, wsdlPort, false, serviceID, isStatelessSB);
             }
         }
@@ -190,7 +190,7 @@ public class JaxWsUtils {
      */
     public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port, boolean useProvider, boolean isStatelessSB) throws Exception {
         if (useProvider) {
-            generateJaxWsProvider(project, targetFolder, targetName, wsdlURL, service, port);
+            generateJaxWsProvider(project, targetFolder, targetName, wsdlURL, service, port, isStatelessSB);
         } else {
             initProjectInfo(project);
             generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null, isStatelessSB);
@@ -208,8 +208,8 @@ public class JaxWsUtils {
         jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109Supported, false);
     }
 
-    public static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
-            String targetName, final WsdlService service, final WsdlPort port, String serviceID) throws Exception {
+    private static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
+            String targetName, final WsdlService service, final WsdlPort port, String serviceID, final boolean isStatelessSB) throws Exception {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         FileObject implClassFo = implClass;
         if (implClassFo == null) {
@@ -234,7 +234,7 @@ public class JaxWsUtils {
                     ClassTree modifiedClass = make.addClassImplementsClause(javaClass, implClause);
 
                     // add @Stateless annotation
-                    if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {//EJB project
+                    if (isStatelessSB) {//Stateless Session Bean
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
@@ -324,7 +324,7 @@ public class JaxWsUtils {
         }
     }
 
-    private static void generateJaxWsProvider(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port) throws Exception {
+    private static void generateJaxWsProvider(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port, boolean isStatelessSB) throws Exception {
         initProjectInfo(project);
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         String portJavaName = port.getJavaName();
@@ -338,7 +338,7 @@ public class JaxWsUtils {
         String serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(),
                 port.getName(), artifactsPckg, jsr109Supported, true);
 
-        generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID);
+        generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID, isStatelessSB);
 
     }
 
