@@ -216,11 +216,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return VirtualMachineWrapper.eventRequestManager (vm);
     }
 
-    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         addEventRequest(r, false);
     }
     
-    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         logger.fine("BreakpointImpl addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
@@ -250,7 +250,18 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         } else {
             this.hitCountFilter = 0;
         }
-        EventRequestWrapper.enable (r);
+        try {
+            EventRequestWrapper.enable (r);
+        } catch (InternalExceptionWrapper e) {
+            getDebugger ().getOperator ().unregister (r);
+            throw e;
+        } catch (ObjectCollectedExceptionWrapper e) {
+            getDebugger ().getOperator ().unregister (r);
+            throw e;
+        } catch (VMDisconnectedExceptionWrapper e) {
+            getDebugger ().getOperator ().unregister (r);
+            throw e;
+        }
     }
 
     synchronized private void removeAllEventRequests () {
@@ -355,6 +366,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             }
             return success;
         } catch (InternalExceptionWrapper iex) {
+            return true; // Stop here
+        } catch (ObjectCollectedExceptionWrapper iex) {
             return true; // Stop here
         } catch (VMDisconnectedExceptionWrapper iex) {
             return false; // Let it go

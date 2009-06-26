@@ -400,19 +400,20 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             synchronized (this) {
                 if (stepIntoRequest != null) {
                     try {
-                        EventRequestWrapper.enable (stepIntoRequest);
-                        enabledStepRequest = stepIntoRequest;
-                    } catch (IllegalThreadStateException itsex) {
                         try {
+                            EventRequestWrapper.enable (stepIntoRequest);
+                            enabledStepRequest = stepIntoRequest;
+                        } catch (IllegalThreadStateException itsex) {
                             // the thread named in the request has died.
                             getDebuggerImpl().getOperator().unregister(stepIntoRequest);
-                        } catch (InternalExceptionWrapper ex) {
+                            stepIntoRequest = null;
                             return null;
-                        } catch (VMDisconnectedExceptionWrapper ex) {
+                        } catch (ObjectCollectedExceptionWrapper ocex) {
+                            // Thread was collected...
+                            getDebuggerImpl().getOperator().unregister(stepIntoRequest);
+                            stepIntoRequest = null;
                             return null;
                         }
-                        stepIntoRequest = null;
-                        return null;
                     } catch (VMDisconnectedExceptionWrapper e) {
                         stepIntoRequest = null;
                         return null;
@@ -457,22 +458,23 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             smartLogger.finer("Set step request("+step+") and patterns: ");
         }
         try {
-            addPatternsToRequest (
-                getSmartSteppingFilterImpl ().getExclusionPatterns (),
-                stepRequest
-            );
-            EventRequestWrapper.enable (stepRequest);
-        } catch (IllegalThreadStateException itsex) {
             try {
+                addPatternsToRequest (
+                    getSmartSteppingFilterImpl ().getExclusionPatterns (),
+                    stepRequest
+                );
+                EventRequestWrapper.enable (stepRequest);
+            } catch (IllegalThreadStateException itsex) {
                 // the thread named in the request has died.
                 getDebuggerImpl().getOperator().unregister(stepRequest);
-            } catch (InternalExceptionWrapper ex) {
+                stepRequest = null;
                 return null;
-            } catch (VMDisconnectedExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                // the thread named in the request was collected.
+                getDebuggerImpl().getOperator().unregister(stepRequest);
+                stepRequest = null;
                 return null;
             }
-            stepRequest = null;
-            return null;
         } catch (InternalExceptionWrapper ex) {
             return null;
         } catch (VMDisconnectedExceptionWrapper ex) {
