@@ -38,13 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** Test that cookie actions are in fact sensitive to the correct cookies in the
+ * correct numbers, and that changes to either node selection or cookies on the
+ * selected nodes trigger a change in the selected state.
+ * @author Jesse Glick
+ */
+public class ContextActionNonAWTTest extends ContextActionTest {
+    public ContextActionNonAWTTest(String name) {
+        super(name);
+    }
+    
+    protected boolean runInEQ() {
+        return false;
+    }
+    
+    protected boolean getIsEnabled(final Action a1) throws InterruptedException, InvocationTargetException {
+        assertFalse("Not in AWT", EventQueue.isDispatchThread());
+        
+        class R implements Runnable {
+            boolean is;
+            public void run() {
+                is = a1.isEnabled();
+            }
+        }
+        R run = new R();
+        SwingUtilities.invokeAndWait(run);
+        return run.is;
+    }
+    protected void doActionPerformed(final Action a1, final ActionEvent ev) throws InterruptedException, InvocationTargetException {
+        assertFalse("Not in AWT", EventQueue.isDispatchThread());
+        
+        class R implements Runnable {
+            public void run() {
+                a1.actionPerformed(ev);
+            }
+        }
+        R run = new R();
+        SwingUtilities.invokeAndWait(run);
+    }
+    
 }
+

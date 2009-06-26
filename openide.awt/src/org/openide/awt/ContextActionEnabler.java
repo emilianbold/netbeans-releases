@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
+import java.util.List;
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** Additional callback interface to decide whether an action shall
+ * be enabled on given data or not. Implementation of this interface
+ * can be passed to one of the {@link Factory#context} methods in 
+ * addition to regular data type to watch for and its {@link ContextSelection}
+ * policy.
+ *
+ * @author Jaroslav Tulach
+ */
+interface ContextActionEnabler<T> {
+    /** Shall the associated action be enabled on given data?
+     * 
+     * @param data the unmodifiable list of elements to potentially operate on
+     */
+    public boolean enabled(List<? extends T> data);
 }

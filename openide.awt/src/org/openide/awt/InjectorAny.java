@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,14 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.Constructor;
+import java.util.List;
+import java.util.Map;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
-}
+final class InjectorAny extends ContextAction.Performer<Object> {
+    public InjectorAny(Map fo) {
+        super(fo);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ev, List<? extends Object> data, Provider everything) {
+        String clazz = (String) delegate.get("injectable"); // NOI18N
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+        if (l == null) {
+            l = Thread.currentThread().getContextClassLoader();
+        }
+        if (l == null) {
+            l = Actions.class.getClassLoader();
+        }
+        try {
+            Class<?> clazzC = Class.forName(clazz, true, l);
+            Constructor c = clazzC.getConstructor(List.class);
+            ActionListener action = (ActionListener) c.newInstance(data);
+            action.actionPerformed(ev);
+        } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }

@@ -84,6 +84,11 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.netbeans.api.actions.Closable;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Viewable;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
@@ -427,7 +432,38 @@ public class Actions extends Object {
     static Action alwaysEnabled(Map map) {
         return new AlwaysEnabledAction(map);
     }
-
+    static ContextAwareAction callback(Map fo) {
+        return GeneralAction.callback(fo);
+    }
+    static ContextAwareAction context(Map fo) {
+        return GeneralAction.context(fo);
+    }
+    static ContextAction.Performer<?> inject(final Map fo) {
+        Object t = fo.get("selectionType"); // NOI18N
+        if (ContextSelection.EXACTLY_ONE.toString().equals(t)) {
+            return new InjectorExactlyOne(fo);
+        }
+        if (ContextSelection.ANY.toString().equals(t)) {
+            return new InjectorAny(fo);
+        }
+        throw new IllegalStateException("no selectionType parameter in " + fo); // NOI18N
+    }
+    static ContextAction.Performer<?> performer(final Map fo) {
+        String type = (String)fo.get("type");
+        if (type.equals(Openable.class.getName())) {
+            return new ActionDefaultPerfomer(0);
+        }
+        if (type.equals(Viewable.class.getName())) {
+            return new ActionDefaultPerfomer(1);
+        }
+        if (type.equals(Editable.class.getName())) {
+            return new ActionDefaultPerfomer(2);
+        }
+        if (type.equals(Closable.class.getName())) {
+            return new ActionDefaultPerfomer(3);
+        }
+        throw new IllegalStateException(type);
+    }
     
     /** Extracts help from action.
      */

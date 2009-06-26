@@ -38,13 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import junit.framework.Assert;
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** Utilities for actions tests.
+ * @author Jesse Glick
+ */
+public class ActionsInfraHid {//implements ContextGlobalProvider {
+
+    /** Prop listener that will tell you if it gets a change.
+     */
+    public static final class WaitPCL implements PropertyChangeListener, Runnable {
+        /** whether a change has been received, and if so count */
+        public int gotit = 0;
+        /** optional property name to filter by (if null, accept any) */
+        private final String prop;
+        public WaitPCL(String p) {
+            prop = p;
+        }
+        public synchronized void propertyChange(PropertyChangeEvent evt) {
+            Assert.assertTrue("In AWT thread", EventQueue.isDispatchThread());
+            
+            if (prop == null || prop.equals(evt.getPropertyName())) {
+                gotit++;
+                notifyAll();
+            }
+        }
+        public boolean changed() {
+            synchronized (this) {
+                if (gotit > 0) {
+                    return true;
+                }
+            }
+            
+            if (!EventQueue.isDispatchThread()) {
+                try {
+                    EventQueue.invokeAndWait(this);
+                } catch (InvocationTargetException ex) {
+                    ex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            
+            return gotit > 0;
+        }
+        
+        public void run() {
+        }
+    }
+
 }

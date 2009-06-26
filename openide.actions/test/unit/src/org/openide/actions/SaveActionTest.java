@@ -38,13 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.actions;
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.SaveCookie;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+public class SaveActionTest extends NbTestCase
+implements SaveCookie {
+    private int cnt;
+
+    public SaveActionTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
+    public void testActionWorksOnSaveCookieOnly() {
+        Lookup lkp = Lookups.singleton(this);
+        SaveAction sa = SaveAction.get(SaveAction.class);
+        Action clone = sa.createContextAwareInstance(lkp);
+        clone.actionPerformed(new ActionEvent(this, 0, ""));
+        assertEquals("Save was called", 1, cnt);
+    }
+
+    public void save() throws IOException {
+        cnt++;
+    }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
+import java.awt.event.ActionEvent;
+import java.util.List;
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** Callback handler of invocations on some data type.
+ *
+ * @author Jaroslav Tulach
+ */
+interface ContextActionPerformer<T> {
+    /** Performs action initiated by the event <code>ev</code> on
+     * given data. 
+     * 
+     * @param ev the event that initiated this action
+     * @param data the unmodifiable list of elements to operate on
+     */
+    public void actionPerformed(ActionEvent ev, List<? extends T> data);
 }

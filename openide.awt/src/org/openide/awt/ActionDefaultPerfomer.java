@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
+package org.openide.awt;
 
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Viewable;
+import org.openide.util.Lookup.Provider;
 
+final class ActionDefaultPerfomer extends ContextAction.Performer<Object> {
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+    final int type;
+
+    public ActionDefaultPerfomer(int type) {
+        super(Collections.emptyMap());
+        this.type = type;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ev, List<? extends Object> data, Provider everything) {
+        for (Object o : data) {
+            switch (type) {
+                case 0:
+                    ((Openable) o).open();
+                    break;
+                case 1:
+                    ((Viewable) o).view();
+                    break;
+                case 2:
+                    ((Editable) o).edit();
+                    break;
+                case 3:
+                    ((Closable) o).close();
+                    break;
+                default:
+                    assert false : "Wrong type: " + type;
+            }
+        }
+    }
 }

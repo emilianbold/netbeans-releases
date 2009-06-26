@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
-
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** Possible types of selections in case of {@link ContextAction.Performer}.
+ * These values can be passed to {@link Factory#context} method to specify 
+ * the selection mode that will influence the selection in the action.
+ *
+ * @author Jaroslav Tulach
+ */
+enum ContextSelection {
+    /** the action is enabled when exactly one instance of 
+     * desired object is present
+     */
+    EXACTLY_ONE,
+    /** the action is enabled if at least one, but potentially
+     * many instances of a desired object are present
+     */
+    ANY,
+    /** Each of the selected items (like <a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a>s)
+     * has to provide exactly one desired object. Moreover there is at least
+     * one selected item.
+     */
+    EACH,
+    /** Each of the selected items (like <a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a>s)
+     * has to provide at least one of the desired objects, but it can provide more.
+     */
+    ALL
 }

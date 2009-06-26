@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.openide.cookies;
 
-import org.netbeans.api.actions.Closable;
-import org.openide.nodes.Node;
+package org.openide.awt;
 
+import java.lang.ref.WeakReference;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-/** Permits an object which was {@link OpenCookie opened} to be closed.
-*/
-public interface CloseCookie extends Closable, Node.Cookie {
+/** Test of behaviour of manager listening for ActionMap in a lookup.
+ *
+ * @author Jaroslav Tulach
+ */
+public class GlobalManagerTest extends NbTestCase {
+    
+    public GlobalManagerTest(String testName) {
+        super(testName);
+    }
+
+    protected void setUp() throws Exception {
+    }
+
+    protected void tearDown() throws Exception {
+    }
+
+    public void testFindManager() {
+        doFindManager(true);
+    }
+    public void testFindManagerNoSurvive() {
+        doFindManager(false);
+    }
+    
+    private void doFindManager(boolean survive) {
+        Lookup context = new AbstractLookup(new InstanceContent());
+        
+        GlobalManager r1 = GlobalManager.findManager(context, survive);
+        assertNotNull("Need an instace", r1);
+        GlobalManager r2 = GlobalManager.findManager(context, survive);
+        assertEquals("Caches", r1, r2);
+
+        Lookup c3 = new AbstractLookup(new InstanceContent());
+        GlobalManager r3 = GlobalManager.findManager(c3, survive);
+        if (r3 == r2) {
+            fail("Need next manager for new lookup: " + r2 + " e: " + r3);
+        }
+        
+        r1 = null;
+        WeakReference<?> ref = new WeakReference<GlobalManager>(r2);
+        r2 = null;
+        assertGC("Disappers", ref);
+        
+        WeakReference<?> lookupRef = new WeakReference<Lookup>(c3);
+        c3 = null;
+        r3 = null;
+        
+        assertGC("Lookup can also disappear", lookupRef);
+    }
+    
 }
