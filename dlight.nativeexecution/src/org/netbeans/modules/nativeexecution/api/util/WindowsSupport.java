@@ -136,6 +136,11 @@ public final class WindowsSupport {
         } catch (IOException e) {
         }
 
+        // If not found, try to search for the entry in user's space ...
+        if (key.toLowerCase().startsWith("hklm")) { // NOI18N
+            return queryWindowsRegistry("HKCU" + key.substring(4), param, regExpr); // NOI18N
+        }
+
         return null;
     }
 

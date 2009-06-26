@@ -111,7 +111,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             }
             lb = AddressBreakpoint.create(dis.getLineAddress(ln));
             lb.setPrintText(
-                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")
+                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Address_Breakpoint_Print_Text")
             );
             log.fine("ToggleBreakpointActionProvider.doAction: Adding disassembly breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
             d.addBreakpoint(lb);

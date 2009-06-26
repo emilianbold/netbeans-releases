@@ -41,38 +41,40 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb.j2ee1_3;
 
-import org.netbeans.modules.schema2beans.Version;
-import org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanSingle;
+// TODO PetrS Not used anywhere, not part of API. Remove!
 
-abstract public class EntityBean extends ComponentBeanSingle {
-
-    public EntityBean(java.util.Vector comps, Version version) {
-	super(comps, version);
-    }
-
-    //
-    // The 1.3 descriptor wants True or False instead of the boolean value
-    //
-    public static final String TRUE = "True";	//NOI18N
-    public static final String FALSE = "False";	//NOI18N
-
-    public void setReentrant(boolean value) {
-	if (value) {
-	    setReentrant(TRUE);
-	} else {
-	    setReentrant(FALSE);
-	}
-    }
-
-    public boolean isReentrant() {
-	String value = getReentrant();
-	if ((value == null) || value.equals(FALSE)) {
-	    return false;
-	} else {
-	    return true;
-	}
-    }
-
-    abstract public void setReentrant(String value);
-    abstract public String getReentrant();
-}
+//import org.netbeans.modules.schema2beans.Version;
+//import org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanSingle;
+//
+//abstract public class EntityBean extends ComponentBeanSingle {
+//
+//    public EntityBean(java.util.Vector comps, Version version) {
+//	super(comps, version);
+//    }
+//
+//    //
+//    // The 1.3 descriptor wants True or False instead of the boolean value
+//    //
+//    public static final String TRUE = "True";	//NOI18N
+//    public static final String FALSE = "False";	//NOI18N
+//
+//    public void setReentrant(boolean value) {
+//	if (value) {
+//	    setReentrant(TRUE);
+//	} else {
+//	    setReentrant(FALSE);
+//	}
+//    }
+//
+//    public boolean isReentrant() {
+//	String value = getReentrant();
+//	if ((value == null) || value.equals(FALSE)) {
+//	    return false;
+//	} else {
+//	    return true;
+//	}
+//    }
+//
+//    abstract public void setReentrant(String value);
+//    abstract public String getReentrant();
+//}

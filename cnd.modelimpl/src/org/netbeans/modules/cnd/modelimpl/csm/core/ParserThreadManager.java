@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -119,12 +120,7 @@ public final class ParserThreadManager {
 //        int threadCount = Integer.getInteger("cnd.modelimpl.parser.wrappers",
 //                Math.max(Runtime.getRuntime().availableProcessors()-1, 1)).intValue();
 
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
-                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
-
-        threadCount = Math.min(threadCount, 8);
-        threadCount = Math.max(threadCount, 1);
-
+        int threadCount = CndUtils.getNumberCndWorkerThreads();
 
         if (!standalone) {
             processor = new RequestProcessor(threadNameBase, threadCount);

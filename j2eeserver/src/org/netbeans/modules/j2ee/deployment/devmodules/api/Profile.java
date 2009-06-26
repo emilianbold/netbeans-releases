@@ -47,12 +47,12 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public final class Profile implements Comparable<Profile> {
+public final class Profile {
 
-    public static final Comparator<Profile> REVERSE_COMPARATOR = new Comparator<Profile>() {
+    public static final Comparator<Profile> PROFILE_UI_COMPARATOR = new Comparator<Profile>() {
 
         public int compare(Profile o1, Profile o2) {
-            return -(o1.compareTo(o2));
+            return -(o1.order - o2.order);
         }
     };
 
@@ -97,10 +97,6 @@ public final class Profile implements Comparable<Profile> {
     @Override
     public String toString() {
         return name;
-    }
-
-    public int compareTo(Profile o) {
-        return this.order - o.order;
     }
 
     public static Profile fromPropertiesString(String value) {

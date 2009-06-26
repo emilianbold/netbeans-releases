@@ -59,7 +59,7 @@ public class TargNode extends AbstractNode {
         return bogusNodes;
     }
     
-    public TargNode(Targ targ) {
+    public TargNode(TestTarget targ) {
         super(new MyChildren(Arrays.asList(getNodes())));
         setDisplayName("Original:"+ targ.getName());
         setIconBase("org/netbeans/tests/j2eeserver/plugin/registry/target");

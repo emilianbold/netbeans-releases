@@ -51,6 +51,7 @@ import java.net.URLConnection;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Creates an HTTP connection to Hudson.
@@ -78,12 +78,18 @@ public final class ConnectionBuilder {
     private static final Logger LOG = Logger.getLogger(ConnectionBuilder.class.getName());
     private static final RequestProcessor TIMER = new RequestProcessor(ConnectionBuilder.class.getName() + ".TIMER"); // NOI18N
 
+    /**
+     * Session cookies set by home.
+     * {@link java.net.CookieManager} in JDK 6 would be a bit easier.
+     */
+    private static final Map<URL,String[]> COOKIES = new HashMap<URL,String[]>();
+
     private URL home;
     private URL url;
     private final Map<String,String> requestHeaders = new LinkedHashMap<String,String>();
     private byte[] postData;
-    private Map<String,List<String>> responseHeaders;
     private int timeout;
+    private boolean auth = true;
 
     /**
      * Prepare a connection.
@@ -170,16 +176,6 @@ public final class ConnectionBuilder {
     }
 
     /**
-     * Collect headers from the response.
-     * @param responseHeaders a map which will be populated on the <em>initial</em> connection
-     * @return this builder
-     */
-    public ConnectionBuilder collectResponseHeaders(Map<String,List<String>> responseHeaders) {
-        this.responseHeaders = responseHeaders;
-        return this;
-    }
-
-    /**
      * Sets a timeout on the response.
      * If the connection has not opened within that time,
      * {@link InterruptedIOException} will be thrown from {@link #connection}.
@@ -188,6 +184,16 @@ public final class ConnectionBuilder {
      */
     public ConnectionBuilder timeout(int milliseconds) {
         timeout = milliseconds;
+        return this;
+    }
+
+    /**
+     * Configures whether to prompt for authentication.
+     * @param true to prompt for authentication (the default), false to immediately report 403s as errors
+     * @return this builder
+     */
+    public ConnectionBuilder authentication(boolean a) {
+        auth = a;
         return this;
     }
 
@@ -260,6 +266,13 @@ public final class ConnectionBuilder {
                 for (ConnectionAuthenticator auth : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
                     auth.prepareRequest(conn, home);
                 }
+                if (COOKIES.containsKey(home)) {
+                    for (String cookie : COOKIES.get(home)) {
+                        String cookieBare = cookie.replaceFirst(";.*", ""); // NOI18N
+                        LOG.log(Level.FINER, "Setting cookie {0} for {1}", new Object[] {cookieBare, conn.getURL()});
+                        conn.setRequestProperty("Cookie", cookieBare); // NOI18N
+                    }
+                }
             }
             if (postData != null) {
                 conn.setDoOutput(true);
@@ -286,10 +299,12 @@ public final class ConnectionBuilder {
             if (!(conn instanceof HttpURLConnection)) {
                 break;
             }
-            if (responseHeaders != null) {
-                responseHeaders.putAll(conn.getHeaderFields());
-                LOG.log(Level.FINER, "  => {0}", responseHeaders);
-                responseHeaders = null;
+            if (home != null) {
+                List<String> cookies = conn.getHeaderFields().get("Set-Cookie"); // NOI18N
+                if (cookies != null) {
+                    LOG.log(Level.FINE, "Cookies set for domain {0}: {1}", new Object[] {home, cookies});
+                    COOKIES.put(home, cookies.toArray(new String[cookies.size()]));
+                }
             }
             int responseCode = ((HttpURLConnection) conn).getResponseCode();
             LOG.log(Level.FINER, "  => {0}", responseCode);
@@ -301,7 +316,7 @@ public final class ConnectionBuilder {
                 conn = redirect.openConnection();
                 continue RETRY;
             case HttpURLConnection.HTTP_FORBIDDEN:
-                if (home != null) {
+                if (auth && home != null) {
                     for (ConnectionAuthenticator auth : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
                         URLConnection retry = auth.forbidden(conn, home);
                         if (retry != null) {
