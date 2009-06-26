@@ -310,7 +310,9 @@ made subject to such option by the copyright holder.
 &lt;folder name="Editors"&gt;
   &lt;folder name="text"&gt;
     &lt;folder name="x-something"&gt;
-        &lt;file name="org-some-module-BMFactory.instance" /&gt;
+        &lt;folder name="BracesMatchers"&gt;
+            &lt;file name="org-some-module-BMFactory.instance" /&gt;
+        &lt;/folder&gt;
     &lt;/folder&gt;
   &lt;/folder&gt;
 &lt;/folder&gt;
