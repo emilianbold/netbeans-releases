@@ -20,32 +20,6 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>Module</bean-name>
 		<implements>org.netbeans.modules.j2ee.dd.api.application.Module</implements>
-                <user-code>
-                    public String getAltDdId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public void setAltDdId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public String getJavaId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public void setJavaId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public String getEjbId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public void setEjbId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public String getConnectorId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                    public void setConnectorId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
-                    }
-                </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>security-roleType</dtd-name>
