@@ -89,48 +89,49 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     public void testQuote() throws IOException {
         testSample("Quote", "all");
     }
-
-    @Test
-    public void testPi() throws IOException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            setDefaultCompilerSet("SunStudio");
-            testSample("Pi", "all");
-        }
-    }
-
-    @Test
-    public void testFreeway() throws IOException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            setDefaultCompilerSet("SunStudio");
-            testSample("Freeway", "all");
-            setDefaultCompilerSet("GNU");
-            testSample("Freeway", "all");
-        }
-    }
-
-    @Test
-    public void testFractal() throws IOException {
-        testSample("Fractal", "CONF=Debug");
-        testSample("Fractal", "CONF=PerformanceDebug");
-        testSample("Fractal", "CONF=DianogsableRelease");
-        testSample("Fractal", "CONF=Release");
-        testSample("Fractal", "CONF=PerformanceRelease");
-    }
-
-    @Test
-    public void testLexYacc() throws IOException {
-        testSample("LexYacc", "all");
-    }
-
-    @Test
-    public void testMP() throws IOException {
-        testSample("MP", "all");
-    }
-
+    
     @Test
     public void testSubProjects() throws IOException {
         testSample("SubProjects", "all");
     }
+
+//    @Test
+//    public void testPi() throws IOException {
+//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//            setDefaultCompilerSet("SunStudio");
+//            testSample("Pi", "all");
+//        }
+//    }
+//
+//    @Test
+//    public void testFreeway() throws IOException {
+//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//            setDefaultCompilerSet("SunStudio");
+//            testSample("Freeway", "all");
+//            setDefaultCompilerSet("GNU");
+//            testSample("Freeway", "all");
+//        }
+//    }
+//
+//    @Test
+//    public void testFractal() throws IOException {
+//        testSample("Fractal", "CONF=Debug");
+//        testSample("Fractal", "CONF=PerformanceDebug");
+//        testSample("Fractal", "CONF=DianogsableRelease");
+//        testSample("Fractal", "CONF=Release");
+//        testSample("Fractal", "CONF=PerformanceRelease");
+//    }
+//
+//    @Test
+//    public void testLexYacc() throws IOException {
+//        testSample("LexYacc", "all");
+//    }
+//
+//    @Test
+//    public void testMP() throws IOException {
+//        testSample("MP", "all");
+//    }
+
 
     private void setDefaultCompilerSet(String setName) {
         List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
