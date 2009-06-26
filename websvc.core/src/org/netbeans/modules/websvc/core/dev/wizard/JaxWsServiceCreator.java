@@ -358,6 +358,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
         } else {
             final WsdlPort port = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
+            final boolean isStatelessSB = (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN);
             //String portJavaName = port.getJavaName();   
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
             // don't set the packageName for modeler (use the default one generated from target Namespace)
@@ -374,13 +375,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     port1.setSOAPVersion(port.getSOAPVersion());
                     FileObject targetFolder = Templates.getTargetFolder(wiz);
                     String targetName = Templates.getTargetName(wiz);
-
                     try {
                         JaxWsUtils.generateJaxWsImplementationClass(projectInfo.getProject(),
                                 targetFolder,
                                 targetName,
                                 wsdlURL,
-                                service1, port1, useProvider);
+                                service1, port1, useProvider, isStatelessSB);
                         handle.finish();
                     } catch (Exception ex) {
                         handle.finish();
