@@ -58,6 +58,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -82,7 +83,7 @@ class SlownessReporter {
     private static final String UI_ACTION_EDITOR = "UI_ACTION_EDITOR";  //NOI18N
     private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
-    private static final long LATEST_ACTION_LIMIT = 200;//ms
+    static final long LATEST_ACTION_LIMIT = 1000;//ms
     
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
@@ -175,7 +176,8 @@ class SlownessReporter {
             JPanel result = new JPanel();
             result.setOpaque(false);
             result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
-            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", data.getTime(), data.getTime() / 1000), this));
+            result.add(new JLabel(NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", data.getTime(), data.getTime() / 1000)));
+            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_SeeSnapshot"), this));
             result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_Report"), new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {

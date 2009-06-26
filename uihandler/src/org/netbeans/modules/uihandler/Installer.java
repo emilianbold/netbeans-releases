@@ -1152,9 +1152,7 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\"");
             os.println("Content-Type: x-application/nps");
             os.println();
-            GZIPOutputStream gzip = new GZIPOutputStream(os);
-            gzip.write(slownData.getNpsContent());
-            gzip.finish();
+            os.write(slownData.getNpsContent());
             os.println();
             os.println("\n----------konec<>bloku");
         }

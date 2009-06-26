@@ -65,17 +65,17 @@ public class SlownessReporterTest extends NbTestCase {
         logs = new ArrayList<LogRecord>();
         LogRecord rec = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         Object[] params = new Object[]{null, null, null, null, "undo"};
-        rec.setMillis(now - 20);
+        rec.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/2);
         rec.setParameters(params);
         logs.add(rec);
         LogRecord rec2 = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         params = new Object[]{null, null, null, null, "redo"};
-        rec2.setMillis(now - 10);
+        rec2.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/5);
         rec2.setParameters(params);
         logs.add(rec2);
         LogRecord rec3 = new LogRecord(Level.FINE, "SOME OTHER LOG");
         params = new Object[]{null, null, null, null, "redo"};
-        rec3.setMillis(now - 1);
+        rec3.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/10);
         rec3.setParameters(params);
         logs.add(rec3);
     }
@@ -91,7 +91,7 @@ public class SlownessReporterTest extends NbTestCase {
     public void testIgnoreOldActions() {
         SlownessReporter reporter = new SlownessReporter();
         for (LogRecord logRecord : logs) {
-            logRecord.setMillis(logRecord.getMillis() - 500);
+            logRecord.setMillis(logRecord.getMillis() - SlownessReporter.LATEST_ACTION_LIMIT*2);
         }
         String latestAction = reporter.getLatestAction(logs, new byte[0], 10L);
         assertNull(latestAction);
