@@ -57,6 +57,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
@@ -379,7 +380,7 @@ class ObjectProviders {
         public List<T> createInitialObjects() throws InterruptedException {
             final List<T> result = new LinkedList<T>();
             getHelper().getAnnotationScanner().findAnnotations(getAnnotationName(), 
-                    EnumSet.of( ElementKind.CLASS ), 
+                    AnnotationScanner.TYPE_KINDS, 
                     new AnnotationHandler() {
                         public void handleAnnotation(TypeElement type, 
                                 Element element, AnnotationMirror annotation) 

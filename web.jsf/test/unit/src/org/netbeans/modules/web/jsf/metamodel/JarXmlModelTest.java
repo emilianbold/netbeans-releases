@@ -52,6 +52,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.Factory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -68,9 +69,9 @@ public class JarXmlModelTest extends CommonTestCase {
         super.setUp();
         List<URL> urls = new ArrayList<URL>(2);
         URL url = JarXmlModelTest.class.getResource("data/lib.jar");
-        urls.add(  new URL("jar:"+url.toString()+"!/") );
+        urls.add(  FileUtil.getArchiveRoot( url ));
         url = JarXmlModelTest.class.getResource("data/lib1.jar");
-        urls.add(  new URL( "jar:"+url.toString()+"!/") );
+        urls.add(  FileUtil.getArchiveRoot( url) );
         addCompileRoots( urls );
     }
     

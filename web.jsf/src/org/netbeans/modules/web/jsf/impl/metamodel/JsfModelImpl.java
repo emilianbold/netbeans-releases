@@ -123,9 +123,19 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
             }
         }
         
-        if ( finder != null && myMainModel != null && 
-                myMainModel.getRootComponent()!= null &&
-                !myMainModel.getRootComponent().isMetaDataComplete() )
+        
+        JSFConfigModel model = myMainModel;
+        boolean metadataComplete = false;
+        if ( model!= null){
+            FacesConfig config = model.getRootComponent();
+            if ( config!= null ){
+                Boolean isComplete = config.isMetaDataComplete();
+                if ( isComplete!= null ){
+                    metadataComplete = isComplete;
+                }
+            }
+        }
+        if ( finder != null && !metadataComplete )
         {
             result.addAll( finder.getAnnotations( this  ));
         }
@@ -146,7 +156,8 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      */
     public FacesConfig getMainConfig() {
         refreshModels();
-        return myMainModel!= null ? myMainModel.getRootComponent() : null ;
+        JSFConfigModel model = myMainModel;
+        return model!= null ? model.getRootComponent() : null ;
     }
 
     /* (non-Javadoc)

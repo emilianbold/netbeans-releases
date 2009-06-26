@@ -583,6 +583,9 @@ made subject to such option by the copyright holder.
 			<test-dependency>
 			    <code-name-base>org.netbeans.modules.projectui</code-name-base>
 			</test-dependency>
+			<test-dependency>
+			    <code-name-base>org.netbeans.modules.web.jsf20</code-name-base>
+			</test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

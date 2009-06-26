@@ -41,42 +41,69 @@
 package org.netbeans.modules.web.jsf.metamodel;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
+import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
+import org.openide.filesystems.FileUtil;
 
 
 /**
  * @author ads
  *
  */
-public class CommonTestCase extends JavaSourceTestCase {
+public class AnnotationsTest extends CommonTestCase {
 
-    public CommonTestCase( String testName ) {
+    public AnnotationsTest( String testName ) {
         super(testName);
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.metamodel.CommonTestCase#setUp()
+     */
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-    }
-    
-    public MetadataModel<JsfModel> createJsfModel() throws IOException, InterruptedException {
-        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
-        ModelUnit modelUnit = ModelUnit.create(
-                ClassPath.getClassPath(srcFO, ClassPath.BOOT),
-                ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
-                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
-        return JsfModelFactory.createMetaModel(modelUnit);
+        URL url = FileUtil.getArchiveRoot(javax.faces.component.FacesComponent.class.getProtectionDomain().
+                getCodeSource().getLocation());
+        addCompileRoots( Collections.singletonList( url ));
     }
 
-    public String getFileContent( String relativePath ) throws IOException{
-        return TestUtilities.copyStreamToString(SeveralXmlModelTest.class.
-                getResourceAsStream( relativePath));
+    public void testModel() throws IOException, InterruptedException {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomComponent.java",
+                "package foo; " +
+                "import javax.faces.component.*; " +
+                "@FacesComponent(value=\"a\") " +
+                "public class CustomComponent  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBehavior.java",
+                "package foo; " +
+                "import javax.faces.component.behavior .*; " +
+                "@FacesBehavior(value=\"b\") " +
+                "public class CustomBehavior  {" +
+                "}");
+        
+        createJsfModel().runReadAction(new MetadataModelAction<JsfModel,Void>(){
+
+            public Void run( JsfModel model ) throws Exception {
+                List<Component> components = model.getElements(Component.class);
+                assertEquals( 1 ,  components.size());
+                assertEquals( "foo.CustomComponent", components.get(0 ).getComponentClass() );
+                assertEquals( "a", components.get(0 ).getComponentType() );
+                
+                List<Behavior> behaviors = model.getElements( Behavior.class);
+                assertEquals( 1 ,  behaviors.size());
+                assertEquals( "foo.CustomBehavior", behaviors.get(0 ).getBehaviorClass() );
+                assertEquals( "b", behaviors.get(0 ).getBehaviorId() );
+                return null;
+            }
+        });
     }
 }
