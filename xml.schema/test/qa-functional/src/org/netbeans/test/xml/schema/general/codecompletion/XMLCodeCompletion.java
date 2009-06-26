@@ -44,8 +44,6 @@ package org.netbeans.test.xml.schema.general.codecompletion;
 import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -58,8 +56,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
-import javax.swing.SwingUtilities;
-import junit.framework.AssertionFailedError;
 
 /**
  *
