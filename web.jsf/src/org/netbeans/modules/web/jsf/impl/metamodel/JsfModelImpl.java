@@ -220,7 +220,6 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      */
     @Override
     protected List<SystemEventListener> getSystemEventListeners() {
-        // TODO : scan for @ListenersFor annotation.
         // Notion : one don't need to check metadata-complete attribute. 
         // Listeners annotations works in any case. 
         Collection<SystemEventListenerImpl> collection =  
@@ -283,10 +282,9 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         
         FileObject[] roots = getUnit().getCompilePath().getRoots();
         for (FileObject fileObject : roots) {
-            if ( !FileUtil.isArchiveFile( fileObject )){
-                continue;
+            if ( FileUtil.isArchiveFile( fileObject )){
+                fileObject  = FileUtil.getArchiveRoot(fileObject);
             }
-            fileObject  = FileUtil.getArchiveRoot(fileObject);
             collectModels(models, fileObject);
         }
         
@@ -351,10 +349,9 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                     List<JSFConfigModel> deleted = getModels();
                     List<FileObject> added = new LinkedList<FileObject>();
                     for (FileObject root : roots) {
-                        if ( !FileUtil.isArchiveFile( root )){
-                            continue;
+                        if ( FileUtil.isArchiveFile( root )){
+                            root = FileUtil.getArchiveRoot( root );
                         }
-                        root = FileUtil.getArchiveRoot( root );
                         boolean found = false;
                         for ( JSFConfigModel model : myModels ){
                             FileObject fileObject = model.getModelSource().
@@ -393,8 +390,6 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
             
         });
         
-        ClassPath sources = getUnit().getSourcePath();
-        FileObject[] fileObjects = sources.getRoots();
         myListener = new FileChangeListener(){
 
             public void fileAttributeChanged( FileAttributeEvent arg0 ) {
@@ -475,7 +470,7 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
             }
 
             public void fileRenamed( FileRenameEvent arg0 ) {
-                // TODO Auto-generated method stub
+                // TODO ??
                 
             }
             
