@@ -915,7 +915,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (stepsDeletedDuringMethodInvoke != null) {
                 try {
                     for (StepRequest sr : stepsDeletedDuringMethodInvoke) {
-                        EventRequestWrapper.enable(sr);
+                        try {
+                            EventRequestWrapper.enable(sr);
+                        } catch (ObjectCollectedExceptionWrapper ex) {
+                            continue;
+                        }
                         if (logger.isLoggable(Level.FINE)) logger.fine("ENABLED Step Request: "+sr);
                     }
                 } catch (InternalExceptionWrapper iew) {
@@ -1407,7 +1411,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return true;
     }
 
-    private void submitMonitorEnteredRequest(EventRequest monitorEnteredRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    private void submitMonitorEnteredRequest(EventRequest monitorEnteredRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         EventRequestWrapper.setSuspendPolicy(monitorEnteredRequest, EventRequest.SUSPEND_ALL);
         EventRequestWrapper.putProperty(monitorEnteredRequest, Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
         debugger.getOperator().register(monitorEnteredRequest, new Executor() {
@@ -1478,7 +1482,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         try {
             EventRequestWrapper.enable(monitorEnteredRequest);
         } catch (InternalExceptionWrapper ex) {
-        } catch (VMDisconnectedExceptionWrapper ex) {
+            debugger.getOperator().unregister(monitorEnteredRequest);
+            throw ex;
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            debugger.getOperator().unregister(monitorEnteredRequest);
+            throw ocex;
         }
     }
 
@@ -1494,6 +1502,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             MonitorContendedEnteredRequestWrapper.addThreadFilter(monitorEnteredRequest, threadReference);
             submitMonitorEnteredRequest(monitorEnteredRequest);
         } catch (InternalExceptionWrapper e) {
+            return false;
+        } catch (ObjectCollectedExceptionWrapper e) {
             return false;
         } catch (VMDisconnectedExceptionWrapper e) {
             return false;

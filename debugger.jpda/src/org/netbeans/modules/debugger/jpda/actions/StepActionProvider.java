@@ -243,6 +243,10 @@ implements Executor {
                 }
                 getDebuggerImpl ().getOperator ().unregister(stepRequest);
                 return ;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                // Thread was collected...
+                getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                return ;
             }
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);

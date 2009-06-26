@@ -255,6 +255,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             }
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
+        } catch (ObjectCollectedExceptionWrapper e) {
         }
     }
     

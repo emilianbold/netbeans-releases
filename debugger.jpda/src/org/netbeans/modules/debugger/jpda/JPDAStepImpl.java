@@ -716,6 +716,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 } catch (IllegalThreadStateException itsex) {
                     // the thread named in the request has died.
                     debuggerImpl.getOperator ().unregister (stepRequest);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    // the thread named in the request was collected.
+                    debuggerImpl.getOperator ().unregister (stepRequest);
                 }
             } finally {
                 t.accessLock.readLock().unlock();
