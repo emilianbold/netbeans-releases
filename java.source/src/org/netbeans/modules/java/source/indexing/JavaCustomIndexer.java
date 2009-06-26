@@ -162,7 +162,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     break;
                                 }
                             }
-                            assert compileResult != null && compileResult.success;
+                            assert compileResult != null;
 
                             Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
                             Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
