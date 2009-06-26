@@ -279,6 +279,11 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
 //                    System.out.println("B     cls: " + referenceType);
             if (i != null) {
                 try {
+                    ClassLoaderReference clref = ReferenceTypeWrapper.classLoader(referenceType);
+                    if (ObjectReferenceWrapper.isCollected(clref)) {
+                        // Ignore classes whose class loaders are gone.
+                        continue;
+                    }
                     String name = ReferenceTypeWrapper.name (referenceType);
                     if (match (name, className)) {
                         boolean excluded = false;
@@ -307,6 +312,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     }
                 } catch (InternalExceptionWrapper e) {
                 } catch (VMDisconnectedExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
                 }
             }
         }
