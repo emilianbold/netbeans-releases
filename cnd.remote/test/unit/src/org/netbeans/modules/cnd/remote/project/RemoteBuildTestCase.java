@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.project;
 
+import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

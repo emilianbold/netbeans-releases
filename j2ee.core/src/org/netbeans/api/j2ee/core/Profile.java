@@ -37,9 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.deployment.devmodules.api;
+package org.netbeans.api.j2ee.core;
 
 import java.util.Comparator;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.NbBundle;
 
 /**
@@ -49,21 +52,21 @@ import org.openide.util.NbBundle;
  */
 public final class Profile {
 
-    public static final Comparator<Profile> PROFILE_UI_COMPARATOR = new Comparator<Profile>() {
+    public static final Comparator<Profile> UI_COMPARATOR = new Comparator<Profile>() {
 
         public int compare(Profile o1, Profile o2) {
             return -(o1.order - o2.order);
         }
     };
 
-    @SuppressWarnings("deprecation")
-    public static final Profile J2EE_13  = new Profile(1, J2eeModule.J2EE_13, "J2EE13.displayName");
+    // Do not ever change name of this constant - it is copied from j2eeserver
+    public static final Profile J2EE_13  = new Profile(1, "1.3", "J2EE13.displayName");
 
-    @SuppressWarnings("deprecation")
-    public static final Profile J2EE_14  = new Profile(2, J2eeModule.J2EE_14, "J2EE14.displayName");
+    // Do not ever change name of this constant - it is copied from j2eeserver
+    public static final Profile J2EE_14  = new Profile(2, "1.4", "J2EE14.displayName");
 
-    @SuppressWarnings("deprecation")
-    public static final Profile JAVA_EE_5  = new Profile(3, J2eeModule.JAVA_EE_5, "JavaEE5.displayName");
+    // Do not ever change name of this constant - it is copied from j2eeserver
+    public static final Profile JAVA_EE_5  = new Profile(3, "1.5", "JavaEE5.displayName");
 
     public static final Profile JAVA_EE_6_FULL  = new Profile(4, "EE_6_FULL", "JavaEE6Full.displayName");
 
@@ -86,10 +89,12 @@ public final class Profile {
      *
      * @return the UI visible description of the profile
      */
+    @NonNull
     public String getDisplayName() {
         return NbBundle.getMessage(Profile.class, bundleKey);
     }
 
+    @NonNull
     public String toPropertiesString() {
         return name;
     }
@@ -99,7 +104,8 @@ public final class Profile {
         return name;
     }
 
-    public static Profile fromPropertiesString(String value) {
+    @CheckForNull
+    public static Profile fromPropertiesString(@NullAllowed String value) {
         if (J2EE_13.toPropertiesString().equals(value)) {
             return J2EE_13;
         } else if (J2EE_14.toPropertiesString().equals(value)) {
