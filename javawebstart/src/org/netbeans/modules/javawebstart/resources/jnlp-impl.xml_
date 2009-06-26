@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
     <!-- Main target -->
     
     <target name="jnlp" depends="-init-filename,-test-jnlp-enabled" if="is.jnlp.enabled">
+        <makeurl property="jnlp.local.codebase.url" file="${basedir}/dist" validate="false"/>
         <delete file="dist/lib/javaws.jar" failonerror="false"/>
         <antcall target="generate-jnlp"/>
         <antcall target="generate-html-preview"/>

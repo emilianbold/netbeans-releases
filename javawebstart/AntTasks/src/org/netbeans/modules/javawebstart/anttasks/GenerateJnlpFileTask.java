@@ -183,7 +183,9 @@ public class GenerateJnlpFileTask extends Task {
         String codebaseAttr = ((Element) jnlpElem).getAttribute("codebase");
         String codebaseTypeProp = getProject().getProperty("jnlp.codebase.type"); // property in project.properties
         String codebaseProp = null;
-        if (codebaseTypeProp.equals("local") || codebaseTypeProp.equals("web")) {
+        if (codebaseTypeProp.equals("local")) {
+            codebaseProp = getProject().getProperty("jnlp.local.codebase.url");
+        } else if (codebaseTypeProp.equals("web")) {
             codebaseProp = getProject().getProperty("jnlp.codebase.url"); // property in project.properties
         } else if (codebaseTypeProp.equals("user")) {
             codebaseProp = getProject().getProperty("jnlp.codebase.user"); // property in project.properties

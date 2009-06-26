@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.dd.api.ejb.j2ee1_3;
+package org.netbeans.api.j2ee.core;
 
-// TODO PetrS Not used anywhere, not part of API. Remove!
+import org.netbeans.junit.NbTestCase;
 
-//import org.netbeans.modules.schema2beans.Version;
-//import org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanSingle;
-//
-//abstract public class EntityBean extends ComponentBeanSingle {
-//
-//    public EntityBean(java.util.Vector comps, Version version) {
-//	super(comps, version);
-//    }
-//
-//    //
-//    // The 1.3 descriptor wants True or False instead of the boolean value
-//    //
-//    public static final String TRUE = "True";	//NOI18N
-//    public static final String FALSE = "False";	//NOI18N
-//
-//    public void setReentrant(boolean value) {
-//	if (value) {
-//	    setReentrant(TRUE);
-//	} else {
-//	    setReentrant(FALSE);
-//	}
-//    }
-//
-//    public boolean isReentrant() {
-//	String value = getReentrant();
-//	if ((value == null) || value.equals(FALSE)) {
-//	    return false;
-//	} else {
-//	    return true;
-//	}
-//    }
-//
-//    abstract public void setReentrant(String value);
-//    abstract public String getReentrant();
-//}
+/**
+ *
+ * @author Petr Hejl
+ */
+public class ProfileTest extends NbTestCase {
+
+    public ProfileTest(String name) {
+        super(name);
+    }
+
+    public void testFromPropertiesString() {
+        assertEquals(Profile.J2EE_13, Profile.fromPropertiesString("1.3"));
+        assertEquals(Profile.J2EE_14, Profile.fromPropertiesString("1.4"));
+        assertEquals(Profile.JAVA_EE_5, Profile.fromPropertiesString("1.5"));
+        assertEquals(Profile.JAVA_EE_6_FULL, Profile.fromPropertiesString("EE_6_FULL"));
+        assertEquals(Profile.JAVA_EE_6_WEB, Profile.fromPropertiesString("EE_6_WEB"));
+        assertNull(Profile.fromPropertiesString("something"));
+    }
+}
