@@ -37,37 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.dd.impl.web.metadata;
+package org.netbeans.modules.ruby;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
-import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
- * @author Petr Slechta
+ *
+ * @author Marek Slama
  */
-abstract class MergeEngine<T> {
-    protected List<T> res = new ArrayList<T>();
-
-    void clean() {
-        res.clear();
+public final class RubyBracesMatcherFactory implements BracesMatcherFactory {
+    
+    public BracesMatcher createMatcher(MatcherContext context) {
+        return new RubyBracesMatcher(context);
     }
-
-    abstract void addItems(WebApp webXml);
-    abstract void addItems(WebFragment webFragment);
-    abstract void addAnnotations(AnnotationHelpers annotationHelpers);
-
-    List<T> getResult() {
-        return res;
-    }
-
-    protected void addAll(T[] items) {
-        if (items != null) {
-            for (T item : items) {
-                res.add(item);
-            }
-        }
-    }
+    
 }

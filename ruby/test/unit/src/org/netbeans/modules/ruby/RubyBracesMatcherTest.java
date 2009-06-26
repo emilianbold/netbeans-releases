@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +37,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.dd.impl.web.metadata;
+package org.netbeans.modules.ruby;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
-import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
+import javax.swing.text.BadLocationException;
 
 /**
- * @author Petr Slechta
+ * Test for RubyBracesMatcher
+ * 
+ * @author Marek Slama
  */
-abstract class MergeEngine<T> {
-    protected List<T> res = new ArrayList<T>();
-
-    void clean() {
-        res.clear();
+public class RubyBracesMatcherTest extends RubyTestBase {
+    
+    public RubyBracesMatcherTest(String testName) {
+        super(testName);
     }
 
-    abstract void addItems(WebApp webXml);
-    abstract void addItems(WebFragment webFragment);
-    abstract void addAnnotations(AnnotationHelpers annotationHelpers);
-
-    List<T> getResult() {
-        return res;
+    /** 
+     * Test for BracesMatcher, first ^ gives current caret position,
+     * second ^ gives matching caret position. Test is done in forward and backward direction.
+     */
+    private void match2(String original) throws BadLocationException {
+        super.assertMatches2(original);
     }
 
-    protected void addAll(T[] items) {
-        if (items != null) {
-            for (T item : items) {
-                res.add(item);
-            }
-        }
+    public void testFindMatching1() throws Exception {
+        match2("^if true\n^end");
     }
+
+    public void testFindMatching2() throws Exception {
+        match2("x=^(true^)\ny=5");
+    }
+
+    public void testFindMatching3() throws Exception {
+        match2("x=^(true || (false)^)\ny=5");
+    }
+
+    public void testFindMatching4() throws Exception {
+        match2("^def foo\nif true\nend\n^end\nend");
+    }
+
+    public void testFindMatching5() throws Exception {
+        // Test heredocs
+        match2("x=f(^<<ABC,\"hello\")\nfoo\nbar\n^ABC\n");
+    }
+
+    public void testFindMatching6() throws Exception {
+        // Test heredocs
+        match2("x=f(^<<ABC,'hello',<<-DEF,'bye')\nfoo\nbar\n^ABC\nbaz\n  DEF\nwhatever");
+    }
+
+    public void testFindMatching7() throws Exception {
+        // Test heredocs
+        match2("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
+    }
+    
 }
