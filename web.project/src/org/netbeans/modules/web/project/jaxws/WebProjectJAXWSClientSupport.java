@@ -43,20 +43,15 @@ package org.netbeans.modules.web.project.jaxws;
 
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,23 +82,24 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
     }
 
     protected void addJaxWs20Library() throws Exception{
-        
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-        FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
-        
-        if (wsimportFO == null) {
-            //Add the jaxws21 library to the project to be packed with the archive
-            Library jaxws21_ext = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-            if (jaxws21_ext != null) {
-                try {
-                    ProjectClassPathModifier.addLibraries(new Library[]{jaxws21_ext}, sgs[0].getRootFolder(), ClassPath.COMPILE);
-                }catch(IOException e){
-                    throw new Exception("Unable to add JAXWS 2.1 library", e);
-                } 
-            } else {
-                throw new Exception("Unable to add JAXWS 2.1 Library. " +
-                        "ProjectClassPathExtender or library not found");
+        SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
+        if (sgs.length > 0) {
+            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
+
+            if (wsimportFO == null) {
+
+                //Add the jaxws21 library to the project to be packed with the archive
+                Library MetroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
+                if (MetroLib != null) {
+                    try {
+                        ProjectClassPathModifier.addLibraries(new Library[]{MetroLib}, sgs[0].getRootFolder(), ClassPath.COMPILE);
+                    } catch(IOException e){
+                        throw new Exception("Unable to add Metro library", e);
+                    }
+                } else {
+                    throw new Exception("Unable to add Metro Library" ); //NOI18N
+                }
             }
         }
     }

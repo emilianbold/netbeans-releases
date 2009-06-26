@@ -84,6 +84,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
@@ -352,6 +353,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     //System.out.println("Breakpoint " + br + location + "created");
                 } catch (VMDisconnectedExceptionWrapper e) {
                 } catch (InternalExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
                 }
             }
         }
