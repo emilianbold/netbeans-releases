@@ -39,15 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.persistence.wizard.dao;
+package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
-import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
+//import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -55,18 +57,17 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tests for <code>EjbFacadeWizardIterator</code>.
  *
- * Wizard was moved to ejbcore, need to move test also but it may require to move a lot of persistence test staff also, commented to fix compilation for now.
- *
  * @author Erno Mononen
  */
-public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
-    
+public class EjbFacadeWizardIteratorTest extends TestBase {
+
     public EjbFacadeWizardIteratorTest(String testName) {
         super(testName);
     }
-    
-    
-    public void setUp() throws Exception{
+
+
+    @Override
+    public void setUp() throws IOException{
         super.setUp();
         File javaxEjb = new File(getWorkDir(), "javax" + File.separator + "ejb");
         javaxEjb.mkdirs();
@@ -98,38 +99,33 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
 //        FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(pkg));
 //        assertEquals(golden, TestUtilities.copyFileObjectToString(result));
 //    }
-    
-//    public void testAddMethodToInterface() throws Exception {
-//        File testFile = new File(getWorkDir(), "Test.java");
-//        String originalContent =
-//                "package org.netbeans.test;\n\n" +
-//                "import java.util.*;\n\n" +
-//                "public interface Test {\n" +
-//                "}";
-//
-//        TestUtilities.copyStringToFile(testFile, originalContent);
-//
-//        String golden =
-//                "package org.netbeans.test;\n\n" +
-//                "import java.util.*;\n\n" +
-//                "public interface Test {\n\n" +
-//                "    void testMethod(Object entity);\n" +
-//                "}";
-//
-//        EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
-//        GenerationOptions options = new GenerationOptions();
-//        options.setMethodName("testMethod");
-//        options.setReturnType("void");
-//        options.setParameterName("entity");
-//        options.setParameterType("Object");
-//        wizardIterator.addMethodToInterface(Collections.<GenerationOptions>singletonList(options), FileUtil.toFileObject(testFile));
-//        assertEquals(golden, TestUtilities.copyFileToString(testFile));
-//
-//    }
 
-    public void testDummy()
-    {
-        //need to move/update test
+    public void testAddMethodToInterface() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String originalContent =
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n\n" +
+                "public interface Test {\n" +
+                "}";
+
+        TestUtilities.copyStringToFile(testFile, originalContent);
+
+        String golden =
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n\n" +
+                "public interface Test {\n\n" +
+                "    void testMethod(Object entity);\n" +
+                "}";
+
+        EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
+        GenerationOptions options = new GenerationOptions();
+        options.setMethodName("testMethod");
+        options.setReturnType("void");
+        options.setParameterName("entity");
+        options.setParameterType("Object");
+        wizardIterator.addMethodToInterface(Collections.<GenerationOptions>singletonList(options), FileUtil.toFileObject(testFile));
+        assertEquals(golden, TestUtilities.copyFileToString(testFile));
+
     }
 
     /**
@@ -163,5 +159,5 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
 //        }
 //
 //    }
-    
+
 }
