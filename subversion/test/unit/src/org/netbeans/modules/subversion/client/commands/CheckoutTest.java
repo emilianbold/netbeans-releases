@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,17 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 // XXX add referenceclient
 package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -67,35 +71,70 @@ public class CheckoutTest extends AbstractCommandTest {
             cleanUpRepo(new String[] {CI_FOLDER});
         }        
     }
-    
+
     public void testCheckoutFile() throws Exception {
-        File folder = createFolder(CI_FOLDER);        
-        File file = createFile(folder, "file");
-        
-        importFile(folder);        
+        testCheckoutFiles("file");
+    }
+
+    public void testCheckoutFileWithAtSign() throws Exception {
+        testCheckoutFiles("@file", "fi@le", "file@");
+    }
+
+    private void testCheckoutFiles(String... fileNames) throws Exception {
+        File folder = createFolder(CI_FOLDER);
+
+        List<File> files = new ArrayList<File>(4);
+        for (String fileName : fileNames) {
+            files.add(createFile(folder, fileName));
+        }
+
+        importFile(folder);
 
         File checkout = createFolder("checkoutfolder");
         SVNUrl url = getTestUrl().appendPath(folder.getName());
-        ISVNClientAdapter c = getNbClient();         
+        ISVNClientAdapter c = getNbClient();
         c.checkout(url, checkout, SVNRevision.HEAD, true);
-                        
-        File chFile = new File(checkout, file.getName());
-        
-        assertTrue(chFile.exists());
-        assertStatus(SVNStatusKind.NORMAL, checkout);                   
-        assertStatus(SVNStatusKind.NORMAL, chFile);      
-        
-        assertNotifiedFiles(chFile);
+
+        assertStatus(SVNStatusKind.NORMAL, checkout);
+
+        List<File> chFiles = new ArrayList<File>(files.size());
+        for (File file : files) {
+            File chFile = new File(checkout, file.getName());
+
+            assertTrue(chFile.exists());
+            assertStatus(SVNStatusKind.NORMAL, chFile);
+
+            chFiles.add(chFile);
+        }
+
+        assertNotifiedFiles(chFiles.toArray(new File[chFiles.size()]));
     }
     
     public void testCheckoutFolder() throws Exception {
-        File cifolder = createFolder(CI_FOLDER);
+        testCheckoutFolder(CI_FOLDER, "checkoutFolder");
+    }
+
+    public void testCheckoutFolderWithAtSign() throws Exception {
+        testCheckoutFolder('@' + CI_FOLDER, "checkoutFolder");
+    }
+
+    public void testCheckoutFolderToDirWithAtSign() throws Exception {
+        testCheckoutFolder(CI_FOLDER, "@checkoutFolder");
+    }
+
+    public void testCheckoutFolderWithAtSignToDirWithAtSign() throws Exception {
+        testCheckoutFolder('@' + CI_FOLDER, "@checkoutFolder");
+    }
+
+    private void testCheckoutFolder(String repoFolderName,
+                                    String targetFolderName) throws Exception {
+        File cifolder = createFolder(repoFolderName);
         File folder1 = createFolder(cifolder, "folder1");
         File file = createFile(folder1, "file");
-        
+
         importFile(cifolder);        
 
-        File checkout = createFolder("checkoutfolder");
+        File checkout = createFolder(targetFolderName);
         SVNUrl url = getTestUrl().appendPath(cifolder.getName());
         ISVNClientAdapter c = getNbClient();         
         c.checkout(url, checkout, SVNRevision.HEAD, true);
@@ -107,11 +146,11 @@ public class CheckoutTest extends AbstractCommandTest {
         assertTrue(chFile.exists());
         assertStatus(SVNStatusKind.NORMAL, checkout);                   
         assertStatus(SVNStatusKind.NORMAL, chFolder1);        
-        assertStatus(SVNStatusKind.NORMAL, chFile);      
-        
+        assertStatus(SVNStatusKind.NORMAL, chFile);
+
         assertNotifiedFiles(new File[] {chFolder1, chFile});
     }
-    
+
     public void testCheckoutFolderNonRecursivelly() throws Exception {
         File cifolder = createFolder(CI_FOLDER);
         File folder1 = createFolder(cifolder, "folder1");
@@ -137,7 +176,15 @@ public class CheckoutTest extends AbstractCommandTest {
     }
 
     public void testCheckoutFolderPrevRevision() throws Exception {
-        File cifolder = createFolder(CI_FOLDER);
+        testCheckoutFolderPrevRevision(CI_FOLDER);
+    }
+
+    public void testCheckoutFolderWithAtSignPrevRevision() throws Exception {
+        testCheckoutFolderPrevRevision('@' + CI_FOLDER);
+    }
+
+    private void testCheckoutFolderPrevRevision(String repoFolderName) throws Exception {
+        File cifolder = createFolder(repoFolderName);
         File folder1 = createFolder(cifolder, "folder1");
         File file = createFile(folder1, "file");
         

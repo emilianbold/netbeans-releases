@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
  */
 public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
         public static final String PROPERTY_VERSION="dd_version"; //NOI18N
+        // TODO PetrS remove version 2.3 after client fixes
         public static final String VERSION_2_3="2.3"; //NOI18N
         public static final String VERSION_2_4="2.4"; //NOI18N
         public static final String VERSION_2_5="2.5"; //NOI18N
