@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,50 +37,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.openide.awt;
+package org.openide.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Map;
-import org.openide.util.Exceptions;
+import java.io.IOException;
+import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Provider;
+import org.openide.util.lookup.Lookups;
 
-final class InjectorExactlyOne extends ContextAction.Performer<Object> {
-    public InjectorExactlyOne(Map fo) {
-        super(fo);
+
+public class SaveActionTest extends NbTestCase
+implements SaveCookie {
+    private int cnt;
+
+    public SaveActionTest(String name) {
+        super(name);
     }
 
     @Override
-    public void actionPerformed(ActionEvent ev, List<? extends Object> data, Provider everything) {
-        if (data.size() != 1) {
-            return;
-        }
-        String clazz = (String) delegate.get("injectable"); // NOI18N
-        String type = (String) delegate.get("type"); // NOI18N
-        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-        if (l == null) {
-            l = Thread.currentThread().getContextClassLoader();
-        }
-        if (l == null) {
-            l = Actions.class.getClassLoader();
-        }
-        try {
-            Class<?> typeC = Class.forName(type, true, l);
-            Class<?> clazzC = Class.forName(clazz, true, l);
-            Constructor c = clazzC.getConstructor(typeC);
-            ActionListener action = (ActionListener) c.newInstance(data.get(0));
-            action.actionPerformed(ev);
-        } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-        }
+    protected boolean runInEQ() {
+        return true;
+    }
+
+    public void testActionWorksOnSaveCookieOnly() {
+        Lookup lkp = Lookups.singleton(this);
+        SaveAction sa = SaveAction.get(SaveAction.class);
+        Action clone = sa.createContextAwareInstance(lkp);
+        clone.actionPerformed(new ActionEvent(this, 0, ""));
+        assertEquals("Save was called", 1, cnt);
+    }
+
+    public void save() throws IOException {
+        cnt++;
     }
 }

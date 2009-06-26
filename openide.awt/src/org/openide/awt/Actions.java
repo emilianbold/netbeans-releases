@@ -89,7 +89,6 @@ import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
@@ -439,7 +438,7 @@ public class Actions extends Object {
     static ContextAwareAction context(Map fo) {
         return GeneralAction.context(fo);
     }
-    static ContextActionPerformer<?> inject(final Map fo) {
+    static ContextAction.Performer<?> inject(final Map fo) {
         Object t = fo.get("selectionType"); // NOI18N
         if (ContextSelection.EXACTLY_ONE.toString().equals(t)) {
             return new InjectorExactlyOne(fo);
@@ -449,42 +448,22 @@ public class Actions extends Object {
         }
         throw new IllegalStateException("no selectionType parameter in " + fo); // NOI18N
     }
-    static ContextActionPerformer<?> performer(final Map fo) {
+    static ContextAction.Performer<?> performer(final Map fo) {
         String type = (String)fo.get("type");
         if (type.equals(Openable.class.getName())) {
-            return new DefaultPerfomer(0);
+            return new ActionDefaultPerfomer(0);
         }
         if (type.equals(Viewable.class.getName())) {
-            return new DefaultPerfomer(1);
+            return new ActionDefaultPerfomer(1);
         }
         if (type.equals(Editable.class.getName())) {
-            return new DefaultPerfomer(2);
+            return new ActionDefaultPerfomer(2);
         }
         if (type.equals(Closable.class.getName())) {
-            return new DefaultPerfomer(3);
+            return new ActionDefaultPerfomer(3);
         }
         throw new IllegalStateException(type);
     }
-    private static final class DefaultPerfomer implements ContextActionPerformer<Object> {
-        final int type;
-
-        public DefaultPerfomer(int type) {
-            this.type = type;
-        }
-
-        public void actionPerformed(ActionEvent ev, List<? extends Object> data) {
-            for (Object o : data) {
-                switch (type) {
-                    case 0: ((Openable)o).open(); break;
-                    case 1: ((Viewable)o).view(); break;
-                    case 2: ((Editable)o).edit(); break;
-                    case 3: ((Closable)o).close(); break;
-                    default: assert false: "Wrong type: " + type;
-                }
-            }
-        }
-    }
-
     
     /** Extracts help from action.
      */

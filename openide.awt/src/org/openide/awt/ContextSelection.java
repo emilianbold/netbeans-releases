@@ -41,7 +41,7 @@
 
 package org.openide.awt;
 
-/** Possible types of selections in case of {@link ContextActionPerformer}.
+/** Possible types of selections in case of {@link ContextAction.Performer}.
  * These values can be passed to {@link Factory#context} method to specify 
  * the selection mode that will influence the selection in the action.
  *

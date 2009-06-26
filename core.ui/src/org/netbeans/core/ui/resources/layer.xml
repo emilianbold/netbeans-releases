@@ -117,7 +117,16 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-RenameAction.instance"/>
             <file name="org-openide-actions-ReorderAction.instance"/>
             <file name="org-openide-actions-SaveAllAction.instance"/>
-            <file name="org-openide-actions-SaveAction.instance"/>
+            <file name="org-openide-actions-SaveAction.instance">
+                <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
+                <attr name='delegate' newvalue='org.openide.actions.SaveAction'/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name='surviveFocusChange' boolvalue="false"/>
+                <attr name='displayName' bundlevalue='org/openide/actions/Bundle#Save'/>
+                <attr name='noIconInMenu' boolvalue="true"/>
+                <attr name="iconBase" stringvalue='org/openide/resources/actions/save.png'/>
+                <attr name="type" stringvalue="org.openide.cookies.SaveCookie"/>
+            </file>
             <file name="org-openide-actions-SaveAsAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.actions.SaveAsAction.create"/>
                 <attr name="instanceClass" stringvalue="org.openide.util.ContextAwareAction"/>

@@ -42,22 +42,20 @@ package org.openide.awt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 
-final class InjectorAny implements ContextActionPerformer<Object> {
-    private final Map fo;
-
+final class InjectorAny extends ContextAction.Performer<Object> {
     public InjectorAny(Map fo) {
-        super();
-        this.fo = fo;
+        super(fo);
     }
 
-    public void actionPerformed(ActionEvent ev, List<? extends Object> data) {
-        String clazz = (String) fo.get("injectable"); // NOI18N
+    @Override
+    public void actionPerformed(ActionEvent ev, List<? extends Object> data, Provider everything) {
+        String clazz = (String) delegate.get("injectable"); // NOI18N
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         if (l == null) {
             l = Thread.currentThread().getContextClassLoader();
@@ -71,7 +69,7 @@ final class InjectorAny implements ContextActionPerformer<Object> {
             ActionListener action = (ActionListener) c.newInstance(data);
             action.actionPerformed(ev);
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
-}

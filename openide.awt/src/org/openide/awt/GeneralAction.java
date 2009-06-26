@@ -46,11 +46,13 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import org.openide.awt.ContextAction.Performer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -86,21 +88,22 @@ final class GeneralAction {
     }
 
     public static <T> ContextAwareAction context(
-        ContextActionPerformer<? super T> handler, 
-        ContextActionEnabler<? super T> enabler,
+        ContextAction.Performer<? super T> perf,
         ContextSelection selectionType, 
         Lookup context, 
         Class<T> dataType
     ) {
-        return new ContextAction<T>(handler, enabler, selectionType, context, dataType, false);
+        return new ContextAction<T>(perf, selectionType, context, dataType, false);
     }
     
     public static ContextAwareAction context(Map map) {
         ContextSelection sel = readSelection(map.get("selectionType")); // NOI18N
         Class<?> dataType = readClass(map.get("type")); // NOI18N
-        LazyPerformer perf = new LazyPerformer(map);
-        
-        ContextAwareAction cAction = context(perf, perf, sel, Utilities.actionsGlobalContext(), dataType);
+        Performer perf = new Performer(map);
+        boolean survive = Boolean.TRUE.equals(map.get("surviveFocusChange")); // NOI18N
+        ContextAwareAction cAction = new ContextAction(
+            perf, sel, Utilities.actionsGlobalContext(), dataType, survive
+        );
         return new DelegateAction(map, cAction);
     }
     
@@ -144,55 +147,6 @@ final class GeneralAction {
     public Logger getLOG() {
         return LOG;
     }
-    
-    private static final class LazyPerformer 
-    implements ContextActionPerformer<Object>, ContextActionEnabler<Object> {
-        private Map delegate;
-        
-        public LazyPerformer(Map delegate) {
-            this.delegate = delegate;
-        }
-        
-        public void actionPerformed(ActionEvent ev, List<? extends Object> data) {
-            ContextActionPerformer<Object> perf = (ContextActionPerformer<Object>)delegate.get("delegate"); // NOI18N
-            if (perf == null) {
-                LOG.warning("No 'delegate' for " + delegate); // NOI18N
-                return;
-            }
-            perf.actionPerformed(ev, data);
-        }
-        public boolean enabled(List<? extends Object> data) {
-            Object o = delegate.get("enabler"); // NOI18N
-            if (o == null) {
-                return true;
-            }
-            
-            if (o instanceof ContextActionEnabler) {
-                ContextActionEnabler<Object> en = (ContextActionEnabler<Object>)o;
-                return en.enabled(data);
-            }
-            
-            LOG.warning("Wrong enabler for " + delegate + ":" + o);
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return delegate.hashCode() + 117;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj instanceof LazyPerformer) {
-                LazyPerformer l = (LazyPerformer)obj;
-                return delegate.equals(l.delegate);
-            }
-            return false;
-        }
-    } // end of LazyPerformer
     
     /** A delegate action that is usually associated with a specific lookup and
      * extract the nodes it operates on from it. Otherwise it delegates to the

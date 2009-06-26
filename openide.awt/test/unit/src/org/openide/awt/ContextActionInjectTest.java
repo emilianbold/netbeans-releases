@@ -41,8 +41,8 @@ package org.openide.awt;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -152,5 +152,60 @@ public class ContextActionInjectTest extends NbTestCase {
         assertFalse("It is disabled", clone.isEnabled());
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("No change", 16, MultiContext.cnt);
+    }
+
+   public static final class LookupContext extends AbstractAction 
+   implements ContextAwareAction {
+        private final Lookup context;
+
+        public LookupContext() {
+            this(Lookup.EMPTY);
+        }
+
+        private LookupContext(Lookup context) {
+            this.context = context;
+        }
+
+        static int cnt;
+
+        public void actionPerformed(ActionEvent e) {
+            for (Number n : context.lookupAll(Number.class)) {
+                cnt += n.intValue();
+            }
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new LookupContext(actionContext);
+        }
+    }
+
+    public void testMultiContextActionLookup() throws Exception {
+        FileObject fo = FileUtil.getConfigFile(
+            "actions/support/test/testInjectContextLookup.instance"
+        );
+        assertNotNull("File found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Attribute present", obj);
+        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
+        ContextAwareAction a = (ContextAwareAction)obj;
+
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup lkp = new AbstractLookup(ic);
+        Action clone = a.createContextAwareInstance(lkp);
+        ic.add(10);
+        ic.add(3L);
+
+        assertEquals("Number lover!", clone.getValue(Action.NAME));
+        clone.actionPerformed(new ActionEvent(this, 300, ""));
+        assertEquals("Global Action not called", 13, LookupContext.cnt);
+
+        ic.remove(10);
+        clone.actionPerformed(new ActionEvent(this, 200, ""));
+        assertEquals("Adds 3", 16, LookupContext.cnt);
+
+        ic.remove(3L);
+        assertFalse("It is disabled", clone.isEnabled());
+        clone.actionPerformed(new ActionEvent(this, 200, ""));
+        assertEquals("No change", 16, LookupContext.cnt);
     }
 }

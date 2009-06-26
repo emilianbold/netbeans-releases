@@ -60,6 +60,8 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /** Listener on a global context.
@@ -147,7 +149,7 @@ class ContextManager extends Object {
 
     /** Checks whether a type is enabled.
      */
-    public <T> boolean isEnabled(Class<T> type, ContextSelection selectMode, ContextActionEnabler<? super T> enabler) {
+    public <T> boolean isEnabled(Class<T> type, ContextSelection selectMode, ContextAction.Performer<? super T> enabler) {
         Lookup.Result<T> result = findResult(type);
         
         boolean e = isEnabledOnData(result, type, selectMode);
@@ -217,11 +219,24 @@ class ContextManager extends Object {
         return result;
     }
     
-    public <T> void actionPerformed(ActionEvent e, ContextActionPerformer<? super T> perf, Class<T> type, ContextSelection selectMode) {
+    public <T> void actionPerformed(final ActionEvent e, ContextAction.Performer<? super T> perf, final Class<T> type, ContextSelection selectMode) {
         Lookup.Result<T> result = findResult(type);
-        List<? extends T> all = listFromResult(result);
-        
-        perf.actionPerformed(e, Collections.unmodifiableList(all));
+        final List<? extends T> all = listFromResult(result);
+
+        class LkpAE implements Lookup.Provider {
+            private Lookup lookup;
+            public Lookup getLookup() {
+                if (lookup == null) {
+                    lookup = new ProxyLookup(
+                        Lookups.fixed(all.toArray()),
+                        Lookups.exclude(ContextManager.this.lookup, type)
+                    );
+                }
+                return lookup;
+            }
+        }
+
+        perf.actionPerformed(e, Collections.unmodifiableList(all), new LkpAE());
     }
 
     private <T> List<? extends T> listFromResult(Lookup.Result<T> result) {

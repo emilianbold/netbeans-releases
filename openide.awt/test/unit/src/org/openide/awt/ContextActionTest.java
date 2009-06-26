@@ -50,7 +50,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -649,14 +651,15 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         return data.size() == expectedEnabledmentCount;
     }
     
-    public static ContextActionEnabler<?> getEnabler() {
+    static ContextActionEnabler<?> getEnabler() {
         return new ContextActionTest("");
     }
 
     private static <T> ContextAwareAction context(
         ContextActionPerformer<? super T> a, ContextActionEnabler<? super T> e, ContextSelection s, Lookup lookupProxy, Class<T> c
     ) {
-        return GeneralAction.context(a, e, s, lookupProxy, c);
+        ContextAction.Performer perf = new ContextAction.Performer(a, e);
+        return GeneralAction.context(perf, s, lookupProxy, c);
     }
     
     public static interface Openable {
