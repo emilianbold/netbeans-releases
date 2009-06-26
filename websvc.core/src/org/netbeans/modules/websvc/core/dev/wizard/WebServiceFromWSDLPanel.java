@@ -63,7 +63,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -526,6 +525,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     void store(WizardDescriptor d) {
         String wsdlLocation = jTextFieldWSDLFile.getText().trim();
         Boolean useProvider = this.useProviderBtn.isSelected();
+        Boolean isSessionBean = sessionBeanCB.isSelected();
         if (wsdlLocation.startsWith("www.")) {
             wsdlLocation = "http://" + wsdlLocation;
         } //NOI18N
@@ -540,6 +540,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         d.putProperty(WizardProperties.WSDL_PORT, port);
         d.putProperty(WizardProperties.WSDL_SERVICE_HANDLER, wsdlServiceHandler);
         d.putProperty(WizardProperties.USE_PROVIDER, useProvider);
+        d.putProperty(WizardProperties.IS_STATELESS_BEAN, isSessionBean);
     }
 
     void read(WizardDescriptor wizardDescriptor) {
