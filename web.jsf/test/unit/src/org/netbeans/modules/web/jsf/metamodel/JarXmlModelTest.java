@@ -48,6 +48,7 @@ import java.util.List;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.Factory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
@@ -141,6 +142,17 @@ public class JarXmlModelTest extends CommonTestCase {
                 URL url = JarXmlModelTest.class.getResource("data/lib2.jar");
                 addCompileRoots( Collections.singletonList( 
                         new URL( "jar:"+url.toString()+"!/")));
+                
+                assertEquals( 7 ,  model.getModels().size());
+                assertEquals( 7 ,  model.getFacesConfigs().size());
+                boolean hasEmptyModel = false;
+                for ( FacesConfig config : model.getFacesConfigs() ){
+                    int size = config.getChildren().size();
+                    if ( size == 0 ){
+                        hasEmptyModel = true;
+                    }
+                }
+                assertTrue( "added jar contians empty model. But it is not found", hasEmptyModel );
                 return null;
             }
         });

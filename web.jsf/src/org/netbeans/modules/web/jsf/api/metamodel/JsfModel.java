@@ -42,6 +42,7 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -61,7 +62,7 @@ public interface JsfModel {
     
     /**
      * Accessor to list of faces-config models.
-     * @return list of models found in module
+     * @return set of models found in module
      */
     List<JSFConfigModel> getModels();
     
