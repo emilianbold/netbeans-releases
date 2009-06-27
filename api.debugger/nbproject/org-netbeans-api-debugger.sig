@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.14.1
+#Version 1.17.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -41,6 +41,32 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract interface java.util.EventListener
 
 CLSS public final org.netbeans.api.debugger.ActionsManager
@@ -69,7 +95,7 @@ meth public void destroy()
 meth public void removeActionsManagerListener(java.lang.String,org.netbeans.api.debugger.ActionsManagerListener)
 meth public void removeActionsManagerListener(org.netbeans.api.debugger.ActionsManagerListener)
 supr java.lang.Object
-hfds actionListener,actionProviders,actionProvidersLock,destroy,doiingDo,lazyListeners,listener,listeners,listerersLoaded,lookup
+hfds actionListener,actionProviders,actionProvidersLock,aps,destroy,doiingDo,lazyListeners,listener,listeners,listerersLoaded,lookup
 hcls AsynchActionTask,MyActionListener
 
 CLSS public org.netbeans.api.debugger.ActionsManagerAdapter
@@ -138,7 +164,7 @@ meth public <%0 extends java.lang.Object> java.util.List<? extends {%%0}> lookup
 meth public <%0 extends java.lang.Object> {%%0} lookupFirst(java.lang.String,java.lang.Class<{%%0}>)
 meth public org.netbeans.api.debugger.ActionsManager getActionsManager()
 supr java.lang.Object
-hfds actionsManager,lookup
+hfds actionsManager,lookup,privateLookup
 
 CLSS public org.netbeans.api.debugger.DebuggerEngine$Destructor
 cons public Destructor(org.netbeans.api.debugger.DebuggerEngine)
@@ -222,9 +248,17 @@ meth public abstract void watchRemoved(org.netbeans.api.debugger.Watch)
 
 CLSS public abstract org.netbeans.api.debugger.LazyActionsManagerListener
 cons public LazyActionsManagerListener()
+innr public abstract interface static !annotation Registration
 meth protected abstract void destroy()
 meth public abstract java.lang.String[] getProperties()
 supr org.netbeans.api.debugger.ActionsManagerAdapter
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.api.debugger.LazyActionsManagerListener$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract interface org.netbeans.api.debugger.LazyDebuggerManagerListener
 intf org.netbeans.api.debugger.DebuggerManagerListener
@@ -232,6 +266,7 @@ meth public abstract java.lang.String[] getProperties()
 
 CLSS public abstract org.netbeans.api.debugger.Properties
 cons public Properties()
+innr public abstract interface static Initializer
 innr public abstract interface static Reader
 meth public abstract boolean getBoolean(java.lang.String,boolean)
 meth public abstract byte getByte(java.lang.String,byte)
@@ -261,9 +296,15 @@ meth public abstract void setObject(java.lang.String,java.lang.Object)
 meth public abstract void setShort(java.lang.String,short)
 meth public abstract void setString(java.lang.String,java.lang.String)
 meth public static org.netbeans.api.debugger.Properties getDefault()
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
 hfds defaultProperties
 hcls DelegatingProperties,PrimitiveRegister,PropertiesImpl
+
+CLSS public abstract interface static org.netbeans.api.debugger.Properties$Initializer
+meth public abstract java.lang.Object getDefaultPropertyValue(java.lang.String)
+meth public abstract java.lang.String[] getSupportedPropertyNames()
 
 CLSS public abstract interface static org.netbeans.api.debugger.Properties$Reader
 meth public abstract java.lang.Object read(java.lang.String,org.netbeans.api.debugger.Properties)
@@ -290,7 +331,7 @@ meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void setCurrentLanguage(java.lang.String)
 supr java.lang.Object
-hfds currentDebuggerEngine,currentLanguage,engines,languages,locationName,lookup,name,pcs,privateLookup
+hfds currentDebuggerEngine,currentLanguage,engines,enginesLookups,languages,locationName,lookup,name,pcs,privateLookup
 
 CLSS public final org.netbeans.api.debugger.Watch
 fld public final static java.lang.String PROP_EXPRESSION = "expression"
@@ -305,6 +346,7 @@ hfds expression,pcs
 
 CLSS public abstract org.netbeans.spi.debugger.ActionsProvider
 cons public ActionsProvider()
+innr public abstract interface static !annotation Registration
 meth public abstract boolean isEnabled(java.lang.Object)
 meth public abstract java.util.Set getActions()
 meth public abstract void addActionsProviderListener(org.netbeans.spi.debugger.ActionsProviderListener)
@@ -312,6 +354,13 @@ meth public abstract void doAction(java.lang.Object)
 meth public abstract void removeActionsProviderListener(org.netbeans.spi.debugger.ActionsProviderListener)
 meth public void postAction(java.lang.Object,java.lang.Runnable)
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ActionsProvider$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract interface org.netbeans.spi.debugger.ActionsProviderListener
 intf java.util.EventListener
@@ -328,17 +377,39 @@ meth public final void removeActionsProviderListener(org.netbeans.spi.debugger.A
 supr org.netbeans.spi.debugger.ActionsProvider
 hfds enabled,listeners
 
+CLSS public abstract interface org.netbeans.spi.debugger.ContextAwareService<%0 extends java.lang.Object>
+meth public abstract {org.netbeans.spi.debugger.ContextAwareService%0} forContext(org.netbeans.spi.debugger.ContextProvider)
+
+CLSS public final org.netbeans.spi.debugger.ContextAwareSupport
+meth public static java.lang.Object createInstance(java.lang.String,org.netbeans.spi.debugger.ContextProvider)
+supr java.lang.Object
+
 CLSS public abstract interface org.netbeans.spi.debugger.ContextProvider
 meth public abstract <%0 extends java.lang.Object> java.util.List<? extends {%%0}> lookup(java.lang.String,java.lang.Class<{%%0}>)
 meth public abstract <%0 extends java.lang.Object> {%%0} lookupFirst(java.lang.String,java.lang.Class<{%%0}>)
 
 CLSS public abstract org.netbeans.spi.debugger.DebuggerEngineProvider
 cons public DebuggerEngineProvider()
+innr public abstract interface static !annotation Registration
 meth public abstract java.lang.Object[] getServices()
 meth public abstract java.lang.String getEngineTypeID()
 meth public abstract java.lang.String[] getLanguages()
 meth public abstract void setDestructor(org.netbeans.api.debugger.DebuggerEngine$Destructor)
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.DebuggerEngineProvider$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
+
+CLSS public abstract interface !annotation org.netbeans.spi.debugger.DebuggerServiceRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
+meth public abstract java.lang.Class[] types()
 
 CLSS public abstract org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider
 cons public DelegatingDebuggerEngineProvider()
@@ -354,9 +425,17 @@ supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.debugger.SessionProvider
 cons public SessionProvider()
+innr public abstract interface static !annotation Registration
 meth public abstract java.lang.Object[] getServices()
 meth public abstract java.lang.String getLocationName()
 meth public abstract java.lang.String getSessionName()
 meth public abstract java.lang.String getTypeID()
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.SessionProvider$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
