@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 7.18.1
+#Version 7.22.1
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public Clipboard(java.lang.String)
@@ -576,7 +576,7 @@ meth public static <%0 extends java.lang.Throwable> {%%0} attachMessage({%%0},ja
 meth public static java.lang.String findLocalizedMessage(java.lang.Throwable)
 meth public static void printStackTrace(java.lang.Throwable)
 supr java.lang.Object
-hfds LOC_MSG_PLACEHOLDER
+hfds LOC_MSG_PLACEHOLDER,LOG
 hcls AnnException,OwnLevel
 
 CLSS public final org.openide.util.HelpCtx
@@ -609,6 +609,7 @@ meth public final static java.awt.Image loadImage(java.lang.String,boolean)
 meth public final static java.awt.Image mergeImages(java.awt.Image,java.awt.Image,int,int)
 meth public final static java.lang.String getImageToolTip(java.awt.Image)
 meth public final static javax.swing.Icon image2Icon(java.awt.Image)
+meth public final static javax.swing.ImageIcon loadImageIcon(java.lang.String,boolean)
 supr java.lang.Object
 hfds ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,currentLoader,extraInitialSlashes,imageToolTipCache,loaderQuery,localizedCache,mediaTrackerID,noLoaderWarned,tracker
 hcls ActiveRef,CompositeImageKey,ToolTipImage,ToolTipImageKey
@@ -770,7 +771,7 @@ meth public static void setBranding(java.lang.String)
 meth public static void setClassLoaderFinder(org.openide.util.NbBundle$ClassLoaderFinder)
  anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hfds USE_DEBUG_LOADER,brandingToken,bundleCache,localizedFileCache
+hfds LOG,USE_DEBUG_LOADER,brandingToken,bundleCache,localizedFileCache
 hcls AttributesMap,DebugLoader,LocaleIterator,MergedBundle,PBundle
 
 CLSS public abstract interface static org.openide.util.NbBundle$ClassLoaderFinder
@@ -1021,6 +1022,7 @@ meth public static java.lang.String escapeParameters(java.lang.String[])
 meth public static java.lang.String getClassName(java.lang.Class)
 meth public static java.lang.String getShortClassName(java.lang.Class)
 meth public static java.lang.String keyToString(javax.swing.KeyStroke)
+meth public static java.lang.String keyToString(javax.swing.KeyStroke,boolean)
 meth public static java.lang.String replaceString(java.lang.String,java.lang.String,java.lang.String)
 meth public static java.lang.String translate(java.lang.String)
 meth public static java.lang.String wrapString(java.lang.String,int,boolean,boolean)
@@ -1042,8 +1044,8 @@ meth public static javax.swing.KeyStroke stringToKey(java.lang.String)
 meth public static javax.swing.KeyStroke[] stringToKeys(java.lang.String)
 meth public static org.openide.util.Lookup actionsGlobalContext()
 supr java.lang.Object
-hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,activeReferenceQueue,clearIntrospector,doClear,global,keywords,namesAndValues,operatingSystem,transExp,transLoader
-hcls ActiveQueue,NamesAndValues,RE
+hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,global,keywords,namesAndValues,operatingSystem,transExp,transLoader
+hcls NamesAndValues,RE
 
 CLSS public static org.openide.util.Utilities$UnorderableException
  anno 0 java.lang.Deprecated()
@@ -1373,7 +1375,7 @@ meth public final <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%
 meth public java.lang.String toString()
 supr org.openide.util.Lookup
 hfds count,serialVersionUID,tree,treeLock
-hcls ISE,Info,R,ReferenceIterator,ReferenceToResult,Storage
+hcls CycleError,ISE,Info,NotifyListeners,R,ReferenceIterator,ReferenceToResult,Storage
 
 CLSS public static org.openide.util.lookup.AbstractLookup$Content
 cons public Content()
@@ -1438,6 +1440,21 @@ meth public java.lang.String toString()
 supr org.openide.util.Lookup
 hfds data
 hcls EmptyInternalData,ImmutableInternalData,R,RealInternalData,SingleInternalData,WeakRef,WeakResult
+
+CLSS public abstract interface !annotation org.openide.util.lookup.ServiceProvider
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String path()
+meth public abstract !hasdefault java.lang.String[] supersedes()
+meth public abstract java.lang.Class<?> service()
+
+CLSS public abstract interface !annotation org.openide.util.lookup.ServiceProviders
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract org.openide.util.lookup.ServiceProvider[] value()
 
 CLSS public abstract org.openide.xml.EntityCatalog
 cons public EntityCatalog()
