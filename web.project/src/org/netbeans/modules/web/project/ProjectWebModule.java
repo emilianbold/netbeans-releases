@@ -509,10 +509,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return WebApp.VERSION_2_5;
         } else if (Profile.J2EE_14.equals(platformVersion)) {
             return WebApp.VERSION_2_4;
-        } else if (Profile.J2EE_13.equals(platformVersion)) {
-            return WebApp.VERSION_2_3;
         } else {
-            // return 2.5 as default value
+            // return 3.0 as default value
             return WebApp.VERSION_3_0;
         }
     }
