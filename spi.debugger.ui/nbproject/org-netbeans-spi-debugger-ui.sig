@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 2.14.1
+#Version 2.16.1
 
 CLSS public java.lang.Object
 cons public Object()
@@ -15,12 +15,47 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract org.netbeans.spi.debugger.ui.AttachType
 cons public AttachType()
-meth public abstract java.lang.String getTypeDisplayName()
+innr public abstract interface static !annotation Registration
 meth public abstract javax.swing.JComponent getCustomizer()
+meth public java.lang.String getTypeDisplayName()
 meth public org.netbeans.spi.debugger.ui.Controller getController()
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.AttachType$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String displayName()
 
 CLSS public abstract org.netbeans.spi.debugger.ui.BreakpointAnnotation
 cons public BreakpointAnnotation()
@@ -29,12 +64,29 @@ supr org.openide.text.Annotation
 
 CLSS public abstract org.netbeans.spi.debugger.ui.BreakpointType
 cons public BreakpointType()
+innr public abstract interface static !annotation Registration
 meth public abstract boolean isDefault()
 meth public abstract java.lang.String getCategoryDisplayName()
-meth public abstract java.lang.String getTypeDisplayName()
 meth public abstract javax.swing.JComponent getCustomizer()
+meth public java.lang.String getTypeDisplayName()
 meth public org.netbeans.spi.debugger.ui.Controller getController()
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.BreakpointType$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String path()
+meth public abstract java.lang.String displayName()
+
+CLSS public abstract interface !annotation org.netbeans.spi.debugger.ui.ColumnModelRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String path()
 
 CLSS public abstract interface org.netbeans.spi.debugger.ui.Constants
 fld public final static java.lang.String BREAKPOINT_ENABLED_COLUMN_ID = "BreakpointEnabled"
@@ -77,7 +129,7 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds context,currentEditorCookie,currentFile,currentOpenedPane,currentURL,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
+hfds NO_COOKIE,NO_EDITOR,NO_FILE,context,currentEditorCookie,currentFile,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
 hcls EditorLookupListener,EventFirer
 
 CLSS public abstract org.openide.text.Annotation

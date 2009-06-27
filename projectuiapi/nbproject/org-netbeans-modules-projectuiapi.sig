@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.31.1
+#Version 1.35.1
 
 CLSS public java.lang.Object
 cons public Object()
@@ -15,9 +15,36 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public final org.netbeans.api.project.ui.OpenProjects
 fld public final static java.lang.String PROPERTY_MAIN_PROJECT = "MainProject"
 fld public final static java.lang.String PROPERTY_OPEN_PROJECTS = "openProjects"
+meth public boolean isProjectOpen(org.netbeans.api.project.Project)
 meth public java.util.concurrent.Future<org.netbeans.api.project.Project[]> openProjects()
 meth public org.netbeans.api.project.Project getMainProject()
 meth public org.netbeans.api.project.Project[] getOpenProjects()
@@ -25,6 +52,7 @@ meth public static org.netbeans.api.project.ui.OpenProjects getDefault()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void close(org.netbeans.api.project.Project[])
 meth public void open(org.netbeans.api.project.Project[],boolean)
+meth public void open(org.netbeans.api.project.Project[],boolean,boolean)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setMainProject(org.netbeans.api.project.Project)
 supr java.lang.Object
@@ -48,6 +76,18 @@ supr java.lang.Object
 
 CLSS public abstract interface org.netbeans.spi.project.ui.RecommendedTemplates
 meth public abstract java.lang.String[] getRecommendedTypes()
+
+CLSS public final org.netbeans.spi.project.ui.support.BuildExecutionSupport
+innr public abstract interface static Item
+meth public static void registerFinishedItem(org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item)
+meth public static void registerRunningItem(org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item)
+supr java.lang.Object
+
+CLSS public abstract interface static org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item
+meth public abstract boolean isRunning()
+meth public abstract java.lang.String getDisplayName()
+meth public abstract void repeatExecution()
+meth public abstract void stopRunning()
 
 CLSS public org.netbeans.spi.project.ui.support.CommonProjectActions
 fld public final static java.lang.String EXISTING_SOURCES_FOLDER = "existingSourcesFolder"
@@ -81,7 +121,15 @@ meth public static javax.swing.Action mainProjectSensitiveAction(org.netbeans.sp
 supr java.lang.Object
 
 CLSS public abstract interface org.netbeans.spi.project.ui.support.NodeFactory
+innr public abstract interface static !annotation Registration
 meth public abstract org.netbeans.spi.project.ui.support.NodeList<?> createNodes(org.netbeans.api.project.Project)
+
+CLSS public abstract interface static !annotation org.netbeans.spi.project.ui.support.NodeFactory$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String[] projectType()
 
 CLSS public org.netbeans.spi.project.ui.support.NodeFactorySupport
 meth public !varargs static org.netbeans.spi.project.ui.support.NodeList fixedNodeList(org.openide.nodes.Node[])
