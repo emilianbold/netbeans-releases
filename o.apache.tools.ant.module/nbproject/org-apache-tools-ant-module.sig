@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 3.32.1
+#Version 3.35.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public FeatureDescriptor()
@@ -254,6 +254,7 @@ meth public java.lang.Object getCustomData(org.apache.tools.ant.module.spi.AntLo
 meth public java.lang.String getDisplayName()
 meth public java.lang.String toString()
 meth public java.lang.String[] getOriginatingTargets()
+meth public org.openide.windows.InputOutput getIO()
 meth public org.openide.windows.OutputListener createStandardHyperlink(java.net.URL,java.lang.String,int,int,int,int)
 meth public void consumeException(java.lang.Throwable)
 meth public void deliverMessageLogged(org.apache.tools.ant.module.spi.AntEvent,java.lang.String,int)
@@ -348,10 +349,12 @@ meth public org.openide.util.actions.SystemAction[] getContextActions()
  anno 0 java.lang.Deprecated()
 meth public void destroy() throws java.io.IOException
 meth public void setDisplayName(java.lang.String)
+meth public void setHidden(boolean)
+ anno 0 java.lang.Deprecated()
 meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
-hfds INIT_LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
+hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
 hcls LookupEventList
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
