@@ -208,10 +208,6 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.addServletMapping(value);
     }
 
-    public int addTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?-1:webApp.addTaglib(value);
-    }
-
     public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
         return webApp==null?null:webApp.createBean(beanName);
     }
@@ -444,14 +440,6 @@ public class WebAppProxy implements WebApp {
         return webApp==null?null:webApp.getSmallIcon(locale);
     }
 
-    public org.netbeans.modules.j2ee.dd.api.web.Taglib[] getTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.Taglib[0]:webApp.getTaglib();
-    }
-
-    public org.netbeans.modules.j2ee.dd.api.web.Taglib getTaglib(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?null:webApp.getTaglib(index);
-    }
-
     public Object getValue(String name) {
         return webApp==null?null:webApp.getValue(name);
     }
@@ -599,10 +587,6 @@ public class WebAppProxy implements WebApp {
 
     public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.removeSmallIcon(locale);
-    }
-
-    public int removeTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?-1:webApp.removeTaglib(value);
     }
 
     public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
@@ -859,14 +843,6 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setSmallIcon(locale, icon);
     }
 
-    public void setTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        if (webApp!=null) webApp.setTaglib(value);
-    }
-
-    public void setTaglib(int index, org.netbeans.modules.j2ee.dd.api.web.Taglib value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        if (webApp!=null) webApp.setTaglib(index, value);
-    }
-
     public void setWelcomeFileList(org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList value) {
         if (webApp!=null) webApp.setWelcomeFileList(value);
     }
@@ -941,10 +917,6 @@ public class WebAppProxy implements WebApp {
 
     public int sizeServletMapping() {
         return webApp==null?0:webApp.sizeServletMapping();
-    }
-
-    public int sizeTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?0:webApp.sizeTaglib();
     }
 
     public void write(java.io.OutputStream os) throws java.io.IOException {

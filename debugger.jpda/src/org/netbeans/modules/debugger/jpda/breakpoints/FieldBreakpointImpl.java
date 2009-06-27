@@ -68,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
@@ -152,6 +153,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                 submitted = true;
             } catch (InternalExceptionWrapper e) {
             } catch (ClassNotPreparedExceptionWrapper e) {
+            } catch (ObjectCollectedExceptionWrapper e) {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             }
