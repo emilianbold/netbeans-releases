@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.22.1
+#Version 1.24.1
 
 CLSS public java.lang.Object
 cons public Object()
@@ -105,6 +105,7 @@ hfds actionName,keyStrokeList
 hcls UnmodifiableArrayList
 
 CLSS public final org.netbeans.api.editor.settings.SimpleValueNames
+fld public final static java.lang.String ALT_HYPERLINK_ACTIVATION_MODIFIERS = "alt-hyperlink-activation-modifiers"
 fld public final static java.lang.String CARET_BLINK_RATE = "caret-blink-rate"
 fld public final static java.lang.String CARET_COLOR_INSERT_MODE = "caret-color-insert-mode"
  anno 0 java.lang.Deprecated()
@@ -119,6 +120,7 @@ fld public final static java.lang.String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT =
 fld public final static java.lang.String CODE_FOLDING_COLLAPSE_INNERCLASS = "code-folding-collapse-innerclass"
 fld public final static java.lang.String CODE_FOLDING_COLLAPSE_JAVADOC = "code-folding-collapse-javadoc"
 fld public final static java.lang.String CODE_FOLDING_COLLAPSE_METHOD = "code-folding-collapse-method"
+fld public final static java.lang.String CODE_FOLDING_COLLAPSE_TAGS = "code-folding-collapse-tags"
 fld public final static java.lang.String CODE_FOLDING_ENABLE = "code-folding-enable"
 fld public final static java.lang.String COMPLETION_AUTO_POPUP = "completion-auto-popup"
 fld public final static java.lang.String COMPLETION_AUTO_POPUP_DELAY = "completion-auto-popup-delay"
