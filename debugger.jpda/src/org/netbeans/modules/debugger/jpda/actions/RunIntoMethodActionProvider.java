@@ -366,7 +366,13 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 BreakpointRequestWrapper.addThreadFilter(brReq, t.getThreadReference());
                 EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
                 EventRequestWrapper.addCountFilter(brReq, 1);
-                EventRequestWrapper.enable(brReq);
+                try {
+                    EventRequestWrapper.enable(brReq);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    // Unlikely to be thrown.
+                    debugger.getOperator().unregister(brReq);
+                    return false;
+                }
                 if (setBoundaryStep) {
                     boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
                 }
