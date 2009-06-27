@@ -74,6 +74,7 @@ import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -393,18 +394,30 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         }
                     }
                 } catch (InternalExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
                 } catch (VMDisconnectedExceptionWrapper e) {
                     return ;
                 }
             }
             try {
                 if (entryReq != null) {
-                    addEventRequest(entryReq);
+                    try {
+                        addEventRequest(entryReq);
+                    } catch (InternalExceptionWrapper e) {
+                        entryReq = null;
+                    } catch (ObjectCollectedExceptionWrapper e) {
+                        entryReq = null;
+                    }
                 }
                 if (exitReq != null) {
-                    addEventRequest(exitReq);
+                    try {
+                        addEventRequest(exitReq);
+                    } catch (InternalExceptionWrapper e) {
+                        exitReq = null;
+                    } catch (ObjectCollectedExceptionWrapper e) {
+                        exitReq = null;
+                    }
                 }
-            } catch (InternalExceptionWrapper e) {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             }

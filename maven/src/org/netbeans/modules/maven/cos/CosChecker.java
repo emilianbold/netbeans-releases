@@ -98,7 +98,7 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
-public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
+public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
@@ -108,6 +108,11 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
     public static ExecutionResultChecker createResultChecker() {
         return new COSExChecker();
     }
+
+    public static ProjectOpenedHook createCoSHook(Project prj) {
+        return new CosPOH(prj);
+    }
+
     private final Project project;
 
     public CosChecker(Project prj) {
@@ -694,7 +699,7 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
         return null;
     }
 
-    private static void touchProject(Project project) {
+    static void touchProject(Project project) {
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
             MavenProject mvn = prj.getMavenProject();
@@ -711,20 +716,29 @@ public class CosChecker extends ProjectOpenedHook implements PrerequisitesChecke
         }
     }
 
-    @Override
-    protected void projectOpened() {
-        touchProject(project);
-    }
+    static class CosPOH extends ProjectOpenedHook {
 
-    @Override
-    protected void projectClosed() {
-        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-        if (prj != null) {
-            MavenProject mvn = prj.getMavenProject();
-            deleteCoSTimeStamp(mvn, true);
-            deleteCoSTimeStamp(mvn, false);
+        private Project project;
 
-            //TODO also delete the IDE generated class files now?
+        CosPOH(Project prj) {
+            project = prj;
+        }
+
+        @Override
+        protected void projectOpened() {
+            touchProject(project);
+        }
+
+        @Override
+        protected void projectClosed() {
+            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                MavenProject mvn = prj.getMavenProject();
+                deleteCoSTimeStamp(mvn, true);
+                deleteCoSTimeStamp(mvn, false);
+
+                //TODO also delete the IDE generated class files now?
+            }
         }
     }
 

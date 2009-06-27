@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,42 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.dd.api.ejb.j2ee1_3;
+package org.netbeans.modules.ruby;
 
-// TODO PetrS Not used anywhere, not part of API. Remove!
+import javax.swing.text.BadLocationException;
 
-//import org.netbeans.modules.schema2beans.Version;
-//import org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanSingle;
-//
-//abstract public class EntityBean extends ComponentBeanSingle {
-//
-//    public EntityBean(java.util.Vector comps, Version version) {
-//	super(comps, version);
-//    }
-//
-//    //
-//    // The 1.3 descriptor wants True or False instead of the boolean value
-//    //
-//    public static final String TRUE = "True";	//NOI18N
-//    public static final String FALSE = "False";	//NOI18N
-//
-//    public void setReentrant(boolean value) {
-//	if (value) {
-//	    setReentrant(TRUE);
-//	} else {
-//	    setReentrant(FALSE);
-//	}
-//    }
-//
-//    public boolean isReentrant() {
-//	String value = getReentrant();
-//	if ((value == null) || value.equals(FALSE)) {
-//	    return false;
-//	} else {
-//	    return true;
-//	}
-//    }
-//
-//    abstract public void setReentrant(String value);
-//    abstract public String getReentrant();
-//}
+/**
+ * Test for RubyBracesMatcher
+ * 
+ * @author Marek Slama
+ */
+public class RubyBracesMatcherTest extends RubyTestBase {
+    
+    public RubyBracesMatcherTest(String testName) {
+        super(testName);
+    }
+
+    /** 
+     * Test for BracesMatcher, first ^ gives current caret position,
+     * second ^ gives matching caret position. Test is done in forward and backward direction.
+     */
+    private void match2(String original) throws BadLocationException {
+        super.assertMatches2(original);
+    }
+
+    public void testFindMatching1() throws Exception {
+        match2("^if true\n^end");
+    }
+
+    public void testFindMatching2() throws Exception {
+        match2("x=^(true^)\ny=5");
+    }
+
+    public void testFindMatching3() throws Exception {
+        match2("x=^(true || (false)^)\ny=5");
+    }
+
+    public void testFindMatching4() throws Exception {
+        match2("^def foo\nif true\nend\n^end\nend");
+    }
+
+    public void testFindMatching5() throws Exception {
+        // Test heredocs
+        match2("x=f(^<<ABC,\"hello\")\nfoo\nbar\n^ABC\n");
+    }
+
+    public void testFindMatching6() throws Exception {
+        // Test heredocs
+        match2("x=f(^<<ABC,'hello',<<-DEF,'bye')\nfoo\nbar\n^ABC\nbaz\n  DEF\nwhatever");
+    }
+
+    public void testFindMatching7() throws Exception {
+        // Test heredocs
+        match2("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
+    }
+    
+}

@@ -42,7 +42,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;

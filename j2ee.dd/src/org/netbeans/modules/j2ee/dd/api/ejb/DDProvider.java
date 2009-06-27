@@ -62,7 +62,6 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
@@ -80,7 +79,6 @@ import org.openide.util.Exceptions;
 
 public final class DDProvider {
     private static final String EJB_21_DOCTYPE = "http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"; //NOI18N
-    private static final String EJB_20_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     private final Map ddMap;
 

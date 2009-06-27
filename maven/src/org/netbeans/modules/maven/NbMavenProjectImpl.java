@@ -916,9 +916,9 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
+                    new ProjectOpenedHookImpl(this),
 
                     // default mergers..        
-                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
@@ -930,6 +930,7 @@ public final class NbMavenProjectImpl implements Project {
                     new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
+                    CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
                     new TestSkippingChecker(),

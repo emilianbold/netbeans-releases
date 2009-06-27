@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.*;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -508,10 +509,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return WebApp.VERSION_2_5;
         } else if (Profile.J2EE_14.equals(platformVersion)) {
             return WebApp.VERSION_2_4;
-        } else if (Profile.J2EE_13.equals(platformVersion)) {
-            return WebApp.VERSION_2_3;
         } else {
-            // return 2.5 as default value
+            // return 3.0 as default value
             return WebApp.VERSION_3_0;
         }
     }
