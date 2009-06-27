@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.2.1
+#Version 1.4.1
 
 CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()

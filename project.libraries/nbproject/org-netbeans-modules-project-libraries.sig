@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.19.1
+#Version 1.20.1
 
 CLSS public java.lang.Object
 cons public Object()
@@ -39,7 +39,7 @@ meth public org.netbeans.api.project.libraries.LibraryManager getManager()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds impl,listeners,manager
+hfds LOG,impl,listener,listeners,manager
 
 CLSS public final org.netbeans.api.project.libraries.LibraryChooser
 innr public abstract interface static Filter
@@ -83,7 +83,7 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removeLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds AREAL_LIBRARY_PROVIDER_LISTENER,alp,area,areaProvidersLookupResult,cache,currentAreaProviders,currentStorages,instance,listeners,lookupListener,openLibraryManagerListListeners,plistener,result
+hfds AREAL_LIBRARY_PROVIDER_LISTENER,alp,area,areaProvidersLookupResult,cache,currentAreaProviders,currentStorages,eventId,instance,listeners,lookupListener,openLibraryManagerListListeners,plistener,result
 
 CLSS public abstract interface org.netbeans.spi.project.libraries.ArealLibraryProvider<%0 extends org.netbeans.spi.project.libraries.LibraryStorageArea, %1 extends org.netbeans.spi.project.libraries.LibraryImplementation2>
 fld public final static java.lang.String PROP_OPEN_AREAS = "openAreas"
