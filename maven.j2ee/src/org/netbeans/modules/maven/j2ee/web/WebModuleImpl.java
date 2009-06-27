@@ -127,9 +127,6 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
                 WebApp wa = prov.getDDRoot(dd);
                 String waVersion = wa.getVersion() ;
                 
-                if(WebApp.VERSION_2_3.equals(waVersion)) {
-                    return WebModule.J2EE_13_LEVEL;
-                }
                 if (WebApp.VERSION_2_4.equals(waVersion)) {
                     return WebModule.J2EE_14_LEVEL;
                 }
