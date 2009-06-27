@@ -1960,8 +1960,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 EventRequestWrapper.enable (l.get (i));
             } catch (IllegalThreadStateException ex) {
                 // see #53163
-                // this can occurre if there is some "old" StepRequest and
+                // this can occurr if there is some "old" StepRequest and
                 // thread named in the request has died
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                // Something in the request was collected.
             } catch (InvalidRequestStateException ex) {
                 // workaround for #51176
             } catch (InternalExceptionWrapper ex) {

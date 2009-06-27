@@ -55,6 +55,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ExceptionEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
@@ -104,6 +105,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             } catch (InternalExceptionWrapper e) {
+            } catch (ObjectCollectedExceptionWrapper e) {
             }
         }
     }
