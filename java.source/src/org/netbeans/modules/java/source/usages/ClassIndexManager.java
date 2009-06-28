@@ -92,7 +92,7 @@ public final class ClassIndexManager {
     @Deprecated
     public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         //Ugly, in scala much more cleaner.
-        return reserveWriteLock(
+        return prepareWriteLock(
                 new ExceptionAction<T>() {
                     public T run() throws IOException, InterruptedException {
                         return takeWriteLock(r);
@@ -100,7 +100,7 @@ public final class ClassIndexManager {
                 });
     }
 
-    public <T> T reserveWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
+    public <T> T prepareWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
         synchronized (internalLock) {
             depth++;
             if (depth == 1) {
