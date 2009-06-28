@@ -116,7 +116,6 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>                 
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
                         <attr name="position" intvalue="2000"/>
