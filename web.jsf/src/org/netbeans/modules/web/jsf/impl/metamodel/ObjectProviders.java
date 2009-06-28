@@ -57,7 +57,6 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
@@ -92,7 +91,8 @@ class ObjectProviders {
                                 Element element, AnnotationMirror annotation) 
                         {
                             if ( !SystemEventListenerProvider.
-                                    isApplicationSystemEventListener(typeElement))
+                                    isApplicationSystemEventListener(typeElement,
+                                            helper))
                             {
                                 return;
                             }
@@ -325,16 +325,18 @@ class ObjectProviders {
          */
         @Override
         protected boolean checkType( TypeElement type ) {
-            return isApplicationSystemEventListener(type);
+            return isApplicationSystemEventListener(type, getHelper());
         }
         
-        static boolean isApplicationSystemEventListener( TypeElement type ){
+        static boolean isApplicationSystemEventListener( TypeElement type ,
+                AnnotationModelHelper helper )
+        {
             /**
              * This method checks if class annotated with @ListenerFor annotation
              * should be attached to Application as SystemEventListener.
              * The following algorithm identify type as such listener.
              */
-            List<TypeElement> interfaces = getImplementedInterfaces(type);
+            List<TypeElement> interfaces = getImplementedInterfaces(type, helper);
             boolean isSystemEventListener = false;
             boolean isComponentSystemEventListener = false;
             for (TypeElement typeElement : interfaces) {
@@ -352,7 +354,9 @@ class ObjectProviders {
             return isSystemEventListener && ! isComponentSystemEventListener;
         }
         
-        static List<TypeElement> getImplementedInterfaces( TypeElement type ) {
+        static List<TypeElement> getImplementedInterfaces( TypeElement type , 
+                AnnotationModelHelper helper) 
+                {
             List<? extends TypeMirror> interfaces = type.getInterfaces();
             List<TypeElement> result = new ArrayList<TypeElement>(interfaces
                     .size());
@@ -361,8 +365,18 @@ class ObjectProviders {
                     Element element = ((DeclaredType) typeMirror).asElement();
                     if (ElementKind.INTERFACE.equals(element.getKind())) {
                         result.add( (TypeElement) element );
+                        List<TypeElement> superInterfaces = 
+                            getImplementedInterfaces((TypeElement) element, helper);
+                        result.addAll( superInterfaces );
                     }
                 }
+            }
+            
+            List<? extends TypeElement> superClasses = helper.getSuperclasses(type);
+            for (TypeElement typeElement : superClasses) {
+                List<TypeElement> list = getImplementedInterfaces(typeElement, 
+                        helper);
+                result.addAll( list );
             }
             return result;
         }
@@ -380,7 +394,7 @@ class ObjectProviders {
         public List<T> createInitialObjects() throws InterruptedException {
             final List<T> result = new LinkedList<T>();
             getHelper().getAnnotationScanner().findAnnotations(getAnnotationName(), 
-                    AnnotationScanner.TYPE_KINDS, 
+                    EnumSet.of( ElementKind.CLASS ), 
                     new AnnotationHandler() {
                         public void handleAnnotation(TypeElement type, 
                                 Element element, AnnotationMirror annotation) 
@@ -423,7 +437,7 @@ class ObjectProviders {
             return true;
         }
         
-        private AnnotationModelHelper getHelper(){
+        protected AnnotationModelHelper getHelper(){
             return myHelper;
         }
         

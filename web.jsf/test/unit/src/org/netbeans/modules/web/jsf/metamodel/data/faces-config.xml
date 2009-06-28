@@ -37,10 +37,11 @@
      	<display-name>mainReferencedBean</display-name>
      </referenced-bean>
      <render-kit>
+     	<render-kit-id>kitId</render-kit-id>
      	<renderer>
      		<renderer-class>mainRendererClass</renderer-class>
      		<renderer-type>mainRendererType</renderer-type>
-     		<description>mainComponentFamily</description>
+     		<component-family>mainComponentFamily</component-family>
      	</renderer>
      </render-kit>
      <behavior>

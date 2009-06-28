@@ -192,8 +192,12 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
     protected List<AnnotationBehaviorRenderer> getClientBehaviorRenderers(
             String renderKitId )
     {
-        if ( getMainConfig()!= null && getMainConfig().isMetaDataComplete()){
-            return Collections.emptyList();
+        FacesConfig config = getMainConfig();
+        if ( config!= null ){
+            Boolean complete = config.isMetaDataComplete();
+            if ( complete != null && complete ){
+                return Collections.emptyList();
+            }
         }
         Collection<ClientBehaviorRendererImpl> collection =  
             getClientBehaviorManager().getObjects();
@@ -213,8 +217,12 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
      */
     @Override
     protected List<AnnotationRenderer> getRenderers( String renderKitId ) {
-        if ( getMainConfig()!= null && getMainConfig().isMetaDataComplete()){
-            return Collections.emptyList();
+        FacesConfig config = getMainConfig();
+        if ( config!= null ){
+            Boolean complete = config.isMetaDataComplete();
+            if ( complete != null && complete ){
+                return Collections.emptyList();
+            }
         }
         Collection<RendererImpl> collection =  
             getRendererManager().getObjects();
