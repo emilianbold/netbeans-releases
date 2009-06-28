@@ -261,10 +261,12 @@ implements PropertyChangeListener, LookupListener {
     }
 
     private void fireChange() {
+        FoDFileSystem.LOG.fine("Firing FeatureManager change"); // NOI18N
         for (FeatureInfo f : features()) {
             f.clearCache();
         }
         support.fireChange();
+        FoDFileSystem.LOG.fine("FeatureManager change delivered"); // NOI18N
     }
 
 }
