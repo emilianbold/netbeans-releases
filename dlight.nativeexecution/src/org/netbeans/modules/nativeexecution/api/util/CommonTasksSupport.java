@@ -59,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -121,11 +122,18 @@ public final class CommonTasksSupport {
                     }
                     return result;
                 }
-                CommandLineHelper helper = CommandLineHelper.getInstance(dstExecEnv);
-                String dstFileNameEscaped = helper.toShellPath(dstFileName);
+
+                String trgFileName;
+
+                if (dstExecEnv.isLocal() && Utilities.isWindows()) {
+                    trgFileName = WindowsSupport.getInstance().convertToShellPath(dstFileName);
+                } else {
+                    trgFileName = dstFileName;
+                }
+
                 try {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("cat >%s", dstFileNameEscaped)); // NOI18N
+                    npb.setCommandLine(String.format("cat >\"%s\"", trgFileName)); // NOI18N
                     NativeProcess np = npb.call();
 
                     OutputStream os = np.getOutputStream();
@@ -151,12 +159,14 @@ public final class CommonTasksSupport {
                         error.append(ex.getMessage() == null ? ex.toString() : ex.getMessage()); // NOI18N
                     }
                 }
+
                 if (result == 0) {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("chmod 0%03o %s", mask, dstFileNameEscaped)); // NOI18N
+                    npb.setCommandLine(String.format("chmod 0%03o \"%s\"", mask, trgFileName)); // NOI18N
                     NativeProcess np = npb.call();
                     result += np.waitFor();
                 }
+
                 return result;
             }
         };

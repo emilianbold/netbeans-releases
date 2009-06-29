@@ -456,7 +456,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (enclosingClass != null && offerMagicAndInherited) {
             Expression superClass = enclosingClass.getSuperClass();
             if (superClass != null) {
-                String superClsName = CodeUtils.extractSuperClassName(enclosingClass);
+                String superClsName = CodeUtils.extractUnqualifiedSuperClassName(enclosingClass);
                 Collection<IndexedFunction> superMethods = request.index.getAllMethods(
                         request.result, superClsName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
@@ -474,7 +474,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             List<Expression> interfaces = enclosingClass.getInterfaes();
             for (Expression identifier : interfaces) {
-                String ifaceName = CodeUtils.extractTypeName(identifier);
+                String ifaceName = CodeUtils.extractUnqualifiedName(identifier);
                 Collection<IndexedFunction> superMethods = request.index.getAllMethods(
                         request.result, ifaceName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
@@ -551,7 +551,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (classDecl != null) {
                     Expression superIdentifier = classDecl.getSuperClass();
                     if (superIdentifier != null) {
-                        typeName = CodeUtils.extractSuperClassName(classDecl);
+                        typeName = CodeUtils.extractUnqualifiedSuperClassName(classDecl);
                         staticContext = instanceContext = true;
                         attrMask |= Modifier.PROTECTED;
                     }
@@ -993,7 +993,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (parameterName instanceof Variable) {
                     String varName = CodeUtils.extractVariableName((Variable) parameterName);
                     if (varName != null) {
-                        String type = CodeUtils.extractParameterTypeName(param);
+                        String type = CodeUtils.extractUnqualifiedTypeName(param);
 
                         if (type == null){
                             type = typeByParamName.get(varName);

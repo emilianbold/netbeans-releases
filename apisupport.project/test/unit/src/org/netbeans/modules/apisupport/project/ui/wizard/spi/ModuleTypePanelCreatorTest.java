@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.wizard.TypeChooserPanelImpl;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -81,12 +82,14 @@ public class ModuleTypePanelCreatorTest extends TestBase {
         // test that changes notifications are received
         ModuleTypePanel.setProjectFolder(wizardDescriptor, new File(""));
         
-        l.assertEvents(TypeChooserPanelImpl.IS_NETBEANS_ORG, 
+        l.assertEvents(TypeChooserPanelImpl.IS_NETBEANS_ORG,
+                NotifyDescriptor.PROP_MESSAGE,
                 TypeChooserPanelImpl.IS_STANDALONE_OR_SUITE_COMPONENT,
                 TypeChooserPanelImpl.SUITE_ROOT,
                 TypeChooserPanelImpl.ACTIVE_PLATFORM_ID,
                 TypeChooserPanelImpl.ACTIVE_NB_PLATFORM,
-                TypeChooserPanelImpl.PROJECT_FOLDER);
+                TypeChooserPanelImpl.PROJECT_FOLDER,
+                NotifyDescriptor.PROP_TITLE);
     }
     
     public void testIsPanelUpdated() {

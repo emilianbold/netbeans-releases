@@ -592,12 +592,7 @@ made subject to such option by the copyright holder.
                 <condition>
                     <and>
                         <isset property="tests.failed"/>
-                        <or>
-                            <not>
-                                <isset property="continue.after.failing.tests"/>
-                            </not>
-                            <isfalse value="${continue.after.failing.tests}"/>
-                        </or>
+                        <isfalse value="${continue.after.failing.tests}"/>
                     </and>
                 </condition>
             </fail>

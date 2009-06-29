@@ -41,8 +41,8 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
@@ -73,15 +73,21 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
     }
 
     @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.create(getOriginalNode().getName());
+    }
+
+
+    @Override
     public OffsetRange getRange() {
         ClassDeclaration classDeclaration = getOriginalNode();
         Identifier name = classDeclaration.getName();
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public Identifier getSuperClass() {
+    public Expression getSuperClass() {
         return (getOriginalNode().getSuperClass() != null) ?
-            CodeUtils.extractIdentifier(getOriginalNode().getSuperClass()) : null;
+            getOriginalNode().getSuperClass() : null;
     }
 
     public List<? extends Expression> getInterfaces() {

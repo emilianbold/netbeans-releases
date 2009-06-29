@@ -307,17 +307,9 @@ public abstract class APTWalker {
                 return;
             }
         }
-        if (curAPT.getType() == APT.Type.CONDITION_CONTAINER) {
-            // new conditional container node
-            
-            // if wasn't yet in any children
-            curWasInChild = false; 
-            // push container to have possibility move on it's sibling after ENDIF
-            pushState();
-            // move to the first child of container
-            assert(curAPT.getFirstChild() != null);
-            curAPT = curAPT.getFirstChild();           
-        } 
+        if (APTUtils.isStartConditionNode(curAPT.getType())) {
+            curWasInChild = false;
+        }
 
         // allow any actions in extension for the current node
         boolean visitChild = onAPT(curAPT, curWasInChild);
@@ -326,9 +318,9 @@ public abstract class APTWalker {
             // move on next node to visit
             assert(APTUtils.isStartOrSwitchConditionNode(curAPT.getType()));   
             if (curAPT.getFirstChild() != null) {
-                // node has children
                 // push to have possibility move on it's sibling after visited children
-                pushState();                  
+                pushState();
+                // node has children which are not yet visited
                 curAPT = curAPT.getFirstChild();
                 curWasInChild = false;
             } else {
@@ -339,13 +331,7 @@ public abstract class APTWalker {
             if (curAPT.getType() == APT.Type.ENDIF) {
                 APT endif = curAPT;
                 // end of condition block
-                popState();
-                if (curAPT.getType() != APT.Type.CONDITION_CONTAINER) {
-                    APTUtils.LOG.log(Level.SEVERE, 
-                            "#endif directive {0} without starting #if in APT {1}", // NOI18N
-                            new Object[] { endif, root });
-                }
-                curWasInChild = false;
+                curAPT = endif;
             } else if( curAPT.getType() == APT.Type.ERROR ) {
 		if (stopOnErrorDirective()) {
 		    stop();

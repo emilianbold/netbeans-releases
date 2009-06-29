@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.impl.structure;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import java.io.Serializable;
-import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTConditionsBlock;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
- * implementation of preprocessor conditions block container
- * @author Vladimir Voskresensky
+ *
+ * @author Radek Matous
  */
-public final class APTConditionsBlockNode extends APTContainerNode 
-                                        implements APTConditionsBlock, 
-                                        Serializable {
-    private static final long serialVersionUID = 2285405035404696441L;
-    transient private APT next;
-    
-    /** Copy constructor */
-    /**package*/APTConditionsBlockNode(APTConditionsBlockNode orig) {
-        super(orig);
-        // clear tree structure information
-        this.next = null;
+public class ASTNodeInfoInContext<T extends ASTNode>  {
+    private Scope scope;
+    private ASTNodeInfo<T> nodeInfo;
+
+
+    public ASTNodeInfoInContext(ASTNodeInfo<T> nodeInfo, ModelElement element) {
+        this.nodeInfo = nodeInfo;
+        if (element instanceof Scope) {
+            this.scope  = (Scope) element;
+        } else {
+            this.scope  = element.getInScope();
+        }
     }
-    
     /**
-     * Creates a new instance of APTConditionsBlockNode
+     * @return the scope
      */
-    public APTConditionsBlockNode() {
+    public Scope getScope() {
+        return scope;
     }
 
-    public final int getType() {
-        return APT.Type.CONDITION_CONTAINER;
+    public FileScope getFileScope() {
+        return ModelUtils.getFileScope(scope);
     }
-    
-    public int getOffset() {
-        return -1;
+    public NamespaceScope getNamespaceScope() {
+        return ModelUtils.getNamespaceScope(scope);
+    }
+    public QualifiedName getFullyQualifiedName() {
+        QualifiedName qualifiedName = getNodeInfo().getQualifiedName();
+        if (qualifiedName != null) {
+            qualifiedName = qualifiedName.toFullyQualified(getNamespaceScope());
+        }
+
+        return qualifiedName;
     }
 
-    public int getEndOffset() {
-        return -1;
-    }
-    
-    public APT getNextSibling() {
-        return next;
-    }
-
-    public String getText() {
-        return "preprocessor condition branches container"; // NOI18N
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // implementation details
-
-    public final void setNextSibling(APT next) {
-        assert (next != null) : "null sibling, what for?"; // NOI18N
-        assert (this.next == null) : "why do you change immutable APT?"; // NOI18N
-        this.next = next;
+    /**
+     * @return the nodeInfo
+     */
+    public ASTNodeInfo<T> getNodeInfo() {
+        return nodeInfo;
     }
 }
