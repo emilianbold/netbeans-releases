@@ -76,6 +76,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
 
     //  those are dirs in project root we already know and create specific source groups
     public static final List KNOWN_FOLDERS = Arrays.asList(
+            "docs", // NOI18N
             "grails-app", // NOI18N
             "lib", // NOI18N
             "scripts", // NOI18N
