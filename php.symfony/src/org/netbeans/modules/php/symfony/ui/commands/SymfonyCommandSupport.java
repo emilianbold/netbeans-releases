@@ -223,7 +223,7 @@ public final class SymfonyCommandSupport {
 
     private ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
         SymfonyScript symfonyScript = SymfonyScript.getDefault();
-        if (symfonyScript== null || !symfonyScript.isValid()) {
+        if (symfonyScript == null || !symfonyScript.isValid()) {
             if (warnUser) {
                 UiUtils.invalidScriptProvided(
                         NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidSymfonyScript"),
