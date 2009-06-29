@@ -43,12 +43,13 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public abstract class BaseAction extends AbstractAction {
+public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 
     protected BaseAction() {
         putValue("noIconInMenu", true); // NOI18N
@@ -70,6 +71,10 @@ public abstract class BaseAction extends AbstractAction {
 
     protected String getFullName() {
         return NbBundle.getMessage(BaseAction.class, "LBL_SymfonyAction", getPureName());
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     protected abstract String getPureName();
