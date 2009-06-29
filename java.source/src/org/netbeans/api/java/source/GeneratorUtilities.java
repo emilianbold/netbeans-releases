@@ -505,16 +505,27 @@ public final class GeneratorUtilities {
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
         try {
-            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
+            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
             return (T) translator.translate(original);
+            
+            /*
+            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
+            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+            CommentCollector instance = CommentCollector.getInstance();
+            instance.collect(seq, copy);
+
+            return original;
+             */
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return original;
     }
-
+    
+    
     // private implementation --------------------------------------------------
 
     private MethodTree createMethod(ExecutableElement element, DeclaredType type) {
