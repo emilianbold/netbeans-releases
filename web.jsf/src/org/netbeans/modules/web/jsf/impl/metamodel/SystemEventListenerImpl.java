@@ -75,7 +75,7 @@ class SystemEventListenerImpl extends PersistentObject implements
                 "javax.faces.event.ListenerFor");                       // NOI18N
         if (annotationMirror == null || 
                 !ObjectProviders.SystemEventListenerProvider.
-                isApplicationSystemEventListener(type)) 
+                isApplicationSystemEventListener(type, getHelper())) 
         {
             return false;
         }
