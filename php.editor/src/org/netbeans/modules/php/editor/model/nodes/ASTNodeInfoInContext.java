@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
  *
  * @author Radek Matous
  */
-class ParameterImpl implements Parameter {
-    private String name;
-    private String defaultValue;
-    ParameterImpl(String name) {
-        this(name, null);
+public class ASTNodeInfoInContext<T extends ASTNode>  {
+    private Scope scope;
+    private ASTNodeInfo<T> nodeInfo;
+
+
+    public ASTNodeInfoInContext(ASTNodeInfo<T> nodeInfo, ModelElement element) {
+        this.nodeInfo = nodeInfo;
+        if (element instanceof Scope) {
+            this.scope  = (Scope) element;
+        } else {
+            this.scope  = element.getInScope();
+        }
+    }
+    /**
+     * @return the scope
+     */
+    public Scope getScope() {
+        return scope;
     }
 
-    ParameterImpl(String name, String defaultValue) {
-        this.name = name;
-        this.defaultValue = defaultValue;
+    public FileScope getFileScope() {
+        return ModelUtils.getFileScope(scope);
+    }
+    public NamespaceScope getNamespaceScope() {
+        return ModelUtils.getNamespaceScope(scope);
+    }
+    public QualifiedName getFullyQualifiedName() {
+        QualifiedName qualifiedName = getNodeInfo().getQualifiedName();
+        if (qualifiedName != null) {
+            qualifiedName = qualifiedName.toFullyQualified(getNamespaceScope());
+        }
+
+        return qualifiedName;
     }
 
-    @NonNull
-    public String getName() {
-        return name;
-    }
-
-    @NonNull
-    public String getDefaultValue() {
-        return defaultValue;//NOI18N
-    }
-
-    public boolean isMandatory() {
-        return defaultValue == null;
-    }
-
-    //TODO: not implemented yet
-    public TypeScope getType() {
-        return null;
+    /**
+     * @return the nodeInfo
+     */
+    public ASTNodeInfo<T> getNodeInfo() {
+        return nodeInfo;
     }
 }

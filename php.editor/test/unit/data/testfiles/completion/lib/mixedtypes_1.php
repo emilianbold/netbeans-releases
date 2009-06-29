@@ -1,18 +1,19 @@
 <?php
-class Author {
+class Author_1 {
     public $name;
 }
 
-/**
- * @property Author $author hello this is doc
- */
-class Book {
+class Book_1 {
     /**
      * Title of the book.
      * @var string
      */
     public $title;
 
+    /**
+     *
+     * @var Author_1|null
+     */
     public $author;
 
     private function __construct($title) {
@@ -22,19 +23,19 @@ class Book {
     /**
      *
      * @param string $title
-     * @return Book
+     * @return Book_1
      */
-    public static function createBook($title) {
-        return new Book($title);
+    public static function createBook_1($title) {
+        return new Book_1($title);
     }
 }
 
-class Magazine {
+class Magazine_1 {
     public $pages;
 }
 
 /**
- * @return Book|Magazine
+ * @return Book_1|Magazine_1
  */
 function getBookMagazine() {
 
@@ -48,7 +49,7 @@ $bm->author;
 
 
 /**
- * @return Book|null
+ * @return Book_1|null
  */
 function getBook(){
 
