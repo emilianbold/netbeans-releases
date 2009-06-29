@@ -329,8 +329,8 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
                                         + ": " + statusValues);
     }
 
-    protected ISVNClientAdapter getNbClient() throws Exception {        
-        ISVNClientAdapter c = SvnClientTestFactory.getInstance().createSvnClient();
+    protected SvnClient getNbClient() throws Exception {
+        SvnClient c = SvnClientTestFactory.getInstance().createSvnClient();
         fileNotifyListener = new FileNotifyListener();
         c.addNotifyListener(fileNotifyListener);
         return c;
