@@ -269,7 +269,13 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         JiraConfiguration config = issue.getRepository().getConfiguration();
         if (isNew) {
-            projectCombo.setSelectedIndex(0); // Preselect the project
+            String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
+            if ((projectId != null) && !projectId.equals("")) { // NOI18N
+                Project project = config.getProjectById(projectId);
+                projectCombo.setSelectedItem(project);
+            } else {
+                projectCombo.setSelectedIndex(0); // Preselect the project
+            }
             reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
