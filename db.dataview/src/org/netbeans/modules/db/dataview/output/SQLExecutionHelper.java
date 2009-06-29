@@ -549,33 +549,31 @@ class SQLExecutionHelper {
 
     private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
         Statement stmt = null;
-        boolean select = false;
         if (sql.startsWith("{")) { // NOI18N
 
             stmt = conn.prepareCall(sql);
         } else if (isSelectStatement(sql)) {
             stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            select = true;
+            int pageSize = dataView.getDataViewPageContext().getPageSize();
+
+            try {
+                stmt.setFetchSize(pageSize);
+            } catch (SQLException e) {
+                // ignore -  used only as a hint to the driver to optimize
+                LOGGER.log(Level.WARNING, "Unable to set Fetch size" + e); // NOI18N
+            }
+
+            try {
+                if (dataView.isLimitSupported() && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
+                    stmt.setMaxRows(pageSize);
+                } else {
+                    stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+                }
+            } catch (SQLException exc) {
+                mLogger.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
+            }
         } else {
             stmt = conn.createStatement();
-        }
-        int pageSize = dataView.getDataViewPageContext().getPageSize();
-
-        try {
-            stmt.setFetchSize(pageSize);
-        } catch (SQLException e) {
-            // ignore -  used only as a hint to the driver to optimize
-            LOGGER.log(Level.WARNING, "Unable to set Fetch size" + e); // NOI18N
-        }
-
-        try {
-            if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
-                stmt.setMaxRows(pageSize);
-            } else {
-                stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
-            }
-        } catch (SQLException exc) {
-            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
         }
         return stmt;
     }

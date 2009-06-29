@@ -856,7 +856,7 @@ with another module even if tests in previous module failed. Set to "false"
 in your suite's project.properties to force test target to stop after tests
 in one module failed. In module project this controls whether test target
 fails when tests fail (when set to "false" or unset) or succeeds even if 
-test failed (when set to anything else).
+test failed (when set to "true").
 
 extra.test.libs.dir - directory with extra libraries needed for test run. 
 
