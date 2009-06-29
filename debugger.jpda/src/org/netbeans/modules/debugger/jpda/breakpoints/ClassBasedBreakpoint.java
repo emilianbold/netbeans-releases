@@ -281,7 +281,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             if (i != null) {
                 try {
                     ClassLoaderReference clref = ReferenceTypeWrapper.classLoader(referenceType);
-                    if (ObjectReferenceWrapper.isCollected(clref)) {
+                    if (clref != null && ObjectReferenceWrapper.isCollected(clref)) {
                         // Ignore classes whose class loaders are gone.
                         continue;
                     }

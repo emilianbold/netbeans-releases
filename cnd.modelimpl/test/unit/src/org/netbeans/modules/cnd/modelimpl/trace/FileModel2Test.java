@@ -269,4 +269,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#165038 : parser fail on variable declaration
         performTest("iz165038.cc");
     }
+
+    public void testIZ167547() throws Exception {
+        // IZ#167547 : 100% CPU core usage with C++ project
+        performTest("iz167547.cc");
+    }
 }

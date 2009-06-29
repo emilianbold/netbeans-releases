@@ -976,7 +976,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "imq/etc/imqenv.conf"; // NOI18N
     */
     public static final String JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3.installRoot"; // NOI18N
+            "-Dorg.glassfish.v3ee6.installRoot"; // NOI18N
     
     public static final String PRODUCT_ID =
             "GFMOD"; // NOI18N
