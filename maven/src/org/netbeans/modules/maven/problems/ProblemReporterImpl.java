@@ -167,10 +167,14 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     public void clearReports() {
+        boolean hasAny;
         synchronized (reports) {
+            hasAny = !reports.isEmpty();
             reports.clear();
         }
-        fireChange();
+        if (hasAny) {
+            fireChange();
+        }
     }
     
     public int compare(ProblemReport o1, ProblemReport o2) {

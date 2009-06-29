@@ -38,56 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.api.metamodel;
+package org.netbeans.modules.web.jsf.metamodel;
 
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 
 
 /**
- * An entry point for accessing to collection model information 
- * about JSF configuration inside some module.
- * Such module could be JAR file ( with set of faces-config.xml files
- * and annotations ). Also NB project ( not yet packed into war/jar file )
- * could be also such module.
- * 
  * @author ads
  *
  */
-public interface JsfModel {
-    
-    /**
-     * Accessor to list of faces-config models.
-     * @return set of models found in module
-     */
-    List<JSFConfigModel> getModels();
-    
-    FacesConfig getMainConfig();
-    
-    List<FacesConfig> getFacesConfigs();
-    
-    /**
-     * Generic accessor to top-level elements .
-     * @param <T>
-     * @param clazz
-     * @return list of all elements in merged model.
-     */
-    <T extends JsfModelElement> List<T> getElements( Class<T> clazz);
-    
-    /**
-     * Register change listener on model elements.
-     * @param listener
-     */
-    void addPropertyChangeListener(PropertyChangeListener listener);
-    
-    /**
-     * Unregister change listener on model elements.
-     * @param listener
-     */
-    void removePropertyChangeListener(PropertyChangeListener listener);
+public class CommonTestCase extends JavaSourceTestCase {
 
+    public CommonTestCase( String testName ) {
+        super(testName);
+    }
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+    
+    public MetadataModel<JsfModel> createJsfModel() throws IOException, InterruptedException {
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
+        ModelUnit modelUnit = ModelUnit.create(
+                ClassPath.getClassPath(srcFO, ClassPath.BOOT),
+                ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
+                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
+        return JsfModelFactory.createMetaModel(modelUnit);
+    }
+
+    public String getFileContent( String relativePath ) throws IOException{
+        return TestUtilities.copyStreamToString(SeveralXmlModelTest.class.
+                getResourceAsStream( relativePath));
+    }
 }

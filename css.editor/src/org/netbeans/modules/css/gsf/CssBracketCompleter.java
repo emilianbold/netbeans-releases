@@ -185,21 +185,25 @@ public class CssBracketCompleter implements KeystrokeHandler {
     }
 
     @Override
-    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+    public boolean afterCharInserted(Document doc, final int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         if ('}' != ch) {
             return false;
         }
-        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, caretOffset);
+        final int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, caretOffset);
         if (lineStart != caretOffset) {
             return false;
         }
         final Indent indent = Indent.get(doc);
-        indent.lock();
-        try {
-            indent.reindent(lineStart, caretOffset);
-        } finally {
-            indent.unlock();
-        }
+        ((BaseDocument)doc).runAtomic(new Runnable() {
+            public void run() {
+                try {
+                    indent.reindent(lineStart, caretOffset);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
         return false;
     }
 
