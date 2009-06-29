@@ -36,46 +36,48 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.model;
 
-import java.util.Collection;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import java.util.List;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 
-/**
- * @author Radek Matous
- */
-/*
- * TODO:
- * Namespaces must be involved in:
- * TypeScope: Collection<? extends InterfaceScope> getSuperInterfaces();
- * ClassScope, TypeScope: Collection<? extends String> getSuperInterfaceNames();
- * ClassScope: Collection<? extends ClassScope> getSuperClasses();
- */
-public interface TypeScope extends Scope {
-    PhpModifiers getPhpModifiers();
-    /**
-     * @return declared methods only
-     */
-    Collection<? extends MethodScope> getDeclaredMethods();
-    /**
-     * @return inherited methods only
-     */
-    Collection<? extends MethodScope> getInheritedMethods();
-    /**
-     * @return declared+inherited methods
-     */
-    Collection<? extends MethodScope> getMethods();
+public enum QualifiedNameKind {
+    UNQUALIFIED, QUALIFIED, FULLYQUALIFIED;
+    public boolean isUnqualified() {
+        return UNQUALIFIED.equals(this);
+    }
+    public boolean isQualified() {
+        return QUALIFIED.equals(this);
+    }
+    public boolean isFullyQualified() {
+        return FULLYQUALIFIED.equals(this);
+    }
+    public static QualifiedNameKind resolveKind(NamespaceName namespaceName) {
+        if (namespaceName.isGlobal()) {
+            return FULLYQUALIFIED;
+        } else if (namespaceName.getSegments().size() > 1) {
+            return QUALIFIED;
+        }
+        return UNQUALIFIED;
+    }
+    public static QualifiedNameKind resolveKind(List<String> segments) {
+        if (segments.size() > 1) {
+            return QUALIFIED;
+        }
+        return UNQUALIFIED;
+    }
+    public static QualifiedNameKind resolveKind(Identifier identifier) {
+        return UNQUALIFIED;
+    }
+    public static QualifiedNameKind resolveKind(String name) {
+        if (name.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
+            return FULLYQUALIFIED;
+        } else if (name.indexOf(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) != -1) {
+            return QUALIFIED;
+        }
+        return UNQUALIFIED;
+    }
 
-    Collection<? extends ClassConstantElement> getDeclaredConstants();
-    Collection<? extends ClassConstantElement> getInheritedConstants();
-    Collection<? extends InterfaceScope> getSuperInterfaces();
-    Collection<? extends String> getSuperInterfaceNames();
-
-    Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
-    Collection<? extends MethodScope> findInheritedMethods(final String queryName);
-    Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
-    Collection<? extends MethodScope> findDeclaredMethods(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName);
 }

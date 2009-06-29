@@ -47,6 +47,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 public interface ClassScope extends TypeScope {
     Collection<? extends InterfaceScope> getSuperInterfaces();
     Collection<? extends ClassScope> getSuperClasses();
+    Collection<? extends String> getSuperClassNames();
     Collection<? extends MethodScope> getDeclaredConstructors();
     Collection<? extends MethodScope> getDeclaredMethods();
     Collection<? extends MethodScope> getMethods();

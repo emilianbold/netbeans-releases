@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,48 +34,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import java.util.Collection;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
+ *
  * @author Radek Matous
  */
-/*
- * TODO:
- * Namespaces must be involved in:
- * TypeScope: Collection<? extends InterfaceScope> getSuperInterfaces();
- * ClassScope, TypeScope: Collection<? extends String> getSuperInterfaceNames();
- * ClassScope: Collection<? extends ClassScope> getSuperClasses();
- */
-public interface TypeScope extends Scope {
-    PhpModifiers getPhpModifiers();
-    /**
-     * @return declared methods only
-     */
-    Collection<? extends MethodScope> getDeclaredMethods();
-    /**
-     * @return inherited methods only
-     */
-    Collection<? extends MethodScope> getInheritedMethods();
-    /**
-     * @return declared+inherited methods
-     */
-    Collection<? extends MethodScope> getMethods();
+public class ASTNodeInfoInContext<T extends ASTNode>  {
+    private Scope scope;
+    private ASTNodeInfo<T> nodeInfo;
 
-    Collection<? extends ClassConstantElement> getDeclaredConstants();
-    Collection<? extends ClassConstantElement> getInheritedConstants();
-    Collection<? extends InterfaceScope> getSuperInterfaces();
-    Collection<? extends String> getSuperInterfaceNames();
 
-    Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
-    Collection<? extends MethodScope> findInheritedMethods(final String queryName);
-    Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
-    Collection<? extends MethodScope> findDeclaredMethods(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName);
+    public ASTNodeInfoInContext(ASTNodeInfo<T> nodeInfo, ModelElement element) {
+        this.nodeInfo = nodeInfo;
+        if (element instanceof Scope) {
+            this.scope  = (Scope) element;
+        } else {
+            this.scope  = element.getInScope();
+        }
+    }
+    /**
+     * @return the scope
+     */
+    public Scope getScope() {
+        return scope;
+    }
+
+    public FileScope getFileScope() {
+        return ModelUtils.getFileScope(scope);
+    }
+    public NamespaceScope getNamespaceScope() {
+        return ModelUtils.getNamespaceScope(scope);
+    }
+    public QualifiedName getFullyQualifiedName() {
+        QualifiedName qualifiedName = getNodeInfo().getQualifiedName();
+        if (qualifiedName != null) {
+            qualifiedName = qualifiedName.toFullyQualified(getNamespaceScope());
+        }
+
+        return qualifiedName;
+    }
+
+    /**
+     * @return the nodeInfo
+     */
+    public ASTNodeInfo<T> getNodeInfo() {
+        return nodeInfo;
+    }
 }

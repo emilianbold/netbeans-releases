@@ -133,14 +133,17 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         });
     }
 
-    @Override
-    public String getFullyQualifiedName() {
-        return getName();
-    }
-
     @NonNull
     public CachingSupport getCachingSupport() {
         return cachedModelSupport;
+    }
+
+    public NamespaceScope getDefaultDeclaredNamespace() {
+        return ModelUtils.getFirst(ModelUtils.filter(getDeclaredNamespaces(), new ModelUtils.ElementFilter<NamespaceScope>() {
+            public boolean isAccepted(NamespaceScope ns) {
+                return ns.isDefaultNamespace();
+            }
+        }));
     }
 
 }

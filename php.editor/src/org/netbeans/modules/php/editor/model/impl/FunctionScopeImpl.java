@@ -222,6 +222,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
             sb.append(returnType);
         }
         sb.append(";");//NOI18N
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
         return sb.toString();
     }
 }

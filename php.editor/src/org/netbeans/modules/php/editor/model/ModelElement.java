@@ -50,7 +50,6 @@ import org.openide.util.Union2;
  */
 public interface ModelElement {
     String getName();
-    String getFullyQualifiedName();
     @CheckForNull
     String getIndexSignature();
     PhpKind getPhpKind();

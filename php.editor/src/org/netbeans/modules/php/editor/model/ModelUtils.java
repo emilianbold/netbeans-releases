@@ -156,7 +156,7 @@ public class ModelUtils {
     }
 
     @CheckForNull
-    public static <T extends ModelElement> T getFirst(Collection<? extends T> all) {
+    public static <T> T getFirst(Collection<? extends T> all) {
         if (all instanceof List) {
             return all.size() > 0 ? ((List<T>)all).get(0) : null;
         }
@@ -263,6 +263,24 @@ public class ModelUtils {
         return retval;
     }
 
+    @CheckForNull
+    public static TypeScope getTypeScope(ModelElement element) {
+        TypeScope retval = (element instanceof TypeScope) ? (TypeScope)element : null;
+        while (retval == null && element != null) {
+            element = element.getInScope();
+            retval = (TypeScope) ((element instanceof TypeScope) ? element : null);
+        }
+        return retval;
+    }
+    @CheckForNull
+    public static ClassScope getClassScope(ModelElement element) {
+        ClassScope retval = (element instanceof ClassScope) ? (ClassScope)element : null;
+        while (retval == null && element != null) {
+            element = element.getInScope();
+            retval = (ClassScope) ((element instanceof ClassScope) ? element : null);
+        }
+        return retval;
+    }
     @NonNull
     public static IndexScope getIndexScope(ModelElement element) {
         IndexScope retval = (element instanceof IndexScope) ? (IndexScope)element : null;
