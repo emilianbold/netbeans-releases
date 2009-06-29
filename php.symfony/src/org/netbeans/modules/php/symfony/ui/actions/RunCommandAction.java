@@ -62,7 +62,7 @@ public final class RunCommandAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformedInternal(PhpModule phpModule) {
+    public void actionPerformed(PhpModule phpModule) {
         SymfonyCommandChooser.CommandDescriptor commandDescriptor = SymfonyCommandChooser.select(phpModule);
         if (commandDescriptor == null) {
             return;

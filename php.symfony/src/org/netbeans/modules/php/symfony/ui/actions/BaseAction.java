@@ -58,7 +58,7 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public final void actionPerformed(ActionEvent e) {
         PhpModule phpModule = PhpModule.inferPhpModule();
         if (phpModule == null) {
             return;
@@ -66,7 +66,7 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
         if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
             return;
         }
-        actionPerformedInternal(phpModule);
+        actionPerformed(phpModule);
     }
 
     protected String getFullName() {
@@ -78,5 +78,5 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
     }
 
     protected abstract String getPureName();
-    protected abstract void actionPerformedInternal(PhpModule phpModule);
+    protected abstract void actionPerformed(PhpModule phpModule);
 }
