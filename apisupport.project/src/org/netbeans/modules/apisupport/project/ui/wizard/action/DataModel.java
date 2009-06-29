@@ -153,12 +153,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf = new CreatedModifiedFiles(getProject());
 
         boolean actionProxy;
+        boolean actionContext;
         try {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
             actionProxy = current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
+            actionContext = current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
+            actionContext = false;
         }
         
         String actionPath = getDefaultPackagePath(className + ".java", false); // NOI18N
@@ -170,7 +173,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 :
                 "callableSystemAction.java"
             ):
-            "cookieAction.java"
+            (
+                actionContext ?
+                "contextAction.java"
+                :
+                "cookieAction.java"
+            )
         ); // NOI18N
         assert template != null;
         String actionNameKey = "CTL_" + className; // NOI18N
@@ -179,10 +187,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         replaceTokens.put("DISPLAY_NAME_KEY", actionNameKey); // NOI18N
         replaceTokens.put("MODE", getSelectionMode()); // NOI18N
-        Set<String> imports = new TreeSet<String>(Arrays.asList(HARDCODED_IMPORTS));
+        Set<String> imports = new TreeSet<String>();
+        String cName = parseClassName(cookieClasses[0]);
+        String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
+        if (!actionContext) {
+            imports.addAll(Arrays.asList(HARDCODED_IMPORTS));
+        }
         Set<String> addedFQNCs = new TreeSet<String>();
+        StringBuffer cookieSB = new StringBuffer();
         if (!alwaysEnabled) {
-            StringBuffer cookieSB = new StringBuffer();
             for (String cookieClass : cookieClasses) {
                 // imports for predefined chosen cookie classes
                 if (CLASS_TO_CNB.containsKey(cookieClass)) {
@@ -195,12 +208,22 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 cookieSB.append(parseClassName(cookieClass) + ".class"); // NOI18N
             }
             replaceTokens.put("COOKIE_CLASSES_BLOCK", cookieSB.toString()); // NOI18N
+            replaceTokens.put("CONTEXT_TYPE", multiSelection ? "List<" + cName + ">" : cName);
             String impl;
             if (cookieClasses.length == 1) {
-                String cName = parseClassName(cookieClasses[0]);
-                String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
-                impl = cName + ' ' + cNameVar + " = activatedNodes[0].getLookup().lookup(" + cName + ".class);\n" // NOI18N
+                if (actionContext) {
+                    if (multiSelection) {
+                        impl = "for (" + cName + ' ' + cNameVar + " : context) {\n" // NOI18N
+                                + INDENT_2X + "// TODO use " + cNameVar + "\n" // NOI18N
+                                + INDENT + "}"; // NOI18N
+                        imports.add("java.util.List"); // NOI18N
+                    } else {
+                        impl = "// TODO use context";
+                    }
+                } else {
+                    impl = cName + ' ' + cNameVar + " = activatedNodes[0].getLookup().lookup(" + cName + ".class);\n" // NOI18N
                         + INDENT_2X + "// TODO use " + cNameVar; // NOI18N
+                }
             } else {
                 impl = "// TODO implement action body"; // NOI18N
             }
@@ -238,7 +261,30 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         String instanceFullPath = category + "/" // NOI18N
                 + dashedFqClassName + ".instance"; // NOI18N
         if (!alwaysEnabled || !actionProxy) {
-            cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
+            if (!actionContext) {
+                cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
+            } else {
+                Map<String, Object> attrs = new HashMap<String, Object>();
+                attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.context"); // NOI18N
+                attrs.put("delegate", "methodvalue:org.openide.awt.Actions.inject"); // NOI18N
+                attrs.put("injectable", getPackageName() + '.' + className); // NOI18N
+                attrs.put("selectionType", multiSelection ? "ANY" : "EXACTLY_ONE"); // NOI18N
+                attrs.put("type", fullClassName(cName)); // NOI18N
+                attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
+                if (relativeIconPath != null) {
+                    attrs.put("iconBase", relativeIconPath); // NOI18N
+                }
+                attrs.put("displayName", "bundlevalue:" + getPackageName() + ".Bundle#" + actionNameKey); // NOI18N
+                cmf.add(
+                    cmf.createLayerEntry(
+                        instanceFullPath,
+                        null,
+                        null,
+                        null,
+                        attrs
+                    )
+                );
+            }
         } else {
             Map<String,Object> attrs = new HashMap<String,Object>();
             attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.alwaysEnabled"); // NOI18N
@@ -253,7 +299,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     instanceFullPath,
                     null,
                     null,
-                    displayName,
+                    null,
                     attrs
                 )
             );
@@ -537,6 +583,18 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 null, null, null, null));
         cmf.add(cmf.createLayerAttribute(sepPath, "instanceClass", // NOI18N
                 "javax.swing.JSeparator")); // NOI18N
+    }
+
+    static String fullClassName(String type) {
+        if (type.contains(".")) {
+            return type;
+        }
+        for (String s : PREDEFINED_COOKIE_CLASSES) {
+            if (s.endsWith(type)) {
+                return s;
+            }
+        }
+        return type;
     }
     
     /**

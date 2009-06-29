@@ -198,6 +198,7 @@ made subject to such option by the copyright holder.
             <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
             <file name="actionListener.java" url="../wizard/action/actionListener.javx"/>
             <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
+            <file name="contextAction.java" url="../wizard/action/contextAction.javx"/>
             <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
 			<file name="quickSearch.java" url="../wizard/quicksearch/quickSearch.javx"/>
             <file name="contextProvider.java" url="../wizard/codegenerator/contextProvider.javx"/>
