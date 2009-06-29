@@ -210,7 +210,11 @@ public final class SymfonyCommandSupport {
     }
 
     private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
-        ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser).addArgument(command);
+        ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser);
+        if (processBuilder == null) {
+            return null;
+        }
+        processBuilder = processBuilder.addArgument(command);
         for (String arg : arguments) {
             processBuilder = processBuilder.addArgument(arg);
         }
@@ -219,7 +223,7 @@ public final class SymfonyCommandSupport {
 
     private ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
         SymfonyScript symfonyScript = SymfonyScript.getDefault();
-        if (!symfonyScript.isValid()) {
+        if (symfonyScript== null || !symfonyScript.isValid()) {
             if (warnUser) {
                 UiUtils.invalidScriptProvided(
                         NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidSymfonyScript"),
