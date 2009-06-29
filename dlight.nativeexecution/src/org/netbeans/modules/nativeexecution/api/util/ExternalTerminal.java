@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,7 +122,7 @@ public final class ExternalTerminal {
 
         @Override
         public List<String> wrapCommand(ExecutionEnvironment execEnv,
-                ExternalTerminal terminal, String... args) {
+                ExternalTerminal terminal, List<String> args) {
             String t = terminal.title;
 
             if (t == null) {
@@ -138,7 +137,7 @@ public final class ExternalTerminal {
             String exec = terminal.getExecutable(execEnv);
 
             if (exec == null) {
-                return Arrays.asList(args);
+                return args;
             }
 
             ArrayList<String> result = new ArrayList<String>();
@@ -147,7 +146,7 @@ public final class ExternalTerminal {
 
             for (String arg : terminal.profile.getArguments()) {
                 if ("$@".equals(arg)) { // NOI18N
-                    result.addAll(Arrays.asList(args));
+                    result.addAll(args);
                     continue;
                 }
 
