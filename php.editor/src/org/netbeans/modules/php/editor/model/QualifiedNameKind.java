@@ -36,45 +36,48 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.model;
 
-package org.netbeans.modules.php.editor.model.nodes;
+import java.util.List;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.TypeScope;
-
-/**
- *
- * @author Radek Matous
- */
-class ParameterImpl implements Parameter {
-    private String name;
-    private String defaultValue;
-    ParameterImpl(String name) {
-        this(name, null);
+public enum QualifiedNameKind {
+    UNQUALIFIED, QUALIFIED, FULLYQUALIFIED;
+    public boolean isUnqualified() {
+        return UNQUALIFIED.equals(this);
+    }
+    public boolean isQualified() {
+        return QUALIFIED.equals(this);
+    }
+    public boolean isFullyQualified() {
+        return FULLYQUALIFIED.equals(this);
+    }
+    public static QualifiedNameKind resolveKind(NamespaceName namespaceName) {
+        if (namespaceName.isGlobal()) {
+            return FULLYQUALIFIED;
+        } else if (namespaceName.getSegments().size() > 1) {
+            return QUALIFIED;
+        }
+        return UNQUALIFIED;
+    }
+    public static QualifiedNameKind resolveKind(List<String> segments) {
+        if (segments.size() > 1) {
+            return QUALIFIED;
+        }
+        return UNQUALIFIED;
+    }
+    public static QualifiedNameKind resolveKind(Identifier identifier) {
+        return UNQUALIFIED;
+    }
+    public static QualifiedNameKind resolveKind(String name) {
+        if (name.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
+            return FULLYQUALIFIED;
+        } else if (name.indexOf(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) != -1) {
+            return QUALIFIED;
+        }
+        return UNQUALIFIED;
     }
 
-    ParameterImpl(String name, String defaultValue) {
-        this.name = name;
-        this.defaultValue = defaultValue;
-    }
-
-    @NonNull
-    public String getName() {
-        return name;
-    }
-
-    @NonNull
-    public String getDefaultValue() {
-        return defaultValue;//NOI18N
-    }
-
-    public boolean isMandatory() {
-        return defaultValue == null;
-    }
-
-    //TODO: not implemented yet
-    public TypeScope getType() {
-        return null;
-    }
 }

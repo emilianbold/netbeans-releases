@@ -3,5 +3,5 @@ getBookMagazine()->|pages;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     createBook($title)              [STATIC]   Book
 VARIABLE   ? pages                         [PUBLIC]   Magazine
-VARIABLE   Author|null author              [PUBLIC]   Book
+VARIABLE   Author author                   [PUBLIC]   Book
 VARIABLE   string title                    [PUBLIC]   Book

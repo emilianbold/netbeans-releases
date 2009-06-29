@@ -43,6 +43,8 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -54,6 +56,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  */
 final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableContainerImpl {
     private String classNormName;
+
     //new contructors
     MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, returnType);
@@ -137,4 +140,36 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return sb.toString();
     }
 
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName()).append(";");//NOI18N
+        StringBuilder defaultArgs = new StringBuilder();
+        List<? extends Parameter> parameters = getParameters();
+        for (int paramIdx = 0; paramIdx < parameters.size(); paramIdx++) {
+            Parameter parameter = parameters.get(paramIdx);
+            if (paramIdx > 0) { sb.append(","); }//NOI18N
+            sb.append(parameter.getName());
+            if (!parameter.isMandatory()) {
+                if (defaultArgs.length() > 0) { defaultArgs.append(","); }//NOI18N
+                defaultArgs.append(paramIdx);
+            }
+        }
+        sb.append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(defaultArgs).append(";");//NOI18N
+        if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
+            sb.append(returnType);
+        }
+        sb.append(";");//NOI18N
+        sb.append(getPhpModifiers().toBitmask()).append(";");
+        return sb.toString();
+    }
+
+    @Override
+    public String getConstructorIndexSignature() {
+        String indexSignature = getIndexSignature();
+        int indexOf = indexSignature.indexOf(";");
+        return  getInScope().getName() + indexSignature.substring(indexOf);
+    }
 }

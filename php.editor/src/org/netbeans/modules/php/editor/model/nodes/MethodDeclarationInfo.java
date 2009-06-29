@@ -45,6 +45,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -72,6 +73,11 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     public String getName() {
         MethodDeclaration methodDeclaration = getOriginalNode();
         return methodDeclaration.getFunction().getFunctionName().getName();
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.create(getOriginalNode().getFunction().getFunctionName());
     }
 
     @Override

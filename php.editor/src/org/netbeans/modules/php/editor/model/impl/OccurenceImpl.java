@@ -141,7 +141,7 @@ class OccurenceImpl implements Occurence {
         return geModelElement();
     }
 
-    public void setGotoDeclaratin(ModelElement gotDeclaration) {
+    public void setGotoDeclaration(ModelElement gotDeclaration) {
         this.gotDeclaration = gotDeclaration;
     }
 
