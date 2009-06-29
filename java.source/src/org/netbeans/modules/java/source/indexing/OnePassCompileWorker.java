@@ -181,7 +181,9 @@ final class OnePassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
+                    if (!active.virtual) {
+                        TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
+                    }
                     Log.instance(jt.getContext()).nerrors = 0;
                     finished.add(active.indexable);
                 }
