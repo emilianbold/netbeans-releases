@@ -293,7 +293,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
 	    //new EventTool().waitNoEvent(500);
-            new DebugProjectAction().performMenu();
+            Utilities.startDebugger();
             //Class breakpoint hit for class examples.advanced.Helper.");
             try {
                 Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper", 10000);
