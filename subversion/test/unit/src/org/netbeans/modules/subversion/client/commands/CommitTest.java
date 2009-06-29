@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -56,29 +56,60 @@ public class CommitTest extends AbstractCommandTest {
     }
 
     public void testCommitFile() throws Exception {                
-        File file = createFile("file");
-                
-        add(file);               
+        testCommitFile("file");
+    }
+
+    public void testCommitFileWithAtSign() throws Exception {
+        testCommitFile("@file");
+        testCommitFile("fi@le");
+        testCommitFile("file@");
+    }
+
+    public void testCommitFileInDir() throws Exception {
+        testCommitFile("folder/file");
+    }
+
+    public void testCommitFileWithAtSignInDir() throws Exception {
+        testCommitFile("folder/@file");
+        testCommitFile("folder/fi@le");
+        testCommitFile("folder/file@");
+    }
+
+    private void testCommitFile(String path) throws Exception {
+        createAndCommitParentFolders(path);
+        File file = createFile(path);
+
+        add(file);
         assertStatus(SVNStatusKind.ADDED, file);
 
         SVNRevision revisionBefore = (SVNRevision.Number) getRevision(getRepoUrl());
-        
-        ISVNClientAdapter client = getNbClient();        
-                
+
+        ISVNClientAdapter client = getNbClient();
+
         long r = client.commit(new File[] {file}, "commit", true);
-        
+
         SVNRevision revisionAfter = (SVNRevision.Number) getRevision(getRepoUrl());
-        
-        assertTrue(file.exists());        
-        assertStatus(SVNStatusKind.NORMAL, file);                
+
+        assertTrue(file.exists());
+        assertStatus(SVNStatusKind.NORMAL, file);
         assertNotSame(revisionBefore, revisionAfter);
         assertEquals(((SVNRevision.Number)revisionAfter).getNumber(), r);
-        assertNotifiedFiles(file);        
+        assertNotifiedFiles(file);
     }
     
     public void testCommitFolder() throws Exception {                
-        File folder = createFolder("folder");
-        File file = createFile(folder, "file");
+        testCommitFolder("folder", "file");
+    }
+
+    public void testCommitFolderWithAtSign() throws Exception {
+        testCommitFolder("@folder", "file1");
+        testCommitFolder("fol@der", "file2");
+        testCommitFolder("folder@", "file3");
+    }
+
+    private void testCommitFolder(String folderName, String fileName) throws Exception {
+        File folder = createFolder(folderName);
+        File file = createFile(folder, fileName);
                 
         add(folder);               
         assertStatus(SVNStatusKind.ADDED, file);

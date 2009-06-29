@@ -117,6 +117,10 @@ public class PythonLexerTest extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence<?> ts = hi.tokenSequence();
+
+        // Newline in empty doc: this started happening around June 1st 2009
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.NEWLINE, "\n");
+        
         assertFalse(ts.moveNext());
 
         // Insert text into document
@@ -142,6 +146,7 @@ public class PythonLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_BEGIN, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_LITERAL, "Hello World!");
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.NEWLINE, "\n");
 
         assertFalse(ts.moveNext());
 
@@ -158,7 +163,7 @@ public class PythonLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.ANY_KEYWORD, "print");
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.STRING_BEGIN, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.ERROR, "Hello World!");
+        LexerTestUtilities.assertNextTokenEquals(ts, PythonTokenId.ERROR, "Hello World!\n");
 
         assertFalse(ts.moveNext());
 

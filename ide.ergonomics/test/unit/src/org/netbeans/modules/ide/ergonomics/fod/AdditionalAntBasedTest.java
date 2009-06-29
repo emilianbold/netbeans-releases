@@ -40,7 +40,9 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -49,13 +51,18 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class AdditionalAntBasedTest extends NbTestCase {
+public class AdditionalAntBasedTest extends NbTestCase
+implements LookupListener {
+    Logger LOG;
 
     public AdditionalAntBasedTest(String name) {
         super(name);
@@ -73,11 +80,13 @@ public class AdditionalAntBasedTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINER;
+        return Level.FINE;
     }
 
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("org.netbeans.modules.ide.ergonomics.fod." + getName());
+
         URL u = AdditionalAntBasedTest.class.getResource("default.xml");
         assertNotNull("Default layer found", u);
         XMLFileSystem xml = new XMLFileSystem(u);
@@ -89,14 +98,43 @@ public class AdditionalAntBasedTest extends NbTestCase {
         FileObject fo = FileUtil.getConfigFile("Menu/Edit");
         assertNull("Default layer is on and Edit is hidden", fo);
 
+        Result<AntBasedType> res = Lookup.getDefault().lookupResult(AntBasedType.class);
+        assertEquals("no ant project types: " + res.allInstances(), 0, res.allInstances().size());
+        res.addLookupListener(this);
+
+        LOG.info("creating AntBasedType registration on disk");
         FileUtil.createData(FileUtil.getConfigRoot(), 
             "Services/" + AntBasedType.class.getName().replace('.', '-') + ".instance"
         );
+        LOG.info("registration created");
         AntBasedType f = Lookup.getDefault().lookup(AntBasedType.class);
-        assertNotNull("Ant found", f);
-        FoDFileSystem.getInstance().waitFinished();
+        LOG.info("looking up the result " + f);
+        synchronized (this) {
+            while (!delivered) {
+                wait();
+            }
+        }
 
-        fo = FileUtil.getConfigFile("Menu/Edit");
+        assertNotNull("Ant found", f);
+        LOG.info("waiting for FoDFileSystem to be updated");
+        FoDFileSystem.getInstance().waitFinished();
+        LOG.info("waiting for FoDFileSystem to be waitFinished is over");
+
+        for (int cnt = 0; cnt < 5; cnt++) {
+            fo = FileUtil.getConfigFile("Menu/Edit");
+            if (fo != null) {
+                break;
+            }
+            Thread.sleep(500);
+        }
+        LOG.info("Edit found: " + fo);
+        LOG.info("Menu items: " + Arrays.toString(FileUtil.getConfigFile("Menu").getChildren()));
         assertNotNull("Default layer is off and Edit is visible", fo);
+    }
+
+    private boolean delivered;
+    public synchronized void resultChanged(LookupEvent ev) {
+        delivered = true;
+        notifyAll();
     }
 }

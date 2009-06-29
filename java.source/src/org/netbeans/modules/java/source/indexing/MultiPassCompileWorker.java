@@ -76,6 +76,9 @@ import org.openide.filesystems.FileUtil;
  */
 final class MultiPassCompileWorker extends CompileWorker {
 
+    private static final int MEMORY_LOW = 1;
+    private static final int ERR = 2;
+
     ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
         for (CompileTuple i : files) {
@@ -108,10 +111,10 @@ final class MultiPassCompileWorker extends CompileWorker {
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             break;
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
@@ -140,16 +143,16 @@ final class MultiPassCompileWorker extends CompileWorker {
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             if (isBigFile) {
                                 break;
                             } else {
                                 bigFiles.add(active);
                                 active = null;
-                                state = 0;
+                                state &= ~MEMORY_LOW;
                             }
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
@@ -162,16 +165,16 @@ final class MultiPassCompileWorker extends CompileWorker {
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
                         types = null;
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             if (isBigFile) {
                                 break;
                             } else {
                                 bigFiles.add(active);
                                 active = null;
-                                state = 0;
+                                state &= ~MEMORY_LOW;
                             }
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
@@ -184,16 +187,16 @@ final class MultiPassCompileWorker extends CompileWorker {
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
                         types = null;
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             if (isBigFile) {
                                 break;
                             } else {
                                 bigFiles.add(active);
                                 active = null;
-                                state = 0;
+                                state &= ~MEMORY_LOW;
                             }
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
@@ -215,17 +218,28 @@ final class MultiPassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                    if (!active.virtual) {
+                        TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                    }
                     Log.instance(jt.getContext()).nerrors = 0;
                     previous.finishedFiles.add(active.indexable);
                     active = null;
                     state  = 0;
                 } catch (CouplingAbort ca) {
                     //Coupling error
-                    TreeLoader.dumpCouplingAbort(ca, active.jfo);
+                    TreeLoader.dumpCouplingAbort(ca, null);
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
-                    state = 0;
+                    if ((state & ERR) != 0) {
+                        //When a javac failed with the Exception mark a file
+                        //causing this exceptin as compiled
+                        if (active != null)
+                            previous.finishedFiles.add(active.indexable);
+                        active = null;
+                        state = 0;
+                    } else {
+                        state |= ERR;
+                    }
                 } catch (OutputFileManager.InvalidSourcePath isp) {
                     //Deleted project - log & ignore
                     if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -241,6 +255,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                     );
                         JavaIndex.LOG.log(Level.FINEST, message, isp);
                     }
+                    return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
                 } catch (MissingPlatformError mpe) {
                     //No platform - log & ignore
                     if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -256,6 +271,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                     );
                         JavaIndex.LOG.log(Level.FINEST, message, mpe);
                     }
+                    return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
                 } catch (Throwable t) {
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
@@ -274,19 +290,22 @@ final class MultiPassCompileWorker extends CompileWorker {
                                         );
                             JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
                         }
-                        //When a javac failed with the Exception mark a file
-                        //causing this exceptin as compiled
-                        //otherwise tasklist will reschedule the parse again
-                        //and the RepositoryUpdater ends in infinite loop of reparse.
-                        if (active != null)
-                            previous.finishedFiles.add(active.indexable);
-                        diagnosticListener.cleanDiagnostics();
                         jt = null;
-                        active = null;
+                        diagnosticListener.cleanDiagnostics();
+                        if ((state & ERR) != 0) {
+                            //When a javac failed with the Exception mark a file
+                            //causing this exceptin as compiled
+                            if (active != null)
+                                previous.finishedFiles.add(active.indexable);
+                            active = null;
+                            state = 0;
+                        } else {
+                            state |= ERR;
+                        }
                     }
                 }
             }
-            if (state == 1) {
+            if ((state & MEMORY_LOW) != 0) {
                 JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
             }
         } finally {

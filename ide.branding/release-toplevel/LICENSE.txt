@@ -14,12 +14,12 @@ unspecified.
 Please review the list of libraries and licenses provided
 for use. This license file contains four distinct licenses.
 
-Unless specified below, the use of NetBeans IDE and
-components from the GlassFish runtime are governed by the
-terms of either the GNU General Public License Version 2 
-with Classpath Exception ("GPLv2 with Classpath Exception")
-or the Common Development and Distribution License ("CDDL").
-The Product also contains components  which are governed
+Unless specified below, the use of NetBeans IDE and Sun
+GlassFish v3 community version are governed by the  terms of
+either the GNU General Public License Version 2  with
+Classpath Exception ("GPLv2 with Classpath Exception") or
+the Common Development and Distribution License ("CDDL").
+The Product also contains components which are governed
 exclusively by the terms of the GPLv2 with Classpath
 Exception (e.g., components from OpenJDK) .
 
@@ -32,10 +32,8 @@ LICENSE #3: The use of the Sun Java Wireless Toolkit 2.5.2
 for CLDC in the Java ME pack is subject to this Software
 License Agreement and Entitlement.
 
-LICENSE #4: The use of the Sun GlassFish Enterprise Server v2.1 
-and Sun GlassFish Enterprise Server v3 Prelude is subject to this 
-Software License Agreement and Entitlement.
-
+LICENSE #4: The use of the Java ME SDK 3.0 is subject to
+this Software License Agreement and Entitlement.
 
 ************************************************************
 
@@ -535,72 +533,67 @@ subject to third party intellectual property claims, the
 Initial Developer hereby grants You a world-wide,
 royalty-free, non-exclusive license: 
 
-(a) under intellectual property rights (other than
-patent or trademark) Licensable by Initial Developer,
-to use, reproduce, modify, display, perform,
-sublicense and distribute the Original Software (or
-portions thereof), with or without Modifications,
-and/or as part of a Larger Work; and 
+(a) under intellectual property rights (other than patent or
+trademark) Licensable by Initial Developer, to use,
+reproduce, modify, display, perform, sublicense and
+distribute the Original Software (or portions thereof), with
+or without Modifications, and/or as part of a Larger Work;
+and 
 
-(b) under Patent Claims infringed by the making,
-using or selling of Original Software, to make, have
-made, use, practice, sell, and offer for sale, and/or
-otherwise dispose of the Original Software (or
-portions thereof). 
+(b) under Patent Claims infringed by the making, using or
+selling of Original Software, to make, have made, use,
+practice, sell, and offer for sale, and/or otherwise dispose
+of the Original Software (or portions thereof). 
 
-(c) The licenses granted in Sections 2.1(a) and (b)
-are effective on the date Initial Developer first
-distributes or otherwise makes the Original Software
-available to a third party under the terms of this
-License. 
+(c) The licenses granted in Sections 2.1(a) and (b) are
+effective on the date Initial Developer first distributes or
+otherwise makes the Original Software available to a third
+party under the terms of this License. 
 
-(d) Notwithstanding Section 2.1(b) above, no patent
-license is granted: (1) for code that You delete from
-the Original Software, or (2) for infringements
-caused by: (i) the modification of the Original
-Software, or (ii) the combination of the Original
-Software with other software or devices. 
+(d) Notwithstanding Section 2.1(b) above, no patent license
+is granted: (1) for code that You delete from the Original
+Software, or (2) for infringements caused by: (i) the
+modification of the Original Software, or (ii) the
+combination of the Original Software with other software or
+devices. 
 
-2.2. Contributor Grant.
-Conditioned upon Your compliance with Section 3.1 below and
-subject to third party intellectual property claims, each
-Contributor hereby grants You a world-wide, royalty-free,
-non-exclusive license:
+2.2. Contributor Grant. Conditioned upon Your compliance
+with Section 3.1 below and subject to third party
+intellectual property claims, each Contributor hereby grants
+You a world-wide, royalty-free, non-exclusive license:
 
-(a) under intellectual property rights (other than
-patent or trademark) Licensable by Contributor to
-use, reproduce, modify, display, perform, sublicense
-and distribute the Modifications created by such
-Contributor (or portions thereof), either on an
-unmodified basis, with other Modifications, as
-Covered Software and/or as part of a Larger Work; and
+(a) under intellectual property rights (other than patent or
+trademark) Licensable by Contributor to use, reproduce,
+modify, display, perform, sublicense and distribute the
+Modifications created by such Contributor (or portions
+thereof), either on an unmodified basis, with other
+Modifications, as Covered Software and/or as part of a
+Larger Work; and
 
-(b) under Patent Claims infringed by the making,
-using, or selling of Modifications made by that
-Contributor either alone and/or in combination with
-its Contributor Version (or portions of such
-combination), to make, use, sell, offer for sale,
-have made, and/or otherwise dispose of: (1)
+(b) under Patent Claims infringed by the making, using, or
+selling of Modifications made by that Contributor either
+alone and/or in combination with its Contributor Version (or
+portions of such combination), to make, use, sell, offer for
+sale, have made, and/or otherwise dispose of: (1)
 Modifications made by that Contributor (or portions
-thereof); and (2) the combination of Modifications
-made by that Contributor with its Contributor Version
-(or portions of such combination). 
+thereof); and (2) the combination of Modifications made by
+that Contributor with its Contributor Version (or portions
+of such combination). 
 
-(c) The licenses granted in Sections 2.2(a) and
-2.2(b) are effective on the date Contributor first
-distributes or otherwise makes the Modifications
-available to a third party. 
+(c) The licenses granted in Sections 2.2(a) and 2.2(b) are
+effective on the date Contributor first distributes or
+otherwise makes the Modifications available to a third
+party. 
 
-(d) Notwithstanding Section 2.2(b) above, no patent
-license is granted: (1) for any code that Contributor
-has deleted from the Contributor Version; (2) for
-infringements caused by: (i) third party
-modifications of Contributor Version, or (ii) the
-combination of Modifications made by that Contributor
-with other software (except as part of the
-Contributor Version) or other devices; or (3) under
-Patent Claims infringed by Covered Software in the
-absence of Modifications made by that Contributor. 
+(d) Notwithstanding Section 2.2(b) above, no patent license
+is granted: (1) for any code that Contributor has deleted
+from the Contributor Version; (2) for infringements caused
+by: (i) third party modifications of Contributor Version, or
+(ii) the combination of Modifications made by that
+Contributor with other software (except as part of the
+Contributor Version) or other devices; or (3) under Patent
+Claims infringed by Covered Software in the absence of
+Modifications made by that Contributor. 
 
 3. Distribution Obligations.
 
@@ -1180,13 +1173,10 @@ representative of each party.
 Please contact Sun Microsystems, Inc. 4150 Network Circle,
 Santa Clara,  California 95054 if you have questions.
 
-
 ************************************************************
-
 LICENSE #4:
 
-SUN GLASSFISH ENTERPRISE SERVER V2.1
-SUN GLASSFISH ENTERPRISE SERVER V3 PRELUDE
+JAVA PLATFORM, MICRO EDITION SOFTWARE DEVELOPMENT KIT 3.0
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 
@@ -1194,36 +1184,54 @@ Licensee/Company: Entity receiving Software.
 
 Effective Date: Date of delivery of the Software to You.
 
-Software: Sun GlassFish Enterprise Server V2.1 and Sun GlassFish 
-Enterprise Server V3 Prelude
+Software: Java Platform, Micro Edition Software Development
+Kit 3.0.
 
-License Term:  Perpetual (subject to termination under the SLA).
+License Term:  Perpetual (subject to termination under the
+SLA).
 
 Licensed Unit: Software Copy.
 
 Licensed unit Count: Unlimited.
 
-Permitted Uses: You may reproduce and use the Software for Your own 
-Individual, Commercial, or Research and Instructional Use, subject to 
-and conditioned on Your compliance with the Additional Terms below.
+Permitted Uses: 
 
-Additional Terms:
+1. You may reproduce and use the Software for Your own
+Individual, Commercial and Research and Instructional Use
+only for the purposes of designing, developing, testing, and
+running Your and applications.
 
-1.Software includes only the versions of the above products that are 
-made initially available to You.
+2. Java Technology Restrictions.  You may not create,
+modify, or change the behavior of, or authorize Your
+licensees to create, modify, or change the behavior of,
+classes, interfaces, or subpackages that are in any way
+identified as "java", "javax", "sun" or similar convention
+as specified by Sun in any naming convention designation.
+
+3. In no event will Sun's or its licensor's liability to
+You, whether in contract, tort (including negligence), or
+otherwise, exceed the amount paid by You for Software under
+this Agreement.  The foregoing limitations will apply even
+if the below stated warranty fails of its essential purpose.
 
 
-Sun Microsystems, Inc. ("Sun") SOFTWARE LICENSE AGREEMENT
+Sun Microsystems, Inc. ("Sun")
+SOFTWARE LICENSE AGREEMENT
 
 READ THE TERMS OF THIS AGREEMENT ("AGREEMENT") CAREFULLY
 BEFORE OPENING SOFTWARE MEDIA PACKAGE. BY OPENING SOFTWARE
 MEDIA PACKAGE, YOU AGREE TO THE TERMS OF THIS AGREEMENT. IF
-YOU DO NOT AGREE TO ALL OF THE TERMS, PROMPTLY RETURN THE
-UNUSED SOFTWARE TO YOUR PLACE OF PURCHASE FOR A REFUND.  IF
-YOU HAVE SEPARATELY AGREED TO LICENSE TERMS ("MASTER TERMS")
-FOR YOUR LICENSE TO THIS SOFTWARE, THEN SECTIONS 1-6 OF THIS
-AGREEMENT ("SUPPLEMENTAL LICENSE TERMS") SHALL SUPPLEMENT
-AND SUPERSEDE THE MASTER TERMS IN RELATION TO THIS SOFTWARE.
+YOU ARE ACCESSING SOFTWARE ELECTRONICALLY, INDICATE YOUR
+ACCEPTANCE OF THESE TERMS BY SELECTING THE "ACCEPT" BUTTON
+AT THE END OF THIS AGREEMENT. IF YOU DO NOT AGREE TO ALL OF
+THE TERMS, PROMPTLY RETURN THE UNUSED SOFTWARE TO YOUR PLACE
+OF PURCHASE FOR A REFUND OR, IF SOFTWARE IS ACCESSED
+ELECTRONICALLY, SELECT THE "DECLINE" (OR "EXIT") BUTTON AT
+THE END OF THIS AGREEMENT. IF YOU HAVE SEPARATELY AGREED TO
+LICENSE TERMS ("MASTER TERMS") FOR YOUR LICENSE TO THIS
+SOFTWARE, THEN SECTIONS 1-6 OF THIS AGREEMENT ("SUPPLEMENTAL
+LICENSE TERMS") SHALL SUPPLEMENT AND SUPERSEDE THE MASTER
+TERMS IN RELATION TO THIS SOFTWARE.
 
 1.      Definitions.
 
@@ -1250,7 +1258,7 @@ service listings at www.sun.com/service/servicelist.
 
 (e)     "Software" means the Sun software described in your
 Entitlement. Also, certain software may be included for
-evaluation use under Section 3.
+evaluation use under Section 3. 
 
 (f)     "You" and "Your" means the individual or legal
 entity specified in the Entitlement, or for evaluation
@@ -1263,10 +1271,10 @@ nonexclusive, nontransferable limited license to use
 Software for its Permitted Use for the license term. Your
 Entitlement will specify (a) Software licensed, (b) the
 Permitted Use, (c) the license term, and (d) the Licensed
-Units.
+Units. 
 
 Additionally, if your Entitlement includes Services, then it
-will also specify the (e) Service and (f) service term.
+will also specify the (e) Service and (f) service term. 
 
 If your rights to Software or Services are limited in
 duration and the date such rights begin is other than the
@@ -1291,7 +1299,7 @@ Entitlement doesn't cover additional software delivered to
 you, then such software is for your Evaluation Use.
 
 (a) Evaluation Use. You may evaluate Software internally for
-a period of 90 days from your first use.
+a period of 90 days from your first use. 
 
 (b) Research and Instructional Use. You may use Software
 internally to design, develop and test, and also to provide
@@ -1301,7 +1309,7 @@ instruction on such uses.
 personal, individual use.
 
 (d) Commercial Use. You may use Software internally for your
-own commercial purposes.
+own commercial purposes. 
 
 (e) Service Provider Use. You may make Software
 functionality accessible (but not by providing Software
@@ -1318,10 +1326,10 @@ Licensed Units, you will need additional Entitlement(s).
 5.      Restrictions.
 
 (a) The copies of Software provided to you under this
-Agreement is licensed, not sold, to you by Sun. Sun reserves
-all rights not expressly granted. (b) You may make a single
-archival copy of Software, but otherwise may not copy,
-modify, or distribute Software. However if the Sun
+Agreement are licensed, not sold, to you by Sun. Sun
+reserves all rights not expressly granted. (b) You may make
+a single archival copy of Software, but otherwise may not
+copy, modify, or distribute Software. However if the Sun
 documentation accompanying Software lists specific portions
 of Software, such as header files, class libraries,
 reference source code, and/or redistributable files, that
@@ -1366,8 +1374,8 @@ www.java.net.
 
 Sun supports and benefits from the global community of open
 source developers, and thanks the community for its
-important contributions and open standards- based
-technology, which Sun has adopted into many of its products.
+important contributions and open standards-based technology,
+which Sun has adopted into many of its products.
 
 Please note that portions of Software may be provided with
 notices and open source licenses from such communities and
@@ -1378,7 +1386,7 @@ however, the disclaimer of warranty and limitation of
 liability provisions in this Agreement will apply to all
 Software in this distribution.
 
-7.      Term and Termination.
+7.      Term and Termination. 
 
 The license and service term are set forth in your
 Entitlement(s). Your rights under this Agreement will
@@ -1393,7 +1401,8 @@ and destroy, Software and confirm compliance in writing to
 Sun. Sections 1, 5, 6, 7, and 9-15 will survive termination
 of the Agreement.
 
-8.      Limited Warranty.
+
+8.      Limited Warranty. 
 
 Sun warrants to you that for a period of 90 days from the
 date of purchase, as evidenced by a copy of the receipt, the
@@ -1408,16 +1417,16 @@ above may not apply to you. This limited warranty gives you
 specific legal rights. You may have others, which vary from
 state to state.
 
-9.      Disclaimer of Warranty.
+9.      Disclaimer of Warranty. 
 
 UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS OR IMPLIED
 CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
 IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
 PARTICULAR PURPOSE OR NON-INFRINGEMENT ARE DISCLAIMED,
 EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS ARE HELD TO BE
-LEGALLY INVALID.
+LEGALLY INVALID. 
 
-10.     Limitation of Liability.
+10.     Limitation of Liability. 
 
 TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT WILL SUN OR
 ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR
@@ -1432,9 +1441,9 @@ Software under this Agreement. The foregoing limitations
 will apply even if the above stated warranty fails of its
 essential purpose. Some states do not allow the exclusion of
 incidental or consequential damages, so some of the terms
-above may not be applicable to you.
+above may not be applicable to you. 
 
-11.     Export Regulations.
+11.     Export Regulations. 
 
 All Software, documents, technical data, and any other
 materials delivered under this Agreement are subject to U.S.
@@ -1443,47 +1452,47 @@ regulations in other countries. You agree to comply strictly
 with these laws and regulations and acknowledge that you
 have the responsibility to obtain any licenses to export,
 re-export, or import as may be required after delivery to
-you.
+you. 
 
-12.     U.S. Government Restricted Rights.
+12.     U.S. Government Restricted Rights. 
 
 If Software is being acquired by or on behalf of the U.S.
-Government or by a  U.S. Government prime contractor or
-subcontractor (at any tier), then the  Government's rights
-in Software and accompanying documentation will be only as 
-set forth in this Agreement; this is in accordance with 48
-CFR 227.7201 through  227.7202-4 (for Department of Defense
-(DOD) acquisitions) and with 48 CFR 2.101  and 12.212 (for
-non-DOD acquisitions).
+Government or by a U.S. Government prime contractor or
+subcontractor (at any tier), then the Government's rights in
+Software and accompanying documentation will be only as set
+forth in this Agreement; this is in accordance with 48 CFR
+227.7201 through 227.7202-4 (for Department of Defense (DOD)
+acquisitions) and with 48 CFR 2.101 and 12.212 (for non-DOD
+acquisitions). 
 
-13.     Governing Law.
+13.     Governing Law. 
 
 Any action related to this Agreement will be governed by
-California law and  controlling U.S. federal law. No choice
-of law rules of any jurisdiction will  apply.
+California law and controlling U.S. federal law. No choice
+of law rules of any jurisdiction will apply. 
 
-14.     Severability.
+14.     Severability. 
 
 If any provision of this Agreement is held to be
-unenforceable, this Agreement  will remain in effect with
-the provision omitted, unless omission would  frustrate the
-intent of the parties, in which case this Agreement will 
+unenforceable, this Agreement will remain in effect with the
+provision omitted, unless omission would frustrate the
+intent of the parties, in which case this Agreement will
 immediately terminate.
 
-15.     Integration.
+15.     Integration. 
 
 This Agreement, including any terms contained in your
-Entitlement, is the entire  agreement between you and Sun
-relating to its subject matter. It supersedes all  prior or
-contemporaneous oral or written communications, proposals, 
+Entitlement, is the entire agreement between you and Sun
+relating to its subject matter. It supersedes all prior or
+contemporaneous oral or written communications, proposals,
 representations and warranties and prevails over any
-conflicting or additional  terms of any quote, order,
-acknowledgment, or other communication between the  parties
+conflicting or additional terms of any quote, order,
+acknowledgment, or other communication between the parties
 relating to its subject matter during the term of this
-Agreement. No  modification of this Agreement will be
-binding, unless in writing and signed by  an authorized
+Agreement. No modification of this Agreement will be
+binding, unless in writing and signed by an authorized
 representative of each party.
 
 Please contact Sun Microsystems, Inc. 4150 Network Circle,
-Santa Clara,  California 95054 if you have questions.
+Santa Clara, California 95054 if you have questions.
 

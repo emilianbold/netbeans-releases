@@ -42,6 +42,7 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
 
 import java.util.List;
 
+import org.netbeans.modules.web.jsf.api.metamodel.ValidatorId;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 
@@ -54,7 +55,7 @@ public interface DefaultValidators extends ApplicationElement, IdentifiableEleme
     String VALIDATOR_ID = JSFConfigQNames.VALIDATOR_ID.getLocalName();
     
     List<ValidatorId> getValidatorIds();
-    void addValidatorId( ValidatorId id );
-    void addValidatorId( int index, ValidatorId id );
-    void removeValidatorId( ValidatorId id );
+    void addValidatorId( FacesValidatorId id );
+    void addValidatorId( int index, FacesValidatorId id );
+    void removeValidatorId( FacesValidatorId id );
 }

@@ -42,7 +42,7 @@ package org.netbeans.tests.j2eeserver.plugin;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentManager;
 
 /**
  *
@@ -50,10 +50,10 @@ import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
  */
 public class TestInstanceDescriptor implements ServerInstanceDescriptor {
 
-    private final DepManager manager;
+    private final TestDeploymentManager manager;
 
     public TestInstanceDescriptor(DeploymentManager manager) {
-        this.manager = (DepManager) manager;
+        this.manager = (TestDeploymentManager) manager;
     }
 
     public String getHostname() {

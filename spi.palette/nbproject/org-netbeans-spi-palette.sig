@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.14.1
+#Version 1.15.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -91,9 +91,11 @@ meth protected boolean clearSharedData()
 meth public boolean closing()
 meth public void close()
 meth public void installed()
+ anno 0 java.lang.Deprecated()
 meth public void restored()
 meth public void uninstalled()
 meth public void updated(int,java.lang.String)
+ anno 0 java.lang.Deprecated()
 meth public void validate()
 supr org.openide.util.SharedClassObject
 hfds serialVersionUID

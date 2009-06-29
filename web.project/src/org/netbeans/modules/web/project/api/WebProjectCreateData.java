@@ -42,7 +42,7 @@
 package org.netbeans.modules.web.project.api;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.filesystems.FileObject;
 
 /**

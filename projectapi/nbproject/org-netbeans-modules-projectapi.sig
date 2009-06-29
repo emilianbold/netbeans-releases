@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.19.1
+#Version 1.24.1
 
 CLSS public java.lang.Object
 cons public Object()
@@ -14,6 +14,32 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public org.netbeans.api.project.FileOwnerQuery
 fld public final static int EXTERNAL_ALGORITHM_TRANSIENT = 0
@@ -41,11 +67,13 @@ meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeLis
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 
 CLSS public final org.netbeans.api.project.ProjectManager
+innr public final static Result
 meth public boolean isModified(org.netbeans.api.project.Project)
 meth public boolean isProject(org.openide.filesystems.FileObject)
 meth public boolean isValid(org.netbeans.api.project.Project)
 meth public java.util.Set<org.netbeans.api.project.Project> getModifiedProjects()
 meth public org.netbeans.api.project.Project findProject(org.openide.filesystems.FileObject) throws java.io.IOException
+meth public org.netbeans.api.project.ProjectManager$Result isProject2(org.openide.filesystems.FileObject)
 meth public static org.netbeans.api.project.ProjectManager getDefault()
 meth public static org.openide.util.Mutex mutex()
 meth public void clearNonProjectCache()
@@ -54,6 +82,12 @@ meth public void saveProject(org.netbeans.api.project.Project) throws java.io.IO
 supr java.lang.Object
 hfds DEFAULT,LOG,MUTEX,TIMERS,dir2Proj,factories,loadingThread,modifiedProjects,proj2Factory,projectDeletionListener,removedProjects
 hcls LoadStatus,ProjectDeletionListener,ProjectStateImpl
+
+CLSS public final static org.netbeans.api.project.ProjectManager$Result
+cons public Result(javax.swing.Icon)
+meth public javax.swing.Icon getIcon()
+supr java.lang.Object
+hfds icon
 
 CLSS public org.netbeans.api.project.ProjectUtils
 meth public static boolean hasSubprojectCycles(org.netbeans.api.project.Project,org.netbeans.api.project.Project)
@@ -73,6 +107,19 @@ meth public abstract javax.swing.Icon getIcon(boolean)
 meth public abstract org.openide.filesystems.FileObject getRootFolder()
 meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+
+CLSS public final org.netbeans.api.project.SourceGroupModifier
+innr public final static Future
+meth public final static org.netbeans.api.project.SourceGroup createSourceGroup(org.netbeans.api.project.Project,java.lang.String,java.lang.String)
+meth public final static org.netbeans.api.project.SourceGroupModifier$Future createSourceGroupFuture(org.netbeans.api.project.Project,java.lang.String,java.lang.String)
+supr java.lang.Object
+
+CLSS public final static org.netbeans.api.project.SourceGroupModifier$Future
+meth public final org.netbeans.api.project.SourceGroup createSourceGroup()
+meth public java.lang.String getHint()
+meth public java.lang.String getType()
+supr java.lang.Object
+hfds hint,impl,type
 
 CLSS public abstract interface org.netbeans.api.project.Sources
 fld public final static java.lang.String TYPE_GENERIC = "generic"
@@ -133,11 +180,35 @@ meth public abstract org.netbeans.api.project.Project getOwner(java.net.URI)
 meth public abstract org.netbeans.api.project.Project getOwner(org.openide.filesystems.FileObject)
 
 CLSS public abstract interface org.netbeans.spi.project.LookupMerger<%0 extends java.lang.Object>
+innr public abstract interface static !annotation Registration
 meth public abstract java.lang.Class<{org.netbeans.spi.project.LookupMerger%0}> getMergeableClass()
 meth public abstract {org.netbeans.spi.project.LookupMerger%0} merge(org.openide.util.Lookup)
 
+CLSS public abstract interface static !annotation org.netbeans.spi.project.LookupMerger$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String[] projectType()
+meth public abstract !hasdefault org.netbeans.spi.project.LookupProvider$Registration$ProjectType[] projectTypes()
+
 CLSS public abstract interface org.netbeans.spi.project.LookupProvider
+innr public abstract interface static !annotation Registration
 meth public abstract org.openide.util.Lookup createAdditionalLookup(org.openide.util.Lookup)
+
+CLSS public abstract interface static !annotation org.netbeans.spi.project.LookupProvider$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+innr public abstract interface static !annotation ProjectType
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String[] projectType()
+meth public abstract !hasdefault org.netbeans.spi.project.LookupProvider$Registration$ProjectType[] projectTypes()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.project.LookupProvider$Registration$ProjectType
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String id()
 
 CLSS public abstract interface org.netbeans.spi.project.MoveOperationImplementation
 intf org.netbeans.spi.project.DataFilesProviderImplementation
@@ -164,6 +235,18 @@ meth public abstract boolean isProject(org.openide.filesystems.FileObject)
 meth public abstract org.netbeans.api.project.Project loadProject(org.openide.filesystems.FileObject,org.netbeans.spi.project.ProjectState) throws java.io.IOException
 meth public abstract void saveProject(org.netbeans.api.project.Project) throws java.io.IOException
 
+CLSS public abstract interface org.netbeans.spi.project.ProjectFactory2
+intf org.netbeans.spi.project.ProjectFactory
+meth public abstract org.netbeans.api.project.ProjectManager$Result isProject2(org.openide.filesystems.FileObject)
+
+CLSS public abstract interface !annotation org.netbeans.spi.project.ProjectServiceProvider
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String[] projectType()
+meth public abstract !hasdefault org.netbeans.spi.project.LookupProvider$Registration$ProjectType[] projectTypes()
+meth public abstract java.lang.Class<?>[] service()
+
 CLSS public abstract interface org.netbeans.spi.project.ProjectState
 meth public abstract void markModified()
 meth public abstract void notifyDeleted()
@@ -178,6 +261,10 @@ meth public java.lang.String getMethodName()
 meth public org.openide.filesystems.FileObject getFile()
 supr java.lang.Object
 hfds file,methodName
+
+CLSS public abstract interface org.netbeans.spi.project.SourceGroupModifierImplementation
+meth public abstract boolean canCreateSourceGroup(java.lang.String,java.lang.String)
+meth public abstract org.netbeans.api.project.SourceGroup createSourceGroup(java.lang.String,java.lang.String)
 
 CLSS public abstract interface org.netbeans.spi.project.SubprojectProvider
 meth public abstract java.util.Set<? extends org.netbeans.api.project.Project> getSubprojects()

@@ -65,7 +65,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -416,9 +416,14 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         j2eeSpecComboBox.removeAllItems();
         if (serverInstanceWrapper != null) {
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
-            Set<Profile> profiles = new TreeSet<Profile>(Profile.REVERSE_COMPARATOR);
+            Set<Profile> profiles = new TreeSet<Profile>(Profile.UI_COMPARATOR);
             profiles.addAll(j2eePlatform.getSupportedProfiles(j2eeModuleType));
             for (Profile profile : profiles) {
+                // j2ee 1.3 is not supported anymore
+                if (Profile.J2EE_13.equals(profile)) {
+                    continue;
+                }
+
                 j2eeSpecComboBox.addItem(new ProfileItem(profile));
             }
             if (prevSelectedItem != null) {

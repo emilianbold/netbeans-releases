@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 7.7.1
+#Version 7.10.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -25,6 +25,32 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public final org.openide.modules.Dependency
 fld public final static int COMPARE_ANY = 3
 fld public final static int COMPARE_IMPL = 2
@@ -49,6 +75,7 @@ fld public final static org.openide.modules.SpecificationVersion IDE_SPEC
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.modules.SpecificationVersion JAVA_SPEC
 fld public final static org.openide.modules.SpecificationVersion VM_SPEC
+intf java.io.Serializable
 meth public boolean equals(java.lang.Object)
 meth public final int getComparison()
 meth public final int getType()
@@ -58,7 +85,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 meth public static java.util.Set<org.openide.modules.Dependency> create(int,java.lang.String)
 supr java.lang.Object
-hfds comparison,name,type,version
+hfds comparison,name,serialVersionUID,type,version
 hcls DependencyKey
 
 CLSS public abstract org.openide.modules.InstalledFileLocator
@@ -97,12 +124,19 @@ meth protected boolean clearSharedData()
 meth public boolean closing()
 meth public void close()
 meth public void installed()
+ anno 0 java.lang.Deprecated()
 meth public void restored()
 meth public void uninstalled()
 meth public void updated(int,java.lang.String)
+ anno 0 java.lang.Deprecated()
 meth public void validate()
 supr org.openide.util.SharedClassObject
 hfds serialVersionUID
+
+CLSS public abstract interface !annotation org.openide.modules.PatchedPublic
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[METHOD, CONSTRUCTOR])
+intf java.lang.annotation.Annotation
 
 CLSS public final org.openide.modules.SpecificationVersion
 cons public SpecificationVersion(java.lang.String)

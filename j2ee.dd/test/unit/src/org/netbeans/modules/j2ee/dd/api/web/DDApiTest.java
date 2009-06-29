@@ -177,27 +177,6 @@ public class DDApiTest extends NbTestCase {
         assertTrue("Context Param "+PARAM1+" not found", null != p);
     }
     
-    public void test_VersionNotSupportedException() {
-        System.out.println("Testing VersionNotSupportedException for Taglibs in Servlet2.4");
-        try {
-            Taglib[] taglibs = webApp.getTaglib();
-            throw new AssertionFailedError("method getTaglib() shouldn't be supported in version:"+VERSION);
-        } catch (VersionNotSupportedException ex) {
-            System.out.println("Expected exception : "+ex);
-        }
-        try {
-            Taglib taglib = (Taglib) webApp.createBean("Taglib");
-            taglib.setTaglibLocation("xxx");
-            taglib.setTaglibUri("xxx");
-            webApp.addTaglib(taglib);
-            throw new AssertionFailedError("method setTaglib (int i, Taglib taglib) shouldn't be supported in version:"+VERSION);
-        } catch (ClassNotFoundException ex) {
-            throw new AssertionFailedErrorException("createBean() method failed",ex);
-        } catch (VersionNotSupportedException ex) {
-            System.out.println("Expected exception : "+ex);
-        }
-    }
-    
     public void test_Description() {
         System.out.println("Testing description, description for locales");
         Servlet s = (Servlet)webApp.findBeanByName("Servlet","ServletName",SERVLET_NAME);

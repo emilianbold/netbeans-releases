@@ -40,11 +40,14 @@
  */
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.DefaultValidators;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
-import org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
+import org.netbeans.modules.web.jsf.api.metamodel.Validator;
+import org.netbeans.modules.web.jsf.api.metamodel.ValidatorId;
 import org.w3c.dom.Element;
 
 
@@ -64,28 +67,41 @@ class DefaultValidatorsImpl extends IdentifiableComponentImpl implements
         this(model, createElementNS(model, JSFConfigQNames.DEFAULT_VALIDATORS));
     }
 
-    public void addValidatorId( ValidatorId id ) {
+    public void addValidatorId( FacesValidatorId id ) {
         appendChild( VALIDATOR_ID, id);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.facesmodel.DefaultValidators#addValidatorId(int, org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId)
      */
-    public void addValidatorId( int index, ValidatorId id ) {
-        insertAtIndex( VALIDATOR_ID, id, index, ValidatorId.class );
+    public void addValidatorId( int index, FacesValidatorId id ) {
+        insertAtIndex( VALIDATOR_ID, id, index, FacesValidatorId.class );
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.facesmodel.DefaultValidators#getValidatorIds()
      */
     public List<ValidatorId> getValidatorIds() {
-        return getChildren( ValidatorId.class );
+        List<FacesValidatorId> list = getChildren( FacesValidatorId.class );
+        List<ValidatorId> result = new ArrayList<ValidatorId>( list );
+        AbstractJsfModel model = getModel().getModelSource().getLookup().lookup(
+                AbstractJsfModel.class);
+        List<Validator> validators = model.getElements( Validator.class );
+        for (Validator validator : validators) {
+            if ( validator instanceof FacesValidatorImpl){
+                if ( ((FacesValidatorImpl)validator).isDefault() ){
+                    result.add( new AnnotationValidatorId( 
+                            validator.getValidatorId() ));
+                }
+            }
+        }
+        return result;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.facesmodel.DefaultValidators#removeValidatorId(org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId)
      */
-    public void removeValidatorId( ValidatorId id ) {
+    public void removeValidatorId( FacesValidatorId id ) {
         removeChild( VALIDATOR_ID, id);
     }
 

@@ -451,7 +451,7 @@ public class BugzillaRepository extends Repository {
                         Bugzilla.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {name}); // NOI18N
                         return;
                     }
-                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids}); // NOI18N
+                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {name, ids}); // NOI18N
                     GetMultiTaskDataCommand cmd = new GetMultiTaskDataCommand(BugzillaRepository.this, ids, new IssuesCollector());
                     getExecutor().execute(cmd, false);
                     scheduleIssueRefresh();

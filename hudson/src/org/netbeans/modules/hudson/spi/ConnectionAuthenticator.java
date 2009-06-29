@@ -49,7 +49,6 @@ public interface ConnectionAuthenticator {
 
     /**
      * Prepare a request with authentication that might be needed.
-     * Could for example add a session cookie.
      * {@link URLConnection#connect} has not yet been called.
      * @param conn a pending connection
      * @param home the Hudson root URL

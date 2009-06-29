@@ -78,6 +78,7 @@ import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -915,9 +916,10 @@ public class CommitAction extends ContextAction {
         //    we have to commit it nonrecursively ...
         boolean nonRecursiveDirs = false;
         for(File file : nonRecursiveComits) {
+            ISVNStatus st = null;
             if( file.isDirectory() &&
                 !( removeCandidates.contains(file) ||
-                   cache.getStatus(file).getEntry(file).isCopied()) )
+                   ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())))
             {
                 nonRecursiveDirs = true;
                 break;
@@ -935,9 +937,10 @@ public class CommitAction extends ContextAction {
             //        the (bloody) flat-folder loginc aren't supposed to be commited at all =>
             //        => the commit has to be split in two parts.
             for(File file : nonRecursiveComits) {
+                ISVNStatus st = null;
                 if(file.isDirectory() &&
                     ( removeCandidates.contains(file) ||
-                      cache.getStatus(file).getEntry(file).isCopied() ))
+                      ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())))
                 {
                     recursiveCommits.add(file);
                 }
