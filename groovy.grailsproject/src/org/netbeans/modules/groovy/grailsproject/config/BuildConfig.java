@@ -78,7 +78,7 @@ public class BuildConfig {
     private File projectPluginsDir;
 
     private File globalPluginsDir;
-    
+
     public BuildConfig(GrailsProject project) {
         this.project = project;
         this.projectRoot = FileUtil.toFile(project.getProjectDirectory());
@@ -98,7 +98,7 @@ public class BuildConfig {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             File cached = config.getProjectPluginsDir();
             if (cached != null && isFilePresent()) {
-                projectPluginsDir = cached;
+                projectPluginsDir = FileUtil.normalizeFile(cached);
             } else {
                 projectPluginsDir = getProjectPluginsDirDefault11();
             }
@@ -151,7 +151,7 @@ public class BuildConfig {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             File cached = config.getGlobalPluginsDir();
             if (cached != null && isFilePresent()) {
-                globalPluginsDir = cached;
+                globalPluginsDir = FileUtil.normalizeFile(cached);
             } else {
                 globalPluginsDir = getGlobalPluginsDirDefault11();
             }
@@ -239,10 +239,10 @@ public class BuildConfig {
         }
         return projectPluginsDir;
     }
-    
+
     private File getProjectPluginsDir10() {
         assert Thread.holdsLock(this);
-        return new File(projectRoot, "plugins"); // NOI18N
+        return FileUtil.normalizeFile(new File(projectRoot, "plugins")); // NOI18N
     }
 
     private File getProjectPluginsDir11() {
@@ -258,7 +258,7 @@ public class BuildConfig {
                     if (!file.isAbsolute()) {
                         file = new File(projectRoot, file.getPath());
                     }
-                    return file;
+                    return FileUtil.normalizeFile(file);
                 }
             }
         } catch (NoSuchMethodException ex) {
@@ -272,9 +272,9 @@ public class BuildConfig {
         GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
         GrailsPlatform platform = config.getGrailsPlatform();
         if (platform.isConfigured()) {
-            return new File(System.getProperty("user.home"), ".grails" + File.separator // NOI18N
+            return FileUtil.normalizeFile(new File(System.getProperty("user.home"), ".grails" + File.separator // NOI18N
                     + config.getGrailsPlatform().getVersion().toString() + File.separator
-                    + "projects" + File.separator + projectRoot.getName() + File.separator + "plugins"); // NOI18N
+                    + "projects" + File.separator + projectRoot.getName() + File.separator + "plugins")); // NOI18N
         }
         return null;
     }
@@ -291,7 +291,7 @@ public class BuildConfig {
         }
         return globalPluginsDir;
     }
-    
+
     private File getGlobalPluginsDir10() {
         assert Thread.holdsLock(this);
         return null;
@@ -310,7 +310,7 @@ public class BuildConfig {
                     if (!file.isAbsolute()) {
                         file = new File(projectRoot, file.getPath());
                     }
-                    return file;
+                    return FileUtil.normalizeFile(file);
                 }
             }
         } catch (NoSuchMethodException ex) {
@@ -324,8 +324,8 @@ public class BuildConfig {
         GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
         GrailsPlatform platform = config.getGrailsPlatform();
         if (platform.isConfigured()) {
-            return new File(System.getProperty("user.home"), ".grails" + File.separator // NOI18N
-                    + config.getGrailsPlatform().getVersion().toString() + File.separator + "global-plugins"); // NOI18N
+            return FileUtil.normalizeFile(new File(System.getProperty("user.home"), ".grails" + File.separator // NOI18N
+                    + config.getGrailsPlatform().getVersion().toString() + File.separator + "global-plugins")); // NOI18N
         }
         return null;
     }
@@ -421,49 +421,5 @@ public class BuildConfig {
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;
-    }
-
-
-    //////
-
-    public File getProjectPluginsDirDefault(GrailsPlatform platform) {
-        if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
-            File pluginsDirFile;
-            String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
-            if (strPluginsDir == null) {
-                File projectWorkDirFile;
-                String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
-                if (projectWorkDir == null) {
-                    File workDirFile;
-                    String workDir = System.getProperty("grails.work.dir"); // NOI18N
-                    if (workDir == null) {
-                        workDir = System.getProperty("user.home"); // NOI18N
-                        workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
-                        workDirFile = new File(workDir);
-                    } else {
-                        workDirFile = new File(workDir);
-                        if (!workDirFile.isAbsolute()) {
-                            workDirFile = new File(projectRoot, workDir);
-                        }
-                    }
-                    projectWorkDirFile = new File(workDirFile, "projects" + File.separator + projectRoot.getName()); // NOI18N
-                } else {
-                    projectWorkDirFile = new File(projectWorkDir);
-                    if (!projectWorkDirFile.isAbsolute()) {
-                        projectWorkDirFile = new File(projectRoot, projectWorkDir);
-                    }
-                }
-                pluginsDirFile = new File(projectWorkDirFile, "plugins"); // NOI18N
-            } else {
-                pluginsDirFile = new File(strPluginsDir);
-                if (!pluginsDirFile.isAbsolute()) {
-                    pluginsDirFile = new File(projectRoot, strPluginsDir);
-                }
-            }
-
-            return pluginsDirFile;
-        }
-
-        return new File(projectRoot, "plugins");
     }
 }
