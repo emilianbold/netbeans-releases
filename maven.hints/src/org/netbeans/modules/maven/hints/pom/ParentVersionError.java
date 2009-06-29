@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -115,8 +116,13 @@ public class ParentVersionError implements POMErrorFixProvider {
                 if (parentPrj != null) {
                     NbMavenProject nbprj = parentPrj.getLookup().lookup(NbMavenProject.class);
                     if (nbprj != null) { //do we have some non-maven project maybe?
-                        currentVersion = nbprj.getMavenProject().getVersion();
-                        useSources = true;
+                        MavenProject mav = nbprj.getMavenProject();
+                        //#167711 check the coordinates to filter out parents in non-default location without relative-path elemnt
+                        if (par.getGroupId().equals(mav.getGroupId()) &&
+                            par.getArtifactId().equals(mav.getArtifactId())) {
+                            currentVersion = mav.getVersion();
+                            usedSources = true;
+                        }
                     }
                 }
             } catch (IOException ex) {
