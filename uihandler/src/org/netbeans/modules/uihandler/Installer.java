@@ -291,6 +291,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         EarlyHandler.disable();
+        CPUInfo.logCPUInfo();
         ScreenSize.logScreenSize();
         logIdeStartup();
 

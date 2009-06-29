@@ -105,7 +105,9 @@ class SlownessReporter {
         String latestActionClassName = null;
         while (it.hasPrevious()){
             LogRecord rec = it.previous();
-            if (now - rec.getMillis() - time  > LATEST_ACTION_LIMIT){
+            if (Installer.IDE_STARTUP.equals(rec.getMessage())){
+                latestActionClassName = NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP");
+            } else if (now - rec.getMillis() - time  > LATEST_ACTION_LIMIT){
                 break;
             }
             if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
@@ -113,8 +115,6 @@ class SlownessReporter {
                 latestActionClassName = getParam(rec, 4);
             } else if (UI_ACTION_KEY_PRESS.equals(rec.getMessage())){
                 latestActionClassName = getParam(rec, 2);
-            } else if (Installer.IDE_STARTUP.equals(rec.getMessage())){
-                latestActionClassName = NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP");
             }
             if (latestActionClassName != null){
                 latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N

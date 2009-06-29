@@ -79,7 +79,7 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         Installer.logDeactivated();
         assertTrue("ok", installer.closing());
         
-        List<LogRecord> rec = ScreenSizeTest.removeScreenSizeLogs(Installer.getLogs());
+        List<LogRecord> rec = ScreenSizeTest.removeExtraLogs(Installer.getLogs());
         if (rec.get(0).getMessage().equals("say anything")) {
             rec.remove(0);
         }
