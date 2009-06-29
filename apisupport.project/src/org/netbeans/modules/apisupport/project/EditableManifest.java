@@ -317,16 +317,23 @@ public final class EditableManifest {
             this.value = value;
             this.text = text;
         }
-        
+
+        private static final Pattern NEWLINE = Pattern.compile("\r?\n");
+
         public void write(Writer w) throws IOException {
-            w.write(text);
+            // translating all newlines to correct format,
+            // see SingleModulePropertiesTest#testThatManifestFormattingIsNotMessedUp_61248
+            String output = NEWLINE.matcher(text).replaceAll(RET);
+            w.write(output);
             newline(w);
         }
         
     }
     
+    private static final String RET = System.getProperty("line.separator");
+    
     private static void newline(Writer w) throws IOException {
-        w.write(System.getProperty("line.separator")); // NOI18N
+        w.write(RET); // NOI18N
     }
     
     private static final class Section {

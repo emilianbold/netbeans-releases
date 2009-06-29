@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
@@ -262,6 +264,7 @@ public abstract class ModuleProperties {
         } else {
             System.err.println(message);
         }
+        Logger.getLogger(ModuleProperties.class.getName()).log(Level.WARNING, message);
     }
     
     static String getPlatformID(JavaPlatform platform) {

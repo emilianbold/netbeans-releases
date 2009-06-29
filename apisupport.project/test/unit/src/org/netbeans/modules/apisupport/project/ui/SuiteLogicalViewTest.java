@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -110,7 +111,8 @@ public class SuiteLogicalViewTest extends TestBase {
         assertEquals("Sweetness is Now!", n.getName());
         assertEquals("Sweetness is Now!", n.getDisplayName());
     }
-    
+
+    @RandomlyFails
     public void testImportantFiles() throws Exception {
         // so getDisplayName is taken from english bundle
         Locale.setDefault(Locale.US);
