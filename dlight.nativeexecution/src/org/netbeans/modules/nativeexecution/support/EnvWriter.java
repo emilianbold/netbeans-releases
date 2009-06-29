@@ -68,7 +68,7 @@ public final class EnvWriter {
                 val = env.get(var);
 
                 if (val != null) {
-                    os.write((var + "=" + val + " && export " + var + "\n").getBytes()); // NOI18N
+                    os.write((var + "=\"" + val + "\" && export " + var + "\n").getBytes()); // NOI18N
                     os.flush();
                 }
             }
