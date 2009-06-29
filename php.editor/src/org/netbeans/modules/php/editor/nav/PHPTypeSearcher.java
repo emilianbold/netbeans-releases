@@ -75,6 +75,13 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
+        // PHP isn't Java so we may need to overrule the chosen kind
+        // in case the query looks like it may be a camel-case/wildcard pattern
+        // fix for #167687
+        if ((kind == Kind.CASE_INSENSITIVE_PREFIX || kind == Kind.PREFIX) && isCamelCasePattern(textForQuery)) {
+            kind = Kind.CAMEL_CASE;
+        }
+
         PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
                 project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
@@ -110,6 +117,13 @@ public class PHPTypeSearcher implements IndexSearcher {
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
+        // PHP isn't Java so we may need to overrule the chosen kind
+        // in case the query looks like it may be a camel-case/wildcard pattern
+        // fix for #167687
+        if ((kind == Kind.CASE_INSENSITIVE_PREFIX || kind == Kind.PREFIX) && isCamelCasePattern(textForQuery)) {
+            kind = Kind.CAMEL_CASE;
+        }
+
         PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
                 project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
@@ -369,5 +383,15 @@ public class PHPTypeSearcher implements IndexSearcher {
             }
         }
         return query;
+    }
+    
+    private static boolean isCamelCasePattern(String query) {
+        char[] chars = query.toCharArray();
+        for (char c : chars) {
+            if (c == '*' || c == '?' || Character.isUpperCase(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
