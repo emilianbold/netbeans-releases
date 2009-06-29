@@ -304,10 +304,14 @@
         <if property="gf-mod.build.type" value="">
             <set property="glassfish-mod-sun.build.suffix" value="en"/>
             <set property="glassfish-mod-sun.ml.appendix" value=""/>
+            <set property="glassfish-mod.build.suffix" value="en"/>
+            <set property="glassfish-mod.ml.appendix" value=""/>
         </if>
         <if property="gf-mod.build.type" value="ml">
             <set property="glassfish-mod-sun.build.suffix" value="ml"/>
             <set property="glassfish-mod-sun.ml.appendix" value="-ml"/>
+            <set property="glassfish-mod.build.suffix" value="ml"/>
+            <set property="glassfish-mod.ml.appendix" value="-ml"/>
         </if>
 
         
@@ -319,7 +323,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="6.7.0.0.${nb.build.number}"/>
+             value="6.8.0.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -416,14 +420,18 @@
 		<set property="glassfish.ml.appendix" value="-ml"/>
 		<set property="sjsas.ml.appendix"     value="-ml"/>
 	</if>
-	<!--
+	
         <get
-            src="${glassfish.builds.host}/java/re/glassfish_branch/10.0/promoted/prelude/latest/archive/bundles"
+            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/trunk-latest/archive/bundles"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod"/>
-        -->
+        <glassfish-buildnumber 
+            file="${temp.file}" 
+            prefix="glassfish-mod-sun"/>
+
+        <!--
 	<set property="glassfish-mod-sun.milestone.number"      value="28"/>
 	<set property="glassfish-mod-sun.milestone.number.real" value="28e"/>
 	<set property="glassfish-mod-sun.build.type"            value="prelude"/>
@@ -433,7 +441,7 @@
 	<set property="glassfish-mod.milestone.number.real" value="28c"/>
 	<set property="glassfish-mod.build.type"            value="prelude"/>
 	<set property="glassfish-mod.build.number"          value="20081022"/>
-
+	-->
 
         <!--
         -->
@@ -665,8 +673,12 @@ jarsigner.storepass=${jarsigner.storepass}
         <delete failonerror="false">
             <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- glassfish-mod-sun -->
-                <include name="**/glassfish-mod-sun*"/>
-                <exclude name="**/glassfish-mod-sun*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
+                <include name="**/glassfish-mod-sun,*"/>
+                <exclude name="**/glassfish-mod-sun,*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
+
+                <include name="**/glassfish-mod,*"/>
+                <exclude name="**/glassfish-mod,*3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}*"/>
+
                 <!-- server -->
                 <include name="**/${server-uid}*"/>
                 <exclude name="**/${server-uid}*${server.version}.${server.milestone.number}.*"/>
@@ -800,7 +812,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group ${server-uid} glassfish-mod-sun tomcat"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
         </antcall>
      </target>
 
@@ -1268,8 +1280,8 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-            <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
-            <component uid="glassfish-mod-sun" version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="java"/>
             </create-bundle>
@@ -1289,8 +1301,8 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-            <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
-            <component uid="glassfish-mod-sun" version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="java"/>
             </create-bundle>
@@ -1323,7 +1335,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base"        version="${nb.full.version}"/>
             <component uid="nb-webcommon"   version="${nb.full.version}"/>
             <component uid="nb-ruby"        version="${nb.full.version}"/>
-            <component uid="glassfish-mod-sun"  version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+            <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
 	<antcall target="convert-netbeans-bundle"/>
@@ -1389,8 +1401,8 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-                       <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
-                       <component uid="glassfish-mod-sun"  version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+                       <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
                        <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
@@ -1412,8 +1424,8 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-                       <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
-                       <component uid="glassfish-mod-sun"  version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+                       <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
                        <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
@@ -1437,8 +1449,8 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-php"        version="${nb.full.version}"/>
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-            <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
-            <component uid="glassfish-mod-sun" version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
             <!--<component uid="openesb"       version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
         </create-bundle>
