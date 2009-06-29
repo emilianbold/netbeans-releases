@@ -599,11 +599,11 @@ public class LayerUtilsTest extends LayerTestBase {
         cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.<String,Object>singletonMap("originalFile", dummyDir.toURI().toURL())));
         cmf.run();
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
-//    XXX: failing test, fix or delete
-//        assertDisplayName(fs, "right display name for platform file", "Menu/RunProject", "Run");
+
+        assertDisplayName(fs, "right display name for platform file", "Templates/Project/APISupport", "NetBeans Modules");
         assertDisplayName(fs, "label for file in suite", "foo", "Foo");
         assertDisplayName(fs, "label for file in this project", "bar", "Bar");
-        assertDisplayName(fs, "right display name for well-known action", "Menu/File/org-openide-actions-SaveAction.instance", "Save");
+        assertDisplayName(fs, "right display name for apisupport-defined action", "Actions/Tools/org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance", "NetBeans Platforms");
         assertDisplayName(fs, "label for simple instance", "test-module2-MyAction.instance", "<instance of MyAction>");
         assertDisplayName(fs, "label for instanceClass", "test-module2-some-action.instance", "<instance of SomeAction>");
         assertDisplayName(fs, "label for newvalue instanceCreate", "test-module2-another-action.instance", "<instance of AnotherAction>");
@@ -670,8 +670,7 @@ public class LayerUtilsTest extends LayerTestBase {
         FileObject nbroot = FileUtil.toFileObject(new File(System.getProperty("test.nbroot")));
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("image"));
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
-//    XXX: failing test, fix or delete
-//        assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
+        assertDisplayName(fs, "right display name for netbeans.org standard file", "Templates/Project/APISupport", "NetBeans Modules");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
         FileObject docbook = nbroot.getFileObject("contrib/docbook");
         if (docbook == null) {

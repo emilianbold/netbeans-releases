@@ -44,6 +44,10 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.regex.Pattern;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -153,6 +157,10 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
         this.io = io;
         targetConf.setIO(io);
+
+        // Setup simple output convertor factory...
+        targetConf.setOutConvertorFactory(new SimpleOutputConvertorFactory());
+
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
@@ -299,5 +307,13 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
     private static String getMessage(String name, Object... params) {
         return NbBundle.getMessage(GizmoRunActionHandler.class, name, params);
+    }
+
+    private static class SimpleOutputConvertorFactory implements LineConvertorFactory {
+
+        public LineConvertor newLineConvertor() {
+            return LineConvertors.proxy(LineConvertors.filePattern(null, Pattern.compile("^file://([^:]*[^ ])(:)([0-9]*).*"), null, 1, 3), // NOI18N
+                    LineConvertors.httpUrl());
+        }
     }
 }
