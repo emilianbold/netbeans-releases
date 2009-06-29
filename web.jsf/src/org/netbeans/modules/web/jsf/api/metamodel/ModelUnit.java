@@ -41,15 +41,19 @@
 package org.netbeans.modules.web.jsf.api.metamodel;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
+import com.sun.swing.internal.plaf.synth.resources.synth;
 
 
 
@@ -107,12 +111,15 @@ public class ModelUnit {
         myBootPath= bootPath;
         myCompilePath = compilePath;
         mySourcePath = sourcePath;
-        FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
-        if ( configs != null && configs.length > 0 ){
-            myMainFacesConfig = FileUtil.toFile(configs[0]);
-        }
-        else {
-            myMainFacesConfig = null;
+        if (webModule != null) {
+            FileObject[] configs = ConfigurationUtils
+                    .getFacesConfigFiles(webModule);
+            if (configs != null && configs.length > 0) {
+                myMainFacesConfig = FileUtil.toFile(configs[0]);
+            }
+            else {
+                myMainFacesConfig = null;
+            }
         }
         myModule = webModule;
         myConfigFiles = null;
@@ -132,21 +139,24 @@ public class ModelUnit {
         return mySourcePath;
     }
     
-    public FileObject getMainFacesConfig(){
+    public synchronized FileObject getMainFacesConfig(){
+        if ( myMainFacesConfig != null && !myMainFacesConfig.exists() ){
+            myMainFacesConfig = null;
+        }
         return myMainFacesConfig != null ? FileUtil.toFileObject(
                 FileUtil.normalizeFile(myMainFacesConfig)) : null;
     }
     
-    public List<FileObject> getConfigFiles(){
+    public synchronized List<FileObject> getConfigFiles(){
         FileObject[] objects = myModule == null ?  myConfigFiles :
                 ConfigurationUtils.getFacesConfigFiles( myModule );
         
-        List<FileObject> configs;
+        Set<FileObject> configs;
         if ( objects != null ){
-            configs = new LinkedList<FileObject>( Arrays.asList( objects ));
+            configs = new HashSet<FileObject>( Arrays.asList( objects ));
         }
         else {
-            configs = new LinkedList<FileObject>();
+            configs = new HashSet<FileObject>();
         }
         
         if (myMainFacesConfig == null) {
@@ -155,6 +165,10 @@ public class ModelUnit {
             if ( list != null && list.size() > 0 ){
                 myMainFacesConfig =  FileUtil.toFile(list.get(0));
             }
+        }
+        if ( myMainFacesConfig!= null ){
+            configs.add( FileUtil.toFileObject( 
+                    FileUtil.normalizeFile(myMainFacesConfig) ));
         }
         String suffix = "."+FACES_CONFIG;
         for (FileObject root : getSourcePath().getRoots()) {
@@ -169,7 +183,7 @@ public class ModelUnit {
                 }
             }
         }
-        return configs;
+        return new ArrayList<FileObject>(configs);
     }
     
     private final ClassPath myBootPath;

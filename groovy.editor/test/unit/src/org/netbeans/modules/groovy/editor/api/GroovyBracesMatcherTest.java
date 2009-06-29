@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,61 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.impl.structure;
+package org.netbeans.modules.groovy.editor.api;
 
-import java.io.Serializable;
-import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTConditionsBlock;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**
- * implementation of preprocessor conditions block container
- * @author Vladimir Voskresensky
+ *
+ * @author Marek Slama
  */
-public final class APTConditionsBlockNode extends APTContainerNode 
-                                        implements APTConditionsBlock, 
-                                        Serializable {
-    private static final long serialVersionUID = 2285405035404696441L;
-    transient private APT next;
+public class GroovyBracesMatcherTest extends GroovyTestBase {
     
-    /** Copy constructor */
-    /**package*/APTConditionsBlockNode(APTConditionsBlockNode orig) {
-        super(orig);
-        // clear tree structure information
-        this.next = null;
+    public GroovyBracesMatcherTest(String testName) {
+        super(testName);
     }
     
     /**
-     * Creates a new instance of APTConditionsBlockNode
+     * Test for BracesMatcher, first ^ gives current caret position,
+     * second ^ gives matching caret position. Test is done in forward and backward direction.
      */
-    public APTConditionsBlockNode() {
-    }
-
-    public final int getType() {
-        return APT.Type.CONDITION_CONTAINER;
+    private void match2(String original) throws BadLocationException {
+        super.assertMatches2(original);
     }
     
-    public int getOffset() {
-        return -1;
-    }
-
-    public int getEndOffset() {
-        return -1;
+    public void testFindMatching1() throws Exception {
+        match2("if (true) ^{\n^}");
     }
     
-    public APT getNextSibling() {
-        return next;
-    }
-
-    public String getText() {
-        return "preprocessor condition branches container"; // NOI18N
+    public void testFindMatching2() throws Exception {
+        match2("x=^(true^)\ny=5");
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // implementation details
-
-    public final void setNextSibling(APT next) {
-        assert (next != null) : "null sibling, what for?"; // NOI18N
-        assert (this.next == null) : "why do you change immutable APT?"; // NOI18N
-        this.next = next;
+    public void testFindMatching3() throws Exception {
+        match2("x=^(true || (false)^)\ny=5");
     }
+    
+    public void testFindMatching4() throws Exception {
+        match2("function foo() ^{\nif (true) {\n}\n^}\n}");
+    }
+    
 }

@@ -65,7 +65,6 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
-import org.netbeans.modules.maven.execute.cmd.DirectConstructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
@@ -395,15 +394,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
 
         File mavenHome = MavenSettings.getDefault().getCommandLinePath();
-        Constructor constructeur;
-
-        if (Boolean.getBoolean("maven.direct")) {
-            //TODO don't assume we know the path to mvn..
-            DefaultArtifactVersion dav = new DefaultArtifactVersion(MavenSettings.getCommandLineMavenVersion());
-            constructeur = new DirectConstructor(dav, javaHome, mavenHome);
-        } else {
-            constructeur = new ShellConstructor(mavenHome);
-        }
+        Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
 

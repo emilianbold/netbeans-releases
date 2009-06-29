@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,18 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.structure;
+package org.netbeans.modules.php.editor.model.nodes;
+
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
- * container for associated preprocessor conditional directives
- * like #if-#elif-#else-#endif, all this directives are on the same level
- * and handling next depends on handled prev,
- * i.e. #else subtree is valid when all prev conditions were not satisfied,
- * #endif directive is always the last child of this container 
- * @author Vladimir Voskresensky
+ *
+ * @author Radek Matous
  */
-public interface APTConditionsBlock extends APT {
-    
+public class ASTNodeInfoInContext<T extends ASTNode>  {
+    private Scope scope;
+    private ASTNodeInfo<T> nodeInfo;
+
+
+    public ASTNodeInfoInContext(ASTNodeInfo<T> nodeInfo, ModelElement element) {
+        this.nodeInfo = nodeInfo;
+        if (element instanceof Scope) {
+            this.scope  = (Scope) element;
+        } else {
+            this.scope  = element.getInScope();
+        }
+    }
+    /**
+     * @return the scope
+     */
+    public Scope getScope() {
+        return scope;
+    }
+
+    public FileScope getFileScope() {
+        return ModelUtils.getFileScope(scope);
+    }
+    public NamespaceScope getNamespaceScope() {
+        return ModelUtils.getNamespaceScope(scope);
+    }
+    public QualifiedName getFullyQualifiedName() {
+        QualifiedName qualifiedName = getNodeInfo().getQualifiedName();
+        if (qualifiedName != null) {
+            qualifiedName = qualifiedName.toFullyQualified(getNamespaceScope());
+        }
+
+        return qualifiedName;
+    }
+
+    /**
+     * @return the nodeInfo
+     */
+    public ASTNodeInfo<T> getNodeInfo() {
+        return nodeInfo;
+    }
 }

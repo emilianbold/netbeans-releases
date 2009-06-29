@@ -47,6 +47,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -64,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author mkleint
@@ -145,7 +147,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
      * @param fe the event describing context where action has taken place
      */
     @Override
-    public void fileChanged(FileEvent fe) {
+    public void fileChanged(final FileEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileChanged(fe);
+                }
+            });
+            return;
+        }
         Project owning = getOwningMavenProject(fe.getFile());
         if (owning == null) {
             return;
@@ -158,7 +168,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     }
 
     @Override
-    public void fileDataCreated(FileEvent fe) {
+    public void fileDataCreated(final FileEvent fe) {
+       if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileDataCreated(fe);
+                }
+            });
+            return;
+        }
         Project owning = getOwningMavenProject(fe.getFile());
         if (owning == null) {
             return;
@@ -171,7 +189,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     }
 
     @Override
-    public void fileRenamed(FileRenameEvent fe) {
+    public void fileRenamed(final FileRenameEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileRenamed(fe);
+                }
+            });
+            return;
+        }
         try {
             FileObject fo = fe.getFile();
             Project owning = getOwningMavenProject(fo);
@@ -197,7 +223,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     }
 
     @Override
-    public void fileDeleted(FileEvent fe) {
+    public void fileDeleted(final FileEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileDeleted(fe);
+                }
+            });
+            return;
+        }
         Project owning = getOwningMavenProject(fe.getFile());
         if (owning == null) {
             return;
