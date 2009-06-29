@@ -216,7 +216,7 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
 
         List<File> result = new ArrayList<File>(files.size());
         for (File file : files) {
-            result.add(relativizeFile(wc, file));
+            result.add(getRelativePath(wc, file));
         }
         return sortFiles(result);
     }
@@ -239,14 +239,6 @@ public abstract class AbstractCommandTest extends AbstractSvnTest {
         SortedSet<File> sortedFiles = new TreeSet<File>(new FileComparator());
         sortedFiles.addAll(files);
         return sortedFiles;
-    }
-
-    private static File relativizeFile(File upperFile, File lowerFile) {
-        if (lowerFile.equals(upperFile)) {
-            return new File(".");
-        } else {
-            return new File(upperFile.toURI().relativize(lowerFile.toURI()).getPath());
-        }
     }
 
     private static String makeFilesList(Collection<File> files) {
