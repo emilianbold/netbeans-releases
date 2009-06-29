@@ -447,7 +447,9 @@ public final class AntProjectHelper {
     
     /**
      * Fire a change of external provenance to all listeners.
-     * Acquires write access.
+     * When run under read or write access to <code>ProjectManager.mutex()</code>
+     * property change is fired synchronously, otherwise fire asynchronously
+     * under acquired read lock.
      * @param path path to the changed file (XML or properties)
      */
     void fireExternalChange(final String path) {

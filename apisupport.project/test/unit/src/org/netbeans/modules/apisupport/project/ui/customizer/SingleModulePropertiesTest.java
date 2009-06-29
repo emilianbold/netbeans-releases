@@ -77,6 +77,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.tax.io.StringUtil;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.Utilities;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -208,13 +211,15 @@ public class SingleModulePropertiesTest extends TestBase {
         PublicPackagesTableModel pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 2, pptm.getRowCount());
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
-        
+    }
+
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    public void testGetPublicPackagesForNBOrg() throws Exception {
         // libs.xerces properties
         NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbRoot().getFileObject("libs.xerces"));
-        props = loadProperties(libP);
-        pptm = props.getPublicPackagesModel();
+        SingleModuleProperties props = loadProperties(libP);
+        PublicPackagesTableModel pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 38, pptm.getRowCount());
-        assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
     }
     
     public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws Exception {
@@ -227,70 +232,69 @@ public class SingleModulePropertiesTest extends TestBase {
         simulatePropertiesOpening(props, p);
     }
 
-//    XXX: failing test, fix or delete
-//    public void testThatManifestFormattingIsNotMessedUp_61248() throws Exception {
-//        NbModuleProject p = generateStandaloneModule("module1");
-//        EditableManifest em = Util.loadManifest(p.getManifestFile());
-//        em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
-//                "  org.openide.execution.ExecutionEngine,\n" +
-//                "  org.openide.windows.IOProvider", null);
-//        Util.storeManifest(p.getManifestFile(), em);
-//        String before = TestBase.slurp(p.getManifestFile());
-//
-//        SingleModuleProperties props = loadProperties(p);
-//        // two lines below are ensured by CustomizerVersioning - let's simulate it
-//        props.setImplementationVersion("");
-//        props.setProvidedTokens("");
-//        props.storeProperties();
-//        ProjectManager.getDefault().saveProject(p);
-//        String after = TestBase.slurp(p.getManifestFile());
-//
-//        assertEquals("the same content", before, after);
-//    }
+    public void testThatManifestFormattingIsNotMessedUp_61248() throws Exception {
+        NbModuleProject p = generateStandaloneModule("module1");
+        EditableManifest em = Util.loadManifest(p.getManifestFile());
+        em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
+                "  org.openide.execution.ExecutionEngine,\n" +
+                "  org.openide.windows.IOProvider", null);
+        Util.storeManifest(p.getManifestFile(), em);
+        String before = TestBase.slurp(p.getManifestFile());
 
-//    XXX: failing test, fix or delete
-//    public void testNiceFormattingForRequiredTokensInManifest_63516() throws Exception {
-//        NbModuleProject p = generateStandaloneModule("module1");
-//        EditableManifest em = Util.loadManifest(p.getManifestFile());
-//        em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
-//                "  org.openide.execution.ExecutionEngine,\n" +
-//                "  org.openide.windows.IOProvider", null);
-//        Util.storeManifest(p.getManifestFile(), em);
-//
-//        SingleModuleProperties props = loadProperties(p);
-//        props.getRequiredTokenListModel().addToken("org.netbeans.api.javahelp.Help");
-//        // two lines below are ensured by CustomizerVersioning - let's simulate it
-//        props.setImplementationVersion("");
-//        props.setProvidedTokens("");
-//        props.storeProperties();
-//        ProjectManager.getDefault().saveProject(p);
-//        String real = TestBase.slurp(p.getManifestFile());
-//        String expected = "Manifest-Version: 1.0\n" +
-//                "OpenIDE-Module: org.example.module1\n" +
-//                "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml\n" +
-//                "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties\n" +
-//                "OpenIDE-Module-Requires: \n" +
-//                "  org.netbeans.api.javahelp.Help,\n" +
-//                "  org.openide.execution.ExecutionEngine,\n" +
-//                "  org.openide.windows.IOProvider\n" +
-//                "OpenIDE-Module-Specification-Version: 1.0\n\n";
-//
-//        assertEquals("expected content", expected, real);
-//
-//        props.getRequiredTokenListModel().removeToken("org.openide.execution.ExecutionEngine");
-//        props.getRequiredTokenListModel().removeToken("org.netbeans.api.javahelp.Help");
-//        props.storeProperties();
-//        ProjectManager.getDefault().saveProject(p);
-//        real = TestBase.slurp(p.getManifestFile());
-//        expected = "Manifest-Version: 1.0\n" +
-//                "OpenIDE-Module: org.example.module1\n" +
-//                "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml\n" +
-//                "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties\n" +
-//                "OpenIDE-Module-Requires: org.openide.windows.IOProvider\n" +
-//                "OpenIDE-Module-Specification-Version: 1.0\n\n";
-//
-//        assertEquals("expected content", expected, real);
-//    }
+        SingleModuleProperties props = loadProperties(p);
+        // two lines below are ensured by CustomizerVersioning - let's simulate it
+        props.setImplementationVersion("");
+        props.setProvidedTokens("");
+        props.storeProperties();
+        ProjectManager.getDefault().saveProject(p);
+        String after = TestBase.slurp(p.getManifestFile());
+
+        assertEquals("the same content", before, after);
+    }
+
+    public void testNiceFormattingForRequiredTokensInManifest_63516() throws Exception {
+        NbModuleProject p = generateStandaloneModule("module1");
+        EditableManifest em = Util.loadManifest(p.getManifestFile());
+        em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
+                "  org.openide.execution.ExecutionEngine,\n" +
+                "  org.openide.windows.IOProvider", null);
+        Util.storeManifest(p.getManifestFile(), em);
+
+        SingleModuleProperties props = loadProperties(p);
+        props.getRequiredTokenListModel().addToken("org.netbeans.api.javahelp.Help");
+        // two lines below are ensured by CustomizerVersioning - let's simulate it
+        props.setImplementationVersion("");
+        props.setProvidedTokens("");
+        props.storeProperties();
+        ProjectManager.getDefault().saveProject(p);
+        String real = TestBase.slurp(p.getManifestFile());
+        String newline = System.getProperty("line.separator");
+        String expected = "Manifest-Version: 1.0" + newline +
+                "OpenIDE-Module: org.example.module1" + newline +
+                "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml" + newline +
+                "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties" + newline +
+                "OpenIDE-Module-Requires: " + newline +
+                "  org.netbeans.api.javahelp.Help," + newline +
+                "  org.openide.execution.ExecutionEngine," + newline +
+                "  org.openide.windows.IOProvider" + newline +
+                "OpenIDE-Module-Specification-Version: 1.0" + newline + newline;
+
+        assertEquals("expected content", expected, real);
+
+        props.getRequiredTokenListModel().removeToken("org.openide.execution.ExecutionEngine");
+        props.getRequiredTokenListModel().removeToken("org.netbeans.api.javahelp.Help");
+        props.storeProperties();
+        ProjectManager.getDefault().saveProject(p);
+        real = TestBase.slurp(p.getManifestFile());
+        expected = "Manifest-Version: 1.0" + newline +
+                "OpenIDE-Module: org.example.module1" + newline +
+                "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml" + newline +
+                "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties" + newline +
+                "OpenIDE-Module-Requires: org.openide.windows.IOProvider" + newline +
+                "OpenIDE-Module-Specification-Version: 1.0" + newline + newline;
+
+        assertEquals("expected content", expected, real);
+    }
     
     public void testAvailablePublicPackages() throws Exception {
         Map<String,String> contents = new HashMap<String,String>();
@@ -371,13 +375,16 @@ public class SingleModulePropertiesTest extends TestBase {
         TestBase.generateSuiteComponent(suite1, "component3");
         props = loadProperties(component2);
         assertEquals("There are two available friends for component2.", 2, props.getAvailableFriends().length);
-        
+    }
+
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    public void testGetAvailableFriendsForNBOrg() throws Exception {
         // netbeans.org
         Project javaProject = ProjectManager.getDefault().findProject(nbRoot().getFileObject("java.project"));
-        props = loadProperties((NbModuleProject) javaProject);
+        SingleModuleProperties props = loadProperties((NbModuleProject) javaProject);
         assertTrue("There are two available friends for component2.", props.getAvailableFriends().length > 50);
     }
-    
+
     @RandomlyFails
     public void testSimulateLocalizedBundlePackageRefactoring() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
@@ -561,23 +568,31 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
 //    }
 
-    // XXX still failing randomly, investigate
-    @RandomlyFails
-    public void testGetActivePlatform() throws Exception {
-        SuiteProject suite = generateSuite("suite");
-        NbModuleProject module = generateSuiteComponent(suite, "module");
-        File plaf = new File(getWorkDir(), "plaf");
-        makePlatform(plaf, "1.13"); // 6.7 harness
-        NbPlatform.addPlatform("plaf", plaf, "Test Platform");
-        FileObject platformPropertiesFO = suite.getProjectDirectory().getFileObject("nbproject/platform.properties");
-        EditableProperties platformProperties = Util.loadProperties(platformPropertiesFO);
-        platformProperties.put("suite.dir", "${basedir}");
-        platformProperties.put("nbplatform.active", "plaf");
-        Util.storeProperties(platformPropertiesFO, platformProperties);
-        SingleModuleProperties props = loadProperties(module);
-        NbPlatform platform = props.getActivePlatform();
-        assertEquals(plaf, platform.getDestDir());
+        public void testGetActivePlatform() throws Exception {
+        ProjectManager.mutex().writeAccess(new ExceptionAction<Void>() {
+            // saving of platform.properties of the project must be done under
+            // PM.mutex() lock (read would in fact suffice too), otherwise
+            // there is a race condition between storing properties file
+            // and updating project evaluator
+            public Void run() throws Exception {
+                SuiteProject suite = generateSuite("suite");
+                NbModuleProject module = generateSuiteComponent(suite, "module");
+                File plaf = new File(getWorkDir(), "plaf");
+                makePlatform(plaf, "1.13"); // 6.7 harness
+                NbPlatform.addPlatform("plaf", plaf, "Test Platform");
+                FileObject platformPropertiesFO = suite.getProjectDirectory().getFileObject("nbproject/platform.properties");
+                EditableProperties platformProperties = Util.loadProperties(platformPropertiesFO);
+                platformProperties.put("suite.dir", "${basedir}");
+                platformProperties.put("nbplatform.active", "plaf");
+                Util.storeProperties(platformPropertiesFO, platformProperties);
+                SingleModuleProperties props = loadProperties(module);
+                NbPlatform platform = props.getActivePlatform();
+                assertEquals(plaf, platform.getDestDir());
+                return null;
+            }
+        });
     }
+
 
     static SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(),
