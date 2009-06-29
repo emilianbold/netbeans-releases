@@ -175,7 +175,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
      */
     @Override
     public void fileChanged(final FileEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) {//#167739
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     fileChanged(fe);
@@ -194,7 +194,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
 
     @Override
     public void fileDataCreated(final FileEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) {//#167739
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     fileDataCreated(fe);
@@ -213,7 +213,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
 
     @Override
     public void fileRenamed(final FileRenameEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) {//#167739
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     fileRenamed(fe);
@@ -250,7 +250,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
 
     @Override
     public void fileDeleted(final FileEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) { //#167739
+        if (SwingUtilities.isEventDispatchThread()) { //#167740
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     fileDeleted(fe);
