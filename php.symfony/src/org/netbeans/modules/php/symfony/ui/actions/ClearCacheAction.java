@@ -50,8 +50,16 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ClearCacheAction extends BaseAction {
+public final class ClearCacheAction extends BaseAction {
     private static final long serialVersionUID = 36068831502227572L;
+    private static final ClearCacheAction INSTANCE = new ClearCacheAction();
+
+    private ClearCacheAction() {
+    }
+
+    public static ClearCacheAction getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public void actionPerformedInternal(PhpModule phpModule) {

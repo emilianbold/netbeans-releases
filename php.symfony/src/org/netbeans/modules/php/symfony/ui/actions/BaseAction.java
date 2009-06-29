@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class BaseAction extends AbstractAction {
 
-    public BaseAction() {
+    protected BaseAction() {
         putValue("noIconInMenu", true); // NOI18N
         putValue(NAME, getFullName());
         putValue("menuText", getPureName()); // NOI18N

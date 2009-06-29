@@ -50,8 +50,16 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class RunCommandAction extends BaseAction {
+public final class RunCommandAction extends BaseAction {
     private static final long serialVersionUID = -22735302227232842L;
+    private static final RunCommandAction INSTANCE = new RunCommandAction();
+
+    private RunCommandAction() {
+    }
+
+    public static RunCommandAction getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public void actionPerformedInternal(PhpModule phpModule) {

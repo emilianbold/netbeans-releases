@@ -56,9 +56,9 @@ public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
 
     static {
         List<Action> actions = new ArrayList<Action>(3);
-        actions.add(new RunCommandAction());
+        actions.add(RunCommandAction.getInstance());
         actions.add(null);
-        actions.add(new ClearCacheAction());
+        actions.add(ClearCacheAction.getInstance());
         ACTIONS = Collections.unmodifiableList(actions);
     }
 
