@@ -269,7 +269,15 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         JiraConfiguration config = issue.getRepository().getConfiguration();
         if (isNew) {
-            projectCombo.setSelectedIndex(0); // Preselect the project
+            String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
+            if ((projectId != null) && !projectId.equals("")) { // NOI18N
+                Project project = config.getProjectById(projectId);
+                if (!project.equals(projectCombo.getSelectedItem())) {
+                    projectCombo.setSelectedItem(project);
+                }
+            } else {
+                projectCombo.setSelectedIndex(0); // Preselect the project
+            }
             reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
             reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)), NbJiraIssue.IssueField.PRIORITY);
             statusField.setText(STATUS_OPEN);
@@ -1186,39 +1194,60 @@ public class IssuePanel extends javax.swing.JPanel {
     private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
         Object value = projectCombo.getSelectedItem();
         if (!(value instanceof Project)) return;
-        Project project = (Project)value;
-        JiraConfiguration config =  issue.getRepository().getConfiguration();
+        final Project project = (Project)value;
 
-        // --- Reload dependent combos
-        // PENDING JiraConfiguration doesn't provide project-specific info for issue-type
-        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes()));
+        String msgPattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectMetaData"); // NOI18N
+        String msg = MessageFormat.format(msgPattern, project.getName());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(msg);
+        handle.start();
+        handle.switchToIndeterminate();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                // The project meta-data may not be initialized.
+                // Their intialization must be performed outside event-dispatch thread
+                try {
+                    JiraConfiguration config =  issue.getRepository().getConfiguration();
+                    config.ensureProjectLoaded(project);
+                } finally {
+                    handle.finish();
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    public void run () {
+                        // --- Reload dependent combos
+                        // PENDING JiraConfiguration doesn't provide project-specific info for issue-type
+                        JiraConfiguration config =  issue.getRepository().getConfiguration();
+                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes()));
 
-        // Reload components
-        DefaultListModel componentModel = new DefaultListModel();
-        for (org.eclipse.mylyn.internal.jira.core.model.Component component : config.getComponents(project)) {
-            componentModel.addElement(component);
-        }
-        componentList.setModel(componentModel);
+                        // Reload components
+                        DefaultListModel componentModel = new DefaultListModel();
+                        for (org.eclipse.mylyn.internal.jira.core.model.Component component : config.getComponents(project)) {
+                            componentModel.addElement(component);
+                        }
+                        componentList.setModel(componentModel);
 
-        // Reload versions
-        DefaultListModel versionModel = new DefaultListModel();
-        for (Version version : config.getVersions(project)) {
-            versionModel.addElement(version);
-        }
-        affectsVersionList.setModel(versionModel);
-        fixVersionList.setModel(versionModel);
+                        // Reload versions
+                        DefaultListModel versionModel = new DefaultListModel();
+                        for (Version version : config.getVersions(project)) {
+                            versionModel.addElement(version);
+                        }
+                        affectsVersionList.setModel(versionModel);
+                        fixVersionList.setModel(versionModel);
 
-        TaskData data = issue.getTaskData();
-        if (data.isNew()) {
-            issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, project.getId());
-            JiraRepositoryConnector connector = Jira.getInstance().getRepositoryConnector();
-            try {
-                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
-                reloadForm(false);
-            } catch (CoreException cex) {
-                cex.printStackTrace();
+                        TaskData data = issue.getTaskData();
+                        if (data.isNew()) {
+                            issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, project.getId());
+                            JiraRepositoryConnector connector = Jira.getInstance().getRepositoryConnector();
+                            try {
+                                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                                reloadForm(false);
+                            } catch (CoreException cex) {
+                                cex.printStackTrace();
+                            }
+                        }
+                    }
+                });
             }
-        }
+        });
     }//GEN-LAST:event_projectComboActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
