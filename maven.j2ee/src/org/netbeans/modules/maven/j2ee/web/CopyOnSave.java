@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -65,6 +66,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -172,7 +174,15 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
      * @param fe the event describing context where action has taken place
      */
     @Override
-    public void fileChanged(FileEvent fe) {
+    public void fileChanged(final FileEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileChanged(fe);
+                }
+            });
+            return;
+        }
         try {
             if (!isInPlace()) {
                 handleCopyFileToDestDir(fe.getFile());
@@ -183,7 +193,15 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     }
 
     @Override
-    public void fileDataCreated(FileEvent fe) {
+    public void fileDataCreated(final FileEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileDataCreated(fe);
+                }
+            });
+            return;
+        }
         try {
             if (!isInPlace()) {
                 handleCopyFileToDestDir(fe.getFile());
@@ -194,7 +212,15 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     }
 
     @Override
-    public void fileRenamed(FileRenameEvent fe) {
+    public void fileRenamed(final FileRenameEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) {//#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileRenamed(fe);
+                }
+            });
+            return;
+        }
         try {
             if (isInPlace()) {
                 return;
@@ -223,7 +249,15 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     }
 
     @Override
-    public void fileDeleted(FileEvent fe) {
+    public void fileDeleted(final FileEvent fe) {
+        if (SwingUtilities.isEventDispatchThread()) { //#167740
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fileDeleted(fe);
+                }
+            });
+            return;
+        }
         try {
             if (isInPlace()) {
                 return;
