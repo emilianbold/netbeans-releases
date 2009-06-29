@@ -309,7 +309,8 @@ public final class ListMatcher<E> {
     }
     
     /**
-     * Returns a list of differences computed by <tt>compute()</tt> method.
+     * Returns a list of di
+     * fferences computed by <tt>compute()</tt> method.
      * Moreover, it groups <b>remove</b> operation followed by <b>insert</b>
      * to one <b>modify</b> operation.
      * 
