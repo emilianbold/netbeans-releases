@@ -530,8 +530,9 @@ public final class NbMavenProjectImpl implements Project {
         synchronized (this) {
             oldProject = project;
             project = null;
+            getOriginalMavenProject(); //#167741 just reload the project here before anything happens.
         }
-        problemReporter.clearReports();
+        problemReporter.clearReports(); //#167741 -this will trigger node refresh?
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
         doBaseProblemChecks();
