@@ -60,7 +60,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 public class GlassFishV3EE6JaxRsStack implements WSStackImplementation<JaxRs> {
 
     private static final String[] JAXRS_LIBRARIES =
-        new String[] {"asm", "jersey-gf-bundle", "jettison", "jsr311-api"}; //NOI18N
+        new String[] {"asm", "jackson", "jersey-gf-bundle", "jettison", "jsr311-api"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
 
     private String gfRootStr;
