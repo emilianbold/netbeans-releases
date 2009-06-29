@@ -46,13 +46,16 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 //import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Tests for <code>EjbFacadeWizardIterator</code>.
@@ -69,11 +72,13 @@ public class EjbFacadeWizardIteratorTest extends TestBase {
     @Override
     public void setUp() throws IOException{
         super.setUp();
-        File javaxEjb = new File(getWorkDir(), "javax" + File.separator + "ejb");
-        javaxEjb.mkdirs();
-        TestUtilities.copyStringToFile(new File(javaxEjb, "Stateless.java"), "package javax.ejb; public @interface Stateless{}");
-        TestUtilities.copyStringToFile(new File(javaxEjb, "Local.java"), "package javax.ejb; public @interface Local{}");
-        TestUtilities.copyStringToFile(new File(javaxEjb, "Remote.java"), "package javax.ejb; public @interface Remote{}");
+        ClassPathProviderImpl cppr=(ClassPathProviderImpl) Lookup.getDefault().lookup(ClassPathProvider.class);
+        cppr.setClassPath(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
+//        File javaxEjb = new File(getWorkDir(), "javax" + File.separator + "ejb");
+//        javaxEjb.mkdirs();
+//        TestUtilities.copyStringToFile(new File(javaxEjb, "Stateless.java"), "package javax.ejb; public @interface Stateless{}");
+//        TestUtilities.copyStringToFile(new File(javaxEjb, "Local.java"), "package javax.ejb; public @interface Local{}");
+//        TestUtilities.copyStringToFile(new File(javaxEjb, "Remote.java"), "package javax.ejb; public @interface Remote{}");
     }
 
     /**
@@ -81,24 +86,39 @@ public class EjbFacadeWizardIteratorTest extends TestBase {
      * TODO: need additional investigation
      * @throws Exception
      */
-//    public void testCreateInterface() throws Exception {
-//
-//        final String name = "Test";
-//        final String annotationType = "javax.ejb.Remote";
-//        final String pkgName = "foo";
-//        File pkg = new File(getWorkDir(), pkgName);
-//        pkg.mkdir();
-//        EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
-//
-//        String golden =
-//                "package " + pkgName +";\n\n" +
-//                "import " + annotationType + ";\n\n" +
-//                "@" + JavaIdentifiers.unqualify(annotationType) + "\n" +
-//                "public interface " + name + " {\n" +
-//                "}";
-//        FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(pkg));
-//        assertEquals(golden, TestUtilities.copyFileObjectToString(result));
-//    }
+    public void testCreateInterface() throws Exception {
+
+        final String name = "Test";
+        final String annotationType = "javax.ejb.Remote";
+        final String pkgName = "foo";
+        File pkg = new File(getWorkDir(), pkgName);
+        pkg.mkdir();
+        EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
+        String author=System.getProperty("user.name");
+
+        String golden =
+        "/*\n"+
+        " * To change this template, choose Tools | Templates\n"+
+        " * and open the template in the editor.\n"+
+        " */\n"+
+        "\n"+
+        "package " + pkgName + ";\n"+
+        "\n"+
+        "import " + annotationType + ";\n"+
+        "\n"+
+        "/**\n"+
+        " *\n"+
+        " * @author "+author+"\n"+
+        " */\n"+
+        "@" + JavaIdentifiers.unqualify(annotationType) + "\n"+
+        "public interface " + name + " {\n"+
+        "\n"+
+        "}\n"+
+        "";
+
+        FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(pkg));
+        assertEquals(golden, TestUtilities.copyFileObjectToString(result));
+    }
 
     public void testAddMethodToInterface() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");

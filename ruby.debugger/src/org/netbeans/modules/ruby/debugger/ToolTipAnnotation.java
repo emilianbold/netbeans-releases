@@ -46,8 +46,14 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.InstVarNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
@@ -114,47 +120,79 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
     
     /** TODO: based on the Java. Tune it up appropriately for Ruby. */
     private static String getIdentifier(final StyledDocument doc, final JEditorPane ep, final int offset) {
-        String t = null;
         if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
-            t = ep.getSelectedText();
+            return ep.getSelectedText();
         }
-        if (t != null) { return t; }
         int line = NbDocument.findLineNumber(doc, offset);
         int col = NbDocument.findLineColumn(doc, offset);
         Element lineElem = NbDocument.findLineRootElement(doc).getElement(line);
-        try {
-            if (lineElem == null) { return null; }
-            int lineStartOffset = lineElem.getStartOffset();
-            int lineLen = lineElem.getEndOffset() - lineStartOffset;
-            if (col + 1 >= lineLen) {
-                // do not evaluate when mouse hover behind the end of line (112662)
-                return null;
-            }
-            t = doc.getText(lineStartOffset, lineLen);
-            return getExpressionToEvaluate(t, col);
-        } catch (BadLocationException e) {
+        if (lineElem == null) {
             return null;
         }
-    }
-
-    static String getExpressionToEvaluate(String text, int col) {
-        int identStart = col;
-        while (identStart > 0 && (isRubyIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.'))) {
-            identStart--;
-        }
-        int identEnd = col;
-        while (identEnd < text.length() && isRubyIdentifier(text.charAt(identEnd))) {
-            identEnd++;
-        }
-        if (identStart == identEnd) {
+        int lineStartOffset = lineElem.getStartOffset();
+        int lineLen = lineElem.getEndOffset() - lineStartOffset;
+        if (col + 1 >= lineLen) {
+            // do not evaluate when mouse hover behind the end of line (112662)
             return null;
         }
-        return text.substring(identStart, identEnd);
-    }
-    
-    static boolean isRubyIdentifier(char ch) {
-        return ch == '@' || ch == '?' || Character.isJavaIdentifierPart(ch);
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        if (fo == null) {
+            // can this happen??
+            return null;
+        }
+        return getExpressionToEvaluate(fo, offset);
     }
 
+    static String getExpressionToEvaluate(FileObject fo, int offset) {
+        Node root = AstUtilities.getRoot(fo);
+        if (root == null) {
+            return null;
+        }
+        Node node = AstUtilities.findNodeAtOffset(root, offset);
+        if (node == null) {
+            return null;
+        }
+        // handles the case when the caret is placed just before the
+        // expression to evaluate, e.g. "^var.foo"
+        if (node.getNodeType() == NodeType.NEWLINENODE) {
+            node = AstUtilities.findNodeAtOffset(root, offset + 1);
+        }
+        if (shouldEvaluate(node) && node instanceof INameNode) {
+            return AstUtilities.getName(node);
+        }
+        return null;
+
+    }
+
+    private static boolean shouldEvaluate(Node node) {
+        if (node.getNodeType() == null) {
+            return false;
+        }
+        // the types we want to evaluate without forcing the user
+        // to select anything. these should be safe to evaluate without 
+        // side effects (unlike evaluating e.g. method calls).
+        switch (node.getNodeType()) {
+            case ARGUMENTNODE:
+            case DVARNODE:
+            case DASGNNODE:
+            case SELFNODE:
+            case LOCALVARNODE:
+            case LOCALASGNNODE:
+            case INSTVARNODE:
+            case INSTASGNNODE:
+            case GLOBALVARNODE:
+            case GLOBALASGNNODE:
+            case CONSTNODE:
+            case CONSTDECLNODE:
+            case CLASSVARNODE:
+            case CLASSVARASGNNODE:
+            case NILNODE:
+            case TRUENODE:
+            case FALSENODE:
+                return true;
+            default:
+                return false;
+        }
+    }
 }
 

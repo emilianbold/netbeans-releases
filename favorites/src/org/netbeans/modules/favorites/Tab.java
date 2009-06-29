@@ -94,7 +94,7 @@ implements Runnable, ExplorerManager.Provider {
 
     private static final Logger LOG = Logger.getLogger(Tab.class.getName());
 
-    private static transient Tab DEFAULT;
+    /* private */ static transient Tab DEFAULT; // package-private for unit tests
 
     /** composited view */
     transient protected TreeView view;
@@ -485,7 +485,7 @@ implements Runnable, ExplorerManager.Provider {
     /** Exchanges deserialized root context to projects root context
     * to keep the uniquennes. */
     protected void validateRootContext () {
-        Node projectsRc = Favorites.getNode ();
+        Node projectsRc = FavoritesNode.getNode ();
         setRootContext(projectsRc);
     }
     
@@ -514,7 +514,7 @@ implements Runnable, ExplorerManager.Provider {
 
             try {
                 Node[] toShadows = new Node[] {DataObject.find(file).getNodeDelegate()};
-                final DataFolder f = Favorites.getFolder();
+                final DataFolder f = FavoritesNode.getFolder();
                 final DataObject [] arr = f.getChildren();
                 final List<DataObject> listAdd = new ArrayList<DataObject>();
                 DataObject createdDO = null;

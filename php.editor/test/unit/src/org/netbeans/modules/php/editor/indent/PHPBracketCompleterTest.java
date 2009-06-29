@@ -99,41 +99,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         return "<?\n" + s + "\n?>";
     }
     
-    public void match(String original) throws BadLocationException {
-        super.assertMatches(wrapAsPhp(original));
-        /*
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-
-        original = wrapAsPhp(original);
-        int caretPos = original.indexOf('^');
-        
-        original = original.substring(0, caretPos) + original.substring(caretPos+1);
-        int matchingCaretPos = original.indexOf('^');
-        assert caretPos < matchingCaretPos;
-        original = original.substring(0, matchingCaretPos) + original.substring(matchingCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        OffsetRange range = bc.findMatching(doc, caretPos);
-        
-        assertNotSame("Didn't find matching token for " + LexUtilities.getToken(doc, caretPos).text().toString(), 
-                OffsetRange.NONE, range);
-        assertEquals("forward match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " +
-                LexUtilities.getToken(doc, matchingCaretPos).text().toString(), 
-                matchingCaretPos, range.getStart());
-        
-        // Perform reverse match
-        range = bc.findMatching(doc, matchingCaretPos);
-        
-        assertNotSame(OffsetRange.NONE, range);
-        assertEquals("reverse match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " + 
-                LexUtilities.getToken(doc, caretPos).text().toString(), 
-                caretPos, range.getStart());
-         */
-    }
-    
     @Override
     public void insertBreak(String original, String expected) throws Exception {
         super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
@@ -580,14 +545,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
 //    }
     
-    public void testFindMatching2() throws Exception {
-        match("x=^(true^)\ny=5");
-    }
-    
-    public void testFindMatching3() throws Exception {
-        match("x=^(true || (false)^)\ny=5");
-    }
-
 // XXX: ruby specific, we don't support this kind of markings; perhaps should be part of mark occurences
 //    public void testFindMatching1() throws Exception {
 //        match("^if true\n^end");

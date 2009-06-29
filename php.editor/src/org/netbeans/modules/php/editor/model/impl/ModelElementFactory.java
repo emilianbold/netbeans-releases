@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
@@ -47,8 +49,6 @@ import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -71,7 +71,11 @@ class ModelElementFactory {
     }
 
     static ClassScopeImpl create(ClassDeclarationInfo nodeInfo, ModelBuilder context) {
-        ClassScopeImpl clz = new ClassScopeImpl(context.getCurrentScope(), nodeInfo);
+        Scope currentScope = context.getCurrentScope();
+        if (currentScope instanceof FunctionScope) {
+            currentScope = currentScope.getInScope();
+        }
+        ClassScopeImpl clz = new ClassScopeImpl( currentScope, nodeInfo);
         return clz;
     }
 
