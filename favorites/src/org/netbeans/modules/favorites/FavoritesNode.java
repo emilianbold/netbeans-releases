@@ -78,14 +78,14 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author  Jaroslav Tulach
  */
-final class Favorites extends FilterNode implements Index {
+public final class FavoritesNode extends FilterNode implements Index {
     /** default node */
     private static Node node;
     /** node that represents root of filesystems */
     private static Node root;
 
     /** Creates new ProjectRootFilterNode. */
-    private Favorites(Node node) {
+    private FavoritesNode(Node node) {
         super(node, new Chldrn (node, false));
     }
 
@@ -125,8 +125,8 @@ final class Favorites extends FilterNode implements Index {
     public int indexOf(final Node node) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
-            if (node instanceof Favorites.ProjectFilterNode) {
-                Favorites.ProjectFilterNode fn = (Favorites.ProjectFilterNode) node;
+            if (node instanceof FavoritesNode.ProjectFilterNode) {
+                FavoritesNode.ProjectFilterNode fn = (FavoritesNode.ProjectFilterNode) node;
                 int i = ind.indexOf(fn.getOriginal());
                 return i;
             } else {
@@ -238,7 +238,7 @@ final class Favorites extends FilterNode implements Index {
      */
     public static synchronized Node getNode () {
         if (node == null) {
-            node = new Favorites (getFolder().getNodeDelegate ());
+            node = new FavoritesNode (getFolder().getNodeDelegate ());
         }
         return node;
     }
@@ -282,7 +282,7 @@ final class Favorites extends FilterNode implements Index {
         /** Return a node for the current project.
         */
         public Node getNode () {
-            return Favorites.getNode ();
+            return FavoritesNode.getNode ();
         }
     }
 
@@ -368,7 +368,7 @@ final class Favorites extends FilterNode implements Index {
         @Override
         public void setName(String name) {
             // #113859 - keep order of children in favorites folder after rename
-            final DataFolder favoritesFolder = Favorites.getFolder();
+            final DataFolder favoritesFolder = FavoritesNode.getFolder();
             final DataObject[] children = favoritesFolder.getChildren();
             super.setName(name);
             try {
@@ -381,12 +381,12 @@ final class Favorites extends FilterNode implements Index {
         @Override
         public String getDisplayName () {
             //Change display name only for favorite nodes (links) under Favorites node.
-            if (Favorites.getNode().equals(this.getParentNode())) {
+            if (FavoritesNode.getNode().equals(this.getParentNode())) {
                 DataShadow ds = getCookie(DataShadow.class);
                 if (ds != null) {
                     String name = ds.getName();
                     String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
-                    return NbBundle.getMessage(Favorites.class, "CTL_DisplayNameTemplate", name, path);
+                    return NbBundle.getMessage(FavoritesNode.class, "CTL_DisplayNameTemplate", name, path);
                 } else {
                     return super.getDisplayName();
                 }
@@ -462,7 +462,7 @@ final class Favorites extends FilterNode implements Index {
             if (isRoot) {
                 return createActionsForRoot(arr);
             } else {
-                if (Favorites.getNode().equals(this.getParentNode())) {
+                if (FavoritesNode.getNode().equals(this.getParentNode())) {
                     DataShadow ds = getCookie(DataShadow.class);
                     if (ds != null) {
                         if (ds.getOriginal().getPrimaryFile().isFolder()) {
