@@ -342,22 +342,22 @@ final class NewLoaderIterator extends BasicWizardIterator {
             public void run(FileSystem layer) throws IOException {
                 List<String> actions = new ArrayList<String>();
                 if (isEditable) {
-                    actions.add("org.openide.actions.OpenAction"); // NOI18N
+                    actions.add("System/org-openide-actions-OpenAction"); // NOI18N
                 }
                 actions.addAll(Arrays.asList(new String[] {
                     null,
-                    "org.openide.actions.CutAction", // NOI18N
-                    "org.openide.actions.CopyAction", // NOI18N
+                    "Edit/org-openide-actions-CutAction", // NOI18N
+                    "Edit/org-openide-actions-CopyAction", // NOI18N
                     null,
-                    "org.openide.actions.DeleteAction", // NOI18N
-                    "org.openide.actions.RenameAction", // NOI18N
+                    "Edit/org-openide-actions-DeleteAction", // NOI18N
+                    "System/org-openide-actions-RenameAction", // NOI18N
                     null,
-                    "org.openide.actions.SaveAsTemplateAction", // NOI18N
+                    "System/org-openide-actions-SaveAsTemplateAction", // NOI18N
                     null,
-                    "org.openide.actions.FileSystemAction", // NOI18N
+                    "System/org-openide-actions-FileSystemAction", // NOI18N
                     null,
-                    "org.openide.actions.ToolsAction", // NOI18N
-                    "org.openide.actions.PropertiesAction", // NOI18N
+                    "System/org-openide-actions-ToolsAction", // NOI18N
+                    "System/org-openide-actions-PropertiesAction", // NOI18N
                 }));
                 FileObject folder = FileUtil.createFolder(layer.getRoot(), "Loaders/" + mime + "/Actions"); // NOI18N
                 List<DataObject> kids = new ArrayList<DataObject>();
@@ -367,7 +367,8 @@ final class NewLoaderIterator extends BasicWizardIterator {
                     String name = (String) it.next();
                     FileObject kid;
                     if (name != null) {
-                        kid = folder.createData(name.replace('.', '-') + ".instance"); // NOI18N
+                        kid = folder.createData(name.replaceAll("[^/]*/", "") + ".shadow"); // NOI18N
+                        kid.setAttribute("originalFile", "Actions/" + name + ".instance"); // NOI18N
                     } else {
                         kid = folder.createData("sep-" + (++i) + ".instance"); // NOI18N
                         kid.setAttribute("instanceClass", "javax.swing.JSeparator"); // NOI18N
