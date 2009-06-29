@@ -1849,7 +1849,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 printComment(c, false, printWhitespace);
             return;
         }
-        LinkedList<Comment> comments = new LinkedList<Comment>();
+/*        LinkedList<Comment> comments = new LinkedList<Comment>();
         if (cInfo != null) {
             int pos = TreeInfo.getEndPos(tree, origUnit.endPositions);
             if (pos >= 0) {
@@ -1920,6 +1920,7 @@ public final class VeryPretty extends JCTree.Visitor {
         }
         for (Comment c : comments)
             printComment(c, false, printWhitespace);
+*/
     }
 
     private void printEmptyBlockComments(JCTree tree, boolean printWhitespace) {

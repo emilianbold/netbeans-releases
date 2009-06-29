@@ -390,7 +390,7 @@ public class CommentsTest extends GeneratorTest {
         
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
-            public void run(WorkingCopy wc) throws IOException {
+            public void run(WorkingCopy wc) throws IOException {                
                 wc.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = wc.getCompilationUnit();
                 TreeMaker make = wc.getTreeMaker();
