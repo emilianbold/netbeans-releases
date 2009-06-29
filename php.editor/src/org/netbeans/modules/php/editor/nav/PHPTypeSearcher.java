@@ -339,22 +339,21 @@ public class PHPTypeSearcher implements IndexSearcher {
         char[] chars = query.toCharArray();
         boolean incamel = false;
         for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '*') {
-                if (!incamel) {
-                    sb.append(".*");
-                }
+            if (chars[i] == '?') {//NOI18N
+                sb.append('.');//NOI18N
+            } else if (chars[i] == '*') {
+                sb.append(".*");//NOI18N
             } else if (Character.isUpperCase(chars[i])) {
                 if (incamel) {
-                    sb.append(".*");
+                    sb.append("[a-z0-9_]*");//NOI18N
                 }
                 sb.append(chars[i]);
                 incamel = true;
             } else {
                 sb.append(chars[i]);
             }
-
         }
-        sb.append(".*");
+        sb.append(".*");//NOI18N
         String patternString = sb.toString();
         patternString = patternString.replaceAll(Pattern.quote(".."), ".");//NOI18N
         return Pattern.compile(patternString);
