@@ -65,7 +65,7 @@
     <property name="glassfish.v3.sun.display.version" value="v3 b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3-b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/-->
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/>
     <property name="glassfish_v3_sun_location_ml" value="${glassfish_v3_sun_location}"/>
     <!--<property name="glassfish_v3_sun_location_ml"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles-ml/sges-v3-${glassfish.v3.sun.build.type}-ml.zip"/-->
     <!--
