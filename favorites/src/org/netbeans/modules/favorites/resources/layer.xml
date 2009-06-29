@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
     <folder name="Favorites">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
         <file name="Home.shadow">
-            <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.Favorites.getHome"/>
+            <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.FavoritesNode.getHome"/>
             <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem"/>
         </file>
     </folder>

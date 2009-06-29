@@ -164,13 +164,13 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     }
     
     public void testLinksAreVisibleAllTheTime() throws Exception {
-        Node[] arr = Favorites.getNode().getChildren().getNodes(true);
+        Node[] arr = FavoritesNode.getNode().getChildren().getNodes(true);
         assertNodeForDataObject("hidden object is there", hiddenDO, true, arr);
         assertNodeForDataObject("folder as well", folderDO, true, arr);
     }
 
     public void testHiddenFilesInFoldersAreHidden() throws Exception {
-        Node[] arr = Favorites.getNode().getChildren().getNodes(true);
+        Node[] arr = FavoritesNode.getNode().getChildren().getNodes(true);
         Node f = assertNodeForDataObject("folder as well", folderDO, true, arr);
         
         arr = f.getChildren().getNodes(true);
@@ -201,7 +201,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     }
     
     private void doCopyOrCut(boolean copy) throws Exception {
-        Node[] arr = Favorites.getNode().getChildren().getNodes(true);
+        Node[] arr = FavoritesNode.getNode().getChildren().getNodes(true);
         Node f = assertNodeForDataObject("folder is there ", rootDO, true, arr);
         arr = f.getChildren().getNodes(true);
         f = assertNodeForDataObject("folder is there ", folderDO, true, arr);
