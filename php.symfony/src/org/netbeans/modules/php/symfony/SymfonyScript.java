@@ -55,7 +55,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -140,7 +140,7 @@ public class SymfonyScript extends PhpProgram {
 
     public void initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
-        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
+        SymfonyCommandSupport commandSupport = new SymfonyCommandSupport(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();

@@ -68,7 +68,7 @@ import org.openide.windows.InputOutput;
  */
 public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
-    SymfonyCommandSupport(PhpModule phpModule) {
+    public SymfonyCommandSupport(PhpModule phpModule) {
         super(phpModule);
     }
 
