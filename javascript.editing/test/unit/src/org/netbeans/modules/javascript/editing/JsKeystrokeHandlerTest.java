@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript.editing;
 
 import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -62,10 +61,6 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     
     public JsKeystrokeHandlerTest(String testName) {
         super(testName);
-    }
-    
-    private void match(String original) throws BadLocationException {
-        super.assertMatches(original);
     }
     
     private void insertChar(String original, char insertText, String expected) throws Exception {
@@ -410,23 +405,7 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
     public void testNotRegexp5() throws Exception {
         insertChar("/^", '/', "//^");
     }
-
-    public void testFindMatching1() throws Exception {
-        match("if (true) ^{\n^}");
-    }
-
-    public void testFindMatching2() throws Exception {
-        match("x=^(true^)\ny=5");
-    }
-
-    public void testFindMatching3() throws Exception {
-        match("x=^(true || (false)^)\ny=5");
-    }
-
-    public void testFindMatching4() throws Exception {
-        match("function foo() ^{\nif (true) {\n}\n^}\n}");
-    }
-
+    
     public void testBackspace1() throws Exception {
         deleteChar("x^", "^");
     }

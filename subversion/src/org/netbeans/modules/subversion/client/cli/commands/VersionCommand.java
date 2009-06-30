@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.cli.commands;
@@ -53,6 +53,7 @@ import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 public class VersionCommand extends SvnCommand {
 
     private List<String> output = new ArrayList<String>();
+    private boolean unsupportedVersion = false;
     
     @Override
     protected int getCommand() {
@@ -78,17 +79,35 @@ public class VersionCommand extends SvnCommand {
         super.outputText(lineString);
     }
     
-    public boolean isSupported() {
+    public boolean checkForErrors() {
+        Integer exitCode = getExitCode();
+        if ((exitCode == null) || !exitCode.equals(Integer.valueOf(0))) {
+            return false;
+        }
+
+        boolean outputProduced = false;
+
         for (String string : output) {
+            if ((string = string.trim()).length() == 0) {     //skip empty lines
+                continue;
+            }
+
+            outputProduced = true;
+
             if(string.indexOf("version 0.")  > -1 ||
                string.indexOf("version 1.0") > -1 ||
                string.indexOf("version 1.1") > -1 ||
                string.indexOf("version 1.2") > -1) 
             {
+                unsupportedVersion = true;
                 return false;
             }
         }
-        return true;
+        return outputProduced;
+    }
+
+    public boolean isUnsupportedVersion() {
+        return unsupportedVersion;
     }
 
     public boolean isSupportedJavaHl() {
