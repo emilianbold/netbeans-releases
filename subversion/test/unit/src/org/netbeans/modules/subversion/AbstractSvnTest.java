@@ -150,10 +150,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
                     getFullWorkingClient().update(folder, SVNRevision.HEAD, true);
                     getFullWorkingClient().commit(new File[]{ folder }, msg, true);
                 } catch (SVNClientException e1) {
-                    fail("commit was supposed to work " + e1.getMessage());   
+                    fail("failed to commit file " + getFilePathDescr(folder) + ": " + e1.getMessage());
                 }
             } else {
-                fail("commit was supposed to work " + e.getMessage());   
+                fail("failed to commit file " + getFilePathDescr(folder) + ": " + e.getMessage());
             }            
         }    
         //assertStatus(SVNStatusKind.NORMAL, folder);
@@ -162,7 +162,21 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected void commit(File folder) throws SVNClientException {
         commit(folder, "commit");
     }
-    
+
+    protected String getFilePathDescr(File file) {
+        String relPath = getRelativePath(getWC(), file).getPath();
+        return relPath.equals(".") ? "<workingcopy>"
+                                   : "<workingcopy>/" + relPath;
+    }
+
+    protected static File getRelativePath(File upperFile, File lowerFile) {
+        if (lowerFile.equals(upperFile)) {
+            return new File(".");
+        } else {
+            return new File(upperFile.toURI().relativize(lowerFile.toURI()).getPath());
+        }
+    }
+
     protected void remove(File file) throws SVNClientException {        
         getFullWorkingClient().remove(new File[] {file}, true);
     }
