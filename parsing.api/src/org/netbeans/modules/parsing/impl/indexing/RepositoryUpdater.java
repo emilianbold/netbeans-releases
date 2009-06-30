@@ -593,7 +593,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         Long lastIndexedVersion = (Long) d.getProperty(PROP_LAST_INDEXED_VERSION);
                         boolean reindex = false;
 
-                        if (jtc.isShowing()) {
+                        if (EditorRegistry.componentList().contains(jtc)) {
                             if (lastIndexedVersion == null) {
                                 Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
                                 reindex = lastDirtyVersion != null;
