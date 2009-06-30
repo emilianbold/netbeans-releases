@@ -63,9 +63,9 @@ class AnnotationGenerator {
      * @return annotation as string
      */
     static String webServlet(ServletData data) {
-        return "@WebServlet("+
-                join(generName(data.getName()), generUrlPatterns(data.getFilterMappings()), generInitParams(data.getInitParams()))+
-                ")";
+        return "@WebServlet("+join(generName(data.getName()),
+                generUrlPatterns(data.getUrlMappings()),
+                generInitParams(data.getInitParams()))+")";
     }
 
     // -------------------------------------------------------------------------
@@ -74,14 +74,13 @@ class AnnotationGenerator {
     }
 
     // -------------------------------------------------------------------------
-    private static String generUrlPatterns(List<FilterMappingData> mappings) {
-        if (mappings == null || mappings.size() <= 0)
+    private static String generUrlPatterns(String[] mappings) {
+        if (mappings == null || mappings.length <= 0)
             return null;
 
         List<String> patterns = new ArrayList<String>();
-        Iterator<FilterMappingData> it = mappings.iterator();
-        while (it.hasNext()) {
-            patterns.add(it.next().getPattern());
+        for (String s : mappings) {
+            patterns.add(s);
         }
         return list("urlPatterns", patterns);
     }
