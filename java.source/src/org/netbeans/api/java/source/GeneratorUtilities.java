@@ -518,7 +518,7 @@ public final class GeneratorUtilities {
             instance.collect(seq, copy);
 
             return original;
-             */
+             */                                         
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

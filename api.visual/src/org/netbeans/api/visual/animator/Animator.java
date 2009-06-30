@@ -57,7 +57,6 @@ public abstract class Animator {
 
     private CopyOnWriteArrayList<AnimatorListener> listeners = new CopyOnWriteArrayList<AnimatorListener> ();
     private SceneAnimator sceneAnimator;
-    private boolean reset;
 
     /**
      * Creates an animator and assigns a scene animator.
@@ -102,15 +101,9 @@ public abstract class Animator {
             for (AnimatorListener listener : listeners)
                 listener.animatorReset (event);
         }
-        reset = true;
     }
 
     final void performTick (double progress) {
-        if (reset) {
-            reset = false;
-            return;
-        }
-
         if (! listeners.isEmpty ()) {
             AnimatorEvent event = new AnimatorEvent (this, progress);
             for (AnimatorListener listener : listeners)

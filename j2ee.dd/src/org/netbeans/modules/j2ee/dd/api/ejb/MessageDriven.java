@@ -60,18 +60,6 @@ public interface MessageDriven extends Ejb {
 
         public String getTransactionType();
         
-        public void setMessageSelector(String value) throws VersionNotSupportedException;
-
-        public String getMessageSelector() throws VersionNotSupportedException;
-
-        public void setAcknowledgeMode(String value) throws VersionNotSupportedException;
-
-        public String getAcknowledgeMode() throws VersionNotSupportedException;
-        
-        public void setMessageDrivenDestination(MessageDrivenDestination value) throws VersionNotSupportedException;
-
-        public MessageDrivenDestination getMessageDrivenDestination() throws VersionNotSupportedException;
-        
         //2.1
         public void setMessagingType(String value) throws VersionNotSupportedException;
 

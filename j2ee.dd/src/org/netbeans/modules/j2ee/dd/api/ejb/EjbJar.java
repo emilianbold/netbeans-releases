@@ -56,9 +56,6 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface EjbJar extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
     public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-    // TODO PetrS remove 1.1, 2.0 (clients)
-    public static final String VERSION_1_1="1.1"; //NOI18N
-    public static final String VERSION_2_0="2.0"; //NOI18N
     public static final String VERSION_2_1="2.1"; //NOI18N
     public static final String VERSION_3_0="3.0"; //NOI18N
     public static final int STATE_VALID=0;
