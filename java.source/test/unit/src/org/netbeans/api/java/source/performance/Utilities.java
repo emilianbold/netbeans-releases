@@ -42,7 +42,6 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
-import java.util.logging.*;
 import java.util.zip.*;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -54,11 +53,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import junit.framework.Assert;
 
 import org.openide.filesystems.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
@@ -156,7 +152,7 @@ public class Utilities {
         return ClassPathSupport.createClassPath(new URL[]{root.toURI().toURL()});
     }
 
-    public static String jEditProjectOpen() {
+    public static String projectOpen(String path, String tmpFile) {
 
 /* Temporary solution - download jEdit from internal location */
 
@@ -166,11 +162,11 @@ public class Utilities {
         int BUFFER = 2048;
 
         try {
-            URL url = new URL("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip");
+            URL url = new URL(path);
             System.err.println("");
             File dir = new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator);
             if (!dir.exists()) dir.mkdirs();
-            out = new BufferedOutputStream(new FileOutputStream(dir.getAbsolutePath() + File.separator + "jEdit41.zip"));
+            out = new BufferedOutputStream(new FileOutputStream(dir.getAbsolutePath() + File.separator + tmpFile));
             conn = url.openConnection();
             in = conn.getInputStream();
             byte[] buffer = new byte[1024];
@@ -194,7 +190,7 @@ public class Utilities {
 
         try {
             BufferedOutputStream dest = null;
-            FileInputStream fis = new FileInputStream(new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip"));
+            FileInputStream fis = new FileInputStream(new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + tmpFile));
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -217,7 +213,7 @@ public class Utilities {
             e.printStackTrace();
         }
 
-        return System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip";
+        return System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + tmpFile;
     }
 
     /**
@@ -367,61 +363,5 @@ public class Utilities {
         long[] result=new long[2];
         result[1]=pd.value;
         xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
-    }
-    
-    public static class TestLkp extends ProxyLookup {
-
-        private static TestLkp DEFAULT;
-
-        public TestLkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-            ClassLoader l = TestLkp.class.getClassLoader();
-            this.setLookups(
-                    new Lookup[] {
-                        Lookups.metaInfServices(l),
-                        Lookups.singleton(l)
-                    }
-            );
-        }
-
-        public static void setLookupsWrapper(Lookup... l) {
-            DEFAULT.setLookups(l);
-        }
-    }
-
-    public static interface ParameterSetter {
-        void setParameters();
-    }
-    
-    public static class MyHandler extends Handler {
-
-        private Map<String, Long> map = new HashMap<String, Long>();
-
-        @Override
-        public void publish(LogRecord record) {
-            Long data;
-            if (record == null) {
-                return;
-            }
-            for (Object o : record.getParameters()) {
-                if (o instanceof Long) {
-                    data = (Long) o;
-                    map.put(record.getMessage(), data);
-                }
-            }
-        }
-
-        public Long get(String key) {
-            return map.get(key);
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
     }
 }
