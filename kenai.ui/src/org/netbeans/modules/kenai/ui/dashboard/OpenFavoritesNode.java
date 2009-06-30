@@ -39,47 +39,53 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
- * Node for project's sources section.
+ * Node for a open other project
  *
- * @author S. Aubrecht, Jan Becicka
+ * @author Jan Becicka
  */
-public class SourceListNode extends SectionNode {
+public class OpenFavoritesNode extends LeafNode {
 
-    public SourceListNode( ProjectNode parent ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+    private final SourceHandle src;
+
+        private JPanel panel;
+        private LinkButton btn;
+
+    public OpenFavoritesNode(SourceHandle src, TreeListNode parent ) {
+        super( parent );
+        this.src=src;
     }
 
-    @Override
-    protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor accessor = SourceAccessor.getDefault();
-        List<SourceHandle> sources = accessor.getSources(project);
-        for (SourceHandle s : sources) {
-            res.add(new SourceNode(s, this));
-            res.addAll(getRecentProjectsNodes(s));
-            if (s.getWorkingDirectory() != null) {
-                res.add(new OpenNbProjectNode(s, this));
-                res.add(new OpenFavoritesNode(s, this));
-        }
-        }
-        return res;
-    }
 
-    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this ) );
+        @Override
+        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+            if( null == panel ) {
+                panel = new JPanel(new GridBagLayout());
+                panel.setOpaque(false);
+                btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenFavorites"), getDefaultAction()); //NOI18N
+                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
+                panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+            }
+            btn.setForeground(foreground, isSelected);
+            return panel;
         }
-        return res;
-    }
+
+        @Override
+        public ActionListener getDefaultAction() {
+            return SourceAccessor.getDefault().getOpenFavorites(src);
+        }
 }

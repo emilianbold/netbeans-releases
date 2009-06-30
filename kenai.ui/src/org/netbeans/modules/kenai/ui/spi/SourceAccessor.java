@@ -24,6 +24,8 @@ public abstract class SourceAccessor {
         return Lookup.getDefault().lookup(SourceAccessor.class);
     }
 
+    public abstract ActionListener getOpenFavorites(SourceHandle src);
+
     /**
      * Retrieve the list of source repositories available for given project.
      * @param project
