@@ -43,7 +43,6 @@ package org.netbeans.api.visual.widget;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class is an extension of the ConnectionWidget. Primarily it is used with FreeRouter and optionally Free*Anchor.
@@ -52,7 +51,6 @@ import java.util.List;
  * @author Alex
  */
 // TODO - later, logic of this class can be moved to the ConnectionWidget class directly
-// TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
 public class FreeConnectionWidget extends ConnectionWidget {
 
     private double createSensitivity=1.00, deleteSensitivity=5.00;
