@@ -106,6 +106,8 @@ public class CodeUtils {
             return (Identifier) typeName;
         } else if (typeName instanceof NamespaceName) {
             return extractUnqualifiedIdentifier((NamespaceName)typeName);
+        } else if (typeName instanceof Variable){
+            return null; // #167863
         }
         //TODO: php5.3 !!!
         assert false : typeName.getClass(); //NOI18N

@@ -1178,7 +1178,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             }
         }
     }
-    
+
+    /** Replaced by PHPBracesMatcher */
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
         return OffsetRange.NONE;
     }
