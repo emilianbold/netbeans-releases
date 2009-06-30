@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +37,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.subversion.client.commands.*;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
+import javax.swing.text.BadLocationException;
 
 /**
+ * Test for JsBracesMatcher
+ * 
+ * @author Marek Slama
  *
- * @author tomas
  */
-public class JhlClientTest extends NbTestCase {
-    // XXX test cancel
-
-    public JhlClientTest(String arg0) {
-        super(arg0);
+public class JsBracesMatcherTest extends JsTestBase {
+    
+    public JsBracesMatcherTest(String testName) {
+        super(testName);
     }
     
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        SvnClientTestFactory.setClientType("javahl");
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BlameTest.class);
-        suite.addTestSuite(CancelTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(ImportTest.class);
-        suite.addTestSuite(InfoTest.class);
-        suite.addTestSuite(ListTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(MergeTest.class);
-        suite.addTestSuite(MkdirTest.class);
-        suite.addTestSuite(MoveTest.class);
-        suite.addTestSuite(ParsedStatusTest.class);
-        suite.addTestSuite(PropertyTest.class);
-        suite.addTestSuite(RelocateTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(ResolvedTest.class);
-        suite.addTestSuite(RevertTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(SwitchToTest.class);
-        suite.addTestSuite(UpdateTest.class);
-        
-        return suite;
+    private void match2(String original) throws BadLocationException {
+        super.assertMatches2(original);
     }
+    
+    public void testFindMatching1() throws Exception {
+        match2("if (true) ^{\n^}");
+    }
+
+    public void testFindMatching2() throws Exception {
+        match2("x=^(true^)\ny=5");
+    }
+
+    public void testFindMatching3() throws Exception {
+        match2("x=^(true || (false)^)\ny=5");
+    }
+
+    public void testFindMatching4() throws Exception {
+        match2("function foo() ^{\nif (true) {\n}\n^}\n}");
+    }
+
 }
