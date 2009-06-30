@@ -42,12 +42,8 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 import java.awt.*;
-import java.util.*;
-import java.net.*;
 
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.xml.multiview.Utils;
