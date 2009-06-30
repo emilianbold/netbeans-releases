@@ -93,7 +93,8 @@ public class PropertiesNodeTest extends JellyTestCase {
         "testEdit",
         "testCut",
         "testCopy",
-        "testPaste",
+        //TODO: uncomment this when http://www.netbeans.org/issues/show_bug.cgi?id=167893 is resolved
+        //"testPaste",
         "testDelete",
         "testRename",
         "testAddLocale",
@@ -112,16 +113,16 @@ public class PropertiesNodeTest extends JellyTestCase {
     
     /** Finds node before each test case. */
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleProject");
+        System.out.println("### "+getName()+" ###");        
         if(propertiesNode == null) {
+            openDataProjects("SampleProject");
             propertiesNode = new PropertiesNode(new SourcePackagesNode("SampleProject"), "sample1|properties.properties");  // NOI18N
         }
     }
     
     /** Test verifyPopup */
     public void testVerifyPopup() {
-        propertiesNode.verifyPopup();
+        propertiesNode.verifyPopup();      
     }
     
     /** Test open */
@@ -138,9 +139,10 @@ public class PropertiesNodeTest extends JellyTestCase {
     
     /** Test paste */
     public void testPaste() throws Exception {
-        // "default language"
-        String defaultLabel = Bundle.getString("org.netbeans.modules.properties.Bundle", "LAB_defaultLanguage");
-        new CopyAction().perform(new Node(propertiesNode, defaultLabel));
+        // test item in the properties file
+        String testItemName = "testitem";
+        Node testItemNode = new Node(propertiesNode, testItemName);
+        new CopyAction().perform(testItemNode);
         final int i = propertiesNode.getChildren().length;
         propertiesNode.paste();
         // waits for a new node

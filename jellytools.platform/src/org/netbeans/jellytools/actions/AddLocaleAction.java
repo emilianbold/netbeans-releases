@@ -42,17 +42,21 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Add Locale" popup menu item on properties node.
+/** Used to call "Add | Locale..." popup menu item on properties node.
  * @see Action
  * @see ActionNoBlock
  * @see org.netbeans.jellytools.nodes.PropertiesNode
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
+ * @author <a href="mailto:vojtech.sigler@sun.com">Vojtech Sigler</a> */
 public class AddLocaleAction extends ActionNoBlock {
 
-    private static final String addPopup = Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle", "CTL_AddLocale");
+    //This bundle is most probably incorrect, but I am unable to find the correct one
+    private static final String addPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "New");
+
+    private static final String localePopup = Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle",
+            "LAB_NewLocaleAction");
 
     /** creates new AddLocaleAction instance */
     public AddLocaleAction() {
-        super(null, addPopup);
+        super(null, addPopup + "|" + localePopup);
     }
 }
