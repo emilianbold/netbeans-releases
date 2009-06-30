@@ -74,6 +74,7 @@ import java.util.Observer;
 import java.util.WeakHashMap;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -432,8 +433,156 @@ public class Actions extends Object {
     static Action alwaysEnabled(Map map) {
         return new AlwaysEnabledAction(map);
     }
+
+    /** Creates new "callback" action. Such action has an assigned key
+     * which is used to find proper delegate in {@link ActionMap} of currently
+     * active component.
+     * <p>
+     * This action can be lazily declared in a
+     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
+     * layer file</a> using following XML snippet:
+     * <pre>
+     * &lt;file name="action-pkg-ClassName.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/&gt;
+     *   &lt;attr name="key" stringvalue="KeyInActionMap"/&gt;
+     *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; &lt;!-- defaults to false --&gt;
+     *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt; &lt;!-- may be missing --&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * 
+     *
+     * @param key the key to search for in an {@link ActionMap}
+     * @param surviveFocusChange true to remember action provided by previously
+     *   active component even some other component is currently active
+     * @param fallback action to delegate to when no key found. Use <code>null</code>
+     *   to make the action disabled if delegate assigned to key is missing
+     * @return creates new action associated with given key
+     * @since 7.10
+     */
+    public static ContextAwareAction callback(
+        String key, Action fallback, boolean surviveFocusChange
+    ) {
+        Map<String,Object> map = new HashMap<String, Object>();
+        map.put("key", key); // NOI18N
+        map.put("surviveFocusChange", surviveFocusChange); // NOI18N
+        map.put("fallback", fallback); // NOI18N
+        return callback(map);
+    }
     static ContextAwareAction callback(Map fo) {
         return GeneralAction.callback(fo);
+    }
+
+    /** Creates new "context" action, an action that observes the current
+     * selection for a given type and enables if instances of given type are
+     * present. Common interfaces to watch for include {@link Openable},
+     * {@link Editable}, {@link Closable}, {@link Viewable}, and any interfaces
+     * defined and exposed by various other APIs.
+     * <p>
+     * Actions of this kind can be declared in
+     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
+     * layer file</a> using following XML snippet:
+     * <pre>
+     * &lt;file name="action-pkg-ClassName.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/&gt;
+     *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
+     *   &lt;attr name="selectionType" stringvalue="ANY"/&gt; &lt-- or EXACTLY_ONE --&gt;
+     *   &lt;attr name="delegate" newvalue="action.pkg.YourAction"/&gt;
+     * 
+     *   &lt;!--
+     *      Similar registration like in case of "callback" action.
+     *      May be missing completely:
+     *   --&gt;
+     *   &lt;attr name="key" stringvalue="KeyInActionMap"/&gt;
+     *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; 
+     *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * In the previous case there has to be a class with public default constructor
+     * named <code>action.pkg.YourAction</code>. It has to implement
+     * {@link ContextAwareAction} interface. Its {@link ContextAwareAction#createContextAwareInstance(org.openide.util.Lookup)}
+     * method is called when the action is invoked. The passed in {@link Lookup}
+     * contains instances of the <code>type</code> interface, <code>actionPerformed</code>
+     * is then called on the returned clone.
+     * <p>
+     * Alternatively one can use support for simple dependency injection by
+     * using following attributes:
+     * <pre>
+     * &lt;file name="action-pkg-ClassName.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/&gt;
+     *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="selectionType" stringvalue="EXACTLY_ONE"/&gt;
+     *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * where <code>pkg.YourClass</code> is defined with public constructor taking
+     * <code>type</code>:
+     * <pre>
+     * public final class YourClass implements ActionListener {
+     *    Openable context;
+     *
+     *    public YourClass(Openable context) {
+     *      this.context = context;
+     *    }
+     *
+     *    public void actionPerformed(ActionEvent ev) {
+     *       // do something with context
+     *    }
+     * }
+     * </pre>
+     * The instance of this class is created when the action is invoked and
+     * its constructor is fed with the instance of <code>type</code> inside
+     * the active context. <code>actionPerformed</code> method is called then.
+     * <p>
+     * To create action that handled multiselection
+     * one can use following XML snippet:
+     * <pre>
+     * &lt;file name="action-pkg-ClassName.instance"&gt;
+     *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
+     *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * Now the constructor of <code>YourClass</code> needs to have following
+     * form:
+     * <pre>
+     * public final class YourClass implements ActionListener {
+     *    List&lt;Openable&gt; context;
+     *
+     *    public YourClass(List&lt;Openable&gt; context) {
+     *      this.context = context;
+     *    }
+     *  }
+     * </pre>
+     *
+     * @param type the object to seek for in the active context
+     * @param single shall there be just one or multiple instances of the object
+     * @param surviveFocusChange shall the action remain enabled and act on
+     *    previous selection even if no selection is currently in context?
+     * @param delegate action to call when this action is invoked
+     * @param key alternatively an action can be looked up in action map
+     *    (see {@link #callback(java.lang.String, javax.swing.Action, boolean)})
+     * @param fallback action to fallback to (can be <code>null</code>)
+     * @return new instance of context aware action watching for type
+     * @since 7.10
+     */
+    public static ContextAwareAction context(
+        Class<?> type,
+        boolean single,
+        boolean surviveFocusChange,
+        ContextAwareAction delegate,
+        String key,
+        Action fallback
+    ) {
+        Map<String,Object> map = new HashMap<String, Object>();
+        map.put("key", key); // NOI18N
+        map.put("surviveFocusChange", surviveFocusChange); // NOI18N
+        map.put("fallback", fallback); // NOI18N
+        map.put("delegate", delegate); // NOI18N
+        map.put("type", type); // NOI18N
+        map.put("selectionType", single ? ContextSelection.EXACTLY_ONE : ContextSelection.ANY);
+        return context(map);
     }
     static ContextAwareAction context(Map fo) {
         return GeneralAction.context(fo);

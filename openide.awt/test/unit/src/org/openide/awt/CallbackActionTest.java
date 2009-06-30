@@ -93,7 +93,7 @@ public class CallbackActionTest extends NbTestCase {
         
         ContextAwareAction expResult = null;
         try {
-            ContextAwareAction result = GeneralAction.callback(key, defaultDelegate, context, false);
+            ContextAwareAction result = Actions.callback(key, defaultDelegate, false);
             fail("Shall fail as key is null");
         } catch (NullPointerException ex) {
             // ok

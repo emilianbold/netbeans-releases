@@ -43,9 +43,13 @@
 <body>
 
 <em>Context Interfaces</em>
-are a design pattern used to add behaviors to existing object with
-<a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a> (like
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html">nodes</a>),
+are a design pattern used to add behaviors to existing objects
 or to separate implementation from the main object.
+Usually
+one adds implementation of these interfaces into publically known
+<a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a> (like
+those provided by <a href="@org-openide-nodes@/org/openide/nodes/Node.html">nodes</a>). These interfaces
+are primarily designed for use with <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20javax.swing.Action)">
+context actions</a>.
 </body>
 </html>

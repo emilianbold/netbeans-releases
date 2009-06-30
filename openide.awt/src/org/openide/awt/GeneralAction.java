@@ -42,12 +42,9 @@
 package org.openide.awt;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -55,6 +52,7 @@ import javax.swing.ActionMap;
 import org.openide.awt.ContextAction.Performer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -84,7 +82,9 @@ final class GeneralAction {
     }
 
     public static ContextAwareAction callback(Map map) {
-        return new DelegateAction(map);
+        DelegateAction d = new DelegateAction(map);
+        Parameters.notNull("key", d.key);
+        return d;
     }
 
     public static <T> ContextAwareAction context(
