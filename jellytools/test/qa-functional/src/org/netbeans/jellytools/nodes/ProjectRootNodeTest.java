@@ -63,8 +63,7 @@ public class ProjectRootNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition */
     public static Test suite() {        
         return createModuleTest(ProjectRootNodeTest.class, 
-                "testVerifyPopup", "testFind",
-                "testBuildProject", "testCleanProject",
+                "testVerifyPopup", "testFind",                
                 "testProperties");
     }
     
