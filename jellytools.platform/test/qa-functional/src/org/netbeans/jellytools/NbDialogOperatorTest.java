@@ -47,6 +47,7 @@ import javax.swing.JLabel;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -59,6 +60,22 @@ public class NbDialogOperatorTest extends JellyTestCase {
 
     private static final String TEST_DIALOG_TITLE = "Test Dialog";
     protected static final String TEST_DIALOG_LABEL = "  This is a test dialog.";
+
+    public static final String[] tests = new String[] {
+        "testBtCancel",
+        "testBtClose",
+        //TODO: find out why this test sometimes kills JVM
+        //"testBtHelp",
+        "testBtNo",
+        "testBtOK",
+        "testBtYes",
+        "testCancel",
+        "testClose",
+        "testHelp",
+        "testNo",
+        "testOK",
+        "testYes"
+    };
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -72,7 +89,7 @@ public class NbDialogOperatorTest extends JellyTestCase {
     public static Test suite() {
         //NbTestSuite suite = new NbTestSuite(NbDialogOperatorTest.class);
         //return suite;
-        return createModuleTest(NbDialogOperatorTest.class);
+        return createModuleTest(NbDialogOperatorTest.class, tests);
     }
     
     /** Shows dialog to test. */
@@ -106,7 +123,8 @@ public class NbDialogOperatorTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
         dialog.btHelp().push();
         JemmyProperties.setCurrentTimeout("WindowWaiter.WaitWindowTimeout", 60000);
-        new HelpOperator().close();
+        //new HelpOperator().close();
+        new WindowOperator().close();
         dialog.close();
     }
     /** Test Help button. */
@@ -114,7 +132,8 @@ public class NbDialogOperatorTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
         dialog.help();
         JemmyProperties.setCurrentTimeout("WindowWaiter.WaitWindowTimeout", 60000);
-        new HelpOperator().close();
+        //new HelpOperator().close();
+        new WindowOperator().close();
         dialog.close();
     }
     /** Test OK button getter. */

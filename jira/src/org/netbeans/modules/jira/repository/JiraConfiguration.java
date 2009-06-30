@@ -208,6 +208,17 @@ public class JiraConfiguration extends JiraClientCache {
         return data.issueTypes;
     }
 
+    public IssueType[] getIssueTypes(String projectId) {
+        return getProjectById(projectId).getIssueTypes();
+    }
+
+    public IssueType[] getIssueTypes(final Project project) {
+        synchronized(PROJECT_LOCK) {
+            ensureProjectLoaded(project);
+            return project.getIssueTypes();
+        }
+    }
+
     @Override
     public Priority[] getPriorities() {
         return data.priorities;
@@ -358,6 +369,9 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
+                project.setIssueTypes(issueTypes);
+
                 Component[] components = client.getComponents(project.getKey(), new NullProgressMonitor());
                 project.setComponents(components);
 

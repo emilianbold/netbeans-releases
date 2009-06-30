@@ -52,7 +52,6 @@ import junit.framework.TestSuite;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -86,6 +85,7 @@ import java.io.IOException;
 
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -209,7 +209,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         opNewFileWizard.next();
 
         // Customizing schema properties...
-        NewFileNameLocationStepOperator opNewFileNameLocationStep = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator opNewFileNameLocationStep = new NewJavaFileNameLocationStepOperator();
         // ...by setting custom name.
         opNewFileNameLocationStep.setObjectName(TEST_SCHEMA_NAME);
         // Finishing creation.
