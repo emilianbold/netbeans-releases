@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.commands;
+package org.netbeans.modules.php.api.ui.commands;
 
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
@@ -71,17 +72,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.php.api.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.CommandDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
-public final class SymfonyCommandChooser extends JPanel {
+public final class FrameworkCommandChooser extends JPanel {
     private static final long serialVersionUID = 2405531380316402L;
 
-    private final static Object NO_TASK_ITEM = getMessage("SymfonyCommandChooser.no.matching.task"); // NOI18N
+    private final static Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
 
     /** Remember checkbox state per IDE sessions. */
     private static boolean debug;
@@ -90,26 +92,24 @@ public final class SymfonyCommandChooser extends JPanel {
     private static String lastTask;
 
     /** [project directory path -&gt; (task -&gt; parameters)] */
-    private static final Map<String, Map<SymfonyCommand, ParameterContainer>> PROJECT_TO_TASK
-            = new HashMap<String, Map<SymfonyCommand, ParameterContainer>>();
+    private static final Map<String, Map<FrameworkCommand, ParameterContainer>> PROJECT_TO_TASK
+            = new HashMap<String, Map<FrameworkCommand, ParameterContainer>>();
 
     private final PhpModule phpModule;
 
-    private final List<SymfonyCommand> allTasks = new ArrayList<SymfonyCommand>();
+    private final List<FrameworkCommand> allTasks = new ArrayList<FrameworkCommand>();
+    private final String frameworkName;
 
     private JButton runButton;
     private boolean refreshNeeded;
 
-    /**
-     * Show the Rake Chooser and returns the Rake task selected by the user.
-     */
-    public static CommandDescriptor select(final PhpModule phpModule) {
+    public static CommandDescriptor select(final PhpModule phpModule, String frameworkName) {
         assert EventQueue.isDispatchThread() : "must be called from EDT";
-        final JButton runButton = new JButton(getMessage("SymfonyCommandChooser.runButton"));
-        final SymfonyCommandChooser chooserPanel = new SymfonyCommandChooser(phpModule, runButton);
-        String title = getMessage("SymfonyCommandChooser.title", phpModule.getDisplayName());
+        final JButton runButton = new JButton(getMessage("FrameworkCommandChooser.runButton"));
+        final FrameworkCommandChooser chooserPanel = new FrameworkCommandChooser(phpModule, runButton, frameworkName);
+        String title = getMessage("FrameworkCommandChooser.title", frameworkName, phpModule.getDisplayName());
 
-        runButton.getAccessibleContext().setAccessibleDescription (getMessage("SymfonyCommandChooser.runButton.accessibleDescription"));
+        runButton.getAccessibleContext().setAccessibleDescription (getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName));
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -119,8 +119,8 @@ public final class SymfonyCommandChooser extends JPanel {
         });
 
         final JButton refreshButton = new JButton();
-        Mnemonics.setLocalizedText(refreshButton, getMessage("SymfonyCommandChooser.refreshButton"));
-        refreshButton.getAccessibleContext().setAccessibleDescription (getMessage("SymfonyCommandChooser.refreshButton.accessibleDescription"));
+        Mnemonics.setLocalizedText(refreshButton, getMessage("FrameworkCommandChooser.refreshButton"));
+        refreshButton.getAccessibleContext().setAccessibleDescription (getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));
         refreshButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refreshButton.setEnabled(false);
@@ -145,8 +145,8 @@ public final class SymfonyCommandChooser extends JPanel {
                 options, runButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
         descriptor.setClosingOptions(new Object[] { runButton, DialogDescriptor.CANCEL_OPTION });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleName(getMessage("SymfonyCommandChooser.accessibleName"));
-        dialog.getAccessibleContext().setAccessibleDescription(getMessage("SymfonyCommandChooser.accessibleDescription"));
+        dialog.getAccessibleContext().setAccessibleName(getMessage("FrameworkCommandChooser.accessibleName", frameworkName));
+        dialog.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.accessibleDescription", frameworkName));
 
         if (chooserPanel.refreshNeeded) {
             refreshButton.setEnabled(false);
@@ -162,17 +162,17 @@ public final class SymfonyCommandChooser extends JPanel {
 
         dialog.setVisible(true);
         if (descriptor.getValue() == runButton) {
-            SymfonyCommand task = chooserPanel.getSelectedTask();
-            SymfonyCommandChooser.debug = chooserPanel.debugCheckbox.isSelected();
-            SymfonyCommandChooser.lastTask = task.getCommand();
+            FrameworkCommand task = chooserPanel.getSelectedTask();
+            FrameworkCommandChooser.debug = chooserPanel.debugCheckbox.isSelected();
+            FrameworkCommandChooser.lastTask = task.getCommand();
             chooserPanel.storeParameters();
-            return new CommandDescriptor(task, chooserPanel.getParameters(), SymfonyCommandChooser.debug);
+            return new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug);
         }
         return null;
     }
 
     private void initTaskParameters() {
-        SymfonyCommand task = getSelectedTask();
+        FrameworkCommand task = getSelectedTask();
         List<? super Object> params = new ArrayList<Object>();
         // no param option for convenience
         params.add(""); //NOI18N
@@ -189,7 +189,7 @@ public final class SymfonyCommandChooser extends JPanel {
      *
      * @param task
      */
-    private void preselectLastSelectedParam(SymfonyCommand task) {
+    private void preselectLastSelectedParam(FrameworkCommand task) {
         ParameterContainer params = getTasksToParams().get(task);
         if (params == null) {
             return;
@@ -208,21 +208,21 @@ public final class SymfonyCommandChooser extends JPanel {
         }
     }
 
-    private Map<SymfonyCommand,ParameterContainer> getTasksToParams() {
+    private Map<FrameworkCommand,ParameterContainer> getTasksToParams() {
         String prjDir = phpModule.getSourceDirectory().getPath();
-        Map<SymfonyCommand,ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
+        Map<FrameworkCommand,ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
         if (result == null) {
-            result = new HashMap<SymfonyCommand,ParameterContainer>();
+            result = new HashMap<FrameworkCommand,ParameterContainer>();
             PROJECT_TO_TASK.put(prjDir, result);
         }
         return result;
     }
 
-    private List<String> getStoredParams(SymfonyCommand task) {
+    private List<String> getStoredParams(FrameworkCommand task) {
         if (task == null) {
             return Collections.<String>emptyList();
         }
-        final Map<SymfonyCommand, ParameterContainer> tasksToParams = getTasksToParams();
+        final Map<FrameworkCommand, ParameterContainer> tasksToParams = getTasksToParams();
         if (tasksToParams == null) {
             return Collections.<String>emptyList();
         }
@@ -240,43 +240,21 @@ public final class SymfonyCommandChooser extends JPanel {
         return selected.toString().trim();
     }
 
-    private static void setRunButtonState(final JButton runButton, final SymfonyCommandChooser chooserPanel) {
+    private static void setRunButtonState(final JButton runButton, final FrameworkCommandChooser chooserPanel) {
         runButton.setEnabled(chooserPanel.getSelectedTask() != null);
     }
 
-    public static class CommandDescriptor {
+    private FrameworkCommandChooser(PhpModule phpModule, final JButton runButton, final String frameworkName) {
+        assert phpModule != null;
+        assert runButton != null;
+        assert frameworkName != null;
 
-        private final SymfonyCommand task;
-        private final String[] params;
-        private final boolean debug;
-
-        private CommandDescriptor(SymfonyCommand task, String params, boolean debug) {
-            assert task != null;
-            assert params != null;
-
-            this.task = task;
-            this.params = Utilities.parseParameters(params.trim());
-            this.debug = debug;
-        }
-
-        public SymfonyCommand getSymfonyCommand() {
-            return task;
-        }
-
-        public String[] getCommandParams() {
-            return params;
-        }
-
-        public boolean isDebug() {
-            return debug;
-        }
-    }
-
-    private SymfonyCommandChooser(PhpModule phpModule, final JButton runButton) {
-        this.runButton = runButton;
         this.phpModule = phpModule;
+        this.runButton = runButton;
+        this.frameworkName = frameworkName;
+
         initComponents();
-        matchingTaskList.setCellRenderer(new SymfonyCommandChooser.SymfonyCommandRenderer());
+        matchingTaskList.setCellRenderer(new FrameworkCommandChooser.FrameworkCommandRenderer());
         debugCheckbox.setSelected(debug);
         refreshNeeded = reloadAllTasks();
         refreshTaskList();
@@ -295,9 +273,9 @@ public final class SymfonyCommandChooser extends JPanel {
      */
     private void storeParameters() {
         String prjDir = phpModule.getSourceDirectory().getPath();
-        Map<SymfonyCommand, ParameterContainer> taskToParams = PROJECT_TO_TASK.get(prjDir);
+        Map<FrameworkCommand, ParameterContainer> taskToParams = PROJECT_TO_TASK.get(prjDir);
         if (taskToParams == null) {
-            taskToParams = new HashMap<SymfonyCommand, ParameterContainer>();
+            taskToParams = new HashMap<FrameworkCommand, ParameterContainer>();
             PROJECT_TO_TASK.put(prjDir, taskToParams);
         }
         ParameterContainer params = taskToParams.get(getSelectedTask());
@@ -314,7 +292,7 @@ public final class SymfonyCommandChooser extends JPanel {
         if (lastTask == null) {
             return;
         }
-        for (SymfonyCommand task : allTasks) {
+        for (FrameworkCommand task : allTasks) {
             if (lastTask.equals(task.getCommand())) {
                 matchingTaskList.setSelectedValue(task, true);
                 break;
@@ -326,7 +304,7 @@ public final class SymfonyCommandChooser extends JPanel {
     /** Reloads all tasks for the current project. */
     private boolean reloadAllTasks() {
         allTasks.clear();
-        List<SymfonyCommand> commands = SymfonyCommandSupport.forPhpModule(phpModule).getSymfonyCommands();
+        List<FrameworkCommand> commands = FrameworkCommandSupport.forPhpModule(phpModule).getFrameworkCommands();
         if (commands != null) {
             allTasks.addAll(commands);
             return false;
@@ -338,9 +316,9 @@ public final class SymfonyCommandChooser extends JPanel {
     private void refreshTaskList() {
         String filter = rakeTaskField.getText().trim();
         DefaultListModel model = new DefaultListModel();
-        List<SymfonyCommand> matching = Filter.getFilteredTasks(allTasks, filter);
+        List<FrameworkCommand> matching = Filter.getFilteredTasks(allTasks, filter);
 
-        for (SymfonyCommand task : matching) {
+        for (FrameworkCommand task : matching) {
             model.addElement(task);
         }
         matchingTaskList.setModel(model);
@@ -359,9 +337,9 @@ public final class SymfonyCommandChooser extends JPanel {
             taskParamLabel, taskParametersComboBox, rakeTaskHint
         };
         setEnabled(comps, false);
-        matchingTaskList.setListData(new Object[]{getMessage("SymfonyCommandChooser.reloading.tasks")});
+        matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkName)});
 
-        SymfonyCommandSupport.forPhpModule(phpModule).refreshSymfonyCommandsLater(new Runnable() {
+        FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(new Runnable() {
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
@@ -384,16 +362,16 @@ public final class SymfonyCommandChooser extends JPanel {
 
     }
 
-    private SymfonyCommand getSelectedTask() {
+    private FrameworkCommand getSelectedTask() {
         Object val = matchingTaskList.getSelectedValue();
         if (val != null && !NO_TASK_ITEM.equals(val)) {
-            return (SymfonyCommand) val;
+            return (FrameworkCommand) val;
         }
         return null;
     }
 
     private static String getMessage(final String key, final String... args) {
-        return NbBundle.getMessage(SymfonyCommandChooser.class, key, args);
+        return NbBundle.getMessage(FrameworkCommandChooser.class, key, args);
     }
 
     /** This method is called from within the constructor to
@@ -415,15 +393,15 @@ public final class SymfonyCommandChooser extends JPanel {
         rakeTaskHint = new javax.swing.JLabel();
         taskParametersComboBox = new javax.swing.JComboBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(SymfonyCommandChooser.class, "SymfonyCommandChooser.debugCheckbox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.text")); // NOI18N
 
         rakeTaskLabel.setLabelFor(rakeTaskField);
-        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskLabel, org.openide.util.NbBundle.getMessage(SymfonyCommandChooser.class, "SymfonyCommandChooser.rakeTaskLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.rakeTaskLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(SymfonyCommandChooser.class, "SymfonyCommandChooser.taskParamLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.text")); // NOI18N
 
         matchingTaskLabel.setLabelFor(matchingTaskList);
-        org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(SymfonyCommandChooser.class, "SymfonyCommandChooser.matchingTaskLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.text")); // NOI18N
 
         matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12));
         matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -436,7 +414,7 @@ public final class SymfonyCommandChooser extends JPanel {
 
         rakeTaskFieldPanel.setLayout(new java.awt.BorderLayout());
 
-        rakeTaskField.setText(org.openide.util.NbBundle.getMessage(SymfonyCommandChooser.class, "SymfonyCommandChooser.rakeTaskField.text")); // NOI18N
+        rakeTaskField.setText(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.rakeTaskField.text")); // NOI18N
         rakeTaskField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 rakeTaskFieldKeyPressed(evt);
@@ -444,7 +422,7 @@ public final class SymfonyCommandChooser extends JPanel {
         });
         rakeTaskFieldPanel.add(rakeTaskField, java.awt.BorderLayout.NORTH);
 
-        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskHint, org.openide.util.NbBundle.getMessage(SymfonyCommandChooser.class, "SymfonyCommandChooser.rakeTaskHint.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskHint, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.rakeTaskHint.text")); // NOI18N
         rakeTaskFieldPanel.add(rakeTaskHint, java.awt.BorderLayout.SOUTH);
 
         taskParametersComboBox.setEditable(true);
@@ -537,10 +515,10 @@ public final class SymfonyCommandChooser extends JPanel {
         }
     }//GEN-LAST:event_matchingTaskListMouseClicked
 
-    private static class SymfonyCommandRenderer extends JLabel implements ListCellRenderer {
+    private static class FrameworkCommandRenderer extends JLabel implements ListCellRenderer {
         private static final long serialVersionUID = -6180208903089211882L;
 
-        public SymfonyCommandRenderer() {
+        public FrameworkCommandRenderer() {
             setOpaque(true);
         }
 
@@ -562,8 +540,8 @@ public final class SymfonyCommandChooser extends JPanel {
             }
             setFont(list.getFont());
 
-            if (value instanceof SymfonyCommand) {
-                SymfonyCommand task = (SymfonyCommand) value;
+            if (value instanceof FrameworkCommand) {
+                FrameworkCommand task = (FrameworkCommand) value;
                 String descripton = task.getDescription();
                 StringBuilder text = new StringBuilder("<html>"); // NOI18N
                 text.append("<b>").append(task.getCommand()).append("</b>"); // NOI18N
@@ -596,31 +574,31 @@ public final class SymfonyCommandChooser extends JPanel {
     static final class Filter {
 
         private final String filter;
-        private final List<SymfonyCommand> tasks;
+        private final List<FrameworkCommand> tasks;
 
-        private Filter(List<SymfonyCommand> tasks, String filter) {
+        private Filter(List<FrameworkCommand> tasks, String filter) {
             this.tasks = tasks;
             this.filter = filter;
         }
 
-        static List<SymfonyCommand> getFilteredTasks(List<SymfonyCommand> allTasks, String filter) {
+        static List<FrameworkCommand> getFilteredTasks(List<FrameworkCommand> allTasks, String filter) {
             Filter f = new Filter(allTasks, filter);
             return f.filter();
         }
 
-        private List<SymfonyCommand> filter() {
-            List<SymfonyCommand> matching = new ArrayList<SymfonyCommand>();
+        private List<FrameworkCommand> filter() {
+            List<FrameworkCommand> matching = new ArrayList<FrameworkCommand>();
             Pattern pattern = getPattern();
             if (pattern != null) {
-                for (SymfonyCommand task : tasks) {
+                for (FrameworkCommand task : tasks) {
                     Matcher m = pattern.matcher(task.getCommand());
                     if (m.matches()) {
                         matching.add(task);
                     }
                 }
             } else {
-                List<SymfonyCommand> exact = new ArrayList<SymfonyCommand>();
-                for (SymfonyCommand task : tasks) {
+                List<FrameworkCommand> exact = new ArrayList<FrameworkCommand>();
+                for (FrameworkCommand task : tasks) {
                     String taskLC = task.getCommand().toLowerCase(Locale.ENGLISH);
                     String filterLC = filter.toLowerCase(Locale.ENGLISH);
                     if (taskLC.startsWith(filterLC)) {

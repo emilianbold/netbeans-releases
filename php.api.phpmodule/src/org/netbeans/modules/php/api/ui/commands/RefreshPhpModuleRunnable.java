@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,66 +34,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.commands;
+package org.netbeans.modules.php.api.ui.commands;
+
+import java.io.File;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Petr Hejl, Tomas Mysik
  */
-public class SymfonyCommand implements Comparable<SymfonyCommand> {
+public class RefreshPhpModuleRunnable implements Runnable {
 
-    private final String command;
-    private final String description;
-    private final String displayName;
+    private final PhpModule phpModule;
 
-    public SymfonyCommand(String command, String description, String displayName) {
-        this.command = command;
-        this.description = description;
-        this.displayName = displayName;
+    public RefreshPhpModuleRunnable(PhpModule phpModule) {
+        assert phpModule != null;
+        this.phpModule = phpModule;
     }
 
-    public String getCommand() {
-        return command;
+    public void run() {
+        refresh(phpModule.getSourceDirectory());
+        refresh(phpModule.getTestDirectory());
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    private void refresh(FileObject fo) {
+        if (fo == null) {
+            return;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            FileUtil.refreshFor(file);
+        } else {
+            // just defensive fallback
+            fo.refresh();
         }
-        final SymfonyCommand other = (SymfonyCommand) obj;
-        if ((command == null) ? (other.command != null) : !command.equals(other.command)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + (command != null ? command.hashCode() : 0);
-        return hash;
-    }
-
-    public int compareTo(SymfonyCommand o) {
-        if (command == null || o.getCommand() == null) {
-            assert displayName != null : "displayName not null";
-            assert o.getDisplayName() != null : "other displayName not null";
-            return displayName.compareTo(o.getDisplayName());
-        }
-        return getCommand().compareTo(o.getCommand());
     }
 }

@@ -44,7 +44,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.symfony.SymfonyScript;
-import org.netbeans.modules.php.symfony.ui.commands.SymfonyCommandSupport;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,7 +63,7 @@ public final class ClearCacheAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
-        SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forPhpModule(phpModule);
+        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
         Callable<Process> callable = commandSupport.createCommand(SymfonyScript.CMD_CLEAR_CACHE);
         ExecutionDescriptor descriptor = commandSupport.getDescriptor();
         String displayName = commandSupport.getOutputTitle(SymfonyScript.CMD_CLEAR_CACHE);

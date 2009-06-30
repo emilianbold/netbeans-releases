@@ -37,12 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.commands;
+package org.netbeans.modules.php.symfony.commands;
 
+import org.netbeans.modules.php.api.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import static org.junit.Assert.*;
 
 /**
  * @author Tomas Mysik
@@ -58,10 +58,10 @@ public class HelpLineProcessorTest extends NbTestCase {
         for (String s : getCommands()) {
             processor.processLine(s);
         }
-        List<SymfonyCommand> commands = processor.getCommands();
+        List<FrameworkCommand> commands = processor.getCommands();
         assertEquals(8, commands.size());
 
-        SymfonyCommand command = commands.get(0);
+        FrameworkCommand command = commands.get(0);
         assertEquals("app:routes", command.getCommand());
         assertEquals("app:routes", command.getDisplayName());
         assertEquals("Displays current routes for an application", command.getDescription());

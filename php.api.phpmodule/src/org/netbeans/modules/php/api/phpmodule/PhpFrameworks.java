@@ -52,7 +52,7 @@ import org.openide.util.lookup.Lookups;
  */
 public final class PhpFrameworks {
 
-    private static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
+    public static final String FRAMEWORK_PATH = "PHP/Frameworks"; //NOI18N
 
     private PhpFrameworks() {
     }
