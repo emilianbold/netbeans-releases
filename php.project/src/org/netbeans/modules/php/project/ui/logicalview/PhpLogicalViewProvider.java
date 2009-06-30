@@ -54,6 +54,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -230,20 +231,17 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
 
             // frameworks
-            // XXX: improve performance
             PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
             assert phpModule != null;
-            for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
-                if (frameworkProvider.isInPhpModule(phpModule)) {
-                    PhpModuleActionsExtender actionsProvider = frameworkProvider.createActionsProvider(phpModule);
-                    List<? extends Action> frameworkActions = actionsProvider.getActions();
-                    if (!frameworkActions.isEmpty()) {
-                        actions.add(new FrameworkMenu(actionsProvider.getMenuName(), frameworkActions));
-                    }
+            for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
+                PhpModuleActionsExtender actionsProvider = frameworkProvider.createActionsProvider(phpModule);
+                List<? extends Action> frameworkActions = actionsProvider.getActions();
+                if (!frameworkActions.isEmpty()) {
+                    actions.add(new FrameworkMenu(actionsProvider.getMenuName(), frameworkActions));
                 }
             }
 
-            // honor 57874 contact
+            // honor 57874 contract
             actions.add(null);
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);

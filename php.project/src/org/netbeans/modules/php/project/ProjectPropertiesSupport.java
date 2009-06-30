@@ -44,15 +44,18 @@ import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.api.Pair;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -343,6 +346,23 @@ public final class ProjectPropertiesSupport {
             return null;
         }
         return Pair.of(host, getInt(project, PhpProjectProperties.DEBUG_PROXY_PORT, PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT));
+    }
+
+    /**
+     * Get PHP frameworks that are in the given PHP project.
+     * @return PHP frameworks that are in the given PHP project.
+     */
+    public static List<PhpFrameworkProvider> getFrameworks(PhpProject project) {
+        // XXX: improve performance
+        List<PhpFrameworkProvider> frameworks = new LinkedList<PhpFrameworkProvider>();
+        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+        assert phpModule != null;
+        for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+            if (frameworkProvider.isInPhpModule(phpModule)) {
+                frameworks.add(frameworkProvider);
+            }
+        }
+        return frameworks;
     }
 
     /**
