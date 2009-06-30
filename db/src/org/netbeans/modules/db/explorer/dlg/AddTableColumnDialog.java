@@ -52,6 +52,7 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -91,6 +92,7 @@ public class AddTableColumnDialog extends JPanel {
     JComboBox coltypecombo;
     JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
     DataModel dmodel = new DataModel();
+    private Collection sizelesstypes;
 
     public AddTableColumnDialog(final Specification spe) {
         setBorder(new EmptyBorder(new Insets(12, 12, 5, 11)));
@@ -146,6 +148,8 @@ public class AddTableColumnDialog extends JPanel {
         colnamefield.getDocument().addDocumentListener(docListener);
 
         // Column type
+
+        sizelesstypes = (Collection) spe.getProperties().get("SizelessTypes"); // NOI18N
 
         Map tmap = spe.getTypeMap();
         Vector<TypeElement> ttab = new Vector<TypeElement>(tmap.size());
@@ -472,6 +476,23 @@ public class AddTableColumnDialog extends JPanel {
     /** Validate and update state of model and UI. */
     private void updateState() {
         assert statusLine != null : "Notification status line not available";  //NOI18N
+
+        // enable/disable size/scale text field
+        String columnType = coltypecombo.getSelectedItem().toString();
+        if (sizelesstypes.contains(columnType)) {
+            if (colsizefield.isEditable()) {
+                colsizefield.setEditable(false);
+                colscalefield.setEditable(false);
+                colsizefield.setText(null);
+                colscalefield.setText(null);
+            }
+        } else {
+            if (!colsizefield.isEditable()) {
+                colsizefield.setEditable(true);
+                colscalefield.setEditable(true);
+            }
+        }
+
         String columnName = colnamefield.getText();
         if (columnName == null || columnName.length() < 1) {
             statusLine.setInformationMessage(NbBundle.getMessage (AddTableColumnDialog.class, "AddTableColumn_EmptyColName"));
@@ -491,7 +512,7 @@ public class AddTableColumnDialog extends JPanel {
             updateOK(false);
             return;
         }
-        if (coltypecombo.getSelectedItem().toString().equals("VARCHAR")) {  //NOI18N
+        if (columnType.equals("VARCHAR")) {  //NOI18N
             if (size == 0) {
                 statusLine.setInformationMessage(NbBundle.getMessage(AddTableColumnDialog.class, "AddTableColumn_NotVarcharSize"));
                 updateOK(false);
@@ -542,8 +563,10 @@ public class AddTableColumnDialog extends JPanel {
     private void setValues(ColumnItem columnItem) {
         colnamefield.setText(columnItem.getName());
         coltypecombo.setSelectedItem(columnItem.getType());
-        colsizefield.setText(String.valueOf(columnItem.getSize()));
-        colscalefield.setText(String.valueOf(columnItem.getScale()));
+        if (!sizelesstypes.contains(columnItem.getType().toString())) {
+            colsizefield.setText(String.valueOf(columnItem.getSize()));
+            colscalefield.setText(String.valueOf(columnItem.getScale()));
+        }
         defvalfield.setText(columnItem.getDefaultValue());
         pkcheckbox.setSelected(columnItem.isPrimaryKey());
         uniquecheckbox.setSelected(columnItem.isUnique());

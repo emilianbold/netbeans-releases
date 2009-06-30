@@ -42,14 +42,13 @@
 package org.netbeans.qa.form.refactoring;
 
 import java.io.IOException;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import java.util.ArrayList;
 import junit.framework.Test;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -120,7 +119,7 @@ public class RenamePackageComponentAndCustomCodeTest extends ExtJellyTestCase {
         
         // compiling component to avoid load form error
         compNode = getProjectFileNode(NEW_COMPONENT_NAME, NEW_PACKAGE_NAME);
-        new CompileAction().perform(compNode);
+        new CompileJavaAction().perform(compNode);
     }
     
     /** Tests content of java file */

@@ -48,12 +48,12 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.junit.ide.ProjectSupport;
 //</editor-fold>
 
@@ -136,7 +136,7 @@ public class NewFileWizardTest extends JellyTestCase {
         npwop.selectCategory(Bundle.getStringTrimmed(WIZARD_BUNDLE,"Templates/Project/J2ME")); 
         npwop.selectProject(projectType); 
         npwop.next();
-        NewProjectNameLocationStepOperator step = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator step = new NewJavaProjectNameLocationStepOperator();
         step.txtProjectLocation().setText(getWorkDirPath());
         step.txtProjectName().setText(projectName); //NOI18N
         sleep(20);
@@ -151,7 +151,7 @@ public class NewFileWizardTest extends JellyTestCase {
         newFile.selectCategory(category);
         newFile.selectFileType(template);
         newFile.next();
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         //op.setObjectName(name); //TODO !!! doesn't work with some file types. It doesn;t change the name
         JTextFieldOperator tfo = new JTextFieldOperator(op, 0);
         tfo.setText(name);
@@ -169,7 +169,7 @@ public class NewFileWizardTest extends JellyTestCase {
             ProjectsTabOperator.invoke();
         }
         if (tryCompile) {
-            CompileAction ca = new CompileAction();
+            CompileJavaAction ca = new CompileJavaAction();
             MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
             stt.start();
             ProjectsTabOperator.invoke();
