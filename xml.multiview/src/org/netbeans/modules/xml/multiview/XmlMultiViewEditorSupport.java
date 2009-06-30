@@ -43,10 +43,8 @@ package org.netbeans.modules.xml.multiview;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -94,7 +92,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Enumeration;
-import java.lang.*;
 
 /**
  * An implementation of <code>DataEditorSupport</code> that is
