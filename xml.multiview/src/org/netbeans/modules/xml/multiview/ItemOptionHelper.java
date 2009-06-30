@@ -70,15 +70,15 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
         
         this.synchronizer = synchronizer;
         buttons = (AbstractButton[]) Collections.list(group.getElements()).toArray(new AbstractButton[0]);
-        AbstractButton unmatchedOption = null;
+        AbstractButton unmatchedOpt = null;
         for (int i = 0; i < buttons.length; i++) {
             final AbstractButton button = buttons[i];
             button.addActionListener(this);
             if (getOptionText(button) == null) {
-                unmatchedOption = button;
+                unmatchedOpt = button;
             }
         }
-        this.unmatchedOption = unmatchedOption;
+        this.unmatchedOption = unmatchedOpt;
         setOption(getItemValue());
     }
 
@@ -86,9 +86,9 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
      * Invoked when an action occurs on an option button.
      */
     public final void actionPerformed(ActionEvent e) {
-        final String option = getOption();
+        String option = getOption();
         if (!option.equals(getItemValue())) {
-            setItemValue(getOption());
+            setItemValue(option);
             synchronizer.requestUpdateData();
         }
     }
