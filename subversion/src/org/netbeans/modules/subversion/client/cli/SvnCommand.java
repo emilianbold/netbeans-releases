@@ -77,6 +77,12 @@ public abstract class SvnCommand implements CommandNotificationListener {
     private boolean hasFailed;
 
     /**
+     * exit code (return code) of the command - only set it the command execution
+     * was not interrupted
+     */
+    private Integer exitCode;
+
+    /**
      * Internal check mechanism to prevent commands reuse.
      */
     private boolean commandExecuted;
@@ -172,6 +178,20 @@ public abstract class SvnCommand implements CommandNotificationListener {
         cmdError.add(line);
         if (isErrorMessage(line)) hasFailed = true;
         notificationHandler.logError(line);
+    }
+
+    public void commandCompleted(int exitCode) {
+        this.exitCode = Integer.valueOf(exitCode);
+    }
+
+    /**
+     * Returns exit code of the command.
+     * @return  integer having the value of the command's exit code
+     *          (return code), or {@code null} if the command was cancelled
+     *          or otherwise interrupted
+     */
+    public Integer getExitCode() {
+        return exitCode;
     }
 
     public void commandFinished() {

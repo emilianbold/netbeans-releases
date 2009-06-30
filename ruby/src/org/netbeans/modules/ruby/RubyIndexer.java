@@ -359,34 +359,23 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private String getRequireString(Set<String> requireSet) {
-            if ((requireSet != null) && (requireSet.size() > 0)) {
-                StringBuilder sb = new StringBuilder(20 * requireSet.size());
-
-                for (String s : requireSet) {
-                    if (sb.length() > 0) {
-                        sb.append(","); // NOI18N
-                    }
-
-                    sb.append(s);
-                }
-
-                return sb.toString();
-            }
-
-            return null;
+            return asCommaSeparatedString(requireSet);
         }
 
-        // TODO - combine with getRequireString
         private String getIncludedString(Set<String> includes) {
-            if ((includes != null) && (includes.size() > 0)) {
-                StringBuilder sb = new StringBuilder(20 * includes.size());
+            return asCommaSeparatedString(includes);
+        }
 
-                for (String include : includes) {
+        private String asCommaSeparatedString(Set<String> strings) {
+            if (strings != null && strings.size() > 0) {
+                StringBuilder sb = new StringBuilder(20 * strings.size());
+
+                for (String each : strings) {
                     if (sb.length() > 0) {
                         sb.append(",");
                     }
 
-                    sb.append(include);
+                    sb.append(each);
                 }
 
                 return sb.toString();
@@ -434,7 +423,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             List<?extends AstElement> structure = ar.getElements();
 
             // Rails special case
-            // in case of 2.3.3 fall through to do normal indexing as well, these special cases
+            // in case of 2.3.2 fall through to do normal indexing as well, these special cases
             // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
             // if rails is in vendor/rails, we can't tell the version from
             // the path, so playing safe and falling through to do also normal
