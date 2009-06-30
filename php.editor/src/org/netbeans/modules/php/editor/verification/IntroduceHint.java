@@ -234,16 +234,19 @@ public class IntroduceHint implements AstRule {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
-                IndexedClass clz = getIndexedClass(clzName);
-                if (clz != null && methName != null) {
-                    PHPIndex index = model.getIndexScope().getIndex();
-                    Collection<IndexedFunction> allMethods = index.getAllMethods(null, clz.getName(),
-                            methName, Kind.EXACT, PHPIndex.ANY_ATTR);
-                    if (allMethods.isEmpty()) {
-                        FileObject fileObject = clz.getFileObject();
-                        BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
-                        if (document != null && fileObject.canWrite()) {
-                            fix = new IntroduceStaticMethodFix(document, methodInvocation, clz);
+                
+                if (clzName != null) {
+                    IndexedClass clz = getIndexedClass(clzName);
+                    if (clz != null && methName != null) {
+                        PHPIndex index = model.getIndexScope().getIndex();
+                        Collection<IndexedFunction> allMethods = index.getAllMethods(null, clz.getName(),
+                                methName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                        if (allMethods.isEmpty()) {
+                            FileObject fileObject = clz.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                            if (document != null && fileObject.canWrite()) {
+                                fix = new IntroduceStaticMethodFix(document, methodInvocation, clz);
+                            }
                         }
                     }
                 }
@@ -281,18 +284,20 @@ public class IntroduceHint implements AstRule {
                 final Variable field = staticFieldAccess.getField();
                 String fieldName = CodeUtils.extractVariableName(field);
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticFieldAccess);
-                IndexedClass clz = getIndexedClass(clzName);
-                if (clz != null && fieldName != null) {
-                    if (fieldName.startsWith("$")) {//NOI18N
-                        fieldName = fieldName.substring(1);
-                    }
-                    PHPIndex index = model.getIndexScope().getIndex();
-                    Collection<IndexedConstant> allConstants = index.getAllFields(null, clz.getName(), fieldName, Kind.EXACT, Modifier.STATIC);
-                    if (allConstants.isEmpty()) {
-                        FileObject fileObject = clz.getFileObject();
-                        BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
-                        if (document != null && fileObject.canWrite()) {
-                            fix = new IntroduceStaticFieldFix(document, staticFieldAccess, clz);
+                if (clzName != null) {
+                    IndexedClass clz = getIndexedClass(clzName);
+                    if (clz != null && fieldName != null) {
+                        if (fieldName.startsWith("$")) {//NOI18N
+                            fieldName = fieldName.substring(1);
+                        }
+                        PHPIndex index = model.getIndexScope().getIndex();
+                        Collection<IndexedConstant> allConstants = index.getAllFields(null, clz.getName(), fieldName, Kind.EXACT, Modifier.STATIC);
+                        if (allConstants.isEmpty()) {
+                            FileObject fileObject = clz.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                            if (document != null && fileObject.canWrite()) {
+                                fix = new IntroduceStaticFieldFix(document, staticFieldAccess, clz);
+                            }
                         }
                     }
                 }
@@ -305,15 +310,18 @@ public class IntroduceHint implements AstRule {
             if (isInside(staticConstantAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String constName = staticConstantAccess.getConstant().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
-                IndexedClass clz = getIndexedClass(clzName);
-                if (clz != null && constName != null) {
-                    PHPIndex index = model.getIndexScope().getIndex();
-                    Collection<IndexedConstant> allConstants = index.getAllClassConstants(null, clz.getName(), constName, Kind.EXACT);
-                    if (allConstants.isEmpty()) {
-                        FileObject fileObject = clz.getFileObject();
-                        BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
-                        if (document != null && fileObject.canWrite()) {
-                            fix = new IntroduceClassConstantFix(document, staticConstantAccess, clz);
+
+                if (clzName != null) {
+                    IndexedClass clz = getIndexedClass(clzName);
+                    if (clz != null && constName != null) {
+                        PHPIndex index = model.getIndexScope().getIndex();
+                        Collection<IndexedConstant> allConstants = index.getAllClassConstants(null, clz.getName(), constName, Kind.EXACT);
+                        if (allConstants.isEmpty()) {
+                            FileObject fileObject = clz.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                            if (document != null && fileObject.canWrite()) {
+                                fix = new IntroduceClassConstantFix(document, staticConstantAccess, clz);
+                            }
                         }
                     }
                 }
@@ -349,8 +357,11 @@ public class IntroduceHint implements AstRule {
                 retval = classes.iterator().next();
                 if ("parent".equals(name)) {
                     String superClassName = retval.getSuperClass();
-                    classes = index.getClasses(null, superClassName, Kind.EXACT);
-                    retval = (classes.size() == 1) ? classes.iterator().next() : null;
+
+                    if (superClassName != null){
+                        classes = index.getClasses(null, superClassName, Kind.EXACT);
+                        retval = (classes.size() == 1) ? classes.iterator().next() : null;
+                    }
                 }
             }
             return retval;
