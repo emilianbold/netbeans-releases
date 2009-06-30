@@ -1214,9 +1214,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 EventQueue.invokeLater(new Runnable() {
                     public void run () {
                         // --- Reload dependent combos
-                        // PENDING JiraConfiguration doesn't provide project-specific info for issue-type
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
-                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes()));
+                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();

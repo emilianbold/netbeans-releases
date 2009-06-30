@@ -63,7 +63,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.AroundInvoke;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.LifecycleCallback;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDrivenDestination;
 import org.netbeans.modules.j2ee.dd.api.ejb.NamedMethod;
 import org.netbeans.modules.j2ee.dd.api.ejb.PersistenceContextRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.PersistenceUnitRef;
@@ -101,7 +100,7 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         }
         
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
+        parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         parser.expectString("mappedName", null); // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
         name = parseResult.get("name", String.class); // NOI18N
@@ -242,6 +241,7 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
 
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
 
+    @Override
     public Object clone() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -251,30 +251,6 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     }
 
     public String getTransactionType() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setMessageSelector(String value) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getMessageSelector() throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setAcknowledgeMode(String value) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getAcknowledgeMode() throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setMessageDrivenDestination(MessageDrivenDestination value) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public MessageDrivenDestination getMessageDrivenDestination() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
