@@ -38,22 +38,17 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.CaseInsensitiveMacroMap;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.openide.util.Utilities;
@@ -78,28 +73,6 @@ public final class NativeProcessInfo {
     private boolean x11forwarding;
     private Collection<ChangeListener> listeners = null;
 
-//    public NativeProcessInfo(NativeProcessInfo info) {
-//        execEnv = info.execEnv;
-//        command = info.command;
-//        macroExpander = MacroExpanderFactory.getExpander(execEnv);
-//        workingDirectory = info.workingDirectory;
-//
-//        if (execEnv.isLocal() && Utilities.isWindows()) {
-//            envVariables = new CaseInsensitiveMacroMap(macroExpander);
-//        } else {
-//            envVariables = new MacroMap(macroExpander);
-//        }
-//
-//        envVariables.putAll(info.envVariables);
-//        arguments.addAll(info.arguments);
-//
-//        if (info.listeners != null) {
-//            listeners = new ArrayList<ChangeListener>(info.listeners);
-//        }
-//
-//        unbuffer = info.unbuffer;
-//        isWindows = info.isWindows;
-//    }
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
         this.executable = null;
@@ -109,19 +82,11 @@ public final class NativeProcessInfo {
 
         if (execEnv.isLocal() && Utilities.isWindows()) {
             envVariables = new CaseInsensitiveMacroMap(macroExpander);
+            isWindows = true;
         } else {
             envVariables = new MacroMap(macroExpander);
+            isWindows = false;
         }
-
-        HostInfo hostInfo = null;
-
-        try {
-            hostInfo = HostInfoUtils.getHostInfo(execEnv);
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-
-        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
 
         redirectError = false;
     }
@@ -209,31 +174,74 @@ public final class NativeProcessInfo {
         return result;
     }
 
+    public List<String> getCommandListForShell() {
+        List<String> result = new ArrayList<String>();
+        List<String> cmd = getCommand();
+
+        if (isWindows) {
+            String exec = WindowsSupport.getInstance().convertToShellPath(cmd.get(0));
+            cmd.set(0, exec);
+        }
+
+        boolean first = true;
+
+        for (String s : cmd) {
+            if (first) {
+                result.add(quoteExecutable(s));
+                first = false;
+            } else {
+                result.add(quote(s));
+            }
+        }
+
+        return result;
+    }
+
+    private String quoteExecutable(String orig) {
+        StringBuilder sb = new StringBuilder();
+        String escapeChars = (isWindows) ? " \"'()" : " \"'()!"; // NOI18N
+
+        for (char c : orig.toCharArray()) {
+            if (escapeChars.indexOf(c) >= 0) { // NOI18N
+                sb.append('\\');
+            }
+            sb.append(c);
+        }
+
+        return sb.toString();
+    }
+
+    private String quote(String orig) {
+        String quote = "'"; // NOI18N
+
+        if (isWindows) {
+            // On Windows when ExternalTerminal is used and we have "$" in
+            // parameters we get it expanded by shell (which is not the same
+            // behavior as we have in case of use of OutputWindow or when we
+            // are not on Windows)... So do the following replacement..
+            orig = orig.replaceAll("\\$", "\\\\\\$"); // NOI18N
+        }
+
+        if (orig.indexOf('\'') >= 0) {
+            quote = (isWindows) ? "\\\"" : "\""; // NOI18N
+        }
+
+        return quote + orig + quote;
+    }
+
     public String getCommandLineForShell() {
         if (commandLine != null) {
             return commandLine;
         }
 
-        String cmd;
+        StringBuilder sb = new StringBuilder();
 
-        try {
-            cmd = macroExpander.expandPredefinedMacros(executable);
-        } catch (ParseException ex) {
-            cmd = executable;
-        }
-
-        cmd = CommandLineHelper.getInstance(execEnv).toShellPath(cmd);
-
-        StringBuilder sb = new StringBuilder(cmd);
-
-        if (!arguments.isEmpty()) {
-            for (String arg : arguments) {
-                sb.append(" '").append(arg).append('\''); // NOI18N
-            }
+        for (String s : getCommandListForShell()) {
+            sb.append(s).append(' ');
         }
 
         if (redirectError) {
-            sb.append(" 2>&1"); // NOI18N
+            sb.append("2>&1"); // NOI18N
         }
 
         return sb.toString().trim();

@@ -59,7 +59,7 @@ USER=${USER:-`logname 2>/dev/null`}
 USER=${USER:-${USERNAME}}
 TMPBASE=${TMPBASE:-/var/tmp}
 TMPDIRBASE=${TMPBASE}/dlight_${USER}
-mkdir -p ${TMPDIRBASE}
+mkdir -p "${TMPDIRBASE}"
 
 echo BITNESS=${BITNESS}
 echo CPUFAMILY=${CPUFAMILY}

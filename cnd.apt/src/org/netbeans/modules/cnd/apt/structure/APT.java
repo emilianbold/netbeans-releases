@@ -64,8 +64,7 @@ public interface APT {
         public static final int INCLUDE_NEXT        = INCLUDE + 1;
         public static final int DEFINE              = INCLUDE_NEXT + 1;
         public static final int UNDEF               = DEFINE + 1;
-        public static final int CONDITION_CONTAINER = UNDEF + 1;
-        public static final int IFDEF               = CONDITION_CONTAINER + 1;
+        public static final int IFDEF               = UNDEF + 1;
         public static final int IFNDEF              = IFDEF + 1;
         public static final int IF                  = IFNDEF + 1;
         public static final int ELIF                = IF + 1;

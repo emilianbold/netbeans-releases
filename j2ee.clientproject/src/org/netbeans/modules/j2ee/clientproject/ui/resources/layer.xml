@@ -69,7 +69,6 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="org-netbeans-modules-j2ee-clientproject">
-        <file name="application-client-1.3.xml" url="application-client-1.3.xml"/>
         <file name="application-client-1.4.xml" url="application-client-1.4.xml"/>
         <file name="application-client-5.xml" url="application-client-5.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>

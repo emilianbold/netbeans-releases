@@ -43,6 +43,7 @@ package org.openide.filesystems;
 
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 
 public class ExternalUtilTest extends NbTestCase {
@@ -51,6 +52,7 @@ public class ExternalUtilTest extends NbTestCase {
         super(name);
     }
 
+    @RandomlyFails // about half the time
     public void testInitializationFromTwoThreads() throws Exception {
         MockServices.setServices(MyRepo.class);
 

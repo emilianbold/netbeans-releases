@@ -61,6 +61,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * @author mkleint
@@ -107,7 +108,7 @@ public class ReactorChecker implements PrerequisitesChecker {
         }
         if (showDialog) {
             SelectReactorDirectoryPanel pnl = new SelectReactorDirectoryPanel(config.getExecutionDirectory(), config.getProject());
-            DialogDescriptor nd = new DialogDescriptor(pnl, "Select Reactor Root Directory");
+            DialogDescriptor nd = new DialogDescriptor(pnl, NbBundle.getMessage(ReactorChecker.class, "LBL_SELECT_REACTOR_ROOT"));
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.OK_OPTION) {
                 String path = pnl.getRelativePath();
