@@ -41,44 +41,23 @@ package org.netbeans.test.mobility.editor;
 
 //<editor-fold desc="imports">
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.operators.ButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.jemmy.operators.Operator.StringComparator;
-import org.netbeans.jemmy.operators.TextFieldOperator;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.junit.ide.ProjectSupport;
 //</editor-fold>
 
@@ -163,7 +142,7 @@ public class editorTestsWithNewProject extends JellyTestCase {
         npwop.selectCategory(Bundle.getStringTrimmed(WIZARD_BUNDLE,"Templates/Project/J2ME")); 
         npwop.selectProject(projectType); 
         npwop.next();
-        NewProjectNameLocationStepOperator step = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator step = new NewJavaProjectNameLocationStepOperator();
         step.txtProjectLocation().setText(getWorkDirPath());
         step.txtProjectName().setText(projectName); //NOI18N
         sleep(20);
@@ -178,7 +157,7 @@ public class editorTestsWithNewProject extends JellyTestCase {
         newFile.selectCategory(category);
         newFile.selectFileType(template);
         newFile.next();
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         //op.setObjectName(name); //TODO !!! doesn't work with some file types. It doesn;t change the name
         JTextFieldOperator tfo = new JTextFieldOperator(op, 0);
         tfo.setText(name);
@@ -196,7 +175,7 @@ public class editorTestsWithNewProject extends JellyTestCase {
             ProjectsTabOperator.invoke();
         }
         if (tryCompile) {
-            CompileAction ca = new CompileAction();
+            CompileJavaAction ca = new CompileJavaAction();
             MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
             stt.start();
             ProjectsTabOperator.invoke();
