@@ -42,7 +42,6 @@ package org.netbeans.modules.web.wizards;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.web.wizards.FilterMappingData.Dispatcher;
@@ -63,14 +62,14 @@ class AnnotationGenerator {
      * @return annotation as string
      */
     static String webServlet(ServletData data) {
-        return "@WebServlet("+join(generName(data.getName()),
+        return "@WebServlet("+join(generServletName(data.getName()),
                 generUrlPatterns(data.getUrlMappings()),
                 generInitParams(data.getInitParams()))+")";
     }
 
     // -------------------------------------------------------------------------
-    private static String generName(String name) {
-        return name == null ? null : "name=\""+name+"\"";
+    private static String generServletName(String name) {
+        return (name == null || name.length() < 1) ? null : "name=\""+name+"\"";
     }
 
     // -------------------------------------------------------------------------
@@ -112,7 +111,7 @@ class AnnotationGenerator {
 
     // -------------------------------------------------------------------------
     private static String generFilterName(String name) {
-        return name == null ? null : "filterName=\""+name+"\"";
+        return (name == null || name.length() < 1) ? null : "filterName=\""+name+"\"";
     }
 
     // -------------------------------------------------------------------------
