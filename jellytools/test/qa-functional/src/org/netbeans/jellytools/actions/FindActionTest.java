@@ -42,14 +42,12 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.FindAction
  *
@@ -57,7 +55,14 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class FindActionTest extends JellyTestCase {
-    
+
+    private static final String[] tests = new String[] {
+        "testPerformPopup",
+        "testPerformMenu",
+        "testPerformAPI",
+        "testPerformShortcut"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -68,15 +73,8 @@ public class FindActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new FindActionTest("testPerformPopup"));
-        suite.addTest(new FindActionTest("testPerformMenu"));
-        suite.addTest(new FindActionTest("testPerformAPI"));
-        suite.addTest(new FindActionTest("testPerformShortcut"));
-        return suite;
-         */
-        return createModuleTest(FindActionTest.class);
+        
+        return createModuleTest(FindActionTest.class, tests);
     }
 
     @Override
@@ -93,7 +91,7 @@ public class FindActionTest extends JellyTestCase {
     
     /** Test performPopup */
     public void testPerformPopup() {
-        Node node = new ProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
+        Node node = new JavaProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
         new FindAction().performPopup(node);
         new FindInFilesOperator().close();
     }

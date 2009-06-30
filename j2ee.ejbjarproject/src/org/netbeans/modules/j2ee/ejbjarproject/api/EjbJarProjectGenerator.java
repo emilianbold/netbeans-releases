@@ -389,7 +389,9 @@ public class EjbJarProjectGenerator {
             try {
                 EjbJar root = DDProvider.getDefault().getDDRoot(ejbJarXml);
                 boolean writeDD = false;
-                if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && Profile.J2EE_14.equals(j2eeProfile)) { // NOI18N
+                boolean updateXml = root.getVersion() == null ? true :
+                    new BigDecimal(EjbJar.VERSION_2_1).compareTo(root.getVersion()) > 0;
+                if (updateXml && Profile.J2EE_14.equals(j2eeProfile)) {
                     root.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
                     writeDD = true;
                 }

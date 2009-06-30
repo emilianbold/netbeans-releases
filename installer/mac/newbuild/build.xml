@@ -448,7 +448,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
-                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3.sun}"/>
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <!--<filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>-->
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
