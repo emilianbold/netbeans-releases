@@ -835,9 +835,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 return;
             }
             
-            if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_13));
-            } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).equals(version)) {
+            if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             }
         } catch (IOException e) {
@@ -862,9 +860,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 return;
             }
             
-            if (new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_3).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_13));
-            } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_4).equals(version)) {
+            if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_4).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_5_0).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.JAVA_EE_5));
@@ -876,17 +872,17 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     }
     
     private void setJ2eeVersionWarning(WizardDescriptor d) {
-        String errorMessage;
+        String errorMessage = null;
         ProfileItem selectedItem = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
         
-        if ((Profile.J2EE_14 == selectedItem.getProfile())
-                && new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(xmlVersion)) {
+        boolean oldXml = xmlVersion == null ? true :
+            new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).compareTo(xmlVersion) > 0;
+        if (Profile.J2EE_14 == selectedItem.getProfile() && oldXml) {
             errorMessage = NbBundle.getMessage(ProjectServerPanel.class, "MSG_EjbJarXMLNotSupported");
-        } else {
-            errorMessage = null;
         }
+
         if (d != null) {
-            d.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); //NOI18N
+            d.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
         }
         
         setJ2eeVersionWarningPanel();
