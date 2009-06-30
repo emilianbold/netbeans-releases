@@ -557,8 +557,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
 
             if (action instanceof ContextAwareAction) {
                 action = ((ContextAwareAction) action)
-                              .createContextAwareInstance(
-                                      Lookups.singleton(dataNode));
+                  .createContextAwareInstance(dataNode.getLookup());
                 if (log.isLoggable(FINEST)) {
                     log.finest("    - it is a ContextAwareAction");
                     log.finest("    - using a context-aware instance instead (\"" //NOI18N
