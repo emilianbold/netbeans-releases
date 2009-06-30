@@ -65,7 +65,9 @@ public final class ColorAnimator extends Animator {
     public void setBackgroundColor (Widget widget, Color backgroundColor) {
         assert widget != null;
         assert backgroundColor != null;
-        sourceBackgroundColors.clear ();
+        if (!sourceBackgroundColors.isEmpty()) {
+            sourceBackgroundColors.clear ();
+        }
         targetBackgroundColors.put (widget, backgroundColor);
         start ();
     }
@@ -73,7 +75,9 @@ public final class ColorAnimator extends Animator {
     public void setForegroundColor (Widget widget, Color foregroundColor) {
         assert widget != null;
         assert foregroundColor != null;
-        sourceForegroundColors.clear ();
+        if (!sourceForegroundColors.isEmpty()) {
+            sourceForegroundColors.clear ();
+        }
         targetForegroundColors.put (widget, foregroundColor);
         start ();
     }
