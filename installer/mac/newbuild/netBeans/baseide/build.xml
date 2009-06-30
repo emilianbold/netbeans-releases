@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
 NETBEANS_INSTALL_DIR="${app.name}"
 NETBEANS_BUILDNUMBER="${buildnumber}"
 NETBEANS_CHECK_BUILDNUMBER=${nb.check.build.number}
-#GLASSFISH_INSTALL_DIR="${sjsas.install.dir}"
+GLASSFISH_INSTALL_DIR="${sjsas.install.dir}"
 TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"
 GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
