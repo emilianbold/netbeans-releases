@@ -78,6 +78,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -85,6 +86,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.PriorityRenderer;
 import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
@@ -249,6 +251,21 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateLabelNew.setVisible(isNew);
         originalEstimateFieldNew.setVisible(isNew);
         originalEstimateHint.setVisible(isNew);
+
+        // Operations
+        boolean startProgressAvailable = false;
+        boolean stopProgressAvailable = false;
+        for (TaskOperation operation : issue.getAvailableOperations().values()) {
+            String label = operation.getLabel();
+            if (JiraUtils.isStartProgressOperation(label)) {
+                startProgressAvailable = true;
+            } else if (JiraUtils.isStopProgressOperation(label)) {
+                stopProgressAvailable = true;
+            }
+        }
+        startProgressButton.setVisible(startProgressAvailable);
+        stopProgressButton.setVisible(stopProgressAvailable);
+
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew != (projectCombo.getParent() != null)) {
@@ -693,6 +710,28 @@ public class IssuePanel extends javax.swing.JPanel {
         return workLog;
     }
 
+    private void submitChange(final Runnable change, String progressMessage)  {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    change.run();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    reloadFormInAWT(true);
+                }
+            }
+        });
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -757,7 +796,8 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyAttachmentPanel = new javax.swing.JPanel();
         actionPanel = new javax.swing.JPanel();
         actionLabel = new javax.swing.JLabel();
-        acceptIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        startProgressButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        stopProgressButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         resolveIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         createSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         convertToSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -909,7 +949,19 @@ public class IssuePanel extends javax.swing.JPanel {
         actionLabel.setFont(actionLabel.getFont().deriveFont(actionLabel.getFont().getStyle() | java.awt.Font.BOLD));
         actionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.actionLabel.text")); // NOI18N
 
-        acceptIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.acceptIssueButton.text")); // NOI18N
+        startProgressButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.startProgressButton.text")); // NOI18N
+        startProgressButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startProgressButtonActionPerformed(evt);
+            }
+        });
+
+        stopProgressButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.stopProgressButton.text")); // NOI18N
+        stopProgressButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopProgressButtonActionPerformed(evt);
+            }
+        });
 
         resolveIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text")); // NOI18N
 
@@ -934,12 +986,13 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(actionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(actionLabel)
-                    .add(acceptIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(startProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(resolveIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(createSubtaskButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(convertToSubtaskButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(logWorkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
@@ -948,7 +1001,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(actionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(acceptIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(startProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(resolveIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1012,7 +1067,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                             .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 154, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 162, Short.MAX_VALUE)
                                         .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1214,9 +1269,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 EventQueue.invokeLater(new Runnable() {
                     public void run () {
                         // --- Reload dependent combos
-                        // PENDING JiraConfiguration doesn't provide project-specific info for issue-type
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
-                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes()));
+                        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
@@ -1350,8 +1404,29 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionField.setVisible(nowWithResolution);
     }//GEN-LAST:event_statusComboActionPerformed
 
+    private void startProgressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startProgressButtonActionPerformed
+        String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.startProgressMessage"); // NOI18N
+        String message = MessageFormat.format(pattern, issue.getKey());
+        submitChange(new Runnable() {
+            public void run() {
+                issue.startProgress();
+                issue.submitAndRefresh();
+            }
+        }, message);
+    }//GEN-LAST:event_startProgressButtonActionPerformed
+
+    private void stopProgressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopProgressButtonActionPerformed
+        String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.stopProgressMessage"); // NOI18N
+        String message = MessageFormat.format(pattern, issue.getKey());
+        submitChange(new Runnable() {
+            public void run() {
+                issue.stopProgress();
+                issue.submitAndRefresh();
+            }
+        }, message);
+    }//GEN-LAST:event_stopProgressButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.bugtracking.util.LinkButton acceptIssueButton;
     private javax.swing.JLabel actionLabel;
     private javax.swing.JPanel actionPanel;
     private javax.swing.JTextArea addCommentArea;
@@ -1406,9 +1481,11 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel resolutionLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton resolveIssueButton;
     private javax.swing.JSeparator separator;
+    private org.netbeans.modules.bugtracking.util.LinkButton startProgressButton;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JTextField statusField;
     private javax.swing.JLabel statusLabel;
+    private org.netbeans.modules.bugtracking.util.LinkButton stopProgressButton;
     private javax.swing.JButton submitButton;
     private javax.swing.JLabel subtaskLabel;
     private javax.swing.JTextField summaryField;

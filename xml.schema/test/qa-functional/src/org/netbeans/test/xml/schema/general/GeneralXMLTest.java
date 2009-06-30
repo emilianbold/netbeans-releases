@@ -46,7 +46,6 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -74,6 +73,7 @@ import java.io.File;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.Timeout;
 import java.awt.event.InputEvent;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 
 /**
@@ -189,7 +189,7 @@ public class GeneralXMLTest extends JellyTestCase {
       opNewProjectWizard.selectProject( sProject );
       opNewProjectWizard.next( );
 
-      NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
+      NewJavaProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewJavaProjectNameLocationStepOperator( );
       opNewProjectNameLocationStep.txtProjectLocation( ).setText( GetWorkDir( ) );
       opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
       opNewProjectWizard.finish( );
