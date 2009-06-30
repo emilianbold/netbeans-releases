@@ -46,6 +46,7 @@ import java.util.HashSet;
 import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -58,13 +59,11 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CompileAction;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JDialogOperator;
 //import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
@@ -149,7 +148,7 @@ public class NewProjectFileTest extends JellyTestCase {
         newFile.selectCategory(category);
         newFile.selectFileType(template);
         newFile.next();
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name); //TODO doesn't work with New > MIDP Canvas. It doesn;t change the name
         if (packageName != null) {
             op.setPackage(packageName);
@@ -165,7 +164,7 @@ public class NewProjectFileTest extends JellyTestCase {
         npwop.selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/Project/J2ME"));
         npwop.selectProject(projectType);
         npwop.next();
-        NewProjectNameLocationStepOperator step = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator step = new NewJavaProjectNameLocationStepOperator();
         step.txtProjectLocation().setText(getWorkDirPath());
         step.txtProjectName().setText(projectName);//NOI18N
         String projectLocation = step.txtProjectFolder().getText();
@@ -277,7 +276,7 @@ public class NewProjectFileTest extends JellyTestCase {
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         // call Build on project node
-        new ProjectsTabOperator().getProjectRootNode("NewMobileApplication").buildProject(); // NOI18N
+        new JavaProjectsTabOperator().getJavaProjectRootNode("NewMobileApplication").buildProject(); // NOI18N
 
         // wait message "Building NewMobileApplication (compile-single)..."
         stt.waitText("Building", true); // NOI18N

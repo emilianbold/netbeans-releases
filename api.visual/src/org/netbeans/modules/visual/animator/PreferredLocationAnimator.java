@@ -63,7 +63,9 @@ public final class PreferredLocationAnimator extends Animator {
     public void setPreferredLocation (Widget widget, Point preferredLocation) {
         assert widget != null;
         assert preferredLocation != null;
-        sourceLocations.clear ();
+        if (!sourceLocations.isEmpty()) {
+            sourceLocations.clear ();
+        }
         targetLocations.put (widget, preferredLocation);
         start ();
     }

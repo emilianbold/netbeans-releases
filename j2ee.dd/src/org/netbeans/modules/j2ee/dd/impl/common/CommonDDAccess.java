@@ -70,16 +70,11 @@ public class CommonDDAccess {
     public static final String WEB_API = "org.netbeans.modules.j2ee.dd.api.web."; //NOI18N
     public static final String WEB_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.web.model_"; //NOI18N
 
-    // TODO PetrS remove 1.3 (clients)
-    public static final String APP_1_3 = "1_3"; //NOI18N
     public static final String APP_1_4 = "1_4"; //NOI18N
     public static final String APP_API = "org.netbeans.modules.j2ee.dd.api.application."; //NOI18N
     public static final String APP_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.application.model_"; //NOI18N
     
-    // TODO PetrS remove 1.1, 2.0 (clients)
-    public static final String EJB_2_0 = "2_0"; //NOI18N
     public static final String EJB_2_1 = "2_1"; //NOI18N
-    public static final String EJB_1_1 = "1_1"; //NOI18N
     public static final String EJB_API = "org.netbeans.modules.j2ee.dd.api.ejb."; //NOI18N
     public static final String EJB_PACKAGE_PREFIX = "org.netbeans.modules.j2ee.dd.impl.ejb.model_"; //NOI18N
     

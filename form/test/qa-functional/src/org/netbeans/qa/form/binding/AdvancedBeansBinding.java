@@ -48,7 +48,6 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import java.util.*;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -94,11 +93,11 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     /** Form component classes compilation */
     public void testCompileComponents() {
         Node beanNode = openFile(CONVERTOR_NAME);
-        CompileAction action = new CompileAction();
+        CompileJavaAction action = new CompileJavaAction();
         action.perform(beanNode);
         
         beanNode = openFile(VALIDATOR_NAME);
-        action = new CompileAction();
+        action = new CompileJavaAction();
         action.perform(beanNode);
     }
     
