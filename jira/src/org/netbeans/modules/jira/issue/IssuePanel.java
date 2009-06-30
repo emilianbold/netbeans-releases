@@ -255,16 +255,24 @@ public class IssuePanel extends javax.swing.JPanel {
         // Operations
         boolean startProgressAvailable = false;
         boolean stopProgressAvailable = false;
+        boolean resolveIssueAvailable = false;
+        boolean closeIssueAvailable = false;
         for (TaskOperation operation : issue.getAvailableOperations().values()) {
             String label = operation.getLabel();
             if (JiraUtils.isStartProgressOperation(label)) {
                 startProgressAvailable = true;
             } else if (JiraUtils.isStopProgressOperation(label)) {
                 stopProgressAvailable = true;
+            } else if (JiraUtils.isResolveOperation(label)) {
+                resolveIssueAvailable = true;
+            } else if (JiraUtils.isCloseOperation(label)) {
+                closeIssueAvailable = true;
             }
         }
         startProgressButton.setVisible(startProgressAvailable);
         stopProgressButton.setVisible(stopProgressAvailable);
+        resolveIssueButton.setVisible(resolveIssueAvailable);
+        closeIssueButton.setVisible(closeIssueAvailable);
 
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
@@ -799,6 +807,7 @@ public class IssuePanel extends javax.swing.JPanel {
         startProgressButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         stopProgressButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         resolveIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        closeIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         createSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         convertToSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         logWorkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -964,6 +973,18 @@ public class IssuePanel extends javax.swing.JPanel {
         });
 
         resolveIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text")); // NOI18N
+        resolveIssueButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resolveIssueButtonActionPerformed(evt);
+            }
+        });
+
+        closeIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueButton.text")); // NOI18N
+        closeIssueButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeIssueButtonActionPerformed(evt);
+            }
+        });
 
         createSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.createSubtaskButton.text")); // NOI18N
 
@@ -992,7 +1013,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(convertToSubtaskButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(logWorkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(closeIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
@@ -1006,6 +1028,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(resolveIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(closeIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createSubtaskButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1426,6 +1450,49 @@ public class IssuePanel extends javax.swing.JPanel {
         }, message);
     }//GEN-LAST:event_stopProgressButtonActionPerformed
 
+    private void resolveIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveIssueButtonActionPerformed
+        ResolveIssuePanel panel = new ResolveIssuePanel(issue);
+        String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text"); // NOI18N
+        if (BugtrackingUtil.show(panel, title, title)) {
+            String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueMessage"); // NOI18N
+            String message = MessageFormat.format(pattern, issue.getKey());
+            final Resolution resolution = panel.getSelectedResolution();
+            submitChange(new Runnable() {
+                public void run() {
+                    issue.resolve(resolution, null);
+                    issue.submitAndRefresh();
+                }
+            }, message);
+        }
+    }//GEN-LAST:event_resolveIssueButtonActionPerformed
+
+    private void closeIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeIssueButtonActionPerformed
+        ResolveIssuePanel panel = new ResolveIssuePanel(issue);
+        String resolution = issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION);
+        final Resolution newResolution;
+        if ((resolution == null) || resolution.trim().equals("")) { // NOI18N
+            String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueButton.text"); // NOI18N
+            if (BugtrackingUtil.show(panel, title, title)) {
+                newResolution = panel.getSelectedResolution();
+            } else {
+                newResolution = null;
+            }
+        } else {
+            newResolution = issue.getRepository().getConfiguration().getResolutionById(resolution);
+        }
+        if (newResolution != null) {
+            String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueMessage"); // NOI18N
+            String message = MessageFormat.format(pattern, issue.getKey());
+            submitChange(new Runnable() {
+                public void run() {
+                    issue.close(newResolution, null);
+                    issue.submitAndRefresh();
+                }
+            }, message);
+        }
+
+    }//GEN-LAST:event_closeIssueButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel actionLabel;
     private javax.swing.JPanel actionPanel;
@@ -1439,6 +1506,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel assigneeLabel;
     private javax.swing.JLabel attachmentLabel;
     private javax.swing.JButton cancelButton;
+    private org.netbeans.modules.bugtracking.util.LinkButton closeIssueButton;
     private javax.swing.JLabel componentLabel;
     private javax.swing.JList componentList;
     private javax.swing.JScrollPane componentScrollPane;
