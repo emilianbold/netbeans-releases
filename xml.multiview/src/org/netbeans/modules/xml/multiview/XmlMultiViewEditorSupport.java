@@ -768,19 +768,21 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
                 // Check closed top components
                 Set closed = ((Set) evt.getOldValue());
-                closed.removeAll((Set) evt.getNewValue());
-                for (Iterator iterator = closed.iterator(); iterator.hasNext();) {
-                    Object o = iterator.next();
-                    if (o instanceof CloneableTopComponent) {
-                        final CloneableTopComponent topComponent = (CloneableTopComponent) o;
-                        Enumeration en = topComponent.getReference().getComponents();
-                        if (mvtc == topComponent) {
-                            if (en.hasMoreElements()) {
-                                // Remember next cloned top component
-                                mvtc = (CloneableTopComponent) en.nextElement();
-                            } else {
-                                // All cloned top components are closed
-                                notifyClosed();
+                if (closed != null) {
+                    closed.removeAll((Set) evt.getNewValue());
+                    for (Iterator iterator = closed.iterator(); iterator.hasNext();) {
+                        Object o = iterator.next();
+                        if (o instanceof CloneableTopComponent) {
+                            final CloneableTopComponent topComponent = (CloneableTopComponent) o;
+                            Enumeration en = topComponent.getReference().getComponents();
+                            if (mvtc == topComponent) {
+                                if (en.hasMoreElements()) {
+                                    // Remember next cloned top component
+                                    mvtc = (CloneableTopComponent) en.nextElement();
+                                } else {
+                                    // All cloned top components are closed
+                                    notifyClosed();
+                                }
                             }
                         }
                     }
