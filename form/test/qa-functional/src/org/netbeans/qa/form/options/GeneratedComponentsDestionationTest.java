@@ -41,18 +41,13 @@
 
 package org.netbeans.qa.form.options;
 
-import org.netbeans.qa.form.*;
-import org.netbeans.qa.form.visualDevelopment.*;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.jellytools.properties.Property;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import java.util.*;
 
 /**
  * Componentes declaration test
@@ -103,7 +98,7 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
     private void testGeneratedComponentsDestionation(Boolean local) {
         OptionsOperator.invoke();
         OptionsOperator options = new OptionsOperator();
-        options.switchToClassicView();
+//        options.switchToClassicView();
         waitAMoment();
         
         options.selectOption("Editing|GUI Builder"); // NOI18N

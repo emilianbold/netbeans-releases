@@ -119,7 +119,12 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.lib.terminalemulator");
         // some pseudomodules used only by tests
         permittedDisabledAutoloads.add("org.netbeans.modules.jellytools");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.cnd");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.enterprise");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.ide");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.java");
         permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.platform");
+        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.ruby");
         permittedDisabledAutoloads.add("org.netbeans.modules.jemmy");
         permittedDisabledAutoloads.add("org.netbeans.modules.nbjunit");
         permittedDisabledAutoloads.add("org.netbeans.insane");
