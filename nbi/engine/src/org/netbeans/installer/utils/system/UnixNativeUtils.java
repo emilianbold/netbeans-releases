@@ -563,9 +563,9 @@ public class UnixNativeUtils extends NativeUtils {
         // add x permission bit to r bits
         int permissions = SystemUtils.getPermissions(file);
         int newPermissions = (permissions +
-                ((permissions & FileAccessMode.RU) != 0 ? FileAccessMode.EU : 0) +
-                ((permissions & FileAccessMode.RG) != 0 ? FileAccessMode.EG : 0) +
-                ((permissions & FileAccessMode.RO) != 0 ? FileAccessMode.EO : 0));
+                ((permissions & FileAccessMode.RU) != 0 && (permissions & FileAccessMode.EU)==0 ? FileAccessMode.EU : 0) +
+                ((permissions & FileAccessMode.RG) != 0 && (permissions & FileAccessMode.EG)==0 ? FileAccessMode.EG : 0) +
+                ((permissions & FileAccessMode.RO) != 0 && (permissions & FileAccessMode.EO)==0 ? FileAccessMode.EO : 0));
         SystemUtils.setPermissions(file, newPermissions, FA_MODE_SET);
     }
 
