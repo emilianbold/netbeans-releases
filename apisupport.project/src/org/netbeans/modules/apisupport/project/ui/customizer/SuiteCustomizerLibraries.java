@@ -298,7 +298,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             ModuleList ml = ModuleList.scanCluster(ci.getClusterDir(), null, false, ci);
             moduleCh.setComparator(MODULES_COMPARATOR);
             for (ModuleEntry entry : ml.getAllEntries()) {
-                moduleCh.add(new Node[] { new BinaryModuleNode(entry, true) });
+                moduleCh.add(new Node[] { new BinaryModuleNode(entry, ci.isEnabled()) });
             }
             extraBinaryModules.addAll(ml.getAllEntries());
         } catch (IOException e) {
@@ -317,7 +317,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         moduleCh.setComparator(MODULES_COMPARATOR);
         Set<NbModuleProject> modules = SuiteUtils.getSubProjects(ci.getProject());
         for (NbModuleProject modPrj : modules) {
-            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, true) });
+            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, ci.isEnabled()) });
         }
         return new ClusterNode(ci, moduleCh);
     }
