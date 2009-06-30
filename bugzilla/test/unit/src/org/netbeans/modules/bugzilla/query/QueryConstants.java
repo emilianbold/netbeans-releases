@@ -37,77 +37,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
-
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+package org.netbeans.modules.bugzilla.query;
 
 /**
  *
  * @author tomas
  */
-public class LogHandler extends Handler {
-    private long TIMEOUT = 30 * 1000000;
-    private final String messageToWaitFor;
-    private boolean done = false;
-    private final Compare compare;
-    public enum Compare {
-        STARTS_WITH,
-        ENDS_WITH
-    }
-
-    public LogHandler(String msg, Compare compare) {
-        this(msg, compare, -1);
-    }
-
-    public LogHandler(String msg, Compare compare, int timeout) {
-        this.messageToWaitFor = msg;
-        this.compare = compare;
-        Bugzilla.LOG.addHandler(this);
-        if(timeout > -1) {
-            TIMEOUT = timeout * 1000;
-        }
-    }
-
-    public void reset() {
-        done = false;
-    }
-    @Override
-    public void publish(LogRecord record) {
-        if(!done) {
-            String message = record.getMessage();
-            if(message == null) {
-                return;
-            }
-            switch (compare) {
-                case STARTS_WITH :
-                    done = message.startsWith(messageToWaitFor);
-                    break;
-                case ENDS_WITH :
-                    done = message.endsWith(messageToWaitFor);
-                    break;
-                default:
-                    throw new IllegalStateException("wrong value " + compare);
-            }
-        }
-    }
-
-    public boolean isDone() {
-        return done;
-    }
-
-    @Override
-    public void flush() { }
-    @Override
-    public void close() throws SecurityException { }
-
-    public void waitUntilDone() throws InterruptedException {
-        long t = System.currentTimeMillis();
-        while(!done) {
-            Thread.sleep(200);
-            if(System.currentTimeMillis() - t > TIMEOUT) {
-                throw new IllegalStateException("Timeout >" + TIMEOUT);
-            }
-        }
-    }
+public interface QueryConstants {
+    String REPO_NAME = "Beautiful";
+    String QUERY_NAME = "Hilarious";
+    String PARAMETERS_FORMAT =
+        "&short_desc_type=allwordssubstr&short_desc={0}" +
+        "&long_desc_type=substring&long_desc=&bug_file_loc_type=allwordssubstr" +
+        "&bug_file_loc=&status_whiteboard_type=allwordssubstr&status_whiteboard=" +
+        "&keywords_type=allwords&keywords=&deadlinefrom=&deadlineto=&bug_status=NEW" +
+        "&bug_status=ASSIGNED&bug_status=REOPENED&emailassigned_to1=1&emailtype1=substring" +
+        "&email1=&emailassigned_to2=1&emailreporter2=1&emailqa_contact2=1&emailcc2=1" +
+        "&emailtype2=substring&email2=&bugidtype=include&bug_id=&votes=&chfieldfrom=" +
+        "&chfieldto=Now&chfieldvalue=&cmdtype=doit&order=Reuse+same+sort+as+last+time" + "" +
+        "&field0-0-0=noop&type0-0-0=noop&value0-0-0=";
 }

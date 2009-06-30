@@ -37,76 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.query;
 
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+import javax.swing.ListModel;
+import org.netbeans.modules.bugzilla.TestConstants;
+import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 
 /**
  *
  * @author tomas
  */
-public class LogHandler extends Handler {
-    private long TIMEOUT = 30 * 1000000;
-    private final String messageToWaitFor;
-    private boolean done = false;
-    private final Compare compare;
-    public enum Compare {
-        STARTS_WITH,
-        ENDS_WITH
-    }
-
-    public LogHandler(String msg, Compare compare) {
-        this(msg, compare, -1);
-    }
-
-    public LogHandler(String msg, Compare compare, int timeout) {
-        this.messageToWaitFor = msg;
-        this.compare = compare;
-        Bugzilla.LOG.addHandler(this);
-        if(timeout > -1) {
-            TIMEOUT = timeout * 1000;
-        }
-    }
-
-    public void reset() {
-        done = false;
-    }
-    @Override
-    public void publish(LogRecord record) {
-        if(!done) {
-            String message = record.getMessage();
-            if(message == null) {
-                return;
-            }
-            switch (compare) {
-                case STARTS_WITH :
-                    done = message.startsWith(messageToWaitFor);
-                    break;
-                case ENDS_WITH :
-                    done = message.endsWith(messageToWaitFor);
-                    break;
-                default:
-                    throw new IllegalStateException("wrong value " + compare);
-            }
-        }
-    }
-
-    public boolean isDone() {
-        return done;
-    }
-
-    @Override
-    public void flush() { }
-    @Override
-    public void close() throws SecurityException { }
-
-    public void waitUntilDone() throws InterruptedException {
-        long t = System.currentTimeMillis();
-        while(!done) {
-            Thread.sleep(200);
-            if(System.currentTimeMillis() - t > TIMEOUT) {
-                throw new IllegalStateException("Timeout >" + TIMEOUT);
+public class QueryTestUtil implements TestConstants {
+    public static void selectTestProject(final BugzillaQuery q) {
+        QueryPanel qp = (QueryPanel) q.getController().getComponent();
+        ListModel model = qp.productList.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            QueryParameter.ParameterValue pv = (ParameterValue) model.getElementAt(i);
+            if (pv.getValue().equals(TEST_PROJECT)) {
+                qp.productList.setSelectedIndex(i);
+                break;
             }
         }
     }
