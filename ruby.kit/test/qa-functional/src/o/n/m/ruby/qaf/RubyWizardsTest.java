@@ -41,7 +41,7 @@ package o.n.m.ruby.qaf;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.modules.ruby.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewRubyFileNameLocationStepOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -74,7 +74,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rhtml.resources.Bundle", "Templates/Ruby/_view.rhtml");
         createNewRubyFile(getProject(), label);
         String name = "my_rhtml"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         op.finish();
         EditorOperator eo = new EditorOperator(name + ".rhtml"); //NOI18N
@@ -90,7 +90,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rhtml.resources.Bundle", "Templates/Ruby/_view.erb");
         createNewRubyFile(getProject(), label);
         String name = "my_erb"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         op.finish();
         EditorOperator eo = new EditorOperator(name + ".erb"); //NOI18N
@@ -106,7 +106,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle", "Templates/Ruby/class.rb");
         createNewRubyFile(getProject(), label);
         String name = "my_ruby_class"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(0);
         op.finish();
@@ -118,7 +118,7 @@ public class RubyWizardsTest extends RubyTestCase {
         name = "my_mod_ruby_class"; //NOI18N
         String modName = "Mymod"; //NOI18N
         createNewRubyFile(getProject(), label);
-        op = new NewFileNameLocationStepOperator();
+        op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JTextFieldOperator(op, new ModuleTFFinder()).typeText(modName);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(0);
@@ -137,7 +137,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle", "Templates/Ruby/main.rb");
         createNewRubyFile(getProject(), label);
         String name = "my_ruby_file"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(0);
         op.finish();
@@ -154,7 +154,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle", "Templates/Ruby/module.rb");
         createNewRubyFile(getProject(), label);
         String name = "my_ruby_module"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(0);
         op.finish();
@@ -166,7 +166,7 @@ public class RubyWizardsTest extends RubyTestCase {
         name = "my_submodule"; //NOI18N
         String modName = "MyOrigMod"; //NOI18N
         createNewRubyFile(getProject(), label);
-        op = new NewFileNameLocationStepOperator();
+        op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JTextFieldOperator(op, new ModuleTFFinder()).typeText(modName);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(0);
@@ -188,7 +188,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.javascript.editing.Bundle", "Templates/Other/javascript.js");
         createNewRubyFile(getProject(), label);
         String name = "my_js"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         op.finish();
         EditorOperator eo = new EditorOperator(name + ".js"); //NOI18N
@@ -203,7 +203,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.javascript.editing.Bundle", "Templates/Other/json.json");
         createNewRubyFile(getProject(), label);
         String name = "my_json"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         op.finish();
         EditorOperator eo = new EditorOperator(name + ".json"); //NOI18N
@@ -219,7 +219,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.languages.yaml.Bundle", "Templates/Ruby/EmptyYAML.yml");
         createNewRubyFile(getProject(), label);
         String name = "my_yaml"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         op.finish();
         EditorOperator eo = new EditorOperator(name + ".yml"); //NOI18N
@@ -234,7 +234,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle", "Templates/Ruby/test.rb");
         createNewRubyFile(getProject(), label);
         String name = "my_utest"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(1);
         op.finish();
@@ -244,7 +244,7 @@ public class RubyWizardsTest extends RubyTestCase {
         createNewRubyFile(getProject(), label);
         name = "my_mod_utest"; //NOI18N
         String modName = "Mymod"; //NOI18N
-        op = new NewFileNameLocationStepOperator();
+        op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(1);
         new JTextFieldOperator(op, new ModuleTFFinder()).typeText(modName);
@@ -261,7 +261,7 @@ public class RubyWizardsTest extends RubyTestCase {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle", "Templates/Ruby/suite.rb");
         createNewRubyFile(getProject(), label);
         String name = "my_utest_suite"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         op.setObjectName(name);
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(1);
         op.finish();
@@ -277,7 +277,7 @@ public class RubyWizardsTest extends RubyTestCase {
         //RSpec File
         String label = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle", "Templates/Ruby/rspec.rb");
         createNewRubyFile(getProject(), label);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewRubyFileNameLocationStepOperator op = new NewRubyFileNameLocationStepOperator();
         new JTextFieldOperator(op, new TestedClassTFFinder()).typeText("MyModRubyClass"); //NOI18N
         new JComboBoxOperator(op, new LocationCBFinder()).selectItem(2);
         op.finish();
@@ -285,7 +285,7 @@ public class RubyWizardsTest extends RubyTestCase {
         assertNotNull(eo);
         assertTrue(eo.getText().indexOf("MyModRubyClass") > -1); //NOI18N
         createNewRubyFile(getProject(), label);
-        op = new NewFileNameLocationStepOperator();
+        op = new NewRubyFileNameLocationStepOperator();
         new JTextFieldOperator(op, new TestedClassTFFinder()).typeText("MyRubyClass"); //NOI18N
         op.finish();
         eo = new EditorOperator("my_ruby_class_spec.rb"); //NOI18N

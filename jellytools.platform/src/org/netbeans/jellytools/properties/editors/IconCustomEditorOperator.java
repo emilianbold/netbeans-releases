@@ -46,6 +46,8 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 
+//TODO: Rewrite this class!! It's waaaaaay out of date!
+
 /** Class implementing all necessary methods for handling Icon Custom Editor.
  * @author <a href="mailto:Marian.Mirilovic@sun.com">Marian Mirilovic</a>
  * @version 1.0 */
@@ -82,7 +84,8 @@ public class IconCustomEditorOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbURL() {
         if (_rbURL==null) {
-            _rbURL = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_URL"));
+            //_rbURL = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_URL"));
+
         }
         return _rbURL;
     }
@@ -92,7 +95,7 @@ public class IconCustomEditorOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbFile() {
         if (_rbFile==null) {
-            _rbFile = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_File"));
+            //_rbFile = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_File"));
         }
         return _rbFile;
     }
@@ -100,11 +103,12 @@ public class IconCustomEditorOperator extends NbDialogOperator {
     /** Tries to find "Classpath" JRadioButton in this dialog.
      * @return JRadioButtonOperator instance
      */
-    public JRadioButtonOperator rbClasspath() {
+    public JRadioButtonOperator rbClasspath() {        
         if (_rbClasspath==null) {
-            _rbClasspath = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_Classpath"));
+           // _rbClasspath = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_Classpath"));
         }
         return _rbClasspath;
+
     }
 
     /** Tries to find "No picture" JRadioButton in this dialog.
@@ -112,7 +116,7 @@ public class IconCustomEditorOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbNoPicture() {
         if (_rbNoPicture==null) {
-            _rbNoPicture = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_NoPicture"));
+            //_rbNoPicture = new JRadioButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_NoPicture"));
         }
         return _rbNoPicture;
     }
@@ -132,7 +136,7 @@ public class IconCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btSelectFile() {
         if (_btSelectFile==null) {
-            _btSelectFile = new JButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_ButtonSelect"));
+            //_btSelectFile = new JButtonOperator(this, Bundle.getString("org.openide.explorer.propertysheet.editors.Bundle", "CTL_ButtonSelect"));
         }
         return _btSelectFile;
     }
@@ -194,13 +198,14 @@ public class IconCustomEditorOperator extends NbDialogOperator {
     /** Performs verification of this operator by accessing all its components.
      */
     public void verify() {
-        rbURL();
+
+        /*rbURL();
         rbFile();
         rbClasspath();
         rbNoPicture();
         txtName();
         btSelectFile();
         btOK();
-        btCancel();
+        btCancel();*/
     }
 }

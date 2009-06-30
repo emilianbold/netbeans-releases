@@ -42,7 +42,7 @@
 package org.netbeans.qa.form.beans;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
@@ -79,11 +79,11 @@ public class AddBeanFormsTest extends AddAndRemoveBeansTest {
     /** Compiling beans components */
     public void testCompileBeanClasses() {
         Node beanNode = openFile(VISUAL_BEAN_NAME);
-        CompileAction action = new CompileAction();
+        CompileJavaAction action = new CompileJavaAction();
         action.perform(beanNode);
 
         beanNode = openFile(NONVISUAL_BEAN_NAME);
-        action = new CompileAction();
+        action = new CompileJavaAction();
         action.perform(beanNode);
    }
     
