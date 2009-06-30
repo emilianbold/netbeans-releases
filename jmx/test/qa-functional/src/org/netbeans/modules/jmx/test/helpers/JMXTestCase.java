@@ -61,6 +61,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -69,6 +70,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.NewFileAction;
+import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
@@ -140,8 +142,8 @@ public abstract class JMXTestCase extends JellyTestCase {
      * Compile the specified project.
      */
     public void compileProject(String name) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(name);
+        JavaProjectsTabOperator pto = new JavaProjectsTabOperator();
+        JavaProjectRootNode prn = pto.getJavaProjectRootNode(name);
         prn.select();
         prn.buildProject();
     }
