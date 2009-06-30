@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -72,12 +73,10 @@ public class SourceRoots {
     public FileObject[] getRoots() {
         List<FileObject> result = new ArrayList<FileObject>();
         addGrailsSourceRoots(projectRoot, result);
-        FileObject pluginsDir = projectRoot.getFileObject("plugins");
-        if (pluginsDir != null) {
-            Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
-            while (subfolders.hasMoreElements()) {
-                addGrailsSourceRoots(subfolders.nextElement(), result);
-            }
+
+        if (project != null) {
+            result.addAll(addPluginRoots(project.getBuildConfig().getProjectPluginsDir()));
+            result.addAll(addPluginRoots(project.getBuildConfig().getGlobalPluginsDir()));
         }
 
         return result.toArray(new FileObject[result.size()]);
@@ -93,6 +92,19 @@ public class SourceRoots {
             Exceptions.printStackTrace(murle);
         }
         return urls;
+    }
+
+    private List<FileObject> addPluginRoots(File pluginsDirFile) {
+        FileObject pluginsDir = (pluginsDirFile == null) ? null : FileUtil.toFileObject(pluginsDirFile);
+        if (pluginsDir != null) {
+            List<FileObject> result = new ArrayList<FileObject>();
+            Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
+            while (subfolders.hasMoreElements()) {
+                addGrailsSourceRoots(subfolders.nextElement(), result);
+            }
+            return result;
+        }
+        return Collections.emptyList();
     }
 
     private void addGrailsSourceRoots(FileObject projectRoot, List<FileObject> result) {

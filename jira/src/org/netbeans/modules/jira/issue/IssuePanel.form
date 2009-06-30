@@ -90,7 +90,7 @@
                                           <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace pref="154" max="32767" attributes="0"/>
+                                      <EmptySpace pref="162" max="32767" attributes="0"/>
                                       <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -656,12 +656,14 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="actionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="acceptIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="startProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="resolveIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="createSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="convertToSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="logWorkButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="stopProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="closeIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -673,9 +675,13 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="actionLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="acceptIssueButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="startProgressButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="stopProgressButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="resolveIssueButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="closeIssueButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="createSubtaskButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
@@ -702,12 +708,25 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="acceptIssueButton">
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="startProgressButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.acceptIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.startProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startProgressButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="stopProgressButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.stopProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stopProgressButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="resolveIssueButton">
           <Properties>
@@ -715,6 +734,19 @@
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolveIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolveIssueButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="closeIssueButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.closeIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeIssueButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="createSubtaskButton">
           <Properties>
