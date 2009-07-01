@@ -72,7 +72,8 @@ implements ActionListener, Runnable, Callable<JButton> {
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
     private static boolean flushOnRecord;
-    
+    private final SlownessReporter reporter;
+
     private static boolean exceptionHandler;
     public static void registerExceptionHandler(boolean enable) {
         exceptionHandler = enable;
@@ -81,6 +82,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     public UIHandler(boolean exceptionOnly) {
         setLevel(Level.FINEST);
         this.exceptionOnly = exceptionOnly;
+        this.reporter = new SlownessReporter();
     }
 
     public void publish(LogRecord record) {
@@ -95,6 +97,13 @@ implements ActionListener, Runnable, Callable<JButton> {
                 return;
             }
             if (!exceptionHandler) {
+                return;
+            }
+        } else {
+            if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
+                byte[] nps = (byte[]) record.getParameters()[0];
+                long time = (Long) record.getParameters()[1];
+                reporter.notifySlowness(Installer.getLogs(), nps, time);
                 return;
             }
         }

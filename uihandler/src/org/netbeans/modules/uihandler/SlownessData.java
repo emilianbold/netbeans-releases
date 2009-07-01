@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,63 +38,52 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.uihandler;
 
-import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import java.util.logging.LogRecord;
-import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Jaroslav Tulach
+ * @author Jindrich Sedek
  */
-public class UIHandlerWhenInterruptedTest extends NbTestCase {
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions");
+class SlownessData {
+    private static final String SLOWNESS_DATA = "SlownessData";
 
-    
-    public UIHandlerWhenInterruptedTest(String testName) {
-        super(testName);
+    private final long time;
+    private final byte[] npsContent;
+    private final String latestActionName;
+
+    public SlownessData(long time, byte[] npsContent, String latestActionClassName) {
+        this.time = time;
+        this.npsContent = npsContent;
+        this.latestActionName = latestActionClassName;
     }
 
-    protected void setUp() throws Exception {
-        Installer o = Installer.findObject(Installer.class, true);
-        System.setProperty("netbeans.user", getWorkDirPath());
-        clearWorkDir();
-        assertNotNull("Installer created", o);
-        o.restored();
+    /**
+     * @return the time
+     */
+    public long getTime() {
+        return time;
     }
 
-    protected void tearDown() throws Exception {
+    /**
+     * @return the npsContent
+     */
+    public byte[] getNpsContent() {
+        return npsContent;
     }
 
-    public void testPublishWhenInterupted() {
-        
-        for (int i = 0; i < 800; i++) {
-            LogRecord rec2 = new LogRecord(Level.FINER, "" + i); // NOI18N
-            Thread.currentThread().interrupt();
-            UILOG.log(rec2);        
-        }
-
-        int cnt = 50;
-        while (cnt-- > 0 && Installer.getLogsSize() < 800) {
-            // ok, repeat
-        }
-        List<LogRecord> logs = InstallerTest.getLogs();
-        assertEquals("One log: " + logs, 800, logs.size());
-        
-        for (int i = 1; i < 800; i++) {
-            assertEquals("" + i, logs.get(i).getMessage());
-        }
-        
+    public LogRecord getLogRec(){
+        LogRecord rec = new LogRecord(Level.CONFIG, SLOWNESS_DATA);
+        rec.setParameters(new Object[]{new Long(time), latestActionName});
+        return rec;
     }
-    
-    private static final class MyAction extends AbstractAction {
-        public void actionPerformed(ActionEvent e) {
-        }
+
+    /**
+     * @return the latestActionClassName
+     */
+    public String getLatestActionName() {
+        return latestActionName;
     }
 }
