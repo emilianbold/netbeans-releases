@@ -42,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.core.runtime.CoreException;
@@ -64,6 +65,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.issue.NbJiraIssue.CustomField;
+import org.netbeans.modules.jira.issue.NbJiraIssue.WorkLog;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.filesystems.FileObject;
@@ -396,6 +398,13 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(fixedVersions, newFixedVersions);
     }
 
+    public void testWorkLogs () throws CoreException {
+        NbJiraIssue issue = createIssue();
+        for (int i = 1; i < 4; ++i) {
+            addWorkLog(issue, i);
+        }
+    }
+
     private CustomField getTagField(CustomField[] customFields) {
         CustomField customField = null;
         for (NbJiraIssue.CustomField cf : customFields) {
@@ -601,6 +610,27 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(comment, comments[comments.length - 1].getText());
         assertEquals(config.getUser(who).getFullName(), comments[comments.length - 1].getWho());
         assertEquals(commentsCount + 1, comments[comments.length - 1].getNumber().intValue());
+    }
+
+    private void addWorkLog (NbJiraIssue issue, int worklogNumber) {
+        WorkLog[] workLogs = issue.getWorkLogs();
+        assertNotNull(workLogs);
+        assertEquals(workLogs.length, worklogNumber - 1);
+        String comment = "Worklog number " + worklogNumber;
+        Date startDate = new Date();
+        long timeSpent = 10 * 60; // 10 minutes
+        issue.addWorkLog(startDate, timeSpent, comment);
+        issue.submitAndRefresh();
+
+        workLogs = issue.getWorkLogs();
+        assertNotNull(workLogs);
+        assertEquals(workLogs.length, worklogNumber);
+        // our worklog should be the last???
+        WorkLog workLog = workLogs[worklogNumber - 1];
+        assertEquals(getRepository().getUsername(), workLog.getAuthor());
+        assertEquals(timeSpent, workLog.getTimeSpent());
+        assertEquals(comment, workLog.getComment());
+        assertEquals(startDate.toString(), workLog.getStartDate().toString());
     }
 
     private JiraClient getClient() {
