@@ -995,4 +995,13 @@ public class WebAppProxy implements WebApp {
     public int removeJspConfig(JspConfig valueInterface) throws VersionNotSupportedException {
         return webApp == null ? 0 : webApp.removeJspConfig(valueInterface);
     }
+
+    public void setName(String[] value) throws VersionNotSupportedException {
+        if (webApp != null) webApp.setName(value);
+    }
+
+    public String[] getName() throws VersionNotSupportedException {
+        return webApp != null ? webApp.getName() : null;
+    }
+
 }

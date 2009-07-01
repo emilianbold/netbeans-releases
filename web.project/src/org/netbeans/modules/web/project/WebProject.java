@@ -136,12 +136,14 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -150,6 +152,8 @@ import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImp
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -351,7 +355,7 @@ public final class WebProject implements Project, AntProjectListener {
         updateProject.setUpdateHelper(updateHelper);
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
-        apiWebModule = WebModuleFactory.createWebModule (webModule);
+        apiWebModule = WebModuleFactory.createWebModule(new WebModuleImpl2(webModule));
         webEjbJarProvider = new EjbJarProvider(webModule, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarProvider);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
@@ -488,6 +492,9 @@ public final class WebProject implements Project, AntProjectListener {
             new ProjectWebModuleProvider (),
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
+            // FIXME this is just fallback for code searching for the old SPI in lookup
+            // remove in next release
+            new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
             new WebActionProvider( this, this.updateHelper, this.eval ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
@@ -1772,7 +1779,7 @@ public final class WebProject implements Project, AntProjectListener {
     }
 
     public boolean isJavaEE5(Project project) {
-        return J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
+        return Profile.JAVA_EE_5.equals(getAPIWebModule().getJ2eeProfile());
     }
 
     private static final class WebPropertyEvaluatorImpl implements WebPropertyEvaluator {
@@ -1925,6 +1932,84 @@ public final class WebProject implements Project, AntProjectListener {
 
             }
         }
+    }
+
+    // FIXME this is just fallback for code searching for the old SPI in lookup
+    // remove in next release
+    @SuppressWarnings("deprecation")
+    private class WebModuleImpl implements WebModuleImplementation {
+
+        private final WebModule apiModule;
+
+        public WebModuleImpl(WebModule apiModule) {
+            this.apiModule = apiModule;
+        }
+
+        public FileObject getWebInf() {
+            return apiModule.getWebInf();
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            return apiModule.getMetadataModel();
+        }
+
+        public FileObject[] getJavaSources() {
+            return apiModule.getJavaSources();
+        }
+
+        public String getJ2eePlatformVersion() {
+            return apiModule.getJ2eePlatformVersion();
+        }
+
+        public FileObject getDocumentBase() {
+            return apiModule.getDocumentBase();
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return apiModule.getDeploymentDescriptor();
+        }
+
+        public String getContextPath() {
+            return apiModule.getContextPath();
+        }
+    }
+
+    private class WebModuleImpl2 implements WebModuleImplementation2 {
+
+        private final ProjectWebModule webModule;
+
+        public WebModuleImpl2(ProjectWebModule webModule) {
+            this.webModule = webModule;
+        }
+
+        public String getContextPath() {
+            return webModule.getContextPath();
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return webModule.getDeploymentDescriptor();
+        }
+
+        public FileObject getDocumentBase() {
+            return webModule.getDocumentBase();
+        }
+
+        public Profile getJ2eeProfile() {
+            return webModule.getJ2eeProfile();
+        }
+
+        public FileObject[] getJavaSources() {
+            return webModule.getJavaSources();
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            return webModule.getMetadataModel();
+        }
+
+        public FileObject getWebInf() {
+            return webModule.getWebInf();
+        }
+
     }
 
     private class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{

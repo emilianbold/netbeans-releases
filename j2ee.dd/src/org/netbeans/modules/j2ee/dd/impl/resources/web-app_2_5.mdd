@@ -70,6 +70,12 @@
                         if (values==null || values.length==0) return null;
                         else return values[0];
                     }
+                    public void setName(String[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
+                    public String[] getName() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
             </user-code>
         </meta-element>
         <meta-element>

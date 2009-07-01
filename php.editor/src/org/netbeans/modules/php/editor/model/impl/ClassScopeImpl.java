@@ -317,6 +317,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         sb.append(";");//NOI18N
         sb.append(";");//NOI18N
         sb.append(BodyDeclaration.Modifier.PUBLIC).append(";");
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+
         return sb.toString();
 
     }

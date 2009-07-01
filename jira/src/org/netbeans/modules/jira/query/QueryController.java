@@ -56,8 +56,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -70,6 +72,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -77,6 +80,8 @@ import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.internal.jira.core.model.Version;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ComponentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.DateRangeFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.EstimateVsActualFilter;
@@ -87,6 +92,7 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.VersionFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -242,6 +248,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(types.size() > 0) {
             fd.setIssueTypeFilter(new IssueTypeFilter(types.toArray(new IssueType[types.size()])));
         }
+        List<Component> components = getValues(panel.componentsList);
+        if(components.size() > 0) {
+            fd.setComponentFilter(new ComponentFilter(components.toArray(new Component[components.size()])));
+        }
+        List<Version> versions = getValues(panel.fixForList);
+        if(versions.size() > 0) {
+            fd.setFixForVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()])));
+        }
+        versions = getValues(panel.affectsVersionList);
+        if(versions.size() > 0) {
+            fd.setReportedInVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()])));
+        }
         List<JiraStatus> statuses = getValues(panel.statusList);
         if(statuses.size() > 0) {
             fd.setStatusFilter(new StatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
@@ -376,6 +394,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
 
                     populateList(panel.projectList, jc.getProjects());
+                    if (panel.projectList.getModel().getSize() > 0) {
+                        panel.projectList.setSelectedIndex(0);
+                        populateProjectDetails((Project)panel.projectList.getSelectedValue());
+                    }
                     if (jc.getProjects().length == 1) {
                         panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
                     } else if (filterDefinition != null) {
@@ -420,6 +442,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
         ProjectFilter pf = fd.getProjectFilter();
         if(pf != null) {
             setSelected(panel.projectList, pf.getProjects());
+        }
+        ComponentFilter compf = fd.getComponentFilter();
+        if(compf != null) {
+            setSelected(panel.componentsList, compf.getComponents());
+        }
+        VersionFilter vf = fd.getFixForVersionFilter();
+        if(vf != null) {
+            setSelected(panel.fixForList, vf.getVersions());
+        }
+        vf = fd.getReportedInVersionFilter();
+        if(vf != null) {
+            setSelected(panel.affectsVersionList, vf.getVersions());
         }
         IssueTypeFilter itf = fd.getIssueTypeFilter();
         if(itf != null) {
@@ -481,10 +515,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(selectedItems != null) {
             List<Integer> toSelect = new ArrayList<Integer>();
             DefaultListModel model = (DefaultListModel) list.getModel();
-            for (Object p : selectedItems) {
-                int idx = model.indexOf(p);
+            for (Object o : selectedItems) {
+                if(o == null) continue;
+                int idx = model.indexOf(o);
                 if (idx > -1) {
                     toSelect.add(idx);
+                } else {
+                    // for whatever reason - component doesn't implement equals.
+                    if(o instanceof Component) {
+                        Component c = (Component) o;
+                        for (int i = 0; i < model.getSize(); i++) {
+                            Component mc = (Component) model.get(i);
+                            if(mc != null && mc.getId().equals(c.getId())) {
+                                toSelect.add(i);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             int[] idx = new int[toSelect.size()];
@@ -599,7 +646,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    public void valueChanged(ListSelectionEvent e) {        
+    public void valueChanged(ListSelectionEvent e) {
+        if(e.getSource() == panel.projectList) {
+            onProjectChanged(e);
+        }
         fireDataChanged();            // XXX do we need this ???
     }
 
@@ -985,6 +1035,66 @@ public class QueryController extends BugtrackingController implements DocumentLi
             false,
             autoRefresh
         );
+    }
+
+    private void onProjectChanged(ListSelectionEvent e) {
+        Object[] values =  panel.projectList.getSelectedValues();
+        Project[] projects = null;
+        if(values != null) {
+            projects = new Project[values.length];
+            for (int i = 0; i < values.length; i++) {
+                projects[i] = (Project) values[i];
+            }
+        }
+        populateProjectDetails(projects);
+    }
+
+    private void populateProjectDetails(Project... projects) {
+        if(projects == null || projects.length == 0) {
+            return;
+        }
+
+        Set<Version> versions = new HashSet<Version>();
+        Set<Component> components = new HashSet<Component>();
+        for (Project p : projects) {
+            Component[] cs = p.getComponents();
+            if(cs != null) {
+                for (Component c : cs) {
+                    // for what ever reason - component doesn't implement equals!
+                    boolean found = false;
+                    for (Component knownComponent : components) {
+                        if(knownComponent.getId().equals(c.getId())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found) {
+                        components.add(c);
+                    }
+                }
+            }
+            Version[] vs = p.getVersions();
+            if(vs != null) {
+                for (Version v : vs) {
+                    versions.add(v);
+                }
+            }
+        }
+
+        Version[] versionsArray = versions.toArray(new Version[versions.size()]);
+        Component[] componentsArray = components.toArray(new Component[components.size()]);
+        populateList(panel.fixForList, versionsArray);
+        populateList(panel.affectsVersionList, versionsArray);
+        populateList(panel.componentsList, componentsArray);
+
+        panel.fixForScrollPane.setVisible(versionsArray.length != 0);
+        panel.fixForLabel.setVisible(versionsArray.length != 0);
+        panel.affectsVersionsScrollPane.setVisible(versionsArray.length != 0);
+        panel.affectsVersionsLabel.setVisible(versionsArray.length != 0);
+        panel.componentsScrollPane.setVisible(componentsArray.length != 0);
+        panel.componentsLabel.setVisible(componentsArray.length != 0);
+            
+        panel.byDetailsPanel.validate();
     }
 
     private void remove() {

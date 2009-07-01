@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor;
@@ -63,27 +64,35 @@ import org.openide.util.Lookup;
  * @author  Pavel Buzek
  */
 public final class EjbJar {
-    
-    private EjbJarImplementation impl;
+
     private static final Lookup.Result<EjbJarProvider> implementations =
         Lookup.getDefault().lookup(new Lookup.Template<EjbJarProvider>(EjbJarProvider.class));
     
     static  {
         EjbJarAccessor.setDefault(new EjbJarAccessor() {
+
+            @Override
             public EjbJar createEjbJar(EjbJarImplementation spiEjbJar) {
-                return new EjbJar(spiEjbJar);
+                return new EjbJar(spiEjbJar, null);
             }
 
-            public EjbJarImplementation getEjbJarImplementation(EjbJar wm) {
-                return wm == null ? null : wm.impl;
+            @Override
+            public EjbJar createEjbJar(EjbJarImplementation2 spiEjbJar) {
+                return new EjbJar(null, spiEjbJar);
             }
         });
     }
-    
-    private EjbJar (EjbJarImplementation impl) {
-        if (impl == null)
-            throw new IllegalArgumentException ();
+
+    @SuppressWarnings("deprecation")
+    private final EjbJarImplementation impl;
+
+    private final EjbJarImplementation2 impl2;
+
+    @SuppressWarnings("deprecation")
+    private EjbJar (EjbJarImplementation impl, EjbJarImplementation2 impl2) {
+        assert (impl != null && impl2 == null) || (impl == null && impl2 != null);
         this.impl = impl;
+        this.impl2 = impl2;
     }
     
     /** Find the EjbJar for given file or null if the file does not belong
@@ -119,9 +128,20 @@ public final class EjbJar {
     /** J2EE platform version - one of the constants 
      * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
      * @return J2EE platform version
+     * @deprecated use {@link #getJ2eeProfile()}
      */
     public String getJ2eePlatformVersion () {
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile().toPropertiesString();
+        }
         return impl.getJ2eePlatformVersion();
+    }
+
+    public Profile getJ2eeProfile() {
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile();
+        }
+        return Profile.fromPropertiesString(impl.getJ2eePlatformVersion());
     }
     
     /**
@@ -130,6 +150,9 @@ public final class EjbJar {
      * @return descriptor FileObject or <code>null</code> if not available.
      */
     public FileObject getDeploymentDescriptor () {
+        if (impl2 != null) {
+            return impl2.getDeploymentDescriptor();
+        }
         return impl.getDeploymentDescriptor();
     }
 
@@ -140,16 +163,25 @@ public final class EjbJar {
      * </div>
      */
     public FileObject[] getJavaSources() {
+        if (impl2 != null) {
+            return impl2.getJavaSources();
+        }
         return impl.getJavaSources();
     }
     
     /** Meta-inf
      */
     public FileObject getMetaInf() {
+        if (impl2 != null) {
+            return impl2.getMetaInf();
+        }
         return impl.getMetaInf();
     }
 
     public MetadataModel<EjbJarMetadata> getMetadataModel() {
+        if (impl2 != null) {
+            return impl2.getMetadataModel();
+        }
         return impl.getMetadataModel();
     }
 

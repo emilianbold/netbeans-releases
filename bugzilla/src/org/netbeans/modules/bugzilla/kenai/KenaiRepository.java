@@ -44,7 +44,6 @@ import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
@@ -69,12 +68,16 @@ public class KenaiRepository extends BugzillaRepository {
     private KenaiQuery allIssues;
     private String host;
 
-    public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
-        super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
+    KenaiRepository(String repoName, String url, String host, String userName, String password, String urlParam, String product) {
+        super(repoName, url, userName, password, null, null);
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
         this.host = host;
+    }
+
+    public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
+        this(repoName, url, host, getKenaiUser(), getKenaiPassword(), urlParam, product);
     }
 
     @Override

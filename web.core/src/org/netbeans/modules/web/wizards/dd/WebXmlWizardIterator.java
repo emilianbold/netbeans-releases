@@ -55,6 +55,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * @author Petr Slechta
@@ -106,9 +107,12 @@ public final class WebXmlWizardIterator implements WizardDescriptor.Instantiatin
         WebModule wm = panel.getWebModule();
         if (dir != null && wm != null) {
             try {
-                FileObject dd = DDHelper.createWebXml(Profile.fromPropertiesString(wm.getJ2eePlatformVersion()),
+                FileObject dd = DDHelper.createWebXml(wm.getJ2eeProfile(),
                         true, dir);
-                return Collections.singleton(dd);
+                if (dd != null) {
+                    DataObject dObj = DataObject.find(dd);
+                    return Collections.singleton(dObj);
+                }
             } catch (IOException ioe) {
                 Logger.getLogger("global").log(Level.INFO, "Creation of web.xml failed", ioe); // NOI18N
             }

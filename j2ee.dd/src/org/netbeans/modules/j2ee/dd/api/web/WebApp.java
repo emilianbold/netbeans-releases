@@ -368,4 +368,7 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
         // This attribute is optional
 	public void setMetadataComplete(boolean value) throws VersionNotSupportedException;
 	public boolean isMetadataComplete() throws VersionNotSupportedException;
+
+	public void setName(String[] value) throws VersionNotSupportedException;
+	public String[] getName() throws VersionNotSupportedException;
 }

@@ -80,7 +80,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private boolean collectorsTurnedOn = true;
     private final String iconPath;
     private final DLightToolConfiguration configuration;
-    private Boolean idpsInitialized = false;
+    private volatile Boolean idpsInitialized = false;
     //register accessor which will be used ne friend packages of API/SPI accessor packages
     //to get access to tool creation, etc.
 
@@ -185,7 +185,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     private final void initIndicatorDataProviders() {
-        synchronized(idpsInitialized){
+        synchronized(this){
             if (idpsInitialized){
                 return;
             }
