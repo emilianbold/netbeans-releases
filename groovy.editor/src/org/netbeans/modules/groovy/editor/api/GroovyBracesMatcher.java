@@ -86,23 +86,9 @@ public final class GroovyBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-
+                
                 TokenId id = token.id();
-
-                if (id == GroovyTokenId.WHITESPACE) {
-                    // ts.move(offset) gives the token to the left of the caret.
-                    // If you have the caret right at the beginning of a token, try
-                    // the token to the right too - this means that if you have
-                    //  "   |def" it will show the matching "end" for the "def".
-                    offset++;
-                    ts.move(offset);
-
-                    if (ts.moveNext() && (ts.offset() <= offset)) {
-                        token = ts.token();
-                        id = token.id();
-                    }
-                }
-
+                
                 if (id == GroovyTokenId.STRING_BEGIN) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (id == GroovyTokenId.STRING_END) {
@@ -152,22 +138,8 @@ public final class GroovyBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-
+                
                 TokenId id = token.id();
-
-                if (id == GroovyTokenId.WHITESPACE) {
-                    // ts.move(offset) gives the token to the left of the caret.
-                    // If you have the caret right at the beginning of a token, try
-                    // the token to the right too - this means that if you have
-                    //  "   |def" it will show the matching "end" for the "def".
-                    offset++;
-                    ts.move(offset);
-
-                    if (ts.moveNext() && (ts.offset() <= offset)) {
-                        token = ts.token();
-                        id = token.id();
-                    }
-                }
                 
                 OffsetRange r;
                 if (id == GroovyTokenId.STRING_BEGIN) {
