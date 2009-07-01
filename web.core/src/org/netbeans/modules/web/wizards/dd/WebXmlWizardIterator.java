@@ -107,7 +107,7 @@ public final class WebXmlWizardIterator implements WizardDescriptor.Instantiatin
         WebModule wm = panel.getWebModule();
         if (dir != null && wm != null) {
             try {
-                FileObject dd = DDHelper.createWebXml(Profile.fromPropertiesString(wm.getJ2eePlatformVersion()),
+                FileObject dd = DDHelper.createWebXml(wm.getJ2eeProfile(),
                         true, dir);
                 if (dd != null) {
                     DataObject dObj = DataObject.find(dd);

@@ -40,12 +40,13 @@
 package org.netbeans.modules.web.project;
 
 import java.io.File;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -55,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Dongmei Cao
  */
-public class EjbJarProvider implements EjbJarImplementation {
+public class EjbJarProvider implements EjbJarImplementation2 {
 
     public static final String EJB_JAR_DD = "ejb-jar.xml";//NOI18N
     private final ProjectWebModule webModule;
@@ -67,8 +68,8 @@ public class EjbJarProvider implements EjbJarImplementation {
         this.cpProvider = cpProvider;
     }
 
-    public String getJ2eePlatformVersion() {
-        return this.webModule.getJ2eePlatformVersion();
+    public Profile getJ2eeProfile() {
+        return this.webModule.getJ2eeProfile();
     }
 
     public FileObject getMetaInf() {

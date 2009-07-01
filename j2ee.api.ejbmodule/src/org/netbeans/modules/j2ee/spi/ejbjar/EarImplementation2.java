@@ -38,46 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.j2ee.spi.ejbjar;
 
-package org.netbeans.modules.web.api.webmodule;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
- * Constants useful for web-based projects.
- *
- * @author  Milan Kuchtiak
+ * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.Ear}.
+ * @see EjbJarFactory
  */
-public final class WebProjectConstants {
+public interface EarImplementation2 {
 
-    private WebProjectConstants () {}
+    Profile getJ2eeProfile();
+    
+    /** META-INF folder for the Ear.
+     */
+    FileObject getMetaInf ();
 
-    /**
-     * Document root root sources type (source folders for JSPs, HTML, ...).
-     * See <code>org.netbeans.api.project.Sources</code>.
+    /** Deployment descriptor (application.xml file) of the ejb module.
      */
-    public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
-
-    /**
-     * WEB-INF sources type (source folders for TLD files, ...).
-     * See <code>org.netbeans.api.project.Sources</code>.
-     */
-    public static final String TYPE_WEB_INF="web_inf"; //NOI18N
+    FileObject getDeploymentDescriptor ();
     
-    /**
-     * Standard command for redeploying a web project.
-     * See <code>org.netbeans.api.project.ActionProvider</code>.
+    /** Add j2ee webmodule into application.
+     * @param module the module to be added
      */
-    public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
+    void addWebModule (WebModule module);
     
-    /**
-     * Standard artifact type representing a WAR file.
-     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
+    /** Add j2ee ejbjar module into application.
+     * @param module the module to be added
      */
-    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N
+    void addEjbJarModule (EjbJar module);
     
-    /**
-     * Standard artifact type representing a WAR file used for adding
-     * Web module into a J2EE Application (ear project).
-     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
+    /** Add j2ee application client module into application.
+     * @param module the module to be added
      */
-    public static final String ARTIFACT_TYPE_WAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
+    void addCarModule (Car module);
+    
 }

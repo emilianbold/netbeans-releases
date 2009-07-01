@@ -456,7 +456,7 @@ final public class WebProjectProperties {
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
             
-            Profile j2eeProfile = Profile.fromPropertiesString(project.getAPIWebModule().getJ2eePlatformVersion());
+            Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
             if (shouldCreateWebXml()) {
                 DDHelper.createWebXml(j2eeProfile, true, project.getAPIWebModule().getWebInf());
             }
