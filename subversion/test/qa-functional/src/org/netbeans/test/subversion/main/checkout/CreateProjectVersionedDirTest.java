@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -115,7 +115,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             npwo.selectCategory("Java");
             npwo.selectProject("Java Application");
             npwo.next();
-            NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+            NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
             new JTextFieldOperator(npnlso, 1).setText(work.getAbsolutePath() + File.separator + PROJECT_NAME + File.separator+ "src"); // NOI18N
             new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
             new NewProjectWizardOperator().finish();
