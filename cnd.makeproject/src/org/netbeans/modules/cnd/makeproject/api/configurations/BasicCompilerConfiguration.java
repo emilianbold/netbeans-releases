@@ -108,6 +108,15 @@ public abstract class BasicCompilerConfiguration {
         commandLineConfiguration = new OptionsConfiguration();
     }
 
+    public void fixupMasterLinks(BasicCompilerConfiguration compilerConfiguration) {
+        getDevelopmentMode().setMaster(compilerConfiguration.getDevelopmentMode());
+        getWarningLevel().setMaster(compilerConfiguration.getWarningLevel());
+        getSixtyfourBits().setMaster(compilerConfiguration.getSixtyfourBits());
+        getStrip().setMaster(compilerConfiguration.getStrip());
+        getAdditionalDependencies().setMaster(compilerConfiguration.getAdditionalDependencies());
+        getTool().setMaster(compilerConfiguration.getTool());
+    }
+
     public boolean getModified() {
         return developmentMode.getModified() ||
                 warningLevel.getModified() ||
