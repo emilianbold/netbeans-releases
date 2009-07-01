@@ -48,7 +48,7 @@ import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -126,7 +126,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         projectName = "def EJB Mod" + version;
         NewProjectWizardOperator wiz
                 = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"EJB Module");
-        NewProjectNameLocationStepOperator op
+        NewJavaProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
@@ -142,7 +142,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         projectName = "BadModule" + version;
         NewProjectWizardOperator wiz
                 = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"EJB Module");
-        NewProjectNameLocationStepOperator op
+        NewJavaProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
@@ -160,7 +160,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         projectName = "App client" + version;
         NewProjectWizardOperator wiz
                 = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"Enterprise Application Client");
-        NewProjectNameLocationStepOperator op
+        NewJavaProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_CAR, version);
@@ -177,7 +177,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         projectName = "def Web app" + version;
         NewProjectWizardOperator wiz
                 = WizardUtils.createNewProject(CATEGORY_WEB,"Web Application");
-        NewProjectNameLocationStepOperator op
+        NewJavaProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_WAR, version);
@@ -194,7 +194,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         projectName = "def EAR app" + version;
         NewProjectWizardOperator wiz
                 = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"Enterprise Application");
-        NewProjectNameLocationStepOperator op
+        NewJavaProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EAR, version);

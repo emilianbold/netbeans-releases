@@ -86,7 +86,7 @@ PropertyChangeListener {
 
 
     // set of all IOManagers
-    private static Set          managers = new HashSet ();
+    private static Set<IOManager> managers = new HashSet<IOManager>();
     
     private JPDADebugger        debugger;
     //private DebuggerEngine      engine;
@@ -104,10 +104,10 @@ PropertyChangeListener {
         
         // close old tabs
         if (DebuggerManager.getDebuggerManager ().getSessions ().length == 1) {
-            Iterator i = managers.iterator ();
+            Iterator<IOManager> i = managers.iterator ();
             while (i.hasNext ())
-                ((IOManager) i.next ()).close ();
-            managers = new HashSet ();
+                i.next().close();
+            managers = new HashSet<IOManager>();
         }
         
         // open new tab

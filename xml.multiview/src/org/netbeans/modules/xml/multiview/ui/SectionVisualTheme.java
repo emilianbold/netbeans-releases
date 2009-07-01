@@ -41,13 +41,7 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import java.awt.Color;
 
 /**
  * This class defines the visual theme (i.e. colors) of the 

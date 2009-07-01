@@ -45,7 +45,6 @@ import java.awt.*;
 import javax.swing.*;
 
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.windows.*;
 
 /**
  * The TreePanelDesignEditor two pane editor. This is basically a container that implements the ExplorerManager
