@@ -656,7 +656,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         CndFileUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();
     }
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
     /** maps platform project to project */
     private final Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
     private CsmModelState state;
