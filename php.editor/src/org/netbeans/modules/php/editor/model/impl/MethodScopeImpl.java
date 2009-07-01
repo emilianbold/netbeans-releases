@@ -43,6 +43,8 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpKind;
@@ -168,8 +170,14 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     @Override
     public String getConstructorIndexSignature() {
+        StringBuilder sb = new StringBuilder();
         String indexSignature = getIndexSignature();
         int indexOf = indexSignature.indexOf(";");
-        return  getInScope().getName() + indexSignature.substring(indexOf);
+        sb.append(getInScope().getName()).append(indexSignature.substring(indexOf));//NOI18N
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+
+        return sb.toString();
     }
 }

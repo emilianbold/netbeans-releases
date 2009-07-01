@@ -55,6 +55,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * @author Petr Slechta
@@ -107,10 +108,13 @@ public final class WebFragmentXmlWizardIterator implements WizardDescriptor.Inst
         if (dir != null && wm != null) {
             try {
                 FileObject dd = DDHelper.createWebFragmentXml(
-                        Profile.fromPropertiesString(wm.getJ2eePlatformVersion()), dir);
-                return Collections.singleton(dd);
+                        wm.getJ2eeProfile(), dir);
+                if (dd != null) {
+                    DataObject dObj = DataObject.find(dd);
+                    return Collections.singleton(dObj);
+                }
             } catch (IOException ioe) {
-                Logger.getLogger("global").log(Level.INFO, "Creation of web.xml failed", ioe); // NOI18N
+                Logger.getLogger("global").log(Level.INFO, "Creation of web-fragment.xml failed", ioe); // NOI18N
             }
         }
         return Collections.EMPTY_SET;

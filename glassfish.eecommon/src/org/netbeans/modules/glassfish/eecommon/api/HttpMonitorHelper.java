@@ -45,10 +45,14 @@ package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -59,16 +63,13 @@ import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
-
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 import org.xml.sax.SAXException;
-
 import org.netbeans.modules.schema2beans.Common;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileObject;
@@ -137,12 +138,52 @@ public class HttpMonitorHelper {
     private static File getDefaultWebXML(String domainLoc, String domainName) {
         String loc = domainLoc+"/"+domainName+"/config/default-web.xml"; // NOI18N
         File webXML = new File(loc);
+
+        // Workaround to eliminate Glassfih issue 8609
+        // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8609
+        // Workaround may be removed when GF issue 8609 is fixed
+        String newLoc = domainLoc+"/"+domainName+"/config/default-web-2_4.xml"; // NOI18N
+        File newWebXML = new File(newLoc);
+        if (!newWebXML.exists()) {
+            createCopyAndUpgrade(webXML, newWebXML);
+        }
+        webXML = newWebXML;
+        // end of workaround
+
         if (webXML.exists()) {
             return webXML;
         }
         return null;
     }
-    
+
+    private static void createCopyAndUpgrade(File webXML, File newWebXML) {
+        try {
+            BufferedReader fr = new BufferedReader(new FileReader(webXML));
+            BufferedWriter fw = new BufferedWriter(new FileWriter(newWebXML));
+            while (true) {
+                String line = fr.readLine();
+                if (line == null)
+                    break;
+                if (line.startsWith("<!DOCTYPE")) {
+                    while (!line.startsWith("<web-app")) {
+                        line = fr.readLine();
+                    }
+                    fw.write("<web-app version=\"2.4\" xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\">");
+                    fw.newLine();
+                }
+                else {
+                    fw.write(line);
+                    fw.newLine();
+                }
+            }
+            fw.close();
+            fr.close();
+        }
+        catch (IOException e) {
+            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "hack to eliminate GF bug 8609 failed", e);
+        }
+    }
+
     private static boolean addMonitorJars(String domainLoc, String domainName, String... others) throws FileNotFoundException, IOException {
         String loc = domainLoc+"/"+domainName;
         File instDir = new File(loc);

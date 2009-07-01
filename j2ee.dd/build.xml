@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
   <property name="s2b_root_web_3_0" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_3_0"/>
   <property name="s2b_root_2_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_1"/>
   <property name="s2b_root_3_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_3_0"/>
+  <property name="s2b_root_3_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_3_1"/>
   <property name="s2b_root_app_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_4"/>
   <property name="s2b_root_app_5" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_5"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
@@ -256,6 +257,15 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/> 
+	<schema2beans schema="${s2b_res_root}/ejb-jar_3_1.xsd"
+ 	  mddFile="${s2b_res_root}/ejb-jar_3_1.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_3_1"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
         <schema2beans schema="${s2b_res_root}/application_1_4.xsd"
  	  mddFile="${s2b_res_root}/application_1_4.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_4"
@@ -304,6 +314,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${s2b_root_web_3_0}"/>
         <mkdir dir="${s2b_root_2_1}"/>
         <mkdir dir="${s2b_root_3_0}"/>
+        <mkdir dir="${s2b_root_3_1}"/>
         <mkdir dir="${s2b_root_app_1_4}"/>
         <mkdir dir="${s2b_root_app_5}"/>
         <mkdir dir="${s2b_root_client_1_4}"/>
@@ -338,6 +349,12 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete dir="${s2b_root_3_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_3_1}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_3_1}"/>
         <delete>
             <fileset dir="${s2b_root_app_1_4}">
                 <include name="*.java"/>

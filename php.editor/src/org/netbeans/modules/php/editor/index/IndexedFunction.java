@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Modifier;
  */
 public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String arguments;
+    private String namespaceName;
     private String[] args;
     private List<String> parameters;
     private int[] optionalArgs;
@@ -60,7 +61,12 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private boolean includeIn;
     
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, offset, flags, kind);
+        this(name,in,null,index,fileUrl,arguments,offset,flags,kind);
+    }
+
+    public IndexedFunction(String name, String in, String namespaceName, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
+        super(name, in != null ? in : namespaceName, index, fileUrl, offset, flags, kind);
+        this.namespaceName = namespaceName;
         this.arguments = arguments;
     }
     
@@ -77,7 +83,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     public String getFunctionSignature() {
         return getSignatureImpl(false);
     }
-
+    
     private String getSignatureImpl(boolean includeIn) {
         if (textSignature == null || this.includeIn != includeIn) {
             this.includeIn = includeIn;
@@ -168,5 +174,10 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
             throw new IllegalArgumentException("returnType cannot be empty string!");
         }
         this.returnType = returnType;
+    }
+    
+    public String getNamespaceName() {
+        final String retval = namespaceName;
+        return retval != null ? retval : "";//NOI18N
     }
 }

@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvid
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
@@ -96,7 +97,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         }
         if (proj != null && project == proj) {
             if (earimpl != null && earimpl.isValid()) {
-                return EjbJarFactory.createEar(earimpl);
+                return EjbJarFactory.createEar((EarImplementation2) earimpl);
             }
         }
         return null;

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -55,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
@@ -71,7 +71,6 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -209,7 +208,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     
     private AppClient getAppClient() throws IOException {
         if (webApp==null) {
-            CarImplementation jp = webProject.getLookup().lookup(CarImplementation.class);
+            AppClientProvider jp = webProject.getLookup().lookup(AppClientProvider.class);
             FileObject fo = jp.getDeploymentDescriptor();
             webApp = DDProvider.getDefault().getDDRoot(fo);
         }
@@ -227,12 +226,12 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private void writeDD(FileObject referencingFile, final String referencingClassName) throws IOException {
-        final CarImplementation jp = webProject.getLookup().lookup(CarImplementation.class);
+        final AppClientProvider jp = webProject.getLookup().lookup(AppClientProvider.class);
         JavaSource javaSource = JavaSource.forFileObject(referencingFile);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 TypeElement typeElement = controller.getElements().getTypeElement(referencingClassName);
-                if (isDescriptorMandatory(jp.getJ2eePlatformVersion()) || 
+                if (isDescriptorMandatory(jp.getJ2eeProfile()) ||
                         !InjectionTargetQuery.isInjectionTarget(controller, typeElement)) {
                     FileObject fo = jp.getDeploymentDescriptor();
                     getAppClient().write(fo);
@@ -288,8 +287,8 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
         
     }
     
-    private static boolean isDescriptorMandatory(String j2eeVersion) {
-        if (EjbProjectConstants.J2EE_13_LEVEL.equals(j2eeVersion) || EjbProjectConstants.J2EE_14_LEVEL.equals(j2eeVersion)) {
+    private static boolean isDescriptorMandatory(Profile j2eeVersion) {
+        if (Profile.J2EE_13.equals(j2eeVersion) || Profile.J2EE_14.equals(j2eeVersion)) {
             return true;
         }
         return false;

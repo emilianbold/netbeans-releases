@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.test;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
@@ -61,8 +62,8 @@ public class EjbJarProviderImpl implements EjbJarProvider {
         return ejbModule;
     }
     
-    public void setEjbModule(String j2eePlatformVersion, FileObject ddFileObject, FileObject[] sources) {
-        ejbModule = EjbJarFactory.createEjbJar(new EjbJarImplementationImpl(j2eePlatformVersion, ddFileObject, sources));
+    public void setEjbModule(Profile j2eeProfile, FileObject ddFileObject, FileObject[] sources) {
+        ejbModule = EjbJarFactory.createEjbJar(new EjbJarImplementationImpl(j2eeProfile, ddFileObject, sources));
     }
     
 }

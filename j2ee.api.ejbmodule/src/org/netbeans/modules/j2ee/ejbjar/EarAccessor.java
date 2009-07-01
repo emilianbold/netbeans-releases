@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.ejbjar;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 
 /* This class provides access to the {@link EjbJar}'s private constructor
  * from outside in the way that this class is implemented by an inner class of
@@ -60,9 +61,9 @@ public abstract class EarAccessor {
             ex.printStackTrace();
         }
     }
-    
+
+    @Deprecated
     public abstract Ear createEar(EarImplementation spiEar);
 
-    public abstract EarImplementation getEarImplementation (Ear ear);
-
+    public abstract Ear createEar(EarImplementation2 spiEar);
 }

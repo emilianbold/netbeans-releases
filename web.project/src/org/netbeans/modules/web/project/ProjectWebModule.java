@@ -68,7 +68,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -87,8 +86,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  * @author  Pavel Buzek
  */
 public final class ProjectWebModule extends J2eeModuleProvider 
-  implements WebModuleImplementation, J2eeModuleImplementation2, ModuleChangeReporter,
-  EjbChangeDescriptor, PropertyChangeListener {
+        implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
       
     public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
 //    public static final String FOLDER_CLASSES = "classes";//NOI18N
@@ -107,7 +105,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
   
     private PropertyChangeSupport propertyChangeSupport;
-    private boolean webAppPropChangeLInitialized;
     
     private J2eeModule j2eeModule;
 
@@ -129,8 +126,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
         if (dd == null && !silent 
-                && (J2eeModule.J2EE_13.equals(getJ2eePlatformVersion ()) || 
-                    J2eeModule.J2EE_14.equals(getJ2eePlatformVersion ()))) {
+                && (Profile.J2EE_13.equals(getJ2eeProfile()) ||
+                    Profile.J2EE_14.equals(getJ2eeProfile()))) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
                     webInfFo.getPath()));
         }
@@ -502,7 +499,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     public String getModuleVersion () {
         // return a version based on the Java EE version
-        Profile platformVersion = Profile.fromPropertiesString(getJ2eePlatformVersion());
+        Profile platformVersion = getJ2eeProfile();
         if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
             return WebApp.VERSION_3_0;
         } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
@@ -557,8 +554,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return new String[] {};
     }
 
-    public String getJ2eePlatformVersion () {
-        return helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_PLATFORM);
+    public Profile getJ2eeProfile () {
+        return Profile.fromPropertiesString(helper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty(WebProjectProperties.J2EE_PLATFORM));
     }
     
     public FileObject getDD() {

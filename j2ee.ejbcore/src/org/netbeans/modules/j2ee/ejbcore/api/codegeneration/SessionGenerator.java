@@ -82,11 +82,13 @@ public final class SessionGenerator {
     public static final String EJB30_LOCAL = "Templates/J2EE/EJB30/SessionLocal.java"; // NOI18N
     public static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
+    public static final String EJB31_SINGLETON_EJBCLASS = "Templates/J2EE/EJB31/SingletonEjbClass.java"; // NOI18N
+
     // informations collected in wizard
     private final FileObject pkg;
     private final boolean hasRemote;
     private final boolean hasLocal;
-    private final boolean isStateful;
+    private final String sessionType;
     private final boolean isSimplified;
 //    private final boolean hasBusinessInterface;
     private final boolean isXmlBased;
@@ -107,16 +109,16 @@ public final class SessionGenerator {
     private final Map<String, String> templateParameters;
 
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased, false);
+            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
+        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, false);
     } 
     
     protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, boolean isTest) {
+            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, boolean isTest) {
         this.pkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
-        this.isStateful = isStateful;
+        this.sessionType = sessionType;
         this.isSimplified = isSimplified;
 //        this.hasBusinessInterface = hasBusinessInterface;
         this.isXmlBased = isXmlBased;
@@ -191,7 +193,17 @@ public final class SessionGenerator {
     }
     
     private FileObject generateEJB30Classes() throws IOException {
-        String ejbClassTemplateName = isStateful ? EJB30_STATEFUL_EJBCLASS : EJB30_STATELESS_EJBCLASS;
+        String ejbClassTemplateName = "";
+        if (sessionType.equals(Session.SESSION_TYPE_STATELESS)){
+            ejbClassTemplateName = EJB30_STATELESS_EJBCLASS;
+        } else if (sessionType.equals(Session.SESSION_TYPE_STATEFUL)){
+            ejbClassTemplateName = EJB30_STATEFUL_EJBCLASS;
+        } else if (sessionType.equals(Session.SESSION_TYPE_SINGLETON)){
+            ejbClassTemplateName = EJB31_SINGLETON_EJBCLASS;
+        } else{
+            assert false;
+        }
+
         FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
             GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null, templateParameters);
@@ -244,10 +256,7 @@ public final class SessionGenerator {
             session.setLocal(packageNameWithDot + localName);
             session.setLocalHome(packageNameWithDot + localHomeName);
         }
-        String sessionType = Session.SESSION_TYPE_STATELESS;
-        if (isStateful) {
-            sessionType = Session.SESSION_TYPE_STATEFUL;
-        }
+        
         session.setSessionType(sessionType);
         session.setTransactionType("Container"); // NOI18N
         beans.addSession(session);
