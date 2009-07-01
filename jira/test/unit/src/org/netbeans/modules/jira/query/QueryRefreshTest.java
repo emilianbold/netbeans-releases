@@ -169,6 +169,7 @@ public class QueryRefreshTest extends NbTestCase {
 
     }
 
+    // XXX can't get this running
 //    public void testKenaiQueryAutoRefresh() throws Throwable {
 //        final String summary = "summary" + System.currentTimeMillis();
 //        final String queryName = "refreshtest";
