@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
 public final class FrameworkCommandChooser extends JPanel {
     private static final long serialVersionUID = 2405531380316402L;
 
-    private final static Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
+    private static final Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
 
     /** Remember checkbox state per IDE sessions. */
     private static boolean debug;
@@ -109,7 +109,7 @@ public final class FrameworkCommandChooser extends JPanel {
         final FrameworkCommandChooser chooserPanel = new FrameworkCommandChooser(phpModule, runButton, frameworkName);
         String title = getMessage("FrameworkCommandChooser.title", frameworkName, phpModule.getDisplayName());
 
-        runButton.getAccessibleContext().setAccessibleDescription (getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName));
+        runButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName));
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -120,7 +120,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
         final JButton refreshButton = new JButton();
         Mnemonics.setLocalizedText(refreshButton, getMessage("FrameworkCommandChooser.refreshButton"));
-        refreshButton.getAccessibleContext().setAccessibleDescription (getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));
+        refreshButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));
         refreshButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refreshButton.setEnabled(false);
@@ -143,7 +143,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
         DialogDescriptor descriptor = new DialogDescriptor(chooserPanel, title, true,
                 options, runButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        descriptor.setClosingOptions(new Object[] { runButton, DialogDescriptor.CANCEL_OPTION });
+        descriptor.setClosingOptions(new Object[] {runButton, DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleName(getMessage("FrameworkCommandChooser.accessibleName", frameworkName));
         dialog.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.accessibleDescription", frameworkName));
@@ -208,11 +208,11 @@ public final class FrameworkCommandChooser extends JPanel {
         }
     }
 
-    private Map<FrameworkCommand,ParameterContainer> getTasksToParams() {
+    private Map<FrameworkCommand, ParameterContainer> getTasksToParams() {
         String prjDir = phpModule.getSourceDirectory().getPath();
-        Map<FrameworkCommand,ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
+        Map<FrameworkCommand, ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
         if (result == null) {
-            result = new HashMap<FrameworkCommand,ParameterContainer>();
+            result = new HashMap<FrameworkCommand, ParameterContainer>();
             PROJECT_TO_TASK.put(prjDir, result);
         }
         return result;
@@ -258,7 +258,7 @@ public final class FrameworkCommandChooser extends JPanel {
         debugCheckbox.setSelected(debug);
         refreshNeeded = reloadAllTasks();
         refreshTaskList();
-        rakeTaskField.getDocument().addDocumentListener(new DocumentListener() {
+        taskField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) { refreshTaskList(); }
             public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
             public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
@@ -312,9 +312,8 @@ public final class FrameworkCommandChooser extends JPanel {
         return true;
     }
 
-    /** Refreshes Rake tasks list view. */
     private void refreshTaskList() {
-        String filter = rakeTaskField.getText().trim();
+        String filter = taskField.getText().trim();
         DefaultListModel model = new DefaultListModel();
         List<FrameworkCommand> matching = Filter.getFilteredTasks(allTasks, filter);
 
@@ -333,8 +332,8 @@ public final class FrameworkCommandChooser extends JPanel {
         final Object task = matchingTaskList.getSelectedValue();
         final JComponent[] comps = new JComponent[] {
             matchingTaskSP, matchingTaskLabel, matchingTaskLabel, matchingTaskList,
-            rakeTaskLabel, rakeTaskField, debugCheckbox,
-            taskParamLabel, taskParametersComboBox, rakeTaskHint
+            taskLabel, taskField, debugCheckbox,
+            taskParamLabel, taskParametersComboBox, taskHint
         };
         setEnabled(comps, false);
         matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkName)});
@@ -348,7 +347,7 @@ public final class FrameworkCommandChooser extends JPanel {
                         matchingTaskList.setSelectedValue(task, true);
                         uiFinishAction.run();
                         setEnabled(comps, true);
-                        rakeTaskField.requestFocus();
+                        taskField.requestFocus();
                     }
                 });
             }
@@ -383,27 +382,27 @@ public final class FrameworkCommandChooser extends JPanel {
     private void initComponents() {
 
         debugCheckbox = new javax.swing.JCheckBox();
-        rakeTaskLabel = new javax.swing.JLabel();
+        taskLabel = new javax.swing.JLabel();
         taskParamLabel = new javax.swing.JLabel();
         matchingTaskLabel = new javax.swing.JLabel();
         matchingTaskSP = new javax.swing.JScrollPane();
         matchingTaskList = new javax.swing.JList();
-        rakeTaskFieldPanel = new javax.swing.JPanel();
-        rakeTaskField = new javax.swing.JTextField();
-        rakeTaskHint = new javax.swing.JLabel();
+        taskFieldPanel = new javax.swing.JPanel();
+        taskField = new javax.swing.JTextField();
+        taskHint = new javax.swing.JLabel();
         taskParametersComboBox = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.text")); // NOI18N
 
-        rakeTaskLabel.setLabelFor(rakeTaskField);
-        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.rakeTaskLabel.text")); // NOI18N
+        taskLabel.setLabelFor(taskField);
+        org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.text")); // NOI18N
 
         matchingTaskLabel.setLabelFor(matchingTaskList);
         org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.text")); // NOI18N
 
-        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12));
+        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -412,18 +411,18 @@ public final class FrameworkCommandChooser extends JPanel {
         });
         matchingTaskSP.setViewportView(matchingTaskList);
 
-        rakeTaskFieldPanel.setLayout(new java.awt.BorderLayout());
+        taskFieldPanel.setLayout(new java.awt.BorderLayout());
 
-        rakeTaskField.setText(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.rakeTaskField.text")); // NOI18N
-        rakeTaskField.addKeyListener(new java.awt.event.KeyAdapter() {
+        taskField.setText(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskField.text")); // NOI18N
+        taskField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                rakeTaskFieldKeyPressed(evt);
+                taskFieldKeyPressed(evt);
             }
         });
-        rakeTaskFieldPanel.add(rakeTaskField, java.awt.BorderLayout.NORTH);
+        taskFieldPanel.add(taskField, java.awt.BorderLayout.NORTH);
 
-        org.openide.awt.Mnemonics.setLocalizedText(rakeTaskHint, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.rakeTaskHint.text")); // NOI18N
-        rakeTaskFieldPanel.add(rakeTaskHint, java.awt.BorderLayout.SOUTH);
+        org.openide.awt.Mnemonics.setLocalizedText(taskHint, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskHint.text")); // NOI18N
+        taskFieldPanel.add(taskHint, java.awt.BorderLayout.SOUTH);
 
         taskParametersComboBox.setEditable(true);
 
@@ -437,12 +436,12 @@ public final class FrameworkCommandChooser extends JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(rakeTaskLabel)
+                            .add(taskLabel)
                             .add(taskParamLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
-                            .add(rakeTaskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
+                            .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel))
                 .addContainerGap())
         );
@@ -451,8 +450,8 @@ public final class FrameworkCommandChooser extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rakeTaskLabel)
-                    .add(rakeTaskFieldPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(taskLabel)
+                    .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(taskParamLabel)
@@ -505,9 +504,9 @@ public final class FrameworkCommandChooser extends JPanel {
         }
     }
 
-    private void rakeTaskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_rakeTaskFieldKeyPressed
+    private void taskFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_taskFieldKeyPressed
         handleNavigationKeys(evt);
-    }//GEN-LAST:event_rakeTaskFieldKeyPressed
+    }//GEN-LAST:event_taskFieldKeyPressed
 
     private void matchingTaskListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_matchingTaskListMouseClicked
         if (runButton.isEnabled() && evt.getClickCount() == 2) {
@@ -563,10 +562,10 @@ public final class FrameworkCommandChooser extends JPanel {
     private javax.swing.JLabel matchingTaskLabel;
     private javax.swing.JList matchingTaskList;
     private javax.swing.JScrollPane matchingTaskSP;
-    private javax.swing.JTextField rakeTaskField;
-    private javax.swing.JPanel rakeTaskFieldPanel;
-    private javax.swing.JLabel rakeTaskHint;
-    private javax.swing.JLabel rakeTaskLabel;
+    private javax.swing.JTextField taskField;
+    private javax.swing.JPanel taskFieldPanel;
+    private javax.swing.JLabel taskHint;
+    private javax.swing.JLabel taskLabel;
     private javax.swing.JLabel taskParamLabel;
     private javax.swing.JComboBox taskParametersComboBox;
     // End of variables declaration//GEN-END:variables
