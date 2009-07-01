@@ -418,18 +418,22 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
         
         generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
         
-        //open the class in the editor
+        //open the implementation class in editor
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                // refresh folder due to issue 167543
+                pkg.refresh();
                 FileObject clz = pkg.getFileObject(implClassName,"java"); //NOI18N
-                try {
-                    DataObject dobj = DataObject.find(clz);
-                    EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                    ec.open();
-                } catch (Throwable ex) {
-                    Logger.getLogger(JaxRpcServiceCreator.class.getName()).log(Level.WARNING,
-                            "Cannot open implementation class in editor.", ex); //NOI18N
+                if (clz != null) {
+                    try {
+                        DataObject dobj = DataObject.find(clz);
+                        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                        ec.open();
+                    } catch (Throwable ex) {
+                        Logger.getLogger(JaxRpcServiceCreator.class.getName()).log(Level.WARNING,
+                                "Cannot open implementation class in editor.", ex); //NOI18N
+                    }
                 }
             }
         });

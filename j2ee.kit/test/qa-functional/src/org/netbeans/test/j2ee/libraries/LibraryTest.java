@@ -54,7 +54,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
@@ -105,7 +105,7 @@ public class LibraryTest extends J2eeTestCase {
                 null);
         //create empty j2ee project
         WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
-        NewProjectNameLocationStepOperator npnlso =
+        NewJavaProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
         //Create EJB Module:
