@@ -324,7 +324,7 @@ public class ProjectActionSupport {
             }
 
             if (pae.getType() == ProjectActionEvent.Type.CUSTOM_ACTION && customHandler != null) {
-                initHandler(customHandler, pae);
+                initHandler(customHandler, pae, paes);
                 customHandler.execute(ioTab);
             } else {
                 if (currentAction == 0 && !checkRemotePath(pae)) {
@@ -334,7 +334,7 @@ public class ProjectActionSupport {
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
-                        initHandler(handler, pae);
+                        initHandler(handler, pae, paes);
                         handler.execute(ioTab);
                         break;
                     }
@@ -376,8 +376,8 @@ public class ProjectActionSupport {
             return success;
         }
 
-        private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae) {
-            handler.init(pae);
+        private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
+            handler.init(pae, paes);
             progressHandle.finish();
             progressHandle = handler.canCancel()? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();

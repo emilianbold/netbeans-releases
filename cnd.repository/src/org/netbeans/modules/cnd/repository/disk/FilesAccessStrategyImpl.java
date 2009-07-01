@@ -71,8 +71,9 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             this.unit = unit;
         }
     }
-    
-    private final Object cacheLock = new String("Repository file cache lock"); //NOI18N
+
+    private static final class Lock {}
+    private final Object cacheLock = new Lock();
     private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
     private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N

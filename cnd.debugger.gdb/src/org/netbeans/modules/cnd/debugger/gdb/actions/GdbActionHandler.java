@@ -64,7 +64,7 @@ public class GdbActionHandler implements ProjectActionHandler {
 
     private ProjectActionEvent pae;
 
-    public void init(ProjectActionEvent pae) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
 

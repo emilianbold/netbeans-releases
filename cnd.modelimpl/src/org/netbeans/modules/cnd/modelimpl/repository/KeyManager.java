@@ -62,7 +62,8 @@ public class KeyManager {
     public static KeyManager instance() {
         return instance;
     }
-    private final String lock = new String("lock in KeyManager"); // NOI18N
+    private static final class Lock {}
+    private final Object lock = new Lock();
 
     /**
      * returns shared uid instance equal to input one.
