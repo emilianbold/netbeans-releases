@@ -138,6 +138,7 @@ public class NbJiraIssue extends Issue {
      * Field was changed since the issue was seen the last time
      */
     static final int FIELD_STATUS_MODIFIED = 4;
+    private Map<String, String> seenAtributes;
 
     enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
@@ -210,6 +211,29 @@ public class NbJiraIssue extends Issue {
         super(repo);
         this.taskData = data;
         this.repository = repo;
+    }
+
+    void opened() {
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(!taskData.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
+        if(refresh != null && refresh.equals("true")) {                                      // NOI18N
+            return;
+        }
+        repository.scheduleForRefresh(getID());
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
+    }
+
+    void closed() {
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
+        repository.stopRefreshing(getID());
+        seenAtributes = null;
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     @Override
@@ -1101,6 +1125,14 @@ public class NbJiraIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
+
+        try {
+            seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
+
         return true;
     }
 
@@ -1116,9 +1148,6 @@ public class NbJiraIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-        if(!wasSeen()) {
-            return FIELD_STATUS_IRELEVANT;
-        }
         Map<String, String> a = getSeenAttributes();
         String seenValue = a != null ? a.get(f.key) : null;
         if(seenValue == null) {
@@ -1133,9 +1162,11 @@ public class NbJiraIssue extends Issue {
     }
 
     private Map<String, String> getSeenAttributes() {
-        Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
         if(seenAtributes == null) {
-            seenAtributes = new HashMap<String, String>();
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+            if(seenAtributes == null) {
+                seenAtributes = new HashMap<String, String>();
+            }
         }
         return seenAtributes;
     }
