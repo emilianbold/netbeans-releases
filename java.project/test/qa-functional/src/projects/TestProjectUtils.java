@@ -52,7 +52,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
@@ -95,7 +95,7 @@ public class TestProjectUtils {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(projName);
         
-        BuildProjectAction buildProjectAction = new BuildProjectAction();
+        BuildJavaProjectAction buildProjectAction = new BuildJavaProjectAction();
         buildProjectAction.perform(prn);
         
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
