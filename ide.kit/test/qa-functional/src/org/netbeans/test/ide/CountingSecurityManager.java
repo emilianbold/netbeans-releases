@@ -461,7 +461,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
             }
         }
-        if (file.endsWith("harness/modules/org-netbeans-modules-nbjunit.jar")) {
+        if (file.endsWith("harness" + File.separator + "modules" + File.separator + "org-netbeans-modules-nbjunit.jar")) {
             return false;
         }
 
