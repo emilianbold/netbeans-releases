@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,64 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.uihandler;
 
-import java.awt.event.ActionEvent;
-import java.util.List;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import java.util.logging.LogRecord;
-import org.netbeans.junit.NbTestCase;
+import java.util.logging.Logger;
 
 /**
  *
- * @author Jaroslav Tulach
+ * @author Jindrich Sedek
  */
-public class UIHandlerWhenInterruptedTest extends NbTestCase {
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions");
+public class CPUInfo {
+    static final String MESSAGE = "CPU INFO";
 
-    
-    public UIHandlerWhenInterruptedTest(String testName) {
-        super(testName);
-    }
-
-    protected void setUp() throws Exception {
-        Installer o = Installer.findObject(Installer.class, true);
-        System.setProperty("netbeans.user", getWorkDirPath());
-        clearWorkDir();
-        assertNotNull("Installer created", o);
-        o.restored();
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public void testPublishWhenInterupted() {
-        
-        for (int i = 0; i < 800; i++) {
-            LogRecord rec2 = new LogRecord(Level.FINER, "" + i); // NOI18N
-            Thread.currentThread().interrupt();
-            UILOG.log(rec2);        
-        }
-
-        int cnt = 50;
-        while (cnt-- > 0 && Installer.getLogsSize() < 800) {
-            // ok, repeat
-        }
-        List<LogRecord> logs = InstallerTest.getLogs();
-        assertEquals("One log: " + logs, 800, logs.size());
-        
-        for (int i = 1; i < 800; i++) {
-            assertEquals("" + i, logs.get(i).getMessage());
-        }
-        
-    }
-    
-    private static final class MyAction extends AbstractAction {
-        public void actionPerformed(ActionEvent e) {
-        }
+    static void logCPUInfo() {
+        LogRecord log = new LogRecord(Level.FINEST, MESSAGE); // NOI18N
+        OperatingSystemMXBean bean = ManagementFactory.getOperatingSystemMXBean();
+        Object [] params = new Object[]{bean.getAvailableProcessors(), bean.getSystemLoadAverage()};
+        log.setParameters(params);
+        Logger.getLogger("org.netbeans.ui.performance").log(log);
     }
 }
