@@ -42,49 +42,52 @@ package org.netbeans.modules.extexecution;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
-import org.netbeans.spi.extexecution.destroy.DestroyUtils;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 
 /**
  *
  * @author mkleint
  */
 public class WrapperProcess extends Process {
-        private final String uuid;
-        private final Process del;
 
-        public WrapperProcess(Process delegate, String uuid) {
-            this.del = delegate;
-            this.uuid = uuid;
-        }
+    public static final String KEY_UUID = "NB_EXEC_PROCESS_UUID"; //NOI18N
+    private final String uuid;
 
-        @Override
-        public OutputStream getOutputStream() {
-            return del.getOutputStream();
-        }
+    private final Process del;
 
-        @Override
-        public InputStream getInputStream() {
-            return del.getInputStream();
-        }
+    public WrapperProcess(Process delegate, String uuid) {
+        this.del = delegate;
+        this.uuid = uuid;
+    }
 
-        @Override
-        public InputStream getErrorStream() {
-            return del.getErrorStream();
-        }
+    @Override
+    public OutputStream getOutputStream() {
+        return del.getOutputStream();
+    }
 
-        @Override
-        public int waitFor() throws InterruptedException {
-            return del.waitFor();
-        }
+    @Override
+    public InputStream getInputStream() {
+        return del.getInputStream();
+    }
 
-        @Override
-        public int exitValue() {
-            return del.exitValue();
-        }
+    @Override
+    public InputStream getErrorStream() {
+        return del.getErrorStream();
+    }
 
-        @Override
-        public void destroy() {
-            DestroyUtils.destroy(del, Collections.singletonMap(DestroyUtils.KEY_UUID, uuid));
-        }
+    @Override
+    public int waitFor() throws InterruptedException {
+        return del.waitFor();
+    }
+
+    @Override
+    public int exitValue() {
+        return del.exitValue();
+    }
+
+    @Override
+    public void destroy() {
+        ExternalProcessSupport.destroy(del, Collections.singletonMap(KEY_UUID, uuid));
+    }
 
 }

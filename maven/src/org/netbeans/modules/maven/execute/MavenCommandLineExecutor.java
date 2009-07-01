@@ -64,7 +64,7 @@ import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
-import org.netbeans.spi.extexecution.destroy.DestroyUtils;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -84,6 +84,8 @@ import org.openide.windows.OutputListener;
 public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     static final String ENV_PREFIX = "Env."; //NOI18N
     static final String ENV_JAVAHOME = "Env.JAVA_HOME"; //NOI18N
+
+    private static final String KEY_UUID = "NB_EXEC_PROCESS_UUID"; //NOI18N
 
     private ProgressHandle handle;
     private Process process;
@@ -147,7 +149,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             if (clonedConfig.getPreExecution() != null) {
                 ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);
                 preProcessUUID = UUID.randomUUID().toString();
-                builder.environment().put(DestroyUtils.KEY_UUID, preProcessUUID);
+                builder.environment().put(KEY_UUID, preProcessUUID);
                 preProcess = builder.start();
                 out.setStdOut(preProcess.getInputStream());
                 out.setStdIn(preProcess.getOutputStream());
@@ -165,7 +167,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 //            }
             ProcessBuilder builder = constructBuilder(clonedConfig, ioput);
             processUUID = UUID.randomUUID().toString();
-            builder.environment().put(DestroyUtils.KEY_UUID, processUUID);
+            builder.environment().put(KEY_UUID, processUUID);
             process = builder.start();
             out.setStdOut(process.getInputStream());
             out.setStdIn(process.getOutputStream());
@@ -224,8 +226,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private void kill(Process prcs, String uuid) {
         Map<String, String> env = new HashMap<String, String>();
-        env.put(DestroyUtils.KEY_UUID, uuid);
-        DestroyUtils.destroy(prcs, env);
+        env.put(KEY_UUID, uuid);
+        ExternalProcessSupport.destroy(prcs, env);
     }
     
     public boolean cancel() {

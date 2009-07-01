@@ -41,10 +41,7 @@ package org.netbeans.api.extexecution;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,7 +55,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.extexecution.WrapperProcess;
-import org.netbeans.spi.extexecution.destroy.DestroyUtils;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -235,7 +231,8 @@ public final class ExternalProcessBuilder implements Callable<Process> {
 
     /**
      * Creates the new {@link Process} based on the properties configured
-     * in this builder.
+     * in this builder. Created process will try to kill all its children on
+     * call to {@link Process#destroy()}.
      * <p>
      * Process is created by executing the executable with configured arguments.
      * If custom working directory is specified it is used otherwise value
@@ -289,7 +286,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         Map<String, String> env = buildEnvironment(pbEnv);
         pbEnv.putAll(env);
         String uuid = UUID.randomUUID().toString();
-        pbEnv.put(DestroyUtils.KEY_UUID, uuid);
+        pbEnv.put(WrapperProcess.KEY_UUID, uuid);
         adjustProxy(pb);
         pb.redirectErrorStream(redirectErrorStream);
         logProcess(Level.FINE, pb);

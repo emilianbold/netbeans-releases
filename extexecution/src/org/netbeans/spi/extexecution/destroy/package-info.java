@@ -42,7 +42,7 @@
 /**
  * The support SPI for terminating external processes.
  *
- * @see org.netbeans.spi.extexecution.destroy.DestroyUtils
+ * @see org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer
  */
 package org.netbeans.spi.extexecution.destroy;
 

@@ -40,14 +40,16 @@
 package org.netbeans.spi.extexecution.destroy;
 
 import java.util.Map;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 
 /**
  * A service capable of properly terminating external process along with any
  * child processes created during execution.
  *
- * Note: not to be implemented by modules, might not be present in all versions of
- * the application.
- * Please use <code>DestroyUtils.destroy()</code> for accessing the service.
+ * Note: not to be implemented by modules, might not be present in all versions
+ * of the application.
+ * Please use {@link ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
+ * for accessing the service.
  *
  * @author mkleint
  * @since 1.16
@@ -57,13 +59,11 @@ public interface ProcessDestroyPerformer {
     /**
      * Destroys the process passed as parameter and attempts to terminate all child
      * processes created during the process' execution.
+     *
      * @param process process to kill
      * @param env Map containing environment variable names and values.
-     *            Any process running with such envvar's value will be terminated.
-     *            Improves localization of child processes.
-     *
-     * @param process
-     * @param env
+     *             Any process running with such envvar's value will be
+     *             terminated. Improves localization of child processes.
      */
     void destroy(Process process, Map<String, String> env);
 }
