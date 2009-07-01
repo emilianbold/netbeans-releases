@@ -124,6 +124,21 @@ public final class EditorRegistry {
     public static final String FOCUSED_DOCUMENT_PROPERTY = "focusedDocument"; //NOI18N
 
     /**
+     * Fired when a component (returned previously from {@link #componentList()})
+     * is removed from component hierarchy (so it's likely that the component will be released completely
+     * and garbage-collected).
+     * <br/>
+     * Such component will no longer be returned from {@link #componentList()}
+     * or {@link #lastFocusedComponent()}.
+     * <br/>
+     * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the removed
+     * component.
+     * <br/>
+     * The {@link java.beans.PropertyChangeEvent#getNewValue()} returns <code>null</code>
+     */
+    public static final String COMPONENT_REMOVED_PROPERTY = "componentRemoved"; //NOI18N
+
+    /**
      * Fired when the last focused component (returned previously from {@link #lastFocusedComponent()})
      * was removed from component hierarchy (so it's likely that the component will be released completely
      * and garbage-collected).
@@ -448,7 +463,8 @@ public final class EditorRegistry {
             component.putClientProperty(Item.class, null);
             component.removeFocusListener(FocusL.INSTANCE);
             component.removeAncestorListener(AncestorL.INSTANCE);
-            
+
+            events.add(new PropertyChangeEvent(EditorRegistry.class, COMPONENT_REMOVED_PROPERTY, component, null));
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("Component removed: " + dumpComponent(component) + '\n'); //NOI18N
                 logItemListFinest();
