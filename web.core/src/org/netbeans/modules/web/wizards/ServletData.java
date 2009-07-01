@@ -327,9 +327,9 @@ class ServletData extends DeployData {
 
     boolean isValid() {
         errorMessage = new String();
-        if (webApp == null) {
-            return true;
-        }
+        //if (webApp == null) {
+        //    return true;
+        //}
         //if (!makeEntry()) return true;
 
         if (getName().length() == 0) {

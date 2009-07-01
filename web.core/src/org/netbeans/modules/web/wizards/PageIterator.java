@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -84,7 +85,6 @@ public class PageIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = -7586964579556513549L;
     private transient FileType fileType;
     private WizardDescriptor.Panel folderPanel;
-    private WizardDescriptor.Panel pageLayoutChooserPanel;
     private transient SourceGroup[] sourceGroups;
 
     public static PageIterator createJspIterator() {
@@ -125,8 +125,6 @@ public class PageIterator implements TemplateWizard.Iterator {
             }
             folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
 
-            FileObject template = Templates.getTemplate(wiz);
-           
             return new WizardDescriptor.Panel[]{
                         folderPanel
                     };
@@ -175,7 +173,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                 };
     }
 
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
         // in createPanels(), or at least set the properties targetName and
@@ -220,8 +218,8 @@ public class PageIterator implements TemplateWizard.Iterator {
         } else if (FileType.TAGLIBRARY.equals(fileType)) {
             WebModule wm = WebModule.getWebModule(dir);
             if (wm != null) {
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                if (WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
+                Profile j2eeVersion = wm.getJ2eeProfile();
+                if (Profile.J2EE_13.equals(j2eeVersion)) {
                     template = templateParent.getFileObject("TagLibrary_1_2", "tld"); //NOI18N
                 }
             }
@@ -280,17 +278,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                     }
                 }
             }
-
-        // Do something with the result, e.g. open it:
-            /*
-        OpenCookie open = (OpenCookie) dobj.getCookie (OpenCookie.class);
-        if (open != null) {
-        open.open ();
-        }
-         */
         }
         return Collections.singleton(dobj);
-    }    // --- The rest probably does not need to be touched. ---
+    }
+
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;

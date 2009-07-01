@@ -39,45 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.api.webmodule;
+package org.netbeans.modules.j2ee.spi.ejbjar;
+
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.openide.filesystems.FileObject;
 
 /**
- * Constants useful for web-based projects.
- *
- * @author  Milan Kuchtiak
+ * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.EjbJar}.
+ * @see EjbJarFactory
  */
-public final class WebProjectConstants {
+public interface EjbJarImplementation2 {
 
-    private WebProjectConstants () {}
-
-    /**
-     * Document root root sources type (source folders for JSPs, HTML, ...).
-     * See <code>org.netbeans.api.project.Sources</code>.
-     */
-    public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
+    Profile getJ2eeProfile();
 
     /**
-     * WEB-INF sources type (source folders for TLD files, ...).
-     * See <code>org.netbeans.api.project.Sources</code>.
+     * META-INF folder for the ejb module.
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
-    public static final String TYPE_WEB_INF="web_inf"; //NOI18N
+    FileObject getMetaInf ();
+
+    /**
+     * Deployment descriptor (ejb-jar.xml file) of the ejb module.
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
+     */
+    FileObject getDeploymentDescriptor ();
+
+    /** Source roots associated with the EJB module.
+     * <div class="nonnormative">
+     * Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the EJB module.
+     * </div>
+     */
+    FileObject[] getJavaSources();
     
     /**
-     * Standard command for redeploying a web project.
-     * See <code>org.netbeans.api.project.ActionProvider</code>.
+     * Returns the metadata associated with this EJB module.
      */
-    public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
-    
-    /**
-     * Standard artifact type representing a WAR file.
-     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
-     */
-    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N
-    
-    /**
-     * Standard artifact type representing a WAR file used for adding
-     * Web module into a J2EE Application (ear project).
-     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
-     */
-    public static final String ARTIFACT_TYPE_WAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
+    MetadataModel<EjbJarMetadata> getMetadataModel();
+
 }

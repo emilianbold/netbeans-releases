@@ -41,19 +41,24 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.web.*;
-import org.netbeans.modules.j2ee.ddloaders.web.*;
-import org.netbeans.modules.xml.multiview.ui.*;
+import java.math.BigDecimal;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.web.SessionConfig;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.xml.multiview.Utils;
 import org.netbeans.modules.xml.multiview.Error;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 
 /**
- * @author  mkuchtiak
+ * @author mkuchtiak
+ * @author Petr Slechta
  */
 public class OverviewPanel extends SectionInnerPanel implements java.awt.event.ItemListener {
-    DDDataObject dObj;
-    WebApp webApp;
-    /** Creates new form JspPGPanel */
+    private DDDataObject dObj;
+    private WebApp webApp;
+
     public OverviewPanel(SectionView sectionView, DDDataObject dObj) {
         super(sectionView);
         this.dObj=dObj;
@@ -76,7 +81,15 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         // Session Timeout
         stTF.setText(getSessionTimeout());
         addValidatee(stTF);
-        
+
+        BigDecimal ver = new BigDecimal(webApp.getVersion());
+        boolean jee6 = ver.compareTo(new BigDecimal(3.0)) >= 0;
+        jLabel2.setVisible(jee6);
+        tfName.setVisible(jee6);
+        if (jee6) {
+            tfName.setText(getXmlNames());
+            addModifier(tfName);
+        }
     }
     
     private String getSessionTimeout() {
@@ -100,6 +113,25 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
             } catch (ClassNotFoundException ex){}
         }
 
+    }
+
+    private String getXmlNames() {
+        try {
+            String[] names = webApp.getName();
+            if (names != null && names.length > 0) {
+                StringBuilder res = new StringBuilder();
+                for (String s : names) {
+                    if (res.length() > 0)
+                        res.append(", ");
+                    res.append(s);
+                }
+                return res.toString();
+            }
+        }
+        catch (VersionNotSupportedException e) {
+            // ignore
+        }
+        return "";
     }
     
     public javax.swing.JComponent getErrorComponent(String errorId) {
@@ -134,6 +166,17 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
             webApp.setDescription(text.length()==0?null:text);
         } else if (source==stTF) {
             setSessionTimeout(text);
+        } else if (source == tfName) {
+            try {
+                String[] res = text.split(",");
+                for (int i=0,maxi=res.length; i<maxi; i++) {
+                    res[i] = res[i].trim();
+                }
+                webApp.setName(res);
+            }
+            catch  (VersionNotSupportedException e) {
+                // ignore
+            }
         }
     }
     
@@ -157,6 +200,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jLabel2 = new javax.swing.JLabel();
         filler = new javax.swing.JPanel();
         dispNameLabel = new javax.swing.JLabel();
         dispNameTF = new javax.swing.JTextField();
@@ -166,8 +210,17 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         stLabel = new javax.swing.JLabel();
         stTF = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        tfName = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(OverviewPanel.class, "LBL_Name")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
+        add(jLabel2, gridBagConstraints);
 
         filler.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -182,7 +235,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         org.openide.awt.Mnemonics.setLocalizedText(dispNameLabel, org.openide.util.NbBundle.getMessage(OverviewPanel.class, "LBL_displayName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         add(dispNameLabel, gridBagConstraints);
@@ -190,7 +243,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         dispNameTF.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(dispNameTF, gridBagConstraints);
@@ -199,7 +252,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(OverviewPanel.class, "LBL_description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         add(descriptionLabel, gridBagConstraints);
@@ -207,17 +260,16 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         descriptionTA.setRows(3);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(descriptionTA, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(OverviewPanel.class, "LBL_distributable")); // NOI18N
         jCheckBox1.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jCheckBox1, gridBagConstraints);
@@ -226,7 +278,7 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         org.openide.awt.Mnemonics.setLocalizedText(stLabel, org.openide.util.NbBundle.getMessage(OverviewPanel.class, "LBL_sessionTimeout")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         add(stLabel, gridBagConstraints);
@@ -234,18 +286,25 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         stTF.setColumns(5);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(stTF, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(OverviewPanel.class, "LBL_min")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
         add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(tfName, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -257,8 +316,10 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
     private javax.swing.JPanel filler;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel stLabel;
     private javax.swing.JTextField stTF;
+    private javax.swing.JTextField tfName;
     // End of variables declaration//GEN-END:variables
  
     public void itemStateChanged(java.awt.event.ItemEvent evt) {                                            
