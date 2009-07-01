@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.jira.query;
 
+import javax.swing.ListModel;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.junit.NbTestCase;
@@ -50,6 +52,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -77,7 +80,7 @@ public class QueryRefreshTest extends NbTestCase {
         }
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
-        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
+        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));        
     }
 
     @Override
@@ -115,6 +118,7 @@ public class QueryRefreshTest extends NbTestCase {
         FilterDefinition fd = new FilterDefinition();
         fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, true);
+//        selectTestProject(jq);
         assertEquals(0, jq.getIssues().length);
         jq.refresh(); // refresh the query - so it won't be refreshed via first time open
 
@@ -126,7 +130,7 @@ public class QueryRefreshTest extends NbTestCase {
 
         JiraConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
         JiraConfig.getInstance().setQueryAutoRefresh(queryName, true);
-        
+
         LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 120);
         LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
@@ -144,6 +148,75 @@ public class QueryRefreshTest extends NbTestCase {
 
         issues = jq.getIssues();
         assertEquals(1, issues.length);
+    }
+
+    public void testKenaiQueryNoAutoRefresh() throws Throwable {
+        final String summary = "summary" + System.currentTimeMillis();
+        final String queryName = "refreshtest";
+        JiraConfig.getInstance().setQueryRefreshInterval(0); // would mean refresh imediately
+        JiraConfig.getInstance().setQueryAutoRefresh(queryName, false);
+
+        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
+
+        // create query
+        JiraRepository repo = JiraTestUtil.getRepository();
+        FilterDefinition fd = new FilterDefinition();
+        fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
+        final JiraQuery jq = new KenaiQuery(queryName, repo, fd, JiraTestUtil.TEST_PROJECT, true, false);
+
+        // query was created yet it wasn't refreshed
+        assertFalse(schedulingHandler.isDone());
+
+    }
+
+    // XXX can't get this running
+//    public void testKenaiQueryAutoRefresh() throws Throwable {
+//        final String summary = "summary" + System.currentTimeMillis();
+//        final String queryName = "refreshtest";
+//
+//        JiraConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
+//        JiraConfig.getInstance().setQueryAutoRefresh(queryName, true);
+//
+//        // create issue
+//        RepositoryResponse rr = JiraTestUtil.createIssue(summary, "desc", "Bug");
+//        assertNotNull(rr.getTaskId());
+//
+//        // create query
+//        JiraRepository repo = JiraTestUtil.getRepository();
+//        FilterDefinition fd = new FilterDefinition();
+//        fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
+//        LogHandler populateHandler = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
+//        LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 120);
+//        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
+//        final JiraQuery jq = new KenaiQuery(queryName, repo, fd, JiraTestUtil.TEST_PROJECT, true, false);
+//        populateHandler.waitUntilDone();
+//        selectTestProject(jq);
+//        Issue[] issues = jq.getIssues();
+//        assertEquals(0, issues.length);
+//
+//        // kenai queries are auto refreshed no matter if they are open or not, so
+//        // we don't have to do anythink with the query - just wait until it gets refreshed.
+//
+//        schedulingHandler.waitUntilDone();
+//        refreshHandler.waitUntilDone();
+//
+//        assertTrue(schedulingHandler.isDone());
+//        assertTrue(refreshHandler.isDone());
+//
+//        issues = jq.getIssues();
+//        assertEquals(1, issues.length);
+//    }
+
+    private void selectTestProject(final JiraQuery jq) {
+        QueryPanel panel = (QueryPanel) jq.getController().getComponent();
+        ListModel model = panel.projectList.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            Project project = (Project) model.getElementAt(i);
+            if (project.getKey().equals(JiraTestUtil.TEST_PROJECT)) {
+                panel.projectList.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 
 }

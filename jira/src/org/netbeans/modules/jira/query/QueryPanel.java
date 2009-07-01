@@ -569,6 +569,45 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         projectList.setMaximumSize(new java.awt.Dimension(100, 2));
         jScrollPane7.setViewportView(projectList);
 
+        fixForLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        fixForLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.fixForLabel.text")); // NOI18N
+
+        fixForScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        fixForList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        fixForList.setMaximumSize(new java.awt.Dimension(100, 2));
+        fixForScrollPane.setViewportView(fixForList);
+
+        componentsLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        componentsLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.componentsLabel.text")); // NOI18N
+
+        componentsScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        componentsList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        componentsList.setMaximumSize(new java.awt.Dimension(100, 2));
+        componentsScrollPane.setViewportView(componentsList);
+
+        affectsVersionsLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        affectsVersionsLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.affectsVersionsLabel.text")); // NOI18N
+
+        affectsVersionsScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        affectsVersionList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        affectsVersionList.setMaximumSize(new java.awt.Dimension(100, 2));
+        affectsVersionsScrollPane.setViewportView(affectsVersionList);
+
         org.jdesktop.layout.GroupLayout byDetailsPanelLayout = new org.jdesktop.layout.GroupLayout(byDetailsPanel);
         byDetailsPanel.setLayout(byDetailsPanelLayout);
         byDetailsPanelLayout.setHorizontalGroup(
@@ -582,19 +621,45 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(typeLabel)
                     .add(jScrollPane6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(310, 310, 310))
+                .add(18, 18, 18)
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(fixForScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(fixForLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(componentsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(componentsLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(affectsVersionsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(affectsVersionsLabel))
+                .add(143, 143, 143))
         );
         byDetailsPanelLayout.setVerticalGroup(
             byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(byDetailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectLabel)
-                    .add(typeLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                    .add(byDetailsPanelLayout.createSequentialGroup()
+                        .add(affectsVersionsLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(affectsVersionsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                    .add(byDetailsPanelLayout.createSequentialGroup()
+                        .add(componentsLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(componentsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
+                        .add(fixForLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(fixForScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, byDetailsPanelLayout.createSequentialGroup()
+                        .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(projectLabel)
+                            .add(typeLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -773,7 +838,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byPeopleContainer.setLayout(new java.awt.BorderLayout());
 
-        byOtherLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        byOtherLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         byOtherLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.byOtherLabel.text")); // NOI18N
 
         byOtherContainer.setLayout(new java.awt.BorderLayout());
@@ -1126,6 +1191,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JList affectsVersionList = new javax.swing.JList();
+    final javax.swing.JLabel affectsVersionsLabel = new javax.swing.JLabel();
+    final javax.swing.JScrollPane affectsVersionsScrollPane = new HackedScrollPane();
     final javax.swing.JComboBox assigneeComboBox = new javax.swing.JComboBox();
     final javax.swing.JTextField assigneeTextField = new javax.swing.JTextField();
     private javax.swing.JPanel byAttributesPanel;
@@ -1142,6 +1210,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JPanel byTextPanel;
     final javax.swing.JButton cancelChangesButton = new javax.swing.JButton();
     final javax.swing.JCheckBox commentsCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JLabel componentsLabel = new javax.swing.JLabel();
+    final javax.swing.JList componentsList = new javax.swing.JList();
+    final javax.swing.JScrollPane componentsScrollPane = new HackedScrollPane();
     final javax.swing.JTextField createdFromTextField = new javax.swing.JTextField();
     final javax.swing.JTextField createdToTextField = new javax.swing.JTextField();
     private javax.swing.JPanel criteriaPanel;
@@ -1151,6 +1222,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JCheckBox environmentCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JComboBox filterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel filterLabel;
+    final javax.swing.JLabel fixForLabel = new javax.swing.JLabel();
+    final javax.swing.JList fixForList = new javax.swing.JList();
+    final javax.swing.JScrollPane fixForScrollPane = new HackedScrollPane();
     final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
     final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
     final javax.swing.JTextField idTextField = new javax.swing.JTextField();
