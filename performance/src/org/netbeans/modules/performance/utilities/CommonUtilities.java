@@ -60,8 +60,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -88,7 +86,6 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 
 /**
@@ -101,8 +98,6 @@ public class CommonUtilities {
     public static final String SOURCE_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
     public static final String TEST_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
     private static PerformanceTestCase test = null;
-    
-    private static int size=0;
     private static DocumentBuilderFactory dbf=null;
     private static DocumentBuilder db=null;
     private static Document allPerfDoc=null;
@@ -422,45 +417,7 @@ public class CommonUtilities {
             editorOperator.save();
     }
     
-    /**
-     * Create project
-     * @param category project's category
-     * @param project type of the project
-     * @param wait wait for background tasks
-     * @return name of recently created project
-     */
-    public static String createproject(String category, String project, boolean wait) {
-        // select Projects tab
-        ProjectsTabOperator.invoke();
-        
-        // create a project
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
-        wizard.selectCategory(category);
-        wizard.selectProject(project);
-        wizard.next();
-        
-        NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
-        wizard_location.txtProjectLocation().clearText();
-        wizard_location.txtProjectLocation().typeText(getTempDir());
-        String pname = wizard_location.txtProjectName().getText() + System.currentTimeMillis();
-        wizard_location.txtProjectName().clearText();
-        wizard_location.txtProjectName().typeText(pname);
-        
-//        // if the project exists, try to generate new name
-//        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
-//            pname = pname+"1";
-//            wizard_location.txtProjectName().clearText();
-//            wizard_location.txtProjectName().typeText(pname);
-//        }
-        wizard.finish();
-        
-        // wait 10 seconds
-        waitForProjectCreation(10000, wait);
-        
-        return pname;
-    }
-    
-    
+   
     protected static void waitForProjectCreation(int delay, boolean wait){
         try {
             Thread.sleep(delay);
@@ -512,21 +469,7 @@ public class CommonUtilities {
         
     }
     
-    
-    
-    /**
-     * Build project and wait for finish
-     * @param project
-     */
-    public static void buildProject(String project) {
-        ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
-        prn.buildProject();
-        StringComparator sc = MainWindowOperator.getDefault().getComparator();        
-        MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, true));
-        MainWindowOperator.getDefault().waitStatusText("Finished building "); // NOI18N
-        MainWindowOperator.getDefault().setComparator(sc);
-    }
-    
+   
     /**
      * Invoke action on project node from popup menu
      * @param project
@@ -598,19 +541,6 @@ public class CommonUtilities {
  //       waitForPendingBackgroundTasks(5);
     }
     
-/*    public static void waitForPendingBackgroundTasks(int n) {
-        // wait maximum n minutes
-        for (int i=0; i<n*60; i++) {
-            if (org.netbeans.progress.module.Controller.getDefault().getModel().getSize()==0)
-                return;
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException exc) {
-                exc.printStackTrace(System.err);
-                return;
-            }
-        }
-    }*/
     
     /**
      * Adds GlassFish V2 using path from com.sun.aas.installRoot property
