@@ -664,6 +664,7 @@
                       <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="stopProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="closeIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="reopenIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -678,6 +679,8 @@
                   <Component id="startProgressButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="stopProgressButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="reopenIssueButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="resolveIssueButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -777,6 +780,16 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="reopenIssueButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.reopenIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reopenIssueButtonActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
