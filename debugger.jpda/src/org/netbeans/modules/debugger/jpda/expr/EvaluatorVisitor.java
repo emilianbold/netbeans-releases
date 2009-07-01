@@ -155,6 +155,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -825,7 +826,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     break;
                 default:
                     if (type.toString().equals("java.lang.String")) {
-                        var = vm.mirrorOf("null");
+                        try {
+                            var = vm.mirrorOf("null");
+                        } catch (UnsupportedOperationException e) {
+                            Assert2.error(arg0, "unsupportedStringCreation");
+                        }
                     } else {
                         Assert2.error(arg0, "evaluateError", arg0.getVariable(), operatorToString(kind), arg0.getExpression());
                         //throw new IllegalStateException("Unknown assignment var type: "+type);
@@ -3666,7 +3671,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static StringReference createStringMirrorWithDisabledCollection(String s, VirtualMachine vm, EvaluationContext evaluationContext) {
         StringReference sr;
         do {
-            sr = vm.mirrorOf(s);
+            try {
+                sr = vm.mirrorOf(s);
+            } catch (UnsupportedOperationException e) {
+                Assert2.error(null, "unsupportedStringCreation");
+                return null;
+            }
             try {
                 evaluationContext.disableCollectionOf(sr);
             } catch (ObjectCollectedException oce) {
