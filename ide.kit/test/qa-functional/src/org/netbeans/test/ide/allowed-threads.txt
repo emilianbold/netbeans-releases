@@ -20,6 +20,7 @@ Java2D Disposer
 AWT-Shutdown
 Timer-0
 TimerQueue
+Attach Listener
 
 # Added to whitelist 081222
 Thread-4
