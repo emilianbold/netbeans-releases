@@ -315,13 +315,20 @@ public final class StandardLogger extends AntLogger {
         if (event.isConsumed()) {
             return;
         }
-        // XXX this could start indenting messages, perhaps
         String name = event.getTargetName();
         if (name != null) {
             // Avoid printing internal targets normally:
             int minlevel = (name.length() > 0 && name.charAt(0) == '-') ? AntEvent.LOG_VERBOSE : AntEvent.LOG_INFO;
             AntSession session = event.getSession();
             if (session.getVerbosity() >= minlevel) {
+                // Avoid printing prefix for top-level script.
+                // Note that event.scriptLocation may be different if this target is <import>ed.
+                if (!session.getOriginatingScript().getAbsolutePath().equals(event.getProperty("ant.file"))) { // NOI18N
+                    String projectName = event.getProperty("ant.project.name"); // NOI18N
+                    if (projectName != null && /* hack for JavaRunner */ !projectName.contains("{0}")) { // NOI18N
+                        name = projectName + '.' + name;
+                    }
+                }
                 String msg = NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", name);
                 InputOutput io = session.getIO();
                 if (IOColorLines.isSupported(io)) {
