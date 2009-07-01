@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.api.java.source.performance;
+package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +98,18 @@ public class ScanProjectPerfTest extends NbTestCase {
         scanProject(projectDir);
     }
     
+    public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
+        String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "mediawiki.zip";
+        File f = new File(zipPath);
+        if (!f.exists()) {
+            zipPath = Utilities.projectOpen("http://wiki.netbeans.org/attach/FitnessViaSamples/mediawiki-1.14.0-nbproject.zip", "mediawiki.zip");
+        }
+        File zipFile = FileUtil.normalizeFile(new File(zipPath));
+        Utilities.unzip(zipFile, getWorkDirPath());
+        FileObject projectDir = Utilities.openProject("mediawiki-1.14.0", getWorkDir());
+        scanProject(projectDir);
+    }
+    
     private void scanProject(final FileObject projectDir) throws IOException, ExecutionException, InterruptedException{
         final String projectName = projectDir.getName();
         
@@ -126,7 +138,10 @@ public class ScanProjectPerfTest extends NbTestCase {
 
     
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(ScanProjectPerfTest.class).gui(false));
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
+                addTest(ScanProjectPerfTest.class).
+                clusters(".*").
+                enableModules("php.*", ".*"));
     }
 
     public PerformanceData[] getPerformanceData() {
@@ -141,46 +156,46 @@ public class ScanProjectPerfTest extends NbTestCase {
             this.projectName = projectName;
         }
         
-            @Override
-            public void publish(LogRecord record) {
-                String message = record.getMessage();
-                if (message != null && message.startsWith("Complete indexing")) {
-                    if (message.contains("source roots")) {
-                        PerformanceData res = new PerformanceData();
-                        StringTokenizer tokenizer = new StringTokenizer(message, " ");
-                        int count = tokenizer.countTokens();
-                        res.name = projectName + " source scan";
-                        for (int i = 0; i < count-2; i++) {
-                            tokenizer.nextToken();
-                        }
-                        String token = tokenizer.nextToken();
-                        res.value = Long.parseLong(token);
-                        res.unit = "ms";
-                        res.runOrder = 0;
-                        data.add(res);
-                    } else if (message.contains("binary roots")) {
-                        PerformanceData res = new PerformanceData();
-                        StringTokenizer tokenizer = new StringTokenizer(message, " ");
-                        int count = tokenizer.countTokens();
-                        res.name = projectName + " binary scan";
-                        for (int i = 0; i < count-2; i++) {
-                            tokenizer.nextToken();
-                        }
-                        String token = tokenizer.nextToken();
-                        res.value = Long.parseLong(token);
-                        res.unit = "ms";
-                        res.runOrder = 0;
-                        data.add(res);
+        @Override
+        public void publish(LogRecord record) {
+            String message = record.getMessage();
+            if (message != null && message.startsWith("Complete indexing")) {
+                if (message.contains("source roots")) {
+                    PerformanceData res = new PerformanceData();
+                    StringTokenizer tokenizer = new StringTokenizer(message, " ");
+                    int count = tokenizer.countTokens();
+                    res.name = projectName + " source scan";
+                    for (int i = 0; i < count-2; i++) {
+                        tokenizer.nextToken();
                     }
+                    String token = tokenizer.nextToken();
+                    res.value = Long.parseLong(token);
+                    res.unit = "ms";
+                    res.runOrder = 0;
+                    data.add(res);
+                } else if (message.contains("binary roots")) {
+                    PerformanceData res = new PerformanceData();
+                    StringTokenizer tokenizer = new StringTokenizer(message, " ");
+                    int count = tokenizer.countTokens();
+                    res.name = projectName + " binary scan";
+                    for (int i = 0; i < count-2; i++) {
+                        tokenizer.nextToken();
+                    }
+                    String token = tokenizer.nextToken();
+                    res.value = Long.parseLong(token);
+                    res.unit = "ms";
+                    res.runOrder = 0;
+                    data.add(res);
                 }
             }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
         }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
 }
