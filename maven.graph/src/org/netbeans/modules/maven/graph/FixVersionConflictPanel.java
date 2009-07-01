@@ -510,7 +510,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    private static class ExclusionTargets {
+    static class ExclusionTargets {
 
         // mapping; target artifact for exclusion -> set of versions of conflicting
         // artifact that target currently define by its dependencies
