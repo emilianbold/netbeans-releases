@@ -164,7 +164,7 @@ public class Utilities {
         return res;
     }
 
-    static boolean isJavaEE6(TemplateWizard wizard) {
+    public static boolean isJavaEE6(TemplateWizard wizard) {
         Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {

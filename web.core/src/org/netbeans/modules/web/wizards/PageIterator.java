@@ -84,7 +84,6 @@ public class PageIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = -7586964579556513549L;
     private transient FileType fileType;
     private WizardDescriptor.Panel folderPanel;
-    private WizardDescriptor.Panel pageLayoutChooserPanel;
     private transient SourceGroup[] sourceGroups;
 
     public static PageIterator createJspIterator() {
@@ -125,8 +124,6 @@ public class PageIterator implements TemplateWizard.Iterator {
             }
             folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
 
-            FileObject template = Templates.getTemplate(wiz);
-           
             return new WizardDescriptor.Panel[]{
                         folderPanel
                     };
@@ -175,7 +172,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                 };
     }
 
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
         // in createPanels(), or at least set the properties targetName and
@@ -280,17 +277,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                     }
                 }
             }
-
-        // Do something with the result, e.g. open it:
-            /*
-        OpenCookie open = (OpenCookie) dobj.getCookie (OpenCookie.class);
-        if (open != null) {
-        open.open ();
-        }
-         */
         }
         return Collections.singleton(dobj);
-    }    // --- The rest probably does not need to be touched. ---
+    }
+
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;
