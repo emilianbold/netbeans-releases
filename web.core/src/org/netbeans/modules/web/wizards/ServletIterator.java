@@ -105,6 +105,9 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
 
         if (fileType.equals(FileType.SERVLET) || fileType.equals(FileType.FILTER)) {
             deployData = new ServletData(fileType);
+            if (Utilities.isJavaEE6(wizard)) {
+                deployData.setMakeEntry(false);
+            }
             evaluator = new TargetEvaluator(fileType, deployData);
         }
 

@@ -42,6 +42,9 @@
 package org.netbeans.modules.web.wizards.dd;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -56,6 +59,7 @@ import org.openide.util.NbBundle;
 public final class WebFragmentXmlVisualPanel1 extends JPanel {
     private static final long serialVersionUID = 1L;
     private static final String WEB_FRAGMENT_XML = "web-fragment.xml";
+    private static final String META_INF = "META-INF";
 
     public WebFragmentXmlVisualPanel1() {
         initComponents();
@@ -66,8 +70,20 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         fileNameText.setText(WEB_FRAGMENT_XML);
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        // FIXME PetrS web-fragment.xml should go into META-INF directory!!!
-        locationText.setText(FileUtil.getFileDisplayName(wm.getWebInf()));
+
+        FileObject docBase = wm.getDocumentBase();
+        FileObject metaDir = docBase.getFileObject(META_INF);
+        if (metaDir == null) {
+            try {
+                metaDir = docBase.createFolder(META_INF);
+            }
+            catch (IOException e) {
+                Logger.global.log(Level.WARNING, "Creation of META-INF failed", e);
+                metaDir = wm.getWebInf();
+            }
+        }
+
+        locationText.setText(FileUtil.getFileDisplayName(metaDir));
         refreshLocation();
     }
 

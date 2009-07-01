@@ -60,20 +60,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  *
  * @author tomas
  */
-public class QueryTest extends NbTestCase implements TestConstants {
-
-    private static String REPO_NAME = "Beautiful";
-    private static String QUERY_NAME = "Hilarious";
-    private static String PARAMETERS_FORMAT =
-        "&short_desc_type=allwordssubstr&short_desc={0}" +
-        "&long_desc_type=substring&long_desc=&bug_file_loc_type=allwordssubstr" +
-        "&bug_file_loc=&status_whiteboard_type=allwordssubstr&status_whiteboard=" +
-        "&keywords_type=allwords&keywords=&deadlinefrom=&deadlineto=&bug_status=NEW" +
-        "&bug_status=ASSIGNED&bug_status=REOPENED&emailassigned_to1=1&emailtype1=substring" +
-        "&email1=&emailassigned_to2=1&emailreporter2=1&emailqa_contact2=1&emailcc2=1" +
-        "&emailtype2=substring&email2=&bugidtype=include&bug_id=&votes=&chfieldfrom=" +
-        "&chfieldto=Now&chfieldvalue=&cmdtype=doit&order=Reuse+same+sort+as+last+time" + "" +
-        "&field0-0-0=noop&type0-0-0=noop&value0-0-0=";
+public class QueryTest extends NbTestCase implements TestConstants, QueryConstants {
 
     public QueryTest(String arg0) {
         super(arg0);
@@ -87,7 +74,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.out.println("###" + getName());
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
@@ -103,7 +89,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
-        Bugzilla.LOG.addHandler(h);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
@@ -241,7 +226,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String id1 = TestUtil.createIssue( repository, summary);
 
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
-        Bugzilla.LOG.addHandler(h);
 
         // create query
         BugzillaQuery q = new BugzillaQuery(repository);
@@ -259,7 +243,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         // search
         nl.reset();
         h = new LogHandler("refresh finish", LogHandler.Compare.STARTS_WITH);
-        Bugzilla.LOG.addHandler(h);
         search(c); // search button and wait until done
         ts = System.currentTimeMillis();
         h.waitUntilDone();
@@ -274,7 +257,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         // save
         nl.reset();
-        Bugzilla.LOG.addHandler(h);
         String name = QUERY_NAME + ts;
         h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
         save(c, name); // save button
@@ -297,7 +279,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
         LogHandler h = new LogHandler("Finnished populate ", LogHandler.Compare.STARTS_WITH);
-        Bugzilla.LOG.addHandler(h);
 
         // create query
         BugzillaQuery q = new BugzillaQuery(getRepository());
@@ -316,7 +297,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         h = new LogHandler("refresh finish", LogHandler.Compare.STARTS_WITH); // we wan't to check
                                                                               // if the refresh is made after save
-        Bugzilla.LOG.addHandler(h);
         save(c, QUERY_NAME + ts); // save button
         h.waitUntilDone();
         assertEquals(1, ql.saved);
@@ -335,7 +315,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         // create query
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
-        Bugzilla.LOG.addHandler(h);
         BugzillaQuery q = new BugzillaQuery(getRepository());
 
         // get controler and wait until populated with default values
@@ -349,7 +328,6 @@ public class QueryTest extends NbTestCase implements TestConstants {
         q.addPropertyChangeListener(ql);
         // save
         h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
-        Bugzilla.LOG.addHandler(h);
         save(c, QUERY_NAME + ts);
         h.waitUntilDone();
         assertEquals(1, ql.saved);

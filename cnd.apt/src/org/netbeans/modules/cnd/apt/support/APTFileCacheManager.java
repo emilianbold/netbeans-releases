@@ -57,7 +57,8 @@ public final class APTFileCacheManager {
 
     private static Reference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(null);
     private static ConcurrentMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>();
-    private static final Object aptCachesLock = new Object();
+    private static final class Lock {}
+    private static final Object aptCachesLock = new Lock();
 
     private static ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(CharSequence file, Boolean createAndClean) {
         if (createAndClean == null) {

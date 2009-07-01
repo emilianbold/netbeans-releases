@@ -263,7 +263,8 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final String projectRoot;
         boolean pathsRelCurFile;
         private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
-        private final Object listenersLock = new Object();
+        private static final class Lock {}
+        private final Object listenersLock = new Lock();
 
         static NativeProject getNativeProjectImpl(File file) {
 

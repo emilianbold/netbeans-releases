@@ -44,6 +44,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
@@ -76,9 +77,9 @@ public final class EarProjectUtil {
         //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
         EarImplementation impl = earProject.getLookup().lookup(EarImplementation.class);
         if (impl != null) {
-            return isDDCompulsory(impl.getJ2eePlatformVersion());
+            return isDDCompulsory(Profile.fromPropertiesString(impl.getJ2eePlatformVersion()));
         }
-        return isDDCompulsory(J2eeModule.J2EE_14);
+        return isDDCompulsory(Profile.J2EE_14);
     }
 
     /**
@@ -90,20 +91,17 @@ public final class EarProjectUtil {
      * @return <code>true</code> if deployment descriptor is compulsory.
      * @see J2eeModule
      */
-    public static boolean isDDCompulsory(String j2eeVersion) {
+    public static boolean isDDCompulsory(Profile j2eeVersion) {
         // #103298
         if (j2eeVersion == null) {
             // what should we return?
             return false;
         }
-        if (J2eeModule.J2EE_13.equals(j2eeVersion)
-                || J2eeModule.J2EE_14.equals(j2eeVersion)) {
+        if (Profile.J2EE_13.equals(j2eeVersion)
+                || Profile.J2EE_14.equals(j2eeVersion)) {
             return true;
-        } else if (J2eeModule.JAVA_EE_5.equals(j2eeVersion)) {
-            return false;
         }
-        assert false : "Unknown j2eeVersion: " + j2eeVersion;
-        return true;
+        return false;
     }
     
     /**

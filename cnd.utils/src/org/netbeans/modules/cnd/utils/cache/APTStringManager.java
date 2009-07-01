@@ -115,8 +115,8 @@ public abstract class APTStringManager  {
             this.name = name;
         }
 
-        // we need exclusive copy of string => use "new String(String)" constructor
-        private final String lock = new String("lock in APTStringManager"); // NOI18N
+        private static final class Lock {}
+        private final Object lock = new Lock();
 
         /**
          * returns shared string instance equal to input text.

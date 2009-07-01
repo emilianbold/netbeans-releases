@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -61,7 +62,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
@@ -79,7 +79,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -95,7 +94,7 @@ import org.openide.util.NbBundle;
  * @author jungi
  */
 public final class AppClientProvider extends J2eeModuleProvider
-        implements CarImplementation, J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "application-client.xml";//NOI18N
     
@@ -133,7 +132,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     public FileObject getMetaInf() {
         FileObject metaInf = getFileObject(AppClientProjectProperties.META_INF);
         if (metaInf == null) {
-            String version = project.getAPICar().getJ2eePlatformVersion();
+            Profile version = project.getAPICar().getJ2eeProfile();
             if (needConfigurationFolder(version)) {
                 String relativePath = helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.META_INF);
                 String path = (relativePath != null ? helper.resolvePath(relativePath) : "");
@@ -144,9 +143,9 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     /** Package-private for unit test only. */
-    static boolean needConfigurationFolder(final String version) {
-        return EjbProjectConstants.J2EE_13_LEVEL.equals(version) ||
-                EjbProjectConstants.J2EE_14_LEVEL.equals(version);
+    static boolean needConfigurationFolder(final Profile version) {
+        return Profile.J2EE_13.equals(version) ||
+                Profile.J2EE_14.equals(version);
     }
     
     public File getMetaInfAsFile() {
@@ -387,8 +386,8 @@ public final class AppClientProvider extends J2eeModuleProvider
         return new String[] {};
     }
     
-    public String getJ2eePlatformVersion() {
-        return helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM);
+    public Profile getJ2eeProfile() {
+        return Profile.fromPropertiesString(helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM));
     }
     
     @Override
