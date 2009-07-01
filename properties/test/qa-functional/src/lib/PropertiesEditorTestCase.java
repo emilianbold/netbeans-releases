@@ -244,7 +244,7 @@ public class PropertiesEditorTestCase extends JellyTestCase {
 
     public void createNewPropertiesFile(Node node, String packageName, String fileName) {
         NewFileWizardOperator newWizard = NewFileWizardOperator.invoke(node, this.WIZARD_CATEGORY, this.WIZARD_FILE_TYPE);
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName(fileName);
         JTextFieldOperator jtfo = new JTextFieldOperator(nfnlso, 2);
         jtfo.setText(packageName);
@@ -724,7 +724,7 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     public void createNewPropertiesFileAndOpenInClassicEditor(Node node, String fileName) {
         // create new file
         NewFileWizardOperator newWizard = NewFileWizardOperator.invoke(node, this.WIZARD_CATEGORY, this.WIZARD_FILE_TYPE);
-        new NewFileNameLocationStepOperator().setName(fileName);
+        new NewJavaFileNameLocationStepOperator().setName(fileName);
         newWizard.finish();
 
         new EventTool().waitNoEvent(250);
