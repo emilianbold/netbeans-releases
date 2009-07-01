@@ -54,6 +54,16 @@ made subject to such option by the copyright holder.
             <isset property="proxy.port"/>
         </and>
     </condition>
+
+    <property name="ant.file.1" location="${ant.file}"/>
+    <property name="ant.file.2" location="${nb_all}/${ant.project.name}/build.xml"/>
+    <fail message="Please keep the Ant project name the same as the project's directory name: ${ant.file.1} vs. ${ant.file.2}">
+        <condition>
+            <not>
+                <equals arg1="${ant.file.1}" arg2="${ant.file.2}"/>
+            </not>
+        </condition>
+    </fail>
     
     <target name="-init-proxy" if="proxy.host+port">
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
