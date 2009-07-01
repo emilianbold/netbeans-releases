@@ -42,8 +42,10 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.openide.awt.StatusDisplayer;
@@ -113,7 +115,7 @@ public class IOManager {
     
     // public interface ........................................................
 
-    private final LinkedList buffer = new LinkedList ();
+    private final LinkedList<Text> buffer = new LinkedList<Text>();
     private RequestProcessor.Task task;
     
     /**
@@ -147,13 +149,17 @@ public class IOManager {
         }
         synchronized (buffer) {
             buffer.addLast (new Text (text, line, important));
-        if (task == null)
-            task = new RequestProcessor("Debugger Output", 1).post (new Runnable () {
-                public void run () {
-                    synchronized (buffer) {
-                        int i, k = buffer.size ();
+            if (task == null) {
+                task = new RequestProcessor("Debugger Output", 1).post (new Runnable () {
+                    public void run () {
+                        List<Text> output;
+                        synchronized (buffer) {
+                            output = new ArrayList<Text>(buffer);
+                            buffer.clear();
+                        }
+                        int i, k = output.size ();
                         for (i = 0; i < k; i++) {
-                            Text t = (Text) buffer.removeFirst ();
+                            Text t = output.get(i);
                             try {
                                 //if ((t.where & DEBUGGER_OUT) != 0) {
                                     Listener listener;
@@ -180,21 +186,25 @@ public class IOManager {
                                         debuggerOut.flush();
                                     }
                                 //}
-                               // if ((t.where & STATUS_OUT) != 0) 
+                               // if ((t.where & STATUS_OUT) != 0)
                                     StatusDisplayer.getDefault ().setStatusText (t.text);
                             } catch (IOException ex) {
                                 ex.printStackTrace ();
                             }
-                        }
-                        if (closed) {
-                            debuggerOut.close ();
-                            debuggerErr.close();
+                            if (closed) {
+                                debuggerOut.close ();
+                                debuggerErr.close();
+                            }
                         }
                     }
+                }, 50, Thread.MIN_PRIORITY);
+            } else {
+                if (buffer.size() > 25) {
+                    task.run();
+                } else {
+                    task.schedule (50);
                 }
-            }, 200, Thread.MIN_PRIORITY);
-        else
-            task.schedule (200);
+            }
         }
     }
 
@@ -202,7 +212,7 @@ public class IOManager {
         synchronized (buffer) {
             closed = true;
             if (task != null) {
-                task.schedule(500);
+                task.schedule(50);
             }
         }
     }
