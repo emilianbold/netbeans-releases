@@ -326,7 +326,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         dl.setVisible(true);
         // Update data structure
         Configuration[] editedConfs = configurationsEditor.getListData().toArray(new Configuration[configurationsEditor.getListData().size()]);
-        projectDescriptor.getConfs().init(editedConfs, -1);
+        int active = -1;
+        for (int i = 0; i < editedConfs.length; i++) {
+            if (editedConfs[i].isDefault()) {
+                active = i;
+                break;
+            }
+        }
+        projectDescriptor.getConfs().init(editedConfs, active);
         // Update gui with changes
         ActionListener[] actionListeners = configurationComboBox.getActionListeners();
         configurationComboBox.removeActionListener(actionListeners[0]); // assuming one and only one!
