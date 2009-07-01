@@ -644,7 +644,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
         }
         if (incoming.isEmpty()) {
-            removeNodeWithEdges(node);
+            removeSubGraph(node);
             shouldValidate = true;
         } else {
             node.getWidget().modelChanged();
@@ -653,6 +653,40 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         if (shouldValidate) {
             validate();
         }
+    }
+
+    private void removeSubGraph (ArtifactGraphNode node) {
+        if (!isNode(node)) {
+            // already visited and removed
+            return;
+        }
+
+        Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+        if (!incoming.isEmpty()) {
+            return;
+        }
+        Collection<ArtifactGraphEdge> outgoing = findNodeEdges(node, true, false);
+
+        List<ArtifactGraphNode> children = new ArrayList<ArtifactGraphNode>();
+
+        DependencyNode dn = null;
+        ArtifactGraphNode childNode = null;
+        // remove edges to children
+        for (ArtifactGraphEdge age : outgoing) {
+            dn = age.getTarget();
+            childNode = getGraphNodeRepresentant(dn);
+            children.add(childNode);
+            removeEdge(age);
+            age.getSource().removeChild(dn);
+            childNode.getDuplicatesOrConflicts().remove(dn);
+        }
+        // recurse to children
+        for (ArtifactGraphNode age : children) {
+            removeSubGraph(age);
+        }
+
+        // remove itself finally
+        removeNode(node);
     }
 
     private class ExcludeDepAction extends AbstractAction implements Runnable {

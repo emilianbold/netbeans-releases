@@ -549,6 +549,10 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             for (DependencyNode dn : allDNs) {
                 curDn = dn;
                 parent = curDn.getParent();
+                // bad luck with no parent...
+                if (parent == null) {
+                    continue;
+                }
                 while (parent.getParent() != null) {
                     parent = parent.getParent();
                     curDn = curDn.getParent();
