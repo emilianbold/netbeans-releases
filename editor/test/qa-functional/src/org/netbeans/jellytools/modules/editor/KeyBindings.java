@@ -316,7 +316,10 @@ public class KeyBindings extends JDialogOperator {
      */
     public static KeyBindings invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
-        options.switchToClassicView();
+
+        //No classic view anymore
+        //options.switchToClassicView();
+
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+"|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+"|" + editorName);
         //new EventTool().waitNoEvent(500);
         try {
