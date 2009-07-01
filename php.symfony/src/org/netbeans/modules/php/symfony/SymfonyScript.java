@@ -154,7 +154,7 @@ public class SymfonyScript extends PhpProgram {
     public static String getHelp(FrameworkCommand command) {
         SymfonyScript symfonyScript = SymfonyScript.getDefault();
         if (symfonyScript == null || !symfonyScript.isValid()) {
-            return null;
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_InvalidSymfonyScript");
         }
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(symfonyScript.getProgram());
         for (String param : symfonyScript.getParameters()) {

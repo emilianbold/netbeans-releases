@@ -236,6 +236,8 @@ public final class FrameworkCommandChooser extends JPanel {
         final FrameworkCommand task = getSelectedTask();
         if (task == null) {
             updateHelp(null);
+        } else if (task.hasHelp()) {
+            updateHelp(task.getHelp());
         } else {
             updateHelp(getMessage("LBL_PleaseWait")); // NOI18N
             EXECUTOR.submit(new Runnable() {

@@ -58,7 +58,7 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     /**
      * Get the help for the current command. This method is called just once,
      * the result is cached and used later each time user wants to see it.
-     * @return the help message for the current command
+     * @return the help message for the current command, it should not be <code>null</code>
      */
     protected abstract String getHelpInternal();
 
@@ -90,6 +90,10 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
         return help;
     }
 
+    public boolean hasHelp() {
+        return help != null;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -119,5 +123,21 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
             return displayName.compareTo(o.getDisplayName());
         }
         return getCommand().compareTo(o.getCommand());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder(200);
+        buffer.append(getClass().getName());
+        buffer.append(" [displayName: ");
+        buffer.append(displayName);
+        buffer.append(", command: ");
+        buffer.append(command);
+        buffer.append(", description: ");
+        buffer.append(description);
+        buffer.append(", help: ");
+        buffer.append(help);
+        buffer.append("]");
+        return buffer.toString();
     }
 }
