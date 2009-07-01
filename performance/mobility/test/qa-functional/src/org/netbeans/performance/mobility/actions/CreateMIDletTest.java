@@ -44,7 +44,7 @@ package org.netbeans.performance.mobility.actions;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
 
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -60,7 +60,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreateMIDletTest extends PerformanceTestCase {
 
-    private NewFileNameLocationStepOperator location;
+    private NewJavaFileNameLocationStepOperator location;
     private static String testProjectName = "MobileApplicationVisualMIDlet";
 
     /**
@@ -113,7 +113,7 @@ public class CreateMIDletTest extends PerformanceTestCase {
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("MIDlet"); //NOI18N
         wizard.next();
-        location = new NewFileNameLocationStepOperator();
+        location = new NewJavaFileNameLocationStepOperator();
         location.txtObjectName().setText("MIDlet_" + System.currentTimeMillis());
     }
 
