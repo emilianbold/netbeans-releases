@@ -96,7 +96,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         this.listeners = new CopyOnWriteArrayList<ExecutionListener>();
     }
 
-    public void init(ProjectActionEvent pae) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
 
