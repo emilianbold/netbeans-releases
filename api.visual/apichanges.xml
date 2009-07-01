@@ -739,25 +739,6 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.action" name="ContiguousSelectEvent" link="yes"/>
             <issue number="144139"/>
         </change>
-        <change>
-            <api name="general"/>
-            <summary>ConnectionWidget methods have been restricted</summary>
-            <version major="2" minor="20"/>
-            <date day="30" month="6" year="2009"/>
-            <author login="t_h"/>
-            <compatibility addition="no"/>
-            <description>
-                From beginning the ConnectionWidget.getTargetAnchorShapeRotation method was meant to be protected.
-                Also many getter and setter methods in ConnectionWidget were meant to be final.
-                Therefore, getSourceAnchorShapeRotation and getTargetAnchorShapeRotation were changed to protected
-                and getSourceAnchorEntry, getTargetAnchorEntry, getSourceAnchorShape, setSourceAnchorShape,
-		getTargetAnchorShape, setTargetAnchorShape, getControlPointShape, setControlPointShape,
-		getEndPointShape, setEndPointShape, getControlPoints, getControlPoint, setControlPoints,
-		setConstraint, setConstraint, removeConstraint methods of the ConnectionWidget class were made final.
-            </description>
-            <class package="org.netbeans.api.visual.widget" name="ConnectionWidget" link="yes"/>
-            <issue number="106472"/>
-        </change>
     </changes>
 
     <htmlcontents>
