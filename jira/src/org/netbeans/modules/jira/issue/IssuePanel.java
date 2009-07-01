@@ -257,6 +257,7 @@ public class IssuePanel extends javax.swing.JPanel {
         boolean stopProgressAvailable = false;
         boolean resolveIssueAvailable = false;
         boolean closeIssueAvailable = false;
+        boolean reopenIssueAvailable = false;
         for (TaskOperation operation : issue.getAvailableOperations().values()) {
             String label = operation.getLabel();
             if (JiraUtils.isStartProgressOperation(label)) {
@@ -267,12 +268,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 resolveIssueAvailable = true;
             } else if (JiraUtils.isCloseOperation(label)) {
                 closeIssueAvailable = true;
+            } else if (JiraUtils.isReopenOperation(label)) {
+                reopenIssueAvailable = true;
             }
         }
         startProgressButton.setVisible(startProgressAvailable);
         stopProgressButton.setVisible(stopProgressAvailable);
         resolveIssueButton.setVisible(resolveIssueAvailable);
         closeIssueButton.setVisible(closeIssueAvailable);
+        reopenIssueButton.setVisible(reopenIssueAvailable);
 
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
@@ -812,12 +816,14 @@ public class IssuePanel extends javax.swing.JPanel {
         convertToSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         logWorkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        reopenIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         originalEstimatePanel = new javax.swing.JPanel();
         remainingEstimatePanel = new javax.swing.JPanel();
         timeSpentPanel = new javax.swing.JPanel();
         originalEstimateFieldNew = new javax.swing.JTextField();
         originalEstimateLabelNew = new javax.swing.JLabel();
         originalEstimateHint = new javax.swing.JLabel();
+        logWorkButton2 = new org.netbeans.modules.bugtracking.util.LinkButton();
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -991,11 +997,23 @@ public class IssuePanel extends javax.swing.JPanel {
         convertToSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.convertToSubtaskButton.text")); // NOI18N
 
         logWorkButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkButton.text")); // NOI18N
+        logWorkButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logWorkButtonActionPerformed(evt);
+            }
+        });
 
         refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
+            }
+        });
+
+        reopenIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reopenIssueButton.text")); // NOI18N
+        reopenIssueButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reopenIssueButtonActionPerformed(evt);
             }
         });
 
@@ -1014,7 +1032,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(logWorkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(closeIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(closeIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(reopenIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
@@ -1026,6 +1045,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(startProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(reopenIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(resolveIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1053,6 +1074,13 @@ public class IssuePanel extends javax.swing.JPanel {
 
         originalEstimateHint.setFont(originalEstimateHint.getFont().deriveFont(originalEstimateHint.getFont().getSize()-2f));
         originalEstimateHint.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.originalEstimateHint.text")); // NOI18N
+
+        logWorkButton2.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkButton2.text")); // NOI18N
+        logWorkButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logWorkButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -1091,7 +1119,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                             .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 162, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 160, Short.MAX_VALUE)
                                         .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1149,6 +1177,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap())
             .add(separator)
             .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(475, Short.MAX_VALUE)
+                .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -1225,7 +1257,9 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(timeSpentLabel)
                         .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(timeSpentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(attachmentLabel)
                     .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -1287,6 +1321,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 try {
                     JiraConfiguration config =  issue.getRepository().getConfiguration();
                     config.ensureProjectLoaded(project);
+                    if (project.getIssueTypes() == null) {
+                        // The cached project data had been created before we started
+                        // to use project specific issue types. Forcing reload.
+                        config.forceProjectReload(project);
+                    }
                 } finally {
                     handle.finish();
                 }
@@ -1493,6 +1532,24 @@ public class IssuePanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_closeIssueButtonActionPerformed
 
+    private void reopenIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reopenIssueButtonActionPerformed
+        String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reopenIssueMessage"); // NOI18N
+        String message = MessageFormat.format(pattern, issue.getKey());
+        submitChange(new Runnable() {
+            public void run() {
+                issue.reopen(null);
+                issue.submitAndRefresh();
+            }
+        }, message);
+    }//GEN-LAST:event_reopenIssueButtonActionPerformed
+
+    private void logWorkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logWorkButtonActionPerformed
+        WorkLogPanel panel = new WorkLogPanel(issue);
+        if (panel.showDialog()) {
+            // PENDING log work
+        }
+    }//GEN-LAST:event_logWorkButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel actionLabel;
     private javax.swing.JPanel actionPanel;
@@ -1529,6 +1586,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton logWorkButton;
+    private org.netbeans.modules.bugtracking.util.LinkButton logWorkButton2;
     private javax.swing.JTextField originalEstimateField;
     private javax.swing.JTextField originalEstimateFieldNew;
     private javax.swing.JLabel originalEstimateHint;
@@ -1544,6 +1602,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField remainingEstimateField;
     private javax.swing.JLabel remainingEstimateLabel;
     private javax.swing.JPanel remainingEstimatePanel;
+    private org.netbeans.modules.bugtracking.util.LinkButton reopenIssueButton;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;

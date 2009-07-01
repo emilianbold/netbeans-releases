@@ -71,6 +71,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
@@ -415,7 +416,23 @@ public class CommitAction extends ContextAction {
                     // XXX handle veto
                 }
             }
-            HgCommand.doCommit(repository, commitCandidates, message, logger);
+            boolean commitAfterMerge = false;
+            try {
+                HgCommand.doCommit(repository, commitCandidates, message, logger);
+            } catch (HgException ex) {
+                if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
+                    // committing after a merge, all modified files have to be committed, even excluded files
+                    // ask the user for confirmation
+                    if (support.isCanceled() || !commitAfterMerge()) {
+                        return;
+                    } else {
+                        HgCommand.doCommit(repository, Collections.EMPTY_LIST, message, logger);
+                        commitAfterMerge = true;
+                    }
+                } else {
+                    throw ex;
+                }
+            }
 
             HgRepositoryContextCache.getInstance().setHasHistory(ctx);
             
@@ -426,17 +443,23 @@ public class CommitAction extends ContextAction {
                 hook.afterCommit(context);
             }
 
-            if (commitCandidates.size() == 1) {
+            if (commitAfterMerge) {
                 logger.output(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); // NOI18N
+                        "MSG_COMMITED_FILES_AFTER_MERGE"));             //NOI18N
             } else {
-                logger.output(
-                        NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP", commitCandidates.size())); // NOI18N
-            }
-            for (File f : commitCandidates) {
-                logger.output("\t" + f.getAbsolutePath()); // NOI18N
+                if (commitCandidates.size() == 1) {
+                    logger.output(
+                            NbBundle.getMessage(CommitAction.class,
+                            "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); // NOI18N
+                } else {
+                    logger.output(
+                            NbBundle.getMessage(CommitAction.class,
+                            "MSG_COMMIT_INIT_SEP", commitCandidates.size())); // NOI18N
+                }
+                for (File f : commitCandidates) {
+                    logger.output("\t" + f.getAbsolutePath()); // NOI18N
+                }
             }
             HgUtils.logHgLog(tip, logger);
         } catch (HgException ex) {
@@ -449,5 +472,17 @@ public class CommitAction extends ContextAction {
         }
     }
 
+    private static boolean commitAfterMerge () {
+        if (HgModuleConfig.getDefault().getConfirmCommitAfterMerge()) { // ask before commit?
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_AFTER_MERGE_QUERY")); // NOI18N
+            descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_AFTER_MERGE_TITLE")); // NOI18N
+            descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+            descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
+            return res == NotifyDescriptor.YES_OPTION;
+        }
+        return true;
+    }
 }
 

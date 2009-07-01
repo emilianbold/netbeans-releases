@@ -51,9 +51,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -105,6 +107,13 @@ public class WebFragmentXmlWizardPanel1 implements WizardDescriptor.Panel {
                     NbBundle.getMessage(WebFragmentXmlWizardPanel1.class,"ERR_WebFragmentExistsOrNoValidLocation")); //NOI18N
             return false;
         }
+
+        if (!Utilities.isJavaEE6((TemplateWizard)wizardDescriptor)) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(WebFragmentXmlWizardPanel1.class,"ERR_WebFragmentIsForJavaEE6projects")); //NOI18N
+            return false;
+        }
+
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         return true;
     }

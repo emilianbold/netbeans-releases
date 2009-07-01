@@ -52,7 +52,8 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 public class SimpleRWAccess implements FileRWAccess {
     
     private RandomAccessFile randomAccessFile;
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
 
     public SimpleRWAccess(File file) throws IOException {
 	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N

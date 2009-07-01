@@ -567,8 +567,9 @@ import org.openide.util.Lookup;
     }
     
     private static File getTestNBDestDir() {
-        String destDir = System.getProperty("netbeans.dest.dir");
-        assertNotNull("netbeans.dest.dir property has to be set when running within binary distribution", destDir);
+        String destDir = System.getProperty("test.netbeans.dest.dir");
+        // set in project.properties as test-unit-sys-prop.test.netbeans.dest.dir
+        assertNotNull("test.netbeans.dest.dir property has to be set when running within binary distribution", destDir);
         return new File(destDir);
     }
 

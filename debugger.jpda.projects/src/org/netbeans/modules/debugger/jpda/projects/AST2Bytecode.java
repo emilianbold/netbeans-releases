@@ -191,7 +191,7 @@ class AST2Bytecode {
                                 return null; // No path to the identifier...
                             }
                             TypeMirror type = trees.getTypeMirror(iPath);
-                            if (type.getKind() == TypeKind.ERROR) {
+                            if (type == null || type.getKind() == TypeKind.ERROR) {
                                 // There are errors, give it up.
                                 return null;
                             }
@@ -222,7 +222,7 @@ class AST2Bytecode {
                                     return null; // No path to the expression...
                                 }
                                 TypeMirror type = trees.getTypeMirror(expPath);
-                                if (type.getKind() == TypeKind.ERROR) {
+                                if (type == null || type.getKind() == TypeKind.ERROR) {
                                     // There are errors, give it up.
                                     return null;
                                 }

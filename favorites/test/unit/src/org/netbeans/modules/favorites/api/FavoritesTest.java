@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.favorites.FavoritesNode;
 import org.netbeans.modules.favorites.RootsTest;
 import org.openide.explorer.ExplorerManager;
@@ -157,6 +158,7 @@ public class FavoritesTest extends NbTestCase {
         assertTrue("NPE has been thrown", thrown);
     }
 
+    @RandomlyFails
     public void testExternallyDeletedRoot() throws Exception {
         fav.add(file);
         assertTrue(fav.isInFavorites(file));

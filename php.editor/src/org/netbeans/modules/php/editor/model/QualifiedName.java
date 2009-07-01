@@ -110,6 +110,14 @@ public class QualifiedName {
         assert kind.equals(QualifiedNameKind.UNQUALIFIED);
         return new QualifiedName(false, Collections.singletonList(name));
     }
+    public static QualifiedName create(String name) {
+        QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
+        if (kind.isUnqualified()) {
+            return createUnqualifiedName(name);
+        }
+        final String[] segments = name.split("\\\\");//NOI18N
+        return new QualifiedName(kind.isFullyQualified(),Arrays.asList(segments));
+    }
     private QualifiedName(NamespaceName namespaceName) {
         this.kind = QualifiedNameKind.resolveKind(namespaceName);
         segments = new LinkedList<String>();

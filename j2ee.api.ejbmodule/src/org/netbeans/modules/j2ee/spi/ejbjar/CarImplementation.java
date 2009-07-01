@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
  * @see CarFactory
  * @author Pavel Buzek
  * @author Lukas Jungmann
+ * @deprecated implement {@link CarImplementation2}
  */
 public interface CarImplementation {
     

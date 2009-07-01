@@ -53,8 +53,9 @@ public interface ProjectActionHandler {
      * project action event.
      *
      * @param pae  project action event to be handled
+     * @param paes the full chain of project action events to be handled
      */
-    public void init(ProjectActionEvent pae);
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes);
 
     /**
      * Will be called to execute current project action event that was passed

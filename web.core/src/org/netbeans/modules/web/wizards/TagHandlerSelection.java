@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -71,7 +72,7 @@ public class TagHandlerSelection implements WizardDescriptor.Panel {
      */
     private transient TagHandlerPanel component;
     private transient TemplateWizard wizard;
-    private transient String j2eeVersion;
+    private transient Profile j2eeVersion;
     
     /** Create the wizard panel descriptor. */
     public TagHandlerSelection(TemplateWizard wizard) {
@@ -87,12 +88,12 @@ public class TagHandlerSelection implements WizardDescriptor.Panel {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         WebModule wm=null;
-        j2eeVersion = WebModule.J2EE_14_LEVEL;
+        j2eeVersion = Profile.J2EE_14;
         if (groups!=null && groups.length>0) {
             wm = WebModule.getWebModule(groups[0].getRootFolder());
         }
         if (wm!=null) {
-            j2eeVersion=wm.getJ2eePlatformVersion();
+            j2eeVersion=wm.getJ2eeProfile();
         }
         if (component == null) {
             component = new TagHandlerPanel(this,j2eeVersion);
@@ -107,7 +108,7 @@ public class TagHandlerSelection implements WizardDescriptor.Panel {
     
     public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
-        if (!isBodyTagSupport() && WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
+        if (!isBodyTagSupport() && Profile.J2EE_13.equals(j2eeVersion)) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                 org.openide.util.NbBundle.getMessage(TagHandlerSelection.class, "NOTE_simpleTag"));
         } else {

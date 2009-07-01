@@ -142,8 +142,9 @@ public class BaseQueue {
             return ret;
         }
     }
-    
-    protected final Object lock = new Object();
+
+    private static final class Lock {}
+    protected final Object lock = new Lock();
     protected StopWatch stopWatch = needsTiming() ? new StopWatch(false) : null;
     protected Queue queue;
     

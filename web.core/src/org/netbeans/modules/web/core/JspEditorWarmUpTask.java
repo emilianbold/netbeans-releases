@@ -64,8 +64,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.core.palette.JspPaletteFactory;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -337,8 +338,10 @@ public class JspEditorWarmUpTask implements Runnable{
         //init jasper for all opened projects
         Project[] openedProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openedProjects.length; i++) {
-            WebModuleImplementation wmImpl = (WebModuleImplementation)openedProjects[i].getLookup().lookup(WebModuleImplementation.class);
-            if(wmImpl != null)  return true;
+            J2eeModuleProvider provider = openedProjects[i].getLookup().lookup(J2eeModuleProvider.class);
+            if (provider != null && J2eeModule.Type.WAR.equals(provider.getJ2eeModule().getType())) {
+                return true;
+            }
         }
         return false;
     }

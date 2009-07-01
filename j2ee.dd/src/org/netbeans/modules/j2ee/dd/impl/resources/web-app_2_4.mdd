@@ -73,8 +73,14 @@
                 public void setMetadataComplete(boolean value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_4);
                 }
-                public boolean isMetadataComplete() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException{
+                public boolean isMetadataComplete() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_4);
+                }
+                public void setName(String[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_4);
+                }
+                public String[] getName() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_4);
                 }
             </user-code>
 	</meta-element>

@@ -41,10 +41,11 @@
 
 package org.openide.filesystems;
 
+import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 public class ExternalUtilTest extends NbTestCase {
 
@@ -52,7 +53,11 @@ public class ExternalUtilTest extends NbTestCase {
         super(name);
     }
 
-    @RandomlyFails // about half the time
+    @Override
+    protected Level logLevel() {
+        return Level.FINEST;
+    }
+
     public void testInitializationFromTwoThreads() throws Exception {
         MockServices.setServices(MyRepo.class);
 
@@ -60,6 +65,7 @@ public class ExternalUtilTest extends NbTestCase {
 
         assertNotNull("Repo created", r);
         assertEquals("It is our class", MyRepo.class, r.getClass());
+        MyRepo.task.waitFinished();
         assertEquals("Both repositories are same", r, MyRepo.fromRunnable);
         assertEquals("One add", 1, MyFs.addCnt);
         assertEquals("No remove", 0, MyFs.removeCnt);
@@ -67,11 +73,13 @@ public class ExternalUtilTest extends NbTestCase {
 
     public static final class MyRepo extends Repository implements Runnable {
         static Repository fromRunnable;
+        static Task task;
 
         public MyRepo() throws InterruptedException {
             super(new MyFs());
 
-            RequestProcessor.getDefault().post(this).waitFinished(500);
+            task = RequestProcessor.getDefault().post(this);
+            task.waitFinished(500);
         }
 
         public void run() {

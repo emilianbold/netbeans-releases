@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -163,7 +164,9 @@ public class PHPIndex {
                 int offset = sig.integer(2);
                 String superClass = sig.string(3);
                 superClass = superClass.length() == 0 ? null : superClass;
-                IndexedClass clazz = new IndexedClass(className, null, this, map.getUrl().toString(), superClass, offset, 0);
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, offset, 0);
                 //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 classes.add(clazz);
             }
@@ -222,7 +225,9 @@ public class PHPIndex {
                 }
                 int offset = sig.integer(3);
                 String arguments = sig.string(2);
-                IndexedFunction func = new IndexedFunction(funcName, null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
+                String namespaceName = sig.string(6);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedFunction func = new IndexedFunction(funcName, null, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
                 int[] optionalArgs = extractOptionalArgs(sig.string(4));
                 func.setOptionalArgs(optionalArgs);
                 //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
@@ -576,7 +581,7 @@ public class PHPIndex {
                 String args = sig.string(1);
                 int offset = sig.integer(2);
 
-                IndexedFunction func = new IndexedFunction(funcName, funcName,
+                IndexedFunction func = new IndexedFunction(funcName, funcName,sig.string(6),
                         this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
@@ -874,7 +879,10 @@ public class PHPIndex {
                 int offset = sig.integer(2);
                 String interfaces[] = sig.string(3).split(","); //NOI18N
 
-                IndexedInterface iface = new IndexedInterface(ifaceName, null,
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+
+                IndexedInterface iface = new IndexedInterface(ifaceName, useNamespaceName ? namespaceName : null,
                         this, map.getUrl().toString(), interfaces, offset, 0);
 
                 //iface.setResolved(context != null && isReachable(context, map.getPersistentUrl()));

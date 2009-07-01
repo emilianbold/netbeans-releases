@@ -90,7 +90,7 @@ import org.openide.util.Exceptions;
 
 public class SessionImpl extends PersistentObject implements Session {
     
-    protected enum Kind { STATELESS, STATEFUL }
+    protected enum Kind { STATELESS, STATEFUL, SINGLETON }
     
     private final Kind kind;
     
@@ -121,7 +121,21 @@ public class SessionImpl extends PersistentObject implements Session {
     
     boolean refresh(TypeElement typeElement) {
         Map<String, ? extends AnnotationMirror> annByType = getHelper().getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationMirror annotationMirror = annByType.get(kind == Kind.STATELESS ? "javax.ejb.Stateless" : "javax.ejb.Stateful"); // NOI18N
+        AnnotationMirror annotationMirror = null;
+        switch(kind){
+            case STATELESS:
+                annotationMirror = annByType.get("javax.ejb.Stateless"); //NOI18N
+                sessionType = Session.SESSION_TYPE_STATELESS;
+                break;
+            case STATEFUL:
+                annotationMirror = annByType.get("javax.ejb.Stateful"); //NOI18N
+                sessionType = Session.SESSION_TYPE_STATEFUL;
+                break;
+            case SINGLETON: 
+                annotationMirror = annByType.get("javax.ejb.Singleton"); //NOI18N
+                sessionType = Session.SESSION_TYPE_SINGLETON;
+                break;
+        }
         if (annotationMirror == null) {
             return false;
         }
@@ -131,7 +145,6 @@ public class SessionImpl extends PersistentObject implements Session {
         ParseResult parseResult = parser.parse(annotationMirror);
         ejbName = parseResult.get("name", String.class); // NOI18N
         ejbClass = typeElement.getQualifiedName().toString();
-        sessionType = (kind == Kind.STATELESS) ? Session.SESSION_TYPE_STATELESS : Session.SESSION_TYPE_STATEFUL;
         return true;
     }
     

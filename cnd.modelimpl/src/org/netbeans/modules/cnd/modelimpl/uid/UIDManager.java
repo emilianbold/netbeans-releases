@@ -62,8 +62,8 @@ public class UIDManager {
     public static UIDManager instance() {
         return instance;
     }
-    // we need exclusive copy of string => use "new String(String)" constructor
-    private final String lock = new String("lock in UIDManager"); // NOI18N
+    private static final class Lock {}
+    private final Object lock = new Lock();
 
     /**
      * returns shared uid instance equal to input one.
