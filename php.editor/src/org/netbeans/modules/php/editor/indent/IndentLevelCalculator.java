@@ -298,7 +298,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     private void addIndentLevel(int offset, int indent){
-        Integer existingIndent = indentLevels.get(offset);
+        Integer existingIndent = getExistingIndentLevel(offset);
 
         int newIndent = existingIndent == null ? indent : indent + existingIndent;
         try {
@@ -306,5 +306,16 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    //TODO optimize for performace
+    private Integer getExistingIndentLevel(int offset){
+        for (Position pos : indentLevels.keySet()){
+            if (pos.getOffset() == offset){
+                indentLevels.get(pos);
+            }
+        }
+
+        return 0;
     }
 }
