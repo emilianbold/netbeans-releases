@@ -161,13 +161,19 @@ public final class ModuleList {
      * @return created or cached module list
      * @throws java.io.IOException
      */
-    private static ModuleList runProtected(Object protectedCache, Mutex.ExceptionAction<ModuleList> action) throws IOException {
-        synchronized (protectedCache) {
-            try {
-                return ProjectManager.mutex().readAccess(action);
-            } catch (MutexException e){
-                throw (IOException) e.getException();
-            }
+    private static ModuleList runProtected(final Object protectedCache, final Mutex.ExceptionAction<ModuleList> action) throws IOException {
+        try {
+            LOG.log(Level.FINE, "runProtected: sync 0");
+            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<ModuleList>() {
+                public ModuleList run() throws Exception {
+                    LOG.log(Level.FINE, "runProtected: sync 1");
+                    synchronized (protectedCache) {
+                        return action.run();
+                    }
+                }
+            });
+        } catch (MutexException e){
+            throw (IOException) e.getException();
         }
     }
     /**
