@@ -38,14 +38,44 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import java.awt.Dialog;
+import java.text.DateFormat;
+import java.util.Date;
+import javax.swing.SwingConstants;
+import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Jan Stola
  */
 public class WorkLogPanel extends javax.swing.JPanel {
+    private NbJiraIssue issue;
 
-    public WorkLogPanel() {
+    public WorkLogPanel(NbJiraIssue issue) {
+        this.issue = issue;
         initComponents();
+        startDateField.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(DateFormat.getDateTimeInstance())));
+        startDateField.setValue(new Date());
+    }
+
+    public boolean showDialog() {
+        DialogDescriptor dd = new DialogDescriptor(
+                this,
+                NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.dialog.title"), // NOI18N
+                true,
+                new Object[] {submitButton, discardButton},
+                submitButton,
+                SwingConstants.CENTER,
+                HelpCtx.DEFAULT_HELP,
+                null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        return (submitButton == dd.getValue());
     }
 
     /** This method is called from within the constructor to
@@ -57,6 +87,9 @@ public class WorkLogPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        submitButton = new javax.swing.JButton();
+        discardButton = new javax.swing.JButton();
+        adjustEstimateGroup = new javax.swing.ButtonGroup();
         hintLabel = new javax.swing.JLabel();
         timeSpentLabel = new javax.swing.JLabel();
         timeSpentField = new javax.swing.JTextField();
@@ -75,8 +108,10 @@ public class WorkLogPanel extends javax.swing.JPanel {
         workDescriptionLabel = new javax.swing.JLabel();
         workDescriptionScrollPane = new javax.swing.JScrollPane();
         workDescriptionArea = new javax.swing.JTextArea();
-        submitButton = new javax.swing.JButton();
-        discardButton = new javax.swing.JButton();
+
+        submitButton.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.submitButton.text")); // NOI18N
+
+        discardButton.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.discardButton.text")); // NOI18N
 
         hintLabel.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.hintLabel.text")); // NOI18N
 
@@ -96,14 +131,19 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
         adjustEstimateLabel.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.adjustEstimateLabel.text")); // NOI18N
 
+        adjustEstimateGroup.add(autoAdjustChoice);
+        autoAdjustChoice.setSelected(true);
         autoAdjustChoice.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.autoAdjustChoice.text")); // NOI18N
 
+        adjustEstimateGroup.add(leaveEstimateChoice);
         leaveEstimateChoice.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text")); // NOI18N
 
+        adjustEstimateGroup.add(setEstimatedTimeChoice);
         setEstimatedTimeChoice.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.setEstimatedTimeChoice.text")); // NOI18N
 
         setEstimatedTimeField.setColumns(8);
 
+        adjustEstimateGroup.add(reduceEstimatedTimeChoice);
         reduceEstimatedTimeChoice.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.reduceEstimatedTimeChoice.text")); // NOI18N
 
         reduceEstimatedTimeField.setColumns(8);
@@ -112,10 +152,6 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
         workDescriptionArea.setRows(5);
         workDescriptionScrollPane.setViewportView(workDescriptionArea);
-
-        submitButton.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.submitButton.text")); // NOI18N
-
-        discardButton.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.discardButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -158,12 +194,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(workDescriptionLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(submitButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(discardButton))
-                            .add(workDescriptionScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))))
+                        .add(workDescriptionScrollPane)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -199,17 +230,14 @@ public class WorkLogPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(workDescriptionLabel)
-                    .add(workDescriptionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(submitButton)
-                    .add(discardButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(workDescriptionScrollPane))
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup adjustEstimateGroup;
     private javax.swing.JLabel adjustEstimateLabel;
     private javax.swing.JRadioButton autoAdjustChoice;
     private javax.swing.JButton discardButton;
