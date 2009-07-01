@@ -198,7 +198,7 @@ public class ReportPanel extends javax.swing.JPanel {
                         .add(11, 11, 11))
                     .add(layout.createSequentialGroup()
                         .add(jLabel8)
-                        .addContainerGap(202, Short.MAX_VALUE))))
+                        .addContainerGap(211, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
