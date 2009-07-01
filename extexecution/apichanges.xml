@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change>
+            <api name="extexecution_api"/>
+            <summary>New SPI for improved external process termination</summary>
+            <version major="1" minor="16"/>
+            <date day="1" month="7" year="2008"/>
+            <author login="mkleint"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+
+            </description>
+            <class package="org.netbeans.spi.extexecution.destroy" name="DestroyUtils"/>
+            <class package="org.netbeans.spi.extexecution.destroy" name="ProcessDestroyPerformer"/>
+            <issue number="138116"/>
+        </change>
+
         <change>
             <api name="extexecution_api"/>
             <summary>Configurable charset for process streams</summary>

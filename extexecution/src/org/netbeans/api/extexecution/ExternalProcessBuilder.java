@@ -41,18 +41,24 @@ package org.netbeans.api.extexecution;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.extexecution.WrapperProcess;
+import org.netbeans.spi.extexecution.destroy.DestroyUtils;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -282,10 +288,13 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         Map<String, String> pbEnv = pb.environment();
         Map<String, String> env = buildEnvironment(pbEnv);
         pbEnv.putAll(env);
+        String uuid = UUID.randomUUID().toString();
+        pbEnv.put(DestroyUtils.KEY_UUID, uuid);
         adjustProxy(pb);
         pb.redirectErrorStream(redirectErrorStream);
         logProcess(Level.FINE, pb);
-        return pb.start();
+        WrapperProcess wp = new WrapperProcess(pb.start(), uuid);
+        return wp;
     }
 
     /**
@@ -472,4 +481,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
             return this;
         }
     }
+
+
 }
