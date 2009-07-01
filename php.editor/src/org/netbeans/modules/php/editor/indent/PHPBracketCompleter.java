@@ -1179,107 +1179,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
     }
 
+    /** Replaced by PHPBracesMatcher */
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
-        BaseDocument doc = (BaseDocument)document;
-
-        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-
-        if (ts != null) {
-            ts.move(offset);
-
-            if (!ts.moveNext()) {
-                return OffsetRange.NONE;
-            }
-
-            Token<?extends PHPTokenId> token = ts.token();
-
-            if (token == null) {
-                return OffsetRange.NONE;
-            }
-
-            TokenId id = token.id();
-
-            if (id == PHPTokenId.WHITESPACE) {
-                // ts.move(offset) gives the token to the left of the caret.
-                // If you have the caret right at the beginning of a token, try
-                // the token to the right too - this means that if you have
-                //  "   |def" it will show the matching "end" for the "def".
-                offset++;
-                ts.move(offset);
-
-                if (ts.moveNext() && (ts.offset() <= offset)) {
-                    token = ts.token();
-                    id = token.id();
-                }
-            }
-
-//            if (id == PHPTokenId.PHP_QUOTED_STRING_BEGIN) {
-//                // Heredocs should be treated specially
-//                if (token.text().toString().startsWith("<<")) {
-//                    return LexUtilities.findHeredocEnd(ts, token);
-//                }
-//                return LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_QUOTED_STRING_BEGIN,
-//                    PHPTokenId.PHP_QUOTED_STRING_END);
-//            } else if (id == PHPTokenId.PHP_QUOTED_STRING_END) {
-//                String s = token.text().toString();
-//                if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
-//                    OffsetRange r = LexUtilities.findHeredocBegin(ts, token);
-//                    if (r != OffsetRange.NONE) {
-//                        return r;
-//                    }
-//                    ts.move(offset);
-//                }
-//                return LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_QUOTED_STRING_BEGIN,
-//                    PHPTokenId.PHP_QUOTED_STRING_END);
-//            } else if (id == PHPTokenId.PHP_STRING_BEGIN) {
-//                // Heredocs should be treated specially
-//                if (token.text().toString().startsWith("<<")) {
-//                    return LexUtilities.findHeredocEnd(ts, token);
-//                }
-//                return LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_STRING_BEGIN, PHPTokenId.PHP_STRING_END);
-//            } else if (id == PHPTokenId.PHP_STRING_END) {
-//                String s = token.text().toString();
-//                if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
-//                    OffsetRange r = LexUtilities.findHeredocBegin(ts, token);
-//                    if (r != OffsetRange.NONE) {
-//                        return r;
-//                    }
-//                    ts.move(offset);
-//                }
-//                return LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_STRING_BEGIN, PHPTokenId.PHP_STRING_END);
-//            } else if (id == PHPTokenId.PHP_REGEXP_BEGIN) {
-//                return LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_REGEXP_BEGIN, PHPTokenId.PHP_REGEXP_END);
-//            } else if (id == PHPTokenId.PHP_REGEXP_END) {
-//                return LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_REGEXP_BEGIN, PHPTokenId.PHP_REGEXP_END);
-//            } else if (id == PHPTokenId.PHP_LPAREN) {
-            if (LexUtilities.textEquals(token.text(), '(')) {
-                return LexUtilities.findFwd(doc, ts, '(', ')');
-            } else if (LexUtilities.textEquals(token.text(), ')')) {
-                return LexUtilities.findBwd(doc, ts, '(', ')');
-            } else if (id == PHPTokenId.PHP_CURLY_OPEN) {
-                return LexUtilities.findFwd(doc, ts, '{', '}');
-            } else if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                return LexUtilities.findBwd(doc, ts, '{', '}');
-            } else if (LexUtilities.textEquals(token.text(), '[')) {
-                return LexUtilities.findFwd(doc, ts, '[', ']');
-            } else if (LexUtilities.textEquals(token.text(), ']')) {
-                return LexUtilities.findBwd(doc, ts, '[', ']');
-//            } else if (id == PHPTokenId.PHP_DO && !LexUtilities.isEndmatchingDo(doc, ts.offset())) {
-//                // No matching dot for "do" used in conditionals etc.
-//                return OffsetRange.NONE;
-//            } else if (id.primaryCategory().equals("keyword")) {
-//                if (LexUtilities.isBeginToken(id, doc, ts)) {
-//                    return LexUtilities.findEnd(doc, ts);
-//                } else if ((id == PHPTokenId.PHP_END) || LexUtilities.isIndentToken(id)) { // Find matching block
-//
-//                    return LexUtilities.findBegin(doc, ts);
-//                }
-            }
-        }
-
         return OffsetRange.NONE;
     }
-
+    
     /**
     * Hook called after a character *ch* was backspace-deleted from
     * *doc*. The function possibly removes bracket or quote pair if

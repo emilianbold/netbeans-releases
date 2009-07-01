@@ -48,7 +48,6 @@
 package org.netbeans.modules.j2ee.dd.api.application;
 
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface Module extends CommonDDBean {
 	public static final String CONNECTOR = "Connector";	// NOI18N
@@ -61,25 +60,13 @@ public interface Module extends CommonDDBean {
 
 	public String getConnector();
 
-	public void setConnectorId(java.lang.String value) throws VersionNotSupportedException;
-
-	public java.lang.String getConnectorId() throws VersionNotSupportedException;
-
 	public void setEjb(String value);
 
 	public String getEjb();
 
-	public void setEjbId(java.lang.String value) throws VersionNotSupportedException;
-
-	public java.lang.String getEjbId() throws VersionNotSupportedException;
-
 	public void setJava(String value);
 
 	public String getJava();
-
-	public void setJavaId(java.lang.String value) throws VersionNotSupportedException;
-
-	public java.lang.String getJavaId() throws VersionNotSupportedException;
 
 	public void setWeb(Web value);
 
@@ -90,9 +77,5 @@ public interface Module extends CommonDDBean {
 	public void setAltDd(String value);
 
 	public String getAltDd();
-
-	public void setAltDdId(java.lang.String value) throws VersionNotSupportedException;
-
-	public java.lang.String getAltDdId() throws VersionNotSupportedException;
 
 }

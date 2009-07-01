@@ -41,38 +41,18 @@ package org.netbeans.test.mobility;
 
 
 //<editor-fold desc="imports">
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.operators.ButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.TextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 //</editor-fold>
 
@@ -126,7 +106,7 @@ public class JavaMEWebServiceClientTest extends JellyTestCase {
         newFile.selectCategory(CATEGORY_MIDP);
         newFile.selectFileType(ITEM_J2MEWSClient);
         newFile.next();
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         new JTextFieldOperator(op, 0).setText("http://wiki.netbeans.org/wiki/attach/TS_60_MobilityEndToEnd/EchoNoArraysDOCUMENT.wsdl");
         //op.setObjectName("http://wiki.netbeans.org/wiki/attach/TS_60_MobilityEndToEnd/EchoNoArraysDOCUMENT.wsdl"); //TODO !!! doesn't work with some file types. It doesn;t change the name
         sleep(1000);

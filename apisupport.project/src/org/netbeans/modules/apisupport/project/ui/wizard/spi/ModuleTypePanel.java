@@ -171,7 +171,7 @@ public class ModuleTypePanel{
      * Notifies panel that project folder is changed 
      * and panel UI should be updated.
      * @param settings Wizard descriptor 
-     * @param folder new Project folder value
+     * @param value new Project folder value
      */
     public static void setProjectFolder(WizardDescriptor settings, File value) {
         settings.putProperty(PROJECT_FOLDER, value);

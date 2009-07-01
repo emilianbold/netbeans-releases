@@ -45,11 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -57,7 +55,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -504,22 +501,18 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public String getModuleVersion () {
-        // we don't want to use MetadataModel here as it can block
-        String version = null;
-        try {
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO != null) {
-                WebApp webApp = DDProvider.getDefault().getDDRoot(ddFO);
-                version = webApp.getVersion();
-            }
-        } catch (IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+        // return a version based on the Java EE version
+        Profile platformVersion = Profile.fromPropertiesString(getJ2eePlatformVersion());
+        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
+            return WebApp.VERSION_3_0;
+        } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
+            return WebApp.VERSION_2_5;
+        } else if (Profile.J2EE_14.equals(platformVersion)) {
+            return WebApp.VERSION_2_4;
+        } else {
+            // return 3.0 as default value
+            return WebApp.VERSION_3_0;
         }
-        if (version == null) {
-            // XXX should return a version based on the Java EE version
-            version = WebApp.VERSION_2_5;
-        }
-        return version;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

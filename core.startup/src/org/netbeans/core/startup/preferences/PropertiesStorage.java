@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -193,12 +195,18 @@ class PropertiesStorage implements NbPreferences.FileStorage {
         Statistics.StopWatch sw = Statistics.getStopWatch(Statistics.LOAD, true);
         try {
             Properties retval = new Properties();
-            InputStream is = inputStream();
-            if (is != null) {
+            FileObject file = toPropertiesFile(false);
+            if (file != null) {
                 try {
-                    retval.load(is);
-                } finally {
-                    if (is != null) is.close();
+                    InputStream is = file.getInputStream();
+                    try {
+                        retval.load(is);
+                    } finally {
+                        is.close();
+                    }
+                } catch (IllegalArgumentException x) { // #167745
+                    Logger.getLogger(PropertiesStorage.class.getName()).log(Level.INFO, "While loading " + file, x);
+                    file.delete();
                 }
             }
             return retval;
@@ -235,11 +243,6 @@ class PropertiesStorage implements NbPreferences.FileStorage {
                 sw.stop();
             }
         }
-    }
-    
-    private InputStream inputStream() throws IOException {
-        FileObject file = toPropertiesFile(false);
-        return (file == null) ? null : file.getInputStream();
     }
     
     private OutputStream outputStream() throws IOException {

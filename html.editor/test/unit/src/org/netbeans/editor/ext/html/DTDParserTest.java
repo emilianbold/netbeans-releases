@@ -36,9 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html;
 
+import java.io.IOException;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -52,17 +55,24 @@ import static org.junit.Assert.*;
  */
 public class DTDParserTest extends TestBase {
 
-    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01//EN";  // NOI18N
+    private static final String HTML401_STRICT = "-//W3C//DTD HTML 4.01//EN";  // NOI18N
+    private static final String HTML401_TRANS = "-//W3C//DTD HTML 4.01 Transitional//EN"; //NOI18N
     private static final String XHTML_DOCTYPE = "-//W3C//DTD XHTML 1.0 Strict//EN";  // NOI18N
 
-    public DTDParserTest() {
-        super(DTDParserTest.class.getName());
+    public DTDParserTest(String testName) {
+        super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         NbReaderProvider.setupReaders();
+    }
+
+    public static Test xsuite() throws IOException {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new DTDParserTest("testReduceSgmlAndGroups"));
+        return suite;
     }
 
     public void testDTDParserXHTML() {
@@ -73,7 +83,7 @@ public class DTDParserTest extends TestBase {
         assertNotNull(htmlElement);
         Content htmlc = htmlElement.getContentModel().getContent();
         assertNotNull(htmlc);
-        assertEquals(1,htmlc.getPossibleElements().size());
+        assertEquals(1, htmlc.getPossibleElements().size());
 
         Element headElement = dtd.getElement("head");
         assertNotNull(headElement);
@@ -90,7 +100,12 @@ public class DTDParserTest extends TestBase {
     }
 
     public void testDTDParser_HTML_BODY_Elements() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+        testDTDParser_HTML_BODY_Elements(HTML401_STRICT);
+        testDTDParser_HTML_BODY_Elements(HTML401_TRANS);
+    }
+
+    private void testDTDParser_HTML_BODY_Elements(String doctype) {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(doctype, null);
         assertNotNull(dtd);
 
         Element htmlElement = dtd.getElement("HTML");
@@ -110,28 +125,89 @@ public class DTDParserTest extends TestBase {
         assertTrue(c.getPossibleElements().contains(bodyElement));
     }
 
-      public void testTable() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+    public void testTable() {
+        testTable(HTML401_STRICT);
+        testTable(HTML401_TRANS);
+    }
+
+    private void testTable(String doctype) {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(doctype, null);
         assertNotNull(dtd);
 
         Element el = dtd.getElement("TABLE");
         assertNotNull(el);
         Content c = el.getContentModel().getContent();
 
-//        dumpContent(c);
-//        assertEquals(Content.EMPTY_CONTENT, c.reduce("TR"));
+        assertNotNull(c);
 
-      }
+    }
 
-      public void testOption() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+    public void testReduceSgmlAmpGroups() {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(HTML401_TRANS, null);
+        assertNotNull(dtd);
+        Element el = dtd.getElement("HEAD");
+        assertNotNull(el);
+
+        Content orig = el.getContentModel().getContent();
+        Content c = orig;
+        assertNotNull(c);
+
+        System.out.println(c);
+
+        //try reducing the elements in the declaration order (TITLE & ISINDEX? & BASE?)
+        c = c.reduce("TITLE");
+        assertNotNull(c);
+        assertNotEqual(DTD.Content.EMPTY_CONTENT, c);
+
+        assertNull(c.reduce("TITLE")); //can't reduce twice
+
+        c = c.reduce("ISINDEX");
+        assertNotNull(c);
+
+        c = c.reduce("BASE");
+        assertNotNull(c);
+
+        assertEquals(DTD.Content.EMPTY_CONTENT, c);
+
+        //now try different order, order doesn't play role in & groups
+        c = orig;
+
+        c = c.reduce("BASE");
+        assertNotNull(c);
+
+        assertNotEqual(DTD.Content.EMPTY_CONTENT, c);
+
+        c = c.reduce("ISINDEX");
+        assertNotNull(c);
+        assertNotEqual(DTD.Content.EMPTY_CONTENT, c);
+
+        c = c.reduce("TITLE");
+        assertNotNull(c);
+        assertEquals(DTD.Content.EMPTY_CONTENT, c);
+
+
+    }
+
+    public void testOption() {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(HTML401_STRICT, null);
         assertNotNull(dtd);
 
         Element el = dtd.getElement("OPTION");
         assertNotNull(el);
         assertFalse(el.isEmpty());
 
-      }
+    }
+
+    public void testFrameset() {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null);
+        assertNotNull(dtd);
+    }
+
+    private static void assertNotEqual(Object o1, Object o2) {
+        if(o1.equals(o2)) {
+            throw new AssertionFailedError("Objects are unexpectedly equal: " + o1.toString());
+        }
+    }
 
 //      private void dumpContent(Content c) {
 //          for(Object obj : c.getPossibleElements()) {
@@ -139,5 +215,4 @@ public class DTDParserTest extends TestBase {
 //            System.out.println(e);
 //        }
 //      }
-
 }

@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 2.16.1
+#Version 2.19.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -44,6 +44,32 @@ meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
 hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract interface java.util.EventListener
 
@@ -291,6 +317,7 @@ fld public final static java.lang.String PROP_THREAD_DIED = "threadDied"
 fld public final static java.lang.String PROP_THREAD_GROUP_ADDED = "threadGroupAdded"
 fld public final static java.lang.String PROP_THREAD_STARTED = "threadStarted"
 fld public final static java.lang.String SESSION_ID = "netbeans-JPDASession"
+innr public abstract interface static !annotation Registration
 meth protected void fireBreakpointEvent(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent)
 meth public abstract boolean canFixClasses()
 meth public abstract boolean canPopFrames()
@@ -320,6 +347,13 @@ meth public static org.netbeans.api.debugger.jpda.JPDADebugger listen(com.sun.jd
 meth public static void launch(java.lang.String,java.lang.String[],java.lang.String,boolean)
 meth public static void startListening(com.sun.jdi.connect.ListeningConnector,java.util.Map<java.lang.String,? extends com.sun.jdi.connect.Connector$Argument>,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.api.debugger.jpda.JPDADebugger$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.api.debugger.jpda.JPDAStep
 cons public JPDAStep(org.netbeans.api.debugger.jpda.JPDADebugger,int,int)
@@ -369,6 +403,7 @@ meth public abstract java.lang.String getSourceName(java.lang.String) throws com
 meth public abstract java.lang.String getSourcePath(java.lang.String) throws com.sun.jdi.AbsentInformationException
 meth public abstract java.util.List<org.netbeans.api.debugger.jpda.MonitorInfo> getOwnedMonitorsAndFrames()
 meth public abstract java.util.List<org.netbeans.spi.debugger.jpda.EditorContext$Operation> getLastOperations()
+meth public abstract java.util.concurrent.locks.Lock getReadAccessLock()
 meth public abstract org.netbeans.api.debugger.jpda.CallStackFrame[] getCallStack() throws com.sun.jdi.AbsentInformationException
 meth public abstract org.netbeans.api.debugger.jpda.CallStackFrame[] getCallStack(int,int) throws com.sun.jdi.AbsentInformationException
 meth public abstract org.netbeans.api.debugger.jpda.JPDABreakpoint getCurrentBreakpoint()
@@ -612,6 +647,7 @@ fld public final static java.lang.String FIELD_BREAKPOINT_ANNOTATION_TYPE = "Fie
 fld public final static java.lang.String METHOD_BREAKPOINT_ANNOTATION_TYPE = "MethodBreakpoint"
 fld public final static java.lang.String OTHER_THREAD_ANNOTATION_TYPE = "OtherThread"
 fld public final static java.lang.String PROP_LINE_NUMBER = "lineNumber"
+innr public abstract interface static !annotation Registration
 innr public abstract interface static BytecodeProvider
 innr public final static MethodArgument
 innr public final static Operation
@@ -648,6 +684,7 @@ meth public org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument[] getArg
 meth public org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument[] getArguments(java.lang.String,org.netbeans.spi.debugger.jpda.EditorContext$Operation)
 meth public org.netbeans.spi.debugger.jpda.EditorContext$Operation[] getOperations(java.lang.String,int,org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider)
 supr java.lang.Object
+hcls ContextAware
 
 CLSS public abstract interface static org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider
 meth public abstract byte[] byteCodes()
@@ -688,15 +725,30 @@ meth public int hashCode()
 supr java.lang.Object
 hfds column,line,offset
 
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.EditorContext$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
+
 CLSS public abstract org.netbeans.spi.debugger.jpda.SmartSteppingCallback
 cons public SmartSteppingCallback()
+innr public abstract interface static !annotation Registration
 meth public abstract boolean stopHere(org.netbeans.spi.debugger.ContextProvider,org.netbeans.api.debugger.jpda.JPDAThread,org.netbeans.api.debugger.jpda.SmartSteppingFilter)
 meth public abstract void initFilter(org.netbeans.api.debugger.jpda.SmartSteppingFilter)
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.SmartSteppingCallback$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.SourcePathProvider
 cons public SourcePathProvider()
 fld public final static java.lang.String PROP_SOURCE_ROOTS = "sourceRoots"
+innr public abstract interface static !annotation Registration
 meth public abstract java.lang.String getRelativePath(java.lang.String,char,boolean)
 meth public abstract java.lang.String getURL(java.lang.String,boolean)
 meth public abstract java.lang.String[] getOriginalSourceRoots()
@@ -706,9 +758,17 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setSourceRoots(java.lang.String[])
 meth public java.lang.String getSourceRoot(java.lang.String)
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.SourcePathProvider$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.VariablesFilter
 cons public VariablesFilter()
+innr public abstract interface static !annotation Registration
 meth public abstract boolean isLeaf(org.netbeans.spi.viewmodel.TreeModel,org.netbeans.api.debugger.jpda.Variable) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public abstract boolean isReadOnly(org.netbeans.spi.viewmodel.TableModel,org.netbeans.api.debugger.jpda.Variable,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public abstract int getChildrenCount(org.netbeans.spi.viewmodel.TreeModel,org.netbeans.api.debugger.jpda.Variable) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -723,6 +783,13 @@ meth public abstract javax.swing.Action[] getActions(org.netbeans.spi.viewmodel.
 meth public abstract void performDefaultAction(org.netbeans.spi.viewmodel.NodeActionsProvider,org.netbeans.api.debugger.jpda.Variable) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public abstract void setValueAt(org.netbeans.spi.viewmodel.TableModel,org.netbeans.api.debugger.jpda.Variable,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 supr java.lang.Object
+hcls ContextAware
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.VariablesFilter$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.VariablesFilterAdapter
 cons public VariablesFilterAdapter()

@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import org.netbeans.modules.groovy.editor.api.BracketCompleter;
 import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -65,11 +63,7 @@ public class BracketCompleterTest extends GroovyTestBase {
         // Must run in AWT thread (BaseKit.install() checks for that)
         return true;
     }
-
-    private void match(String original) throws BadLocationException {
-        super.assertMatches(original);
-    }
-
+    
     private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
@@ -416,23 +410,7 @@ public class BracketCompleterTest extends GroovyTestBase {
     public void testNotRegexp5() throws Exception {
         insertChar("/^", '/', "//^");
     }
-
-    public void testFindMatching1() throws Exception {
-        match("if (true) ^{\n^}");
-    }
-
-    public void testFindMatching2() throws Exception {
-        match("x=^(true^)\ny=5");
-    }
-
-    public void testFindMatching3() throws Exception {
-        match("x=^(true || (false)^)\ny=5");
-    }
-
-    public void testFindMatching4() throws Exception {
-        match("function foo() ^{\nif (true) {\n}\n^}\n}");
-    }
-
+    
     public void testBackspace1() throws Exception {
         deleteChar("x^", "^");
     }

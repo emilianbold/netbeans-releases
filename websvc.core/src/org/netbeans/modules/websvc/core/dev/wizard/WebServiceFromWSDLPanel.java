@@ -59,9 +59,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -128,6 +129,16 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         if (supportsJaxrpc()) {
             useProviderBtn.setVisible(false);
         }
+
+        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+            sessionBeanCB.setSelected(true);
+            sessionBeanCB.setEnabled(false);
+        } else if (isEjbInWebSupported(project)) {
+            sessionBeanCB.setEnabled(true);
+        } else {
+            sessionBeanCB.setEnabled(false);
+        }
+
         generateWsdlModelTask = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
@@ -244,6 +255,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         jTextFieldPort = new javax.swing.JTextField();
         jButtonBrowsePort = new javax.swing.JButton();
         useProviderBtn = new javax.swing.JCheckBox();
+        sessionBeanCB = new javax.swing.JCheckBox();
 
         jLabelWSDLFile.setLabelFor(jTextFieldWSDLFile);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLFile, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WSDL_File")); // NOI18N
@@ -276,6 +288,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
 
         org.openide.awt.Mnemonics.setLocalizedText(useProviderBtn, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_UseProvider")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(sessionBeanCB, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WsAsSessionBean")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -285,8 +299,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     .add(jLabelWSDLFile)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
-                            .add(jLabelPortDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
+                            .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 766, Short.MAX_VALUE)
+                            .add(jLabelPortDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 766, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jLabelPort)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -297,7 +311,10 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonBrowsePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(useProviderBtn)))
+                        .add(useProviderBtn))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(sessionBeanCB)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -317,7 +334,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     .add(jTextFieldPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(57, 57, 57)
                 .add(useProviderBtn)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(sessionBeanCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(105, Short.MAX_VALUE))
         );
 
         jTextFieldWSDLFile.getAccessibleContext().setAccessibleDescription("null");
@@ -382,6 +401,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private javax.swing.JLabel jLabelWSDLFile;
     private javax.swing.JTextField jTextFieldPort;
     private javax.swing.JTextField jTextFieldWSDLFile;
+    private javax.swing.JCheckBox sessionBeanCB;
     private javax.swing.JCheckBox useProviderBtn;
     // End of variables declaration//GEN-END:variables
     void validate(WizardDescriptor wizardDescriptor) {
@@ -505,6 +525,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     void store(WizardDescriptor d) {
         String wsdlLocation = jTextFieldWSDLFile.getText().trim();
         Boolean useProvider = this.useProviderBtn.isSelected();
+        Boolean isSessionBean = sessionBeanCB.isSelected();
         if (wsdlLocation.startsWith("www.")) {
             wsdlLocation = "http://" + wsdlLocation;
         } //NOI18N
@@ -519,6 +540,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         d.putProperty(WizardProperties.WSDL_PORT, port);
         d.putProperty(WizardProperties.WSDL_SERVICE_HANDLER, wsdlServiceHandler);
         d.putProperty(WizardProperties.USE_PROVIDER, useProvider);
+        d.putProperty(WizardProperties.IS_STATELESS_BEAN, isSessionBean);
     }
 
     void read(WizardDescriptor wizardDescriptor) {
@@ -660,6 +682,24 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     if (serviceName.equals(webService.getIdentifier())) {
                         return true;
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isEjbInWebSupported(Project prj) {
+        if (prj== null) {
+            throw new IllegalArgumentException("Passed null to Util.isEjbInWebSupported(Project prj)");
+        }
+        J2eeModuleProvider j2eeModuleProvider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+            if (j2eeModule != null) {
+                J2eeModule.Type type = j2eeModule.getType();
+                double version = Double.parseDouble(j2eeModule.getModuleVersion());
+                if (J2eeModule.Type.WAR.equals(type) && (version >= 3.0)) {
+                    return true;
                 }
             }
         }

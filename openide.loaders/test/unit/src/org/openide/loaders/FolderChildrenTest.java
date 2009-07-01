@@ -294,6 +294,7 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     private static Object holder;
+    @RandomlyFails // NB-Core-Build #2838 (in FolderChildrenEagerTest)
     public void testChildrenCanGC () throws Exception {
         Filter filter = new Filter();
         holder = filter;

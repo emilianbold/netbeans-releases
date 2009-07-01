@@ -108,11 +108,10 @@ public class PropertiesDataNode extends DataNode {
     }
 
     private static Children createChildren(PropertiesDataObject propDO) {
-        if (propDO.isMultiLocale()) {
-            return propDO.getChildren();
-        } else {
-            return ((PropertiesFileEntry)propDO.getPrimaryEntry()).getChildren();
-        }
+        return ((PropertiesFileEntry) propDO.getPrimaryEntry()).getChildren();
+        // used to use propDO.getChildren() if propDO.isMultiLocale()
+        // but that is now always false, and anyway too slow to call isMultiLocale here
+        // (observed 1811 msec), should avoid calculations unless and until children expanded
     }
 
     /**

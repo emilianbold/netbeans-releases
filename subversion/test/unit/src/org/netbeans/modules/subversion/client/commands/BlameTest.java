@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -43,6 +43,8 @@ import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -128,15 +130,38 @@ public class BlameTest extends AbstractCommandTest {
     }
     
     public void testBlameFile() throws Exception {
-        blame(fileAnnotator);
+        blame(fileAnnotator, "file");
+    }
+
+    public void testBlameFileWithAtSign() throws Exception {
+        blame(fileAnnotator, "@file");
+        blame(fileAnnotator, "fi@le");
+        blame(fileAnnotator, "file@");
+    }
+
+    public void testBlameFileInDir() throws Exception {
+        blame(fileAnnotator, "folder/file");
+    }
+
+    public void testBlameFileInDirWithAtSign() throws Exception {
+        blame(fileAnnotator, "folder/@file");
+        blame(fileAnnotator, "folder/fi@le");
+        blame(fileAnnotator, "folder/file@");
     }
 
     public void testBlameUrl() throws Exception {
-        blame(urlAnnotator);
+        blame(urlAnnotator, "file");
     }
-    
-    private void blame(Annotator annotator) throws Exception {                                
-        File file = createFile("file");
+
+    public void testBlameUrlWithAtSign() throws Exception {
+        blame(urlAnnotator, "@file");
+        blame(urlAnnotator, "fi@le");
+        blame(urlAnnotator, "file@");
+    }
+
+    private void blame(Annotator annotator, String path) throws Exception {
+        createAndCommitParentFolders(path);
+        File file = createFile(path);
         add(file);
         commit(file);
         

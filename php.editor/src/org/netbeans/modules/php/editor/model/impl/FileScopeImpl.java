@@ -138,4 +138,12 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         return cachedModelSupport;
     }
 
+    public NamespaceScope getDefaultDeclaredNamespace() {
+        return ModelUtils.getFirst(ModelUtils.filter(getDeclaredNamespaces(), new ModelUtils.ElementFilter<NamespaceScope>() {
+            public boolean isAccepted(NamespaceScope ns) {
+                return ns.isDefaultNamespace();
+            }
+        }));
+    }
+
 }

@@ -253,7 +253,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(CatchClause node) {
-        Identifier className = (node.getClassName() != null) ? CodeUtils.extractIdentifier(node.getClassName()) : null;
+        Identifier className = (node.getClassName() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getClassName()) : null;
         AttributedElement ae = null;
         if (className != null) {
             String name = className.getName();
@@ -296,7 +296,7 @@ public class SemiAttribute extends DefaultVisitor {
             }
         }
         Identifier parameterType = (node.getParameterType() != null) ? 
-            CodeUtils.extractIdentifier(node.getParameterType()) : null;
+            CodeUtils.extractUnqualifiedIdentifier(node.getParameterType()) : null;
         String name = parameterType.getName();
         if (name != null) {
             Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
@@ -356,7 +356,7 @@ public class SemiAttribute extends DefaultVisitor {
             } else {
                 if (par instanceof StaticMethodInvocation) {
                     StaticMethodInvocation smi = (StaticMethodInvocation) par;
-                    final String clsName = CodeUtils.extractClassName(smi);
+                    final String clsName = CodeUtils.extractUnqualifiedClassName(smi);
                     Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,clsName);
                     if (!nn.isEmpty()) {
                         String contextClassName = clsName;
@@ -414,7 +414,7 @@ public class SemiAttribute extends DefaultVisitor {
         node2Element.put(node, ce);
         List<Expression> interfaes = node.getInterfaes();
         for (Expression identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
+            ClassElement iface = (ClassElement) lookup(CodeUtils.extractUnqualifiedName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -440,13 +440,13 @@ public class SemiAttribute extends DefaultVisitor {
 
         node2Element.put(node, ce);
         Identifier superClsName = (node.getSuperClass() != null) ?
-            CodeUtils.extractIdentifier(node.getSuperClass()) : null;
+            CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
         if (superClsName != null) {
             ce.superClass = (ClassElement) lookup(superClsName.getName(), Kind.CLASS);
         }
         List<Expression> interfaes = node.getInterfaes();
         for (Expression identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
+            ClassElement iface = (ClassElement) lookup(CodeUtils.extractUnqualifiedName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -534,7 +534,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(StaticConstantAccess node) {
-        String clsName = CodeUtils.extractClassName(node);
+        String clsName = CodeUtils.extractUnqualifiedClassName(node);
         if (clsName.equals("self")) {//NOI18N
             ClassElement c = getCurrentClassElement();
             if (c != null) {
@@ -555,7 +555,7 @@ public class SemiAttribute extends DefaultVisitor {
             for (AttributedElement ell : nn) {
                 ClassElement ce = (ClassElement)ell;
                 if (ce != null && ce.getName().equals(clsName)) {
-                    String name = CodeUtils.extractClassName(node);
+                    String name = CodeUtils.extractUnqualifiedClassName(node);
                     AttributedElement thisEl = ce.lookup(name, Kind.CONST);
                     node2Element.put(node.getClassName(), ce);
                     node2Element.put(node, thisEl);
@@ -571,9 +571,9 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(StaticFieldAccess node) {
         Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,
-                CodeUtils.extractClassName(node));
+                CodeUtils.extractUnqualifiedClassName(node));
         if (!nn.isEmpty()) {
-            String contextClassName = CodeUtils.extractClassName(node);
+            String contextClassName = CodeUtils.extractUnqualifiedClassName(node);
             if ("parent".equals(contextClassName)) {
                 contextClassName = getContextSuperClassName();
             } else if ("self".equals(contextClassName)) {
@@ -793,7 +793,7 @@ public class SemiAttribute extends DefaultVisitor {
                 ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
                 node2Element.put(node, ce);
                 Identifier superClsName = (node.getSuperClass() != null) ?
-                    CodeUtils.extractIdentifier(node.getSuperClass()) : null;
+                    CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
 
                 if (superClsName != null) {
                     ce.superClass = (ClassElement) lookup(superClsName.getName(), Kind.CLASS);

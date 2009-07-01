@@ -49,6 +49,7 @@ public interface MethodScope extends FunctionScope, VariableScope, ClassMemberEl
     TypeScope getTypeScope();
     String getClassSkeleton();
     String getInterfaceSkeleton();
+    public String getConstructorIndexSignature();
     //TODO:
     //boolean implementedMethod();
     //boolean overridenMethod();

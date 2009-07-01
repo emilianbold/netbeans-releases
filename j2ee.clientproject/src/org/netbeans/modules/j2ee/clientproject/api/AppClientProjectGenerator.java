@@ -68,7 +68,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -181,10 +181,8 @@ public class AppClientProjectGenerator {
         String resource;
         if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                  resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
-        } else if (Profile.J2EE_14.equals(j2eeProfile)) {
-                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
         } else {
-                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.3.xml"; // NOI18N
+                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
         }
         FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "application-client"); //NOI18N
         AppClient appClient = DDProvider.getDefault().getDDRoot(ddFile);
@@ -369,10 +367,11 @@ public class AppClientProjectGenerator {
                 : confFolderFO.getFileObject(AppClientProvider.FILE_DD);
         if (appClientXML != null) {
             try {
-                //AppClient root = DDProvider.getDefault().getDDRoot(Car.getCar(appClientXML));
                 AppClient root = DDProvider.getDefault().getDDRoot(appClientXML);
                 boolean writeDD = false;
-                if (new BigDecimal(AppClient.VERSION_1_3).equals(root.getVersion()) && Profile.J2EE_14.equals(j2eeProfile)) { // NOI18N
+                boolean upgradeTo14 = root.getVersion() == null ? true :
+                    new BigDecimal(AppClient.VERSION_1_4).compareTo(root.getVersion()) > 0;
+                if (upgradeTo14 && Profile.J2EE_14.equals(j2eeProfile)) {
                     root.setVersion(new BigDecimal(AppClient.VERSION_1_4));
                     writeDD = true;
                 }
@@ -393,11 +392,9 @@ public class AppClientProjectGenerator {
             String resource;
             if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
-            } else if (Profile.J2EE_14.equals(j2eeProfile)) {
-                resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
             } else {
-                resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.3.xml"; // NOI18N
-            }  
+                resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
+            }
             FileUtil.copyFile(FileUtil.getConfigFile(resource),
                     confFolderFO, "application-client"); //NOI18N
         }

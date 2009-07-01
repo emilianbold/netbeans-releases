@@ -63,7 +63,9 @@ public final class PreferredBoundsAnimator extends Animator {
 
     public void setPreferredBounds (Widget widget, Rectangle preferredBounds) {
         assert widget != null;
-        sourceBounds.clear ();
+        if (!sourceBounds.isEmpty()) {
+            sourceBounds.clear ();
+        }
         boolean extra = preferredBounds == null;
         nullBounds.put (widget, extra);
         Rectangle rect = null;

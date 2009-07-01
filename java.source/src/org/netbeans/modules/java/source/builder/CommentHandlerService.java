@@ -77,7 +77,7 @@ public class CommentHandlerService implements CommentHandler {
         context.put(commentHandlerKey, instance);
     }
 
-    private Map<Tree, CommentSetImpl> map = new WeakHashMap<Tree, CommentSetImpl>();
+    private final Map<Tree, CommentSetImpl> map = new HashMap<Tree, CommentSetImpl>();
     
     private CommentHandlerService(Context context) {
     }
@@ -136,5 +136,12 @@ public class CommentHandlerService implements CommentHandler {
             }
             set.addPrecedingComment(c);
         }
+    }
+
+
+    public String toString() {
+        return "CommentHandlerService[" +
+                "map=" + map +
+                ']';
     }
 }

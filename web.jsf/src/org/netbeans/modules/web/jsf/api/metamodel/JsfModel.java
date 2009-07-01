@@ -42,9 +42,9 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfigElement;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 
 
@@ -62,7 +62,7 @@ public interface JsfModel {
     
     /**
      * Accessor to list of faces-config models.
-     * @return list of models found in module
+     * @return set of models found in module
      */
     List<JSFConfigModel> getModels();
     
@@ -76,7 +76,7 @@ public interface JsfModel {
      * @param clazz
      * @return list of all elements in merged model.
      */
-    <T extends JsfModelElement> List<T> getElement( Class<T> clazz);
+    <T extends JsfModelElement> List<T> getElements( Class<T> clazz);
     
     /**
      * Register change listener on model elements.

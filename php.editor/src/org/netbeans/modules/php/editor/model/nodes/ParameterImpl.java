@@ -66,7 +66,7 @@ class ParameterImpl implements Parameter {
 
     @NonNull
     public String getDefaultValue() {
-        return defaultValue != null ? defaultValue : "";//NOI18N
+        return defaultValue;//NOI18N
     }
 
     public boolean isMandatory() {

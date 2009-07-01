@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 PATH=/bin:/usr/bin:${PATH}
 PROG=`basename '$0'`
 USAGE="usage: ${PROG} -p pidfile -e envfile [-w work dir] [-x prompt] ..."
@@ -10,9 +10,10 @@ fail() {
 }
 
 doExit() {
-  test -f ${PIDFILE} && rm ${PIDFILE}
-  test -f ${ENVFILE} && rm ${ENVFILE}
-  echo ${STATUS} > ${PIDFILE}.res
+  test -f "${PIDFILE}" && rm "${PIDFILE}"
+  test -f "${PIDFILE}.sh" && rm "${PIDFILE}.sh"
+  test -f "${ENVFILE}" && rm "${ENVFILE}"
+  echo ${STATUS} > "${PIDFILE}.res"
   exit ${STATUS}
 }
 
@@ -41,15 +42,16 @@ fi
 
 STATUS=-1
 
-if [ -r ${ENVFILE} ]; then
-  /bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd '${WDIR}' && exec $@"
-  STATUS=$?
+if [ -r "${ENVFILE}" ]; then
+  echo "echo \$\$>\"${PIDFILE}\" && . \"${ENVFILE}\" && cd \"${WDIR}\" && exec $@" > "${PIDFILE}.sh"
 else
-  /bin/sh -c "echo \$\$>${PIDFILE} && cd '${WDIR}' && exec $@"
-  STATUS=$?
+  echo "echo \$\$>\"${PIDFILE}\" && cd \"${WDIR}\" && exec $@" > "${PIDFILE}.sh"
 fi
 
-echo ${STATUS} > ${PIDFILE}.res
+/bin/sh "${PIDFILE}.sh"
+STATUS=$?
+
+echo ${STATUS} > "${PIDFILE}.res"
 
 if [ "${PROMPT}" != "NO" ]; then
   /bin/echo "${PROMPT}"

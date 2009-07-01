@@ -55,7 +55,6 @@ public interface Application extends org.netbeans.modules.j2ee.dd.api.common.Roo
 	public static final String SECURITY_ROLE = "SecurityRole";	// NOI18N
 
         public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-        public static final String VERSION_1_3="1.3"; //NOI18N
         public static final String VERSION_1_4="1.4"; //NOI18N
         public static final String VERSION_5="5"; //NOI18N
         public static final int STATE_VALID=0;
