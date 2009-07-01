@@ -69,9 +69,10 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
                 renderer.setIcon(icon);
                 return renderer;
-            } else {
-                renderer.setIcon(null);
             }
+//            else {
+//                renderer.setIcon(null);
+//            }
             return renderer;
         }
 
