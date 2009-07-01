@@ -52,7 +52,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.modules.php.api.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -70,6 +70,40 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     public SymfonyCommandSupport(PhpModule phpModule) {
         super(phpModule);
+    }
+
+    public static String getHelp(FrameworkCommand command) {
+        SymfonyScript symfonyScript = SymfonyScript.getDefault();
+        if (symfonyScript == null || !symfonyScript.isValid()) {
+            return null;
+        }
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(symfonyScript.getProgram());
+        for (String param : symfonyScript.getParameters()) {
+            processBuilder = processBuilder.addArgument(param);
+        }
+        processBuilder = processBuilder.addArgument("help"); // NOI18N
+        processBuilder = processBuilder.addArgument(command.getCommand());
+        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, new ExecutionDescriptor.InputProcessorFactory() {
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.bridge(lineProcessor);
+            }
+        }));
+        final ExecutionService service = ExecutionService.newService(
+                processBuilder,
+                executionDescriptor,
+                "getting help for: " + command.getPreview()); // NOI18N
+        final Future<Integer> result = service.run();
+        try {
+            result.get();
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        return lineProcessor.getHelp();
     }
 
     @Override
@@ -104,9 +138,12 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     protected List<FrameworkCommand> getFrameworkCommandsInternal() throws InterruptedException, ExecutionException {
         ExternalProcessBuilder processBuilder = createSilentCommand("list"); // NOI18N
         if (processBuilder == null) {
+            UiUtils.invalidScriptProvided(
+                    NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidSymfonyScript"),
+                    SymfonyScript.getOptionsSubPath());
             return null;
         }
-        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
+        final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, new ExecutionDescriptor.InputProcessorFactory() {
 
@@ -125,7 +162,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return freshCommands;
     }
 
-    static class HelpLineProcessor implements LineProcessor {
+    static class CommandsLineProcessor implements LineProcessor {
 
         private static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
         private static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
@@ -146,7 +183,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
                 if (commandMatcher.matches()) {
                     String command = prefix + ":" + commandMatcher.group(1); // NOI18N
                     String description = commandMatcher.group(2);
-                    commands.add(new FrameworkCommand(command, description, command));
+                    commands.add(new SymfonyCommand(command, description, command));
                 }
             }
         }
@@ -159,6 +196,25 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         }
 
         public void reset() {
+        }
+    }
+
+    static class HelpLineProcessor implements LineProcessor {
+        private final StringBuilder buffer = new StringBuilder();
+
+        public void processLine(String line) {
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        public void reset() {
+        }
+
+        public void close() {
+        }
+
+        public String getHelp() {
+            return buffer.toString().trim();
         }
     }
 

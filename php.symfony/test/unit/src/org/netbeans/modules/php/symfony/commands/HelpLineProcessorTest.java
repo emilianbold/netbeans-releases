@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
-import org.netbeans.modules.php.api.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
@@ -54,7 +54,7 @@ public class HelpLineProcessorTest extends NbTestCase {
     }
 
     public void testCommands() {
-        SymfonyCommandSupport.HelpLineProcessor processor = new SymfonyCommandSupport.HelpLineProcessor();
+        SymfonyCommandSupport.CommandsLineProcessor processor = new SymfonyCommandSupport.CommandsLineProcessor();
         for (String s : getCommands()) {
             processor.processLine(s);
         }

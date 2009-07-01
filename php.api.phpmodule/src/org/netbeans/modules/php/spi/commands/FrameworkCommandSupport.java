@@ -41,7 +41,6 @@ package org.netbeans.modules.php.spi.commands;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -55,7 +54,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.php.api.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -205,10 +203,6 @@ public abstract class FrameworkCommandSupport {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-        }
-        if (freshCommands == null) {
-            // avoid NPE
-            freshCommands = Collections.emptyList();
         }
 
         synchronized (this) {

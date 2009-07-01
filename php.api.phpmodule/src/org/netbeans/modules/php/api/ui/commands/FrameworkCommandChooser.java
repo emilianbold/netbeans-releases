@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Action;
@@ -65,14 +67,16 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.php.api.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.CommandDescriptor;
 import org.openide.DialogDescriptor;
@@ -83,7 +87,9 @@ import org.openide.util.NbBundle;
 public final class FrameworkCommandChooser extends JPanel {
     private static final long serialVersionUID = 2405531380316402L;
 
-    private static final Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
+    private static final Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.task"); // NOI18N
+    private static final Object NO_MATCHING_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     /** Remember checkbox state per IDE sessions. */
     private static boolean debug;
@@ -99,9 +105,36 @@ public final class FrameworkCommandChooser extends JPanel {
 
     private final List<FrameworkCommand> allTasks = new ArrayList<FrameworkCommand>();
     private final String frameworkName;
+    private final JTextField taskParametersComboBoxEditor;
 
     private JButton runButton;
     private boolean refreshNeeded;
+
+    private FrameworkCommandChooser(PhpModule phpModule, final JButton runButton, final String frameworkName) {
+        assert phpModule != null;
+        assert runButton != null;
+        assert frameworkName != null;
+
+        this.phpModule = phpModule;
+        this.runButton = runButton;
+        this.frameworkName = frameworkName;
+
+        initComponents();
+        taskParametersComboBoxEditor = (JTextField) taskParametersComboBox.getEditor().getEditorComponent();
+        matchingTaskList.setCellRenderer(new FrameworkCommandChooser.FrameworkCommandRenderer());
+        debugCheckbox.setSelected(debug);
+        refreshNeeded = reloadAllTasks();
+        refreshTaskList();
+        taskField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) { refreshTaskList(); }
+            public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
+            public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
+        });
+        preselectLastlySelected();
+        initTaskParameters();
+        updateHelp();
+        updatePreview();
+    }
 
     public static CommandDescriptor select(final PhpModule phpModule, String frameworkName) {
         assert EventQueue.isDispatchThread() : "must be called from EDT";
@@ -115,6 +148,8 @@ public final class FrameworkCommandChooser extends JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 setRunButtonState(runButton, chooserPanel);
                 chooserPanel.initTaskParameters();
+                chooserPanel.updateHelp();
+                chooserPanel.updatePreview();
             }
         });
 
@@ -171,7 +206,7 @@ public final class FrameworkCommandChooser extends JPanel {
         return null;
     }
 
-    private void initTaskParameters() {
+    void initTaskParameters() {
         FrameworkCommand task = getSelectedTask();
         List<? super Object> params = new ArrayList<Object>();
         // no param option for convenience
@@ -181,6 +216,54 @@ public final class FrameworkCommandChooser extends JPanel {
         //params.addAll(RakeParameters.getParameters(task, project));
         taskParametersComboBox.setModel(new DefaultComboBoxModel(params.toArray()));
         preselectLastSelectedParam(task);
+        taskParametersComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                updatePreview();
+            }
+        });
+    }
+
+    void updateHelp() {
+        final FrameworkCommand task = getSelectedTask();
+        if (task == null) {
+            updateHelp(null);
+        } else {
+            updateHelp(getMessage("LBL_PleaseWait")); // NOI18N
+            EXECUTOR.submit(new Runnable() {
+                public void run() {
+                    final String help = task.getHelp();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateHelp(help);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    void updateHelp(String help) {
+        assert SwingUtilities.isEventDispatchThread() : "must be run in EDT";
+        helpTextArea.setText(help);
+        helpTextArea.setCaretPosition(0);
+    }
+
+    void updatePreview() {
+        FrameworkCommand task = getSelectedTask();
+        String preview = null;
+        if (task != null) {
+            preview = task.getPreview() + " " + taskParametersComboBoxEditor.getText(); // NOI18N
+        }
+        previewLabel.setText(preview);
     }
 
     /**
@@ -244,29 +327,6 @@ public final class FrameworkCommandChooser extends JPanel {
         runButton.setEnabled(chooserPanel.getSelectedTask() != null);
     }
 
-    private FrameworkCommandChooser(PhpModule phpModule, final JButton runButton, final String frameworkName) {
-        assert phpModule != null;
-        assert runButton != null;
-        assert frameworkName != null;
-
-        this.phpModule = phpModule;
-        this.runButton = runButton;
-        this.frameworkName = frameworkName;
-
-        initComponents();
-        matchingTaskList.setCellRenderer(new FrameworkCommandChooser.FrameworkCommandRenderer());
-        debugCheckbox.setSelected(debug);
-        refreshNeeded = reloadAllTasks();
-        refreshTaskList();
-        taskField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { refreshTaskList(); }
-            public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
-            public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
-        });
-        preselectLastlySelected();
-        initTaskParameters();
-    }
-
     /**
      * Stores the param that the user entered in the params combo
      * box.
@@ -322,7 +382,11 @@ public final class FrameworkCommandChooser extends JPanel {
         }
         matchingTaskList.setModel(model);
         if (model.isEmpty()) {
-            model.addElement(NO_TASK_ITEM);
+            if (allTasks.isEmpty()) {
+                model.addElement(NO_TASK_ITEM);
+            } else {
+                model.addElement(NO_MATCHING_TASK_ITEM);
+            }
         }
         matchingTaskList.setSelectedIndex(0);
         initTaskParameters();
@@ -363,7 +427,9 @@ public final class FrameworkCommandChooser extends JPanel {
 
     private FrameworkCommand getSelectedTask() {
         Object val = matchingTaskList.getSelectedValue();
-        if (val != null && !NO_TASK_ITEM.equals(val)) {
+        if (val != null
+                && !NO_MATCHING_TASK_ITEM.equals(val)
+                && !NO_TASK_ITEM.equals(val)) {
             return (FrameworkCommand) val;
         }
         return null;
@@ -383,33 +449,22 @@ public final class FrameworkCommandChooser extends JPanel {
 
         debugCheckbox = new javax.swing.JCheckBox();
         taskLabel = new javax.swing.JLabel();
-        taskParamLabel = new javax.swing.JLabel();
-        matchingTaskLabel = new javax.swing.JLabel();
-        matchingTaskSP = new javax.swing.JScrollPane();
-        matchingTaskList = new javax.swing.JList();
         taskFieldPanel = new javax.swing.JPanel();
         taskField = new javax.swing.JTextField();
         taskHint = new javax.swing.JLabel();
+        taskParamLabel = new javax.swing.JLabel();
         taskParametersComboBox = new javax.swing.JComboBox();
+        matchingTaskLabel = new javax.swing.JLabel();
+        matchingTaskSP = new javax.swing.JScrollPane();
+        matchingTaskList = new javax.swing.JList();
+        helpScrollPane = new javax.swing.JScrollPane();
+        helpTextArea = new javax.swing.JTextArea();
+        previewLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.text")); // NOI18N
 
         taskLabel.setLabelFor(taskField);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.text")); // NOI18N
-
-        matchingTaskLabel.setLabelFor(matchingTaskList);
-        org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.text")); // NOI18N
-
-        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
-        matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                matchingTaskListMouseClicked(evt);
-            }
-        });
-        matchingTaskSP.setViewportView(matchingTaskList);
 
         taskFieldPanel.setLayout(new java.awt.BorderLayout());
 
@@ -424,17 +479,40 @@ public final class FrameworkCommandChooser extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(taskHint, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskHint.text")); // NOI18N
         taskFieldPanel.add(taskHint, java.awt.BorderLayout.SOUTH);
 
+        org.openide.awt.Mnemonics.setLocalizedText(taskParamLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.text")); // NOI18N
+
         taskParametersComboBox.setEditable(true);
+
+        matchingTaskLabel.setLabelFor(matchingTaskList);
+        org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.text")); // NOI18N
+
+        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                matchingTaskListMouseClicked(evt);
+            }
+        });
+        matchingTaskSP.setViewportView(matchingTaskList);
+
+        helpTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        helpTextArea.setColumns(20);
+        helpTextArea.setEditable(false);
+        helpTextArea.setRows(5);
+        helpScrollPane.setViewportView(helpTextArea);
+
+        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, "DUMMY"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(helpScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(taskLabel)
                             .add(taskParamLabel))
@@ -442,7 +520,8 @@ public final class FrameworkCommandChooser extends JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
                             .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel))
+                    .add(matchingTaskLabel)
+                    .add(previewLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -459,8 +538,12 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(helpScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(previewLabel)
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -559,9 +642,12 @@ public final class FrameworkCommandChooser extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox debugCheckbox;
+    private javax.swing.JScrollPane helpScrollPane;
+    private javax.swing.JTextArea helpTextArea;
     private javax.swing.JLabel matchingTaskLabel;
     private javax.swing.JList matchingTaskList;
     private javax.swing.JScrollPane matchingTaskSP;
+    private javax.swing.JLabel previewLabel;
     private javax.swing.JTextField taskField;
     private javax.swing.JPanel taskFieldPanel;
     private javax.swing.JLabel taskHint;

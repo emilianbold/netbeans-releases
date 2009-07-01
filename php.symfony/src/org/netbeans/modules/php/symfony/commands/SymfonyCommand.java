@@ -37,63 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.commands;
+package org.netbeans.modules.php.symfony.commands;
+
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.symfony.SymfonyScript;
 
 /**
- * @author Petr Hejl, Tomas Mysik
+ * @author Tomas Mysik
  */
-public final class FrameworkCommand implements Comparable<FrameworkCommand> {
+public class SymfonyCommand extends FrameworkCommand {
+    private final String preview;
 
-    private final String command;
-    private final String description;
-    private final String displayName;
-
-    public FrameworkCommand(String command, String description, String displayName) {
-        this.command = command;
-        this.description = description;
-        this.displayName = displayName;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDisplayName() {
-        return displayName;
+    public SymfonyCommand(String command, String description, String displayName) {
+        super(command, description, displayName);
+        preview = SymfonyScript.SCRIPT_NAME + " " + getCommand(); // NOI18N
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final FrameworkCommand other = (FrameworkCommand) obj;
-        if ((command == null) ? (other.command != null) : !command.equals(other.command)) {
-            return false;
-        }
-        return true;
+    protected String getHelpInternal() {
+        return SymfonyCommandSupport.getHelp(this);
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + (command != null ? command.hashCode() : 0);
-        return hash;
-    }
-
-    public int compareTo(FrameworkCommand o) {
-        if (command == null || o.getCommand() == null) {
-            assert displayName != null : "displayName not null";
-            assert o.getDisplayName() != null : "other displayName not null";
-            return displayName.compareTo(o.getDisplayName());
-        }
-        return getCommand().compareTo(o.getCommand());
+    public String getPreview() {
+        return preview;
     }
 }
