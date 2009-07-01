@@ -93,7 +93,8 @@ public class CallbackActionTest extends NbTestCase {
         
         ContextAwareAction expResult = null;
         try {
-            ContextAwareAction result = Actions.callback(key, defaultDelegate, false);
+            ContextAwareAction result = Actions.callback(key, defaultDelegate, false,
+                    "displayName", "org/openide/awt/TestIcon.png", false);
             fail("Shall fail as key is null");
         } catch (NullPointerException ex) {
             // ok

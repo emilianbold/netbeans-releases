@@ -401,7 +401,7 @@ public class Actions extends Object {
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/&gt;
      *   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
-     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourComponent.png"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -447,6 +447,9 @@ public class Actions extends Object {
      *   &lt;attr name="key" stringvalue="KeyInActionMap"/&gt;
      *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; &lt;!-- defaults to false --&gt;
      *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt; &lt;!-- may be missing --&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * 
@@ -456,16 +459,23 @@ public class Actions extends Object {
      *   active component even some other component is currently active
      * @param fallback action to delegate to when no key found. Use <code>null</code>
      *   to make the action disabled if delegate assigned to key is missing
+     * @param displayName localized name of the action (including ampersand)
+     * @param iconBase the location to the action icon
+     * @param noIconInMenu true if this icon shall not have an item in menu
      * @return creates new action associated with given key
      * @since 7.10
      */
     public static ContextAwareAction callback(
-        String key, Action fallback, boolean surviveFocusChange
+        String key, Action fallback, boolean surviveFocusChange,
+        String displayName, String iconBase, boolean noIconInMenu
     ) {
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("key", key); // NOI18N
         map.put("surviveFocusChange", surviveFocusChange); // NOI18N
         map.put("fallback", fallback); // NOI18N
+        map.put("displayName", displayName); // NOI18N
+        map.put("iconBase", iconBase); // NOI18N
+        map.put("noIconInMenu", noIconInMenu); // NOI18N
         return callback(map);
     }
     static ContextAwareAction callback(Map fo) {
@@ -495,6 +505,9 @@ public class Actions extends Object {
      *   &lt;attr name="key" stringvalue="KeyInActionMap"/&gt;
      *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; 
      *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * In the previous case there has to be a class with public default constructor
@@ -513,6 +526,9 @@ public class Actions extends Object {
      *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="EXACTLY_ONE"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * where <code>pkg.YourClass</code> is defined with public constructor taking
@@ -542,6 +558,9 @@ public class Actions extends Object {
      *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * Now the constructor of <code>YourClass</code> needs to have following
@@ -562,8 +581,11 @@ public class Actions extends Object {
      *    previous selection even if no selection is currently in context?
      * @param delegate action to call when this action is invoked
      * @param key alternatively an action can be looked up in action map
-     *    (see {@link #callback(java.lang.String, javax.swing.Action, boolean)})
+     *    (see {@link Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean)})
      * @param fallback action to fallback to (can be <code>null</code>)
+     * @param displayName localized name of the action (including ampersand)
+     * @param iconBase the location to the action icon
+     * @param noIconInMenu true if this icon shall not have an item in menu
      * @return new instance of context aware action watching for type
      * @since 7.10
      */
@@ -573,7 +595,8 @@ public class Actions extends Object {
         boolean surviveFocusChange,
         ContextAwareAction delegate,
         String key,
-        Action fallback
+        Action fallback,
+        String displayName, String iconBase, boolean noIconInMenu
     ) {
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("key", key); // NOI18N
@@ -582,6 +605,9 @@ public class Actions extends Object {
         map.put("delegate", delegate); // NOI18N
         map.put("type", type); // NOI18N
         map.put("selectionType", single ? ContextSelection.EXACTLY_ONE : ContextSelection.ANY);
+        map.put("displayName", displayName); // NOI18N
+        map.put("iconBase", iconBase); // NOI18N
+        map.put("noIconInMenu", noIconInMenu); // NOI18N
         return context(map);
     }
     static ContextAwareAction context(Map fo) {
