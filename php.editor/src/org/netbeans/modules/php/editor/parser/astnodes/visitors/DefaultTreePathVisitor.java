@@ -86,6 +86,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -133,6 +134,11 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
      */
     public List<ASTNode> getPath() {
         return unmodifiablePath;
+    }
+
+    @Override
+    public void visit(NamespaceDeclaration node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
     }
 
     @Override

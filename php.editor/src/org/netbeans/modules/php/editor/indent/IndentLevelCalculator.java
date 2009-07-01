@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -89,6 +90,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Block node) {
+
+        // do not indent virtual blocks created by namespace declarations
+        if (getPath().get(0) instanceof NamespaceDeclaration){
+            return;
+        }
+
+        // end of hot fix
+
         indentListOfStatements(node.getStatements());
         super.visit(node);
     }
