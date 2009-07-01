@@ -41,13 +41,15 @@ package org.netbeans.modules.bugzilla.query;
 
 import javax.swing.ListModel;
 import org.netbeans.modules.bugzilla.TestConstants;
+import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
  * @author tomas
  */
-public class QueryTestUtil implements TestConstants {
+public class QueryTestUtil implements TestConstants, QueryConstants {
     public static void selectTestProject(final BugzillaQuery q) {
         QueryPanel qp = (QueryPanel) q.getController().getComponent();
         ListModel model = qp.productList.getModel();
@@ -59,4 +61,9 @@ public class QueryTestUtil implements TestConstants {
             }
         }
     }
+
+    static BugzillaRepository getRepository() {
+        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
+    }
+
 }
