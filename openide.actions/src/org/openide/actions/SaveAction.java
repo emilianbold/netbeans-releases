@@ -41,14 +41,19 @@
 
 package org.openide.actions;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -73,6 +78,21 @@ public class SaveAction extends CookieAction {
         return new Class[] { SaveCookie.class };
     }
 
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new Delegate(this, actionContext);
+    }
+
+    final void performAction(Lookup context) {
+        SaveCookie sc = context.lookup(SaveCookie.class);
+        if (sc == null) {
+            return;
+        }
+        Node n = context.lookup(Node.class);
+        performAction(sc, n);
+    }
+
+
     protected void performAction(final Node[] activatedNodes) {
         SaveCookie sc = activatedNodes[0].getCookie(SaveCookie.class);
         assert sc != null : "SaveCookie must be present on " + activatedNodes[0] + ". " +
@@ -81,6 +101,10 @@ public class SaveAction extends CookieAction {
         // avoid NPE if disabled assertions
         if (sc == null) return ;
 
+        performAction(sc, activatedNodes[0]);
+    }
+
+    private void performAction(SaveCookie sc, Node n) {
         UserQuestionException userEx = null;
         for (;;) {
             try {
@@ -90,7 +114,7 @@ public class SaveAction extends CookieAction {
                     userEx.confirmed();
                 }
                 StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(SaveAction.class, "MSG_saved", getSaveMessage(activatedNodes[0]))
+                    NbBundle.getMessage(SaveAction.class, "MSG_saved", getSaveMessage(sc, n))
                 );
             } catch (UserQuestionException ex) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
@@ -105,7 +129,7 @@ public class SaveAction extends CookieAction {
                 Exceptions.attachLocalizedMessage(e,
                                                   NbBundle.getMessage(SaveAction.class,
                                                                       "EXC_notsaved",
-                                                                      getSaveMessage(activatedNodes[0]),
+                                                                      getSaveMessage(sc, n),
                                                                       e.getLocalizedMessage ()));
                 Logger.getLogger (getClass ().getName ()).log (Level.SEVERE, null, e);
             }
@@ -118,7 +142,10 @@ public class SaveAction extends CookieAction {
         return false;
     }
 
-    private String getSaveMessage(Node n) {
+    private String getSaveMessage(SaveCookie sc, Node n) {
+        if (n == null) {
+            return sc.toString();
+        }
         if (dataObject == null) {
             // read the class
             ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
@@ -166,5 +193,42 @@ public class SaveAction extends CookieAction {
     @Override
     protected String iconResource() {
         return "org/openide/resources/actions/save.png"; // NOI18N
+    }
+
+
+    private static final class Delegate extends AbstractAction
+    implements ContextAwareAction {
+        final SaveAction sa;
+        final Lookup context;
+
+        public Delegate(SaveAction sa, Lookup context) {
+            this.sa = sa;
+            this.context = context;
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new Delegate(sa, actionContext);
+        }
+
+        @Override
+        public Object getValue(String key) {
+            return sa.getValue(key);
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+            sa.putValue(key, value);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return context.lookup(SaveCookie.class) != null;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            sa.performAction(context);
+        }
+
+
     }
 }

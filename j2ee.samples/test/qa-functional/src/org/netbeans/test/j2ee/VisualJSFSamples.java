@@ -46,7 +46,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.actions.RedeployProjectAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -307,7 +307,7 @@ public class VisualJSFSamples extends JellyTestCase {
     public void testBuildProject(String PROJECT_NAME) {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         Util.cleanStatusBar();
-        new BuildProjectAction().perform(rootNode);
+        new BuildJavaProjectAction().perform(rootNode);
         MainWindowOperator.getDefault().waitStatusText("Finished building");
 //        ref(Util.dumpFiles(new File(PROJECT_FOLDER)));
     //compareReferenceFiles();

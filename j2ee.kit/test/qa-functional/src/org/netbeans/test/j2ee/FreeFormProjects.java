@@ -47,7 +47,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -102,7 +102,7 @@ public class FreeFormProjects extends J2eeTestCase {
         npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
         npwo.selectProject("EJB Module with Existing Sources");
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewWebProjectNameLocationStepOperator npnlso = new NewWebProjectNameLocationStepOperator();
         npnlso.txtLocation().setText(location);
         npnlso.next();
         //server settings panel - accept defaults
@@ -145,7 +145,7 @@ public class FreeFormProjects extends J2eeTestCase {
         npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
         npwo.selectProject("Enterprise Application with Existing Sources");
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewWebProjectNameLocationStepOperator npnlso = new NewWebProjectNameLocationStepOperator();
         npnlso.txtLocation().setText(location);
         npnlso.next();
         new JComboBoxOperator(npnlso, 1).selectItem(1);
