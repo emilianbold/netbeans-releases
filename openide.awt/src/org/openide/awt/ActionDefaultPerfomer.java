@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.api.actions.Closable;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Printable;
 import org.netbeans.api.actions.Viewable;
 import org.openide.util.Lookup.Provider;
 
@@ -73,6 +74,9 @@ final class ActionDefaultPerfomer extends ContextAction.Performer<Object> {
                     break;
                 case 3:
                     ((Closable) o).close();
+                    break;
+                case 4:
+                    ((Printable) o).print();
                     break;
                 default:
                     assert false : "Wrong type: " + type;

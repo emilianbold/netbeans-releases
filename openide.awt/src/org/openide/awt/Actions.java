@@ -88,6 +88,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.api.actions.Closable;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Printable;
 import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -636,6 +637,9 @@ public class Actions extends Object {
         }
         if (type.equals(Closable.class.getName())) {
             return new ActionDefaultPerfomer(3);
+        }
+        if (type.equals(Printable.class.getName())) {
+            return new ActionDefaultPerfomer(4);
         }
         throw new IllegalStateException(type);
     }
