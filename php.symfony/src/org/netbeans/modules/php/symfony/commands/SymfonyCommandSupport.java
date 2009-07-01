@@ -72,40 +72,6 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         super(phpModule);
     }
 
-    public static String getHelp(FrameworkCommand command) {
-        SymfonyScript symfonyScript = SymfonyScript.getDefault();
-        if (symfonyScript == null || !symfonyScript.isValid()) {
-            return null;
-        }
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(symfonyScript.getProgram());
-        for (String param : symfonyScript.getParameters()) {
-            processBuilder = processBuilder.addArgument(param);
-        }
-        processBuilder = processBuilder.addArgument("help"); // NOI18N
-        processBuilder = processBuilder.addArgument(command.getCommand());
-        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING, new ExecutionDescriptor.InputProcessorFactory() {
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.bridge(lineProcessor);
-            }
-        }));
-        final ExecutionService service = ExecutionService.newService(
-                processBuilder,
-                executionDescriptor,
-                "getting help for: " + command.getPreview()); // NOI18N
-        final Future<Integer> result = service.run();
-        try {
-            result.get();
-        } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-        return lineProcessor.getHelp();
-    }
-
     @Override
     protected String getFrameworkName() {
         return NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_Symfony");
@@ -196,25 +162,6 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         }
 
         public void reset() {
-        }
-    }
-
-    static class HelpLineProcessor implements LineProcessor {
-        private final StringBuilder buffer = new StringBuilder();
-
-        public void processLine(String line) {
-            buffer.append(line);
-            buffer.append("\n"); // NOI18N
-        }
-
-        public void reset() {
-        }
-
-        public void close() {
-        }
-
-        public String getHelp() {
-            return buffer.toString().trim();
         }
     }
 

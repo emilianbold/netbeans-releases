@@ -55,7 +55,7 @@ public class SymfonyCommand extends FrameworkCommand {
 
     @Override
     protected String getHelpInternal() {
-        return SymfonyCommandSupport.getHelp(this);
+        return SymfonyScript.getHelp(this);
     }
 
     @Override

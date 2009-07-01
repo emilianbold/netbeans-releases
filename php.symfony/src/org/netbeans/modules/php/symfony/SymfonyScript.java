@@ -55,6 +55,9 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.ProxyInputProcessorFactory;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.util.NbBundle;
@@ -145,15 +148,42 @@ public class SymfonyScript extends PhpProgram {
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
         String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
+        runService(processBuilder, executionDescriptor, tabTitle);
+    }
+
+    public static String getHelp(FrameworkCommand command) {
+        SymfonyScript symfonyScript = SymfonyScript.getDefault();
+        if (symfonyScript == null || !symfonyScript.isValid()) {
+            return null;
+        }
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(symfonyScript.getProgram());
+        for (String param : symfonyScript.getParameters()) {
+            processBuilder = processBuilder.addArgument(param);
+        }
+        processBuilder = processBuilder.addArgument("help"); // NOI18N
+        processBuilder = processBuilder.addArgument(command.getCommand());
+        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new ProxyInputProcessorFactory(FrameworkCommandSupport.ANSI_STRIPPING, new ExecutionDescriptor.InputProcessorFactory() {
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.bridge(lineProcessor);
+            }
+        }));
+        runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview()); // NOI18N
+        return lineProcessor.getHelp();
+    }
+
+    private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) {
         final ExecutionService service = ExecutionService.newService(
                 processBuilder,
                 executionDescriptor,
-                tabTitle);
+                title);
         final Future<Integer> result = service.run();
         try {
             result.get();
         } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, getOptionsSubPath());
+            UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -217,6 +247,25 @@ public class SymfonyScript extends PhpProgram {
                 }
             }
             return null;
+        }
+    }
+
+    static class HelpLineProcessor implements LineProcessor {
+        private final StringBuilder buffer = new StringBuilder();
+
+        public void processLine(String line) {
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        public void reset() {
+        }
+
+        public void close() {
+        }
+
+        public String getHelp() {
+            return buffer.toString().trim();
         }
     }
 }

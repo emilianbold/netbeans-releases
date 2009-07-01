@@ -72,8 +72,9 @@ import org.openide.util.lookup.Lookups;
  */
 public abstract class FrameworkCommandSupport {
 
+    public static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
+
     protected static final Logger LOGGER = Logger.getLogger(FrameworkCommandSupport.class.getName());
-    protected static final InputProcessorFactory ANSI_STRIPPING = new AnsiStrippingInputProcessorFactory();
 
     // @GuardedBy(CACHE)
     private static final Map<PhpModule, FrameworkCommandSupport> CACHE = new WeakHashMap<PhpModule, FrameworkCommandSupport>();
@@ -311,7 +312,7 @@ public abstract class FrameworkCommandSupport {
     /**
      * Proxy for factories for standard input processor.
      */
-    protected static class ProxyInputProcessorFactory implements InputProcessorFactory {
+    public static final class ProxyInputProcessorFactory implements InputProcessorFactory {
         private final List<InputProcessorFactory> factories;
 
         public ProxyInputProcessorFactory(InputProcessorFactory... proxied) {
