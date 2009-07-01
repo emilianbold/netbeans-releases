@@ -24,3 +24,6 @@ Attach Listener
 
 # Added to whitelist 081222
 Thread-4
+
+# Added to whitelist 090701 - Mac Specific
+AWT-AppKit
