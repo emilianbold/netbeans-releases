@@ -39,45 +39,41 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.api.webmodule;
+package org.netbeans.modules.j2ee.spi.ejbjar;
+
+import org.netbeans.api.j2ee.core.Profile;
+import org.openide.filesystems.FileObject;
 
 /**
- * Constants useful for web-based projects.
- *
- * @author  Milan Kuchtiak
+ * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.Car}.
+ * @see CarFactory
+ * @author Pavel Buzek
+ * @author Lukas Jungmann
  */
-public final class WebProjectConstants {
-
-    private WebProjectConstants () {}
-
-    /**
-     * Document root root sources type (source folders for JSPs, HTML, ...).
-     * See <code>org.netbeans.api.project.Sources</code>.
-     */
-    public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
-
-    /**
-     * WEB-INF sources type (source folders for TLD files, ...).
-     * See <code>org.netbeans.api.project.Sources</code>.
-     */
-    public static final String TYPE_WEB_INF="web_inf"; //NOI18N
+public interface CarImplementation2 {
+    
+    Profile getJ2eeProfile();
     
     /**
-     * Standard command for redeploying a web project.
-     * See <code>org.netbeans.api.project.ActionProvider</code>.
+     * META-INF folder for the car module.
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
-    public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
-    
+    FileObject getMetaInf ();
+
     /**
-     * Standard artifact type representing a WAR file.
-     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
+     * Deployment descriptor (application-client.xml file) of the application
+     * client (car) module.
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
-    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N
+    FileObject getDeploymentDescriptor();
     
-    /**
-     * Standard artifact type representing a WAR file used for adding
-     * Web module into a J2EE Application (ear project).
-     * See <code>org.netbeans.api.project.ant.AntArtifact</code>.
+    /** Source roots associated with the application client (car) module.
+     * <div class="nonnormative">
+     * Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the Car module.
+     * </div>
      */
-    public static final String ARTIFACT_TYPE_WAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
+    FileObject[] getJavaSources();
 }

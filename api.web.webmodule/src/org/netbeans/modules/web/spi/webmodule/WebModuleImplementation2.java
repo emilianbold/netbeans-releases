@@ -38,51 +38,81 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.spi.webmodule;
 
-package org.netbeans.modules.j2ee.spi.ejbjar;
-
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.EjbJar}.
- * 
- * @see EjbJarFactory
- * @deprecated implement {@link EjbJarImplementation2}
+ * SPI for {@link org.netbeans.modules.web.api.webmodule.WebModule}.
+ *
+ * @see WebModuleFactory
  */
-public interface EjbJarImplementation {
+public interface WebModuleImplementation2 {
 
-    /** J2EE platform version - one of the constants
-     * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
-     * @return J2EE platform version
-     */
-    String getJ2eePlatformVersion ();
     /**
-     * META-INF folder for the ejb module.
+     * Returns the folder that contains sources of the static documents for
+     * the web module (html, JSPs, etc.).
+     *
+     * @return the static documents folder; can be null.
+     */
+    FileObject getDocumentBase ();
+
+    /**
+     * Returns the context path of the web module.
+     *
+     * @return the context path; can be null.
+     */
+    String getContextPath ();
+
+    Profile getJ2eeProfile();
+
+    /**
+     * WEB-INF folder for the web module.
+     * <div class="nonnormative">
+     * The WEB-INF folder would typically be a child of the folder returned
+     * by {@link #getDocumentBase} but does not need to be.
+     * </div>
      *
      * @return the {@link FileObject}; might be <code>null</code>
      */
-    FileObject getMetaInf ();
+    FileObject getWebInf ();
 
     /**
-     * Deployment descriptor (ejb-jar.xml file) of the ejb module.
+     * Returns the deployment descriptor (<code>web.xml</code> file) of the web module.
+     * <div class="nonnormative">
+     * The web.xml file would typically be a child of the folder returned
+     * by {@link #getWebInf} but does not need to be.
+     * </div>
      *
-     * @return the {@link FileObject}; might be <code>null</code>
+     * @return the <code>web.xml</code> file; can be null.
      */
     FileObject getDeploymentDescriptor ();
 
-    /** Source roots associated with the EJB module.
-     * <div class="nonnormative">
-     * Note that not all the java source roots in the project (e.g. in a freeform project)
-     * belong to the EJB module.
-     * </div>
-     */
-    FileObject[] getJavaSources();
-    
     /**
-     * Returns the metadata associated with this EJB module.
+     * Returns the Java source roots associated with the web module.
+     * <div class="nonnormative">
+     * <p>Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the web module.</p>
+     * </div>
+     *
+     * @return this web module's Java source roots; never null.
+     * 
+     * @deprecated This method is deprecated, because its return values does
+     * not contain enough information about the source roots. Source roots
+     * are usually implemented by a <code>org.netbeans.api.project.SourceGroup</code>,
+     * which is more than just a container for a {@link org.openide.filesystems.FileObject}.
      */
-    MetadataModel<EjbJarMetadata> getMetadataModel();
+    @Deprecated
+    FileObject[] getJavaSources();
 
+    /**
+     * Returns a model describing the metadata of this web module (servlets,
+     * resources, etc.).
+     *
+     * @return this web module's metadata model; never null.
+     */
+    MetadataModel<WebAppMetadata> getMetadataModel();
 }

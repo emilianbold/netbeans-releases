@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -76,7 +77,6 @@ import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -187,7 +187,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     
     private WebApp getWebApp() throws IOException {
         if (webApp==null) {
-            WebModuleImplementation jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
+            WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
             FileObject fo = jp.getDeploymentDescriptor();
             webApp = DDProvider.getDefault().getDDRoot(fo);
         }
@@ -202,7 +202,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
             cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE) 
         );
         JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
-        WebModuleImplementation jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
+        WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getWebModuleImplementation();
         
         // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
@@ -220,7 +220,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
             refFile.runUserActionTask(task, true);
         }
         
-        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !isInjectionTarget[0];
+        boolean shouldWrite = isDescriptorMandatory(jp.getJ2eeProfile()) || !isInjectionTarget[0];
         if (shouldWrite) {
             FileObject fo = jp.getDeploymentDescriptor();
             getWebApp().write(fo);
@@ -309,8 +309,8 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         return proposedValue;
     }
     
-    private static boolean isDescriptorMandatory(String j2eeVersion) {
-        if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) { //NOI18N
+    private static boolean isDescriptorMandatory(Profile j2eeVersion) {
+        if (Profile.J2EE_13.equals(j2eeVersion) || Profile.J2EE_14.equals(j2eeVersion)) { //NOI18N
             return true;
         }
         return false;

@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -220,8 +221,8 @@ public class PageIterator implements TemplateWizard.Iterator {
         } else if (FileType.TAGLIBRARY.equals(fileType)) {
             WebModule wm = WebModule.getWebModule(dir);
             if (wm != null) {
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                if (WebModule.J2EE_13_LEVEL.equals(j2eeVersion)) {
+                Profile j2eeVersion = wm.getJ2eeProfile();
+                if (Profile.J2EE_13.equals(j2eeVersion)) {
                     template = templateParent.getFileObject("TagLibrary_1_2", "tld"); //NOI18N
                 }
             }

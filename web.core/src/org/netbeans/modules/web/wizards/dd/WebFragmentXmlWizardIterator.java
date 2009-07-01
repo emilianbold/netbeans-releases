@@ -107,7 +107,7 @@ public final class WebFragmentXmlWizardIterator implements WizardDescriptor.Inst
         if (dir != null && wm != null) {
             try {
                 FileObject dd = DDHelper.createWebFragmentXml(
-                        Profile.fromPropertiesString(wm.getJ2eePlatformVersion()), dir);
+                        wm.getJ2eeProfile(), dir);
                 return Collections.singleton(dd);
             } catch (IOException ioe) {
                 Logger.getLogger("global").log(Level.INFO, "Creation of web.xml failed", ioe); // NOI18N
