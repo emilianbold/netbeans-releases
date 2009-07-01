@@ -1321,6 +1321,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 try {
                     JiraConfiguration config =  issue.getRepository().getConfiguration();
                     config.ensureProjectLoaded(project);
+                    if (project.getIssueTypes() == null) {
+                        // The cached project data had been created before we started
+                        // to use project specific issue types. Forcing reload.
+                        config.forceProjectReload(project);
+                    }
                 } finally {
                     handle.finish();
                 }
