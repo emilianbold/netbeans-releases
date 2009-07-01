@@ -90,7 +90,7 @@ public final class LibraryManager {
     /**
      * Returns collection of artificial libraries used in project
      */
-    public Collection<LibProjectImpl> getLibraries(ProjectImpl project) {
+    public List<LibProjectImpl> getLibraries(ProjectImpl project) {
         List<LibProjectImpl> res = new ArrayList<LibProjectImpl>();
         CsmUID<CsmProject> projectUid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {

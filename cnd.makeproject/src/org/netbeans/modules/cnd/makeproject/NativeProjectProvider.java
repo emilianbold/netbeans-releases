@@ -196,16 +196,27 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (cachedList == null) {
             cachedList = new ArrayList<NativeProject>(0);
             MakeConfiguration makeConfiguration = getMakeConfiguration();
+            int size = 0;
+            NativeProject oneOf = null;
             if (makeConfiguration != null) {
                 for (Object lib : makeConfiguration.getSubProjects()) {
                     Project prj = (Project) lib;
                     NativeProject nativeProject = prj.getLookup().lookup(NativeProject.class);
                     if (nativeProject != null) {
                         cachedList.add(nativeProject);
+                        size++;
+                        oneOf = nativeProject;
                     }
                 }
             }
-            cachedDependency = new SoftReference<List<NativeProject>>(Collections.unmodifiableList(cachedList));
+            if (size == 0) {
+                cachedList = Collections.<NativeProject>emptyList();
+            } else if (size == 1) {
+                cachedList = Collections.singletonList(oneOf);
+            } else {
+                cachedList = Collections.unmodifiableList(cachedList);
+            }
+            cachedDependency = new SoftReference<List<NativeProject>>(cachedList);
         }
         return cachedList;
     }
