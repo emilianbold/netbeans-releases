@@ -143,7 +143,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         InstanceProperties ip = InstanceProperties.createInstanceProperties(url, username, password, displayName);
         ip.setProperty(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
         ip.setProperty(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
-        ip.setProperty(WLPluginProperties.IS_LOCAL_ATTR, isLocal);
         ip.setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
 
         // add the created instance properties to the result set
@@ -164,7 +163,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     // the main and additional instance properties
     private String serverRoot;
     private String domainRoot;
-    private String isLocal;
     private String username;
     private String password;
     private String url;
@@ -233,15 +231,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    /**
-     * Setter for the isLocal property
-     *
-     * @param isLocal "true" if the server is local, "false" otherwise
-     */
-    public void setIsLocal(String isLocal) {
-        this.isLocal = isLocal;
     }
 
     ////////////////////////////////////////////////////////////////////////////

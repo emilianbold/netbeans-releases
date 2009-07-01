@@ -164,11 +164,11 @@ public class Utilities {
         return res;
     }
 
-    static boolean isJavaEE6(TemplateWizard wizard) {
+    public static boolean isJavaEE6(TemplateWizard wizard) {
         Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
-            Profile profile = Profile.fromPropertiesString(wm.getJ2eePlatformVersion());
+            Profile profile = wm.getJ2eeProfile();
             return (profile == Profile.JAVA_EE_6_FULL || profile == Profile.JAVA_EE_6_WEB);
         }
         return false;

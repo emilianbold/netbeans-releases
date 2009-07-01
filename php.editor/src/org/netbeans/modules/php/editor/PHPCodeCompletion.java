@@ -131,6 +131,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("__CLASS__", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("__METHOD__", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE);
+        PHP_KEYWORDS.put("namespace", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("php_user_filter", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("class", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);

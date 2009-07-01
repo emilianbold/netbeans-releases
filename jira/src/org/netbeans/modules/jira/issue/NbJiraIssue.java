@@ -64,6 +64,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
+import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -79,6 +80,7 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
@@ -147,9 +149,9 @@ public class NbJiraIssue extends Issue {
         PRIORITY(JiraAttribute.PRIORITY.id(), "LBL_PRIORITY"),
         RESOLUTION(JiraAttribute.RESOLUTION.id(), "LBL_RESOLUTION"),
         PROJECT(JiraAttribute.PROJECT.id(), "LBL_PROJECT"),
-        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT"),
-        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS"),
-        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS"),
+        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT", false),
+        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS", false),
+        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS", false),
         ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
         REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
         ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNEE"),
@@ -351,6 +353,39 @@ public class NbJiraIssue extends Issue {
                     && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
                 attribute.setValues(customField.getValues());
             }
+        }
+    }
+
+    /**
+     * Returns an array of worklogs under the issue.
+     * @return
+     */
+    WorkLog[] getWorkLogs () {
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, WorkLogConverter.TYPE_WORKLOG);
+        if (attrs == null) {
+            return new WorkLog[0];
+        }
+        List<WorkLog> workLogs = new ArrayList<WorkLog>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            workLogs.add(new WorkLog(taskAttribute));
+        }
+        return workLogs.toArray(new WorkLog[workLogs.size()]);
+    }
+
+    /**
+     * Adds a new worklog. Just one worklog can be added before committing the issue.
+     * Don't forget to commit the issue.
+     * @param startDate
+     * @param spentTime in seconds
+     * @param comment
+     */
+    void addWorkLog (Date startDate, long spentTime, String comment) {
+        if(startDate != null) {
+            TaskAttribute attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            TaskAttributeMapper mapper = taskData.getAttributeMapper();
+            mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
+            mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
+            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
         }
     }
 
@@ -1385,6 +1420,47 @@ public class NbJiraIssue extends Issue {
 
         public void setValues (List<String> values) {
             this.values = values;
+        }
+    }
+
+    public static final class WorkLog {
+        private final Date startDate;
+        private final String author;
+        private final long timeSpent;
+        private final String comment;
+
+        public WorkLog(TaskAttribute workLogTA) {
+            TaskAttributeMapper mapper = workLogTA.getTaskData().getAttributeMapper();
+            startDate = mapper.getDateValue(workLogTA.getMappedAttribute(WorkLogConverter.START_DATE.key()));
+            IRepositoryPerson person = mapper.getRepositoryPerson(workLogTA.getMappedAttribute(WorkLogConverter.AUTOR.key()));
+            author = person == null ? null : person.getPersonId();
+            comment = mapper.getValue(workLogTA.getMappedAttribute(WorkLogConverter.COMMENT.key()));
+            Long timeSpentValue = mapper.getLongValue(workLogTA.getMappedAttribute(WorkLogConverter.TIME_SPENT.key()));
+            this.timeSpent = timeSpentValue == null ? 0 : timeSpentValue.longValue();
+        }
+
+        public Date getStartDate () {
+            return startDate;
+        }
+
+        /**
+         *
+         * @return author's ID
+         */
+        public String getAuthor () {
+            return author;
+        }
+
+        /**
+         *
+         * @return spent time on the issue in seconds
+         */
+        public long getTimeSpent () {
+            return timeSpent;
+        }
+
+        public String getComment () {
+            return comment;
         }
     }
 }

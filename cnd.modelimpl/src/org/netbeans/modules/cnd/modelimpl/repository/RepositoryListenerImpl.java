@@ -103,7 +103,8 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
     }
     /** Access both unitTimers and explicitelyOpened only under this lock! */
-    private final Object lock = new String("Repository listener lock"); //NOI18N
+    private static final class Lock {}
+    private final Object lock = new Lock();
     /** 
      * Implicitly opened units.
      * Access only under the lock!

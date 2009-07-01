@@ -360,8 +360,13 @@ public class JiraConfiguration extends JiraClientCache {
         if (initialized != project) {
             project.setComponents(initialized.getComponents());
             project.setVersions(initialized.getVersions());
+            project.setIssueTypes(initialized.getIssueTypes());
             // XXX what else !!!
         }
+    }
+
+    public void forceProjectReload(Project project) {
+        initProject(project);
     }
 
     protected void initProject(final Project project) {
