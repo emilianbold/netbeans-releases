@@ -317,6 +317,7 @@ public class HgCommand {
 
     private static final String HG_AUTHORIZATION_REQUIRED_ERR = "authorization required"; // NOI18N
     private static final String HG_AUTHORIZATION_FAILED_ERR = "authorization failed"; // NOI18N
+    public static final String COMMIT_AFTER_MERGE = "commitAfterMerge"; //NOI18N
 
     /**
      * Merge working directory with the head revision
@@ -1761,8 +1762,6 @@ public class HgCommand {
             if(Utilities.isWindows()) {
                 saveCommand = new ArrayList<String>(command);
             }
-            List<String> commitAfterMergeCommand = null;
-            commitAfterMergeCommand = new ArrayList<String>(command);
 
             for(File f: commitFiles){
                 command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
@@ -1789,8 +1788,8 @@ public class HgCommand {
             }
             List<String> list = exec(command);
             //#132984: range of issues with upgrade to Hg 1.0, new restriction whereby you cannot commit using explicit file names after a merge.
-            if (!list.isEmpty() && isCommitAfterMerge(list.get(list.size() -1))){
-                list = exec(commitAfterMergeCommand); //#132984: Rerun Commit without specifying files to commit after merge
+            if (!list.isEmpty() && isCommitAfterMerge(list.get(list.size() -1))) {
+                throw new HgException(COMMIT_AFTER_MERGE);
             }
 
             if (!list.isEmpty()
