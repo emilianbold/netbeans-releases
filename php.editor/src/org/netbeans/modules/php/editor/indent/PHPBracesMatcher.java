@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -87,20 +87,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
                 }
                 
                 TokenId id = token.id();
-                if (id == PHPTokenId.WHITESPACE) {
-                    // ts.move(offset) gives the token to the left of the caret.
-                    // If you have the caret right at the beginning of a token, try
-                    // the token to the right too - this means that if you have
-                    //  "   |def" it will show the matching "end" for the "def".
-                    offset++;
-                    ts.move(offset);
-
-                    if (ts.moveNext() && (ts.offset() <= offset)) {
-                        token = ts.token();
-                        id = token.id();
-                    }
-                }
-
+                
                 if (LexUtilities.textEquals(token.text(), '(')) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (LexUtilities.textEquals(token.text(), ')')) {
@@ -141,22 +128,8 @@ public final class PHPBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-
+                
                 TokenId id = token.id();
-
-                if (id == PHPTokenId.WHITESPACE) {
-                    // ts.move(offset) gives the token to the left of the caret.
-                    // If you have the caret right at the beginning of a token, try
-                    // the token to the right too - this means that if you have
-                    //  "   |def" it will show the matching "end" for the "def".
-                    offset++;
-                    ts.move(offset);
-
-                    if (ts.moveNext() && (ts.offset() <= offset)) {
-                        token = ts.token();
-                        id = token.id();
-                    }
-                }
                 
                 OffsetRange r;
                 if (LexUtilities.textEquals(token.text(), '(')) {
