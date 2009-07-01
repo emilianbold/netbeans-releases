@@ -159,7 +159,7 @@ public class WLDeploymentManager implements DeploymentManager {
 
     private static WLClassLoader wlloader;
 
-    public static synchronized ClassLoader getWLClassLoader (String serverRoot) {
+    private static synchronized ClassLoader getWLClassLoader (String serverRoot) {
         if (wlloader == null) {
             try {
                 URL[] urls = new URL[] { new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
@@ -311,9 +311,6 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
-    public boolean isLocal () {
-        return Boolean.valueOf(getInstanceProperties().getProperty(WLPluginProperties.IS_LOCAL_ATTR)).booleanValue();
-    }
     /**
      * Returns the InstanceProperties object for the current server instance
      */
@@ -355,21 +352,8 @@ public class WLDeploymentManager implements DeploymentManager {
     public ProgressObject distribute(Target[] target, File file, File file2)
             throws IllegalStateException {
 
-        if (isLocal()) {
-            //autodeployment version
-            return new WLDeployer(uri).deploy(target, file, file2, getHost(), getPort());
-        } else {
-            //weblogic jsr88 version
-            ClassLoader original = modifyLoader();
-            try {
-                return new DelegatingProgressObject(getDeploymentManager().distribute(target, file, null));
-            } catch (DeploymentManagerCreationException ex) {
-                return new FinishedProgressObject(ActionType.EXECUTE, CommandType.DISTRIBUTE,
-                        NbBundle.getMessage(WLDeploymentManager.class, "MSG_Deployment_Failed"), null, true);
-            } finally {
-                originalLoader(original);
-            }
-        }
+        //autodeployment
+        return new WLDeployer(uri).deploy(target, file, file2, getHost(), getPort());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
