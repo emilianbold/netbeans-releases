@@ -99,6 +99,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
         cbOpenOutputWindow = new javax.swing.JCheckBox();
+        cbAskBeforeCommitAfterMerge = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
@@ -135,6 +136,10 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbOpenOutputWindow.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbOpenOutputWindow, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbOpenOutputWindow.text")); // NOI18N
         cbOpenOutputWindow.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
+
+        cbAskBeforeCommitAfterMerge.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbAskBeforeCommitAfterMerge, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbAskBeforeCommitAfterMerge.text")); // NOI18N
+        cbAskBeforeCommitAfterMerge.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbAskBeforeCommitAfterMerge.toolTipText")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -183,6 +188,9 @@ final class MercurialPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(cbOpenOutputWindow)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(cbAskBeforeCommitAfterMerge)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -221,6 +229,8 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .add(backupOnRevertModifications)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbOpenOutputWindow)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(cbAskBeforeCommitAfterMerge)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -254,6 +264,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         annotationTextField.setText(HgModuleConfig.getDefault().getAnnotationFormat());
         backupOnRevertModifications.setSelected(HgModuleConfig.getDefault().getBackupOnRevertModifications());
         cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault().getAutoOpenOutput());
+        cbAskBeforeCommitAfterMerge.setSelected(HgModuleConfig.getDefault().getConfirmCommitAfterMerge());
     }
     
     void store() {
@@ -277,6 +288,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
         HgModuleConfig.getDefault().setBackupOnRevertModifications(backupOnRevertModifications.isSelected());
         HgModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
+        HgModuleConfig.getDefault().setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
     }
     
     boolean valid() {
@@ -295,6 +307,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     final javax.swing.JButton addButton = new javax.swing.JButton();
     final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     private javax.swing.JCheckBox backupOnRevertModifications;
+    private javax.swing.JCheckBox cbAskBeforeCommitAfterMerge;
     private javax.swing.JCheckBox cbOpenOutputWindow;
     final javax.swing.JButton execPathBrowseButton = new javax.swing.JButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
