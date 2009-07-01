@@ -299,7 +299,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
             Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
         }
         if (version == null) {
-            version = Profile.fromPropertiesString(getJ2eePlatformVersion()).equals(Profile.JAVA_EE_5)?EjbJar.VERSION_3_0:EjbJar.VERSION_3_1;
+            version = Profile.JAVA_EE_5.equals(getJ2eeProfile()) ? EjbJar.VERSION_3_0 : EjbJar.VERSION_3_1;
         }
         return version;
     }
