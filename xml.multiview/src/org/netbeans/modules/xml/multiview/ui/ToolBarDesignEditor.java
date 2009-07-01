@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyVetoException;
 
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager

@@ -43,6 +43,7 @@ package org.netbeans.jellytools.actions;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -80,7 +81,21 @@ public class ProjectViewActionTest extends JellyTestCase {
     }
     
     /** Test performMenu */
-    public void testPerformMenu() {
+    public void testPerformMenu() throws InterruptedException {
+
+        //Make sure the menu has time to load (workaround for the case the menu
+        //is not fully loaded at the beginning of the test.
+        new Action(Bundle.getStringTrimmed(
+            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+
+        Thread.sleep(1000);
+
+
+        new Action(Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
+                "Menu/BuildProject"), null).performMenu();
+
+        Thread.sleep(1000);
+
         ProjectsTabOperator.invoke().close();
         new ProjectViewAction().performMenu();
         new ProjectsTabOperator();

@@ -83,9 +83,12 @@ public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
     public void testOpenActionIsAlwaysFirst() throws Exception {
         Node n = obj.getNodeDelegate();
 
+        FileObject fo = FileUtil.getConfigFile("Actions/System/org-openide-actions-OpenAction.instance");
+        Action openAction = (Action) fo.getAttribute("instanceCreate");
+
         assertEquals(
                 "Open action is the default one",
-                OpenAction.get(OpenAction.class),
+                openAction,
                 n.getPreferredAction()
                 );
 
@@ -94,7 +97,7 @@ public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
 
         assertEquals(
                 "First one is open",
-                OpenAction.get(OpenAction.class),
+                openAction,
                 actions[0]
                 );
     }
