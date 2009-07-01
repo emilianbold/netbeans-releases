@@ -47,10 +47,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.openide.util.WeakSet;
 
-/** An action which may be called programmatically.
-* Typically a presenter will call its {@link #performAction} method,
-* which must be implemented.
-* <p>Provides default presenters using the <a href="@org-openide-awt@/org/openide/awt/Actions.html">Actions</a> utility class.
+/** Not preferred anymore, use <a href="@org-openide-awt@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.alwaysEnabled</a>
+* instead. To migrate your
+* <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
+* layer definition</a> use:
+* <pre>
+* &lt;file name="your-pkg-action-id.instance"&gt;
+*   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/&gt;
+*   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
+*   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+*   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+*   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+* &lt;/file&gt;
+* </pre>
 *
 * @author   Ian Formanek, Jaroslav Tulach, Jan Jancura, Petr Hamernik
 */
