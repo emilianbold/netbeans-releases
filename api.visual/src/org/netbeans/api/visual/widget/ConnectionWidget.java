@@ -173,7 +173,6 @@ public class ConnectionWidget extends Widget {
      * @param previousState the previous state
      * @param state the new state
      */
-    @Override
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
         setForeground (lineColor != null ? lineColor : getScene ().getLookFeel ().getLineColor (state));
         setPaintControlPoints (state.isSelected ());
@@ -316,7 +315,7 @@ public class ConnectionWidget extends Widget {
      * Returns an anchor entry representing the source of the connection widget.
      * @return the anchor entry representing the source of the connection widget
      */
-    public final Anchor.Entry getSourceAnchorEntry () {
+    public Anchor.Entry getSourceAnchorEntry () {
         return sourceEntry;
     }
 
@@ -324,7 +323,7 @@ public class ConnectionWidget extends Widget {
      * Returns an anchor entry representing the target of the connection widget.
      * @return the anchor entry representing the target of the connection widget
      */
-    public final Anchor.Entry getTargetAnchorEntry () {
+    public Anchor.Entry getTargetAnchorEntry () {
         return targetEntry;
     }
 
@@ -332,7 +331,7 @@ public class ConnectionWidget extends Widget {
      * Returns an anchor shape of the source of the connection widget.
      * @return the source anchor shape
      */
-    public final AnchorShape getSourceAnchorShape () {
+    public AnchorShape getSourceAnchorShape () {
         return sourceAnchorShape;
     }
 
@@ -340,7 +339,7 @@ public class ConnectionWidget extends Widget {
      * Sets the anchor shape of the source of the connection widget.
      * @param sourceAnchorShape the source anchor shape
      */
-    public final void setSourceAnchorShape (AnchorShape sourceAnchorShape) {
+    public void setSourceAnchorShape (AnchorShape sourceAnchorShape) {
         assert sourceAnchorShape != null;
         boolean repaintOnly = this.sourceAnchorShape.getRadius () == sourceAnchorShape.getRadius ();
         this.sourceAnchorShape = sourceAnchorShape;
@@ -351,7 +350,7 @@ public class ConnectionWidget extends Widget {
      * Returns an anchor shape of the target of the connection widget.
      * @return the target anchor shape
      */
-    public final AnchorShape getTargetAnchorShape () {
+    public AnchorShape getTargetAnchorShape () {
         return targetAnchorShape;
     }
 
@@ -359,7 +358,7 @@ public class ConnectionWidget extends Widget {
      * Sets the anchor shape of the target of the connection widget.
      * @param targetAnchorShape the target anchor shape
      */
-    public final void setTargetAnchorShape (AnchorShape targetAnchorShape) {
+    public void setTargetAnchorShape (AnchorShape targetAnchorShape) {
         assert targetAnchorShape != null;
         boolean repaintOnly = this.targetAnchorShape.getRadius () == targetAnchorShape.getRadius ();
         this.targetAnchorShape = targetAnchorShape;
@@ -370,7 +369,7 @@ public class ConnectionWidget extends Widget {
      * Returns a point shape of control points of the connection widget.
      * @return the control points shape
      */
-    public final PointShape getControlPointShape () {
+    public PointShape getControlPointShape () {
         return controlPointShape;
     }
 
@@ -378,7 +377,7 @@ public class ConnectionWidget extends Widget {
      * Sets a point shape of control points of the connection widget.
      * @param controlPointShape the control points shape
      */
-    public final void setControlPointShape (PointShape controlPointShape) {
+    public void setControlPointShape (PointShape controlPointShape) {
         assert controlPointShape != null;
         boolean repaintOnly = this.controlPointShape.getRadius () == controlPointShape.getRadius ();
         this.controlPointShape = controlPointShape;
@@ -389,7 +388,7 @@ public class ConnectionWidget extends Widget {
      * Returns a point shape of end points of the connection widget.
      * @return the end points shape
      */
-    public final PointShape getEndPointShape () {
+    public PointShape getEndPointShape () {
         return endPointShape;
     }
 
@@ -397,7 +396,7 @@ public class ConnectionWidget extends Widget {
      * Sets a point shape of end points of the connection widget.
      * @param endPointShape the end points shape
      */
-    public final void setEndPointShape (PointShape endPointShape) {
+    public void setEndPointShape (PointShape endPointShape) {
         assert endPointShape != null;
         boolean repaintOnly = this.endPointShape.getRadius () == endPointShape.getRadius ();
         this.endPointShape = endPointShape;
@@ -450,7 +449,7 @@ public class ConnectionWidget extends Widget {
      * Returns a list of control points.
      * @return the list of control points
      */
-    public final List<Point> getControlPoints () {
+    public List<Point> getControlPoints () {
         return controlPointsUm;
     }
     
@@ -460,7 +459,7 @@ public class ConnectionWidget extends Widget {
      * @param index index of the control point to return
      * @return the point; null if the control point does not exist
      */
-    public final Point getControlPoint (int index) {
+    public Point getControlPoint (int index) {
         if (index < 0  ||  index >= controlPoints.size ())
             return null;
         return new Point (controlPoints.get(index));
@@ -472,7 +471,7 @@ public class ConnectionWidget extends Widget {
      * @param sceneLocations if true, then controlPoints argyment is taken as a list of scene locations;
      *            if false, then controlPoints argument is taken as a list of local locations
      */
-    public final void setControlPoints (Collection<Point> controlPoints, boolean sceneLocations) {
+    public void setControlPoints (Collection<Point> controlPoints, boolean sceneLocations) {
         //quick return if possible
         if (controlPoints == null) return ;
         
@@ -496,7 +495,7 @@ public class ConnectionWidget extends Widget {
      * @param alignment the alignment specified relatively to the origin point
      * @param placementInPercentage the placement on a path in percentage of the path length
      */
-    public final void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, float placementInPercentage) {
+    public void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, float placementInPercentage) {
         connectionWidgetLayout.setConstraint (childWidget, alignment, placementInPercentage);
     }
 
@@ -506,7 +505,7 @@ public class ConnectionWidget extends Widget {
      * @param alignment the alignment specified relatively to the origin point
      * @param placementAtDistance the placement on a path in pixels as a distance from the source anchor
      */
-    public final void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, int placementAtDistance) {
+    public void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, int placementAtDistance) {
         connectionWidgetLayout.setConstraint (childWidget, alignment, placementAtDistance);
     }
 
@@ -514,7 +513,7 @@ public class ConnectionWidget extends Widget {
      * Removes a constraint for a child widget.
      * @param childWidget the child widget
      */
-    public final void removeConstraint (Widget childWidget) {
+    public void removeConstraint (Widget childWidget) {
         connectionWidgetLayout.removeConstraint (childWidget);
     }
 
@@ -573,7 +572,6 @@ public class ConnectionWidget extends Widget {
      * Calculates a client area of the connection widget.
      * @return the calculated client area
      */
-    @Override
     protected Rectangle calculateClientArea () {
         calculateRouting ();
         int controlPointShapeRadius = controlPointShape.getRadius ();
@@ -619,7 +617,6 @@ public class ConnectionWidget extends Widget {
      * Returns whether the connection widget is validated and routed.
      * @return true, if the connection widget is validated and routed
      */
-    @Override
     public boolean isValidated () {
         return super.isValidated ()  &&  isRouted ();
     }
@@ -665,7 +662,7 @@ public class ConnectionWidget extends Widget {
      * Returns the rotation of the source anchor shape.
      * @return the source anchor shape rotation
      */
-    protected double getSourceAnchorShapeRotation () {
+    private double getSourceAnchorShapeRotation () {
         if (controlPoints.size () <= 1)
             return 0.0;
         Point point1 = controlPoints.get (0);
@@ -677,7 +674,7 @@ public class ConnectionWidget extends Widget {
      * Returns the rotation of the target anchor shape.
      * @return the target anchor shape rotation
      */
-    protected double getTargetAnchorShapeRotation () {
+    public double getTargetAnchorShapeRotation () {
         int size = controlPoints.size ();
         if (size <= 1)
             return 0.0;
@@ -694,7 +691,6 @@ public class ConnectionWidget extends Widget {
      * @param localLocation the local locaytion
      * @return true, if the location is a part of the connection widget
      */
-    @Override
     public boolean isHitAt (Point localLocation) {
         if (! super.isHitAt (localLocation))
                 return false;
@@ -773,7 +769,6 @@ public class ConnectionWidget extends Widget {
      * @return the cursor
      * @since 2.3
      */
-    @Override
     protected Cursor getCursorAt (Point localLocation) {
         if (paintControlPoints) {
             Cursor pointsCursor = getControlPointsCursor ();
@@ -786,7 +781,6 @@ public class ConnectionWidget extends Widget {
     /**
      * Paints the connection widget (the path, the anchor shapes, the control points, the end points).
      */
-    @Override
     protected void paintWidget () {
         Graphics2D gr = getGraphics ();
         gr.setColor (getForeground ());
