@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
@@ -86,7 +85,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         if (workingDirectory != null) {
             workingDirectory = new File(workingDirectory).getAbsolutePath();
-            workingDirectory = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPath(workingDirectory);
         }
 
         final MacroMap env = info.getEnvVariables();
