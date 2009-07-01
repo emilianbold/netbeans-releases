@@ -324,6 +324,14 @@ public class WebProjectUtilities {
 
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
+
+        if (dd == null) {
+            FileObject indexJsp = createIndexJSP(webRoot);
+            if (indexJsp != null)
+                resultSet.add(indexJsp);
+            return resultSet;
+        }
+
         try {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
