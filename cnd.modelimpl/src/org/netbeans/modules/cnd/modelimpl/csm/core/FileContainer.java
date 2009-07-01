@@ -85,7 +85,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 /*package-local*/ 
 class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
     private Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
     private Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
 

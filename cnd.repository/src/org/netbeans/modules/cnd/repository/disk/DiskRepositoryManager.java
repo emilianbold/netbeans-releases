@@ -80,7 +80,8 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     private final Persistent removedObject;
     private final ReadWriteLock queueLock;
     private Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
-    private final String mainUnitLock = new String("DelegateRepository main lock"); // NOI18N
+    private static final class UnitLock {}
+    private final Object mainUnitLock = new UnitLock();
 
     public DiskRepositoryManager() {
         removedObject = new RemovedPersistent();
@@ -94,7 +95,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         synchronized (mainUnitLock) {
             Object lock = unitLocks.get(unitId);
             if (lock == null) {
-                lock = new String("unitId=" + unitId); // NOI18N
+                lock = new NamedLock("unitId=" + unitId); // NOI18N
                 unitLocks.put(unitId, lock);
             }
             return lock;
@@ -397,5 +398,40 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     private String getUnitNameSafe(Key key) {
         RepositoryTranslation translator = RepositoryAccessor.getTranslator();
         return translator.getUnitNameSafe(key.getUnitId());
+    }
+
+private static final class NamedLock {
+        private final String name;
+
+        public NamedLock(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NamedLock other = (NamedLock) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
     }
 }

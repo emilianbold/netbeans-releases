@@ -205,7 +205,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private volatile State state;
     private volatile ParsingState parsingState;
     private FileType fileType = FileType.UNDEFINED_FILE;
-    private final Object stateLock = new Object();
+    private static final class StateLock {}
+    private final Object stateLock = new StateLock();
     private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
@@ -589,7 +590,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return true;
         }
     }
-    private final Object changeStateLock = new Object();
+    private static final class ChangeStateLock {}
+    private final Object changeStateLock = new ChangeStateLock();
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
@@ -847,8 +849,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // remember walk info
         setAPTCacheEntry(preprocHandler, cacheEntry, false);
         return true;
-    }    
-    private final Object tokStreamLock = new Object();
+    }
+    private static final class TokenStreamLock {}
+    private final Object tokStreamLock = new TokenStreamLock();
     private Reference<FileTokenStreamCache> tsRef = new SoftReference<FileTokenStreamCache>(null);
     /**
      *

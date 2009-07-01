@@ -80,7 +80,8 @@ public final class LibraryManager {
     private LibraryManager() {
     }
     private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
 
     public void shutdown(){
         librariesEntries.clear();

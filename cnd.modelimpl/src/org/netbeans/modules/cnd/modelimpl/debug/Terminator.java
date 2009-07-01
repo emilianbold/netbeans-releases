@@ -70,7 +70,8 @@ public class Terminator implements Runnable {
         this.project = project;
     }
     
-    private static final Object lock = new Object();
+    private static final class Lock {}
+    private static final Object lock = new Lock();
     private static int inParse = 0;
     
     public static void create(ProjectBase project) {

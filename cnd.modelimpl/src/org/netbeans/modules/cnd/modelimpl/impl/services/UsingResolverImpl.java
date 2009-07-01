@@ -279,7 +279,8 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     ////////////////////////////////////////////////////////////////////////////
     // try to cache a little the last request
     
-    private final Object lock = new Object();
+    private static final class Lock {}
+    private final Object lock = new Lock();
     private Reference<SearchInfo> lastSearch = new SoftReference<SearchInfo>(null);
     
     private final boolean cache = true;

@@ -2559,12 +2559,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** The task that is run in a request processor during project initialization */
     private Cancellable initializationTask;
     /** The lock under which the initializationTask is set */
-    private final Object initializationTaskLock = new Object();
-    private final Object waitParseLock = new Object();
-// to profile monitor usages
-//    private static final class ClassifierReplaceLock {
-//    }
-    private final Object classifierReplaceLock = new Object(); // ClassifierReplaceLock();
+    private static final class InitializationTaskLock {}
+    private final Object initializationTaskLock = new InitializationTaskLock();
+    private static final class WaitParseLock {}
+    private final Object waitParseLock = new WaitParseLock();
+    // to profile monitor usages
+    private static final class ClassifierReplaceLock {}
+    private final Object classifierReplaceLock = new ClassifierReplaceLock();
     private ModelImpl model;
     private Unresolved unresolved;
     private CharSequence name;
@@ -2607,10 +2608,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     // collection of sharable system macros and system includes
     private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
     private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
-    private final Object namespaceLock = new String("namespaceLock in Projectbase " + hashCode()); // NOI18N
+    private static final class NamespaceLock {}
+    private final Object namespaceLock = new NamespaceLock();
     private Key declarationsSorageKey;
     private Key fileContainerKey;
-    private final Object fileContainerLock = new Object();
+    private static final class FileContainerLock {}
+    private final Object fileContainerLock = new FileContainerLock();
     private Key graphStorageKey;
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
     private NativeProjectListenerImpl projectListener;
