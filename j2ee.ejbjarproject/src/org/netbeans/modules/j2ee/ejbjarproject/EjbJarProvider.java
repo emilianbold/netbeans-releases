@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -299,8 +300,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
             Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
         }
         if (version == null) {
-            // XXX should return a version based on the Java EE version
-            version = EjbJar.VERSION_3_0;
+            version = Profile.fromPropertiesString(getJ2eePlatformVersion()).equals(Profile.JAVA_EE_5)?EjbJar.VERSION_3_0:EjbJar.VERSION_3_1;
         }
         return version;
     }

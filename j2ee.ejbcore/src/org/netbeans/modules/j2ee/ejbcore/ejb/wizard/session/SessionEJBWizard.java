@@ -89,7 +89,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        ejbPanel = new SessionEJBWizardDescriptor();
+        ejbPanel = new SessionEJBWizardDescriptor(project);
         WizardDescriptor.Panel wizardDescriptorPanel = new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true);
 
         panels = new WizardDescriptor.Panel[] {wizardDescriptorPanel};
@@ -107,7 +107,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
                 pkg, 
                 ejbPanel.hasRemote(), 
                 ejbPanel.hasLocal(), 
-                ejbPanel.isStateful(), 
+                ejbPanel.getSessionType(),
                 isSimplified, 
                 true, // TODO: UI - add checkbox for creation of business interface
                 !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
