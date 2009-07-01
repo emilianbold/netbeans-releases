@@ -116,9 +116,10 @@ is the proper place.
             <author login="mkleint"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible"/>
             <description>
-
+                Added API/SPI support to kill the whole process tree on
+                Process.destroy().
             </description>
-            <class package="org.netbeans.spi.extexecution.destroy" name="DestroyUtils"/>
+            <class package="org.netbeans.api.extexecution" name="ExternalProcessSupport"/>
             <class package="org.netbeans.spi.extexecution.destroy" name="ProcessDestroyPerformer"/>
             <issue number="138116"/>
         </change>
