@@ -82,7 +82,7 @@ public class IOManager {
     private boolean                         closed = false;
     
     /** output writer Thread */
-    private Hashtable                       lines = new Hashtable ();
+    private Hashtable<String, Line>         lines = new Hashtable<String, Line>();
     private Listener                        listener = new Listener ();
 
     
@@ -231,12 +231,12 @@ public class IOManager {
         }
         public void outputLineAction (OutputEvent ev) {
             String t = ev.getLine ();
-            Line l = (Line) lines.get (t);
+            Line l = lines.get (t);
             if (l == null) return;
             l.show ();
         }
         public void outputLineCleared (OutputEvent ev) {
-            lines = new Hashtable ();
+            lines = new Hashtable<String, Line>();
         }
     }
     
