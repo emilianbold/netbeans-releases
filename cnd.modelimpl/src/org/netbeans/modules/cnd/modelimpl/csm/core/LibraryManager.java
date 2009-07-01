@@ -224,7 +224,10 @@ public final class LibraryManager {
         if (file != null) {
             return baseProject;
         }
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 break;
             }
@@ -264,7 +267,10 @@ public final class LibraryManager {
                 return baseProject;
             }
         }
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 break;
             }
@@ -277,7 +283,10 @@ public final class LibraryManager {
     }
 
     private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, List<String> folders) {
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 ProjectBase res = searchInProjectRoots((ProjectBase) prj, folders);
                 if (res != null) {

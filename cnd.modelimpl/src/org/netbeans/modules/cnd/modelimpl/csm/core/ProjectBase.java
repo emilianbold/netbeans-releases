@@ -1792,7 +1792,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
-    public Collection<CsmProject> getLibraries() {
+    public List<CsmProject> getLibraries() {
         List<CsmProject> res = new ArrayList<CsmProject>();
         if (platformProject instanceof NativeProject) {
             List<NativeProject> dependences = ((NativeProject) platformProject).getDependences();
