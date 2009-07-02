@@ -59,7 +59,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
     public WorkLogPanel(NbJiraIssue issue) {
         this.issue = issue;
         initComponents();
-        startDateField.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(DateFormat.getDateTimeInstance())));
+        startDateField.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT))));
         startDateField.setValue(new Date());
     }
 
@@ -121,7 +121,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
         startDateLabel.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.startDateLabel.text")); // NOI18N
 
-        startDateField.setColumns(15);
+        startDateField.setColumns(13);
 
         timeSpentHint.setFont(timeSpentHint.getFont().deriveFont(timeSpentHint.getFont().getSize()-2f));
         timeSpentHint.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.timeSpentHint.text")); // NOI18N
