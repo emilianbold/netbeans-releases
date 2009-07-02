@@ -74,7 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
@@ -86,7 +86,7 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -102,12 +102,7 @@ import org.openide.util.WeakListeners;
  * @author  vince kraemer
  */
 public final class ProjectEar extends J2eeApplicationProvider
-        implements
-        ModuleChangeReporter,
-        EjbChangeDescriptor,
-        PropertyChangeListener,
-        EarImplementation,
-        J2eeApplicationImplementation2 {
+        implements ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener, J2eeApplicationImplementation2 {
     
     public static final String FILE_DD        = "application.xml";//NOI18N
 
@@ -347,11 +342,6 @@ public final class ProjectEar extends J2eeApplicationProvider
 
     public String[] getChangedEjbs () {
         return new String[] {};
-    }
-
-    // FIXME mix of two apis
-    public String getJ2eePlatformVersion () {
-        return project.getJ2eePlatformVersion();
     }
 
     public Profile getJ2eeProfile() {

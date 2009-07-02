@@ -85,7 +85,7 @@ public class AddRemoveControlPointAction extends WidgetAction.Adapter {
             for (Point elem : list) {
                 if (exPoint != null) {
                     Line2D l2d = new Line2D.Double (exPoint, elem);
-                    if (l2d.ptLineDist (localLocation) < createSensitivity) {
+                    if (l2d.ptSegDist (localLocation) < createSensitivity) {
                         list.add (index, localLocation);
                         break;
                     }

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.n
  */
-
 package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
@@ -50,83 +49,86 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
 /**
-* Generic methods for evaluating the input into the wizards.
-*
-* @author Ana von Klopp
-*/
-
-abstract class DeployData { 
+ * Generic methods for evaluating the input into the wizards.
+ *
+ * @author Ana von Klopp
+ */
+abstract class DeployData {
 
     private static final Logger LOG = Logger.getLogger(DeployData.class.getName());
-    
-    WebApp webApp = null; 
-    String className = null; 
-    boolean makeEntry = true; 
-    FileObject ddObject = null; 
+    WebApp webApp = null;
+    String className = null;
+    boolean makeEntry = true;
+    FileObject ddObject = null;
 
     // This is the web app file object
-    void setWebApp(FileObject fo) { 
-	LOG.finer("setWebApp()");
-        
-	ddObject = fo;
-	if (fo == null) {
-	    webApp = null; 
-	    return;
-	} 
+    void setWebApp(FileObject fo) {
+        LOG.finer("setWebApp()");
 
-	try { 
-	    webApp = DDProvider.getDefault().getDDRoot(fo);
-	    LOG.finer("webApp = "+webApp);
-	}
-	catch(IOException ioex) {
-	    LOG.log(Level.FINE, "Couldn't get the web app!", ioex);
-	} 
-	catch(Exception ex) {
-	    LOG.log(Level.FINE, "Couldn't get the web app!", ex);
-	} 
-    } 
+        ddObject = fo;
+        if (fo == null) {
+            webApp = null;
+            return;
+        }
 
-    String getClassName() { 
-	if(className == null) return ""; 
-	return className; 
-    } 
+        try {
+            webApp = DDProvider.getDefault().getDDRoot(fo);
+            LOG.finer("webApp = " + webApp);
+        } catch (IOException ioex) {
+            LOG.log(Level.FINE, "Couldn't get the web app!", ioex);
+        } catch (Exception ex) {
+            LOG.log(Level.FINE, "Couldn't get the web app!", ex);
+        }
+    }
 
-    void setClassName(String name) { 
-	this.className = name; 
-    } 
+    String getClassName() {
+        if (className == null) {
+            return "";
+        }
+        return className;
+    }
 
-    boolean makeEntry() { 
-	return makeEntry; 
-    } 
+    void setClassName(String name) {
+        this.className = name;
+    }
 
-    void setMakeEntry(boolean makeEntry) { 
-	this.makeEntry = makeEntry; 
-    } 
+    boolean makeEntry() {
+        return makeEntry;
+    }
 
-    void writeChanges() throws IOException { 
-	LOG.finer("writeChanges()"); //NOI18N
-	if(webApp == null)
-            return; 
-	LOG.finer("now writing..."); //NOI18N
+    void setMakeEntry(boolean makeEntry) {
+        this.makeEntry = makeEntry;
+    }
+
+    void writeChanges() throws IOException {
+        LOG.finer("writeChanges()"); //NOI18N
+        if (webApp == null) {
+            return;
+        }
+        LOG.finer("now writing..."); //NOI18N
         webApp.write(ddObject);
     }
 
     abstract boolean isValid();
     // This must invoke write changes at the end 
-    abstract void createDDEntries(); 
-    abstract String getErrorMessage(); 
-    abstract void setAddToDD(boolean addToDD);
-    abstract boolean isAddToDD();
-    
+
+    abstract void createDDEntries();
+
+    abstract String getErrorMessage();
+
     public static FileObject getWebAppFor(FileObject folder) {
-        if (folder==null) return null;
+        if (folder == null) {
+            return null;
+        }
         WebModule webModule = WebModule.getWebModule(folder);
-        if (webModule==null) return null;
-        return webModule.getDeploymentDescriptor ();
+        if (webModule == null) {
+            return null;
+        }
+        return webModule.getDeploymentDescriptor();
     }
-    
+
     public boolean hasDD() {
-        return webApp!=null;
+        return webApp != null;
     }
 }
 

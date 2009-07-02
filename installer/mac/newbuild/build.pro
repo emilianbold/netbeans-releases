@@ -12,6 +12,7 @@
     <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.7"/>      
+    <property name="nb.check.build.number" value="0"/>
 
     <property name="appversion" value="Development Version"/>
     <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
@@ -20,7 +21,7 @@
     <property name="servicetag.source" value="NetBeans ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="6.0.18"/>
+    <property name="tomcat.version" value="6.0.20"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -47,12 +48,13 @@
 
 
     <!-- Sun GlassFish V3 properties   -->
-    <property name="glassfish.v3.sun.build.type"      value="prelude"/>
-    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
-    <property name="glassfish.v3.sun.build.number"    value="28e"/>
+    <property name="glassfish.v3.sun.build.type"      value="preview"/>
+    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
     <!--
+    <property name="glassfish.v3.sun.build.number"    value="28e"/>
+    -->
     <loadresource property="glassfish.v3.sun.build.number">
-          <url url="${glassfish.v3.sun.location.prefix}/prelude/latest/archive/bundles"/>
+          <url url="${glassfish.v3.sun.location.prefix}/trunk-latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -60,24 +62,28 @@
             </tokenfilter>
           </filterchain>
     </loadresource>
-    -->
-    <property name="glassfish.v3.sun.display.version" value="v3 Prelude"/>
+    <property name="glassfish.v3.sun.display.version" value="v3 b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3-${glassfish.v3.sun.build.type}"/>
-    <!--property name="glassfish_v3_sun_location"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/-->
-    <!--property name="glassfish_v3_sun_location_ml"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles-ml/sges-v3-${glassfish.v3.sun.build.type}-ml.zip"/-->
+    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3-b${glassfish.v3.sun.build.number}"/>
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/>
+    <property name="glassfish_v3_sun_location_ml" value="${glassfish_v3_sun_location}"/>
+    <!--<property name="glassfish_v3_sun_location_ml"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles-ml/sges-v3-${glassfish.v3.sun.build.type}-ml.zip"/-->
+    <!--
     <property name="glassfish_v3_sun_location"     value="${binary_cache_host}/glassfish/sges-v3-prelude.zip"/>
     <property name="glassfish_v3_sun_location_ml"  value="${binary_cache_host}/glassfish/sges-v3-prelude-ml.zip"/>
-    <property name="glassfish.v3.sun.subdir"       value="glassfishv3-prelude"/>
+    -->
+    <property name="glassfish.v3.sun.subdir"       value="glassfishv3"/>
 
 
     <!-- GlassFish V3 properties   -->   
-    <property name="glassfish.v3.build.type"      value="prelude"/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
-    <property name="glassfish.v3.build.number"    value="28c"/>
+    <property name="glassfish.v3.build.type"      value="preview"/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
     <!--
+    <property name="glassfish.v3.build.number"    value="28c"/>
+    -->
+    
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/prelude/latest/archive/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/trunk-latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -85,14 +91,17 @@
             </tokenfilter>
           </filterchain>
     </loadresource>
-    -->
-    <property name="glassfish.v3.display.version" value="v3 Prelude"/>
+    
+    <property name="glassfish.v3.display.version" value="v3 b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.build.type}"/>    
-    <!--<property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>-->
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-b${glassfish.v3.build.number}"/>    
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
+    <!--
     <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-prelude.zip"/>
     <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-prelude-ml.zip"/>
-    <property name="glassfish.v3.subdir"       value="glassfishv3-prelude"/>
+    -->
+    <property name="glassfish.v3.subdir"       value="glassfishv3"/>
     
     <!-- Open ESB Properties-->    
     <property name="openesb.install.dir" value="${sjsas.install.dir}/addons"/>

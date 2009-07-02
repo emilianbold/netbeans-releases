@@ -103,7 +103,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceHandler;
 import org.netbeans.modules.web.jsf.api.facesmodel.StateManager;
 import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.TagHandlerDelegateFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
 import org.netbeans.modules.web.jsf.api.facesmodel.VariableResolver;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewDeclarationLanguageFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
@@ -461,7 +461,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
     }
     
     @Override
-    public void visit( ValidatorId id ) {
+    public void visit( FacesValidatorId id ) {
         if (target instanceof DefaultValidators  ) {
             if (operation == Operation.ADD) {
                 insert( DefaultValidators.VALIDATOR_ID, id);

@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.CarAccessor;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject;
 import org.openide.filesystems.FileObject;
@@ -65,26 +67,33 @@ import org.openide.util.Lookup;
  * @author Lukas Jungmann
  */
 public final class Car {
-    private CarImplementation impl;
+    
     private static final Lookup.Result<CarProvider> implementations =
         Lookup.getDefault().lookup(new Lookup.Template<CarProvider>(CarProvider.class));
     
     static  {
         CarAccessor.DEFAULT = new CarAccessor() {
+
+            @Override
             public Car createCar(CarImplementation spiEjbJar) {
-                return new Car(spiEjbJar);
+                return new Car(spiEjbJar, null);
             }
 
-            public CarImplementation getCarImplementation(Car wm) {
-                return wm == null ? null : wm.impl;
+            @Override
+            public Car createCar(CarImplementation2 spiEjbJar) {
+                return new Car(null, spiEjbJar);
             }
         };
     }
+
+    private final CarImplementation impl;
+
+    private final CarImplementation2 impl2;
     
-    private Car (CarImplementation impl) {
-        if (impl == null)
-            throw new IllegalArgumentException ();
+    private Car (CarImplementation impl, CarImplementation2 impl2) {
+        assert (impl != null && impl2 == null) || (impl == null && impl2 != null);
         this.impl = impl;
+        this.impl2 = impl2;
     }
     
     /**
@@ -121,14 +130,28 @@ public final class Car {
     /** J2EE platform version - one of the constants 
      * defined in {@link org.netbeans.modules.j2ee.api.common.J2eeProjectConstants}.
      * @return J2EE platform version
+     * @deprecated use {@link #getJ2eeProfile()}
      */
     public String getJ2eePlatformVersion () {
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile().toPropertiesString();
+        }
         return impl.getJ2eePlatformVersion();
+    }
+
+    public Profile getJ2eeProfile() {
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile();
+        }
+        return Profile.fromPropertiesString(impl.getJ2eePlatformVersion());
     }
     
     /** Deployment descriptor (application-client.xml file) of the application client module.
      */
     public FileObject getDeploymentDescriptor () {
+        if (impl2 != null) {
+            return impl2.getDeploymentDescriptor();
+        }
         return impl.getDeploymentDescriptor();
     }
 
@@ -139,12 +162,18 @@ public final class Car {
      * </div>
      */
     public FileObject[] getJavaSources() {
+        if (impl2 != null) {
+            return impl2.getJavaSources();
+        }
         return impl.getJavaSources();
     }
     
     /** Meta-inf
      */
     public FileObject getMetaInf() {
+        if (impl2 != null) {
+            return impl2.getMetaInf();
+        }
         return impl.getMetaInf();
     }
 }

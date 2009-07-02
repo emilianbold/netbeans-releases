@@ -69,7 +69,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
@@ -201,7 +201,8 @@ public class EjbJarProjectGenerator {
         }
         
         // create ejb-jar.xml
-        if (!Profile.JAVA_EE_5.equals(createData.getJavaEEProfile())) {
+        Profile profile = createData.getJavaEEProfile();
+        if (!Profile.JAVA_EE_5.equals(profile) && !Profile.JAVA_EE_6_FULL.equals(profile) && !Profile.JAVA_EE_6_WEB.equals(profile)) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml";
             FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "ejb-jar"); //NOI18N
             EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFile);
@@ -388,7 +389,9 @@ public class EjbJarProjectGenerator {
             try {
                 EjbJar root = DDProvider.getDefault().getDDRoot(ejbJarXml);
                 boolean writeDD = false;
-                if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && Profile.J2EE_14.equals(j2eeProfile)) { // NOI18N
+                boolean updateXml = root.getVersion() == null ? true :
+                    new BigDecimal(EjbJar.VERSION_2_1).compareTo(root.getVersion()) > 0;
+                if (updateXml && Profile.J2EE_14.equals(j2eeProfile)) {
                     root.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
                     writeDD = true;
                 }

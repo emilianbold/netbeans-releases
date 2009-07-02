@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.26.1
+#Version 1.31.1
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -396,6 +396,32 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons protected AbstractMap()
 innr public static SimpleEntry
@@ -790,6 +816,17 @@ CLSS public abstract interface org.netbeans.spi.project.ant.AntBuildExtenderImpl
 meth public abstract java.util.List<java.lang.String> getExtensibleTargets()
 meth public abstract org.netbeans.api.project.Project getOwningProject()
 
+CLSS public abstract interface !annotation org.netbeans.spi.project.support.ant.AntBasedProjectRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String privateName()
+meth public abstract !hasdefault java.lang.String sharedName()
+meth public abstract java.lang.String iconResource()
+meth public abstract java.lang.String privateNamespace()
+meth public abstract java.lang.String sharedNamespace()
+meth public abstract java.lang.String type()
+
 CLSS public abstract interface org.netbeans.spi.project.support.ant.AntBasedProjectType
 meth public abstract java.lang.String getPrimaryConfigurationDataElementName(boolean)
 meth public abstract java.lang.String getPrimaryConfigurationDataElementNamespace(boolean)
@@ -888,7 +925,7 @@ meth public boolean refreshBuildScript(java.lang.String,java.net.URL,boolean) th
 meth public int getBuildScriptState(java.lang.String,java.net.URL)
 meth public void generateBuildScriptFromStylesheet(java.lang.String,java.net.URL) throws java.io.IOException
 supr java.lang.Object
-hfds GENFILES_PROPERTIES_PATH,KEY_SUFFIX_DATA_CRC,KEY_SUFFIX_SCRIPT_CRC,KEY_SUFFIX_STYLESHEET_CRC,crcCache,crcCacheTimestampsXorSizes,dir,extender,h
+hfds GENFILES_PROPERTIES_PATH,KEY_SUFFIX_DATA_CRC,KEY_SUFFIX_SCRIPT_CRC,KEY_SUFFIX_STYLESHEET_CRC_PLUS_VERSION,STYLESHEET_VERSIONS,crcCache,crcCacheTimestampsXorSizes,dir,extender,h
 hcls EolFilterOutputStream
 
 CLSS public final org.netbeans.spi.project.support.ant.PathMatcher
@@ -995,7 +1032,9 @@ supr java.lang.Object
 hfds SUB_ELEMENT_NAMES,artifactID,artifactType,cleanTargetName,foreignProjectName,newScriptLocation,props,scriptLocation,targetName
 
 CLSS public final org.netbeans.spi.project.support.ant.SourcesHelper
+cons public SourcesHelper(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
 cons public SourcesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+ anno 0 java.lang.Deprecated()
 meth public org.netbeans.api.project.Sources createSources()
 meth public void addNonSourceRoot(java.lang.String)
 meth public void addOwnedFile(java.lang.String)
@@ -1006,7 +1045,7 @@ meth public void addTypedSourceRoot(java.lang.String,java.lang.String,java.lang.
 meth public void registerExternalRoots(int)
 meth public void registerExternalRoots(int,boolean)
 supr java.lang.Object
-hfds evaluator,lastRegisteredRoots,minimalSubfolders,nonSourceRoots,ownedFiles,principalSourceRoots,project,propChangeL,registeredRootAlgorithm,typedSourceRoots
+hfds aph,evaluator,lastRegisteredRoots,minimalSubfolders,nonSourceRoots,ownedFiles,principalSourceRoots,project,propChangeL,registeredRootAlgorithm,typedSourceRoots
 hcls PropChangeL,Root,SourceRoot,SourcesImpl,TypedSourceRoot
 
 CLSS public org.netbeans.spi.project.support.ant.ui.StoreGroup

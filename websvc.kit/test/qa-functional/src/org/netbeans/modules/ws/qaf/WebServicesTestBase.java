@@ -51,13 +51,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.CleanProjectAction;
+import org.netbeans.jellytools.actions.CleanJavaProjectAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
@@ -213,10 +213,10 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             switch (this) {
                 case J2EE14:
                     //J2EE 1.4
-                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14");
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.Bundle", "LBL_J2EESpec_14");
                 case JAVAEE5:
                     //Java EE 5
-                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50");
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.Bundle", "LBL_JavaEESpec_5");
 
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
@@ -469,7 +469,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         }
         npwo.next();
         // project name & location selection step
-        NewProjectNameLocationStepOperator op = new NewProjectNameLocationStepOperator();
+        NewWebProjectNameLocationStepOperator op = new NewWebProjectNameLocationStepOperator();
         op.txtProjectName().setText(name);
         if (ProjectType.SAMPLE.equals(type)) {
             op.txtLocation().setText(getWorkDirPath());
@@ -543,7 +543,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param projectName name of the project to be deployed
      */
     protected void deployProject(String projectName) throws IOException {
-        new CleanProjectAction().perform();
+        new CleanJavaProjectAction().perform();
         //Deploy
         String deployProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name");
         performProjectAction(projectName, deployProjectLabel);

@@ -62,7 +62,6 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
  */
 public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
         public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-        public static final String VERSION_2_3="2.3"; //NOI18N
         public static final String VERSION_2_4="2.4"; //NOI18N
         public static final String VERSION_2_5="2.5"; //NOI18N
         public static final String VERSION_3_0="3.0"; //NOI18N
@@ -366,15 +365,10 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
         
 	public void setLocaleEncodingMappingList(org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList value) throws VersionNotSupportedException;
 
-        // due to compatibility with servlet2.3
-	public void setTaglib(int index, org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws VersionNotSupportedException;
-	public org.netbeans.modules.j2ee.dd.api.web.Taglib getTaglib(int index) throws VersionNotSupportedException;
-	public void setTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib[] value) throws VersionNotSupportedException;
-	public org.netbeans.modules.j2ee.dd.api.web.Taglib[] getTaglib() throws VersionNotSupportedException;
-	public int sizeTaglib() throws VersionNotSupportedException;
-	public int addTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws VersionNotSupportedException;
-	public int removeTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws VersionNotSupportedException;
         // This attribute is optional
 	public void setMetadataComplete(boolean value) throws VersionNotSupportedException;
 	public boolean isMetadataComplete() throws VersionNotSupportedException;
+
+	public void setName(String[] value) throws VersionNotSupportedException;
+	public String[] getName() throws VersionNotSupportedException;
 }

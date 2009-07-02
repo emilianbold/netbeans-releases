@@ -108,8 +108,8 @@ public final class LibProjectImpl extends ProjectBase {
 
     /** override parent to avoid inifinite recursion */
     @Override
-    public Collection<CsmProject> getLibraries() {
-        return Collections.<CsmProject>emptySet();
+    public List<CsmProject> getLibraries() {
+        return Collections.<CsmProject>emptyList();
     }
 
     public void onFileRemoved(FileImpl file) {

@@ -530,8 +530,9 @@ public final class NbMavenProjectImpl implements Project {
         synchronized (this) {
             oldProject = project;
             project = null;
+            getOriginalMavenProject(); //#167741 just reload the project here before anything happens.
         }
-        problemReporter.clearReports();
+        problemReporter.clearReports(); //#167741 -this will trigger node refresh?
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
         doBaseProblemChecks();
@@ -916,9 +917,9 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
+                    new ProjectOpenedHookImpl(this),
 
                     // default mergers..        
-                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
@@ -930,6 +931,7 @@ public final class NbMavenProjectImpl implements Project {
                     new DebuggerChecker(),
                     new CosChecker(this),
                     CosChecker.createResultChecker(),
+                    CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
                     new TestSkippingChecker(),

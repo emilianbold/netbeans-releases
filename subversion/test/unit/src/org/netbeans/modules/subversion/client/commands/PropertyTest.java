@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -61,8 +61,29 @@ public class PropertyTest extends AbstractCommandTest {
         super(testName);
     }
             
-    public void testPropertyGetNonProp() throws Exception {                                                
-        File file = createFile("file");        
+    public void testPropertyGetFileNonProp() throws Exception {
+        testPropertyGetFileNoProp("file");
+    }
+
+    public void testPropertyGetFileWithAtSignNoProp() throws Exception {
+        testPropertyGetFileNoProp("@file");
+        testPropertyGetFileNoProp("fi@le");
+        testPropertyGetFileNoProp("file@");
+    }
+
+    public void testPropertyGetFileInDirNoProp() throws Exception {
+        testPropertyGetFileNoProp("folder/file");
+    }
+
+    public void testPropertyGetFileWithAtSignInDirNoProp() throws Exception {
+        testPropertyGetFileNoProp("folder/@file");
+        testPropertyGetFileNoProp("folder/fi@le");
+        testPropertyGetFileNoProp("folder/file@");
+    }
+
+    private void testPropertyGetFileNoProp(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         add(file);
         commit(file);
         
@@ -74,8 +95,29 @@ public class PropertyTest extends AbstractCommandTest {
         assertNull(p);
     }            
     
-    public void testPropertyGetUrl() throws Exception {                                                
-        File file = createFile("file");        
+    public void testPropertyGetUrl() throws Exception {
+        testPropertyGetUrl("file");
+    }
+
+    public void testPropertyGetUrlWithAtSign() throws Exception {
+        testPropertyGetUrl("@file");
+        testPropertyGetUrl("fi@le");
+        testPropertyGetUrl("file@");
+    }
+
+    public void testPropertyGetUrlInDir() throws Exception {
+        testPropertyGetUrl("folder/file");
+    }
+
+    public void testPropertyGetUrlWithAtSignInDir() throws Exception {
+        testPropertyGetUrl("folder/@file");
+        testPropertyGetUrl("folder/fi@le");
+        testPropertyGetUrl("folder/file@");
+    }
+
+    private void testPropertyGetUrl(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         add(file);
                 
         ISVNClientAdapter c = getNbClient();        
@@ -88,8 +130,29 @@ public class PropertyTest extends AbstractCommandTest {
         assertProperty(c, getFileUrl(file), "p1", "v1");                
     }            
     
-    public void testPropertyListUrl() throws Exception {                                                
-        File file = createFile("file");        
+    public void testPropertyListUrl() throws Exception {
+        testPropertyListUrl("file");
+    }
+
+    public void testPropertyListUrlWithAtSign() throws Exception {
+        testPropertyListUrl("@file");
+        testPropertyListUrl("fi@le");
+        testPropertyListUrl("file@");
+    }
+
+    public void testPropertyListUrlInDir() throws Exception {
+        testPropertyListUrl("folder/file");
+    }
+
+    public void testPropertyListUrlWithAtSignInDir() throws Exception {
+        testPropertyListUrl("folder/@file");
+        testPropertyListUrl("folder/fi@le");
+        testPropertyListUrl("folder/file@");
+    }
+
+    private void testPropertyListUrl(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         add(file);
         
         ISVNClientAdapter c = getNbClient();        
@@ -111,8 +174,29 @@ public class PropertyTest extends AbstractCommandTest {
         assertProperty("p3", "v3", propMap);        
     }          
     
-    public void testPropertySetGetDel() throws Exception {                                                
-        File file = createFile("file");        
+    public void testPropertySetGetDel() throws Exception {
+        testPropertySetGetDel("file");
+    }
+
+    public void testPropertySetGetDelWithAtSign() throws Exception {
+        testPropertySetGetDel("@file");
+        testPropertySetGetDel("fi@le");
+        testPropertySetGetDel("file@");
+    }
+
+    public void testPropertySetGetDelInDir() throws Exception {
+        testPropertySetGetDel("folder/file");
+    }
+
+    public void testPropertySetGetDelWithAtSignInDir() throws Exception {
+        testPropertySetGetDel("folder/@file");
+        testPropertySetGetDel("folder/fi@le");
+        testPropertySetGetDel("folder/file@");
+    }
+
+    private void testPropertySetGetDel(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         add(file);
         commit(file);
         
@@ -131,8 +215,29 @@ public class PropertyTest extends AbstractCommandTest {
         assertNotifiedFiles(file);
     }            
     
-    public void testPropertyList() throws Exception {                                                
-        File file = createFile("file");        
+    public void testPropertyListFile() throws Exception {
+        testPropertyListFile("file");
+    }
+
+    public void testPropertyListFileWithAtSign() throws Exception {
+        testPropertyListFile("@file");
+        testPropertyListFile("fi@le");
+        testPropertyListFile("file@");
+    }
+
+    public void testPropertyListFileInDir() throws Exception {
+        testPropertyListFile("folder/file");
+    }
+
+    public void testPropertyListFileWithAtSignInDir() throws Exception {
+        testPropertyListFile("folder/@file");
+        testPropertyListFile("folder/fi@le");
+        testPropertyListFile("folder/file@");
+    }
+
+    private void testPropertyListFile(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         add(file);
         commit(file);
         

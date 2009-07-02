@@ -306,7 +306,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.ORGANIZATIONURL, NbBundle.getMessage(POMModelVisitor.class, "ORGANIZATION_URL"), t != null ? t.getOrganizationUrl() : null);
         checkChildString(names.TIMEZONE, NbBundle.getMessage(POMModelVisitor.class, "TIMEZONE"), t != null ? t.getTimezone() : null);
 
-        count++;    }
+        count++;
+    }
 
     public void visit(Scm target) {
         Scm t = target;
@@ -736,10 +737,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null) {
             doVisit(t.getAnyElements());
         }
+
+        count++;
+        
         for (POMCutHolder prop : childs.values()) {
             growToSize(count, prop);
         }
-        count++;
     }
 
     public void visit(ModelList target) {
@@ -750,11 +753,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         if (t != null) {
             doVisit(t.getConfigurationElements());
         }
+
+        count++;
+
         for (POMCutHolder prop : childs.values()) {
             growToSize(count, prop);
         }
 
-        count++;
     }
 
     private void doVisit(List<POMExtensibilityElement> elems) {
@@ -793,11 +798,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             }
         }
 
+        count++;
+        
         for (POMCutHolder prop : childs.values()) {
             growToSize(count, prop);
         }
 
-        count++;
 
     }
 
@@ -1117,6 +1123,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         public String getShortDescription() {
             String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
             POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            assert values.length == mdls.length : "Values (len=" + values.length + ") don't match models (len=" + mdls.length + ")." +  Arrays.toString(values);
             StringBuffer buff = new StringBuffer();
             int index = 0;
             buff.append("<html>" + //NOI18N

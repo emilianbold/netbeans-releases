@@ -68,6 +68,10 @@ public final class CarFactory {
         return CarAccessor.DEFAULT.createCar (spiCarmodule);
     }
 
+    public static Car createCar(CarImplementation2 spiCarmodule) {
+        return CarAccessor.DEFAULT.createCar (spiCarmodule);
+    }
+
     /**
      * Create API Ear instance for the given SPI carmodule.
      * @param spiEar instance of SPI Ear

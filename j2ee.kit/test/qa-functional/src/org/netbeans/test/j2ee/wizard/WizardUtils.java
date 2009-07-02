@@ -41,9 +41,9 @@
 package org.netbeans.test.j2ee.wizard;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -78,9 +78,9 @@ public class WizardUtils {
         return npwo;
     }
     
-    public static NewProjectNameLocationStepOperator setProjectNameLocation(
+    public static NewJavaProjectNameLocationStepOperator setProjectNameLocation(
             String name, String location) {
-        NewProjectNameLocationStepOperator op = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator op = new NewJavaProjectNameLocationStepOperator();
         op.txtProjectName().setText(name);
         op.txtProjectLocation().setText(location);
         return op;
@@ -99,9 +99,9 @@ public class WizardUtils {
         return nfwo;
     }
     
-    public static NewFileNameLocationStepOperator setFileNameLocation(String name,
+    public static NewJavaFileNameLocationStepOperator setFileNameLocation(String name,
             String pkg, String srcRoot) {
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name);
         if (srcRoot != null) {
             op.cboLocation().selectItem(srcRoot);
@@ -110,8 +110,8 @@ public class WizardUtils {
         return op;
     }
     
-    public static NewProjectNameLocationStepOperator setJ2eeSpecVersion(
-            NewProjectNameLocationStepOperator op, int moduleType, String version) {
+    public static NewJavaProjectNameLocationStepOperator setJ2eeSpecVersion(
+            NewJavaProjectNameLocationStepOperator op, int moduleType, String version) {
         op.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(op, 1);
         boolean found = false;

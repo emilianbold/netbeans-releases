@@ -93,7 +93,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
                     System.err.printf("%s, line %d: warning: extra tokens at end of %s directive\n", // NOI18N
                             APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
-                    APTUtils.LOG.log(Level.WARNING, "line {1}: warning: extra tokens at end of {2} directive", // NOI18N
+                    APTUtils.LOG.log(Level.WARNING, "{0}, line {1}: warning: extra tokens at end of {2} directive", // NOI18N
                             new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()} ); // NOI18N
                 }
             } else {

@@ -74,7 +74,7 @@ public class DDUtils {
             return (EjbJarProxy) DDProvider.getDefault().getDDRoot(inputSource);
         } catch (SAXException ex) {
             // XXX lets throw an exception here
-            EjbJar ejbJar = org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar.createGraph();
+            EjbJar ejbJar = org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar.createGraph();
             EjbJarProxy ejbJarProxy = new EjbJarProxy(ejbJar, ejbJar.getVersion().toString());
             ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
             if (ex instanceof SAXParseException) {
@@ -125,9 +125,7 @@ public class DDUtils {
 
     public static WebApp createWebApp(InputStream is, String version) throws IOException, SAXException {
         try {
-            if (WebApp.VERSION_2_3.equals(version)) {
-                return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
-            } else if (WebApp.VERSION_2_4.equals(version)) {
+            if (WebApp.VERSION_2_4.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp.createGraph(is);
             } else if (WebApp.VERSION_2_5.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web.model_2_5.WebApp.createGraph(is);
@@ -143,9 +141,7 @@ public class DDUtils {
     
     public static AppClient createAppClient(InputStream is, String version) throws IOException, SAXException {
         try {
-            if (AppClient.VERSION_1_3.equals(version)) {
-                return org.netbeans.modules.j2ee.dd.impl.client.model_1_3.ApplicationClient.createGraph(is);
-            } else if (AppClient.VERSION_1_4.equals(version)) {
+            if (AppClient.VERSION_1_4.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.client.model_1_4.ApplicationClient.createGraph(is);
             } else if (AppClient.VERSION_5_0.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.client.model_5_0.ApplicationClient.createGraph(is);

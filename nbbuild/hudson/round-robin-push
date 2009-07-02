@@ -120,7 +120,7 @@ else
      hg heads
      exit 7
    fi
-   hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
+   hg ci -u "$push_username"@netbeans.org -m "Merge of $pop_url" || exit 8
 fi
 HGOUT=`hg out $push_url`
 testresult "$TESTDIR" "outgoing.changes" "$HGOUT"

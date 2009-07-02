@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -61,8 +62,6 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.SourceGroup;
@@ -74,6 +73,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -83,7 +83,7 @@ import org.openide.util.Exceptions;
  * war/webapp related apis implementation..
  * @author  Milos Kleint 
  */
-public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImplementation2 {
+public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplementation2 {
     private Project project;
     private WebModuleProviderImpl provider;
     private MetadataModel<WebAppMetadata> webAppMetadataModel;
@@ -113,12 +113,12 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     public void setWarInplace(boolean inplace) {
         this.inplace = inplace;
     }
-    
-    public String getJ2eePlatformVersion() {
+
+    public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
         String version = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_J2EE_VERSION, true);
         if (version != null) {
-            return version;
+            return Profile.fromPropertiesString(version);
         }
         DDProvider prov = DDProvider.getDefault();
         FileObject dd = getDeploymentDescriptor();
@@ -126,19 +126,16 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
             try {
                 WebApp wa = prov.getDDRoot(dd);
                 String waVersion = wa.getVersion() ;
-                
-                if(WebApp.VERSION_2_3.equals(waVersion)) {
-                    return WebModule.J2EE_13_LEVEL;
-                }
+
                 if (WebApp.VERSION_2_4.equals(waVersion)) {
-                    return WebModule.J2EE_14_LEVEL;
+                    return Profile.J2EE_14;
                 }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
         }
         //make 15 the default..
-        return WebModule.JAVA_EE_5_LEVEL;
+        return Profile.JAVA_EE_5;
     }
     
     public FileObject getDocumentBase() {

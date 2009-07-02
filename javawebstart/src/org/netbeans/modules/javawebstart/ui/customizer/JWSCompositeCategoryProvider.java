@@ -64,7 +64,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectConfigurations;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -114,7 +116,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         ProjectCustomizer.Category category = null;
         if (CAT_WEBSTART.equals(catName)) {
             category = ProjectCustomizer.Category.create(CAT_WEBSTART,
-                    bundle.getString("LBL_Category_WebStart"), null, null);
+                    bundle.getString("LBL_Category_WebStart"), null, (Category[]) null);
         }
         return category;
     }
@@ -188,8 +190,8 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             }
         }
         
-        private Properties prepareSharedProps() {
-            Properties props = new Properties();
+        private EditableProperties prepareSharedProps() {
+            EditableProperties props = new EditableProperties(true);
             props.setProperty(JWSProjectProperties.CONFIG_LABEL_PROPNAME, NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
             props.setProperty(JWSProjectProperties.CONFIG_TARGET_RUN_PROPNAME, JWSProjectProperties.CONFIG_TARGET_RUN);
             props.setProperty(JWSProjectProperties.CONFIG_TARGET_DEBUG_PROPNAME, JWSProjectProperties.CONFIG_TARGET_DEBUG);

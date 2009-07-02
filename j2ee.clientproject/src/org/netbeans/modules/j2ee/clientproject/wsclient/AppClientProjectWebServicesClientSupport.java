@@ -58,10 +58,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
@@ -71,7 +71,6 @@ import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
@@ -504,8 +503,8 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
     
     public List<ClientStubDescriptor> getStubDescriptors() {
         ArrayList<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
-        String version = project.getCarModule().getJ2eePlatformVersion();
-        if (EjbProjectConstants.J2EE_14_LEVEL.equals(version)) {
+        Profile version = project.getCarModule().getJ2eeProfile();
+        if (Profile.J2EE_14.equals(version)) {
             stubs.add(jsr109ClientStub);
         }
         stubs.add(jaxrpcClientStub);

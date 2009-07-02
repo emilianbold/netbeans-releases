@@ -58,4 +58,9 @@ public class IndexedInterface extends IndexedElement {
     public String[] getInterfaces() {
         return interfaces;
     }
+    
+    public String getNamespaceName() {
+        final String retval = getIn();
+        return retval != null ? retval : "";//NOI18N
+    }
 }

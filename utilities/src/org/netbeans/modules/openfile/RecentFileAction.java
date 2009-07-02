@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -140,7 +139,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     
     /** Fills submenu with recently closed files got from RecentFiles support */
     private void fillSubMenu () {
-        List<RecentFiles.HistoryItem> files = RecentFiles.getRecentFiles();
+        List<HistoryItem> files = RecentFiles.getRecentFiles();
 
         int counter = 0;
         for (HistoryItem hItem : files) {
@@ -232,7 +231,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
         }
     
         public JComponent[] getMenuPresenters() {
-            setEnabled(!RecentFiles.getRecentFiles().isEmpty());
+            setEnabled(RecentFiles.hasRecentFiles());
             return content;
         }
 

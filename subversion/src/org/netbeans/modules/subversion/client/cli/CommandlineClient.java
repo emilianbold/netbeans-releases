@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.cli;
@@ -135,8 +135,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             config(cmd);
             cli.exec(cmd);
             checkErrors(cmd);            
-            if(!cmd.isSupported()) {
-                Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.3");
+            if(!cmd.checkForErrors()) {
+                if (cmd.isUnsupportedVersion()) {
+                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.3");
+                }
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
             }                       
         } catch (IOException ex) {

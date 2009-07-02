@@ -151,6 +151,11 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
                     result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, type));
                 }
             });
+            helper.getAnnotationScanner().findAnnotations("javax.ejb.Singleton", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    result.add(new SessionImpl(SessionImpl.Kind.SINGLETON, helper, type));
+                }
+            });
             return result;
         }
 
@@ -161,6 +166,9 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
             }
             if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ejb.Stateful")) { // NOI18N
                 result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, type));
+            }
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ejb.Singleton")) { // NOI18N
+                result.add(new SessionImpl(SessionImpl.Kind.SINGLETON, helper, type));
             }
             return result;
         }

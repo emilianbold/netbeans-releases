@@ -59,7 +59,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
@@ -67,7 +69,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
@@ -76,8 +78,11 @@ import org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -155,7 +160,7 @@ public final class EarProject implements Project, AntProjectListener {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new EarExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper,buildExtender);
         appModule = new ProjectEar(this);
-        ear = EjbJarFactory.createEar(appModule);
+        ear = EjbJarFactory.createEar(new EarImpl2(appModule));
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         updateHelper = new UpdateHelper(updateProject, helper);
         cpProvider = new ClassPathProviderImpl(helper, evaluator());
@@ -211,6 +216,9 @@ public final class EarProject implements Project, AntProjectListener {
             helper.createAuxiliaryProperties(),
             new ProjectEarProvider(),
             appModule, //implements J2eeModuleProvider
+            // FIXME this is just fallback for code searching for the old SPI in lookup
+            // remove in next release
+            new EarImpl(ear, appModule),
             new EarActionProvider(this, updateHelper),
             new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper),
             new MyIconBaseProvider(),
@@ -662,8 +670,81 @@ public final class EarProject implements Project, AntProjectListener {
         }
         
     }
-    
-   private class EarExtenderImplementation implements AntBuildExtenderImplementation {
+
+    // FIXME this is just fallback for code searching for the old SPI in lookup
+    // remove in next release
+    @SuppressWarnings("deprecation")
+    private class EarImpl implements EarImplementation {
+
+        private final Ear apiEar;
+
+        private final ProjectEar projectEar;
+
+        public EarImpl(Ear apiEar, ProjectEar projectEar) {
+            this.apiEar = apiEar;
+            this.projectEar = projectEar;
+        }
+
+        public void addCarModule(Car module) {
+            apiEar.addCarModule(module);
+        }
+
+        public void addEjbJarModule(EjbJar module) {
+            apiEar.addEjbJarModule(module);
+        }
+
+        public void addWebModule(WebModule module) {
+            apiEar.addWebModule(module);
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return apiEar.getDeploymentDescriptor();
+        }
+
+        public String getJ2eePlatformVersion() {
+            return apiEar.getJ2eePlatformVersion();
+        }
+
+        public FileObject getMetaInf() {
+            return projectEar.getMetaInf();
+        }
+    }
+
+    private class EarImpl2 implements EarImplementation2 {
+
+        private final ProjectEar projectEar;
+
+        public EarImpl2(ProjectEar projectEar) {
+            this.projectEar = projectEar;
+        }
+
+        public void addCarModule(Car module) {
+            projectEar.addCarModule(module);
+        }
+
+        public void addEjbJarModule(EjbJar module) {
+            projectEar.addEjbJarModule(module);
+        }
+
+        public void addWebModule(WebModule module) {
+            projectEar.addWebModule(module);
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return projectEar.getDeploymentDescriptor();
+        }
+
+        public Profile getJ2eeProfile() {
+            return projectEar.getJ2eeProfile();
+        }
+
+        public FileObject getMetaInf() {
+            return projectEar.getMetaInf();
+        }
+
+    }
+
+    private class EarExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {
             String[] targets = new String[] {

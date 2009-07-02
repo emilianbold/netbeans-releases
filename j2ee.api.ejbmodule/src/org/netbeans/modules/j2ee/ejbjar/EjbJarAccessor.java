@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.ejbjar;
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 
 /* This class provides access to the {@link EjbJar}'s private constructor
  * from outside in the way that this class is implemented by an inner class of
@@ -74,9 +75,9 @@ public abstract class EjbJarAccessor {
         assert DEFAULT != null : "The DEFAULT field must be initialized";
         return DEFAULT;
     }
-    
+
+    @Deprecated
     public abstract EjbJar createEjbJar(EjbJarImplementation spiWebmodule);
 
-    public abstract EjbJarImplementation getEjbJarImplementation (EjbJar wm);
-
+    public abstract EjbJar createEjbJar(EjbJarImplementation2 spiWebmodule);
 }

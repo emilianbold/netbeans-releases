@@ -51,7 +51,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -113,7 +112,7 @@ public final class StandardLogger extends AntLogger {
      * <li>message
      * </ol>
      */
-    public static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
+    private static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
     
     /**
      * Data stored in the session.
@@ -316,13 +315,20 @@ public final class StandardLogger extends AntLogger {
         if (event.isConsumed()) {
             return;
         }
-        // XXX this could start indenting messages, perhaps
         String name = event.getTargetName();
         if (name != null) {
             // Avoid printing internal targets normally:
             int minlevel = (name.length() > 0 && name.charAt(0) == '-') ? AntEvent.LOG_VERBOSE : AntEvent.LOG_INFO;
             AntSession session = event.getSession();
             if (session.getVerbosity() >= minlevel) {
+                // Avoid printing prefix for top-level script.
+                // Note that event.scriptLocation may be different if this target is <import>ed.
+                if (!session.getOriginatingScript().getAbsolutePath().equals(event.getProperty("ant.file"))) { // NOI18N
+                    String projectName = event.getProperty("ant.project.name"); // NOI18N
+                    if (projectName != null && /* hack for JavaRunner */ !projectName.contains("{0}")) { // NOI18N
+                        name = projectName + '.' + name;
+                    }
+                }
                 String msg = NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", name);
                 InputOutput io = session.getIO();
                 if (IOColorLines.isSupported(io)) {
@@ -399,15 +405,14 @@ public final class StandardLogger extends AntLogger {
                 }
             }
         }
-        AtomicBoolean isHyperlink = new AtomicBoolean();
-        OutputListener hyperlink = findHyperlink(session, line, isHyperlink);
+        if ("java".equals(event.getTaskName()) &&
+                (event.getLogLevel() == AntEvent.LOG_WARN || event.getLogLevel() == AntEvent.LOG_INFO)) {
+            // stdout and stderr is printed directly for java
+            return;
+        }
+        OutputListener hyperlink = findHyperlink(line, event.getSession(), getSessionData(session).currentDir);
         if (hyperlink instanceof Hyperlink) {
             getSessionData(session).lastHyperlink = (Hyperlink) hyperlink;
-        }
-        if (!isHyperlink.get() && "java".equals(event.getTaskName()) &&
-                (event.getLogLevel() == AntEvent.LOG_WARN || event.getLogLevel() == AntEvent.LOG_INFO)) {
-            // stdout and stderr (except hyperlinks) is printed directly for java
-            return;
         }
         // XXX should translate tabs to spaces here as a safety measure (esp. since output window messes it up...)
         event.getSession().println(line, event.getLogLevel() <= AntEvent.LOG_WARN, hyperlink);
@@ -422,15 +427,12 @@ public final class StandardLogger extends AntLogger {
     /**
      * Possibly hyperlink a message logged event.
      */
-    private OutputListener findHyperlink(AntSession session, String line, AtomicBoolean isHyperlink) {
-        Stack<File> cwd = getSessionData(session).currentDir;
+    public static OutputListener findHyperlink(String line, AntSession session, Stack<File> cwd) {
         Matcher m = HYPERLINK.matcher(line);
         if (!m.matches()) {
-            isHyperlink.set(false);
             ERR.fine("does not look like a hyperlink");
             return null;
         }
-        isHyperlink.set(true);
         String path = m.group(1);
         File file;
         if (path.startsWith("file:")) {
@@ -446,7 +448,7 @@ public final class StandardLogger extends AntLogger {
         } else {
             file = new File(path);
             if (!file.isAbsolute()) {
-                if (cwd.isEmpty()) {
+                if (cwd == null || cwd.isEmpty()) {
                     ERR.fine("Non-absolute path with no CWD, skipping");
                     // don't waste time on File.exists!
                     return null;
@@ -485,7 +487,8 @@ public final class StandardLogger extends AntLogger {
         file = FileUtil.normalizeFile(file); // do this late, after File.exists
         ERR.log(Level.FINE, "Hyperlink: {0} [{1}:{2}:{3}:{4}]: {5}", new Object[] {file, line1, col1, line2, col2, message});
         try {
-            return session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2);
+            return session != null ? session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2)
+                : new Hyperlink(file.toURI().toURL(), message, line1, col1, line2, col2);
         } catch (MalformedURLException e) {
             assert false : e;
             return null;
