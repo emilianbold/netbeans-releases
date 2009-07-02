@@ -141,7 +141,7 @@ class SQLExecutionHelper {
         }
     }
 
-    void executeInsertRow(final String insertSQL, final Object[] insertedRow) {
+    RequestProcessor.Task executeInsertRow(final String insertSQL, final Object[] insertedRow) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
@@ -200,6 +200,7 @@ class SQLExecutionHelper {
         RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
+        return task;
     }
 
     void executeDeleteRow(final DataViewTableUI rsTable) {

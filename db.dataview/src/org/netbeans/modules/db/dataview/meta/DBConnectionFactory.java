@@ -108,26 +108,17 @@ public final class DBConnectionFactory {
     }
 
     private Connection showConnectionDialog(final DatabaseConnection dbConn) {
-        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-
-            public Void run() {
-                if(dbConn == null){
-                    return null;
-                }
-                Connection conn = dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
-                if(conn == null) {
-                    ConnectionManager.getDefault().showConnectionDialog(dbConn);
-                }
-                return null;
-            }
-        });
-
-        synchronized (DBConnectionFactory.class) {
-            if (dbConn != null) {
-                return dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
-            }
+        if (dbConn == null) {
+            return null;
         }
-        return null;
+        Connection conn = dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
+        if (conn == null) {
+            // this call is automatically redirected to AWT thread if needed
+            ConnectionManager.getDefault().showConnectionDialog(dbConn);
+            return dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
+        } else {
+            return conn;
+        }
     }
 
     private DBConnectionProvider findDBConnectionProvider() {
