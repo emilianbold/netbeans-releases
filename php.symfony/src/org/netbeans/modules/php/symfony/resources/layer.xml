@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="OptionsDialog">
+        <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
+            <file name="Symfony.instance">
+                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.symfony.ui.options.SymfonyAdvancedOptions"/>
+                 <attr name="position" intvalue="200"/>
+             </file>
+        </folder>
+    </folder>
+    <folder name="OptionsExport">
+        <folder name="PHP">
+            <file name="Symfony">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/symfony/symfony.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.symfony.resources.Bundle#LBL_SymfonyExportName"/>
+                <attr name="position" intvalue="300"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="PHP">
+        <folder name="Frameworks">
+            <file name="org-netbeans-modules-php-symfony-SymfonyPhpFrameworkProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider.getInstance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="org-netbeans-modules-php-symfony-commands-SymfonyCommandSupport$SymfonyFactory.instance">
+                <attr name="position" intvalue="101"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="PHP">
+            <file name="org-netbeans-modules-php-symfony-ui-actions-RunCommandAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.RunCommandAction.getInstance"/>
+            </file>
+            <file name="org-netbeans-modules-php-symfony-ui-actions-ClearCacheAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction.getInstance"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

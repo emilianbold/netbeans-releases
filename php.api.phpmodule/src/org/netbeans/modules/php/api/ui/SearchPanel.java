@@ -39,12 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.php.project.ui.options;
+package org.netbeans.modules.php.api.ui;
 
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -57,6 +54,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.api.util.UiUtils.SearchWindow.SearchWindowSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -68,37 +66,35 @@ import org.openide.util.RequestProcessor.Task;
  * Heavily inspired by Andrei's {@link org.netbeans.modules.spring.beans.ui.customizer.SelectConfigFilesPanel}.
  * @author Tomas Mysik
  */
-public class SearchPanel extends JPanel {
-    private static final long serialVersionUID = 26389758945641322L;
+public final class SearchPanel extends JPanel {
+    private static final long serialVersionUID = 26389843114771322L;
 
     private final RequestProcessor rp;
-    private final Detector detector;
-    private final Strings strings;
+    private final SearchWindowSupport support;
 
     private List<String> foundItems;
     private DialogDescriptor descriptor;
     private Task detectTask;
 
-    private SearchPanel(Strings strings, Detector detector) {
-        assert strings != null;
-        assert detector != null;
+    private SearchPanel(SearchWindowSupport support) {
+        assert support != null;
+
+        this.support = support;
 
         initComponents();
 
-        rp = new RequestProcessor("PHP Options detection thread (" + strings.pleaseWaitPart + ")", 1, true); // NOI18N
-        this.strings = strings;
-        this.detector = detector;
+        rp = new RequestProcessor("PHP Search Panel detection thread (" + support.getPleaseWaitPart() + ")", 1, true); // NOI18N
 
-        Mnemonics.setLocalizedText(detectedFilesLabel, strings.listTitle);
-        messageLabel.setText(NbBundle.getMessage(SearchPanel.class, "LBL_PleaseWait", strings.pleaseWaitPart));
+        Mnemonics.setLocalizedText(detectedFilesLabel, support.getListTitle());
+        messageLabel.setText(NbBundle.getMessage(SearchPanel.class, "LBL_PleaseWait", support.getPleaseWaitPart()));
     }
 
-    public static SearchPanel create(Strings strings, Detector detector) {
-        return new SearchPanel(strings, detector);
+    public static SearchPanel create(SearchWindowSupport support) {
+        return new SearchPanel(support);
     }
 
     public boolean open() {
-        descriptor = new DialogDescriptor(this, strings.windowTitle, true, new ActionListener() {
+        descriptor = new DialogDescriptor(this, support.getWindowTitle(), true, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cancelDetection();
             }
@@ -116,7 +112,7 @@ public class SearchPanel extends JPanel {
                     } catch (InterruptedException ex) {
                         return;
                     }
-                    final List<String> allItems = detector.detect();
+                    final List<String> allItems = support.detect();
                     assert allItems != null;
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -146,20 +142,20 @@ public class SearchPanel extends JPanel {
         return (String) foundItemsList.getSelectedValue();
     }
 
-    private void cancelDetection() {
+    void cancelDetection() {
         if (detectTask != null) {
             detectTask.cancel();
         }
     }
 
-    private void updateFoundItems(List<String> foundItems) {
+    void updateFoundItems(List<String> foundItems) {
         this.foundItems = foundItems;
         foundItemsList.setEnabled(true);
         foundItemsList.setListData(foundItems.toArray(new String[foundItems.size()]));
         // In an attempt to hide the progress bar and label, but force the occupy the same space.
         String message = null;
         if (foundItems.size() == 0) {
-            message = strings.noItemsFound;
+            message = support.getNoItemsFound();
         } else {
             message = " "; // NOI18N
             // preselect the 1st item
@@ -187,31 +183,10 @@ public class SearchPanel extends JPanel {
         messageLabel = new JLabel();
         progressBar = new JProgressBar();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return foundItemsList;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return foundItemsList;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return foundItemsList;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                return foundItemsList;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                return foundItemsList;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         detectedFilesLabel.setLabelFor(foundItemsList);
-
-        Mnemonics.setLocalizedText(detectedFilesLabel, "title");
+        org.openide.awt.Mnemonics.setLocalizedText(detectedFilesLabel, "title"); // NOI18N
 
         foundItemsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         foundItemsList.setEnabled(false);
@@ -220,8 +195,8 @@ public class SearchPanel extends JPanel {
         foundItemsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleName")); // NOI18N
         foundItemsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleDescription")); // NOI18N
         messageLabel.setLabelFor(progressBar);
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, "please wait..."); // NOI18N
 
-        Mnemonics.setLocalizedText(messageLabel, "please wait..."); // NOI18N
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 

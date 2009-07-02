@@ -39,8 +39,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -54,13 +52,13 @@ import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
-import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -306,7 +304,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
-        OptionsDisplayer.getDefault().open(PHPOptionsCategory.PATH_IN_LAYER);
+        OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH);
     }//GEN-LAST:event_configureButtonActionPerformed
 
     private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
