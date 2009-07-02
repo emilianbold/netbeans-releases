@@ -1302,7 +1302,7 @@ public class HgCommand {
         }
         command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
 
-        List<String> list = exec(command);
+        List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
         String proxy = getGlobalProxyIfNeeded(defaultPull, false, null);
         if(proxy != null){
