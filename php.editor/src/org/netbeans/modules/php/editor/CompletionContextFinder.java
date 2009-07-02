@@ -68,11 +68,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  * @author Tomasz.Slota@Sun.COM
  */
 class CompletionContextFinder {
+    private static final String NAMESPACE_FALSE_TOKEN = "NAMESPACE_FALSE_TOKEN"; //NOI18N
+
     private static final List<Object[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NEW},
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING
-    });
+            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
+    );
 
     private static final List<Object[]> TYPE_TOKENCHAINS = Arrays.asList(
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN},
@@ -360,12 +363,36 @@ class CompletionContextFinder {
                     accept = false;
                     break;
                 }
+            } else if (tokenID == NAMESPACE_FALSE_TOKEN){
+                if (!consumeNameSpace(tokenSequence)){
+                    accept = false;
+                    break;
+                }
+            } else {
+                assert false : "Unsupported token type: " + tokenID.getClass().getName();
             }
         }
 
         tokenSequence.move(orgTokenSequencePos);
         tokenSequence.moveNext();
         return accept;
+    }
+
+    private static boolean consumeNameSpace(TokenSequence tokenSequence){
+        if (tokenSequence.token().id() != PHPTokenId.PHP_NS_SEPARATOR
+                && tokenSequence.token().id() != PHPTokenId.PHP_STRING) {
+            return false;
+        }
+
+        do {
+            if (!tokenSequence.movePrevious()) {
+                return false;
+            }
+
+        } while (tokenSequence.token().id() == PHPTokenId.PHP_NS_SEPARATOR
+                || tokenSequence.token().id() == PHPTokenId.PHP_STRING);
+
+        return true;
     }
 
     private static Token[] getLeftPreceedingTokens(TokenSequence tokenSequence){
