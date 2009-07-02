@@ -41,7 +41,6 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.lang.reflect.Field;
 import java.util.logging.Level;
-import javax.swing.JTable;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -62,17 +61,6 @@ public class IssueTableTest extends NbTestCase {
     }   
     
     @Override
-    protected void setUp() throws Exception {    
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        System.setProperty("netbeans.t9y.bugzilla.force.refresh.delay", "please!");
-    }
-
-    @Override
     protected void tearDown() throws Exception {        
     }
 
@@ -81,21 +69,18 @@ public class IssueTableTest extends NbTestCase {
         Query q = factory.createQuery();
         assertEquals(0,q.getIssues().length);
 
-        JTable table = getTable(q);
-        // key, sumary, type, prio, status, resolution, assigned
-        NodeTableModel model = (NodeTableModel) table.getModel();
+        NodeTableModel model = getModel(q);       
         assertEquals(factory.getColumnsCountBeforeSave(), model.getColumnCount());
-
         new QueryAccessor(q).setSaved(true);
         assertEquals(factory.getColumnsCountAfterSave(), model.getColumnCount());
 
     }
 
-    private JTable getTable(Query q) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private NodeTableModel getModel(Query q) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         IssueTable it = IssuetableTestFactory.getInstance(this).getTable(q);
-        Field f = it.getClass().getDeclaredField("table");
+        Field f = it.getClass().getDeclaredField("tableModel");
         f.setAccessible(true);
-        return (JTable) f.get(it);
+        return (NodeTableModel) f.get(it);
     }
 
 }
