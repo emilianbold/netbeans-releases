@@ -91,14 +91,16 @@ public class SymfonyScript extends PhpProgram {
 
     /**
      * Get the default, <b>valid only</b> Symfony script.
-     * @return the default, <b>valid only</b> Symfony script, <code>null</code> otherwise.
+     * @return the default, <b>valid only</b> Symfony script.
+     * @throws InvalidSymfonyScriptException if Symfony script is not valid.
      */
-    public static SymfonyScript getDefault() {
+    public static SymfonyScript getDefault() throws InvalidSymfonyScriptException {
         String symfony = SymfonyOptions.getInstance().getSymfony();
-        if (validate(symfony) == null) {
-            return new SymfonyScript(symfony);
+        String error = validate(symfony);
+        if (error != null) {
+            throw new InvalidSymfonyScriptException(error);
         }
-        return null;
+        return new SymfonyScript(symfony);
     }
 
     public static void resetVersion() {
@@ -117,6 +119,10 @@ public class SymfonyScript extends PhpProgram {
     @Override
     public boolean isValid() {
         return validate(getFullCommand()) == null;
+    }
+
+    public static String validateDefault() {
+        return validate(SymfonyOptions.getInstance().getSymfony());
     }
 
     public static String validate(String command) {
@@ -152,10 +158,14 @@ public class SymfonyScript extends PhpProgram {
     }
 
     public static String getHelp(FrameworkCommand command) {
-        SymfonyScript symfonyScript = SymfonyScript.getDefault();
-        if (symfonyScript == null || !symfonyScript.isValid()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_InvalidSymfonyScript");
+        SymfonyScript symfonyScript = null;
+        try {
+            symfonyScript = SymfonyScript.getDefault();
+        } catch (InvalidSymfonyScriptException ex) {
+            return ex.getMessage();
         }
+        assert symfonyScript.isValid();
+
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(symfonyScript.getProgram());
         for (String param : symfonyScript.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
@@ -266,6 +276,14 @@ public class SymfonyScript extends PhpProgram {
 
         public String getHelp() {
             return buffer.toString().trim();
+        }
+    }
+
+    public static final class InvalidSymfonyScriptException extends Exception {
+        private static final long serialVersionUID = -83198591758428354L;
+
+        public InvalidSymfonyScriptException(String message) {
+            super(message);
         }
     }
 }

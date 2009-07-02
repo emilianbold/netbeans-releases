@@ -45,8 +45,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
@@ -57,9 +59,15 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
     @Override
     public Set<FileObject> extend(PhpModule phpModule) {
         // init project
-        SymfonyScript symfonyScript = SymfonyScript.getDefault();
-        assert symfonyScript != null : "Symfony script has to be known already!";
+        SymfonyScript symfonyScript = null;
+        try {
+            symfonyScript = SymfonyScript.getDefault();
+        } catch (InvalidSymfonyScriptException ex) {
+            // should not happen, must be handled in the wizard
+            Exceptions.printStackTrace(ex);
+        }
         assert symfonyScript.isValid() : "Symfony script has to be valid!";
+
         symfonyScript.initProject(phpModule);
 
         // return files
