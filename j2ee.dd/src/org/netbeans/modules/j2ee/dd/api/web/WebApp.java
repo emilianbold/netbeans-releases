@@ -71,11 +71,10 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     static final int STATE_INVALID_UNPARSABLE = 2;
     static final String PROPERTY_STATUS = "dd_status"; //NOI18N
 
-    //void setVersion(java.lang.String value);
     /** Getter for version property.
      * @return property value
      */
-    java.lang.String getVersion();
+    String getVersion();
 
     /** Getter for SAX Parse Error property.
      * Used when deployment descriptor is in invalid state.
@@ -106,83 +105,83 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     int addContextParam(InitParam valueInterface);
     int removeContextParam(InitParam valueInterface);
 
-    void setFilter(int index, org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.Filter getFilter(int index);
-    void setFilter(org.netbeans.modules.j2ee.dd.api.web.Filter[] value);
-    org.netbeans.modules.j2ee.dd.api.web.Filter[] getFilter();
+    void setFilter(int index, Filter valueInterface);
+    Filter getFilter(int index);
+    void setFilter(Filter[] value);
+    Filter[] getFilter();
     int sizeFilter();
-    int addFilter(org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
-    int removeFilter(org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
+    int addFilter(Filter valueInterface);
+    int removeFilter(Filter valueInterface);
 
-    void setFilterMapping(int index, org.netbeans.modules.j2ee.dd.api.web.FilterMapping valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.FilterMapping getFilterMapping(int index);
-    void setFilterMapping(org.netbeans.modules.j2ee.dd.api.web.FilterMapping[] value);
-    org.netbeans.modules.j2ee.dd.api.web.FilterMapping[] getFilterMapping();
+    void setFilterMapping(int index, FilterMapping valueInterface);
+    FilterMapping getFilterMapping(int index);
+    void setFilterMapping(FilterMapping[] value);
+    FilterMapping[] getFilterMapping();
     int sizeFilterMapping();
-    int addFilterMapping(org.netbeans.modules.j2ee.dd.api.web.FilterMapping valueInterface);
-    int removeFilterMapping(org.netbeans.modules.j2ee.dd.api.web.FilterMapping valueInterface);
+    int addFilterMapping(FilterMapping valueInterface);
+    int removeFilterMapping(FilterMapping valueInterface);
 
-    void setListener(int index, org.netbeans.modules.j2ee.dd.api.web.Listener valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.Listener getListener(int index);
-    void setListener(org.netbeans.modules.j2ee.dd.api.web.Listener[] value);
-    org.netbeans.modules.j2ee.dd.api.web.Listener[] getListener();
+    void setListener(int index, Listener valueInterface);
+    Listener getListener(int index);
+    void setListener(Listener[] value);
+    Listener[] getListener();
     int sizeListener();
-    int addListener(org.netbeans.modules.j2ee.dd.api.web.Listener valueInterface);
-    int removeListener(org.netbeans.modules.j2ee.dd.api.web.Listener valueInterface);
+    int addListener(Listener valueInterface);
+    int removeListener(Listener valueInterface);
 
-    void setServlet(int index, org.netbeans.modules.j2ee.dd.api.web.Servlet valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.Servlet getServlet(int index);
-    void setServlet(org.netbeans.modules.j2ee.dd.api.web.Servlet[] value);
-    org.netbeans.modules.j2ee.dd.api.web.Servlet[] getServlet();
+    void setServlet(int index, Servlet valueInterface);
+    Servlet getServlet(int index);
+    void setServlet(Servlet[] value);
+    Servlet[] getServlet();
     int sizeServlet();
-    int addServlet(org.netbeans.modules.j2ee.dd.api.web.Servlet valueInterface);
-    int removeServlet(org.netbeans.modules.j2ee.dd.api.web.Servlet valueInterface);
+    int addServlet(Servlet valueInterface);
+    int removeServlet(Servlet valueInterface);
 
-    void setServletMapping(int index, org.netbeans.modules.j2ee.dd.api.web.ServletMapping valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.ServletMapping getServletMapping(int index);
-    void setServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping[] value);
-    org.netbeans.modules.j2ee.dd.api.web.ServletMapping[] getServletMapping();
+    void setServletMapping(int index, ServletMapping valueInterface);
+    ServletMapping getServletMapping(int index);
+    void setServletMapping(ServletMapping[] value);
+    ServletMapping[] getServletMapping();
     int sizeServletMapping();
-    int addServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping valueInterface);
-    int removeServletMapping(org.netbeans.modules.j2ee.dd.api.web.ServletMapping valueInterface);
+    int addServletMapping(ServletMapping valueInterface);
+    int removeServletMapping(ServletMapping valueInterface);
 
-    void setSessionConfig(org.netbeans.modules.j2ee.dd.api.web.SessionConfig value);
-    org.netbeans.modules.j2ee.dd.api.web.SessionConfig getSingleSessionConfig();
+    void setSessionConfig(SessionConfig value);
+    SessionConfig getSingleSessionConfig();
 
-    void setMimeMapping(int index, org.netbeans.modules.j2ee.dd.api.web.MimeMapping valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.MimeMapping getMimeMapping(int index);
-    void setMimeMapping(org.netbeans.modules.j2ee.dd.api.web.MimeMapping[] value);
-    org.netbeans.modules.j2ee.dd.api.web.MimeMapping[] getMimeMapping();
+    void setMimeMapping(int index, MimeMapping valueInterface);
+    MimeMapping getMimeMapping(int index);
+    void setMimeMapping(MimeMapping[] value);
+    MimeMapping[] getMimeMapping();
     int sizeMimeMapping();
-    int addMimeMapping(org.netbeans.modules.j2ee.dd.api.web.MimeMapping valueInterface);
-    int removeMimeMapping(org.netbeans.modules.j2ee.dd.api.web.MimeMapping valueInterface);
+    int addMimeMapping(MimeMapping valueInterface);
+    int removeMimeMapping(MimeMapping valueInterface);
 
-    void setWelcomeFileList(org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList value);
-    org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList getSingleWelcomeFileList();
+    void setWelcomeFileList(WelcomeFileList value);
+    WelcomeFileList getSingleWelcomeFileList();
 
-    void setErrorPage(int index, org.netbeans.modules.j2ee.dd.api.web.ErrorPage valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.ErrorPage getErrorPage(int index);
-    void setErrorPage(org.netbeans.modules.j2ee.dd.api.web.ErrorPage[] value);
-    org.netbeans.modules.j2ee.dd.api.web.ErrorPage[] getErrorPage();
+    void setErrorPage(int index, ErrorPage valueInterface);
+    ErrorPage getErrorPage(int index);
+    void setErrorPage(ErrorPage[] value);
+    ErrorPage[] getErrorPage();
     int sizeErrorPage();
-    int addErrorPage(org.netbeans.modules.j2ee.dd.api.web.ErrorPage valueInterface);
-    int removeErrorPage(org.netbeans.modules.j2ee.dd.api.web.ErrorPage valueInterface);
+    int addErrorPage(ErrorPage valueInterface);
+    int removeErrorPage(ErrorPage valueInterface);
 
-    void setJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) throws VersionNotSupportedException;
-    org.netbeans.modules.j2ee.dd.api.web.JspConfig getSingleJspConfig() throws VersionNotSupportedException;
-    int addJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig valueInterface) throws VersionNotSupportedException;
-    int removeJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig valueInterface) throws VersionNotSupportedException;
+    void setJspConfig(JspConfig value) throws VersionNotSupportedException;
+    JspConfig getSingleJspConfig() throws VersionNotSupportedException;
+    int addJspConfig(JspConfig valueInterface) throws VersionNotSupportedException;
+    int removeJspConfig(JspConfig valueInterface) throws VersionNotSupportedException;
 
-    void setSecurityConstraint(int index, org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
-    org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint getSecurityConstraint(int index);
-    void setSecurityConstraint(org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint[] value);
-    org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint[] getSecurityConstraint();
+    void setSecurityConstraint(int index, SecurityConstraint valueInterface);
+    SecurityConstraint getSecurityConstraint(int index);
+    void setSecurityConstraint(SecurityConstraint[] value);
+    SecurityConstraint[] getSecurityConstraint();
     int sizeSecurityConstraint();
-    int addSecurityConstraint(org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
-    int removeSecurityConstraint(org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint valueInterface);
+    int addSecurityConstraint(SecurityConstraint valueInterface);
+    int removeSecurityConstraint(SecurityConstraint valueInterface);
 
-    void setLoginConfig(org.netbeans.modules.j2ee.dd.api.web.LoginConfig value);
-    org.netbeans.modules.j2ee.dd.api.web.LoginConfig getSingleLoginConfig();
+    void setLoginConfig(LoginConfig value);
+    LoginConfig getSingleLoginConfig();
 
     void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
     org.netbeans.modules.j2ee.dd.api.common.SecurityRole getSecurityRole(int index);
@@ -256,8 +255,8 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     int addMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
     int removeMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
 
-    org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList getSingleLocaleEncodingMappingList() throws VersionNotSupportedException;
-    void setLocaleEncodingMappingList(org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList value) throws VersionNotSupportedException;
+    LocaleEncodingMappingList getSingleLocaleEncodingMappingList() throws VersionNotSupportedException;
+    void setLocaleEncodingMappingList(LocaleEncodingMappingList value) throws VersionNotSupportedException;
 
     void setMetadataComplete(boolean value) throws VersionNotSupportedException;
     boolean isMetadataComplete() throws VersionNotSupportedException;
