@@ -251,6 +251,7 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateLabelNew.setVisible(isNew);
         originalEstimateFieldNew.setVisible(isNew);
         originalEstimateHint.setVisible(isNew);
+        logWorkButton2.setVisible(!isNew);
 
         // Operations
         boolean startProgressAvailable = false;
@@ -357,9 +358,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 // originalEstimate is sometimes 0 (incorrectly)
                 originalEstimate = remainintEstimate + timeSpent;
             }
-            reloadField(originalEstimateField, workBySeconds(originalEstimate, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
-            reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true), NbJiraIssue.IssueField.ESTIMATE);
-            reloadField(timeSpentField, workBySeconds(timeSpent, false), NbJiraIssue.IssueField.ACTUAL);
+            int daysPerWeek = issue.getRepository().getConfiguration().getWorkDaysPerWeek();
+            int hoursPerDay = issue.getRepository().getConfiguration().getWorkHoursPerDay();
+            reloadField(originalEstimateField, JiraUtils.getWorkLogText(originalEstimate, daysPerWeek, hoursPerDay, false), NbJiraIssue.IssueField.INITIAL_ESTIMATE);
+            reloadField(remainingEstimateField, JiraUtils.getWorkLogText(remainintEstimate, daysPerWeek, hoursPerDay, true), NbJiraIssue.IssueField.ESTIMATE);
+            reloadField(timeSpentField, JiraUtils.getWorkLogText(timeSpent, daysPerWeek, hoursPerDay, false), NbJiraIssue.IssueField.ACTUAL);
             fixPrefSize(originalEstimateField);
             fixPrefSize(remainingEstimateField);
             fixPrefSize(timeSpentField);
@@ -566,28 +569,6 @@ public class IssuePanel extends javax.swing.JPanel {
         return 0;
     }
 
-    private String workBySeconds(int seconds, boolean remainingEstimate) {
-        ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
-        if (seconds == 0) {
-            return bundle.getString(remainingEstimate ? "IssuePanel.emptyWorkLog1" : "IssuePanel.emptyWorkLog2"); // NOI18N
-        }
-        int minutes = seconds/60;
-        int hours = minutes/60;
-        minutes = minutes%60;
-        JiraConfiguration config = issue.getRepository().getConfiguration();
-        int days = hours/config.getWorkHoursPerDay();
-        hours = hours%config.getWorkHoursPerDay();
-        int weeks = days/config.getWorkDaysPerWeek();
-        days = days%config.getWorkDaysPerWeek();
-        String format = bundle.getString("IssuePanel.workLog"); // NOI18N
-        String work = MessageFormat.format(format, weeks, days, hours, minutes);
-        // Removing trailing space and comma
-        if (work.length() > 0 && work.charAt(work.length()-1) == ' ') {
-            work = work.substring(0, work.length()-2);
-        }
-        return work;
-    }
-
     void reloadFormInAWT(final boolean force) {
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
@@ -683,43 +664,6 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         return allowedStatuses;
-    }
-
-    private int workByCode(String code) {
-        int workLog = 0;
-        try {
-            int index = code.indexOf('w');
-            if (index != -1) {
-                int w = Integer.parseInt(code.substring(0,index));
-                workLog += w;
-                code = code.substring(index+1);
-            }
-            workLog *= issue.getRepository().getConfiguration().getWorkDaysPerWeek();
-            index = code.indexOf('d');
-            if (index != -1) {
-                int d = Integer.parseInt(code.substring(0,index));
-                workLog += d;
-                code = code.substring(index+1);
-            }
-            workLog *= issue.getRepository().getConfiguration().getWorkHoursPerDay();
-            index = code.indexOf('h');
-            if (index != -1) {
-                int h = Integer.parseInt(code.substring(0,index));
-                workLog += h;
-                code = code.substring(index+1);
-            }
-            workLog *= 60;
-            index = code.indexOf('m');
-            if (index != -1) {
-                int m = Integer.parseInt(code.substring(0,index));
-                workLog += m;
-                code = code.substring(index+1);
-            }
-            workLog *= 60;
-        } catch (NumberFormatException nfex) {
-            workLog = 0;
-        }
-        return workLog;
     }
 
     private void submitChange(final Runnable change, String progressMessage)  {
@@ -1334,6 +1278,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         // --- Reload dependent combos
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
                         issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
+                        reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE);
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
@@ -1341,6 +1286,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             componentModel.addElement(component);
                         }
                         componentList.setModel(componentModel);
+                        List<String> componentIds = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
+                        reloadField(componentList, componentsByIds(project.getId(), componentIds), NbJiraIssue.IssueField.COMPONENT);
 
                         // Reload versions
                         DefaultListModel versionModel = new DefaultListModel();
@@ -1349,6 +1296,10 @@ public class IssuePanel extends javax.swing.JPanel {
                         }
                         affectsVersionList.setModel(versionModel);
                         fixVersionList.setModel(versionModel);
+                        List<String> affectsVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
+                        reloadField(affectsVersionList, versionsByIds(project.getId(), affectsVersionIds),NbJiraIssue.IssueField.AFFECTSVERSIONS);
+                        List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+                        reloadField(fixVersionList, versionsByIds(project.getId(), fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
 
                         TaskData data = issue.getTaskData();
                         if (data.isNew()) {
@@ -1402,7 +1353,10 @@ public class IssuePanel extends javax.swing.JPanel {
         String submitMessage;
         if (isNew) {
             String estimateCode = originalEstimateFieldNew.getText();
-            String estimateTxt = workByCode(estimateCode) + ""; // NOI18N
+            String estimateTxt = JiraUtils.getWorkLogSeconds(
+                    estimateCode,
+                    issue.getRepository().getConfiguration().getWorkDaysPerWeek(),
+                    issue.getRepository().getConfiguration().getWorkHoursPerDay()) + ""; // NOI18N
             storeFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE, estimateTxt);
             storeFieldValue(NbJiraIssue.IssueField.ESTIMATE, estimateTxt);
             storeFieldValue(NbJiraIssue.IssueField.DESCRIPTION, addCommentArea);

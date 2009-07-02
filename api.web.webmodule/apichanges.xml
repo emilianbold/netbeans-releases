@@ -103,6 +103,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Adding_requresWebXml">
+            <api name="WebModuleAPI"/>
+            <summary>Adding method requiresWebXml</summary>
+            <version major="1" minor="15"/>
+            <date day="1" month="7" year="2009"/>
+            <author login="pslechta@netbeans.org"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    New method requiresWebXml added. Framework specifies via this method if it reqires web.xml DD or not.
+                </p>
+            </description>
+        </change>
         <change id="Making_WebModuleAPI_Public">
             <api name="WebModuleAPI"/>
             <summary>Making the WebModule API public</summary>

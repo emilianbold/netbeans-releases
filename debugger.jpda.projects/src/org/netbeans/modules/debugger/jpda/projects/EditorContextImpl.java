@@ -1794,10 +1794,12 @@ public class EditorContextImpl extends EditorContext {
                             if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) tree;
                                 el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), mst.getExpression()));
-                                TypeMirror tm = el.asType();
-                                if (tm.getKind().equals(TypeKind.DECLARED)) {
-                                    currentElementPtr[0] = tm.toString();
-                                    isMemberClass = true;
+                                if (el != null) {
+                                    TypeMirror tm = el.asType();
+                                    if (tm.getKind().equals(TypeKind.DECLARED)) {
+                                        currentElementPtr[0] = tm.toString();
+                                        isMemberClass = true;
+                                    }
                                 }
                             }
                         }
@@ -1853,7 +1855,7 @@ public class EditorContextImpl extends EditorContext {
                         Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
                             el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
-                            if (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT) {
+                            if (el != null && (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT)) {
                                 currentElementPtr[0] = ((VariableTree) tree).getName().toString();
                             }
                         } else if (tree.getKind() == Tree.Kind.IDENTIFIER && selectedIdentifier != null) {
@@ -1873,7 +1875,7 @@ public class EditorContextImpl extends EditorContext {
                             MemberSelectTree mst = (MemberSelectTree) tree;
                             String fieldName = mst.getIdentifier().toString();
                             el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), mst.getExpression()));
-                            if (el.asType().getKind().equals(TypeKind.DECLARED)) {
+                            if (el != null && el.asType().getKind().equals(TypeKind.DECLARED)) {
                                 List<? extends Element> enclosedElms = ((DeclaredType) el.asType()).asElement().getEnclosedElements();
                                 for (Element elm : enclosedElms) {
                                     if (elm.getKind().equals(ElementKind.FIELD) && elm.getSimpleName().contentEquals(fieldName)) {

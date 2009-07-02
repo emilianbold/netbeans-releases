@@ -1,8 +1,8 @@
  /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -56,7 +56,7 @@ public class HgLogMessage {
     public static char HgAddStatus = 'A';
     public static char HgDelStatus = 'R';
     public static char HgCopyStatus = 'C';
-    
+
     private List<HgLogMessageChangedPath> paths;
     private String rev;
     private String author;
@@ -88,7 +88,7 @@ public class HgLogMessage {
         }
     }
 
-    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id, 
+    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id,
             String parents, String fm, String fa, String fd, String fc) {
 
         this.rootURL = rootURL;
@@ -114,24 +114,24 @@ public class HgLogMessage {
 
         // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
         if (fc != null && !fc.equals("")) {
-            for (String s : fc.split(" ")) {
+            for (String s : fc.split("\t")) {
                 updatePaths(cpathsStrings, s, filesShortPaths, HgCopyStatus);
             }
         }
         if (fa != null && !fa.equals("")) {
-            for (String s : fa.split(" ")) {
+            for (String s : fa.split("\t")) {
                 if(!cpathsStrings.contains(s)){
                     updatePaths(apathsStrings, s, filesShortPaths, HgAddStatus);
                 }
             }
         }
         if (fd != null && !fd.equals("")) {
-            for (String s : fd.split(" ")) {
+            for (String s : fd.split("\t")) {
                 updatePaths(dpathsStrings, s, filesShortPaths, HgDelStatus);
             }
         }
         if (fm != null && !fm.equals("")) {
-            for (String s : fm.split(" ")) {
+            for (String s : fm.split("\t")) {
                 //#132743, incorrectly reporting files as added/modified, deleted/modified in same changeset
                 if (!apathsStrings.contains(s) && !dpathsStrings.contains(s) && !cpathsStrings.contains(s)) {
                     updatePaths(null, s, filesShortPaths, HgModStatus);
@@ -141,7 +141,7 @@ public class HgLogMessage {
         if(fa == null && fc == null && fd == null && fm == null) {
             for (String fileSP : filesShortPaths) {
                 paths.add(new HgLogMessageChangedPath(fileSP, ' '));
-            }    
+            }
         }
     }
 
@@ -163,7 +163,7 @@ public class HgLogMessage {
         }
         return revLong;
     }
-    
+
     public Date getDate() {
         return date;
     }
@@ -192,7 +192,7 @@ public class HgLogMessage {
         revInt = revInt > -1? revInt -1: -1;
         return Integer.toString(revInt);
     }
-    
+
     private OutputLogger getLogger() {
         if (logger == null) {
             logger = Mercurial.getInstance().getLogger(rootURL);
@@ -211,7 +211,7 @@ public class HgLogMessage {
     public void setTimeZoneOffset(String timeZoneOffset) {
         this.timeZoneOffset = timeZoneOffset;
     }
-    
+
     @Override
     public String toString(){
         StringBuffer sb = new StringBuffer();

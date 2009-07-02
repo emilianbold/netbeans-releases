@@ -44,7 +44,7 @@ package org.netbeans.modules.jmx.test.mbeanwizard;
 import java.util.ArrayList;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -148,7 +148,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
                 FILE_CATEGORY_JMX,
                 fileType);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(null, null);
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(null, null);
         if (fileType.equals(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS)) {
             setTextFieldContent(CLASS_TO_WRAP_TEXT_FIELD, nfnlso,
                     PACKAGE_COM_FOO_BAR + "." + EMPTY_JAVA_CLASS_NAME);
@@ -215,7 +215,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
      * Check operations wizard components are enabled/disabled
      */
     private void checkMBeanOperationsWizardComponents(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             ArrayList<Operation> opList,
             String fileType) {
         
@@ -336,7 +336,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
      * - same operation name
      */
     private void checkMBeanOperationsWizardWarnings(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             JTableOperator jto,
             String fileType) {
         

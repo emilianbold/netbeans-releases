@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -112,7 +112,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 FILE_CATEGORY_JAVA,
                 FILE_TYPE_JAVA_PACKAGE);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 PACKAGE_COM_FOO_BAR, null);
         nfnlso.finish();
     }
@@ -124,7 +124,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test1() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
 
         String objectName = "Test1";
 
@@ -154,7 +154,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test2() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
 
         String objectName = "Test2";
 
@@ -184,7 +184,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test3() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
 
         String objectName = "Test3";
 
@@ -214,7 +214,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test4() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
         SNMPManagementConfiguration snmpConfig = null;
 
@@ -289,7 +289,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test5() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
         SNMPManagementConfiguration snmpConfig = null;
 
@@ -402,7 +402,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test6() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
         SNMPManagementConfiguration snmpConfig = null;
 
@@ -478,7 +478,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test7() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
 
         String objectName = "Test7";
@@ -547,7 +547,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test8() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
 
         String objectName = "Test8";
@@ -621,7 +621,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      */
     public void test9() {
 
-        NewFileNameLocationStepOperator nfnlso = null;
+        NewJavaFileNameLocationStepOperator nfnlso = null;
         RMIManagementConfiguration rmiConfig = null;
 
         String objectName = "Test9";
@@ -708,7 +708,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      * Check name and location wizard components are enabled/disabled
      */
     private void checkNameAndLocationWizardComponents(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             String fileNameAlreadyExists) {
 
         // Check text fields
@@ -740,7 +740,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      * Check name and location wizard values
      */
     private void checkNameAndLocationWizardValues(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             String objectName,
             boolean enableThreadContentionMonitoring) {
 
@@ -762,7 +762,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      * Check Enable RMI wizard components are enabled/disabled
      */
     private void checkEnableRMIWizardComponents(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             RMIManagementConfiguration rmiConfig) {
 
         assertTrue(getCheckBoxOperator(ENABLE_RMI_CHECK_BOX, nfnlso).isEnabled());
@@ -820,7 +820,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      * Check Enable RMI wizard values
      */
     private void checkEnableRMIWizardValues(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             RMIManagementConfiguration rmiConfig) {
 
         JTableOperator jto = getTableOperator(RMI_CREDENTIALS_TABLE, nfnlso);
@@ -870,7 +870,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      * Check SNMP Configuration wizard components are enabled/disabled
      */
     private void checkSNMPConfigurationWizardComponents(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             SNMPManagementConfiguration snmpConfig) {
 
         assertTrue(getCheckBoxOperator(ENABLE_SNMP_CHECK_BOX, nfnlso).isEnabled());
@@ -910,7 +910,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
      * Check SNMP Configuration wizard values
      */
     private void checkSNMPConfigurationWizardValues(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             SNMPManagementConfiguration snmpConfig) {
 
         // Check box values
@@ -953,7 +953,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
     /**
      * Create empty file into PACKAGE_NAME directory.
      */
-    private NewFileNameLocationStepOperator createEmptyFile(String objectName) {
+    private NewJavaFileNameLocationStepOperator createEmptyFile(String objectName) {
         // First select the folder node to initialize the folder JTextField
         selectNode(PROJECT_NAME_CONFIGURATION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + PACKAGE_COM_FOO_BAR);
@@ -962,7 +962,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 FILE_CATEGORY_OTHER,
                 FILE_TYPE_EMPTY_FILE);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 objectName, null);
         return nfnlso;
     }
@@ -970,7 +970,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
     /**
      * Create management configuration file into PACKAGE_NAME directory.
      */
-    private NewFileNameLocationStepOperator createManagementConfigurationFileFromMenu(
+    private NewJavaFileNameLocationStepOperator createManagementConfigurationFileFromMenu(
             String objectName) {
         // First select the folder node to initialize the folder JTextField
         selectNode(PROJECT_NAME_CONFIGURATION_FUNCTIONAL + "|" +
@@ -980,7 +980,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 FILE_CATEGORY_JMX,
                 FILE_TYPE_MANAGEMENT_CONFIGURATION_FILE);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 objectName, null);
         return nfnlso;
     }
@@ -988,7 +988,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
     /**
      * Create management configuration file into PACKAGE_NAME directory.
      */
-    private NewFileNameLocationStepOperator createManagementConfigurationFileFromNode(
+    private NewJavaFileNameLocationStepOperator createManagementConfigurationFileFromNode(
             String objectName) {
         NewFileWizardOperator nfwo = newFileWizardFromNode(
                 PROJECT_NAME_CONFIGURATION_FUNCTIONAL + "|" +
@@ -996,7 +996,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
                 FILE_CATEGORY_JMX,
                 FILE_TYPE_MANAGEMENT_CONFIGURATION_FILE);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 objectName, null);
         return nfnlso;
     }

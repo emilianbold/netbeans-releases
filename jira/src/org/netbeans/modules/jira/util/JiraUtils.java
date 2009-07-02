@@ -43,8 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -245,4 +245,81 @@ public class JiraUtils {
         }
         return ret;
     }
+
+    public static String getWorkLogText(int seconds, int daysPerWeek, int hoursPerDay, boolean isRemainingEstimate) {
+        ResourceBundle bundle = NbBundle.getBundle(JiraUtils.class);
+        if (seconds == 0) {
+            return bundle.getString(isRemainingEstimate ? "WorkLog.emptyWorkLog1" : "WorkLog.emptyWorkLog2"); // NOI18N
+        }
+        int minutes = seconds/60;
+        int hours = minutes/60;
+        minutes = minutes%60;
+        int days = hours/hoursPerDay;
+        hours = hours%hoursPerDay;
+        int weeks = days/daysPerWeek;
+        days = days%daysPerWeek;
+        String format = bundle.getString("WorkLog.textPattern"); // NOI18N
+        String work = MessageFormat.format(format, weeks, days, hours, minutes);
+        // Removing trailing space and comma
+        if (work.length() > 0 && work.charAt(work.length()-1) == ' ') {
+            work = work.substring(0, work.length()-2);
+        }
+        return work;
+    }
+
+    public static String getWorkLogCode(int seconds, int daysPerWeek, int hoursPerDay) {
+        ResourceBundle bundle = NbBundle.getBundle(JiraUtils.class);
+        int minutes = seconds/60;
+        int hours = minutes/60;
+        minutes = minutes%60;
+        int days = hours/hoursPerDay;
+        hours = hours%hoursPerDay;
+        int weeks = days/daysPerWeek;
+        days = days%daysPerWeek;
+        String format = bundle.getString("WorkLog.codePattern"); // NOI18N
+        String work = MessageFormat.format(format, weeks, days, hours, minutes);
+        // Removing trailing space
+        if (work.length() > 0 && work.charAt(work.length()-1) == ' ') {
+            work = work.substring(0, work.length()-1);
+        }
+        return work;
+    }
+
+    public static int getWorkLogSeconds(String code, int daysPerWeek, int hoursPerDay) {
+        int workLog = 0;
+        try {
+            int index = code.indexOf('w');
+            if (index != -1) {
+                int w = Integer.parseInt(code.substring(0,index));
+                workLog += w;
+                code = code.substring(index+1);
+            }
+            workLog *= daysPerWeek;
+            index = code.indexOf('d');
+            if (index != -1) {
+                int d = Integer.parseInt(code.substring(0,index));
+                workLog += d;
+                code = code.substring(index+1);
+            }
+            workLog *= hoursPerDay;
+            index = code.indexOf('h');
+            if (index != -1) {
+                int h = Integer.parseInt(code.substring(0,index));
+                workLog += h;
+                code = code.substring(index+1);
+            }
+            workLog *= 60;
+            index = code.indexOf('m');
+            if (index != -1) {
+                int m = Integer.parseInt(code.substring(0,index));
+                workLog += m;
+                code = code.substring(index+1);
+            }
+            workLog *= 60;
+        } catch (NumberFormatException nfex) {
+            workLog = 0;
+        }
+        return workLog;
+    }
+
 }
