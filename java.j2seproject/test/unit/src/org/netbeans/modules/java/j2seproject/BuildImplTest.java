@@ -647,7 +647,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"jar"}, p));
         assertTrue("jar target was not executed", output.contains("jar:"));
         output.remove("jar:");
-        assertTrue("subproject's jar target was not executed", output.contains("jar:"));
+        assertTrue("subproject's jar target was not executed", output.contains("p2.jar:"));
         fo = aph1.getProjectDirectory();
         fo.refresh();
         assertNotNull("build folder must exist", fo.getFileObject("build"));
@@ -661,7 +661,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"clean"}, p));
         assertTrue("clean target was not executed", output.contains("clean:"));
         output.remove("clean:");
-        assertFalse("subproject's clean should not be executed", output.contains("clean:"));
+        assertFalse("subproject's clean should not be executed", output.contains("p2.clean:"));
         fo = aph1.getProjectDirectory();
         fo.refresh();
         assertNull("build folder cannot exist", fo.getFileObject("build"));
@@ -675,7 +675,7 @@ public final class BuildImplTest extends NbTestCase {
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"clean"}, p));
         assertTrue("clean target was not executed", output.contains("clean:"));
         output.remove("clean:");
-        assertTrue("subproject's clean target was not executed", output.contains("clean:"));
+        assertTrue("subproject's clean target was not executed", output.contains("p2.clean:"));
         fo = aph1.getProjectDirectory();
         fo.refresh();
         assertNull("build folder must be removed", fo.getFileObject("build"));
@@ -748,7 +748,7 @@ public final class BuildImplTest extends NbTestCase {
     private int countOfOutput(String expectedLine) {
         int cnt = 0;
         for (String line : output) {
-            if (line.equals(expectedLine)) {
+            if (line.replaceFirst("^.+[.](?=.+:$)", "").equals(expectedLine)) {
                 cnt++;
             }
         }
