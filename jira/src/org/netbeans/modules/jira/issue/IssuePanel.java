@@ -251,6 +251,7 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateLabelNew.setVisible(isNew);
         originalEstimateFieldNew.setVisible(isNew);
         originalEstimateHint.setVisible(isNew);
+        logWorkButton2.setVisible(!isNew);
 
         // Operations
         boolean startProgressAvailable = false;
