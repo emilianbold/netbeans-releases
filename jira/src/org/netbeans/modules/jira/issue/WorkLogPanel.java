@@ -98,6 +98,22 @@ public class WorkLogPanel extends javax.swing.JPanel {
         return (submitButton == dd.getValue());
     }
 
+    public Date getStartDate() {
+        return (Date)startDateField.getValue();
+    }
+
+    public int getTimeSpent() {
+        String timeSpentTxt = timeSpentField.getText();
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        int daysPerWeek = config.getWorkDaysPerWeek();
+        int hoursPerDay = config.getWorkHoursPerDay();
+        return JiraUtils.getWorkLogSeconds(timeSpentTxt, daysPerWeek, hoursPerDay);
+    }
+
+    public String getDescription() {
+        return workDescriptionArea.getText();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
