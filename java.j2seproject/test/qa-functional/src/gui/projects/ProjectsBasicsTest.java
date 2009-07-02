@@ -299,6 +299,7 @@ public class ProjectsBasicsTest extends JellyTestCase {
 
     }
 
+    @SuppressWarnings("deprecation")
     private void waitScanFinished() {
         try {
             SourceUtils.waitScanFinished();
