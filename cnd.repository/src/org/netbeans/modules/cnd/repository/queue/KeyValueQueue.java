@@ -75,7 +75,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     protected boolean active = true;
 	    
     public KeyValueQueue() {
-	queue = new BaseQueue.Queue();
+        super(new BaseQueue.Queue());
     }
     
     public void addLast(K key, V value) {

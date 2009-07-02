@@ -67,8 +67,18 @@ public abstract class APTMacroCache  {
     public abstract APTMacro getMacro(APTMacro macro);
     public abstract void dispose();
 
-    private static final int MACRO_MANAGER_DEFAULT_CAPACITY=1024;
-    private static final int MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int MACRO_MANAGER_DEFAULT_CAPACITY;
+    private static final int MACRO_MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = Runtime.getRuntime().availableProcessors();
+        if (nrProc <= 4) {
+            MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            MACRO_MANAGER_DEFAULT_CAPACITY=512;
+        } else {
+            MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            MACRO_MANAGER_DEFAULT_CAPACITY=128;
+        }
+    }
     private static final APTMacroCache instance = create(false);
 
     private static APTMacroCache create(boolean single) {
@@ -147,13 +157,19 @@ public abstract class APTMacroCache  {
 
     private static final class APTCompoundMacroManager extends APTMacroCache {
         private final APTMacroCache[] instances;
-        private final int sliceNumber; // primary number for better distribution
+//        private final int sliceNumber; // primary number for better distribution
+        private final int segmentMask; // mask
         private APTCompoundMacroManager(int sliceNumber) {
             this(sliceNumber, APTMacroCache.MACRO_MANAGER_DEFAULT_CAPACITY);
         }
         private APTCompoundMacroManager(int sliceNumber, int initialCapacity) {
-            this.sliceNumber = sliceNumber;
-            instances = new APTMacroCache[sliceNumber];
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
+            instances = new APTMacroCache[ssize];
             for (int i = 0; i < instances.length; i++) {
                 instances[i] = new APTSingleMacroManager(initialCapacity);
             }
@@ -163,10 +179,7 @@ public abstract class APTMacroCache  {
             if (macro == null) {
                 throw new NullPointerException("null macro is illegal to share"); // NOI18N
             }
-            int index = macro.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
+            int index = macro.hashCode() & segmentMask;
             return instances[index];
         }
 
