@@ -237,12 +237,14 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             RequestProcessor.Task task = support.start(rp, url, NbBundle.getMessage(CloneRepositoryWizardPanel.class, "BK2012"));
             task.waitFinished();
         } finally {
-            /*
-             * We cannot reuse the progress component because
-             * org.netbeans.api.progress.ProgressHandle cannot be reused.
-             */
-            component.remove(support.getProgressComponent());
-            support = null;
+            if (support != null) {      //see bug #167172
+                /*
+                 * We cannot reuse the progress component because
+                 * org.netbeans.api.progress.ProgressHandle cannot be reused.
+                 */
+                component.remove(support.getProgressComponent());
+                support = null;
+            }
         }
 
     }
