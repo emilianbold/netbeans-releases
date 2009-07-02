@@ -53,21 +53,25 @@ public class SlicedLongHashMap<K> {
 
     private final LongHashMap<K>[] instances;
     private int sliceNumber;
+    private final int segmentMask; // mask
 
     @SuppressWarnings("unchecked")
     public SlicedLongHashMap(int sliceNumber, int sliceCapacity) {
-        this.sliceNumber = sliceNumber;
-        instances = new LongHashMap[sliceNumber];
+        // Find power-of-two sizes best matching arguments
+        int ssize = 1;
+        while (ssize < sliceNumber) {
+            ssize <<= 1;
+        }
+        segmentMask = ssize - 1;
+        this.sliceNumber = ssize;
+        instances = new LongHashMap[ssize];
         for (int i = 0; i < sliceNumber; i++) {
             instances[i] = new LongHashMap<K>(sliceCapacity);
         }
     }
 
     private LongHashMap<K> getDelegate(K key) {
-	int index = key.hashCode() % sliceNumber;
-	if (index < 0) {
-	    index += sliceNumber;
-	}
+	int index = key.hashCode() & segmentMask;
 	return instances[index];
 
     }
