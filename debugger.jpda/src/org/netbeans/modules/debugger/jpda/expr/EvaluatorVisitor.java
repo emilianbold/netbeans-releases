@@ -1715,6 +1715,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return getIdentifierByName(arg0, evaluationContext);
         }
         switch(elm.getKind()) {
+            case ANNOTATION_TYPE:
             case CLASS:
             case ENUM:
             case INTERFACE:
@@ -1727,6 +1728,21 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     return rt;
                 }
                 Assert2.error(arg0, "unknownType", className);
+            case TYPE_PARAMETER:
+                TypeParameterElement tpel = (TypeParameterElement) elm;
+                List<? extends TypeMirror> bounds = tpel.getBounds();
+                for (TypeMirror tm : bounds) {
+                    //if (tm.getKind() == TypeKind.)
+                    String typeName = getTypeName(tm);
+                    vm = evaluationContext.getDebugger().getVirtualMachine();
+                    if (vm == null) return null;
+                    rt = getOrLoadClass(vm, typeName, evaluationContext);
+                    if (rt != null) {
+                        return rt;
+                    }
+                }
+                Assert2.error(arg0, "unknownType", tpel.getSimpleName().toString());
+                //String className = ElementUtilities.getBinaryName(tpel.);
             case ENUM_CONSTANT:
                 return getEnumConstant(arg0, (VariableElement) elm, evaluationContext);
             case FIELD:
