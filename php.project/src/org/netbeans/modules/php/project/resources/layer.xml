@@ -146,6 +146,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="650"/>
         </file>
         <folder name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory">
+            <attr name="position" intvalue="900"/>
             <file name="General.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpGeneralAdvancedOptions"/>
                 <attr name="position" intvalue="100"/>
