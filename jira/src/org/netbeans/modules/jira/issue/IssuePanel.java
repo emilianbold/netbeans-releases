@@ -1498,9 +1498,17 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reopenIssueButtonActionPerformed
 
     private void logWorkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logWorkButtonActionPerformed
-        WorkLogPanel panel = new WorkLogPanel(issue);
+        final WorkLogPanel panel = new WorkLogPanel(issue);
         if (panel.showDialog()) {
-            // PENDING log work
+            String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkMessage"); // NOI18N
+            String message = MessageFormat.format(pattern, issue.getKey());
+            submitChange(new Runnable() {
+                public void run() {
+                    issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
+                    // PENDING update remaining estimate
+                    issue.submitAndRefresh();
+                }
+            }, message);
         }
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
