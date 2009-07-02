@@ -60,28 +60,37 @@ public final class Profile {
     };
 
     // Do not ever change name of this constant - it is copied from j2eeserver
-    public static final Profile J2EE_13  = new Profile(1, "1.3", "J2EE13.displayName");
+    public static final Profile J2EE_13  = new Profile(1, "1.3", null, "J2EE13.displayName");
 
     // Do not ever change name of this constant - it is copied from j2eeserver
-    public static final Profile J2EE_14  = new Profile(2, "1.4", "J2EE14.displayName");
+    public static final Profile J2EE_14  = new Profile(2, "1.4", null, "J2EE14.displayName");
 
     // Do not ever change name of this constant - it is copied from j2eeserver
-    public static final Profile JAVA_EE_5  = new Profile(3, "1.5", "JavaEE5.displayName");
+    public static final Profile JAVA_EE_5  = new Profile(3, "1.5", null, "JavaEE5.displayName");
 
-    public static final Profile JAVA_EE_6_FULL  = new Profile(4, "EE_6_FULL", "JavaEE6Full.displayName");
+    public static final Profile JAVA_EE_6_FULL  = new Profile(4, "1.6", null, "JavaEE6Full.displayName");
 
-    public static final Profile JAVA_EE_6_WEB  = new Profile(5, "EE_6_WEB", "JavaEE6Web.displayName");
+    public static final Profile JAVA_EE_6_WEB  = new Profile(5, "1.6", "web", "JavaEE6Web.displayName");
 
     private final int order;
 
-    private final String name;
+    private final String canonicalName;
+
+    // cache
+    private final String propertiesString;
 
     private final String bundleKey;
 
-    private Profile(int order, String name, String bundleKey) {
+    private Profile(int order, String canonicalName, String profile, String bundleKey) {
         this.order = order;
-        this.name = name;
+        this.canonicalName = canonicalName;
         this.bundleKey = bundleKey;
+
+        StringBuilder builder = new StringBuilder(canonicalName);
+        if (profile != null) {
+            builder.append("-").append(profile); // NOI18N
+        }
+        this.propertiesString = builder.toString();
     }
 
     /**
@@ -96,12 +105,12 @@ public final class Profile {
 
     @NonNull
     public String toPropertiesString() {
-        return name;
+        return propertiesString;
     }
 
     @Override
     public String toString() {
-        return name;
+        return toPropertiesString();
     }
 
     @CheckForNull
@@ -112,9 +121,11 @@ public final class Profile {
             return J2EE_14;
         } else if (JAVA_EE_5.toPropertiesString().equals(value)) {
             return JAVA_EE_5;
-        } else if (JAVA_EE_6_FULL.toPropertiesString().equals(value)) {
+        } else if (JAVA_EE_6_FULL.toPropertiesString().equals(value)
+                || "EE_6_FULL".equals(value)) { // NOI18N
             return JAVA_EE_6_FULL;
-        } else if (JAVA_EE_6_WEB.toPropertiesString().equals(value)) {
+        } else if (JAVA_EE_6_WEB.toPropertiesString().equals(value)
+                || "EE_6_WEB".equals(value)) {
             return JAVA_EE_6_WEB;
         } else {
             return null;
