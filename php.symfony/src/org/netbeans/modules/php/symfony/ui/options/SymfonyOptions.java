@@ -42,6 +42,7 @@ package org.netbeans.modules.php.symfony.ui.options;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.openide.util.NbPreferences;
 
 /**
@@ -51,7 +52,6 @@ public final class SymfonyOptions {
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
     private static final String PREFERENCES_PATH = "symfony"; // NOI18N
-    private static final String SYMFONY_FILENAME = "symfony"; // NOI18N
 
     private static final SymfonyOptions INSTANCE = new SymfonyOptions();
 
@@ -71,9 +71,10 @@ public final class SymfonyOptions {
         String symfony = getPreferences().get(SYMFONY, null);
         if (symfony == null && !symfonySearched) {
             symfonySearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(SYMFONY_FILENAME);
+            List<String> scripts = FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME);
             if (!scripts.isEmpty()) {
-                setSymfony(scripts.get(0));
+                symfony = scripts.get(0);
+                setSymfony(symfony);
             }
         }
         return symfony;
