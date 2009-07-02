@@ -120,12 +120,12 @@ public class MergeEngines {
     private static class ServletsEngine extends MergeEngine<ServletInfo> {
         @Override
         void addItems(WebApp webXml) {
-            addServlets(webXml);
+            addServlets(webXml.getServlet(), webXml.getServletMapping());
         }
 
         @Override
         void addItems(WebFragment webXml) {
-            addServlets(webXml);
+            addServlets(webXml.getServlet(), webXml.getServletMapping());
         }
 
         @Override
@@ -136,21 +136,19 @@ public class MergeEngines {
             }
         }
 
-        private void addServlets(WebApp xml) {
-            Servlet[] servlets = xml.getServlet();
+        private void addServlets(Servlet[] servlets, ServletMapping[] mappings) {
             if (servlets != null) {
                 for (Servlet s : servlets) {
                     String name = s.getServletName();
                     String clazz = s.getServletClass();
-                    List<String> urlMappings = findUrlMappingsForServlet(xml, name);
+                    List<String> urlMappings = findUrlMappingsForServlet(mappings, name);
                     res.add(ServletInfoAccessor.getDefault().createServletInfo(name, clazz, urlMappings));
                 }
             }
         }
 
-        private List<String> findUrlMappingsForServlet(WebApp xml, String servletName) {
+        private List<String> findUrlMappingsForServlet(ServletMapping[] mappings, String servletName) {
             List<String> mpgs = new ArrayList<String>();
-            ServletMapping[] mappings = xml.getServletMapping();
             if (mappings != null) {
                 for (ServletMapping sm : mappings) {
                     if (sm.getServletName().equals(servletName) && sm.getUrlPattern() != null)
@@ -165,12 +163,12 @@ public class MergeEngines {
     private static class SecurityRolesEngine extends MergeEngine<String> {
         @Override
         void addItems(WebApp webXml) {
-            addRole(webXml);
+            addRole(webXml.getSecurityRole());
         }
 
         @Override
         void addItems(WebFragment webFragment) {
-            addRole(webFragment);
+            addRole(webFragment.getSecurityRole());
         }
 
         @Override
@@ -180,8 +178,8 @@ public class MergeEngines {
             }
         }
 
-        private void addRole(WebApp xml) {
-            for (SecurityRole r : xml.getSecurityRole()) {
+        private void addRole(SecurityRole[] roles) {
+            for (SecurityRole r : roles) {
                 res.add(r.getRoleName());
             }
         }

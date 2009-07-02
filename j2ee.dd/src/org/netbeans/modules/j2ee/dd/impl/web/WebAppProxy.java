@@ -50,6 +50,7 @@ import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 import java.io.OutputStream;
+import org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering;
 
 /**
  * @author  mk115033
@@ -1002,6 +1003,14 @@ public class WebAppProxy implements WebApp {
 
     public String[] getName() throws VersionNotSupportedException {
         return webApp != null ? webApp.getName() : null;
+    }
+
+    public void setAbsoluteOrdering(AbsoluteOrdering[] value) throws VersionNotSupportedException {
+        if (webApp != null) webApp.setAbsoluteOrdering(value);
+    }
+
+    public AbsoluteOrdering[] getAbsoluteOrdering() throws VersionNotSupportedException {
+        return webApp != null ? webApp.getAbsoluteOrdering() : null;
     }
 
 }

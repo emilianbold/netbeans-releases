@@ -5,9 +5,6 @@
 
 <!--
 For now, web-fragment is defined exactly the same way as web-app.
-I believe the XSD for web-fragment should be changed before final release
-of Java EE 6 specification.
-TODO: adapt this to final version of web-fragment XSD
 -->
   
             <dtd-name>web-fragment</dtd-name>
@@ -100,6 +97,12 @@ TODO: adapt this to final version of web-fragment XSD
                         org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList[] values = getLocaleEncodingMappingList();
                         if (values==null || values.length==0) return null;
                         else return values[0];
+                    }
+                    public void setAbsoluteOrdering(org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
+                    }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] getAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
                     }
             </user-code>
         </meta-element>
@@ -822,5 +825,13 @@ public void setUrlPattern(String value) {
             <namespace>http://java.sun.com/xml/ns/javaee</namespace>
             <bean-name>DispatcherType</bean-name>
             <wrapper-class>java.lang.String</wrapper-class>
+        </meta-element>
+        <meta-element>
+            <dtd-name>absoluteOrderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>AbsoluteOrdering</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering
+            </implements>
         </meta-element>
 </metaDD>

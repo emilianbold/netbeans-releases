@@ -55,7 +55,9 @@ public class ProfileTest extends NbTestCase {
         assertEquals(Profile.J2EE_13, Profile.fromPropertiesString("1.3"));
         assertEquals(Profile.J2EE_14, Profile.fromPropertiesString("1.4"));
         assertEquals(Profile.JAVA_EE_5, Profile.fromPropertiesString("1.5"));
+        assertEquals(Profile.JAVA_EE_6_FULL, Profile.fromPropertiesString("1.6"));
         assertEquals(Profile.JAVA_EE_6_FULL, Profile.fromPropertiesString("EE_6_FULL"));
+        assertEquals(Profile.JAVA_EE_6_WEB, Profile.fromPropertiesString("1.6-web"));
         assertEquals(Profile.JAVA_EE_6_WEB, Profile.fromPropertiesString("EE_6_WEB"));
         assertNull(Profile.fromPropertiesString("something"));
     }
