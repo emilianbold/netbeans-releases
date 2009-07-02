@@ -55,21 +55,21 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
  * @author Petr Hejl
  * @since 1.58
  */
-public final class Capabilities {
+public final class J2eeProjectCapabilities {
 
     private final J2eeModuleProvider provider;
 
-    private Capabilities(J2eeModuleProvider provider) {
+    private J2eeProjectCapabilities(J2eeModuleProvider provider) {
         this.provider = provider;
     }
 
     @CheckForNull
-    public static Capabilities forProject(Project project) {
+    public static J2eeProjectCapabilities forProject(Project project) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
             return null;
         }
-        return new Capabilities(provider);
+        return new J2eeProjectCapabilities(provider);
     }
 
     public boolean isEjb30Supported() {

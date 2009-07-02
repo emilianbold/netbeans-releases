@@ -51,7 +51,7 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Capabilities;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -221,7 +221,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     }
     
     public boolean supportsDefaultProvider() {
-        Capabilities capabilities = Capabilities.forProject(project);
+        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
         return capabilities != null && capabilities.hasDefaultPersistenceProvider();
     }
 
