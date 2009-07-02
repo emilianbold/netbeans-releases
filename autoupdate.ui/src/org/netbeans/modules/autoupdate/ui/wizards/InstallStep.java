@@ -598,16 +598,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     static void notifyRestartNeeded (final Runnable onMouseClick, final String tooltip) {
-        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
-                                            getBundle ("RestartConfirmation_Message"),
-                                            getBundle ("RestartConfirmation_Title"),
-                                            NotifyDescriptor.YES_NO_OPTION);
+        //final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
+        //                                    getBundle ("RestartConfirmation_Message"),
+        //                                    getBundle ("RestartConfirmation_Title"),
+        //                                    NotifyDescriptor.YES_NO_OPTION);
         ActionListener onClickAction = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                DialogDisplayer.getDefault ().notify (nd);
-                if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
+                //DialogDisplayer.getDefault ().notify (nd);
+                //if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
                     onMouseClick.run ();
-                }
+                //}
             }
         };
         synchronized (InstallStep.class) {
