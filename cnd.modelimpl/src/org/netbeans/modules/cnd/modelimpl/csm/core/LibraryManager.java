@@ -241,7 +241,10 @@ public final class LibraryManager {
     }
 
     private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, File searchFor) {
-        for (CsmProject prj : baseProject.getLibraries()) {
+        List<CsmProject> libraries = baseProject.getLibraries();
+        int size = libraries.size();
+        for (int i = 0; i < size; i++) {
+            CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 ((ProjectBase) prj).ensureFilesCreated();
                 ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor);
@@ -262,7 +265,9 @@ public final class LibraryManager {
             return null;
         }
         set.add(baseProject);
-        for (String folder : folders) {
+        int folderSize = folders.size();
+        for (int i = 0; i < folderSize; i++) {
+            String folder = folders.get(i);
             if (baseProject.isMySource(folder)) {
                 return baseProject;
             }
