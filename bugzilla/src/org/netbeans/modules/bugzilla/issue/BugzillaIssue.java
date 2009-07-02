@@ -345,8 +345,8 @@ public class BugzillaIssue extends Issue {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
         } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
-            Map<String, String> seenAtributes = getSeenAttributes();
-            assert seenAtributes != null;
+            Map<String, String> attr = getSeenAttributes();
+            assert attr != null;
             for (IssueField f : IssueField.values()) {
                 switch(f) {
                     case MODIFICATION :
@@ -356,7 +356,7 @@ public class BugzillaIssue extends Issue {
                         continue;
                 }
                 String value = getFieldValue(f);
-                String seenValue = seenAtributes.get(f.key);
+                String seenValue = attr.get(f.key);
                 if(seenValue == null) {
                     seenValue = "";                                             // NOI18N
                 }
@@ -384,7 +384,7 @@ public class BugzillaIssue extends Issue {
                             break;
                         case COMMENT_COUNT :
                             String value = getFieldValue(changedField);
-                            String seenValue = seenAtributes.get(changedField.key);
+                            String seenValue = attr.get(changedField.key);
                             int count = 0;
                             try {
                                 count = Integer.parseInt(value) - Integer.parseInt(seenValue);
@@ -589,11 +589,8 @@ public class BugzillaIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-//        if(!wasSeen()) {
-//            return FIELD_STATUS_IRELEVANT;
-//        }
-        Map<String, String> a = getSeenAttributes();
-        String seenValue = a != null ? a.get(f.key) : null;
+        Map<String, String> attr = getSeenAttributes();
+        String seenValue = attr != null ? attr.get(f.key) : null;
         if(seenValue == null) {
             seenValue = "";                                                     // NOI18N
         }

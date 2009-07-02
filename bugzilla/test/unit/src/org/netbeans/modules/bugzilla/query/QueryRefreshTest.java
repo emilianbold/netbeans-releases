@@ -87,7 +87,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         long ts = System.currentTimeMillis();
         final String summary = "summary" + System.currentTimeMillis();
 
-        final BugzillaRepository repo = getRepository();
+        final BugzillaRepository repo = QueryTestUtil.getRepository();
         String id = TestUtil.createIssue(repo, summary);
         assertNotNull(id);
 
@@ -114,7 +114,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         long ts = System.currentTimeMillis();
         final String summary = "summary" + System.currentTimeMillis();
 
-        final BugzillaRepository repo = getRepository();
+        final BugzillaRepository repo = QueryTestUtil.getRepository();
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
@@ -151,10 +151,6 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
 
         issues = q.getIssues();
         assertEquals(1, issues.length);
-    }
-
-    private BugzillaRepository getRepository() {
-        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
 }

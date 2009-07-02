@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.IssueProperty;
@@ -56,6 +57,7 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -84,7 +86,7 @@ import org.openide.nodes.Node;
 /**
  * @author Tomas Stupka
  */
-public class IssueTable implements MouseListener, AncestorListener, KeyListener {
+public class IssueTable implements MouseListener, AncestorListener, KeyListener, PropertyChangeListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -142,8 +144,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
         assert descriptors.length > 0;
         
         this.query = query;
+
         this.descriptors = descriptors;
         query.addNotifyListener(new NotifyListener());
+        query.addPropertyChangeListener(this);
 
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
@@ -191,6 +195,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener 
             }
         }
         setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+            initColumns();
+        }
     }
 
     private class CellAction implements ActionListener {
