@@ -40,10 +40,13 @@ package org.netbeans.modules.jira.issue;
 
 import java.awt.Dialog;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.Date;
 import javax.swing.SwingConstants;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -59,8 +62,25 @@ public class WorkLogPanel extends javax.swing.JPanel {
     public WorkLogPanel(NbJiraIssue issue) {
         this.issue = issue;
         initComponents();
-        startDateField.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(DateFormat.getDateTimeInstance())));
+        startDateField.setFormatterFactory(new DefaultFormatterFactory(new DateFormatter(DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT))));
         startDateField.setValue(new Date());
+
+        // Leave estimate choice
+        String estimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
+        int estimate = 0;
+        if (estimateTxt != null) {
+            try {
+                estimate = Integer.parseInt(estimateTxt);
+            } catch (NumberFormatException nfex) {
+                estimate = 0;
+            }
+        }
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        int daysPerWeek = config.getWorkDaysPerWeek();
+        int hoursPerDay = config.getWorkHoursPerDay();
+        String pattern = NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text"); // NOI18N
+        String leaveEstimateText = MessageFormat.format(pattern, JiraUtils.getWorkLogText(estimate, daysPerWeek, hoursPerDay, true));
+        leaveEstimateChoice.setText(leaveEstimateText);
     }
 
     public boolean showDialog() {
@@ -121,7 +141,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
         startDateLabel.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.startDateLabel.text")); // NOI18N
 
-        startDateField.setColumns(15);
+        startDateField.setColumns(13);
 
         timeSpentHint.setFont(timeSpentHint.getFont().deriveFont(timeSpentHint.getFont().getSize()-2f));
         timeSpentHint.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.timeSpentHint.text")); // NOI18N
