@@ -49,7 +49,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
@@ -468,7 +468,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         entity.selectCategory("Persistence");
         entity.selectFileType("Entity Class");
         entity.next();
-        NewFileNameLocationStepOperator locationOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator locationOper = new NewJavaFileNameLocationStepOperator();
         locationOper.setPackage("mypackage");
         new JButtonOperator(locationOper, "Create Persistence Unit").pushNoBlock();
         

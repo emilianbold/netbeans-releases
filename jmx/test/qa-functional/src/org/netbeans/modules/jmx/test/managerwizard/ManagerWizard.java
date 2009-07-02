@@ -44,7 +44,7 @@ package org.netbeans.modules.jmx.test.managerwizard;
 import java.io.File;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
@@ -110,7 +110,7 @@ public class ManagerWizard extends JMXTestCase {
                 FILE_CATEGORY_JAVA,
                 FILE_TYPE_JAVA_PACKAGE);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 PACKAGE_COM_FOO_BAR, null);
         nfnlso.finish();
     }
@@ -136,7 +136,7 @@ public class ManagerWizard extends JMXTestCase {
                 FILE_CATEGORY_JMX,
                 FILE_TYPE_JMX_MANAGER);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 MANAGER_NAME_1, PACKAGE_COM_FOO_BAR);
         // Check name and location wizard components
         System.out.println("Check Name And Location wizard components");
@@ -198,7 +198,7 @@ public class ManagerWizard extends JMXTestCase {
                 FILE_CATEGORY_JMX,
                 FILE_TYPE_JMX_MANAGER);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 MANAGER_NAME_2, PACKAGE_COM_FOO_BAR);
         // Update some values
         System.out.println("Update Name and location wizard values");
@@ -279,7 +279,7 @@ public class ManagerWizard extends JMXTestCase {
                 FILE_CATEGORY_JMX,
                 FILE_TYPE_JMX_MANAGER);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 MANAGER_NAME_3, PACKAGE_COM_FOO_BAR);
         // Update some values
         System.out.println("Update Name and location wizard values");
@@ -358,7 +358,7 @@ public class ManagerWizard extends JMXTestCase {
      * Check name and location wizard components are enabled/disabled
      */
     private void checkNameAndLocationWizardComponents(
-            NewFileNameLocationStepOperator nfnlso, Manager manager) {
+            NewJavaFileNameLocationStepOperator nfnlso, Manager manager) {
         assertTrue(getCheckBoxOperator(
                 GENERATE_MAIN_METHOD_CHECK_BOX, nfnlso).isEnabled());
         assertEquals(manager.getGenerateMainMethod(), getCheckBoxOperator(
@@ -371,7 +371,7 @@ public class ManagerWizard extends JMXTestCase {
      * Check name and location wizard values
      */
     private void checkNameAndLocationWizardValues(
-            NewFileNameLocationStepOperator nfnlso, Manager manager) {
+            NewJavaFileNameLocationStepOperator nfnlso, Manager manager) {
         assertEquals(manager.getGenerateMainMethod(), getCheckBoxOperator(
                 GENERATE_MAIN_METHOD_CHECK_BOX, nfnlso).isSelected());
         assertEquals(manager.getProjectMainClass(), getCheckBoxOperator(
@@ -384,7 +384,7 @@ public class ManagerWizard extends JMXTestCase {
      * Check JMX agent URL wizard components are enabled/disabled
      */
     private void checkAgentURLWizardComponents(
-            NewFileNameLocationStepOperator nfnlso, Manager manager) {
+            NewJavaFileNameLocationStepOperator nfnlso, Manager manager) {
         
         assertTrue(getTextFieldOperator(AGENT_URL_TEXT_FIELD, nfnlso).isEnabled());
         assertFalse(getTextFieldOperator(AGENT_URL_TEXT_FIELD, nfnlso).isEditable());
@@ -428,7 +428,7 @@ public class ManagerWizard extends JMXTestCase {
      * Check JMX agent URL wizard values
      */
     private void checkAgentURLWizardValues(
-            NewFileNameLocationStepOperator nfnlso, Manager manager) {
+            NewJavaFileNameLocationStepOperator nfnlso, Manager manager) {
         
         assertEquals(manager.getAgentURL(), getTextFieldContent(
                 AGENT_URL_TEXT_FIELD, nfnlso));

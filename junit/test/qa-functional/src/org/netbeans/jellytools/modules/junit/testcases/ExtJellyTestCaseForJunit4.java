@@ -51,7 +51,7 @@ import java.util.Date;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
@@ -133,7 +133,7 @@ public abstract class ExtJellyTestCaseForJunit4 extends JellyTestCase {
         String fileName = name + String.valueOf(new Date().getTime());
 
         if (beanName == null) {
-            NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+            NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
             nfnlso.txtObjectName().clearText();
             nfnlso.txtObjectName().typeText(fileName);
             nfnlso.setPackage(packageName);
