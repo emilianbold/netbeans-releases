@@ -481,20 +481,6 @@ public class JaxWsUtils {
         };
         targetSource.runModificationTask(task).commit();
 
-        final FileObject createdFile = implClassFo;
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                Service serv = findServiceForServiceName(createdFile, service.getName());
-                if (serv != null) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            NbBundle.getMessage(JaxWsUtils.class,"MSG_ServiceNameExists", service.getName(), serv.getImplementationClass()), 
-                            NotifyDescriptor.WARNING_MESSAGE));
-                }
-            }
-            
-        });
         //open in editor
         DataObject dobj = DataObject.find(implClassFo);
         openFileInEditor(dobj);
