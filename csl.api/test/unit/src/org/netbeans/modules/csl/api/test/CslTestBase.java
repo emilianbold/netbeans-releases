@@ -319,6 +319,18 @@ public abstract class CslTestBase extends NbTestCase {
      * from the fuller text
      */
     public static int getCaretOffset(String text, String caretLine) {
+        return getCaretOffsetInternal(text, caretLine).offset;
+    }
+
+    /**
+     * Like <code>getCaretOffset</code>, but the returned <code>CaretLineOffset</code>
+     * contains also the modified <code>caretLine</code> param.
+     
+     * @param text
+     * @param caretLine
+     * @return
+     */
+    private static CaretLineOffset getCaretOffsetInternal(String text, String caretLine) {
         int caretDelta = caretLine.indexOf('^');
         assertTrue(caretDelta != -1);
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
@@ -327,7 +339,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         int caretOffset = lineOffset + caretDelta;
 
-        return caretOffset;
+        return new CaretLineOffset(caretOffset, caretLine);
     }
 
     
@@ -3717,7 +3729,7 @@ public abstract class CslTestBase extends NbTestCase {
         return hints;
     }
 
-    protected ComputedHints computeHints(NbTestCase test, final Rule hint, String relFilePath, FileObject fileObject, final String caretLine, final ChangeOffsetType changeOffsetType) throws Exception {
+    protected ComputedHints computeHints(NbTestCase test, final Rule hint, String relFilePath, FileObject fileObject, final String lineWithCaret, final ChangeOffsetType changeOffsetType) throws Exception {
         assertTrue(relFilePath == null || fileObject == null);
 
         initializeRegistry();
@@ -3729,13 +3741,17 @@ public abstract class CslTestBase extends NbTestCase {
         Source testSource = getTestSource(fileObject);
 
         final int caretOffset;
-        if (caretLine != null) {
-            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
-            enforceCaretOffset(testSource, caretOffset);
+        final String caretLine;
+        if (lineWithCaret != null) {
+            CaretLineOffset caretLineOffset = getCaretOffsetInternal(testSource.createSnapshot().getText().toString(), lineWithCaret);
+            caretOffset = caretLineOffset.offset;
+            caretLine = caretLineOffset.caretLine;
+            enforceCaretOffset(testSource, caretLineOffset.offset);
         } else {
             caretOffset = -1;
+            caretLine = lineWithCaret;
         }
-
+  
         final ComputedHints [] result = new ComputedHints[] { null };
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -3818,7 +3834,7 @@ public abstract class CslTestBase extends NbTestCase {
                         manager.setTestingRules(null, null, null, testHints);
 
                         if (caretLine != null) {
-                            int start = text.indexOf(caretLine);
+                            int start = text.indexOf(caretLine.toString());
                             int end = start+caretLine.length();
                             RuleContext context = manager.createRuleContext(pr, language, -1, start, end);
                             provider.computeSelectionHints(manager, context, hints, start, end);
@@ -4349,4 +4365,15 @@ public abstract class CslTestBase extends NbTestCase {
         public void close() throws SecurityException {
         }
     } // End of Waiter class
+
+    private static class CaretLineOffset {
+        private final int offset;
+        private final String caretLine;
+
+        public CaretLineOffset(int offset, String caretLine) {
+            this.offset = offset;
+            this.caretLine = caretLine;
+        }
+
+    }
 }
