@@ -79,9 +79,19 @@ public final class J2eeProjectCapabilities {
     }
 
     public boolean isEjb31Supported() {
+        return isEjb31FullSupported() || isEjb31LiteSupported();
+    }
+
+    public boolean isEjb31FullSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         String version = provider.getJ2eeModule().getModuleVersion();
         return J2eeModule.Type.EJB.equals(moduleType) && version.startsWith("3.1"); // NOI18N
+    }
+
+    public boolean isEjb31LiteSupported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        String version = provider.getJ2eeModule().getModuleVersion();
+        return J2eeModule.Type.WAR.equals(moduleType) && version.startsWith("3.0"); // NOI18N
     }
 
     public boolean hasDefaultPersistenceProvider() {
