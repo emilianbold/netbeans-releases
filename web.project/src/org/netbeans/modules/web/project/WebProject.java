@@ -1254,12 +1254,32 @@ public final class WebProject implements Project, AntProjectListener {
         "Templates/Other/Folder",                   // NOI18N
     };
 
+    private static final String[] PRIVILEGED_NAMES_EE6 = new String[] {
+        "Templates/JSP_Servlet/JSP.jsp",            // NOI18N
+        "Templates/JSP_Servlet/Html.html",          // NOI18N
+        "Templates/JSP_Servlet/Servlet.java",       // NOI18N
+        "Templates/Classes/Class.java",             // NOI18N
+        "Templates/Classes/Package",                // NOI18N
+        "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/Message", // NOI18N
+        "Templates/Persistence/Entity.java", // NOI18N
+        "Templates/Persistence/RelatedCMP", // NOI18N
+        "Templates/Persistence/JsfFromDB", // NOI18N
+        "Templates/WebServices/WebService.java",    // NOI18N
+        "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
+        "Templates/WebServices/WebServiceClient",   // NOI18N
+        "Templates/WebServices/RestServicesFromEntities", // NOI18N
+        "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
+        "Templates/Other/Folder",                   // NOI18N
+    };
+
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
         "Templates/JSP_Servlet/webXml",     // NOI18N  --- 
     };
     
     // guarded by this, #115809
     private String[] privilegedTemplatesEE5 = null;
+    private String[] privilegedTemplatesEE6 = null;
     private String[] privilegedTemplates = null;
 
     // Path where instances of privileged templates are registered
@@ -1274,20 +1294,28 @@ public final class WebProject implements Project, AntProjectListener {
         ensureTemplatesInitialized();
         return privilegedTemplatesEE5;
     }
+
+    synchronized String[] getPrivilegedTemplatesEE6() {
+        ensureTemplatesInitialized();
+        return privilegedTemplatesEE6;
+    }
     
     public synchronized void resetTemplates() {
         privilegedTemplates = null;
         privilegedTemplatesEE5 = null;
+        privilegedTemplatesEE6 = null;
     }
     
     private void ensureTemplatesInitialized() {
         assert Thread.holdsLock(this);
         if (privilegedTemplates != null
-                && privilegedTemplatesEE5 != null) {
+                && privilegedTemplatesEE5 != null
+                && privilegedTemplatesEE6 != null) {
             return;
         }
         
         ArrayList<String>templatesEE5 = new ArrayList<String>(PRIVILEGED_NAMES_EE5.length + 1);
+        ArrayList<String>templatesEE6 = new ArrayList<String>(PRIVILEGED_NAMES_EE6.length + 1);
         ArrayList<String>templates = new ArrayList<String>(PRIVILEGED_NAMES.length + 1);
 
         // how many templates are added
@@ -1299,6 +1327,7 @@ public final class WebProject implements Project, AntProjectListener {
                 countTemplate = countTemplate + addedTemplates.length;
                 List<String> addedList = Arrays.asList(addedTemplates);
                 templatesEE5.addAll(addedList);
+                templatesEE6.addAll(addedList);
                 templates.addAll(addedList);
             }
         }
@@ -1306,13 +1335,17 @@ public final class WebProject implements Project, AntProjectListener {
         if(countTemplate > 0){
             templatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
             privilegedTemplatesEE5 = templatesEE5.toArray(new String[templatesEE5.size()]);
+            templatesEE6.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6));
+            privilegedTemplatesEE6 = templatesEE5.toArray(new String[templatesEE6.size()]);
             templates.addAll(Arrays.asList(PRIVILEGED_NAMES));
             privilegedTemplates = templates.toArray(new String[templates.size()]);
         }
         else {
             privilegedTemplatesEE5 = PRIVILEGED_NAMES_EE5;
+            privilegedTemplatesEE6 = PRIVILEGED_NAMES_EE6;
             privilegedTemplates = PRIVILEGED_NAMES;
         }
+
     }
     
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
@@ -1349,6 +1382,8 @@ public final class WebProject implements Project, AntProjectListener {
             } else {
                 if (isEE5) {
                     retVal = getPrivilegedTemplatesEE5();
+                } else if (isEE6){
+                    retVal = getPrivilegedTemplatesEE6();
                 } else {
                     retVal = WebProject.this.getPrivilegedTemplates();
                 }
