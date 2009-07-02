@@ -42,7 +42,7 @@
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -247,7 +247,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         
         // Name and Location wizard execution
         // ----------------------------------
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 mbean.getName(),
                 mbean.getPackage(),
                 mbean.getDescription(),
@@ -290,7 +290,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
      * Select/unselect and update wrapped attributes.
      */
     private void updateMBeanAttributes(
-            NewFileNameLocationStepOperator nfnlso) {
+            NewJavaFileNameLocationStepOperator nfnlso) {
         
         JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
         // Give the focus to the table operator
@@ -341,7 +341,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
      * Check Attributes wizard before MBean attributes selection
      */
     private void checkMBeanAttributesWizardBeforeSelection(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
+            NewJavaFileNameLocationStepOperator nfnlso, String fileType) {
         
         JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
         int rowCount = 0;
@@ -388,7 +388,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
      * Check Attributes wizard after MBean attributes selection
      */
     private void checkMBeanAttributesWizardAfterSelection(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
+            NewJavaFileNameLocationStepOperator nfnlso, String fileType) {
         
         JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
         int rowCount = 0;

@@ -382,6 +382,7 @@ public class PhpProject implements Project {
                 new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
+                new PhpModuleImpl(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
@@ -418,7 +419,7 @@ public class PhpProject implements Project {
         }
 
         public String getName() {
-            return PhpProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
 
         public Project getProject() {

@@ -50,12 +50,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.CleanProjectAction;
+import org.netbeans.jellytools.actions.CleanJavaProjectAction;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -199,7 +199,7 @@ public class WsValidation extends WebServicesTestBase {
         // Web Service
         String webServiceLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.dev.wizard.Bundle", "Templates/WebServices/WebService.java");
         createNewWSFile(getProject(), webServiceLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(getWsName());
         op.setPackage(getWsPackage());
         op.finish();
@@ -344,7 +344,7 @@ public class WsValidation extends WebServicesTestBase {
         new JCheckBoxOperator(ndo).clickMouse();
         ndo.ok();
         waitForWsImport("(wsgen-" + getWsName()); //NOI18N
-        new CleanProjectAction().perform();
+        new CleanJavaProjectAction().perform();
     }
 
     public void testDeployWsClientProject() throws IOException {
@@ -361,7 +361,7 @@ public class WsValidation extends WebServicesTestBase {
         //Web Service Client
         String wsClientLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.client.wizard.Bundle", "Templates/WebServices/WebServiceClient");
         createNewWSFile(getProject(), wsClientLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         new JButtonOperator(op, 3).push();
         //Browse Web Services
         String browseWsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.client.wizard.Bundle", "TTL_SelectService");
@@ -402,7 +402,7 @@ public class WsValidation extends WebServicesTestBase {
         //Servlet
         String servletLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.core.Bundle", "Templates/JSP_Servlet/Servlet.java");
         createNewFile(getWsClientProject(), webLabel, servletLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         JComboBoxOperator jcbo = new JComboBoxOperator(op, 1);
         jcbo.typeText("org.mycompany.servlets"); //NOI18N
         op.finish();
@@ -457,7 +457,7 @@ public class WsValidation extends WebServicesTestBase {
         //Java Class
         String javaFileLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java"); //NOI18N
         createNewFile(getWsClientProject(), javaAppLabel, javaFileLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setPackage("org.mycompany.classes"); //NOI18N
         op.finish();
         final EditorOperator eo = new EditorOperator("NewClass"); //NOI18N
@@ -624,7 +624,7 @@ public class WsValidation extends WebServicesTestBase {
 
     protected void createHandler(String pkg, String name, HandlerType type) {
         createNewWSFile(getProject(), type.getFileTypeLabel());
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.txtObjectName().clearText();
         op.txtObjectName().typeText(name);
         op.cboPackage().clearText();

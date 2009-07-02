@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.util;
 
 import java.util.regex.Pattern;
+import org.netbeans.modules.php.api.util.PhpProgram;
 
 /**
  * @author Tomas Mysik
@@ -55,10 +56,5 @@ public final class PhpInterpreter extends PhpProgram {
      */
     public PhpInterpreter(String command) {
         super(command);
-    }
-
-    @Override
-    public boolean isValid() {
-        return super.isValid();
     }
 }

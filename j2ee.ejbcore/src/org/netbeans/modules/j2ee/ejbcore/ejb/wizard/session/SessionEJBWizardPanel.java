@@ -45,7 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Capabilities;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 
 /**
@@ -64,7 +64,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         this.project = project;
         initComponents();
 
-        if (!Capabilities.forProject(project).isEjb31Supported()){
+        if (!J2eeProjectCapabilities.forProject(project).isEjb31Supported()){
             singletonButton.setVisible(false);
             singletonButton.setEnabled(false);
         }

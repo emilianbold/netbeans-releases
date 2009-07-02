@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.api.util;
 
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import org.openide.util.Utilities;
 
 /**
+ * Base class for all PHP based programs (scripts).
  * @author Tomas Mysik
  */
 public abstract class PhpProgram {
@@ -114,7 +115,7 @@ public abstract class PhpProgram {
      * @return <code>true</code> if program is set, <code>false</code> otherwise.
      */
     public boolean isValid() {
-        return program.length() > 0;
+        return StringUtils.hasText(program);
     }
 
     @Override

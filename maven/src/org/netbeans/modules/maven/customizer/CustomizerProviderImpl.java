@@ -119,6 +119,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 "<profilesXml xmlns=\"http://maven.apache.org/PROFILES/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
 "  xsi:schemaLocation=\"http://maven.apache.org/PROFILES/1.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
 "</profilesXml>";//NO18N
+    // a copy is in maven.model's Utilities.
 
     private static final String BROKEN_NBACTIONS = "BROKENNBACTIONS";  //NOI18N
     

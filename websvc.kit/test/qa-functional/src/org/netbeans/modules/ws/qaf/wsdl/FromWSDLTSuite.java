@@ -45,7 +45,7 @@ import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
@@ -130,7 +130,7 @@ public class FromWSDLTSuite extends WsValidation {
         //Web Service from WSDL
         String fromWSDLLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.dev.wizard.Bundle", "Templates/WebServices/WebServiceFromWSDL.java");
         createNewWSFile(p, fromWSDLLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.txtObjectName().clearText();
         op.txtObjectName().typeText(name);
         op.cboPackage().clearText();

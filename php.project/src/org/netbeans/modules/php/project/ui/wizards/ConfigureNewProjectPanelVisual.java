@@ -58,7 +58,6 @@ import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
-import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -69,12 +68,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     private final LocalServerController localServerComponent;
 
     ConfigureNewProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
-        // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_ProjectNameLocation"));
-        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0); // NOI18N
-        // Step name (actually the whole list for reference).
-        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
-
+        super(wizardPanel);
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton, new BrowseSources(),
                 NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));

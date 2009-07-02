@@ -37,16 +37,46 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.spi.execute;
+package org.netbeans.modules.php.symfony.ui.actions;
 
-import java.util.Map;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author mkleint
+ * @author Tomas Mysik
  */
-public interface AdvancedProcessKiller {
+public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 
-    public void kill(Process preProcess, Map<String, String> env);
+    protected BaseAction() {
+        putValue("noIconInMenu", true); // NOI18N
+        putValue(NAME, getFullName());
+        putValue("menuText", getPureName()); // NOI18N
+    }
 
+    @Override
+    public final void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+        if (phpModule == null) {
+            return;
+        }
+        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
+            return;
+        }
+        actionPerformed(phpModule);
+    }
+
+    protected String getFullName() {
+        return NbBundle.getMessage(BaseAction.class, "LBL_SymfonyAction", getPureName());
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    protected abstract String getPureName();
+    protected abstract void actionPerformed(PhpModule phpModule);
 }

@@ -106,7 +106,7 @@ public class CreatingPropertiesFileFromExplorer2Test extends PropertiesEditorTes
         newWizard.selectFileType(WIZARD_FILE_TYPE);
         newWizard.next();
         //type class name
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName(FILE_NAME);
         //push finish
         newWizard.finish();
@@ -128,7 +128,7 @@ public class CreatingPropertiesFileFromExplorer2Test extends PropertiesEditorTes
          * 3th step of testcase
          * Type name to appeared wizard.(as same name as previous case)
          */
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName(FILE_NAME);
         
         
