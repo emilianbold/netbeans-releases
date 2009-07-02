@@ -43,9 +43,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
@@ -65,43 +62,25 @@ public class AcegiConnectionAuthenticator implements ConnectionAuthenticator {
 
     private static final Logger LOGGER = Logger.getLogger(AcegiConnectionAuthenticator.class.getName());
 
-    /**
-     * Session cookies set by home.
-     * {@link java.net.CookieManager} in JDK 6 would be a bit easier.
-     */
-    private static final Map<URL,String[]> COOKIES = new HashMap<URL,String[]>();
-
-    public void prepareRequest(URLConnection conn, URL home) {
-        if (COOKIES.containsKey(home)) {
-            for (String cookie : COOKIES.get(home)) {
-                String cookieBare = cookie.replaceFirst(";.*", ""); // NOI18N
-                LOGGER.log(Level.FINER, "Setting cookie {0} for {1}", new Object[] {cookieBare, conn.getURL()});
-                conn.setRequestProperty("Cookie", cookieBare); // NOI18N
-            }
-        }
-    }
+    public void prepareRequest(URLConnection conn, URL home) {}
 
     public URLConnection forbidden(URLConnection conn, URL home) {
         for (AcegiAuthorizer aa : Lookup.getDefault().lookupAll(AcegiAuthorizer.class)) {
             String[] auth = aa.authorize(home);
             if (auth != null) {
                 LOGGER.log(Level.FINE, "Got authorization for {0} on {1} from {2}", new Object[] {auth[0], home, aa});
-                try {
-                    Map<String, List<String>> responseHeaders = new HashMap<String, List<String>>();
-                    new ConnectionBuilder().url(new URL(home, "j_acegi_security_check")). // NOI18N
-                            postData(("j_username=" + URLEncoder.encode(auth[0], "UTF-8") + "&j_password=" + // NOI18N
-                            URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
-                            collectResponseHeaders(responseHeaders).connection();
-                    List<String> cookies = responseHeaders.get("Set-Cookie"); // NOI18N
-                    if (cookies == null) {
-                        LOGGER.log(Level.FINE, "No cookies set from authentication to {0}", home);
-                        return null;
+                for (String realmURI : new String[] {"j_acegi_security_check", "j_security_check"}) { // NOI18N
+                    try {
+                        LOGGER.log(Level.FINER, "Posting authentication to {0}", realmURI);
+                        new ConnectionBuilder().url(new URL(home, realmURI)).
+                                postData(("j_username=" + URLEncoder.encode(auth[0], "UTF-8") + "&j_password=" + // NOI18N
+                                URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
+                                homeURL(home).authentication(false).connection();
+                        LOGGER.log(Level.FINER, "Posted authentication to {0} worked", realmURI);
+                        return conn.getURL().openConnection();
+                    } catch (IOException x) {
+                        LOGGER.log(Level.FINE, null, x);
                     }
-                    LOGGER.log(Level.FINE, "Authenticated to {0}: {1}", new Object[] {home, cookies});
-                    COOKIES.put(home, cookies.toArray(new String[0]));
-                    return conn.getURL().openConnection();
-                } catch (IOException x) {
-                    LOGGER.log(Level.FINE, null, x);
                 }
             }
         }
