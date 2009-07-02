@@ -55,21 +55,21 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
  * @author Petr Hejl
  * @since 1.58
  */
-public final class Capabilities {
+public final class J2eeProjectCapabilities {
 
     private final J2eeModuleProvider provider;
 
-    private Capabilities(J2eeModuleProvider provider) {
+    private J2eeProjectCapabilities(J2eeModuleProvider provider) {
         this.provider = provider;
     }
 
     @CheckForNull
-    public static Capabilities forProject(Project project) {
+    public static J2eeProjectCapabilities forProject(Project project) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
             return null;
         }
-        return new Capabilities(provider);
+        return new J2eeProjectCapabilities(provider);
     }
 
     public boolean isEjb30Supported() {
@@ -79,9 +79,19 @@ public final class Capabilities {
     }
 
     public boolean isEjb31Supported() {
+        return isEjb31FullSupported() || isEjb31LiteSupported();
+    }
+
+    public boolean isEjb31FullSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         String version = provider.getJ2eeModule().getModuleVersion();
         return J2eeModule.Type.EJB.equals(moduleType) && version.startsWith("3.1"); // NOI18N
+    }
+
+    public boolean isEjb31LiteSupported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        String version = provider.getJ2eeModule().getModuleVersion();
+        return J2eeModule.Type.WAR.equals(moduleType) && version.startsWith("3.0"); // NOI18N
     }
 
     public boolean hasDefaultPersistenceProvider() {

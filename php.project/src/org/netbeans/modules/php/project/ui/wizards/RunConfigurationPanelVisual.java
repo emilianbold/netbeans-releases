@@ -56,15 +56,16 @@ import org.openide.util.NbBundle;
  */
 public class RunConfigurationPanelVisual extends JPanel {
     private static final long serialVersionUID = -2998474632476302L;
+    private static final int STEP_INDEX = 1;
+
     private final RunAsPanel.InsidePanel[] insidePanels;
 
     public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderProvider sourcesFolderProvider,
             ConfigManager configManager, RunAsPanel.InsidePanel[] insidePanels) {
-        // Provide a name in the title bar.
-        setName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfiguration"));
-        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1); // NOI18N
+        setName(wizardPanel.getSteps()[STEP_INDEX]);
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, STEP_INDEX);
         // Step name (actually the whole list for reference).
-        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps());
 
         this.insidePanels = insidePanels;
         initComponents();

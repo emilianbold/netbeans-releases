@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.php.project.connections.ui;
 
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.TransferFile;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
 /**
  * @author Radek Matous
@@ -82,7 +82,7 @@ public class TransferFileUnit {
 
     public final boolean isVisible(final String filter) {
         return getTransferFile().isFile()
-                && (!PhpProjectUtils.hasText(filter) || getDisplayName().toLowerCase().contains(filter));
+                && (!StringUtils.hasText(filter) || getDisplayName().toLowerCase().contains(filter));
     }
 
     String getDisplayName() {

@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -67,104 +68,104 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  * @author Tomasz.Slota@Sun.COM
  */
 class CompletionContextFinder {
-    private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHP_NEW},
-            new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING
+    private static final List<Object[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_NEW},
+            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING
     });
 
-    private static final List<PHPTokenId[]> TYPE_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN},
-        new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-        new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
-        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+    private static final List<Object[]> TYPE_TOKENCHAINS = Arrays.asList(
+        new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.PHP_TOKEN},
+        new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
+        new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.WHITESPACE},
+        new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING},
+        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
+        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
+        new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
     );
 
-    private static final List<PHPTokenId[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+    private static final List<Object[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_VARIABLE},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
+        new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
-    private static final List<PHPTokenId[]> STATIC_CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
+    private static final List<Object[]> STATIC_CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_STRING},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_VARIABLE},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
+        new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
         PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
 
-    private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
-            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT}
+    private static final List<Object[]> PHPDOC_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHPDOC_COMMENT_START},
+            new Object[]{PHPTokenId.PHPDOC_COMMENT}
             );
 
-    private static final List<PHPTokenId[]> FUNCTION_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHP_FUNCTION},
-            new PHPTokenId[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
+    private static final List<Object[]> FUNCTION_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_FUNCTION},
+            new Object[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_FUNCTION,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
             );
 
-    private static final List<PHPTokenId[]> CLASS_CONTEXT_KEYWORDS_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHP_PRIVATE},
-            new PHPTokenId[]{PHPTokenId.PHP_PRIVATE,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_PRIVATE,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_PROTECTED},
-            new PHPTokenId[]{PHPTokenId.PHP_PROTECTED,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_PROTECTED,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_PUBLIC},
-            new PHPTokenId[]{PHPTokenId.PHP_PUBLIC,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_PUBLIC,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_STATIC},
-            new PHPTokenId[]{PHPTokenId.PHP_STATIC,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_STATIC,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT},
-            new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_FINAL},
-            new PHPTokenId[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_OPEN},
-            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT},
-            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_END},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_END,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_END,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_END},
-            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_END,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_END,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_CLOSE,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_OPEN},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_OPEN,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_CURLY_OPEN,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
-            new PHPTokenId[]{PHPTokenId.PHP_SEMICOLON},
-            new PHPTokenId[]{PHPTokenId.PHP_SEMICOLON,PHPTokenId.WHITESPACE},
-            new PHPTokenId[]{PHPTokenId.PHP_SEMICOLON,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
+    private static final List<Object[]> CLASS_CONTEXT_KEYWORDS_TOKENCHAINS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_PRIVATE},
+            new Object[]{PHPTokenId.PHP_PRIVATE,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_PRIVATE,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_PROTECTED},
+            new Object[]{PHPTokenId.PHP_PROTECTED,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_PROTECTED,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_PUBLIC},
+            new Object[]{PHPTokenId.PHP_PUBLIC,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_PUBLIC,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_STATIC},
+            new Object[]{PHPTokenId.PHP_STATIC,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_STATIC,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_ABSTRACT},
+            new Object[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_ABSTRACT,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_FINAL},
+            new Object[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_CURLY_OPEN},
+            new Object[]{PHPTokenId.PHP_LINE_COMMENT},
+            new Object[]{PHPTokenId.PHP_LINE_COMMENT,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_COMMENT_END},
+            new Object[]{PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_COMMENT_END,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_COMMENT_END,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHPDOC_COMMENT_END},
+            new Object[]{PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHPDOC_COMMENT_END,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHPDOC_COMMENT_END,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_CURLY_CLOSE},
+            new Object[]{PHPTokenId.PHP_CURLY_CLOSE,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_CURLY_CLOSE,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_CURLY_OPEN},
+            new Object[]{PHPTokenId.PHP_CURLY_OPEN,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_CURLY_OPEN,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_SEMICOLON},
+            new Object[]{PHPTokenId.PHP_SEMICOLON,PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_SEMICOLON,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING}
             );
 
 
-       private static final List<PHPTokenId[]> SERVER_ARRAY_TOKENCHAINS = Collections.singletonList(
-            new PHPTokenId[]{PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_TOKEN});
+       private static final List<Object[]> SERVER_ARRAY_TOKENCHAINS = Collections.singletonList(
+            new Object[]{PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_TOKEN});
 
        private static final List<String> SERVER_ARRAY_TOKENTEXTS =
                Arrays.asList(new String[] {"$_SERVER","["});//NOI18N
@@ -186,11 +187,11 @@ class CompletionContextFinder {
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
             PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
             PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_CASTING);
-    
+
         @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
        Document document = info.getSnapshot().getSource().getDocument(false);
-       
+
         if (document == null) {
             return CompletionContext.NONE;
         }
@@ -207,7 +208,7 @@ class CompletionContextFinder {
         Token<PHPTokenId> token = tokenSequence.token();
         PHPTokenId tokenId =token.id();
         int tokenIdOffset = tokenSequence.token().offset(th);
-        
+
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,
                 (caretOffset-tokenIdOffset), tokenSequence);
         if (clsIfaceDeclContext != null) {
@@ -236,7 +237,7 @@ class CompletionContextFinder {
             }
             return CompletionContext.NONE;
         }
-        
+
         switch (tokenId){
             case T_INLINE_HTML:
                 return CompletionContext.HTML;
@@ -302,42 +303,35 @@ class CompletionContextFinder {
     }
 
     private static boolean acceptTokenChainTexts(TokenSequence tokenSequence, List<String> tokenTexts) {
-        Token[] preceedingTokens = getPreceedingTokens(tokenSequence, tokenTexts.size());
-        if (preceedingTokens.length != tokenTexts.size()) {
-            return false;
-        }
-        for (int idx = 0; idx < preceedingTokens.length; idx++) {
-            String expectedText = tokenTexts.get(idx);
-            if (!expectedText.contentEquals(preceedingTokens[idx].text())) {
-                return false;
+        int orgTokenSequencePos = tokenSequence.offset();
+        boolean accept = true;
+        boolean moreTokens = tokenSequence.movePrevious();
+
+        for (int i = tokenTexts.size() - 1; i >= 0; i --){
+            String tokenTxt = tokenTexts.get(i);
+
+            if (!moreTokens){
+                accept = false;
+                break;
+            }
+
+            if (TokenUtilities.textEquals(tokenTxt, tokenSequence.token().text())) {
+                moreTokens = tokenSequence.movePrevious();
+            } else {
+                // NO MATCH
+                accept = false;
+                break;
             }
         }
-        return true;
+
+        tokenSequence.move(orgTokenSequencePos);
+        tokenSequence.moveNext();
+        return accept;
     }
 
-    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains) {
-        int maxLen = 0;
-
-        for (PHPTokenId tokenIds[] : tokenIdChains){
-            if (maxLen < tokenIds.length){
-                maxLen = tokenIds.length;
-            }
-        }
-
-        Token preceedingTokens[] = getPreceedingTokens(tokenSequence, maxLen);
-
-        chain_search:
-        for (PHPTokenId tokenIds[] : tokenIdChains){
-
-            int startWithinPrefix = preceedingTokens.length - tokenIds.length;
-
-            if (startWithinPrefix >= 0){
-                for (int i = 0; i < tokenIds.length; i ++){
-                    if (tokenIds[i] != preceedingTokens[i + startWithinPrefix].id()){
-                        continue chain_search;
-                    }
-                }
-
+    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<Object[]> tokenIdChains) {
+        for (Object[] tokenIDChain : tokenIdChains){
+            if (acceptTokenChain(tokenSequence, tokenIDChain)){
                 return true;
             }
         }
@@ -345,32 +339,33 @@ class CompletionContextFinder {
         return false;
     }
 
-    private static Token[] getPreceedingTokens(TokenSequence tokenSequence, int maxNumberOfTokens){
-        int orgOffset = tokenSequence.offset();
-        LinkedList<Token> tokens = new LinkedList<Token>();
-        
-        boolean success = true;
+    private static boolean acceptTokenChain(TokenSequence tokenSequence, Object[] tokenIdChain) {
+        int orgTokenSequencePos = tokenSequence.offset();
+        boolean accept = true;
+        boolean moreTokens = tokenSequence.movePrevious();
 
-        // in case we are at the last token
-        // include it in the result, see #154055
-        if (tokenSequence.moveNext()){
-            success = tokenSequence.movePrevious()
-                && tokenSequence.movePrevious();
-        }
+        for (int i = tokenIdChain.length - 1; i >= 0; i --){
+            Object tokenID = tokenIdChain[i];
 
-        if (success) {
-            for (int i = 0; i < maxNumberOfTokens; i++) {
-                tokens.addFirst(tokenSequence.token());
+            if (!moreTokens){
+                accept = false;
+                break;
+            }
 
-                if (i == maxNumberOfTokens - 1 || !tokenSequence.movePrevious()) {
+            if (tokenID instanceof PHPTokenId) {
+                if (tokenSequence.token().id() == tokenID){
+                    moreTokens = tokenSequence.movePrevious();
+                } else {
+                    // NO MATCH
+                    accept = false;
                     break;
                 }
             }
         }
 
-        tokenSequence.move(orgOffset);
+        tokenSequence.move(orgTokenSequencePos);
         tokenSequence.moveNext();
-        return tokens.toArray(new Token[tokens.size()]);
+        return accept;
     }
 
     private static Token[] getLeftPreceedingTokens(TokenSequence tokenSequence){
@@ -483,7 +478,7 @@ class CompletionContextFinder {
         int orgOffset = tokenSequence.offset();
         LinkedList<Token<PHPTokenId>> tokens = new LinkedList<Token<PHPTokenId>>();
         if (token.id() != PHPTokenId.WHITESPACE ||
-                token.text().subSequence(0, 
+                token.text().subSequence(0,
                 Math.min(token.text().length(), tokenOffset)).toString().indexOf("\n") == -1) {//NOI18N
             while (true) {
                 if (!tokenSequence.movePrevious()) {
@@ -493,14 +488,14 @@ class CompletionContextFinder {
                 if (cToken.id() == PHPTokenId.WHITESPACE &&
                         cToken.text().toString().indexOf("\n") != -1) {//NOI18N
                     break;
-                }                
+                }
                 tokens.addLast(cToken);
             }
         }
 
         tokenSequence.move(orgOffset);
         tokenSequence.moveNext();
-        
+
         return tokens;
     }
 
@@ -580,10 +575,10 @@ class CompletionContextFinder {
         if (text == null || text.length() == 0) {
             return CompletionContext.NONE;
         }
-        
+
         int offset = caretOffset - tokenSeq.offset() -1;
         char charAt = 0;
-        
+
         if (offset > -1) {
             charAt = text.charAt(offset--);
             while (-1 < offset && !Character.isWhitespace(charAt) && charAt != '$') {
