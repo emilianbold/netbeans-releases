@@ -106,10 +106,26 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.extexecution</package>
                 <package>org.netbeans.api.extexecution.print</package>
                 <package>org.netbeans.api.extexecution.input</package>
+                <package>org.netbeans.spi.extexecution.destroy</package>
             </public-packages>
         </data>
     </configuration>

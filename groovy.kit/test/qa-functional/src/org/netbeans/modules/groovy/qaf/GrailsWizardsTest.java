@@ -42,7 +42,7 @@ package org.netbeans.modules.groovy.qaf;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -67,7 +67,7 @@ public class GrailsWizardsTest extends GrailsTestCase {
     public void testGSPFile() {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.gsp.resources.Bundle", "Templates/Groovy/_view.gsp");
         createNewGroovyFile(getProject(), label);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName("MyGSP"); //NOI18N
         op.finish();
     }

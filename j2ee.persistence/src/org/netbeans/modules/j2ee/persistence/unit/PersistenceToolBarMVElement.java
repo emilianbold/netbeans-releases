@@ -296,7 +296,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             Object result = DialogDisplayer.getDefault().notify(nd);
             
             if (result == NotifyDescriptor.OK_OPTION) {
-                String version=PersistenceUtils.getJPAVersion(project);
+                String version=puDataObject.getPersistence().getVersion();
                 PersistenceUnit punit = null;
                 if(Persistence.VERSION_2_0.equals(version))
                 {

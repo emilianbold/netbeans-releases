@@ -57,9 +57,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -116,7 +116,7 @@ public class RemoteClient implements Cancellable {
 
         // base remote directory
         StringBuilder baseDirBuffer = new StringBuilder(configuration.getInitialDirectory());
-        if (PhpProjectUtils.hasText(properties.additionalInitialSubdirectory)) {
+        if (StringUtils.hasText(properties.additionalInitialSubdirectory)) {
             if (!properties.additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
                 throw new IllegalArgumentException("additionalInitialSubdirectory must start with " + TransferFile.SEPARATOR);
             }

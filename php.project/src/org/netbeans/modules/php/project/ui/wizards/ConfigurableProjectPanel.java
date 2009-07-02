@@ -50,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.ProjectNameProvider;
+import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -57,12 +58,19 @@ import org.openide.util.ChangeSupport;
  */
 public abstract class ConfigurableProjectPanel extends JPanel implements ProjectNameProvider, DocumentListener, ChangeListener, ActionListener {
 
+    private static final int STEP_INDEX = 0;
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     protected final ProjectFolder projectFolderComponent;
 
-    public ConfigurableProjectPanel() {
+    public ConfigurableProjectPanel(ConfigureProjectPanel wizardPanel) {
         projectFolderComponent = new ProjectFolder(this);
         projectFolderComponent.addProjectFolderListener(this);
+
+        setName(wizardPanel.getSteps()[STEP_INDEX]);
+        putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, STEP_INDEX);
+        // Step name (actually the whole list for reference).
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps());
     }
 
     // abstract methods
