@@ -50,8 +50,18 @@ import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 public class KeyManager {
 
     private final KeyStorage storage;
-    private static final int KEY_MANAGER_DEFAULT_CAPACITY = 1024;
-    private static final int KEY_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int KEY_MANAGER_DEFAULT_CAPACITY;
+    private static final int KEY_MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = Runtime.getRuntime().availableProcessors();
+        if (nrProc <= 4) {
+            KEY_MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            KEY_MANAGER_DEFAULT_CAPACITY = 512;
+        } else {
+            KEY_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            KEY_MANAGER_DEFAULT_CAPACITY = 128;
+        }
+    }
     private static final KeyManager instance = new KeyManager();
 
     /** Creates a new instance of KeyManager */
@@ -93,14 +103,19 @@ public class KeyManager {
     private static final class KeyStorage {
 
         private final WeakSharedSet<Key>[] instances;
-        private final int sliceNumber; // primary number for better distribution
+        private final int segmentMask; // mask
         private final int initialCapacity;
 
         private KeyStorage(int sliceNumber, int initialCapacity) {
-            this.sliceNumber = sliceNumber;
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
             this.initialCapacity = initialCapacity;
             @SuppressWarnings("unchecked")
-            WeakSharedSet<Key>[] ar = new WeakSharedSet[sliceNumber];
+            WeakSharedSet<Key>[] ar = new WeakSharedSet[ssize];
             for (int i = 0; i < ar.length; i++) {
                 ar[i] = new WeakSharedSet<Key>(initialCapacity);
             }
@@ -108,10 +123,7 @@ public class KeyManager {
         }
 
         private WeakSharedSet<Key> getDelegate(Key key) {
-            int index = key.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
+            int index = key.hashCode() & segmentMask;
             return instances[index];
         }
 
