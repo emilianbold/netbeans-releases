@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-//</editor-fold>
 
 package org.netbeans.modules.glassfish.eecommon.api;
 
@@ -135,31 +133,47 @@ public class HttpMonitorHelper {
         return needRestart;
     }
     
-    private static File getDefaultWebXML(String domainLoc, String domainName) {
+    // Workaround to eliminate Glassfih issue 8609
+    // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8609
+    // Workaround may be removed when GF issue 8609 is fixed
+    // visible for unit testing only
+    //
+    static File getDefaultWebXML(String domainLoc, String domainName) {
         String loc = domainLoc+"/"+domainName+"/config/default-web.xml"; // NOI18N
         File webXML = new File(loc);
 
-        // Workaround to eliminate Glassfih issue 8609
-        // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8609
-        // Workaround may be removed when GF issue 8609 is fixed
-        String newLoc = domainLoc+"/"+domainName+"/config/default-web-2_4.xml"; // NOI18N
-        File newWebXML = new File(newLoc);
-        if (!newWebXML.exists()) {
-            createCopyAndUpgrade(webXML, newWebXML);
-        }
-        webXML = newWebXML;
-        // end of workaround
-
-        if (webXML.exists()) {
-            return webXML;
+        if (webXML.exists())  {
+            String backupLoc = domainLoc+"/"+domainName+"/config/default-web.xml.orig"; // NOI18N
+            File backupXml = new File(backupLoc);
+            if (!backupXml.exists()) {
+                try {
+                    copy(webXML,backupXml);
+                    createCopyAndUpgrade(backupXml, webXML);
+                } catch (FileNotFoundException fnfe) {
+                    Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "This file existed a few milliseconds ago: "+ webXML.getAbsolutePath(), fnfe);
+                } catch (IOException ioe) {
+                    if (backupXml.exists()) {
+                        backupXml.delete();
+                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING,"failed to backup data from "+webXML.getAbsolutePath(), ioe);
+                    } else {
+                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING,"failed to create backup file "+backupXml.getAbsolutePath(), ioe);
+                    }
+                }
+            }
+            return webXML.exists() ? webXML : null;
         }
         return null;
     }
 
-    private static void createCopyAndUpgrade(File webXML, File newWebXML) {
+    // visible for unit testing only
+    //
+    static void createCopyAndUpgrade(File webXML, File newWebXML) {
+        BufferedReader fr= null;
+        BufferedWriter fw= null;
+        boolean deleteNew = true;
         try {
-            BufferedReader fr = new BufferedReader(new FileReader(webXML));
-            BufferedWriter fw = new BufferedWriter(new FileWriter(newWebXML));
+            fr = new BufferedReader(new FileReader(webXML));
+            fw = new BufferedWriter(new FileWriter(newWebXML));
             while (true) {
                 String line = fr.readLine();
                 if (line == null)
@@ -176,11 +190,34 @@ public class HttpMonitorHelper {
                     fw.newLine();
                 }
             }
+            deleteNew = false;
             fw.close();
+            fw = null;
             fr.close();
-        }
-        catch (IOException e) {
+            fr = null;
+        } catch (FileNotFoundException fnfe) {
+            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "This file existed a few milliseconds ago: "+ webXML.getAbsolutePath(), fnfe);
+        } catch (Exception e) {
+            if (null != fw && deleteNew) {
+                if (!newWebXML.delete()) {
+                    Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "hack to eliminate GF bug 8609 failed and left bogus file: " + newWebXML.getAbsolutePath());
+                }
+            }
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "hack to eliminate GF bug 8609 failed", e);
+        } finally {
+            if (null != fw) {
+                try {
+                    fw.close();
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, "close of fw failed: "+ newWebXML.getAbsolutePath(), ioe);
+                }
+            }
+            if (null != fr) {
+                try {
+                    fr.close();
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, "close of fr failed: "+ webXML.getAbsolutePath(), ioe);                }
+            }
         }
     }
 
@@ -197,8 +234,10 @@ public class HttpMonitorHelper {
         }
         return retVal;
     }
-    
-    private static boolean changeFilterMonitor(WebApp webApp,boolean full)  throws ClassNotFoundException {
+
+    // visible for unit testing
+    //
+    static boolean changeFilterMonitor(WebApp webApp,boolean full)  throws ClassNotFoundException {
         boolean filterWasChanged=false;
         if (full) { // adding monitor filter/filter-mapping element
             boolean isFilter=false;
@@ -329,14 +368,16 @@ public class HttpMonitorHelper {
         fileRelPath = fileRelPath.replace('/', File.separatorChar);
         return new File(base, fileRelPath);
     }
-    
+
+    // visible for unit testing only
+    //
     /** Inserts or and updates in the Monitor Filter element the parameter
      *  which tells the Monitor the number of the internal port,
      *  depending on whether the integration mode is full or minimal
      *  @param webApp deployment descriptor in which to do the changes
      *  @return true if the default deployment descriptor was modified
      */
-    private static boolean specifyFilterPortParameter(WebApp webApp) throws ClassNotFoundException {
+     static boolean specifyFilterPortParameter(WebApp webApp) throws ClassNotFoundException {
         Filter[] filters = webApp.getFilter();
         Filter myFilter = null;
         for(int i=0; i<filters.length; i++) {
