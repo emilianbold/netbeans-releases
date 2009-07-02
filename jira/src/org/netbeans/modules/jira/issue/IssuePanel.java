@@ -130,6 +130,22 @@ public class IssuePanel extends javax.swing.JPanel {
         initAttachmentsPanel();
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (issue != null) {
+            issue.opened();
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if(issue != null) {
+            issue.closed();
+        }
+    }
+
     void setIssue(NbJiraIssue issue) {
         if (this.issue == null) {
             attachIssueListener(issue);

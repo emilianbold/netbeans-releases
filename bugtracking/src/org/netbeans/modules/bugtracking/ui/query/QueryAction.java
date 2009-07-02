@@ -44,7 +44,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
@@ -89,6 +91,7 @@ public class QueryAction extends SystemAction {
     public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
                 QueryTopComponent tc = null;
                 if(query != null) {
                     tc = QueryTopComponent.find(query);
@@ -101,6 +104,7 @@ public class QueryAction extends SystemAction {
                     tc.open();
                 }
                 tc.requestActive();
+                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
             }
         });
     }
