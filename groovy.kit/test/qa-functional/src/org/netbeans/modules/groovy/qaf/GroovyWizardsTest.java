@@ -42,7 +42,7 @@ package org.netbeans.modules.groovy.qaf;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -70,7 +70,7 @@ public class GroovyWizardsTest extends GroovyTestCase {
         createNewGroovyFile(getProject(), label);
         //in default package
         String name = "MyGroovyClass"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name);
         op.setPackage(""); //NOI18N
         op.finish();
@@ -81,7 +81,7 @@ public class GroovyWizardsTest extends GroovyTestCase {
         name = "PkgGroovyClass"; //NOI18N
         String pkg = "my.groovy.pkg"; //NOI18N
         createNewGroovyFile(getProject(), label);
-        op = new NewFileNameLocationStepOperator();
+        op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name);
         op.setPackage(pkg);
         op.finish();
@@ -99,7 +99,7 @@ public class GroovyWizardsTest extends GroovyTestCase {
         createNewGroovyFile(getProject(), label);
         //in default package
         String name = "MyGroovyScript"; //NOI18N
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name);
         op.setPackage(""); //NOI18N
         op.finish();
@@ -110,7 +110,7 @@ public class GroovyWizardsTest extends GroovyTestCase {
         name = "PkgGroovyScript"; //NOI18N
         String pkg = "my.groovy.pkg"; //NOI18N
         createNewGroovyFile(getProject(), label);
-        op = new NewFileNameLocationStepOperator();
+        op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name);
         op.setPackage(pkg);
         op.finish();

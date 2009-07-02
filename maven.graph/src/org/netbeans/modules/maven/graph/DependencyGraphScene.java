@@ -53,6 +53,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -324,8 +325,19 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 popupMenu.add(sceneZoomToFitAction);
             } else {
                 ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
-                if (isEditable() && isFixCandidate(node)) {
-                    popupMenu.add(new FixVersionConflictAction(node));
+                if (isEditable()) {
+                    boolean addSeparator = false;
+                    if (isFixCandidate(node)) {
+                        popupMenu.add(new FixVersionConflictAction(node));
+                        addSeparator = true;
+                    }
+                    if (node.getPrimaryLevel() > 1) {
+                        popupMenu.add(new ExcludeDepAction(node));
+                        addSeparator = true;
+                    }
+                    if (addSeparator) {
+                        popupMenu.add(new JSeparator());
+                    }
                 }
                 popupMenu.add(highlitedZoomToFitAction);
                 if (!node.isRoot()) {
@@ -527,6 +539,200 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         new FixVersionConflictAction(node).actionPerformed(null);
     }
 
+    /** Note, must be called inside model transaction */
+    private void excludeDepFromModel (ArtifactGraphNode node, Set<Artifact> exclTargets) {
+        assert model.isIntransaction() : "Must be called inside transaction"; //NOI18N
+
+        Artifact nodeArtif = node.getArtifact().getArtifact();
+
+        for (Artifact eTarget : exclTargets) {
+            org.netbeans.modules.maven.model.pom.Dependency dep =
+                    model.getProject().findDependencyById(
+                    eTarget.getGroupId(), eTarget.getArtifactId(), null);
+            if (dep == null) {
+                // now check the active profiles for the dependency..
+                List<String> profileNames = new ArrayList<String>();
+                NbMavenProject nbMavproject = nbProject.getLookup().lookup(NbMavenProject.class);
+                Iterator it = nbMavproject.getMavenProject().getActiveProfiles().iterator();
+                while (it.hasNext()) {
+                    org.apache.maven.model.Profile prof = (org.apache.maven.model.Profile) it.next();
+                    profileNames.add(prof.getId());
+                }
+                for (String profileId : profileNames) {
+                    Profile modProf = model.getProject().findProfileById(profileId);
+                    if (modProf != null) {
+                        dep = modProf.findDependencyById(eTarget.getGroupId(), eTarget.getArtifactId(), null);
+                        if (dep != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (dep == null) {
+                // must create dependency if not found locally, so that
+                // there is a place where to add dep exclusion
+                dep = model.getFactory().createDependency();
+                dep.setArtifactId(eTarget.getArtifactId());
+                dep.setGroupId(eTarget.getGroupId());
+                dep.setType(eTarget.getType());
+                dep.setVersion(eTarget.getVersion());
+                model.getProject().addDependency(dep);
+            }
+            Exclusion ex = dep.findExclusionById(
+                    nodeArtif.getGroupId(), nodeArtif.getArtifactId());
+            if (ex == null) {
+                ex = model.getFactory().createExclusion();
+                ex.setArtifactId(nodeArtif.getArtifactId());
+                ex.setGroupId(nodeArtif.getGroupId());
+                dep.addExclusion(ex);
+            }
+        }
+    }
+
+    private void updateGraphAfterExclusion (ArtifactGraphNode node, Set<Artifact> exclTargets,
+            Set<DependencyNode> exclParents) {
+        boolean shouldValidate = false;
+
+        Set<DependencyNode> toExclude = new HashSet<DependencyNode>();
+        DependencyNode curDn;
+        for (DependencyNode dn : node.getDuplicatesOrConflicts()) {
+            if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                curDn = dn.getParent();
+                while (curDn != null) {
+                    if (exclTargets.contains(curDn.getArtifact())) {
+                        toExclude.add(dn);
+                        break;
+                    }
+                    curDn = curDn.getParent();
+                }
+            }
+        }
+        List<ArtifactGraphEdge> edges2Exclude = new ArrayList<ArtifactGraphEdge>();
+        Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+        ArtifactGraphNode sourceNode = null;
+        boolean primaryExcluded = false;
+        for (ArtifactGraphEdge age : incoming) {
+            sourceNode = getEdgeSource(age);
+            if (sourceNode != null) {
+                for (DependencyNode dn : exclParents) {
+                    if (sourceNode.getArtifact().equals(dn)) {
+                        primaryExcluded = true;
+                    }
+                    if (sourceNode.represents(dn)) {
+                        edges2Exclude.add(age);
+                        break;
+                    }
+                }
+            }
+        }
+        // note, must be called before node removing edges to work correctly
+        node.getDuplicatesOrConflicts().removeAll(toExclude);
+        for (ArtifactGraphEdge age : edges2Exclude) {
+            removeEdge(age);
+            age.getSource().removeChild(age.getTarget());
+            shouldValidate = true;
+        }
+        incoming = findNodeEdges(node, false, true);
+        if (primaryExcluded) {
+            ArtifactVersion newVersion = findNewest(node, true);
+            node.getArtifact().getArtifact().setVersion(newVersion.toString());
+            for (ArtifactGraphEdge age : incoming) {
+                EdgeWidget curEw = (EdgeWidget) findWidget(age);
+                if (curEw != null) {
+                    curEw.modelChanged();
+                }
+            }
+        }
+        if (incoming.isEmpty()) {
+            removeSubGraph(node);
+            shouldValidate = true;
+        } else {
+            node.getWidget().modelChanged();
+        }
+
+        if (shouldValidate) {
+            validate();
+        }
+    }
+
+    private void removeSubGraph (ArtifactGraphNode node) {
+        if (!isNode(node)) {
+            // already visited and removed
+            return;
+        }
+
+        Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+        if (!incoming.isEmpty()) {
+            return;
+        }
+        Collection<ArtifactGraphEdge> outgoing = findNodeEdges(node, true, false);
+
+        List<ArtifactGraphNode> children = new ArrayList<ArtifactGraphNode>();
+
+        DependencyNode dn = null;
+        ArtifactGraphNode childNode = null;
+        // remove edges to children
+        for (ArtifactGraphEdge age : outgoing) {
+            dn = age.getTarget();
+            childNode = getGraphNodeRepresentant(dn);
+            children.add(childNode);
+            removeEdge(age);
+            age.getSource().removeChild(dn);
+            childNode.getDuplicatesOrConflicts().remove(dn);
+        }
+        // recurse to children
+        for (ArtifactGraphNode age : children) {
+            removeSubGraph(age);
+        }
+
+        // remove itself finally
+        removeNode(node);
+    }
+
+    private class ExcludeDepAction extends AbstractAction implements Runnable {
+        private ArtifactGraphNode node;
+
+        public ExcludeDepAction(ArtifactGraphNode node) {
+            this.node = node;
+            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_ExcludeDep"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DependencyGraphScene.class, "TIP_ExcludeDep"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FixVersionConflictPanel.ExclusionTargets et =
+                    new FixVersionConflictPanel.ExclusionTargets(node, findNewest(node, true));
+            Set<Artifact> exclTargets = et.getAll();
+
+            try {
+                model.startTransaction();
+                excludeDepFromModel(node, exclTargets);
+            } finally {
+                model.endTransaction();
+            }
+
+            HashSet<DependencyNode> conflictParents = new HashSet<DependencyNode>();
+            for (Artifact artif : exclTargets) {
+                conflictParents.addAll(et.getConflictParents(artif));
+            }
+            updateGraphAfterExclusion(node, exclTargets, conflictParents);
+
+            // save changes
+            RequestProcessor.getDefault().post(this);
+        }
+
+        /** Saves fix changes to the pom file, posted to RequestProcessor */
+        public void run() {
+            try {
+                Utilities.saveChanges(model);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                //TODO error reporting on wrong model save
+            }
+        }
+
+    }
+
+
     private class FixVersionConflictAction extends AbstractAction implements Runnable {
         private ArtifactGraphNode node;
         private Artifact nodeArtif;
@@ -574,48 +780,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 }
 
                 if (fixContent.isExclude) {
-                    for (Artifact eTarget : fixContent.exclusionTargets) {
-                        org.netbeans.modules.maven.model.pom.Dependency dep =
-                                model.getProject().findDependencyById(
-                                eTarget.getGroupId(), eTarget.getArtifactId(), null);
-                        if (dep == null) {
-                            // now check the active profiles for the dependency..
-                            List<String> profileNames = new ArrayList<String>();
-                            NbMavenProject project = nbProject.getLookup().lookup(NbMavenProject.class);
-                            Iterator it = project.getMavenProject().getActiveProfiles().iterator();
-                            while (it.hasNext()) {
-                                org.apache.maven.model.Profile prof = (org.apache.maven.model.Profile) it.next();
-                                profileNames.add(prof.getId());
-                            }
-                            for (String profileId : profileNames) {
-                                Profile modProf = model.getProject().findProfileById(profileId);
-                                if (modProf != null) {
-                                    dep = modProf.findDependencyById(eTarget.getGroupId(), eTarget.getArtifactId(), null);
-                                    if (dep != null) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (dep == null) {
-                            // must create dependency if not found locally, so that
-                            // there is a place where to add dep exclusion
-                            dep = model.getFactory().createDependency();
-                            dep.setArtifactId(eTarget.getArtifactId());
-                            dep.setGroupId(eTarget.getGroupId());
-                            dep.setType(eTarget.getType());
-                            dep.setVersion(eTarget.getVersion());
-                            model.getProject().addDependency(dep);
-                        }
-                        Exclusion ex = dep.findExclusionById(
-                                nodeArtif.getGroupId(), nodeArtif.getArtifactId());
-                        if (ex == null) {
-                            ex = model.getFactory().createExclusion();
-                            ex.setArtifactId(nodeArtif.getArtifactId());
-                            ex.setGroupId(nodeArtif.getGroupId());
-                            dep.addExclusion(ex);
-                        }
-                    }
+                    excludeDepFromModel(node, fixContent.exclusionTargets);
                 }
             } finally {
                 model.endTransaction();
@@ -623,8 +788,6 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         private void updateGraph(FixDescription fixContent) {
-            boolean shouldValidate = false;
-
             if (fixContent.isSet) {
                 node.getArtifact().getArtifact().setVersion(fixContent.version2Set.toString());
                 Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
@@ -649,81 +812,17 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     node.setArtifactParent(rootNode.getArtifact());
                     rootNode.getArtifact().addChild(node.getArtifact());
 
-                    shouldValidate = true;
+                    validate();
                 }
             }
 
             if (fixContent.isExclude) {
-                Set<DependencyNode> toExclude = new HashSet<DependencyNode>();
-                DependencyNode curDn;
-                for (DependencyNode dn : node.getDuplicatesOrConflicts()) {
-                    if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                        curDn = dn.getParent();
-                        while (curDn != null) {
-                            if (fixContent.exclusionTargets.contains(curDn.getArtifact())) {
-                                toExclude.add(dn);
-                                break;
-                            }
-                            curDn = curDn.getParent();
-                        }
-                    }
-                }
-
-                List<ArtifactGraphEdge> edges2Exclude = new ArrayList<ArtifactGraphEdge>();
-                Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
-                ArtifactGraphNode sourceNode = null;
-                boolean primaryExcluded = false;
-                for (ArtifactGraphEdge age : incoming) {
-                    sourceNode = getEdgeSource(age);
-                    if (sourceNode != null) {
-                        for (DependencyNode dn : fixContent.conflictParents) {
-                            if (sourceNode.getArtifact().equals(dn)) {
-                                primaryExcluded = true;
-                            }
-                            if (sourceNode.represents(dn)) {
-                                edges2Exclude.add(age);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // note, must be called before node removing edges to work correctly
-                node.getDuplicatesOrConflicts().removeAll(toExclude);
-
-                for (ArtifactGraphEdge age : edges2Exclude) {
-                    removeEdge(age);
-                    age.getSource().removeChild(age.getTarget());
-                    shouldValidate = true;
-                }
-
-                incoming = findNodeEdges(node, false, true);
-
-                if (primaryExcluded) {
-                    ArtifactVersion newVersion = findNewest(node, true);
-                    node.getArtifact().getArtifact().setVersion(newVersion.toString());
-                    for (ArtifactGraphEdge age : incoming) {
-                        EdgeWidget curEw = (EdgeWidget) findWidget(age);
-                        if (curEw != null) {
-                            curEw.modelChanged();
-                        }
-                    }
-                }
-
-                if (incoming.isEmpty()) {
-                    removeNodeWithEdges(node);
-                    shouldValidate = true;
-                } else {
-                    node.getWidget().modelChanged();
-                }
-            }
-
-            if (shouldValidate) {
-                validate();
+                updateGraphAfterExclusion(node, fixContent.exclusionTargets, fixContent.conflictParents);
             }
         }
 
     } // FixVersionConflictAction
+
 
     private class HoverController implements TwoStateHoverProvider {
 

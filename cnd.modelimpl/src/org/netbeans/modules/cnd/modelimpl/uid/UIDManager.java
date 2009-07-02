@@ -50,8 +50,18 @@ import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 public class UIDManager {
 
     private final UIDStorage storage;
-    private static final int UID_MANAGER_DEFAULT_CAPACITY = 1024;
-    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int UID_MANAGER_DEFAULT_CAPACITY;
+    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = Runtime.getRuntime().availableProcessors();
+        if (nrProc <= 4) {
+            UID_MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            UID_MANAGER_DEFAULT_CAPACITY = 512;
+        } else {
+            UID_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            UID_MANAGER_DEFAULT_CAPACITY = 128;
+        }
+    }
     private static final UIDManager instance = new UIDManager();
 
     /** Creates a new instance of UIDManager */
@@ -93,14 +103,19 @@ public class UIDManager {
     private static final class UIDStorage {
 
         private final WeakSharedSet<CsmUID<?>>[] instances;
-        private final int sliceNumber; // primary number for better distribution
+        private final int segmentMask; // mask
         private final int initialCapacity;
 
         private UIDStorage(int sliceNumber, int initialCapacity) {
-            this.sliceNumber = sliceNumber;
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
             this.initialCapacity = initialCapacity;
             @SuppressWarnings("unchecked")
-            WeakSharedSet<CsmUID<?>>[] ar = new WeakSharedSet[sliceNumber];
+            WeakSharedSet<CsmUID<?>>[] ar = new WeakSharedSet[ssize];
             for (int i = 0; i < ar.length; i++) {
                 ar[i] = new WeakSharedSet<CsmUID<?>>(initialCapacity);
             }
@@ -108,10 +123,7 @@ public class UIDManager {
         }
 
         private WeakSharedSet<CsmUID<?>> getDelegate(CsmUID<?> uid) {
-            int index = uid.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
+            int index = uid.hashCode() & segmentMask;
             return instances[index];
         }
 

@@ -70,7 +70,9 @@ public class WeblogicServerProvider implements ServerProvider {
     public void setServerSpecificProperties(InstanceProperties ip) {
         ip.setProperty(WLPluginProperties.SERVER_ROOT_ATTR, cProvider.getServerRoot());
         ip.setProperty(WLPluginProperties.DOMAIN_ROOT_ATTR, cProvider.getDomainRoot());
-        ip.setProperty(WLPluginProperties.IS_LOCAL_ATTR, cProvider.isLocal());
+
+        //For some reason, this was commented out in WLPluginProperties.java
+        //ip.setProperty(WLPluginProperties.IS_LOCAL_ATTR, cProvider.isLocal());
         ip.setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR, cProvider.getPortDebugger());
     }
 }

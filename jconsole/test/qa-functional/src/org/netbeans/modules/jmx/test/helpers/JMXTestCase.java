@@ -64,7 +64,7 @@ import javax.swing.JTextField;
 import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -130,8 +130,8 @@ public abstract class JMXTestCase extends JellyTestCase {
         project.selectCategory(category);
         project.selectProject(type);
         project.next();
-        NewFileNameLocationStepOperator projectName =
-                new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator projectName =
+                new NewJavaFileNameLocationStepOperator();
         projectName.setObjectName(name);
         project.finish();
         setWaitFocusTimeout(project, 10000);
@@ -201,14 +201,14 @@ public abstract class JMXTestCase extends JellyTestCase {
         return nfwo;
     }
     
-    public NewFileNameLocationStepOperator nameAndLocationWizard(
+    public NewJavaFileNameLocationStepOperator nameAndLocationWizard(
             String objectName,
             String packageName,
             String description,
             String classToWrap,
             boolean objectWrappedAsMXBean) {
-        NewFileNameLocationStepOperator wizard =
-                new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator wizard =
+                new NewJavaFileNameLocationStepOperator();
         
         if (objectName != null) {
             wizard.setObjectName(objectName);
@@ -236,7 +236,7 @@ public abstract class JMXTestCase extends JellyTestCase {
     /**
      * Name and Location wizard.
      */
-    public NewFileNameLocationStepOperator nameAndLocationWizard(
+    public NewJavaFileNameLocationStepOperator nameAndLocationWizard(
             String objectName,
             String packageName) {
         return nameAndLocationWizard(objectName, packageName, null, null, false);
