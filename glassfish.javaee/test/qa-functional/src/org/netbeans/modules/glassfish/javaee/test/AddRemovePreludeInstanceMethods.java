@@ -136,22 +136,30 @@ public class AddRemovePreludeInstanceMethods extends NbTestCase {
                 }
                 String instances[] = ServerRegistry.getInstance().getInstanceURLs();
                 if (null != instances) {
-                    if (instances.length > 1) {
+                    if (instances.length > 0) {
                         fail("too many instances");
                     }
-                }
+                } 
 
                 return;
             }
 
             fail("v3 Prelude instance still exists !");
         } finally {
+//                File ff = new File(Util._PRELUDE_LOCATION);
+//                if (ff.getAbsolutePath().contains(Util.TEMP_FILE_PREFIX)) {
+//                    System.out.println("Deleting: " + ff.getAbsolutePath());
+//                    Util.deleteJunk(ff.getParentFile());
+//                }
+        }
+    }
+
+    public void deleteJunkInstall() {
                 File ff = new File(Util._PRELUDE_LOCATION);
                 if (ff.getAbsolutePath().contains(Util.TEMP_FILE_PREFIX)) {
                     System.out.println("Deleting: " + ff.getAbsolutePath());
                     Util.deleteJunk(ff.getParentFile());
                 }
-        }
     }
 
     public void checkJavaDB() {
