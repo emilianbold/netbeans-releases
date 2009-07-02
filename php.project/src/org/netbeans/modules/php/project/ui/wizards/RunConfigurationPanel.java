@@ -79,7 +79,7 @@ import org.openide.util.WeakListeners;
 public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener, CancelablePanel {
 
-    static final String VALID = "valid"; // NOI18N // used in the previous step while validating sources - copy-folder
+    static final String VALID = "RunConfigurationPanel.valid"; // NOI18N // used in the previous step while validating sources - copy-folder
     static final String RUN_AS = PhpProjectProperties.RUN_AS; // this property is used in RunAsPanel... yeah, ugly
     static final String URL = "url"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
@@ -397,7 +397,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public boolean isFinishPanel() {
-        return false;
+        return areOtherStepsValid();
     }
 
     final void fireChangeEvent() {
@@ -408,6 +408,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.addRunAsLocalWebListener(this);
         runAsRemoteWeb.addRunAsRemoteWebListener(this);
         runAsScript.addRunAsScriptListener(this);
+    }
+
+    private boolean areOtherStepsValid() {
+        Boolean isValid = (Boolean) descriptor.getProperty(PhpFrameworksPanel.VALID);
+        if (isValid != null && !isValid) {
+            return false;
+        }
+        return true;
     }
 
     private PhpProjectProperties.RunAsType getRunAsType() {

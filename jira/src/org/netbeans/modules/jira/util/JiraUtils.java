@@ -286,40 +286,36 @@ public class JiraUtils {
     }
 
     public static int getWorkLogSeconds(String code, int daysPerWeek, int hoursPerDay) {
-        int workLog = 0;
-        try {
-            int index = code.indexOf('w');
-            if (index != -1) {
-                int w = Integer.parseInt(code.substring(0,index));
-                workLog += w;
-                code = code.substring(index+1);
+        int seconds = 0;
+        code = code.trim();
+        while (code.length() > 0) {
+            char c = code.charAt(code.length()-1);
+            int index = code.lastIndexOf(' ');
+            String numTxt = code.substring(index+1, code.length()-1);
+            code = code.substring(0,index+1).trim();
+            try {
+                int num = Integer.parseInt(numTxt);
+                switch (c) {
+                    case 'w': 
+                        seconds += num*daysPerWeek*hoursPerDay*3600;
+                        break;
+                    case 'd':
+                        seconds += num*hoursPerDay*3600;
+                        break;
+                    case 'h':
+                        seconds += num*3600;
+                        break;
+                    case 'm':
+                        seconds += num*60;
+                        break;
+                    default:
+                        return -1;
+                }
+            } catch (NumberFormatException nfex) {
+                return -1;
             }
-            workLog *= daysPerWeek;
-            index = code.indexOf('d');
-            if (index != -1) {
-                int d = Integer.parseInt(code.substring(0,index));
-                workLog += d;
-                code = code.substring(index+1);
-            }
-            workLog *= hoursPerDay;
-            index = code.indexOf('h');
-            if (index != -1) {
-                int h = Integer.parseInt(code.substring(0,index));
-                workLog += h;
-                code = code.substring(index+1);
-            }
-            workLog *= 60;
-            index = code.indexOf('m');
-            if (index != -1) {
-                int m = Integer.parseInt(code.substring(0,index));
-                workLog += m;
-                code = code.substring(index+1);
-            }
-            workLog *= 60;
-        } catch (NumberFormatException nfex) {
-            workLog = 0;
         }
-        return workLog;
+        return seconds;
     }
 
 }

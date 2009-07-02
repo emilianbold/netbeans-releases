@@ -79,17 +79,6 @@ public final class PhpProjectUtils {
     }
 
     /**
-     * Return <code>true</code> if the String is not <code>null</code>
-     * and has any character after trimming.
-     * @param input input String.
-     * @return <code>true</code> if the String is not <code>null</code>
-     *         and has any character after trimming.
-     */
-    public static boolean hasText(String input) {
-        return input != null && input.trim().length() > 0;
-    }
-
-    /**
      * Get a PHP project for the given node.
      * @return a PHP project or <code>null</code>.
      */
@@ -121,33 +110,6 @@ public final class PhpProjectUtils {
         } catch (ParserConfigurationException ex) {
             throw new SAXException("Cannot create SAX parser", ex);
         }
-    }
-
-    public static String implode(List<String> items, String delimiter) {
-        assert items != null;
-        assert delimiter != null;
-
-        if (items.isEmpty()) {
-            return ""; // NOI18N
-        }
-
-        StringBuilder buffer = new StringBuilder(200);
-        boolean first = true;
-        for (String s : items) {
-            if (!first) {
-                buffer.append(delimiter);
-            }
-            buffer.append(s);
-            first = false;
-        }
-        return buffer.toString();
-    }
-
-    public static List<String> explode(String string, String delimiter) {
-        if (!hasText(string)) {
-            return Collections.<String>emptyList();
-        }
-        return Arrays.asList(string.split(Pattern.quote(delimiter)));
     }
 
     /**

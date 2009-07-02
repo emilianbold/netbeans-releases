@@ -760,29 +760,24 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
         List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
+        AtomicBoolean enougth = new AtomicBoolean(false);
+        CountDownLatch countDownLatch = new CountDownLatch(items.size());
+        RequestProcessor rp = new RequestProcessor("Create Project Files", getNumberThreads()); // NOI18N
         for (NativeFileItem nativeFileItem : items) {
-            if (disposing) {
-                if (TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.printf("filling parser queue interrupted for %s\n", getName());
-                }
-                return;
-            }
-            if (removedFiles.contains(nativeFileItem)) {
-                continue;
-            }
-            assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if (TraceFlags.DEBUG) {
-                ModelSupport.trace(nativeFileItem);
-            }
-            try {
-                createIfNeed(nativeFileItem, sources, validator, reparseOnEdit, reparseOnPropertyChanged);
-                if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0) {
-                    return;
-                }
-            } catch (Exception ex) {
-                DiagnosticExceptoins.register(ex);
-            }
+            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, nativeFileItem, sources, removedFiles,
+                    validator, reparseOnEdit, reparseOnPropertyChanged, enougth);
+            rp.post(r);
         }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException ex) {
+        }
+        //for (NativeFileItem nativeFileItem : items) {
+        //    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
+        //            reparseOnEdit, reparseOnPropertyChanged, enougth)) {
+        //        return;
+        //    }
+        //}
         if (!reparseOnEdit.isEmpty()) {
             DeepReparsingUtils.reparseOnEdit(reparseOnEdit, this, true);
         }
@@ -790,6 +785,38 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, this);
         }
     }
+
+    private boolean createProjectFilesIfNeedRun(NativeFileItem nativeFileItem, boolean sources,
+            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
+            List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
+        if (enougth.get()) {
+            return false;
+        }
+        if (disposing) {
+            if (TraceFlags.TRACE_MODEL_STATE) {
+                System.err.printf("filling parser queue interrupted for %s\n", getName());
+            }
+            return false;
+        }
+        if (removedFiles.contains(nativeFileItem)) {
+            return true;
+        }
+        assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
+        if (TraceFlags.DEBUG) {
+            ModelSupport.trace(nativeFileItem);
+        }
+        try {
+            createIfNeed(nativeFileItem, sources, validator, reparseOnEdit, reparseOnPropertyChanged);
+            if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0) {
+                enougth.set(true);
+                return false;
+            }
+        } catch (Exception ex) {
+            DiagnosticExceptoins.register(ex);
+        }
+        return true;
+    }
+
 
     /**
      * Creates FileImpl instance for the given file item if it hasn/t yet been created.
@@ -1736,20 +1763,24 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTPreprocHandler preprocHandler = null;
         File file = buf.getFile();
         FileImpl impl = getFile(file, true);
+        CsmUID<CsmFile> aUid = null;
         if (impl == null) {
+            preprocHandler = createPreprocHandler(nativeFile);
             synchronized (fileContainerLock) {
                 impl = getFile(file, true);
                 if (impl == null) {
-                    preprocHandler = createPreprocHandler(nativeFile);
                     assert preprocHandler != null;
                     impl = new FileImpl(buf, this, fileType, nativeFile);
                     putFile(file, impl, preprocHandler.getState());
                 } else {
-                    putNativeFileItem(impl.getUID(), nativeFile);
+                    aUid = impl.getUID();
                 }
             }
         } else {
-            putNativeFileItem(impl.getUID(), nativeFile);
+            aUid = impl.getUID();
+        }
+        if (aUid != null) {
+            putNativeFileItem(aUid, nativeFile);
         }
         return new FileAndHandler(impl, preprocHandler);
     }
@@ -2079,7 +2110,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         CountDownLatch countDownLatch = new CountDownLatch(files.size());
         RequestProcessor rp = new RequestProcessor("Fix registration", getNumberThreads()); // NOI18N
         for (CsmUID<CsmFile> file : files) {
-            MyRunnable r = new MyRunnable(countDownLatch, file, libsAlreadyParsed);
+            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, file, libsAlreadyParsed);
             rp.post(r);
         }
         try {
@@ -2801,12 +2832,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return cc != null ? cc : ClassifierContainer.empty();
     }
 
-    private class MyRunnable implements Runnable {
+    private class FixRegistrationRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
         private final CsmUID<CsmFile> file;
         private final boolean libsAlreadyParsed;
 
-        private MyRunnable(CountDownLatch countDownLatch, CsmUID<CsmFile> file, boolean libsAlreadyParsed){
+        private FixRegistrationRunnable(CountDownLatch countDownLatch, CsmUID<CsmFile> file, boolean libsAlreadyParsed){
             this.countDownLatch = countDownLatch;
             this.file = file;
             this.libsAlreadyParsed = libsAlreadyParsed;
@@ -2825,6 +2856,39 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 Thread.currentThread().setName("Fix registration "+file); // NOI18N
                 impl.onProjectParseFinished(libsAlreadyParsed);
+            } finally {
+                countDownLatch.countDown();
+            }
+        }
+    }
+
+    private class CreateFileRunnable implements Runnable {
+        private final CountDownLatch countDownLatch;
+        private NativeFileItem nativeFileItem;
+        private boolean sources;
+        private Set<NativeFileItem> removedFiles;
+        private ProjectSettingsValidator validator;
+        private List<FileImpl> reparseOnEdit;
+        private List<NativeFileItem> reparseOnPropertyChanged;
+        private AtomicBoolean enougth;
+
+        private CreateFileRunnable(CountDownLatch countDownLatch, NativeFileItem nativeFileItem, boolean sources,
+            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
+            List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
+            this.countDownLatch = countDownLatch;
+            this.nativeFileItem = nativeFileItem;
+            this.sources = sources;
+            this.removedFiles = removedFiles;
+            this.validator = validator;
+            this.reparseOnEdit = reparseOnEdit;
+            this.reparseOnPropertyChanged = reparseOnPropertyChanged;
+            this.enougth = enougth;
+        }
+
+        public void run() {
+            try {
+                createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
+                                            reparseOnEdit, reparseOnPropertyChanged, enougth);
             } finally {
                 countDownLatch.countDown();
             }
