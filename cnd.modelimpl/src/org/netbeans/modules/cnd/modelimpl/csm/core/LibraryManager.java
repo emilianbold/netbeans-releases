@@ -262,7 +262,9 @@ public final class LibraryManager {
             return null;
         }
         set.add(baseProject);
-        for (String folder : folders) {
+        int folderSize = folders.size();
+        for (int i = 0; i < folderSize; i++) {
+            String folder = folders.get(i);
             if (baseProject.isMySource(folder)) {
                 return baseProject;
             }
