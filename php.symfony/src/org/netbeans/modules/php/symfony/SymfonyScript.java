@@ -275,7 +275,7 @@ public class SymfonyScript extends PhpProgram {
         }
 
         public String getHelp() {
-            return buffer.toString().trim();
+            return buffer.toString().trim() + "\n"; // NOI18N
         }
     }
 
