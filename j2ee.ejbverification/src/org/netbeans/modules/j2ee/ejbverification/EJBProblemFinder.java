@@ -108,12 +108,8 @@ public abstract class EJBProblemFinder {
             }
             J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
-                // logging for #156889
                 J2eeModule module = provider.getJ2eeModule();
-                if (module == null) {
-                    NullPointerException npe = new NullPointerException("null J2eeModule from " + provider);
-                    LOG.log(Level.WARNING, npe.getMessage(), npe);
-                } else {
+                if (module != null) {
                     if (J2eeModule.Type.EJB.equals(module.getType())) {
                         isEjb = true;
                     }

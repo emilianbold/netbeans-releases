@@ -664,27 +664,32 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         ServerInstanceWrapper selectedItem = null;
         boolean sjasFound = false;
         boolean gfv3Found = false;
+        boolean gfv3ee6Found = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
             if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
-                if (selectedItem == null || !gfv3Found) {
+                if (selectedItem == null || !gfv3ee6Found) {
                     if (selectedServerInstanceID != null) {
                         if (selectedServerInstanceID.equals(serverInstanceID)) {
                             selectedItem = serverWrapper;
                         }
                     } else {
                         // preselect the best server ;)
+                        // FIXME replace with PriorityQueue mechanism
                         String shortName = Deployment.getDefault().getServerID(serverInstanceID);
-                        if ("gfv3".equals(shortName)) { // NOI18N
+                        if ("gfv3ee6".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                            gfv3ee6Found = true;
+                        } else if ("gfv3".equals(shortName) && !gfv3ee6Found) { // NOI18N
                             selectedItem = serverWrapper;
                             gfv3Found = true;
-                        } else if ("J2EE".equals(shortName)) { // NOI18N
+                        } else if ("J2EE".equals(shortName) && !(gfv3ee6Found || gfv3Found)) { // NOI18N
                             selectedItem = serverWrapper;
                             sjasFound = true;
-                        } else if ("JBoss4".equals(shortName) && !sjasFound) { // NOI18N
+                        } else if ("JBoss4".equals(shortName) && !(gfv3ee6Found || gfv3Found || sjasFound)) { // NOI18N
                             selectedItem = serverWrapper;
                         }
                     }

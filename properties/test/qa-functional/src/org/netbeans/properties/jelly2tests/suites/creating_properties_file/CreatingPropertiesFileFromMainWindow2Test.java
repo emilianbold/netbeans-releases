@@ -112,7 +112,7 @@ public class CreatingPropertiesFileFromMainWindow2Test extends PropertiesEditorT
          * 3rd step of testcase
          * Type name and select directory.
          */
-        NewFileNameLocationStepOperator nfnlsp = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlsp = new NewJavaFileNameLocationStepOperator();
         nfnlsp.setObjectName(FILE_NAME);
         JTextFieldOperator jtfo = new JTextFieldOperator(nfnlsp, 2);
         jtfo.setText("src" + File.separator + "examples");

@@ -34,12 +34,6 @@ Bugzilla
 http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
 bugzilla
 http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1&order=Importance&limit=25
-golden-project-1
-CHAT
-golden-project-1 chat room
-null
-instant_messenger
-http://testkenai.com/projects/golden-project-1/instant_messenger/golden-project-1
 source-code-repository
 SOURCE
 Source Code Repository
@@ -58,3 +52,9 @@ Downloads
 http://testkenai.com/projects/golden-project-1/downloads
 downloads
 http://testkenai.com/projects/golden-project-1/downloads
+golden-project-1
+CHAT
+golden-project-1 chat room
+null
+instant_messenger
+http://testkenai.com/projects/golden-project-1/instant_messenger/golden-project-1

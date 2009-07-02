@@ -99,7 +99,7 @@ public class StackTraceTranslatorTest extends NbTestCase {
         StackTraceTranslator instance = new StackTraceTranslator(p.getBaseDir(),midp.list());
         
         
-        String result = instance.translate(stackTrace);
+        String result = instance.translate(stackTrace, false);
         assertEquals(expResult, result);
                 
     }

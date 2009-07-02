@@ -161,7 +161,7 @@
     </Component>
     <Component class="javax.swing.JFormattedTextField" name="startDateField">
       <Properties>
-        <Property name="columns" type="int" value="15"/>
+        <Property name="columns" type="int" value="13"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="timeSpentHint">

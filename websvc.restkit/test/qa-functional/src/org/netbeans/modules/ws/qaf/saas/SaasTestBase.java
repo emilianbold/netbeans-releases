@@ -40,7 +40,7 @@ package org.netbeans.modules.ws.qaf.saas;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.CopyAction;
@@ -98,7 +98,7 @@ public abstract class SaasTestBase extends RestTestBase {
         //Java Class
         String javaFileLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java"); //NOI18N
         createNewFile(getProject(), javaAppLabel, javaFileLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(javaClassName);
         op.setPackage("org.my"); //NOI18N
         op.finish();
@@ -138,7 +138,7 @@ public abstract class SaasTestBase extends RestTestBase {
         //Servlet
         String servletLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.core.Bundle", "Templates/JSP_Servlet/Servlet.java");
         createNewFile(getProject(), webLabel, servletLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.txtObjectName().clearText();
         op.txtObjectName().typeText(servletName);
         JComboBoxOperator jcbo = new JComboBoxOperator(op, 1);

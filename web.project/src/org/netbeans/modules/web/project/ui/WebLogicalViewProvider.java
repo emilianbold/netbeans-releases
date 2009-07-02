@@ -257,6 +257,11 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
         changeSupport.fireChange();
     }
     
+    private static Lookup createLookup( Project project ) {
+        DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
+        // XXX Remove root folder after FindAction rewrite
+        return Lookups.fixed( new Object[] { project, rootFolder } );
+    }
     // Private innerclasses ----------------------------------------------------
 
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
@@ -319,7 +324,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
         public WebLogicalViewRootNode() {
 //            super( new WebViews.LogicalViewChildren( project, helper, evaluator, resolver ), createLookup( project ) );
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-web-project/Nodes"), 
-                  Lookups.singleton(project));
+                  createLookup(project));
             setIconBaseWithExtension("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"); //NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {

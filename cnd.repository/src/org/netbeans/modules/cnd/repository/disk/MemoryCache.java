@@ -63,6 +63,21 @@ import org.netbeans.modules.cnd.repository.util.Pair;
  */
 public final class MemoryCache {
     private static final boolean STATISTIC = false;
+    private static final int DEFAULT_SLICE_CAPACITY;
+    private static final int SLICE_SIZE;
+    private static final int SLICE_MASK;
+    static {
+        int nrProc = Runtime.getRuntime().availableProcessors();
+        if (nrProc <= 4) {
+            SLICE_SIZE = 32;
+            SLICE_MASK = SLICE_SIZE - 1;
+            DEFAULT_SLICE_CAPACITY = 512;
+        } else {
+            SLICE_SIZE = 128;
+            SLICE_MASK = SLICE_SIZE - 1;
+            DEFAULT_SLICE_CAPACITY = 128;
+        }
+    }
     
     private static class SoftValue<T> extends SoftReference<T> {
         private final Key key;
@@ -73,13 +88,12 @@ public final class MemoryCache {
     }
     
     private static final class Slice {
-        private final Map<Key, Object> storage = new HashMap<Key, Object>(256);
+        private final Map<Key, Object> storage = new HashMap<Key, Object>(DEFAULT_SLICE_CAPACITY);
         private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
         private final Lock w = cacheLock.writeLock();
         private final Lock r = cacheLock.readLock();
     }
     
-    private static final int SLICE_SIZE = 19;
     private static final class SlicedMap {
         private final Slice slices[] = new Slice[SLICE_SIZE];
         private SlicedMap(){
@@ -88,10 +102,7 @@ public final class MemoryCache {
             }
         }
         private Slice getSilce(Key key){
-            int i = key.hashCode()%SLICE_SIZE;
-            if (i < 0){
-                i+=SLICE_SIZE;
-            }
+            int i = key.hashCode() & SLICE_MASK;
             return slices[i];
         }
         private Slice getSilce(int i){

@@ -73,6 +73,7 @@ import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -92,6 +93,7 @@ public class AutoupdateCheckScheduler {
     private static final Logger err = Logger.getLogger (AutoupdateCheckScheduler.class.getName ());
     
     private static boolean wasRealCheckUpdateCenters = false;
+    private static Notification updatesNotification = null;
 
     private AutoupdateCheckScheduler () {
     }
@@ -490,10 +492,16 @@ public class AutoupdateCheckScheduler {
         String title = updateCount == 1
             ? NbBundle.getMessage(AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_UpdateFound_ToolTip", updateCount) // NOI18N
             : NbBundle.getMessage(AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_UpdatesFound_ToolTip", updateCount); // NOI18N
-
-        NotificationDisplayer.getDefault().notify(title,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/newUpdates.png", false),
-                NbBundle.getMessage(AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_UpdateFound_Hint"),
-                onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+        
+        synchronized (AutoupdateCheckScheduler.class) {
+            if (updatesNotification != null) {
+                updatesNotification.clear();
+                updatesNotification = null;
+            }
+            updatesNotification = NotificationDisplayer.getDefault().notify(title,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/newUpdates.png", false),
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_UpdateFound_Hint"),
+                    onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+        }
     }
 }
