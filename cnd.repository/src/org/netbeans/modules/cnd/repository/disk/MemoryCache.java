@@ -55,6 +55,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * An in-memory cache for storing repository objects 
@@ -67,7 +68,7 @@ public final class MemoryCache {
     private static final int SLICE_SIZE;
     private static final int SLICE_MASK;
     static {
-        int nrProc = Runtime.getRuntime().availableProcessors();
+        int nrProc = CndUtils.getConcurrencyLevel();
         if (nrProc <= 4) {
             SLICE_SIZE = 32;
             SLICE_MASK = SLICE_SIZE - 1;

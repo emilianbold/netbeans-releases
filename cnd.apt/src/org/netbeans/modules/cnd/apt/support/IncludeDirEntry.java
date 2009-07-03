@@ -40,8 +40,11 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
@@ -50,7 +53,19 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  * @author Vladimir Voskresensky
  */
 public final class IncludeDirEntry {
-    private final static Map<CharSequence, IncludeDirEntry> dirEntries = new WeakHashMap<CharSequence, IncludeDirEntry>();
+    private static final int MANAGER_DEFAULT_CAPACITY;
+    private static final int MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = CndUtils.getConcurrencyLevel();
+        if (nrProc <= 4) {
+            MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            MANAGER_DEFAULT_CAPACITY = 512;
+        } else {
+            MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            MANAGER_DEFAULT_CAPACITY = 128;
+        }
+    }
+    private static final IncludeDirStorage storage = new IncludeDirStorage(MANAGER_DEFAULT_SLICED_NUMBER, MANAGER_DEFAULT_CAPACITY);
 
     private final File file;
     private final boolean exists;
@@ -66,8 +81,9 @@ public final class IncludeDirEntry {
 
     public static IncludeDirEntry get(String dir) {
         CharSequence key = FilePathCache.getManager().getString(dir);
-        synchronized (dirEntries) {
-            IncludeDirEntry out = dirEntries.get(key);
+        Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
+        synchronized (delegate) {
+            IncludeDirEntry out = delegate.get(key);
             if (out == null) {
                 File file = new File(dir);
                 String asString = file.getAbsolutePath();
@@ -75,7 +91,7 @@ public final class IncludeDirEntry {
                 CharSequence asCharSeq = FilePathCache.getManager().getString(asString);
                 boolean exists = CndFileUtils.isExistingDirectory(file, asString);
                 out = new IncludeDirEntry(file, exists, framework, asCharSeq);
-                dirEntries.put(key, out);
+                delegate.put(key, out);
             }
             return out;
         }
@@ -104,5 +120,70 @@ public final class IncludeDirEntry {
 
     public String getAsString() {
         return file.getPath();
+    }
+
+    /*package*/static void disposeCache() {
+        storage.dispose();
+    }
+
+    private static final class IncludeDirStorage {
+
+        private final WeakHashMap<CharSequence, IncludeDirEntry>[] instances;
+        private final int segmentMask; // mask
+
+        private IncludeDirStorage(int sliceNumber, int initialCapacity) {
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
+            @SuppressWarnings("unchecked")
+            WeakHashMap<CharSequence, IncludeDirEntry>[] ar = new WeakHashMap[ssize];
+            for (int i = 0; i < ar.length; i++) {
+                ar[i] = new WeakHashMap<CharSequence, IncludeDirEntry>(initialCapacity);
+            }
+            instances = ar;
+        }
+
+        private Map<CharSequence, IncludeDirEntry> getDelegate(CharSequence key) {
+            int index = key.hashCode() & segmentMask;
+            return instances[index];
+        }
+
+        @SuppressWarnings("unchecked")
+        public final IncludeDirEntry getSharedUID(CharSequence key) {
+            return getDelegate(key).get(key);
+        }
+
+        public final void dispose() {
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i].size() > 0) {
+                    if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
+                        System.out.println("Include Dir Cache " + instances[i].size()); // NOI18N
+                        Map<Class, Integer> keyClasses = new HashMap<Class, Integer>();
+                        for (Object o : instances[i].keySet()) {
+                            if (o != null) {
+                                incCounter( keyClasses, o);
+                            }
+                        }
+                        for (Map.Entry<Class, Integer> e : keyClasses.entrySet()) {
+                            System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
+                        }
+                    }
+                    instances[i].clear();
+                }
+            }
+        }
+
+        private void incCounter(Map<Class, Integer> uidClasses, Object o) {
+            Integer num = uidClasses.get(o.getClass());
+            if (num != null) {
+                num = new Integer(num.intValue() + 1);
+            } else {
+                num = new Integer(1);
+            }
+            uidClasses.put(o.getClass(), num);
+        }
     }
 }

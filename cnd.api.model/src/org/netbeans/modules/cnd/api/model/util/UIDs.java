@@ -66,11 +66,18 @@ public final class UIDs {
     ////////////////////////////////////////////////////////////////////////////
     // impl details
     
-    private static synchronized UIDProvider getProvider() {
-        if (provider == null) {
-            provider = Lookup.getDefault().lookup(UIDProvider.class);
+    private static UIDProvider getProvider() {
+        UIDProvider out = provider;
+        if (out == null) {
+            out = provider;
+            synchronized (UIDs.class) {
+                out = provider;
+                if (out == null) {
+                    provider = out = Lookup.getDefault().lookup(UIDProvider.class);
+                }
+            }
         }
-        return provider == null ? EMPTY : provider;
+        return out == null ? EMPTY : out;
     }
 
     private final static class SelfUIDProvider implements UIDProvider {
