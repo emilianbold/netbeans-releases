@@ -53,7 +53,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test of TODO Window
+ * Test of ToDo Window
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */

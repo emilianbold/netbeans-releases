@@ -86,6 +86,7 @@ public class MeasureJ2SEActionsTest {
         // needs to be fixed .addTest(SwitchToFileTest.class)
 //  needs to be fixed      .addTest(SwitchViewTest.class)
         .addTest(TypingInEditorTest.class)
+        .addTest(ShowClassMembersInNavigatorTest.class)
         // needs tb moved to scenarios .addTest(RefactorFindUsagesTest.class)
         .enableModules(".*").clusters("websvccommon[0-9]|apisupport[0-9]|profiler[0-9]").reuseUserDir(true)));
  

@@ -46,7 +46,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -58,7 +58,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
 
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewPHPProjectNameLocationStepOperator wizard_location;
     public String category, project, project_name, project_type;
     
     public CreatePHPSampleProjectTest(String testName) {
@@ -95,10 +95,9 @@ public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location = new NewPHPProjectNameLocationStepOperator();
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-        wizard_location.txtProjectLocation().setText("");
-        wizard_location.txtProjectLocation().typeText(directory);
+        wizard_location.typeSourcesFolder(directory);
         project_name = project_type + "_" + System.currentTimeMillis();
         wizard_location.txtProjectName().setText("");
         wizard_location.txtProjectName().typeText(project_name);

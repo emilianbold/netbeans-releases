@@ -94,9 +94,11 @@ import junit.framework.TestResult;
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public class NbModuleSuite {
+    private static final Logger LOG;
 
     static {
         System.setProperty("org.netbeans.MainImpl.154417", "true");
+        LOG = Logger.getLogger(NbModuleSuite.class.getName());
     }
 
     private NbModuleSuite() {}
@@ -1126,13 +1128,18 @@ public class NbModuleSuite {
         }
 
         private static void writeModule(File file, String xml) throws IOException {
+            String previous = null;
             if (file.exists()) {
-                String previous = asString(new FileInputStream(file), true);
+                previous = asString(new FileInputStream(file), true);
                 if (previous.equals(xml)) {
                     return;
                 }
+                LOG.info("rewrite module file: " + file);
+                LOG.fine(previous);
+                LOG.fine("new----");
+                LOG.fine(xml);
+                LOG.fine("end----");
             }
-
             FileOutputStream os = new FileOutputStream(file);
             os.write(xml.getBytes("UTF-8"));
             os.close();

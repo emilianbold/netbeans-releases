@@ -46,7 +46,17 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.performance.j2se</code-name-base>
             <standalone/>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.59</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
@@ -69,7 +79,11 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.java</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -114,7 +128,15 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <code-name-base>org.netbeans.modules.java.navigation</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.java</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

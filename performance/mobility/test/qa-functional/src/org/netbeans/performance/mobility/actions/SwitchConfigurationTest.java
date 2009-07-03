@@ -45,8 +45,8 @@ import javax.swing.JComponent;
 
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
-import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
 
 import org.netbeans.jellytools.EditorOperator;
@@ -111,7 +111,7 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
         EditorOperator.closeDiscardAll();
         targetProject = "MobileApplicationSwitchConfiguration";
         midletName = "Midlet.java";
-        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "switchit" + "|" + midletName;
+        String documentPath = CommonUtilities.SOURCE_PACKAGES + "|" + "switchit" + "|" + midletName;
         projectNode = new ProjectsTabOperator().getProjectRootNode(targetProject);
         openNode = new Node(projectNode, documentPath);
 

@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -119,6 +119,18 @@ made subject to such option by the copyright holder.
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
