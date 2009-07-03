@@ -48,8 +48,12 @@ import org.openide.util.Lookup;
  * @author Egor Ushakov
  */
 public final class UIDs {
-    private static UIDProvider provider;
+    private static final UIDProvider provider;
     private static final UIDProvider EMPTY = new SelfUIDProvider();
+    static {
+        UIDProvider ext = Lookup.getDefault().lookup(UIDProvider.class);
+        provider = ext == null ? EMPTY : ext;
+    }
     private UIDs() {
     }
 
@@ -60,25 +64,11 @@ public final class UIDs {
      * @return never-null handler
      */
     public static <T> CsmUID<T> get(T obj) {
-        return getProvider().get(obj);
+        return provider.get(obj);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // impl details
-    
-    private static UIDProvider getProvider() {
-        UIDProvider out = provider;
-        if (out == null) {
-            out = provider;
-            synchronized (UIDs.class) {
-                out = provider;
-                if (out == null) {
-                    provider = out = Lookup.getDefault().lookup(UIDProvider.class);
-                }
-            }
-        }
-        return out == null ? EMPTY : out;
-    }
 
     private final static class SelfUIDProvider implements UIDProvider {
         public <T> CsmUID<T> get(T obj) {
