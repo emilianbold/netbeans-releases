@@ -61,7 +61,7 @@ public class KeyManager {
             KEY_MANAGER_DEFAULT_SLICED_NUMBER = 32;
             KEY_MANAGER_DEFAULT_CAPACITY = 512;
         } else {
-            KEY_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            KEY_MANAGER_DEFAULT_SLICED_NUMBER = 256;
             KEY_MANAGER_DEFAULT_CAPACITY = 128;
         }
     }

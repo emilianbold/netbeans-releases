@@ -115,5 +115,6 @@ public final class APTSystemStorage {
         }
         includesStorage.dispose();
         APTMacroCache.getManager().dispose();
+        IncludeDirEntry.disposeCache();
     }
 }

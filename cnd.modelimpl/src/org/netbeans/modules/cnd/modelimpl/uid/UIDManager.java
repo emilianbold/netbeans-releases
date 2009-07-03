@@ -62,7 +62,7 @@ public class UIDManager {
             UID_MANAGER_DEFAULT_SLICED_NUMBER = 32;
             UID_MANAGER_DEFAULT_CAPACITY = 512;
         } else {
-            UID_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            UID_MANAGER_DEFAULT_SLICED_NUMBER = 256;
             UID_MANAGER_DEFAULT_CAPACITY = 128;
         }
     }
