@@ -59,12 +59,12 @@ import org.openide.util.NbBundle;
 /**
  * @author Petr Slechta
  */
-public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt.event.ItemListener {
+public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt.event.ItemListener {
     private DDDataObject dObj;
     private WebApp webApp;
     private DefaultListModel listModel;
 
-    public AbsoluteOrderingPanel(SectionView sectionView, DDDataObject dObj) {
+    public RelativeOrderingPanel(SectionView sectionView, DDDataObject dObj) {
         super(sectionView);
         this.dObj = dObj;
         webApp = dObj.getWebApp();
@@ -72,16 +72,6 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
         initComponents();
         listModel = new DefaultListModel();
         listOrdering.setModel(listModel);
-        try {
-            for (AbsoluteOrdering ordering : webApp.getAbsoluteOrdering()) {
-                for (String name : ordering.getName()) {
-                    listModel.addElement(name);
-                }
-            }
-        }
-        catch (VersionNotSupportedException e) {
-            // ignore
-        }
     }
     
     public javax.swing.JComponent getErrorComponent(String errorId) {
@@ -126,40 +116,40 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
         setMinimumSize(new java.awt.Dimension(250, 150));
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AbsoluteOrderingPanel.class, "LBL_AbsoluteOrder")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RelativeOrderingPanel.class, "LBL_RelativeOrder")); // NOI18N
 
         listOrdering.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(listOrdering);
 
-        org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(AbsoluteOrderingPanel.class, "BTN_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(RelativeOrderingPanel.class, "BTN_Add")); // NOI18N
         bAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAddActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(AbsoluteOrderingPanel.class, "BTN_Edit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(RelativeOrderingPanel.class, "BTN_Edit")); // NOI18N
         bEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bEditActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(AbsoluteOrderingPanel.class, "BTN_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(RelativeOrderingPanel.class, "BTN_Remove")); // NOI18N
         bRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bRemoveActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bUp, org.openide.util.NbBundle.getMessage(AbsoluteOrderingPanel.class, "BTN_Up")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bUp, org.openide.util.NbBundle.getMessage(RelativeOrderingPanel.class, "BTN_Up")); // NOI18N
         bUp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bUpActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bDown, org.openide.util.NbBundle.getMessage(AbsoluteOrderingPanel.class, "BTN_Down")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bDown, org.openide.util.NbBundle.getMessage(RelativeOrderingPanel.class, "BTN_Down")); // NOI18N
         bDown.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bDownActionPerformed(evt);
@@ -182,7 +172,7 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
                     .add(bAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(bDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(bUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(92, 92, 92))
+                .add(96, 96, 96))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -207,7 +197,7 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     }// </editor-fold>//GEN-END:initComponents
 
     private void bAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddActionPerformed
-        String name = getNameFromUser("");
+        String name = getOrderItemFromUser("");
         if (name != null) {
             listModel.addElement(name);
             refreshDdModel();
@@ -217,7 +207,7 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bEditActionPerformed
         int x = listOrdering.getSelectedIndex();
         if (x >= 0) {
-            String name = getNameFromUser((String)listModel.get(x));
+            String name = getOrderItemFromUser((String)listModel.get(x));
             if (name != null) {
                 listModel.set(x, name);
                 refreshDdModel();
@@ -251,19 +241,13 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
         refreshDdModel();
     }//GEN-LAST:event_bDownActionPerformed
 
-    private String getNameFromUser(String value) {
-        NamePanel p = new NamePanel(value);
+    private String getOrderItemFromUser(String value) {
+        RelativeOrderItemPanel p = new RelativeOrderItemPanel(value);
         DialogDescriptor dd = new DialogDescriptor(p,
-                NbBundle.getMessage(AbsoluteOrderingPanel.class, "TTL_Ordering"));
+                NbBundle.getMessage(RelativeOrderingPanel.class, "TTL_Ordering"));
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
-            String res = p.getResult();
-            if (res != null) {
-                res = res.trim();
-                if (res.length() < 1)
-                    res = null;
-            }
-            return res;
+            return p.getResult();
         }
         return null;
     }
@@ -276,8 +260,13 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     }
     
     private void refreshDdModel() {
+        /*
         try {
-            AbsoluteOrdering ordering = webApp.newAbsoluteOrdering();
+            // The line below does not work
+            //AbsoluteOrdering ordering = (AbsoluteOrdering)webApp.createBean("AbsoluteOrdering"); // NOI18N
+            // so the following hack was used
+            // TODO fix this hack later
+            AbsoluteOrdering ordering = new org.netbeans.modules.j2ee.dd.impl.web.model_3_0.AbsoluteOrdering();
             AbsoluteOrdering[] orderings = new AbsoluteOrdering[1];
             String[] items = new String[listModel.size()];
             for (int i=0,maxi=listModel.size(); i<maxi; i++) {
@@ -291,6 +280,7 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
         catch (VersionNotSupportedException e) {
             Logger.global.log(Level.SEVERE, "refresh of DD model failed", e);
         }
+        */
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

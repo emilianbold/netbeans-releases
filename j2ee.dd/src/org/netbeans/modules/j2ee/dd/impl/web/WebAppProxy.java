@@ -1005,6 +1005,10 @@ public class WebAppProxy implements WebApp {
         return webApp != null ? webApp.getName() : null;
     }
 
+    public AbsoluteOrdering newAbsoluteOrdering() throws VersionNotSupportedException {
+        return webApp != null ? webApp.newAbsoluteOrdering() : null;
+    }
+    
     public void setAbsoluteOrdering(AbsoluteOrdering[] value) throws VersionNotSupportedException {
         if (webApp != null) webApp.setAbsoluteOrdering(value);
     }

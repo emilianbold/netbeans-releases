@@ -98,6 +98,9 @@ For now, web-fragment is defined exactly the same way as web-app.
                         if (values==null || values.length==0) return null;
                         else return values[0];
                     }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering newAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
+                    }
                     public void setAbsoluteOrdering(org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                         throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException("web-fragment "+VERSION_3_0);
                     }
