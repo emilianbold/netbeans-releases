@@ -214,6 +214,14 @@ public final class NativeProcessInfo {
     private String quote(String orig) {
         String quote = "'"; // NOI18N
 
+        if (isWindows) {
+            // On Windows when ExternalTerminal is used and we have "$" in
+            // parameters we get it expanded by shell (which is not the same
+            // behavior as we have in case of use of OutputWindow or when we
+            // are not on Windows)... So do the following replacement..
+            orig = orig.replaceAll("\\$", "\\\\\\$"); // NOI18N
+        }
+
         if (orig.indexOf('\'') >= 0) {
             quote = (isWindows) ? "\\\"" : "\""; // NOI18N
         }
