@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.repository.queue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * The queue that is based on key-value pairs
@@ -50,28 +52,28 @@ import java.util.Map;
  */
 public class KeyValueQueue<K, V> extends BaseQueue {
 
-    public class Entry extends BaseQueue.AbstractEntry {
+    public static class Entry<KK, VV> extends BaseQueue.AbstractEntry {
 	
-	private K key;
-	private V value;
+	private KK key;
+	private VV value;
 	
-	protected Entry(K key, V value) {
+	protected Entry(KK key, VV value) {
 	    assert( key != null);
 	    assert( value != null);
 	    this.key = key;
 	    this.value = value;
 	}
 	
-	public K getKey() {
+	public KK getKey() {
 	    return key;
 	}
 	
-	public V getValue() {
+	public VV getValue() {
 	    return value;
 	}
     }
 
-    protected Map<K, Entry> map = new HashMap<K, Entry>();
+    protected final Map<K, Entry<K, V>> map = new HashMap<K, Entry<K, V>>();
     protected boolean active = true;
 	    
     public KeyValueQueue() {
@@ -80,67 +82,71 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     
     public void addLast(K key, V value) {
 	if( needsTrace() ) System.err.printf("%s: addLast %s\n", getTraceName(), key.toString());
-	synchronized ( lock ) {
-	    Entry entry = map.get(key);
-	    if( entry == null ) {
-		doAddLast(key, value);
-		if( needsTrace() ) System.err.printf("%s: added last %s\n", getTraceName(), key.toString());
-	    }
-	    else {
-		doReplaceAddLast(key, value, entry);
-		if( needsTrace() ) System.err.printf("%s: replaced last %s\n", getTraceName(), key.toString());
-	    }
-	    lock.notifyAll();
-	}
+        synchronized (lock) {
+            Entry<K, V> entry = map.get(key);
+            if (entry == null) {
+                doAddLast(key, value);
+                if (needsTrace()) {
+                    System.err.printf("%s: added last %s\n", getTraceName(), key.toString());
+                }
+            } else {
+                doReplaceAddLast(key, value, entry);
+                if (needsTrace()) {
+                    System.err.printf("%s: replaced last %s\n", getTraceName(), key.toString());
+                }
+            }
+            lock.notifyAll();
+        }
     }
-    
-    private Entry doAddLast(K key, V value) {
-	Entry entry = createEntry(key, value);
+
+    private Entry<K, V> doAddLast(K key, V value) {
+	Entry<K, V> entry = createEntry(key, value);
 	map.put(key, entry);
 	queue.addLast(entry);
 	return entry;
     }
+
+    protected Entry<K, V> createEntry(K key, V value) {
+        return new Entry<K, V>(key, value);
+    }
     
-    protected void doReplaceAddLast(K key, V value, Entry existent) {
+    protected void doReplaceAddLast(K key, V value, Entry<K, V> existent) {
+	existent.value = value;
+    }
+//
+//    public void addFirst(K key, V value) {
+//	if( needsTrace() ) System.err.printf("%s: addFirst %s\n", getTraceName(), key.toString());
+//	synchronized ( lock ) {
+//	    Entry entry = map.get(key);
+//	    if( entry == null ) {
+//		doAddFirst(key, value);
+//		if( needsTrace() ) System.err.printf("%s: added first %s\n", getTraceName(), key.toString());
+//	    }
+//	    else {
+//		doReplaceAddFirst(key, value, entry);
+//		if( needsTrace() ) System.err.printf("%s: replaced first %s\n", getTraceName(), key.toString());
+//	    }
+//	    lock.notifyAll();
+//	}
+//    }
+//
+//    private Entry doAddFirst(K key, V value) {
+//	Entry entry = createEntry(key, value);
+//	map.put(key, entry);
+//	queue.addFirst(entry);
+//	return entry;
+//    }
+    
+    protected void doReplaceAddFirst(K key, V value, Entry<K, V> existent) {
 	existent.value = value;
     }
     
-    public void addFirst(K key, V value) {
-	if( needsTrace() ) System.err.printf("%s: addFirst %s\n", getTraceName(), key.toString());
-	synchronized ( lock ) {
-	    Entry entry = map.get(key);
-	    if( entry == null ) {
-		doAddFirst(key, value);
-		if( needsTrace() ) System.err.printf("%s: added first %s\n", getTraceName(), key.toString());
-	    }
-	    else {
-		doReplaceAddFirst(key, value, entry);
-		if( needsTrace() ) System.err.printf("%s: replaced first %s\n", getTraceName(), key.toString());
-	    }
-	    lock.notifyAll();
-	}
-    }
-    
-    protected Entry createEntry(K key, V value) {
-        return new Entry(key, value);
-    }
-    
-    private Entry doAddFirst(K key, V value) {
-	Entry entry = createEntry(key, value);
-	map.put(key, entry);
-	queue.addFirst(entry);
-	return entry;
-    }
-    
-    protected void doReplaceAddFirst(K key, V value, Entry existent) {
-	existent.value = value;
-    }
-    
-    public Entry poll() throws InterruptedException {
+    public Entry<K, V> poll() throws InterruptedException {
 	if( needsTrace() ) System.err.printf("%s: Polling...\n", getTraceName());
 	synchronized( lock ) {
             try {
-                Entry e = (Entry) queue.poll(); // TODO: find out more elegant solution than a stupid cast!
+                @SuppressWarnings("unchecked")
+                Entry<K, V> e = (Entry<K, V>) queue.poll(); // TODO: find out more elegant solution than a stupid cast!
                 if( e != null ) {
                     doPostPoll(e);
                     if( needsTrace() ) System.err.printf("    %s: polling -> %s\n", getTraceName(), e.getKey());
@@ -152,7 +158,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	}
     }
     
-    protected void doPostPoll(Entry polled) {
+    protected void doPostPoll(Entry<K, V> polled) {
         map.remove(polled.getKey());
     }
     
