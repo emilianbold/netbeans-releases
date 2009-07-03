@@ -43,9 +43,9 @@
  * Created on Jul 2, 2009, 6:52:07 PM
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugzilla.autoupdate;
 
-import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 
 /**
  *
@@ -56,7 +56,7 @@ public class AutoupdatePanel extends javax.swing.JPanel {
     /** Creates new form AutoupdatePanel */
     public AutoupdatePanel() {
         initComponents();
-        dontShowCheckBox.setSelected(!JiraConfig.getInstance().getCheckUpdates());
+        dontShowCheckBox.setSelected(!BugzillaConfig.getInstance().getCheckUpdates());
     }
 
     /** This method is called from within the constructor to
@@ -112,7 +112,7 @@ public class AutoupdatePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void dontShowCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontShowCheckBoxActionPerformed
-        JiraConfig.getInstance().setCheckUpdates(!dontShowCheckBox.isSelected());
+        BugzillaConfig.getInstance().setCheckUpdates(!dontShowCheckBox.isSelected());
     }//GEN-LAST:event_dontShowCheckBoxActionPerformed
 
 

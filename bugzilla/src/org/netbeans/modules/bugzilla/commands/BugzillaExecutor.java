@@ -49,6 +49,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -81,8 +82,17 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions) {
+        execute(cmd, true, true);
+    }
+
+    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
         try {
             cmd.setFailed(true);
+
+            if(checkVersion) {
+                BugzillaAutoupdate jau = new BugzillaAutoupdate();
+                jau.checkAndNotify(repository);
+            }
 
             cmd.execute();
 

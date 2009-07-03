@@ -37,29 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugzilla.autoupdate;
 
-import org.netbeans.modules.jira.JiraTestUtil;
+import java.io.File;
+import java.net.URL;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author tomas
  */
-public class JiraNotSupportedTest extends JiraPluginUCTestCase {
-
-    public JiraNotSupportedTest(String testName) {
+public class BugzillaPluginUCTestCase extends NbTestCase {
+    
+    protected static File catalogFile;
+    protected static URL catalogURL;
+    
+    public BugzillaPluginUCTestCase(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("netbeans.t9y.jira.supported.version", "0.0.0");
-        super.setUp();
+    public static class MyProvider extends AutoupdateCatalogProvider {
+        public MyProvider () {
+            super ("test-updates-provider", "test-updates-provider", catalogURL, UpdateUnitProvider.CATEGORY.STANDARD);
+        }
     }
 
-    public void testIsNotSupportedJIRAVersion() {
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkSupportedJiraServerVersion(JiraTestUtil.getRepository()));
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.clearWorkDir ();
+        catalogFile = new File(getWorkDir(), "updates.xml");
+        if (!catalogFile.exists()) {
+            catalogFile.createNewFile();
+        }
+        catalogURL = catalogFile.toURI().toURL();
+
+        setUserDir (getWorkDirPath ());
+        MainLookup.register(new MyProvider());
+        assert Lookup.getDefault().lookup(MyProvider.class) != null;
+    }
+
+    public static void setUserDir(String path) {
+        System.setProperty ("netbeans.user", path);
     }
 
 }

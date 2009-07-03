@@ -439,7 +439,7 @@ public class JiraRepository extends Repository {
         }
         ConfigurationCommand cmd = new ConfigurationCommand();
 
-        getExecutor().execute(cmd, true, false);
+        getExecutor().execute(cmd, true, false, false);
         if(!cmd.hasFailed()) {
             return cmd.configuration;
         }
