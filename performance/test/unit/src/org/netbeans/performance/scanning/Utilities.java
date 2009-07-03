@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.api.java.source.performance;
+package org.netbeans.performance.scanning;
 
 import java.io.*;
 import java.net.URL;
@@ -56,13 +56,10 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.openide.filesystems.*;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -129,27 +126,18 @@ public class Utilities {
         File projectsDir = FileUtil.normalizeFile(dir);
         FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
         FileObject projdir = projectsDirFO.getFileObject(projectName);
+        FileObject nbproject = projdir.getFileObject("nbproject");
+        if (nbproject.getFileObject("private") != null) {
+            for (FileObject ch : nbproject.getFileObject("private").getChildren()) {
+                ch.delete();
+            }
+        }
         Project p = ProjectManager.getDefault().findProject(projdir);
         OpenProjects.getDefault().open(new Project[]{p}, false);
         if (p == null) {
             throw new IOException("Project is not opened " + projectName);
         }
         return projdir;
-    }
-
-    public static ClassPath createEmptyPath() {
-        return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
-    }
-
-    public static ClassPath createSourcePath(FileObject projectDir)
-            throws IOException
-    {
-        final FileObject sourceRoot = projectDir.getFileObject("src");
-        File root = FileUtil.toFile(sourceRoot);
-        if (!root.exists()) {
-            root.mkdirs();
-        }
-        return ClassPathSupport.createClassPath(new URL[]{root.toURI().toURL()});
     }
 
     public static String projectOpen(String path, String tmpFile) {

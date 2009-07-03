@@ -45,13 +45,13 @@ import java.util.ArrayList;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
+//import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
+//import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -152,7 +152,7 @@ public class PrepareIDEForMobilityComplexMeasurementsTest extends JellyTestCase 
     /**
      * Open 3 selected files from Mobile projects
      */
-    public void openFiles(){
+/*    public void openFiles(){
         String OPEN = "Open";
         String EDIT = "Edit";
         
@@ -224,7 +224,7 @@ public class PrepareIDEForMobilityComplexMeasurementsTest extends JellyTestCase 
             test_failed = true;
             fail(exc);
         }
-    }
+    }*/
     
     /**
      * Save status, if one of the above defined test failed, this method creates

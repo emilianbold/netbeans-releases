@@ -186,7 +186,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                         final long tm1 = lastShowWaitNodeTime;
                         if (tm1 != -1) {
                             lastShowWaitNodeTime = -1;
-                            PERF_LOG.fine(String.format("ClassMemberPanelUI refresh took: %d ms", (tm2 - tm1))); //NOI18N
+                            PERF_LOG.log(Level.FINE,
+                                String.format("ClassMemberPanelUI refresh took: %d ms", (tm2 - tm1)),
+                                new Object[] { description.getFileObject().getName(), (tm2 - tm1) });
                         }
                     }
                 }

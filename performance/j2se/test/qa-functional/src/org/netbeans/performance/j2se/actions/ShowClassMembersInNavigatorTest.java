@@ -41,17 +41,16 @@
 
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbPerformanceTest;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -63,27 +62,30 @@ import java.util.logging.Level;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenFilesTest extends PerformanceTestCase {
+public class ShowClassMembersInNavigatorTest extends PerformanceTestCase {
     
     /** Node to be opened/edited */
-    public static Node openNode ;
+    public static Node openNode, openAnotherNode ;
     /** Folder with data */
     public static String fileProject;
     /** Folder with data  */
     public static String filePackage;
     /** Name of file to open */
-    public static String fileName;
+    public static String fileName, anotherFileName;
     /** Menu item name that opens the editor */
     public static String menuItem;
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-	private Logger TIMER=null;
+    private Logger TIMER=null;
+    private boolean next=false;
+    private String[] navigTime;
+    NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
 
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
      */
-    public OpenFilesTest(String testName) {
+    public ShowClassMembersInNavigatorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
@@ -93,7 +95,7 @@ public class OpenFilesTest extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenFilesTest(String testName, String performanceDataName) {
+    public ShowClassMembersInNavigatorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
@@ -101,9 +103,19 @@ public class OpenFilesTest extends PerformanceTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(OpenFilesTest.class)
+             .addTest(ShowClassMembersInNavigatorTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
+    }
+
+    @Override
+    public void prepare() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ComponentOperator open() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
         class PhaseHandler extends Handler {
@@ -112,8 +124,10 @@ public class OpenFilesTest extends PerformanceTestCase {
 
             public void publish(LogRecord record) {
 
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               ActionTracker.getInstance().stopRecording();
+            if (record.getMessage().startsWith("ClassMemberPanelUI refresh took:")){
+                navigTime=record.getMessage().split(" ");
+                next=true;
+            }
 
             }
 
@@ -129,61 +143,27 @@ public class OpenFilesTest extends PerformanceTestCase {
 
     
     public void testOpening20kBJavaFile(){
+
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Main20kB.java";
+        anotherFileName = "Main.java";
         menuItem = OPEN;
-        doMeasurement();
-    }
 
-    public void testOpening20kBTxtFile(){
-        WAIT_AFTER_OPEN = 2000;
-        fileProject = "PerformanceTestData";
-        filePackage = "org.netbeans.test.performance";
-        fileName = "textfile20kB.txt";
-        menuItem = OPEN;
-        doMeasurement();
-    }
-    
-    public void testOpening20kBXmlFile(){
-        WAIT_AFTER_OPEN = 2000;
-        fileProject = "PerformanceTestData";
-        filePackage = "org.netbeans.test.performance";
-        fileName = "xmlfile20kB.xml";
-        menuItem = EDIT;
-        doMeasurement();
-    }
-
-    @Override
-    protected void initialize(){
-        EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-    }
-    
-    public void prepare(){
-        TIMER=Logger.getLogger("TIMER");
+        TIMER=Logger.getLogger(org.netbeans.modules.java.navigation.ClassMemberPanelUI.class.getName()+".perf");
         TIMER.setLevel(Level.FINE);
         TIMER.addHandler(phaseHandler);
         openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
+        openAnotherNode=new Node(new SourcePackagesNode(fileProject), filePackage + '|' + anotherFileName);
+
+        openNode.select(); while (!next) {};
+        d.name = "Show class members in navigator";
+        d.value = new Long(navigTime[3]);
+        d.unit = "ms";
+        d.threshold=1000;
+        CommonUtilities.processUnitTestsResults(ShowClassMembersInNavigatorTest.class.getCanonicalName(), d);
+        openAnotherNode.select();
     }
-    
-    public ComponentOperator open(){
-        JPopupMenuOperator popup =  openNode.callPopup();
-        popup.pushMenu(menuItem);
-        return null;
-    }
-    
-    @Override
-    public void close(){
-        new EditorOperator(fileName).closeDiscard();
-    }
-    
-    @Override
-    protected void shutdown(){
-        TIMER.removeHandler(phaseHandler);
-        EditorOperator.closeDiscardAll();
-        repaintManager().resetRegionFilters();
-    }
- 
+
 }

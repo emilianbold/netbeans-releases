@@ -46,7 +46,7 @@ import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -63,7 +63,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class CreateScriptingPackFilesTest extends PerformanceTestCase {
    
     private String doccategory, doctype, docname, suffix, projectfolder, buildedname;
-    private NewFileNameLocationStepOperator location;
+    private NewJavaFileNameLocationStepOperator location;
     private String project_name = "";
     private Node projectRoot;
 
@@ -144,7 +144,7 @@ public class CreateScriptingPackFilesTest extends PerformanceTestCase {
         wizard.selectFileType(doctype);
         wizard.next();
 
-        location = new NewFileNameLocationStepOperator();
+        location = new NewJavaFileNameLocationStepOperator();
         buildedname = docname+"_"+System.currentTimeMillis();
         location.txtObjectName().setText(buildedname);
     }

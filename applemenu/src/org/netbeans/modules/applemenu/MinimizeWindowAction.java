@@ -43,7 +43,7 @@ package org.netbeans.modules.applemenu;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import java.awt.event.ActionListener;
 import org.openide.windows.WindowManager;
 
 /**
@@ -52,13 +52,8 @@ import org.openide.windows.WindowManager;
  * 
  * @author S. Aubrecht
  */
-public class MinimizeWindowAction extends AbstractAction {
-
-    public MinimizeWindowAction() {
-    }
-    
+public final class MinimizeWindowAction implements ActionListener {
     public void actionPerformed(ActionEvent arg0) {
         WindowManager.getDefault().getMainWindow().setExtendedState(Frame.ICONIFIED);
     }
-
 }

@@ -42,8 +42,8 @@
 package org.netbeans.performance.mobility.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
-import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
 
 import org.netbeans.jellytools.EditorOperator;
@@ -114,7 +114,7 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
     }
 
     public void prepare() {
-        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
+        String documentPath = CommonUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
 
         try {

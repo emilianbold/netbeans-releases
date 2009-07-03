@@ -97,11 +97,11 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
     
     public ComponentOperator open(){
         // Web project
-        webproject = CommonUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
+        //webproject = CommonUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
         
-        CommonUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
-        CommonUtilities.buildProject(webproject);
-        CommonUtilities.deployProject(webproject);
+        //CommonUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
+        //CommonUtilities.buildProject(webproject);
+        //CommonUtilities.deployProject(webproject);
         //CommonUtilities.collapseProject(webproject);
         
         return null;
