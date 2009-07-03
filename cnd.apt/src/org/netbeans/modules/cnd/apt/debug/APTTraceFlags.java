@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.apt.debug;
 
+import org.netbeans.modules.cnd.debug.DebugUtils;
+
 /**
  * A common place for APT tracing flags that are used by several classes
  * @author Vladimir Voskresensky

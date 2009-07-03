@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.utils.cache;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 
 
 /**
@@ -71,10 +72,10 @@ public abstract class APTStringManager  {
         int nrProc = Runtime.getRuntime().availableProcessors();
         if (nrProc <= 4) {
             STRING_MANAGER_DEFAULT_SLICED_NUMBER = 32;
-            STRING_MANAGER_DEFAULT_CAPACITY=512;
+            STRING_MANAGER_DEFAULT_CAPACITY = 512;
         } else {
             STRING_MANAGER_DEFAULT_SLICED_NUMBER = 128;
-            STRING_MANAGER_DEFAULT_CAPACITY=128;
+            STRING_MANAGER_DEFAULT_CAPACITY = 128;
         }
     }
 
@@ -151,7 +152,7 @@ public abstract class APTStringManager  {
         }
 
         public final void dispose() {
-            if (false){
+            if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS){
                 Object[] arr = storage.toArray();
                 System.out.println("Dispose cache "+name+" "+arr.length + " " + getClass().getName()); // NOI18N
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();

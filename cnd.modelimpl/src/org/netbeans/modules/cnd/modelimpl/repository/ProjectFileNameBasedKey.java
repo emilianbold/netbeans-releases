@@ -87,7 +87,7 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     @Override
     public int hashCode() {
         int key = super.hashCode();
-        key = 17 * key + fileNameIndex;
+        key = 19 * key + fileNameIndex;
         return key;
     }
 

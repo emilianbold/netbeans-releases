@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
@@ -755,6 +755,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         initFields();
     }
 
+    private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
+
     private void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
 
@@ -762,11 +764,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
         AtomicBoolean enougth = new AtomicBoolean(false);
         CountDownLatch countDownLatch = new CountDownLatch(items.size());
-        RequestProcessor rp = new RequestProcessor("Create Project Files", getNumberThreads()); // NOI18N
         for (NativeFileItem nativeFileItem : items) {
             CreateFileRunnable r = new CreateFileRunnable(countDownLatch, nativeFileItem, sources, removedFiles,
                     validator, reparseOnEdit, reparseOnPropertyChanged, enougth);
-            rp.post(r);
+            PROJECT_FILES_WORKER.post(r);
         }
         try {
             countDownLatch.await();
@@ -2098,20 +2099,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private int getNumberThreads(){
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
-                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
-        threadCount = Math.min(threadCount, 4);
-        return Math.max(threadCount, 1);
-    }
-
     public final void fixFakeRegistration(boolean libsAlreadyParsed){
         final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
         CountDownLatch countDownLatch = new CountDownLatch(files.size());
-        RequestProcessor rp = new RequestProcessor("Fix registration", getNumberThreads()); // NOI18N
         for (CsmUID<CsmFile> file : files) {
             FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, file, libsAlreadyParsed);
-            rp.post(r);
+            PROJECT_FILES_WORKER.post(r);
         }
         try {
             countDownLatch.await();
@@ -2188,6 +2181,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object obj) {
         return obj == this;
     }

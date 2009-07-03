@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import java.io.Serializable;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
