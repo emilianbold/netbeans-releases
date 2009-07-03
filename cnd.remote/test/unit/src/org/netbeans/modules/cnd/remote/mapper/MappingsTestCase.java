@@ -70,7 +70,7 @@ public class MappingsTestCase extends RemoteTestBase {
         System.err.println(mappings);
     }
 
-    public void testHostMappingProviderWindows() throws Exception {
+    public void testHostMappingProviderWindows_English() throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("New connections will not be remembered.\n");
         sb.append("\n");
@@ -91,6 +91,92 @@ public class MappingsTestCase extends RemoteTestBase {
 
         map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
         assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+    }
+
+    public void testHostMappingProviderWindows_Russian() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Новые подключения не будут запомнены.\n");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append("Состояние    Локальный Удаленный                            Сеть\n");
+        sb.append("\n");
+        sb.append("-------------------------------------------------------------------------------\n");
+        sb.append("OK           P:        \\\\serverOne\\pub                     Microsoft Windows Network\n");
+        sb.append("Нет доступа  Y:        \\\\sErvEr_22_\\long name              Microsoft Windows Network\n");
+        sb.append("OK           Z:        \\\\name.domen.domen2.zone\\sg155630   Microsoft Windows Network\n");
+        sb.append("Команда выполнена успешно.\n");
+        Map<String, String> map;
+        map = HostMappingProviderWindows.parseNetUseOutput("serverOne", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "p:".equals(map.get("pub"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("sErvEr_22_", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "y:".equals(map.get("long name"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+    }
+
+    public void testHostMappingProviderWindows_German() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Neue Verbindungen werden gespeichert.\n");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append("Status           Lokal     Remote                               Netzwerk\n");
+        sb.append("\n");
+        sb.append("-------------------------------------------------------------------------------\n");
+        sb.append("OK               P:        \\\\serverOne\\pub                     Microsoft Windows-Netzwerk\n");
+        sb.append("Nicht verfügbar  Y:        \\\\sErvEr_22_\\long name              Microsoft Windows-Netzwerk\n");
+        sb.append("OK               Z:        \\\\name.domen.domen2.zone\\sg155630   Microsoft Windows-Netzwerk\n");
+        sb.append("Der Befehl wurde erfolgreich ausgefÃ¼hrt.\n");
+        Map<String, String> map;
+        map = HostMappingProviderWindows.parseNetUseOutput("serverOne", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "p:".equals(map.get("pub"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("sErvEr_22_", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "y:".equals(map.get("long name"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+    }
+
+    public void testHostMappingProviderWindows_Unexpected() throws Exception {
+        // Test for error processing.
+        // In the case net use prints something unexpected no exceptions should be thrown
+
+        // 1. No header
+        String netUseOutput_1 =
+                "-------------------------------------------------------------------\n" +
+                "OK       P:     \\\\server_1\\pub      Microsoft Windows-Netzwerk\n";
+        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_1));
+
+        // 2. No "-----------------" line
+        String netUseOutput_2 =
+                "Status   Local  Remote               Network\n" +
+                "OK       P:     \\\\server_1\\pub      Microsoft Windows-Netzwerk\n";
+        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_2));
+
+        // 3. short host
+        String netUseOutput_3 =
+                "\n" +
+                "Status   Local  Remote               Network\n" +
+                "-------------------------------------------------------------------\n" +
+                "OK       P:     xx                     Microsoft Windows-Netzwerk\n";
+        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_3));
+
+        // 4. server without "\\"
+        String netUseOutput_4 =
+                "\n" +
+                "Status   Local  Remote               Network\n" +
+                "-------------------------------------------------------------------\n" +
+                "OK       P:     server_1_pub           Microsoft Windows-Netzwerk\n";
+        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_4));
+
+        // 5. empty line
+        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(""));
+
+        // 6. just some crap
+        String netUseOutput_6 = "qwe\nasd\n---------------\nzxc\n123\n456\n\n\n";
+        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_6));
     }
 
     public void testHostMappingProviderSamba() throws Exception {
