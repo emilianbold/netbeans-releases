@@ -55,8 +55,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -65,11 +63,13 @@ import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 /**
@@ -127,7 +127,15 @@ public final class QuerySupport {
                     + ", sourcePathIds=" + sourcePathIds //NOI18N
                     + ", libraryPathIds=" + libraryPathIds //NOI18N
                     + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": " + roots); //NOI18N
+                    + ": "); //NOI18N
+            for(FileObject root : roots) {
+                try {
+                    LOG.fine("  " + root.getURL()); //NOI18N
+                } catch (FileStateInvalidException ex) {
+                    //ignore
+                }
+            }
+            LOG.fine("----"); //NOI18N
         }
 
         return roots != null ? roots : Collections.<FileObject>emptySet();
@@ -192,7 +200,15 @@ public final class QuerySupport {
                     + ", sourcePathIds=" + sourcePathIds //NOI18N
                     + ", libraryPathIds=" + libraryPathIds //NOI18N
                     + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": " + roots); //NOI18N
+                    + ": "); //NOI18N
+            for(FileObject root : roots) {
+                try {
+                    LOG.fine("  " + root.getURL()); //NOI18N
+                } catch (FileStateInvalidException ex) {
+                    //ignore
+                }
+            }
+            LOG.fine("----"); //NOI18N
         }
 
         return roots;
@@ -250,7 +266,8 @@ public final class QuerySupport {
             final URL root = ie.getKey();
             final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("query(" + fieldName + ", " + fieldValue + ", " + kind + ", ...) for " + indexerIdentification + ":"); //NOI18N
+                LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", "
+                        + printFiledToLoad(fieldsToLoad) + ") for " + indexerIdentification + ":"); //NOI18N
                 for(IndexDocumentImpl idi : pr) {
                     LOG.fine(" " + idi); //NOI18N
                 }
@@ -358,20 +375,26 @@ public final class QuerySupport {
             Collection<FileObject> classpathRoots = getClasspathRoots(file, id);
             if (binaryPaths) {
                 // Filter out roots that do not have source files available
-                for(FileObject f : classpathRoots) {
-                    SourceForBinaryQuery.Result2 result;
+                for(FileObject binRoot : classpathRoots) {
+                    URL binRootUrl;
                     try {
-                        result = SourceForBinaryQuery.findSourceRoots2(f.getURL());
+                        binRootUrl = binRoot.getURL();
                     } catch (FileStateInvalidException fsie) {
-                        LOG.warning("Ignoring invalid binary Path root: " + f.getPath()); //NOI18N
-                        LOG.log(Level.FINE, null, fsie);
                         continue;
                     }
 
-                    if (result.preferSources() && result.getRoots().length > 0) {
-                        roots.addAll(Arrays.asList(result.getRoots()));
+                    URL[] srcRoots = PathRegistry.getDefault().sourceForBinaryQuery(binRootUrl, null, false);
+                    if (srcRoots != null) {
+                        LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
+                        for(URL srcRootUrl : srcRoots) {
+                            FileObject srcRoot = URLMapper.findFileObject(srcRootUrl);
+                            if (srcRoot != null) {
+                                roots.add(srcRoot);
+                            }
+                        }
                     } else {
-                        roots.add(f);
+                        LOG.log(Level.FINE, "No sources for {0}, adding bin root", binRootUrl); //NOI18N
+                        roots.add(binRoot);
                     }
                 }
             } else {
@@ -390,9 +413,12 @@ public final class QuerySupport {
             }
         } else {
             roots = new HashSet<FileObject>();
-            Set<ClassPath> classpaths = GlobalPathRegistry.getDefault().getPaths(classpathId);
-            for(ClassPath classpath : classpaths) {
-                roots.addAll(Arrays.asList(classpath.getRoots()));
+            Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
+            for(URL url : urls) {
+                FileObject f = URLMapper.findFileObject(url);
+                if (f != null) {
+                    roots.add(f);
+                }
             }
         }
 
@@ -403,4 +429,18 @@ public final class QuerySupport {
         return SPIAccessor.getInstance().getIndexerPath(indexerName, indexerVersion);
     }
 
+    private static String printFiledToLoad(String... fieldsToLoad) {
+        if (fieldsToLoad == null || fieldsToLoad.length == 0) {
+            return "<all-fields>"; //NOI18N
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < fieldsToLoad.length; i++) {
+                sb.append("\"").append(fieldsToLoad[i]).append("\""); //NOI18N
+                if (i + 1 < fieldsToLoad.length) {
+                    sb.append(", "); //NOI18N
+                }
+            }
+            return sb.toString();
+        }
+    }
 }

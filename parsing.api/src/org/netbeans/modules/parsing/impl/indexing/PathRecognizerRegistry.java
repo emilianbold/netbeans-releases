@@ -118,6 +118,14 @@ public final class PathRecognizerRegistry {
         return arr != null ? arr[1] : Collections.<String>emptySet();
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<String> getSourceIdsForBinaryLibraryId(String id) {
+        final Object [] data = getData();
+        Set<String>[] arr = ((Map<String, Set<String>[]>) data[6]).get(id);
+        return arr != null ? arr[0] : Collections.<String>emptySet();
+    }
+
+
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------
@@ -151,6 +159,7 @@ public final class PathRecognizerRegistry {
             Set<String> mimeTypes = new HashSet<String>();
             Map<String, Set<String>[]> sidsMap = new HashMap<String, Set<String>[]>();
             Map<String, Set<String>[]> lidsMap = new HashMap<String, Set<String>[]>();
+            Map<String, Set<String>[]> blidsMap = new HashMap<String, Set<String>[]>();
 
             Collection<? extends PathRecognizer> recognizers = lookupResult.allInstances();
             for(PathRecognizer r : recognizers) {
@@ -188,6 +197,16 @@ public final class PathRecognizerRegistry {
 
                 if (blids != null) {
                     binaryLibraryIds.addAll(blids);
+                    for(String blid : blids) {
+                        if (!blidsMap.containsKey(blid)) {
+                            @SuppressWarnings("unchecked") //NOI18N
+                            Set<String> [] set = new Set[] {
+                                sids == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(sids),
+                                lids == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(lids),
+                            };
+                            blidsMap.put(blid, set);
+                        }
+                    }
                 }
 
                 Set<String> mts = r.getMimeTypes();
@@ -207,6 +226,7 @@ public final class PathRecognizerRegistry {
                 Collections.unmodifiableSet(mimeTypes),
                 Collections.unmodifiableMap(sidsMap),
                 Collections.unmodifiableMap(lidsMap),
+                Collections.unmodifiableMap(blidsMap),
             };
         }
 

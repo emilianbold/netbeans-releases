@@ -144,8 +144,16 @@ implements PropertyChangeListener, ContextAwareAction {
             String actionName = (String) fo.get("displayName"); // NOI18N
             // NOI18N
             int position = Mnemonics.findMnemonicAmpersand(actionName);
-
-            return position == -1 ? null : Character.valueOf(actionName.charAt(position + 1));
+            if (position == -1) {
+                return null;
+            } else {
+                // #167996: copied from AbstractButton.setMnemonic
+                int vk = (int) actionName.charAt(position + 1);
+                if(vk >= 'a' && vk <='z') { //NOI18N
+                    vk -= ('a' - 'A'); //NOI18N
+                }
+                return vk;
+            }
         }
         if (Action.SMALL_ICON.equals(name)) {
             Object icon = fo == null ? null : fo.get("iconBase"); // NOI18N

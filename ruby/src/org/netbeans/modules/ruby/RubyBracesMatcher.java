@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -84,21 +84,8 @@ public final class RubyBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-
+                
                 TokenId id = token.id();
-                if (id == RubyTokenId.WHITESPACE) {
-                    // ts.move(offset) gives the token to the left of the caret.
-                    // If you have the caret right at the beginning of a token, try
-                    // the token to the right too - this means that if you have
-                    //  "   |def" it will show the matching "end" for the "def".
-                    offset++;
-                    ts.move(offset);
-
-                    if (ts.moveNext() && (ts.offset() <= offset)) {
-                        token = ts.token();
-                        id = token.id();
-                    }
-                }
                 
                 if (id == RubyTokenId.QUOTED_STRING_BEGIN) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
@@ -161,23 +148,9 @@ public final class RubyBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-
+                
                 TokenId id = token.id();
-
-                if (id == RubyTokenId.WHITESPACE) {
-                    // ts.move(offset) gives the token to the left of the caret.
-                    // If you have the caret right at the beginning of a token, try
-                    // the token to the right too - this means that if you have
-                    //  "   |def" it will show the matching "end" for the "def".
-                    offset++;
-                    ts.move(offset);
-
-                    if (ts.moveNext() && (ts.offset() <= offset)) {
-                        token = ts.token();
-                        id = token.id();
-                    }
-                }
-
+                
                 OffsetRange r;
                 if (id == RubyTokenId.QUOTED_STRING_BEGIN) {
                     // Heredocs should be treated specially
