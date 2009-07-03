@@ -95,8 +95,6 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         listOrdering = new javax.swing.JList();
@@ -105,13 +103,6 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
         bRemove = new javax.swing.JButton();
         bUp = new javax.swing.JButton();
         bDown = new javax.swing.JButton();
-
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(jList1);
 
         setMinimumSize(new java.awt.Dimension(250, 150));
 
@@ -290,8 +281,6 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
     private javax.swing.JButton bRemove;
     private javax.swing.JButton bUp;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jList1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList listOrdering;
     // End of variables declaration//GEN-END:variables
