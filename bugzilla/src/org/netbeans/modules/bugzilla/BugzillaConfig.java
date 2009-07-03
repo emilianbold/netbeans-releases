@@ -67,6 +67,7 @@ public class BugzillaConfig {
     private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
+    private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
@@ -97,6 +98,10 @@ public class BugzillaConfig {
         getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
     }
 
+    public void setCheckUpdates(boolean bl) {
+        getPreferences().putBoolean(CHECK_UPDATES, bl);
+    }
+
     public int getQueryRefreshInterval() {
         return getPreferences().getInt(QUERY_REFRESH_INT, DEFAULT_QUERY_REFRESH);
     }
@@ -107,6 +112,10 @@ public class BugzillaConfig {
 
     public boolean getQueryAutoRefresh(String queryName) {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
+    }
+
+    public boolean getCheckUpdates() {
+        return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {

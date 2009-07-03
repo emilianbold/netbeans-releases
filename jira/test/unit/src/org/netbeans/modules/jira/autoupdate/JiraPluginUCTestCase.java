@@ -45,7 +45,6 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
-import org.netbeans.modules.jira.JiraTestUtil;
 import org.openide.util.Lookup;
 
 /**

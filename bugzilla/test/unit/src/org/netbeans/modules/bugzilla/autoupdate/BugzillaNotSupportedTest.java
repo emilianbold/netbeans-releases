@@ -37,29 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugzilla.autoupdate;
 
-import org.netbeans.modules.jira.JiraTestUtil;
+import org.netbeans.modules.bugzilla.TestConstants;
+import org.netbeans.modules.bugzilla.TestUtil;
 
 /**
  *
  * @author tomas
  */
-public class JiraNotSupportedTest extends JiraPluginUCTestCase {
+public class BugzillaNotSupportedTest extends BugzillaPluginUCTestCase implements TestConstants {
 
-    public JiraNotSupportedTest(String testName) {
+    public BugzillaNotSupportedTest(String testName) {
         super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.t9y.jira.supported.version", "0.0.0");
+        System.setProperty("netbeans.t9y.bugzilla.supported.version", "0.0.0");
         super.setUp();
     }
 
-    public void testIsNotSupportedJIRAVersion() {
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkSupportedJiraServerVersion(JiraTestUtil.getRepository()));
+    public void testIsNotSupportedBugzillaVersion() {
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertFalse(jau.checkSupportedBugzillaServerVersion(TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD)));
     }
 
 }

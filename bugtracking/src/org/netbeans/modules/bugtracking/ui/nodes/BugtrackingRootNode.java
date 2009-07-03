@@ -116,7 +116,7 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends Children.Keys<Repository> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends Children.Keys implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
@@ -126,10 +126,14 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected Node[] createNodes(Repository repository) {
-            return new Node[] {repository.getNode()};
+        protected Node[] createNodes(Object key) {
+            if(key instanceof WaitNode) {
+                return new Node[] {(Node)key};
+            }
+            assert key instanceof Repository;
+            return new Node[] {((Repository)key).getNode()};
         }
-        
+
         @Override
         protected void addNotify() {
             super.addNotify();
@@ -143,10 +147,16 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         private void refreshKeys() {
-            List<Repository> l = new ArrayList<Repository>();
-            l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
-            Collections.sort(l, new RepositoryComparator());
-            setKeys(l);
+            AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(BugtrackingRootNode.class, "LBL_Wait")); // NOI18N
+            setKeys(Collections.singleton(waitNode));
+            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                public void run() {
+                    List<Repository> l = new ArrayList<Repository>();
+                    l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
+                    Collections.sort(l, new RepositoryComparator());
+                    setKeys(l);
+                }
+            });
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

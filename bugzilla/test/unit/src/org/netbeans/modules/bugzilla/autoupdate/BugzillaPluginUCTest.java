@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugzilla.autoupdate;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,22 +45,22 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Calendar;
-import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 
 /**
  *
  * @author tomas
  */
-public class JiraPluginUCTest extends JiraPluginUCTestCase {
+public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
 
     String CATALOG_CONTENTS_FORMAT =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\">" +
             "<module_updates timestamp=\"20/02/13/01/07/2009\">" +
             "<module autoload=\"false\" " +
-                    "codenamebase=\"org.netbeans.libs.jira\" " +
-                    "distribution=\"modules/extra/org-netbeans-libs-jira.nbm\" " +
+                    "codenamebase=\"org.netbeans.libs.bugzilla\" " +
+                    "distribution=\"modules/extra/org-netbeans-libs-bugzilla.nbm\" " +
                     "downloadsize=\"2546568\" " +
                     "eager=\"false\" " +
                     "homepage=\"http://www.netbeans.org/\" " +
@@ -69,11 +69,11 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                     "needsrestart=\"false\" " +
                     "releasedate=\"2009/05/27\">" +
                 "<manifest AutoUpdate-Show-In-Client=\"true\" " +
-                          "OpenIDE-Module=\"org.netbeans.libs.jira\" " +
+                          "OpenIDE-Module=\"org.netbeans.libs.bugzilla\" " +
                           "OpenIDE-Module-Display-Category=\"Libraries\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"This module bundles the JIRA connector implementation\" " +
+                          "OpenIDE-Module-Long-Description=\"This module bundles the Bugzilla connector implementation\" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +
                                                                "org.netbeans.libs.commons_logging/1 > 1.7, " +
@@ -83,14 +83,14 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                                                                "org.openide.nodes > 7.7, " +
                                                                "org.openide.util > 7.18, " +
                                                                "org.openide.windows > 6.24\" " +
-                          "OpenIDE-Module-Name=\"JIRA Libraries\" " +
+                          "OpenIDE-Module-Name=\"Bugzilla Libraries\" " +
                           "OpenIDE-Module-Requires=\"org.openide.modules.ModuleFormat1\" " +
-                          "OpenIDE-Module-Short-Description=\"Bundles JIRA Libraries\" " +
+                          "OpenIDE-Module-Short-Description=\"Bundles Bugzilla Libraries\" " +
                           "OpenIDE-Module-Specification-Version=\"1.0.0\"/>" +
             "</module>" +
             "<module autoload=\"false\" " +
                     "codenamebase=\"{0}\" " +
-                    "distribution=\"modules/extra/org-netbeans-modules-jira.nbm\" " +
+                    "distribution=\"modules/extra/org-netbeans-modules-bugzilla.nbm\" " +
                     "downloadsize=\"192657\" " +
                     "eager=\"false\" " +
                     "homepage=\"http://www.netbeans.org/\" " +
@@ -102,12 +102,12 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                           "OpenIDE-Module=\"{0}\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access)\" " +
+                          "OpenIDE-Module-Long-Description=\"Bugzilla Support (Early Access)\" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.api.progress/1 > 1.13, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +
                                                                "org.netbeans.libs.commons_logging/1 > 1.7, " +
-                                                               "org.netbeans.libs.jira > 1.0, " +
+                                                               "org.netbeans.libs.bugzilla > 1.0, " +
                                                                "org.netbeans.modules.bugtracking > 1.0, " +
                                                                "org.netbeans.modules.kenai > 0.1, " +
                                                                "org.openide.awt > 7.3, " +
@@ -118,60 +118,59 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                                                                "org.openide.nodes > 7.7, " +
                                                                "org.openide.util > 7.18, " +
                                                                "org.openide.windows > 6.24\" " +
-                           "OpenIDE-Module-Name=\"JIRA\" " +
+                           "OpenIDE-Module-Name=\"Bugzilla\" " +
                            "OpenIDE-Module-Requires=\"org.openide.modules.ModuleFormat1\" " +
-                           "OpenIDE-Module-Short-Description=\"JIRA\" " +
+                           "OpenIDE-Module-Short-Description=\"Bugzilla\" " +
                            "OpenIDE-Module-Specification-Version=\"{1}\"/>" +
             "</module>" +
             "</module_updates>";
 
-    public JiraPluginUCTest(String testName) {
+    public BugzillaPluginUCTest(String testName) {
         super(testName);
     }
 
-    public void testNewJIRAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "9.9.9");
+    public void testNewBugzillavailable() throws Throwable {
+        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "9.9.9");
         populateCatalog(contents);
 
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertTrue(jau.checkNewJiraPluginAvailable());
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertTrue(jau.checkNewBugzillaPluginAvailable());
     }
 
-    public void testNewJIRANotAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "0.0.0");
+    public void testNewBugzillaNotAvailable() throws Throwable {
+        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "0.0.0");
         populateCatalog(contents);
 
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkNewJiraPluginAvailable());
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertFalse(jau.checkNewBugzillaPluginAvailable());
     }
 
-    public void testJIRAIsNotAtUCAvailable() throws Throwable {
+    public void testBugzillaIsNotAtUCAvailable() throws Throwable {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0");
         populateCatalog(contents);
 
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkNewJiraPluginAvailable());
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertFalse(jau.checkNewBugzillaPluginAvailable());
     }
 
     public void testIsSupported() {
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertTrue(jau.isSupportedVersion(JiraVersion.MIN_VERSION));
-        assertTrue(jau.isSupportedVersion(JiraVersion.JIRA_3_3));
-        assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.1")));
-        assertTrue(jau.isSupportedVersion(new JiraVersion("3.8.0")));
-        assertTrue(jau.isSupportedVersion(getLower(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertTrue(jau.isSupportedVersion(BugzillaVersion.MIN_VERSION));
+        assertTrue(jau.isSupportedVersion(BugzillaVersion.BUGZILLA_3_2));
+        assertTrue(jau.isSupportedVersion(new BugzillaVersion("3.2.1")));
+        assertTrue(jau.isSupportedVersion(getLower(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
     }
 
     public void testIsNotSupported() {
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.isSupportedVersion(getHigherMicro(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
-        assertFalse(jau.isSupportedVersion(getHigherMinor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
-        assertFalse(jau.isSupportedVersion(getHigherMajor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertFalse(jau.isSupportedVersion(getHigherMicro(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
+        assertFalse(jau.isSupportedVersion(getHigherMinor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
+        assertFalse(jau.isSupportedVersion(getHigherMajor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
     }
 
     public void testCheckedToday() {
 
-        JiraAutoupdate jau = new JiraAutoupdate();
+        BugzillaAutoupdate jau = new BugzillaAutoupdate();
 
         assertFalse(jau.wasCheckedToday(-1));                           // never
 
@@ -194,31 +193,31 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
         UpdateUnitProviderFactory.getDefault().refreshProviders (null, true);
     }
 
-    private JiraVersion getHigherMicro(String version) {
+    private BugzillaVersion getHigherMicro(String version) {
         String[] segments = version == null ? new String[0] : version.split("\\."); //$NON-NLS-1$
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
         int micro = segments.length > 2 ? toInt(segments[2]) : 0;
-        return new JiraVersion(new String("" + major + "." + minor + "." + ++micro));
+        return new BugzillaVersion(new String("" + major + "." + minor + "." + ++micro));
     }
 
-    private JiraVersion getHigherMinor(String version) {
+    private BugzillaVersion getHigherMinor(String version) {
         String[] segments = version == null ? new String[0] : version.split("\\."); //$NON-NLS-1$
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
         int micro = segments.length > 2 ? toInt(segments[2]) : 0;
-        return new JiraVersion(new String("" + major + "." + ++minor + "." + micro));
+        return new BugzillaVersion(new String("" + major + "." + ++minor + "." + micro));
     }
 
-    private JiraVersion getHigherMajor(String version) {
+    private BugzillaVersion getHigherMajor(String version) {
         String[] segments = version == null ? new String[0] : version.split("\\."); //$NON-NLS-1$
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
         int micro = segments.length > 2 ? toInt(segments[2]) : 0;
-        return new JiraVersion(new String("" + ++major + "." + minor + "." + micro));
+        return new BugzillaVersion(new String("" + ++major + "." + minor + "." + micro));
     }
 
-    private JiraVersion getLower(String version) {
+    private BugzillaVersion getLower(String version) {
         String[] segments = version == null ? new String[0] : version.split("\\."); //$NON-NLS-1$
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
@@ -232,7 +231,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                 major--;
             }
         }
-        return new JiraVersion(new String("" + major + "." + minor + "." + ++micro));
+        return new BugzillaVersion(new String("" + major + "." + minor + "." + ++micro));
     }
 
     private int toInt(String segment) {
