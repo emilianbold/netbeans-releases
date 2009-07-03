@@ -73,6 +73,11 @@ public class DataViewTest extends NbTestCase {
     }
 
     @Override
+    public boolean runInEQ () {
+        return true;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(new DBConnectionProviderImpl().getClass());
@@ -216,6 +221,6 @@ public class DataViewTest extends NbTestCase {
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
         SQLStatementGenerator expResult = new SQLStatementGenerator(instance);
         SQLStatementGenerator result = instance.getSQLStatementGenerator();
-        assertEquals(expResult.getCountSQLQuery(sqlStr), result.getCountSQLQuery(sqlStr));
+        assertEquals(SQLStatementGenerator.getCountSQLQuery(sqlStr), SQLStatementGenerator.getCountSQLQuery(sqlStr));
     }
 }
