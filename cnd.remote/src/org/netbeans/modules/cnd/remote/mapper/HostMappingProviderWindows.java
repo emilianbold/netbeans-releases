@@ -125,17 +125,20 @@ public class HostMappingProviderWindows implements HostMappingProvider {
         int nLocal = lastNonEmptyLine.indexOf(words[1]); // "Local"
         int nRemote = lastNonEmptyLine.indexOf(words[2]); // "Remote"
         int nNetwork = lastNonEmptyLine.indexOf(words[3]); // "Network"
+        // neither of nLocal, nRemote and nNetwork can be negative - no check need
         
         for( line = reader.readLine(); line != null; line = reader.readLine() ) {  //NOI18N
             if (line.indexOf(':') != -1) {
                 String local = line.substring(nLocal, nRemote -1).trim(); // something like X:
                 String remote = line.substring(nRemote, nNetwork -1).trim(); // something like \\hostname\foldername
-                String[] arRemote = remote.substring(2).split("\\\\"); //NOI18N
-                if (arRemote.length >=2) {
-                    String host = arRemote[0];
-                    String folder = arRemote[1];
-                    if (hostName.equals(host)) {
-                        mappings.put(folder, local.toLowerCase());
+                if (remote.length() > 2) {
+                    String[] arRemote = remote.substring(2).split("\\\\"); //NOI18N
+                    if (arRemote.length >=2) {
+                        String host = arRemote[0];
+                        String folder = arRemote[1];
+                        if (hostName.equals(host)) {
+                            mappings.put(folder, local.toLowerCase());
+                        }
                     }
                 }
             }
