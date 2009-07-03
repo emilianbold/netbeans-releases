@@ -74,14 +74,21 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
 
     protected final Map<K, Entry<K, V>> map = new HashMap<K, Entry<K, V>>();
+    private final EventsDispatcher<K, V> dispatcher;
     protected boolean active = true;
 	    
     public KeyValueQueue() {
         super(new BaseQueue.Queue());
+        dispatcher = new EventsDispatcher<K, V>(this);
+        dispatcher.start();
     }
     
     public void addLast(K key, V value) {
 	if( needsTrace() ) System.err.printf("%s: addLast %s\n", getTraceName(), key.toString());
+        dispatcher.newEvent(createEntry(key, value));
+    }
+
+    private void addLastImpl(K key, V value) {
         synchronized (lock) {
             Entry<K, V> entry = map.get(key);
             if (entry == null) {
@@ -99,6 +106,42 @@ public class KeyValueQueue<K, V> extends BaseQueue {
         }
     }
 
+    private final static class EventsDispatcher<KK, VV> extends Thread {
+        private final KeyValueQueue<KK, VV> delegate;
+        private final BlockingQueue<Entry<KK, VV>> queue = new LinkedBlockingQueue<Entry<KK, VV>>();
+        
+        public EventsDispatcher(KeyValueQueue<KK, VV> delegate) {
+            super("CND Repository Queue Dispatcher");
+            this.delegate = delegate;
+        }
+
+        void newEvent(Entry<KK, VV> entry) {
+            queue.add(entry);
+        }
+        
+        void handleEvent(KK key, VV value) {
+            delegate.addLastImpl(key, value);
+        }
+
+        @Override
+        public void run() {
+            while (!isInterrupted()) {
+                try {
+                    Entry<KK, VV> event;
+                    try {
+                        event = queue.take();
+                    } catch (InterruptedException ex) {
+                        // it's ok
+                        break;
+                    }
+                    handleEvent(event.key, event.value);
+                } catch (Throwable th) {
+                    th.printStackTrace(System.err);
+                }
+            }
+        }
+    }
+
     private Entry<K, V> doAddLast(K key, V value) {
 	Entry<K, V> entry = createEntry(key, value);
 	map.put(key, entry);
@@ -113,29 +156,6 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     protected void doReplaceAddLast(K key, V value, Entry<K, V> existent) {
 	existent.value = value;
     }
-//
-//    public void addFirst(K key, V value) {
-//	if( needsTrace() ) System.err.printf("%s: addFirst %s\n", getTraceName(), key.toString());
-//	synchronized ( lock ) {
-//	    Entry entry = map.get(key);
-//	    if( entry == null ) {
-//		doAddFirst(key, value);
-//		if( needsTrace() ) System.err.printf("%s: added first %s\n", getTraceName(), key.toString());
-//	    }
-//	    else {
-//		doReplaceAddFirst(key, value, entry);
-//		if( needsTrace() ) System.err.printf("%s: replaced first %s\n", getTraceName(), key.toString());
-//	    }
-//	    lock.notifyAll();
-//	}
-//    }
-//
-//    private Entry doAddFirst(K key, V value) {
-//	Entry entry = createEntry(key, value);
-//	map.put(key, entry);
-//	queue.addFirst(entry);
-//	return entry;
-//    }
     
     protected void doReplaceAddFirst(K key, V value, Entry<K, V> existent) {
 	existent.value = value;
@@ -197,6 +217,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 
     public void shutdown() {
 	active = false;
+        dispatcher.interrupt();
 	synchronized ( lock ) {
 	    lock.notifyAll();
 	}
