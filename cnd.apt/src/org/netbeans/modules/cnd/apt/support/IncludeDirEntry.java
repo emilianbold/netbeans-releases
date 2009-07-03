@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
@@ -55,7 +56,7 @@ public final class IncludeDirEntry {
     private static final int MANAGER_DEFAULT_CAPACITY;
     private static final int MANAGER_DEFAULT_SLICED_NUMBER;
     static {
-        int nrProc = Runtime.getRuntime().availableProcessors();
+        int nrProc = CndUtils.getConcurrencyLevel();
         if (nrProc <= 4) {
             MANAGER_DEFAULT_SLICED_NUMBER = 32;
             MANAGER_DEFAULT_CAPACITY = 512;

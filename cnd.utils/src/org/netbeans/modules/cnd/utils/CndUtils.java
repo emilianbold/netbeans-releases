@@ -97,6 +97,10 @@ public class CndUtils {
                 Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
         return Math.max(threadCount, 1);
     }
+
+    public static int getConcurrencyLevel() {
+        return getNumberCndWorkerThreads();
+    }
     
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
