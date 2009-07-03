@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,41 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.jira.autoupdate;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URL;
 import java.text.MessageFormat;
-import java.util.List;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
-import org.netbeans.core.startup.MainLookup;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author tomas
  */
-public class JiraPluginUCTest extends NbTestCase {
-    
-    private static File catalogFile;
-    private static URL catalogURL;
-    protected boolean modulesOnly = true;
-    protected List<UpdateUnit> keepItNotToGC;
+public class JiraPluginUCTest extends JiraPluginUCTestCase {
+
     private static String CATALOG_CONTENTS_FORMAT =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\">" +
@@ -108,31 +95,6 @@ public class JiraPluginUCTest extends NbTestCase {
         super(testName);
     }
 
-    public static class MyProvider extends AutoupdateCatalogProvider {
-        public MyProvider () {
-            super ("test-updates-provider", "test-updates-provider", catalogURL, UpdateUnitProvider.CATEGORY.STANDARD);
-        }
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-        this.clearWorkDir ();
-        catalogFile = new File(getWorkDir(), "updates.xml");
-        if (!catalogFile.exists()) {
-            catalogFile.createNewFile();
-        }
-        catalogURL = catalogFile.toURI().toURL();
-
-        setUserDir (getWorkDirPath ());
-        MainLookup.register(new MyProvider());
-        assert Lookup.getDefault().lookup(MyProvider.class) != null;
-    }
-
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testNewJIRAvailable() throws Throwable {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "9.9.9");
         populateCatalog(contents);
@@ -166,7 +128,7 @@ public class JiraPluginUCTest extends NbTestCase {
         assertTrue(jau.isSupportedVersion(JiraVersion.JIRA_3_7));
         assertTrue(jau.isSupportedVersion(new JiraVersion("3.8.0")));
         assertTrue(jau.isSupportedVersion(JiraVersion.JIRA_3_13));
-        assertTrue(jau.isSupportedVersion(new JiraVersion("3.13.1")));        
+        assertTrue(jau.isSupportedVersion(new JiraVersion("3.13.1")));
         assertTrue(jau.isSupportedVersion(getLower(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
     }
 
@@ -175,10 +137,6 @@ public class JiraPluginUCTest extends NbTestCase {
         assertFalse(jau.isSupportedVersion(getHigherMicro(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
         assertFalse(jau.isSupportedVersion(getHigherMinor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
         assertFalse(jau.isSupportedVersion(getHigherMajor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
-    }
-
-    public static void setUserDir(String path) {
-        System.setProperty ("netbeans.user", path);
     }
 
     private void populateCatalog(String contents) throws FileNotFoundException, IOException {
