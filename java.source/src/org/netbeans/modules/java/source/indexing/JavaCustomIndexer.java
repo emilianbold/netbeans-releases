@@ -129,7 +129,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     splitSources(files,javaSources),
                     context.getRootURI());
 
-            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().reserveWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
@@ -240,7 +240,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring request with no root");
                 return;
             }
-            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().reserveWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
