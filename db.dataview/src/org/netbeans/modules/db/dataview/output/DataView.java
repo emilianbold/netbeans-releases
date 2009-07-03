@@ -98,7 +98,7 @@ public class DataView {
         dv.nbOutputComponent = false;
         try {
             dv.dataPage = new DataViewPageContext(pageSize);
-            dv.execHelper = new SQLExecutionHelper(dv, dbConn);
+            dv.execHelper = new SQLExecutionHelper(dv);
             SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
             dv.stmtGenerator = new SQLStatementGenerator(dv);
         } catch (Exception ex) {
