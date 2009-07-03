@@ -117,7 +117,7 @@ public class HostMappingProviderWindows implements HostMappingProvider {
         }
 
         // lastNonEmptyLine should contain "Status  Local  Remote Network" - probably localized
-        String[] words = lastNonEmptyLine.split("[ \t]+");
+        String[] words = lastNonEmptyLine.split("[ \t]+"); // NOI18N
         if (words.length < 4) {
             return Collections.<String, String>emptyMap();
         }
