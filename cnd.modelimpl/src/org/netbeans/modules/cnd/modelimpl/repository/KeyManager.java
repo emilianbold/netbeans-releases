@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
@@ -136,7 +137,7 @@ public class KeyManager {
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i].size() > 0) {
-                    if (true) {
+                    if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                         Object[] arr = instances[i].toArray();
                         System.out.println("Key cache " + instances[i].size()); // NOI18N
                         Map<Class, Integer> classes = new HashMap<Class, Integer>();

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
 
@@ -73,10 +74,10 @@ public abstract class APTMacroCache  {
         int nrProc = Runtime.getRuntime().availableProcessors();
         if (nrProc <= 4) {
             MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 32;
-            MACRO_MANAGER_DEFAULT_CAPACITY=512;
+            MACRO_MANAGER_DEFAULT_CAPACITY = 512;
         } else {
             MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 128;
-            MACRO_MANAGER_DEFAULT_CAPACITY=128;
+            MACRO_MANAGER_DEFAULT_CAPACITY = 128;
         }
     }
     private static final APTMacroCache instance = create(false);
@@ -129,7 +130,7 @@ public abstract class APTMacroCache  {
         }
 
         public final void dispose() {
-            if (false) {
+            if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                 Object[] arr = storage.toArray();
                 System.out.println("Dispose macro cache "+arr.length + " " + getClass().getName()); // NOI18N
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();
