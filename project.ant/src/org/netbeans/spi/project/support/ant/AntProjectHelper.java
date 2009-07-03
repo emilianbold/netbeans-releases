@@ -184,6 +184,7 @@ public final class AntProjectHelper {
      * Xerces' DOM is not thread-safe <em>even for reading<em> (#50198).
      */
     private final Set<String> modifiedMetadataPaths = new HashSet<String>();
+    private Throwable addedProjectXmlPath; // #155010
     
     /**
      * Registered listeners.
@@ -514,10 +515,16 @@ public final class AntProjectHelper {
     private void modifying(String path) {
         assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
-        synchronized (modifiedMetadataPaths) {
-            modifiedMetadataPaths.add(path);
-        }
+        addModifiedMetadataPath(path);
         fireChange(path, true);
+    }
+    private void addModifiedMetadataPath(String path) {
+        synchronized (modifiedMetadataPaths) {
+            boolean added = modifiedMetadataPaths.add(path);
+            if (added && path.equals(PROJECT_XML_PATH)) {
+                addedProjectXmlPath = new Throwable();
+            }
+        }
     }
     
     /**
@@ -546,9 +553,7 @@ public final class AntProjectHelper {
         assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
         // To make sure projectXmlSaved is called:
-        synchronized (modifiedMetadataPaths) {
-            modifiedMetadataPaths.add(PROJECT_XML_PATH);
-        }
+        addModifiedMetadataPath(PROJECT_XML_PATH);
     }
     
     /**
@@ -556,9 +561,15 @@ public final class AntProjectHelper {
      * to <code>project.xml</code>.
      * Access from GeneratedFilesHelper.
      */
-    boolean isProjectXmlModified() {
+    void possiblyThrowProjectXmlModified(String msg) throws IllegalStateException {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        return modifiedMetadataPaths.contains(PROJECT_XML_PATH);
+        if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
+            IllegalStateException ise = new IllegalStateException(msg);
+            if (addedProjectXmlPath != null) {
+                ise.initCause(addedProjectXmlPath);
+            }
+            throw ise;
+        }
     }
     
     /**
@@ -607,7 +618,7 @@ public final class AntProjectHelper {
                         }
                     } catch (IOException e) {
                         // Treat it as still modified.
-                        modifiedMetadataPaths.add(PROJECT_XML_PATH);
+                        addModifiedMetadataPath(PROJECT_XML_PATH);
                         throw e;
                     }
                 }
