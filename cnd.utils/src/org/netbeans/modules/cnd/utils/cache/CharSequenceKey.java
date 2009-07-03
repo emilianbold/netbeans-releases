@@ -469,7 +469,7 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 
         @Override
         public int hashCode() {
-            return i1 - (i1 >> 8) + (i2 << 5) - i2;
+            return (i1 >> 4) + (i1 >> 8) + (i2 << 5) - i2;
         }
 
         public CharSequence subSequence(int start, int end) {
