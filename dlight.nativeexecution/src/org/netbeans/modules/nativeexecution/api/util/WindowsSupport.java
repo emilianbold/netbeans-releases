@@ -90,9 +90,16 @@ public final class WindowsSupport {
     public void init() {
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
-                "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
+                "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\", // NOI18N
                 "native", // NOI18N
                 ".*native.*REG_SZ(.*)"); // NOI18N
+
+        if (cygwinRoot == null) {
+            cygwinRoot = queryWindowsRegistry(
+                "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
+                "rootdir", // NOI18N
+                ".*rootdir.*REG_SZ(.*)"); // NOI18N
+        }
 
         if (cygwinRoot != null) {
             File sh = new File(cygwinRoot + "/bin/sh.exe"); // NOI18N
@@ -215,7 +222,7 @@ public final class WindowsSupport {
     public String convertToShellPath(String path) {
         String result = ""; // NOI18N
 
-        if (path == null) {
+        if (path == null || path.length() == 0) {
             return result;
         }
 
