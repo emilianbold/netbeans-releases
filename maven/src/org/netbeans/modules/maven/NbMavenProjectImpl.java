@@ -237,16 +237,6 @@ public final class NbMavenProjectImpl implements Project {
 
     /**
      * load a project with properties and profiles other than the current ones.
-     * uses default project embedder
-     * @param activeProfiles
-     * @param properties
-     * @return
-     */
-    public synchronized MavenProject loadMavenProject(List<String> activeProfiles, Properties properties) {
-        return loadMavenProject(getEmbedder(), activeProfiles, properties);
-    }
-    /**
-     * load a project with properties and profiles other than the current ones.
      * @param embedder embedder to use
      * @param activeProfiles
      * @param properties
@@ -517,16 +507,7 @@ public final class NbMavenProjectImpl implements Project {
             });
             return;
         }
-        //when project gets reloaded (pom.xml file changed, build finished)
-        //we need to dmp the weakly referenced caches and start with a clean room
-        try {
-            MavenWorkspaceStore store = (MavenWorkspaceStore) getEmbedder().getPlexusContainer().lookup("org.apache.maven.workspace.MavenWorkspaceStore"); //NOI18N
-            if (store instanceof NbMavenWorkspaceStore) {
-                ((NbMavenWorkspaceStore)store).doManualClear();
-            }
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        clearProjectWorkspaceCache();
         synchronized (this) {
             oldProject = project;
             project = null;
@@ -536,6 +517,19 @@ public final class NbMavenProjectImpl implements Project {
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
         doBaseProblemChecks();
+    }
+
+    public void clearProjectWorkspaceCache() {
+        //when project gets reloaded (pom.xml file changed, build finished)
+        //we need to dump the weakly referenced caches and start with a clean room
+        try {
+            MavenWorkspaceStore store = (MavenWorkspaceStore) getEmbedder().getPlexusContainer().lookup("org.apache.maven.workspace.MavenWorkspaceStore"); //NOI18N
+            if (store instanceof NbMavenWorkspaceStore) {
+                ((NbMavenWorkspaceStore)store).doManualClear();
+            }
+        } catch (ComponentLookupException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     
