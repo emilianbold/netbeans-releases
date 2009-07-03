@@ -49,7 +49,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
@@ -656,7 +655,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         KeyManager.instance().dispose();
         CndFileUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();
-        APTMacroCache.getManager().dispose();
     }
     private static final class Lock {}
     private final Object lock = new Lock();
