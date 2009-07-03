@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -151,7 +152,8 @@ public class BeanRunConfig implements RunConfig {
             if (getProperties() != null) {
                 props.putAll(getProperties());
             }
-            mp = impl.loadMavenProject(profiles, properties);
+            //#168036 use it's own embedder to prevent caching
+            mp = impl.loadMavenProject(EmbedderFactory.createProjectLikeEmbedder(), profiles, props);
         }
         return mp;
      }
