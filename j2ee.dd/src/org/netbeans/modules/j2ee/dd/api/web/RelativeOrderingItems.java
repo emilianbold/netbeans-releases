@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,29 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.j2ee.dd.api.web;
 
 /**
- * Interface for WebFragment element.<br>
- * The WebFragment object is the root of bean graph generated<br>
- * for deployment descriptor(web-fragment.xml) file.<br>
- * For getting the root (WebFragment object) use the {@link WebFragmentProvider#getDDRoot} method.
- *
- *<p><b><font color="red"><em>Important note: Do not provide an implementation of this interface unless you are a DD API provider!</em></font></b>
- *</p>
+ * @author Petr Slechta
  */
-public interface WebFragment extends org.netbeans.modules.j2ee.dd.api.common.RootInterface, WebApp {
+public interface RelativeOrderingItems {
 
-    // For now, the interface inherits from WebApp interface
-    // Later, it can be changed to separate interface
-    // (It will require rewriting of a lot of code -- all GUI editors, etc.)
+    void setName(int index, String value);
+    String getName(int index);
+    int sizeName();
+    void setName(String[] value);
+    String[] getName();
+    int addName(String value);
+    int removeName(String value);
 
-
-    // Methods specific for WebFragment
-
-	RelativeOrdering newRelativeOrdering();
-	RelativeOrdering[] getOrdering();
-	void setOrdering(RelativeOrdering[] value);
+    void setOthers(RelativeOrderingOthersItem value);
+    RelativeOrderingOthersItem getOthers();
+    RelativeOrderingOthersItem newRelativeOrderingOthersItem();
 
 }

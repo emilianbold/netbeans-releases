@@ -45,7 +45,6 @@ import java.awt.event.ItemEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.JTextField;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -106,8 +105,6 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         listOrdering = new javax.swing.JList();
@@ -116,13 +113,6 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
         bRemove = new javax.swing.JButton();
         bUp = new javax.swing.JButton();
         bDown = new javax.swing.JButton();
-
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(jList1);
 
         setMinimumSize(new java.awt.Dimension(250, 150));
 
@@ -278,11 +268,7 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     
     private void refreshDdModel() {
         try {
-            // The line below does not work
-            //AbsoluteOrdering ordering = (AbsoluteOrdering)webApp.createBean("AbsoluteOrdering"); // NOI18N
-            // so the following hack was used
-            // TODO fix this hack later
-            AbsoluteOrdering ordering = new org.netbeans.modules.j2ee.dd.impl.web.model_3_0.AbsoluteOrdering();
+            AbsoluteOrdering ordering = webApp.newAbsoluteOrdering();
             AbsoluteOrdering[] orderings = new AbsoluteOrdering[1];
             String[] items = new String[listModel.size()];
             for (int i=0,maxi=listModel.size(); i<maxi; i++) {
@@ -305,8 +291,6 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     private javax.swing.JButton bRemove;
     private javax.swing.JButton bUp;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jList1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList listOrdering;
     // End of variables declaration//GEN-END:variables

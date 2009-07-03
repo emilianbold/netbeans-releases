@@ -85,7 +85,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class FrameworkCommandChooser extends JPanel {
-    private static final long serialVersionUID = 2405531380316402L;
+    private static final long serialVersionUID = 24055317521316402L;
 
     private static final Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.task"); // NOI18N
     private static final Object NO_MATCHING_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
@@ -265,7 +265,7 @@ public final class FrameworkCommandChooser extends JPanel {
         if (task != null) {
             preview = task.getPreview() + " " + taskParametersComboBoxEditor.getText(); // NOI18N
         }
-        previewLabel.setText(preview);
+        previewTextField.setText(preview);
     }
 
     /**
@@ -457,10 +457,12 @@ public final class FrameworkCommandChooser extends JPanel {
         taskParamLabel = new javax.swing.JLabel();
         taskParametersComboBox = new javax.swing.JComboBox();
         matchingTaskLabel = new javax.swing.JLabel();
+        splitPane = new javax.swing.JSplitPane();
         matchingTaskSP = new javax.swing.JScrollPane();
         matchingTaskList = new javax.swing.JList();
         helpScrollPane = new javax.swing.JScrollPane();
         helpTextArea = new javax.swing.JTextArea();
+        previewTextField = new javax.swing.JTextField();
         previewLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.text")); // NOI18N
@@ -488,6 +490,11 @@ public final class FrameworkCommandChooser extends JPanel {
         matchingTaskLabel.setLabelFor(matchingTaskList);
         org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.text")); // NOI18N
 
+        splitPane.setBorder(null);
+        splitPane.setDividerLocation(200);
+        splitPane.setDividerSize(5);
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
         matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -497,13 +504,20 @@ public final class FrameworkCommandChooser extends JPanel {
         });
         matchingTaskSP.setViewportView(matchingTaskList);
 
+        splitPane.setTopComponent(matchingTaskSP);
+
         helpTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         helpTextArea.setColumns(20);
         helpTextArea.setEditable(false);
         helpTextArea.setRows(5);
         helpScrollPane.setViewportView(helpTextArea);
 
-        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, "DUMMY"); // NOI18N
+        splitPane.setRightComponent(helpScrollPane);
+
+        previewTextField.setEditable(false);
+
+        previewLabel.setLabelFor(previewTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.previewLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -512,8 +526,7 @@ public final class FrameworkCommandChooser extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(helpScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
-                    .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(taskLabel)
@@ -523,7 +536,10 @@ public final class FrameworkCommandChooser extends JPanel {
                             .add(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
                             .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
                     .add(matchingTaskLabel)
-                    .add(previewLabel))
+                    .add(layout.createSequentialGroup()
+                        .add(previewLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -540,11 +556,11 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(helpScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(previewLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(previewTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(previewLabel))
                 .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -650,6 +666,8 @@ public final class FrameworkCommandChooser extends JPanel {
     private javax.swing.JList matchingTaskList;
     private javax.swing.JScrollPane matchingTaskSP;
     private javax.swing.JLabel previewLabel;
+    private javax.swing.JTextField previewTextField;
+    private javax.swing.JSplitPane splitPane;
     private javax.swing.JTextField taskField;
     private javax.swing.JPanel taskFieldPanel;
     private javax.swing.JLabel taskHint;

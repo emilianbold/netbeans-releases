@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,28 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.dd.api.web;
+package org.netbeans.modules.web.beans.model;
+
+import java.io.IOException;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
+
 
 /**
- * Interface for WebFragment element.<br>
- * The WebFragment object is the root of bean graph generated<br>
- * for deployment descriptor(web-fragment.xml) file.<br>
- * For getting the root (WebFragment object) use the {@link WebFragmentProvider#getDDRoot} method.
+ * @author ads
  *
- *<p><b><font color="red"><em>Important note: Do not provide an implementation of this interface unless you are a DD API provider!</em></font></b>
- *</p>
  */
-public interface WebFragment extends org.netbeans.modules.j2ee.dd.api.common.RootInterface, WebApp {
+public class CommonTestCase extends JavaSourceTestCase {
 
-    // For now, the interface inherits from WebApp interface
-    // Later, it can be changed to separate interface
-    // (It will require rewriting of a lot of code -- all GUI editors, etc.)
-
-
-    // Methods specific for WebFragment
-
-	RelativeOrdering newRelativeOrdering();
-	RelativeOrdering[] getOrdering();
-	void setOrdering(RelativeOrdering[] value);
+    public CommonTestCase( String testName ) {
+        super(testName);
+    }
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        /*URL url = FileUtil.getArchiveRoot(javax.faces.component.FacesComponent.class.getProtectionDomain().
+                getCodeSource().getLocation());
+        addCompileRoots( Collections.singletonList( url ));*/
+    }
+    
+    public MetadataModel<WebBeansModel> createBeansModel() throws IOException, InterruptedException {
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
+        ModelUnit modelUnit = ModelUnit.create(
+                ClassPath.getClassPath(srcFO, ClassPath.BOOT),
+                ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
+                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
+        return WebBeansModelFactory.createMetaModel(modelUnit);
+    }
 
 }
