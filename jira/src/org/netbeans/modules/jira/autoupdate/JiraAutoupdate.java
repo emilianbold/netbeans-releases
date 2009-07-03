@@ -40,6 +40,7 @@
 package org.netbeans.modules.jira.autoupdate;
 
 import java.util.List;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
@@ -48,10 +49,10 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -69,7 +70,7 @@ public class JiraAutoupdate {
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.libs.jira"; // NOI18N
 
     public void checkAndNotify(JiraRepository repository) {
-        if(checkHigherJiraServerVersion(repository) && checkHigherJiraVersion()) {
+        if(!checkSupportedJiraServerVersion(repository) && checkNewJiraPluginAvailable()) {
             AutoupdatePanel panel = new AutoupdatePanel();
             if(JiraUtils.show(
                     panel,
@@ -82,7 +83,7 @@ public class JiraAutoupdate {
         }
     }
 
-    boolean checkHigherJiraVersion() {
+    boolean checkNewJiraPluginAvailable() {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
             if(u.getCodeName().equals(JIRA_MODULE_CODE_NAME)) {
@@ -97,18 +98,25 @@ public class JiraAutoupdate {
         return false;
     }
 
-    boolean checkHigherJiraServerVersion(JiraRepository repository) {
+    boolean checkSupportedJiraServerVersion(JiraRepository repository) {
         JiraConfiguration conf = repository.getConfiguration();
         ServerInfo info = null;
         try {
             info = conf.getServerInfo(new NullProgressMonitor());
         } catch (JiraException ex) {
-            Exceptions.printStackTrace(ex);
+            Jira.LOG.log(Level.SEVERE, null, ex);
             return false;
         }
         String v = info.getVersion();
         JiraVersion version = new JiraVersion(v);
-        return isSupportedVersion(version);
+        boolean ret = isSupportedVersion(version);
+        if(!ret) {
+            Jira.LOG.log(Level.WARNING,
+                         "Supported JIRA versions are <= {0}. JIRA repository [{1}] has version {2}. " +
+                         "Please check the UC for a newer plugin version.", // NOI18N
+                         new Object[] {SUPPORTED_JIRA_VERSION, repository.getUrl(), version});
+        }
+        return ret;
     }
 
     boolean isSupportedVersion(JiraVersion version) {
