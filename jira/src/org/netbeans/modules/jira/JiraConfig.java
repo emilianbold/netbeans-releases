@@ -51,7 +51,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  *
