@@ -117,10 +117,12 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
     }
     
-    private void getSystemIncludesAndDefines() {
-        restoreSystemIncludesAndDefines();
+    private synchronized void getSystemIncludesAndDefines() {
         if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines();
+            restoreSystemIncludesAndDefines();
+            if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
+                getFreshSystemIncludesAndDefines();
+            }
         }
     }
     
