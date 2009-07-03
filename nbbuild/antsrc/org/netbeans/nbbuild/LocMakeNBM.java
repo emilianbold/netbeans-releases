@@ -155,7 +155,7 @@ public class LocMakeNBM extends Task {
         }
         if ( mani != null ) {
             java.util.jar.Attributes attr = mani.getMainAttributes();
-            String cname = attr.getValue("OpenIDE-Module");
+            String cname = JarWithModuleAttributes.extractCodeName(attr);
             String sver = attr.getValue("OpenIDE-Module-Specification-Version");
             if ((cname != null) && (!(cname.equals(""))) && (sver != null) && (!(sver.equals("")))) {
                 modInfo = cname + '/' + sver;

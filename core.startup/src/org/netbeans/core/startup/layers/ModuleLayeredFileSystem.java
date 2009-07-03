@@ -260,11 +260,12 @@ implements LookupListener {
             setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer, false));
             err.log(Level.FINEST, "delegates changed");
         }
-        
-        this.urls = urls;
-        firePropertyChange ("layers", null, null); // NOI18N
-        
-        StartLog.logEnd("setURLs"); // NOI18N
+        try {
+            this.urls = urls;
+            firePropertyChange ("layers", null, null); // NOI18N
+        } finally {
+            StartLog.logEnd("setURLs"); // NOI18N
+        }
     }
     
     /** Adds few URLs.

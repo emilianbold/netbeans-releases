@@ -438,7 +438,7 @@ import org.openide.util.Lookup;
                 "Testing Module", // display name
                 "org/example/" + prjDir + "/resources/Bundle.properties",
                 "org/example/" + prjDir + "/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT, false); // platform id
         return FileUtil.toFileObject(prjDirF);
     }
     
@@ -495,7 +495,7 @@ import org.openide.util.Lookup;
         String prjDirDotted = prjDir.replace('/', '.');
         File suiteDir = suiteProject.getProjectDirectoryFile();
         File prjDirF = file(parentDir, prjDir);
-        NbModuleProjectGenerator.createSuiteComponentModule(prjDirF, "org.example." + prjDirDotted, "Testing Module", "org/example/" + prjDir + "/resources/Bundle.properties", "org/example/" + prjDir + "/resources/layer.xml", suiteDir); // suite directory
+        NbModuleProjectGenerator.createSuiteComponentModule(prjDirF, "org.example." + prjDirDotted, "Testing Module", "org/example/" + prjDir + "/resources/Bundle.properties", "org/example/" + prjDir + "/resources/layer.xml", suiteDir, false); // suite directory
         return FileUtil.toFileObject(prjDirF);
     }
 
