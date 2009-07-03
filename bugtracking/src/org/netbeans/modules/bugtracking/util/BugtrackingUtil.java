@@ -75,7 +75,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
@@ -102,8 +101,11 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
@@ -603,6 +605,18 @@ public class BugtrackingUtil {
             reader.close();
         }
         return isPatch;
+    }
+
+    public static void openPluginManager() {
+        try {
+            ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
+            Class<CallableSystemAction> clz = (Class<CallableSystemAction>) cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
+            CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+            a.putValue("InitialTab", "available"); // NOI18N
+            a.performAction ();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
 }
