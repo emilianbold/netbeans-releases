@@ -147,8 +147,9 @@ public final class Ear {
     public void addWebModule (WebModule module) {
         if (impl2 != null) {
             impl2.addWebModule(module);
+        } else {
+            impl.addWebModule (module);
         }
-        impl.addWebModule (module);
     }
     
     /** Add j2ee Ejb module into application.
@@ -157,8 +158,9 @@ public final class Ear {
     public void addEjbJarModule (EjbJar module) {
         if (impl2 != null) {
             impl2.addEjbJarModule(module);
+        } else {
+            impl.addEjbJarModule (module);
         }
-        impl.addEjbJarModule (module);
     }
     
     /** Add j2ee application client module into application.
@@ -167,8 +169,9 @@ public final class Ear {
     public void addCarModule(Car module) {
         if (impl2 != null) {
             impl2.addCarModule(module);
+        } else {
+            impl.addCarModule(module);
         }
-        impl.addCarModule(module);
     }
     
 }

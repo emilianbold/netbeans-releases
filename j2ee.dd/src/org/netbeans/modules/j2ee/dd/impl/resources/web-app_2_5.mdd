@@ -76,6 +76,12 @@
                     public String[] getName() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                         throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
                     }
+                    public void setAbsoluteOrdering(org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] getAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
             </user-code>
         </meta-element>
         <meta-element>
