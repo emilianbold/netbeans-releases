@@ -61,7 +61,11 @@ import org.openide.util.NbBundle;
  */
 public class JiraAutoupdate {
 
-    static final JiraVersion SUPPORTED_JIRA_VERSION = new JiraVersion("3.13.3"); // NOI18N
+    static final JiraVersion SUPPORTED_JIRA_VERSION;
+    static {
+        String version = System.getProperty("netbeans.t9y.jira.supported.version");
+        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("3.13.3"); // NOI18N
+    }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.libs.jira"; // NOI18N
 
     public void checkAndNotify(JiraRepository repository) {
@@ -69,8 +73,8 @@ public class JiraAutoupdate {
             AutoupdatePanel panel = new AutoupdatePanel();
             if(JiraUtils.show(
                     panel,
-                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"),
-                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"),
+                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
+                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"),             // NOI18N
                     new HelpCtx(JiraAutoupdate.class)))
             {
                 BugtrackingUtil.openPluginManager();
