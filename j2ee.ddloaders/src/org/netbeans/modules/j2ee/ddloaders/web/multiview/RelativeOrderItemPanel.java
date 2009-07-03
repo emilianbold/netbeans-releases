@@ -42,37 +42,23 @@
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import javax.swing.JPanel;
-import org.openide.util.NbBundle;
 
 /**
  * @author Petr Slechta
  */
 class RelativeOrderItemPanel extends JPanel {
 
-    public static final String BEFORE = "before "; // NOI18N
-    public static final String AFTER = "after "; // NOI18N
-    public static final String BEFORE_OTHERS = "before <others>"; // NOI18N
-    public static final String AFTER_OTHERS = "after <others>"; // NOI18N
+    public static final String OTHERS = "<others>"; // NOI18N
 
     public RelativeOrderItemPanel(String item) {
         initComponents();
-        cbOrderingType.addItem(NbBundle.getMessage(RelativeOrderItemPanel.class, "CB_Ordering_Before"));
-        cbOrderingType.addItem(NbBundle.getMessage(RelativeOrderItemPanel.class, "CB_Ordering_After"));
-        cbOrderingType.addItem(NbBundle.getMessage(RelativeOrderItemPanel.class, "CB_Ordering_Before_others"));
-        cbOrderingType.addItem(NbBundle.getMessage(RelativeOrderItemPanel.class, "CB_Ordering_After_others"));
-        if (item != null && item.length() > 0) {
-            if (item.equals(BEFORE_OTHERS))
-                cbOrderingType.setSelectedIndex(2);
-            else if (item.equals(AFTER_OTHERS))
-                cbOrderingType.setSelectedIndex(3);
-            else if (item.startsWith(BEFORE)) {
-                cbOrderingType.setSelectedIndex(0);
-                tfNameRef.setText(item.substring(BEFORE.length()));
-            }
-            else if (item.startsWith(AFTER)) {
-                cbOrderingType.setSelectedIndex(1);
-                tfNameRef.setText(item.substring(AFTER.length()));
-            }
+        if (item != null && !item.equals(OTHERS)) {
+            tfNameRef.setText(item);
+            rbName.setSelected(true);
+        }
+        else {
+            tfNameRef.setEnabled(false);
+            rbOthers.setSelected(true);
         }
     }
     
@@ -82,22 +68,25 @@ class RelativeOrderItemPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        cbOrderingType = new javax.swing.JComboBox();
+        buttonGroup1 = new javax.swing.ButtonGroup();
         tfNameRef = new javax.swing.JTextField();
+        rbName = new javax.swing.JRadioButton();
+        rbOthers = new javax.swing.JRadioButton();
 
         setMinimumSize(new java.awt.Dimension(250, 150));
 
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RelativeOrderItemPanel.class, "LBL_RelativeOrder")); // NOI18N
+        tfNameRef.setColumns(20);
 
-        cbOrderingType.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbOrderingTypeActionPerformed(evt);
+        buttonGroup1.add(rbName);
+        org.openide.awt.Mnemonics.setLocalizedText(rbName, org.openide.util.NbBundle.getMessage(RelativeOrderItemPanel.class, "RB_Name")); // NOI18N
+        rbName.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                rbNameStateChanged(evt);
             }
         });
 
-        tfNameRef.setColumns(20);
+        buttonGroup1.add(rbOthers);
+        org.openide.awt.Mnemonics.setLocalizedText(rbOthers, org.openide.util.NbBundle.getMessage(RelativeOrderItemPanel.class, "RB_Others")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -105,50 +94,40 @@ class RelativeOrderItemPanel extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbOrderingType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tfNameRef, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(104, 104, 104))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(rbName)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(tfNameRef, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(rbOthers))
+                .addContainerGap(113, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(cbOrderingType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rbName)
                     .add(tfNameRef, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(115, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rbOthers)
+                .addContainerGap(87, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cbOrderingTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbOrderingTypeActionPerformed
-        int x = cbOrderingType.getSelectedIndex();
-        tfNameRef.setEnabled(x == 0 || x == 1);
-    }//GEN-LAST:event_cbOrderingTypeActionPerformed
+    private void rbNameStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbNameStateChanged
+        tfNameRef.setEnabled(rbName.isSelected());
+    }//GEN-LAST:event_rbNameStateChanged
 
     public String getResult() {
-        String name = tfNameRef.getText();
-        switch (cbOrderingType.getSelectedIndex()) {
-            case 0:
-                return name.length() > 0 ? BEFORE+name : null;
-            case 1:
-                return name.length() > 0 ? AFTER+name : null;
-            case 2:
-                return BEFORE_OTHERS;
-            case 3:
-                return AFTER_OTHERS;
-            default:
-                return null;
-        }
+        return rbName.isSelected() ? tfNameRef.getText() : OTHERS;
     }
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cbOrderingType;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JRadioButton rbName;
+    private javax.swing.JRadioButton rbOthers;
     private javax.swing.JTextField tfNameRef;
     // End of variables declaration//GEN-END:variables
  

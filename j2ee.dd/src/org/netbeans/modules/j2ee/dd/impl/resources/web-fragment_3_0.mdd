@@ -837,4 +837,28 @@ public void setUrlPattern(String value) {
                 org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering
             </implements>
         </meta-element>
+        <meta-element>
+            <dtd-name>orderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>RelativeOrdering</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.RelativeOrdering
+            </implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>ordering-orderingType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>RelativeOrderingItems</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingItems
+            </implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>ordering-othersType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>RelativeOrderingOthersItem</bean-name>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingOthersItem
+            </implements>
+        </meta-element>
 </metaDD>
