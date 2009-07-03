@@ -88,6 +88,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
     private final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
     private final TableCellRenderer CELL_FOCUS_RENDERER = new CellFocusCustomRenderer();
 
+    @SuppressWarnings("deprecation")
     public ResultSetCellRenderer() {
         super(FormatStringValue.TO_STRING);
     }
