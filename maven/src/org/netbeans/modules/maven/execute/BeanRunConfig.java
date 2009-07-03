@@ -152,8 +152,8 @@ public class BeanRunConfig implements RunConfig {
             if (getProperties() != null) {
                 props.putAll(getProperties());
             }
-            //#168036 use online embedder which is not caching anything.
-            mp = impl.loadMavenProject(EmbedderFactory.getOnlineEmbedder(), profiles, props);
+            //#168036 use it's own embedder to prevent caching
+            mp = impl.loadMavenProject(EmbedderFactory.createProjectLikeEmbedder(), profiles, props);
         }
         return mp;
      }
