@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.debug;
+package org.netbeans.modules.cnd.debug;
 
 /**
  * A common place for APT tracing flags that are used by several classes
