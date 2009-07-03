@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.cnd.modelimpl.uid;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
 /**
@@ -135,13 +138,42 @@ public class UIDManager {
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i].size() > 0) {
-                    if (false) {
+                    if (true) {
+                        Object[] arr = instances[i].toArray();
                         System.out.println("Dispose UID cache " + instances[i].size()); // NOI18N
+                        Map<Class, Integer> uidClasses = new HashMap<Class, Integer>();
+                        Map<Class, Integer> keyClasses = new HashMap<Class, Integer>();
+                        for (Object o : arr) {
+                            if (o != null) {
+                                incCounter( uidClasses, o);
+                                if (o instanceof KeyBasedUID<?>) {
+                                    Key k = ((KeyBasedUID<?>)o).getKey();
+                                    incCounter( keyClasses, k);
+                                }
+                            }
+                        }
+                        for (Map.Entry<Class, Integer> e : uidClasses.entrySet()) {
+                            System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
+                        }
+                        System.out.println("-----------");
+                        for (Map.Entry<Class, Integer> e : keyClasses.entrySet()) {
+                            System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
+                        }
                     }
                     instances[i].clear();
                     instances[i].resize(initialCapacity);
                 }
             }
+        }
+
+        private void incCounter(Map<Class, Integer> uidClasses, Object o) {
+            Integer num = uidClasses.get(o.getClass());
+            if (num != null) {
+                num = new Integer(num.intValue() + 1);
+            } else {
+                num = new Integer(1);
+            }
+            uidClasses.put(o.getClass(), num);
         }
     }
 }
