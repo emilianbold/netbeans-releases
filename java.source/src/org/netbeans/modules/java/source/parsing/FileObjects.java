@@ -125,7 +125,7 @@ public class FileObjects {
      * @param name the base (simple name)
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject zipFileObject( File zipFile, String folder, String baseName, long mtime) {
+    public static InferableJavaFileObject zipFileObject( File zipFile, String folder, String baseName, long mtime) {
         assert zipFile != null;                
         return new ZipFileObject( zipFile, folder, baseName, mtime);
     }
@@ -140,7 +140,7 @@ public class FileObjects {
      * @param offset the start of zip entry in the zip file
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject zipFileObject (File zipFile, String folder, String baseName, long mtime, long offset) {
+    public static InferableJavaFileObject zipFileObject (File zipFile, String folder, String baseName, long mtime, long offset) {
         assert zipFile != null;
         return new FastZipFileObject (zipFile, folder, baseName, mtime, offset);
     }
@@ -155,7 +155,7 @@ public class FileObjects {
      * @param offset the start of zip entry in the zip file
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject zipFileObject(ZipFile zipFile, String folder, String baseName, long mtime) {
+    public static InferableJavaFileObject zipFileObject(ZipFile zipFile, String folder, String baseName, long mtime) {
         assert zipFile != null;
         return new CachedZipFileObject (zipFile, folder, baseName, mtime);
     }
@@ -166,7 +166,7 @@ public class FileObjects {
      * @pram root - the classpath root owning the file
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter) {
+    public static InferableJavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter) {
         return fileFileObject(file, root, filter, null);
     }
     
@@ -177,7 +177,7 @@ public class FileObjects {
      * @param encoding - the file's encoding
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter, Charset encoding) {
+    public static InferableJavaFileObject fileFileObject( final File file, final File root, final JavaFileFilterImplementation filter, Charset encoding) {
         assert file != null;
         assert root != null;
         String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);

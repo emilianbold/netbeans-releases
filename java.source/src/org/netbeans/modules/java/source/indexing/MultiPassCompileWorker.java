@@ -60,6 +60,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
@@ -79,9 +80,9 @@ import org.openide.filesystems.FileUtil;
  */
 final class MultiPassCompileWorker extends CompileWorker {
 
-    ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends Indexable> files) {
-        final LinkedList<Indexable> toProcess = new LinkedList<Indexable>();
-        for (Indexable i : files) {
+    ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+        final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
+        for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i)) {
                 toProcess.add(i);
             }
@@ -130,7 +131,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                     if (active == null) {
                         if (!toProcess.isEmpty()) {
-                            active = createTuple(context, javaContext, toProcess.removeFirst());
+                            active = toProcess.removeFirst();
                             if (active == null)
                                 continue;
                             isBigFile = false;
@@ -215,10 +216,11 @@ final class MultiPassCompileWorker extends CompileWorker {
                         continue;
                     }
                     boolean[] main = new boolean[1];
-                    javaContext.sa.analyse(trees, jt, fileManager, false, true, active.jfo, previous.addedTypes, main);
+                    javaContext.sa.analyse(trees, jt, fileManager,
+                            active, previous.addedTypes, main);
 //                        if (activeTuple.file != null) {
                     //When the active file is not set (generated virtual source) ignore executable flag
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.jfo.toUri().toURL(), main[0]);
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
 //                        }
 //                        Log.instance(jt.getContext()).nerrors = 0;
 //                        if (compiledFiles != null && !activeTuple.virtual) {
