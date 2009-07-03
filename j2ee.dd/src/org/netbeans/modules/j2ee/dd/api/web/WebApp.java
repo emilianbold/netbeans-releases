@@ -264,6 +264,7 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     void setName(String[] value) throws VersionNotSupportedException;
     String[] getName() throws VersionNotSupportedException;
 
+	AbsoluteOrdering newAbsoluteOrdering() throws VersionNotSupportedException;
     void setAbsoluteOrdering(AbsoluteOrdering[] value) throws VersionNotSupportedException;
     AbsoluteOrdering[] getAbsoluteOrdering() throws VersionNotSupportedException;
 }

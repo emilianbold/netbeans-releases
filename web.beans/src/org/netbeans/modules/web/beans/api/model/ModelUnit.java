@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,28 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.dd.api.web;
+package org.netbeans.modules.web.beans.api.model;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+
 
 /**
- * Interface for WebFragment element.<br>
- * The WebFragment object is the root of bean graph generated<br>
- * for deployment descriptor(web-fragment.xml) file.<br>
- * For getting the root (WebFragment object) use the {@link WebFragmentProvider#getDDRoot} method.
+ * @author ads
  *
- *<p><b><font color="red"><em>Important note: Do not provide an implementation of this interface unless you are a DD API provider!</em></font></b>
- *</p>
  */
-public interface WebFragment extends org.netbeans.modules.j2ee.dd.api.common.RootInterface, WebApp {
-
-    // For now, the interface inherits from WebApp interface
-    // Later, it can be changed to separate interface
-    // (It will require rewriting of a lot of code -- all GUI editors, etc.)
-
-
-    // Methods specific for WebFragment
-
-	RelativeOrdering newRelativeOrdering();
-	RelativeOrdering[] getOrdering();
-	void setOrdering(RelativeOrdering[] value);
-
+public class ModelUnit {
+    
+    private ModelUnit( ClassPath bootPath, ClassPath compilePath, 
+            ClassPath sourcePath)
+    {
+        myBootPath= bootPath;
+        myCompilePath = compilePath;
+        mySourcePath = sourcePath;
+        ClasspathInfo classpathInfo = ClasspathInfo.create(bootPath, 
+                compilePath, sourcePath);
+        myHelper = AnnotationModelHelper.create(classpathInfo);
+    }
+    
+    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
+            ClassPath sourcePath)
+    {
+        return new ModelUnit(bootPath, compilePath, sourcePath);
+    }
+    
+    AnnotationModelHelper getHelper(){
+        return myHelper;
+    }
+    
+    private final AnnotationModelHelper myHelper;
+    private final ClassPath myBootPath;
+    private final ClassPath myCompilePath;
+    private final ClassPath mySourcePath;
+    
 }
