@@ -161,7 +161,8 @@ public class EditorRegistryTest extends NbTestCase {
         EditorRegistry.notifyClose(tab2);
         jtcList = EditorRegistry.componentList();
         assertSame(4, jtcList.size());
-        assertSame(0, EditorRegistryListener.INSTANCE.firedCount); // Nothing was fired
+        assertSame(1, EditorRegistryListener.INSTANCE.firedCount); // EditroRegistry.COMPONENT_REMOVED_PROPERTY
+        assertEquals(EditorRegistry.COMPONENT_REMOVED_PROPERTY, EditorRegistryListener.INSTANCE.propertyName);
         EditorRegistryListener.INSTANCE.reset(); // Reset firedCount to 0
         assertSame(iac1, EditorRegistry.lastFocusedComponent());
 
@@ -171,8 +172,8 @@ public class EditorRegistryTest extends NbTestCase {
         jtcList = EditorRegistry.componentList();
         assertSame(3, jtcList.size());
         // Since iac1 was the first in the component list then focusLost() would be fired
-        // followed by LAST_FOCUSED_REMOVED_PROPERTY
-        assertSame(2, EditorRegistryListener.INSTANCE.firedCount);
+        // followed by COMPONENT_REMOVED_PROPERTY and LAST_FOCUSED_REMOVED_PROPERTY
+        assertSame(3, EditorRegistryListener.INSTANCE.firedCount);
         assertEquals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY, EditorRegistryListener.INSTANCE.propertyName);
         assertEquals(EditorRegistry.lastFocusedComponent(), EditorRegistryListener.INSTANCE.newValue);
         assertEquals(iac1, EditorRegistryListener.INSTANCE.oldValue);
