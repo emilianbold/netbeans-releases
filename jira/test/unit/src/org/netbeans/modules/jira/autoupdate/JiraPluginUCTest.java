@@ -44,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Calendar;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 
@@ -53,43 +54,76 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
  */
 public class JiraPluginUCTest extends JiraPluginUCTestCase {
 
-    private static String CATALOG_CONTENTS_FORMAT =
+    String CATALOG_CONTENTS_FORMAT =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\">" +
-                "<module_updates timestamp=\"20/02/13/01/07/2009\">" +
-                    "<module " +
-                        "autoload=\"false\" " +
-                        "codenamebase=\"{0}\" " +
-                        "distribution=\"modules/extra/org-netbeans-libs-jira.nbm\" " +
-                        "downloadsize=\"2546568\" " +
-                        "eager=\"false\" " +
-                        "homepage=\"http://www.netbeans.org/\" " +
-                        "license=\"BE94B573\" " +
-                        "moduleauthor=\"\" " +
-                        "needsrestart=\"false\" " +
-                        "releasedate=\"2009/05/27\">" +
-                    "<manifest " +
-                        "AutoUpdate-Show-In-Client=\"true\" " +
-                        "OpenIDE-Module=\"org.netbeans.libs.jira\" " +
-                        "OpenIDE-Module-Display-Category=\"Libraries\" " +
-                        "OpenIDE-Module-Implementation-Version=\"090527\" " +
-                        "OpenIDE-Module-Java-Dependencies=\"Java &gt; 1.5\" " +
-                        "OpenIDE-Module-Long-Description=\"This module bundles the JIRA connector implementation\" " +
-                        "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 &gt; 1.6, " +
-                                                             "org.netbeans.libs.bugtracking &gt; 1.0, " +
-                                                             "org.netbeans.libs.commons_logging/1 &gt; 1.7, " +
-                                                             "org.openide.awt &gt; 7.3, " +
-                                                             "org.openide.dialogs &gt; 7.8, " +
-                                                             "org.openide.modules &gt; 6.0, " +
-                                                             "org.openide.nodes &gt; 7.7, " +
-                                                             "org.openide.util &gt; 7.18, " +
-                                                             "org.openide.windows &gt; 6.24\" " +
-                        "OpenIDE-Module-Name=\"JIRA Libraries\" " +
-                        "OpenIDE-Module-Requires=\"org.openide.modules.ModuleFormat1\" " +
-                        "OpenIDE-Module-Short-Description=\"Bundles JIRA Libraries\" " +
-                        "OpenIDE-Module-Specification-Version=\"{1}\"/>" +
-                    "</module>" +
-                "</module_updates>";
+            "<module_updates timestamp=\"20/02/13/01/07/2009\">" +
+            "<module autoload=\"false\" " +
+                    "codenamebase=\"org.netbeans.libs.jira\" " +
+                    "distribution=\"modules/extra/org-netbeans-libs-jira.nbm\" " +
+                    "downloadsize=\"2546568\" " +
+                    "eager=\"false\" " +
+                    "homepage=\"http://www.netbeans.org/\" " +
+                    "license=\"BE94B573\" " +
+                    "moduleauthor=\"\" " +
+                    "needsrestart=\"false\" " +
+                    "releasedate=\"2009/05/27\">" +
+                "<manifest AutoUpdate-Show-In-Client=\"true\" " +
+                          "OpenIDE-Module=\"org.netbeans.libs.jira\" " +
+                          "OpenIDE-Module-Display-Category=\"Libraries\" " +
+                          "OpenIDE-Module-Implementation-Version=\"090527\" " +
+                          "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
+                          "OpenIDE-Module-Long-Description=\"This module bundles the JIRA connector implementation\" " +
+                          "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
+                                                               "org.netbeans.libs.bugtracking > 1.0, " +
+                                                               "org.netbeans.libs.commons_logging/1 > 1.7, " +
+                                                               "org.openide.awt > 7.3, " +
+                                                               "org.openide.dialogs > 7.8, " +
+                                                               "org.openide.modules > 6.0, " +
+                                                               "org.openide.nodes > 7.7, " +
+                                                               "org.openide.util > 7.18, " +
+                                                               "org.openide.windows > 6.24\" " +
+                          "OpenIDE-Module-Name=\"JIRA Libraries\" " +
+                          "OpenIDE-Module-Requires=\"org.openide.modules.ModuleFormat1\" " +
+                          "OpenIDE-Module-Short-Description=\"Bundles JIRA Libraries\" " +
+                          "OpenIDE-Module-Specification-Version=\"1.0.0\"/>" +
+            "</module>" +
+            "<module autoload=\"false\" " +
+                    "codenamebase=\"{0}\" " +
+                    "distribution=\"modules/extra/org-netbeans-modules-jira.nbm\" " +
+                    "downloadsize=\"192657\" " +
+                    "eager=\"false\" " +
+                    "homepage=\"http://www.netbeans.org/\" " +
+                    "license=\"8B813426\" " +
+                    "moduleauthor=\"\" " +
+                    "needsrestart=\"true\" " +
+                    "releasedate=\"2009/05/27\">" +
+                "<manifest AutoUpdate-Show-In-Client=\"true\" " +
+                          "OpenIDE-Module=\"{0}\" " +
+                          "OpenIDE-Module-Implementation-Version=\"090527\" " +
+                          "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
+                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access)\" " +
+                          "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
+                                                               "org.netbeans.api.progress/1 > 1.13, " +
+                                                               "org.netbeans.libs.bugtracking > 1.0, " +
+                                                               "org.netbeans.libs.commons_logging/1 > 1.7, " +
+                                                               "org.netbeans.libs.jira > 1.0, " +
+                                                               "org.netbeans.modules.bugtracking > 1.0, " +
+                                                               "org.netbeans.modules.kenai > 0.1, " +
+                                                               "org.openide.awt > 7.3, " +
+                                                               "org.openide.dialogs > 7.8, " +
+                                                               "org.openide.filesystems > 7.21, " +
+                                                               "org.openide.loaders > 7.5, " +
+                                                               "org.openide.modules > 6.0, " +
+                                                               "org.openide.nodes > 7.7, " +
+                                                               "org.openide.util > 7.18, " +
+                                                               "org.openide.windows > 6.24\" " +
+                           "OpenIDE-Module-Name=\"JIRA\" " +
+                           "OpenIDE-Module-Requires=\"org.openide.modules.ModuleFormat1\" " +
+                           "OpenIDE-Module-Short-Description=\"JIRA\" " +
+                           "OpenIDE-Module-Specification-Version=\"{1}\"/>" +
+            "</module>" +
+            "</module_updates>";
 
     public JiraPluginUCTest(String testName) {
         super(testName);
@@ -104,7 +138,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
     }
 
     public void testNewJIRANotAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "1.0.0");
+        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "0.0.0");
         populateCatalog(contents);
 
         JiraAutoupdate jau = new JiraAutoupdate();
@@ -137,6 +171,21 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
         assertFalse(jau.isSupportedVersion(getHigherMicro(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
         assertFalse(jau.isSupportedVersion(getHigherMinor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
         assertFalse(jau.isSupportedVersion(getHigherMajor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
+    }
+
+    public void testCheckedToday() {
+
+        JiraAutoupdate jau = new JiraAutoupdate();
+
+        assertFalse(jau.wasCheckedToday(-1));                           // never
+
+        assertFalse(jau.wasCheckedToday(1L));                           // a long long time ago
+
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.HOUR, -24);                                      // yesterday
+        assertFalse(jau.wasCheckedToday(c.getTime().getTime()));
+
+        assertTrue(jau.wasCheckedToday(System.currentTimeMillis()));    // now
     }
 
     private void populateCatalog(String contents) throws FileNotFoundException, IOException {
