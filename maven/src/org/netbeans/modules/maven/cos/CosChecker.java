@@ -328,6 +328,10 @@ public class CosChecker implements PrerequisitesChecker {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                //make sure to run with the proper jdk
+                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+                params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
+
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
                     String action2Quick = action2Quick(actionName);
@@ -409,6 +413,9 @@ public class CosChecker implements PrerequisitesChecker {
                 }
             }
             params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
+
+            //make sure to run with the proper jdk
+            params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
             
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
