@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
@@ -134,6 +136,25 @@ public class KeyManager {
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i].size() > 0) {
+                    if (true) {
+                        Object[] arr = instances[i].toArray();
+                        System.out.println("Key cache " + instances[i].size()); // NOI18N
+                        Map<Class, Integer> classes = new HashMap<Class, Integer>();
+                        for (Object o : arr) {
+                            if (o != null) {
+                                Integer num = classes.get(o.getClass());
+                                if (num != null) {
+                                    num = new Integer(num.intValue() + 1);
+                                } else {
+                                    num = new Integer(1);
+                                }
+                                classes.put(o.getClass(), num);
+                            }
+                        }
+                        for (Map.Entry<Class, Integer> e : classes.entrySet()) {
+                            System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
+                        }
+                    }
                     instances[i].clear();
                     instances[i].resize(initialCapacity);
                 }
