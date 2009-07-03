@@ -199,8 +199,9 @@ public class ConnectAction extends BaseAction {
                             schemaPanel.resetProgress();
                             try {
                                 Connection conn = dbcon.getConnection();
-                                if (conn != null && !conn.isClosed())
+                                if (DatabaseConnection.isVitalConnection(conn, null)) {
                                     conn.close();
+                                }
                             } catch (SQLException exc) {
                                 Exceptions.printStackTrace(exc);
                             }
@@ -274,37 +275,32 @@ public class ConnectAction extends BaseAction {
                             dbcon.setPassword(basePanel.getPassword());
                             dbcon.setRememberPassword(basePanel.rememberPassword());
 
-                            try {
-                                if (dbcon.getConnection() == null || dbcon.getConnection().isClosed())
-                                    dbcon.connectAsync();
-                                else {
-                                    dbcon.setSchema(schemaPanel.getSchema());
-                                    dbcon.setSchema(schemaPanel.getSchema());
-
-                                    try {
-                                        connector.finishConnect(null, dbcon, dbcon.getConnection());
-                                    } catch (DatabaseException exc) {
-                                        Logger.getLogger("global").log(Level.INFO, null, exc);
-                                        DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
-                                        return;
-                                    }
-                                    
-                                    DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
-                                    if (realDbcon != null) {
-                                        realDbcon.setPassword(dbcon.getPassword());
-                                        realDbcon.setRememberPassword(
-                                                basePanel.rememberPassword());
-                                    }
-                                    dbcon.setRememberPassword(basePanel.rememberPassword());
-                                    
-                                    if (dlg != null)
-                                        dlg.close();
-
-                                    dbcon.fireConnectionComplete();
-                                }
-                            } catch (SQLException exc) {
-                                //isClosed() method failed, try to connect
+                            if (! DatabaseConnection.isVitalConnection(dbcon.getConnection(), null)) {
                                 dbcon.connectAsync();
+                            } else {
+                                dbcon.setSchema(schemaPanel.getSchema());
+                                dbcon.setSchema(schemaPanel.getSchema());
+
+                                try {
+                                    connector.finishConnect(null, dbcon, dbcon.getConnection());
+                                } catch (DatabaseException exc) {
+                                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                                    DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
+                                    return;
+                                }
+
+                                DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
+                                if (realDbcon != null) {
+                                    realDbcon.setPassword(dbcon.getPassword());
+                                    realDbcon.setRememberPassword(
+                                            basePanel.rememberPassword());
+                                }
+                                dbcon.setRememberPassword(basePanel.rememberPassword());
+
+                                if (dlg != null)
+                                    dlg.close();
+
+                                dbcon.fireConnectionComplete();
                             }
                             return;
                         }

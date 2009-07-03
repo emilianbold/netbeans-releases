@@ -35,7 +35,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Dusan Balek, Jan Lahoda
  * @since 1.1
+ * @deprecated Use {@link org.netbeans.api.editor.DialogBinding} instead.
  */
+@Deprecated
 public final class DialogBinding {
 
     private DialogBinding() {}
@@ -51,6 +53,7 @@ public final class DialogBinding {
      * @since 1.1
      * @deprecated Use {@link org.netbeans.api.editor.DialogBinding#bindComponentToFile(FileObject,int,int,JTextComponent)} instead.
      */
+    @Deprecated
     public static JavaSource bindComponentToFile(FileObject fileObject, int offset, int length, JTextComponent component) throws IllegalArgumentException {
         org.netbeans.api.editor.DialogBinding.bindComponentToFile(fileObject, offset, length, component);
         return null;

@@ -1793,7 +1793,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 printComment(c, true, printWhitespace);
             return;
         }
-        LinkedList<Comment> comments = new LinkedList<Comment>();
+        /*LinkedList<Comment> comments = new LinkedList<Comment>();
         if (cInfo != null) {
             int startPos = TreeInfo.getStartPos(tree);
             int endPos = TreeInfo.getEndPos(tree, origUnit.endPositions);
@@ -1839,7 +1839,7 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
         for (Comment c : comments)
-            printComment(c, true, printWhitespace);
+            printComment(c, true, printWhitespace);*/
     }
 
     private void printTrailingComments(JCTree tree, boolean printWhitespace) {
