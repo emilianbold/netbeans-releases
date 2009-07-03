@@ -82,18 +82,12 @@ public class TempTest extends CommonTestCase {
                 List<? extends Element> children = clazz.getEnclosedElements();
                 for (Element element : children) {
                     if ( element instanceof VariableElement ){
-                        System.out.println("@@@@@@@@@@@@ variable"  +element.getSimpleName());
-                        for ( Element child: element.getEnclosedElements() ){
-                            System.out.println( "^^^^ "+child );
-                        }
-                        //model.getInjectable( element.asType() );
+                        model.getInjectable((VariableElement) element );
                     }
                     else if ( element instanceof ExecutableElement ){
-                        System.out.println("############ method " +element.getSimpleName());
                         List<? extends VariableElement> params = 
                             ((ExecutableElement)element).getParameters();
                         for (VariableElement variableElement : params) {
-                            System.out.println("!!!!!!!!! "+variableElement.getSimpleName());
                             model.getInjectable( variableElement);
                         }
                     }
