@@ -135,6 +135,9 @@ public class UIDManager {
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i].size() > 0) {
+                    if (false) {
+                        System.out.println("Dispose UID cache " + instances[i].size()); // NOI18N
+                    }
                     instances[i].clear();
                     instances[i].resize(initialCapacity);
                 }

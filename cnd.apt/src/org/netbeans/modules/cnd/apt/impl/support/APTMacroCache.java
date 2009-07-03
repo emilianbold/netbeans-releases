@@ -129,9 +129,9 @@ public abstract class APTMacroCache  {
         }
 
         public final void dispose() {
-            if (false){
-                System.out.println("Dispose cache "+getClass().getName()); // NOI18N
+            if (false) {
                 Object[] arr = storage.toArray();
+                System.out.println("Dispose macro cache "+arr.length + " " + getClass().getName()); // NOI18N
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();
                 for(Object o : arr){
                     if (o != null) {
