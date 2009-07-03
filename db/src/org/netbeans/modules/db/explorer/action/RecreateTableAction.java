@@ -42,8 +42,6 @@ package org.netbeans.modules.db.explorer.action;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -62,7 +60,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -84,14 +81,7 @@ public class RecreateTableAction extends BaseAction {
             DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
             if (dbconn != null) {
-                Connection conn = dbconn.getConnection();
-                try {
-                    if (conn != null) {
-                        enabled = !conn.isClosed();
-                    }
-                } catch (SQLException e) {
-                    Exceptions.printStackTrace(e);
-                }
+                enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
             }
         }
 

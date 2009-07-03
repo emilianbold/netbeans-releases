@@ -42,7 +42,6 @@
 package org.netbeans.api.db.explorer;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.test.DBTestBase;
 
@@ -194,16 +193,6 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
 
     private static boolean connectionIsValid(Connection conn) throws Exception {
-        if (conn == null || conn.isClosed()) {
-            return false;
-        }
-
-        try {
-            // Send a command to the server, if it fails we know the connection is invalid.
-            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-        } catch (SQLException e) {
-            return false;
-        }
-        return true;
+        return org.netbeans.modules.db.explorer.DatabaseConnection.isVitalConnection(conn, null);
     }
 }

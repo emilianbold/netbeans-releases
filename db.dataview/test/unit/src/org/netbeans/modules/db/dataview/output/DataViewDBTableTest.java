@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,18 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
 import java.util.Collection;
-import java.util.Map;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.dataview.meta.DBTable;
+import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
 
@@ -71,6 +72,7 @@ public class DataViewDBTableTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockServices.setServices(new DBConnectionProviderImpl().getClass());
         context = DbUtil.getContext();
         dbconn = DbUtil.getDBConnection();
         conn = DbUtil.getjdbcConnection();

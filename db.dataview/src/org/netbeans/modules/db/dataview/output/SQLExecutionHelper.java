@@ -74,17 +74,15 @@ import org.openide.util.RequestProcessor;
 class SQLExecutionHelper {
 
     private final DataView dataView;
-    private final DatabaseConnection dbConn;
     private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
     // the RequestProcessor used for executing statements.
-    private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 20, true); // NOI18N
     private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
     public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
     private static Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
 
-    SQLExecutionHelper(DataView dataView, DatabaseConnection dbConn) {
+    SQLExecutionHelper(DataView dataView) {
         this.dataView = dataView;
-        this.dbConn = dbConn;
     }
 
     static void initialDataLoad(DataView dv, DatabaseConnection dbConn, SQLExecutionHelper execHelper) throws SQLException {
