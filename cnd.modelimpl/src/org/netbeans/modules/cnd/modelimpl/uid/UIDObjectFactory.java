@@ -101,9 +101,16 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     protected UIDObjectFactory() {
     }
 
-    synchronized public static UIDObjectFactory getDefaultFactory() {
-        if (theFactory == null) {
-            theFactory = new UIDObjectFactory();
+    public static UIDObjectFactory getDefaultFactory() {
+        UIDObjectFactory out = theFactory;
+        if (out == null) {
+            out = theFactory;
+            synchronized (UIDObjectFactory.class) {
+                out = theFactory;
+                if (out == null) {
+                    theFactory = out = new UIDObjectFactory();
+                }
+            }
         }
         return theFactory;
     }

@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 
 /**
@@ -69,7 +70,7 @@ public abstract class APTStringManager  {
     private static final int STRING_MANAGER_DEFAULT_CAPACITY;
     private static final int STRING_MANAGER_DEFAULT_SLICED_NUMBER;
     static {
-        int nrProc = Runtime.getRuntime().availableProcessors();
+        int nrProc = CndUtils.getConcurrencyLevel();
         if (nrProc <= 4) {
             STRING_MANAGER_DEFAULT_SLICED_NUMBER = 32;
             STRING_MANAGER_DEFAULT_CAPACITY = 512;

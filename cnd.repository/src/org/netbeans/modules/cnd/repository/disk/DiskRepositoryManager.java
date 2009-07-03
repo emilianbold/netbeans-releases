@@ -119,6 +119,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         Unit unit = units.get(unitId);
 
         if (unit == null) {
+            unit = null;
             synchronized (getUnitLock(unitId)) {
                 unit = units.get(unitId);
                 if (unit == null) {
@@ -270,9 +271,9 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         try {
             queueLock.writeLock().lock();
 
-            Collection<RepositoryQueue.Entry> removedEntries = queue.clearQueue(new UnitFilter(unitName));
+            Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitName));
             if (!cleanRepository) {
-                for (RepositoryQueue.Entry entry : removedEntries) {
+                for (RepositoryQueue.Entry<Key, Persistent> entry : removedEntries) {
                     write(entry.getKey(), entry.getValue());
                 }
             }
@@ -327,8 +328,8 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
 
     private void cleanAndWriteQueue() {
-        Collection<RepositoryQueue.Entry> removedEntries = queue.clearQueue(new AllFilter());
-        for (RepositoryQueue.Entry entry : removedEntries) {
+        Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new AllFilter());
+        for (RepositoryQueue.Entry<Key, Persistent> entry : removedEntries) {
             write(entry.getKey(), entry.getValue());
         }
     }

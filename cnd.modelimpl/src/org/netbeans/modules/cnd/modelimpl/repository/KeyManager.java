@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
 /**
@@ -56,7 +57,7 @@ public class KeyManager {
     private static final int KEY_MANAGER_DEFAULT_CAPACITY;
     private static final int KEY_MANAGER_DEFAULT_SLICED_NUMBER;
     static {
-        int nrProc = Runtime.getRuntime().availableProcessors();
+        int nrProc = CndUtils.getConcurrencyLevel();
         if (nrProc <= 4) {
             KEY_MANAGER_DEFAULT_SLICED_NUMBER = 32;
             KEY_MANAGER_DEFAULT_CAPACITY = 512;
