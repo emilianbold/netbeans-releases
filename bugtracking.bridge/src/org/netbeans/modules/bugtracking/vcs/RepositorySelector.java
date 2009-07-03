@@ -74,9 +74,9 @@ final class RepositorySelector implements HierarchyListener, Runnable {
     private boolean tooLate;
     private boolean repositoriesDisplayed = false;
     private boolean defaultRepoSelected = false;
-    private transient Repository[] repositories;
-    private transient boolean defaultRepoComputed;
-    private transient Repository defaultRepo;
+    private volatile Repository[] repositories;
+    private volatile boolean defaultRepoComputed;
+    private volatile Repository defaultRepo;
 
     static void setup(HookPanel hookPanel, File referenceFile) {
         hookPanel.addHierarchyListener(
