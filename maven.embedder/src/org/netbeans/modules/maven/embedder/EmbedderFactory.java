@@ -139,6 +139,79 @@ public final class EmbedderFactory {
         }
     }
 
+    public static MavenEmbedder createProjectLikeEmbedder() {
+        Configuration req = new DefaultConfiguration();
+        req.setClassLoader(EmbedderFactory.class.getClassLoader());
+        setLocalRepoPreference(req);
+
+        //TODO remove explicit activation
+        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
+        Properties props = new Properties();
+        props.putAll(System.getProperties());
+        req.setSystemProperties(fillEnvVars(props));
+        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
+        File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
+
+        //validating  Configuration
+        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
+        Exception userSettingsException = cvr.getUserSettingsException();
+        if (userSettingsException != null) {
+            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
+                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
+        }
+        if (cvr.isValid()) {
+            req.setUserSettingsFile(userSettingsPath);
+        } else {
+            LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
+            req.setUserSettingsFile(globalSettingsPath);
+        }
+
+        req.setGlobalSettingsFile(globalSettingsPath);
+        req.setMavenEmbedderLogger(new NullEmbedderLogger());
+        req.setConfigurationCustomizer(new ContainerCustomizer() {
+
+            public void customize(PlexusContainer plexusContainer) {
+                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
+                desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
+
+                desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
+                desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
+
+                desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
+                desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
+
+                desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
+                desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
+
+                desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
+                desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
+
+                //MEVENIDE-634
+                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+
+                //MEVENIDE-634
+                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
+                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+                }
+        });
+        MavenEmbedder embedder = null;
+        try {
+            embedder = new MavenEmbedder(req);
+            try {
+                //MEVENIDE-634 make all instances non-interactive
+                WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
+                wagonManager.setInteractive(false);
+            } catch (ComponentLookupException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+
+        } catch (MavenEmbedderException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return embedder;
+    }
+
 
     public synchronized static MavenEmbedder getProjectEmbedder() /*throws MavenEmbedderException*/ {
         MavenEmbedder projectEmbedder;
@@ -153,75 +226,7 @@ public final class EmbedderFactory {
             projectTL.remove();
         }
         if (projectEmbedder == null) {
-            Configuration req = new DefaultConfiguration();
-            req.setClassLoader(EmbedderFactory.class.getClassLoader());
-            setLocalRepoPreference(req);
-           
-            //TODO remove explicit activation
-            req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-            Properties props = new Properties();
-            props.putAll(System.getProperties());
-            req.setSystemProperties(fillEnvVars(props));
-            File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-            File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
-            
-            //validating  Configuration
-            ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-            Exception userSettingsException = cvr.getUserSettingsException();
-            if (userSettingsException != null) {
-                Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-                        "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-            }
-            if (cvr.isValid()) {
-                req.setUserSettingsFile(userSettingsPath);
-            } else {
-                LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-                req.setUserSettingsFile(globalSettingsPath);
-            }
-
-            req.setGlobalSettingsFile(globalSettingsPath);
-            req.setMavenEmbedderLogger(new NullEmbedderLogger());
-            req.setConfigurationCustomizer(new ContainerCustomizer() {
-
-                public void customize(PlexusContainer plexusContainer) {
-                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
-                    desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
-
-                    desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
-                    desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
-
-                    desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
-                    desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
-
-                    desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
-                    desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
-
-                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                    desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
-
-                    //MEVENIDE-634
-                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
-                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-
-                    //MEVENIDE-634
-                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
-                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                }
-            });
-            MavenEmbedder embedder = null;
-            try {
-                embedder = new MavenEmbedder(req);
-                try {
-                    //MEVENIDE-634 make all instances non-interactive
-                    WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
-                    wagonManager.setInteractive( false );
-                } catch (ComponentLookupException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
-                
-            } catch (MavenEmbedderException e) {
-                ErrorManager.getDefault().notify(e);
-            }
+            MavenEmbedder embedder = createProjectLikeEmbedder();
             if (!wasReset) {
                 projectTL.set(embedder);
             } else {
