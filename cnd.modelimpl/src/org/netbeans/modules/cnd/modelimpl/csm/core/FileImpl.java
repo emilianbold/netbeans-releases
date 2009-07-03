@@ -124,7 +124,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int SOURCE_C_FILE = 2;
     public static final int SOURCE_CPP_FILE = 3;
     public static final int HEADER_FILE = 4;
-    private static long parseCount = 1;
+    private static volatile long parseCount = 1;
 
     public static int getParseCount() {
         return (int) (parseCount & 0xFFFFFFFFL);
@@ -633,6 +633,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     private void render(AST tree) {
         new AstRenderer(this).render(tree);
+        parseCount++;
     }
 
     private APTFile getFullAPT() {
@@ -1111,7 +1112,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (aHook != null) {
             aHook.parsingFinished(this, preprocHandler);
         }
-        parseCount++;
+//        parseCount++;
         return ast;
     }
 
