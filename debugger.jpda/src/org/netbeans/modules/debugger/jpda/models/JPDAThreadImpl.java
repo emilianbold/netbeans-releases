@@ -130,7 +130,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
+    /** Thread is suspended and everybody know about this. */
     private boolean             suspended;
+    /** Thread is suspended, but only this class knows it.
+        A notification about real suspend or resume is expected to come soon.
+        Typically just some evaluation, which will decide what's going to be done next, is just being performed.
+        We do not notify anyone about this, in order not to trigger unnecessary work (refreshing variables view, thread stack frames, etc.).*/
+    private boolean             suspendedNoFire;
+    /** Suspend was requested while this thread was suspended, but looked like running to others. */
+    private boolean             suspendRequested;
     private int                 suspendCount;
     private Operation           currentOperation;
     private List<Operation>     lastOperations;
@@ -635,6 +643,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         accessLock.writeLock().lock();
         try {
             if (!isSuspended ()) {
+                if (suspendedNoFire) {
+                    // We were suspended just to process something, thus we do not want to be resumed then
+                    suspendRequested = true;
+                    return ;
+                }
                 logger.fine("Suspending thread "+threadName);
                 ThreadReferenceWrapper.suspend (threadReference);
                 suspendedToFire = Boolean.TRUE;
@@ -723,6 +736,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
+    public boolean notifyToBeResumedNoFire() {
+        //System.err.println("notifyToBeResumed("+getName()+")");
+        accessLock.writeLock().lock();
+        try {
+            if (suspendRequested) {
+                suspendRequested = false;
+                return false;
+            }
+            notifyToBeRunning(true, true);
+        } finally {
+            accessLock.writeLock().unlock();
+        }
+        return true;
+    }
+
     private List<PropertyChangeEvent> notifyToBeRunning(boolean clearVars, boolean resumed) {
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
@@ -745,6 +773,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (suspended) {
                 //System.err.println("notifyToBeRunning("+getName()+") suspended = false");
                 suspended = false;
+                suspendedNoFire = false;
                 suspendedToFire = Boolean.FALSE;
                 methodInvokingDisabledUntilResumed = false;
             }
@@ -781,6 +810,14 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         notifySuspended(true);
     }
 
+    public void notifySuspendedNoFire() {
+        //notifySuspended(false);
+        // Keep the thread look like running until we get a firing notification
+        accessLock.writeLock().lock();
+        suspendedNoFire = true;
+        accessLock.writeLock().unlock();
+    }
+
     private void notifySuspended(boolean doFire) {
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
@@ -797,22 +834,26 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 return ; // Something is gone
             }
             //System.err.println("notifySuspended("+getName()+") suspendCount = "+suspendCount+", var suspended = "+suspended);
-            if (!suspended && isThreadSuspended()) {
+            if ((!suspended || suspendedNoFire && doFire) && isThreadSuspended()) {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
+                suspendedNoFire = !doFire;
+                suspendRequested = false; // Regularly suspended now
                 suspendedToFire = Boolean.TRUE;
-                try {
-                    threadName = ThreadReferenceWrapper.name(threadReference);
-                } catch (InternalExceptionWrapper ex) {
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                } catch (ObjectCollectedExceptionWrapper ex) {
-                } catch (IllegalThreadStateExceptionWrapper ex) {
+                if (doFire) {
+                    try {
+                        threadName = ThreadReferenceWrapper.name(threadReference);
+                    } catch (InternalExceptionWrapper ex) {
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
+                    }
                 }
             }
         } finally {
             accessLock.writeLock().unlock();
         }
-        if (suspendedToFire != null && doFire) {
+        if (doFire && suspendedToFire != null) {
             pch.firePropertyChange(PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
@@ -1069,7 +1110,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             ObjectReference or;
             accessLock.readLock().lock();
             try {
-                if (!isSuspended()) return null;
+                if (!(isSuspended() || suspendedNoFire)) return null;
                 try {
                     if ("DestroyJavaVM".equals(threadName)) {
                         // See defect #6474293
@@ -1145,7 +1186,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         List<ObjectReference> l;
         accessLock.readLock().lock();
         try {
-            if (!isSuspended()) return new ObjectVariable [0];
+            if (!(isSuspended() || suspendedNoFire)) return new ObjectVariable [0];
             if ("DestroyJavaVM".equals(threadName)) {
                 // See defect #6474293
                 return new ObjectVariable[0];
@@ -1220,7 +1261,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         if (JPDAUtils.IS_JDK_16 && VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
             accessLock.readLock().lock();
             try {
-                if (!isSuspended() || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
+                if (!(isSuspended() || suspendedNoFire) || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
                     return Collections.emptyList();
                 }
                 List monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);

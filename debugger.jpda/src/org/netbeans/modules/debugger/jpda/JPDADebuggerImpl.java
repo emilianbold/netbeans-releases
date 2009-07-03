@@ -1568,8 +1568,29 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     } catch (ObjectCollectedException ocex) {
                         invalid = true;
                     }
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
+                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
-                if (invalid) {
+            }
+        }
+    }
+
+    public void notifySuspendAllNoFire() {
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                int status = ((JPDAThreadImpl) threadOrGroup).getState();
+                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                   status == JPDAThread.STATE_UNKNOWN ||
+                                   status == JPDAThread.STATE_ZOMBIE);
+                if (!invalid) {
+                    try {
+                        ((JPDAThreadImpl) threadOrGroup).notifySuspendedNoFire();
+                    } catch (ObjectCollectedException ocex) {
+                        invalid = true;
+                    }
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
                     threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
             }
@@ -1602,11 +1623,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (vm != null) {
             logger.fine("VM resume");
             accessLock.writeLock().lock();
+            logger.finer("Debugger WRITE lock taken.");
             try {
                 VirtualMachineWrapper.resume(vm);
+                logger.finer("All threads resumed.");
             } catch (VMDisconnectedExceptionWrapper e) {
             } catch (InternalExceptionWrapper e) {
             } finally {
+                logger.finer("Debugger WRITE lock released.");
                 accessLock.writeLock().unlock();
             }
         }
@@ -1660,7 +1684,25 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                    status == JPDAThread.STATE_ZOMBIE);
                 if (!invalid) {
                     ((JPDAThreadImpl) threadOrGroup).notifyToBeResumed();
-                } else {
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
+                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
+                }
+            }
+        }
+    }
+
+    public void notifyToBeResumedAllNoFire() {
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                int status = ((JPDAThreadImpl) threadOrGroup).getState();
+                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                   status == JPDAThread.STATE_UNKNOWN ||
+                                   status == JPDAThread.STATE_ZOMBIE);
+                if (!invalid) {
+                    ((JPDAThreadImpl) threadOrGroup).notifyToBeResumedNoFire();
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
                     threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
             }
