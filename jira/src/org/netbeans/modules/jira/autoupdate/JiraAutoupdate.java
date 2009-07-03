@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
@@ -50,6 +53,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -67,9 +71,26 @@ public class JiraAutoupdate {
         String version = System.getProperty("netbeans.t9y.jira.supported.version");
         SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("3.13.3"); // NOI18N
     }
-    static final String JIRA_MODULE_CODE_NAME = "org.netbeans.libs.jira"; // NOI18N
+    static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
 
-    public void checkAndNotify(JiraRepository repository) {
+    private static Map<String, Long> lastChecks = null;
+
+    /**
+     * Checks if the remote JIRA has a version higher then actually supported and if
+     * an update is available on the UC.
+     *
+     * @param repository the repository to check the version for
+     * @return true if things are ok or if the user desided to continue even with a
+     *         outdated version. False in case a new plugin version is abut to be
+     *         downloaded
+     */
+    public boolean checkAndNotify(JiraRepository repository) {
+        if(wasCheckedToday(getLastCheck(repository))) {
+            return true;
+        }
+        if(!JiraConfig.getInstance().getCheckUpdates()) {
+            return true;
+        }
         if(!checkSupportedJiraServerVersion(repository) && checkNewJiraPluginAvailable()) {
             AutoupdatePanel panel = new AutoupdatePanel();
             if(JiraUtils.show(
@@ -79,8 +100,10 @@ public class JiraAutoupdate {
                     new HelpCtx(JiraAutoupdate.class)))
             {
                 BugtrackingUtil.openPluginManager();
+                return false;
             }
         }
+        return true;
     }
 
     boolean checkNewJiraPluginAvailable() {
@@ -121,5 +144,28 @@ public class JiraAutoupdate {
 
     boolean isSupportedVersion(JiraVersion version) {
         return version.compareTo(SUPPORTED_JIRA_VERSION) <= 0;
+    }
+
+    boolean wasCheckedToday(long lastCheck) {
+        if (lastCheck < 0) {
+            return false;
+        }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.SECOND, c.get(Calendar.SECOND) * -1);
+        c.add(Calendar.MINUTE, c.get(Calendar.MINUTE) * -1);
+        c.add(Calendar.HOUR, c.get(Calendar.HOUR) * -1);
+        return lastCheck > c.getTime().getTime();
+    }
+
+    private long getLastCheck(JiraRepository repository) {
+        if(lastChecks == null) {
+            lastChecks = new HashMap<String, Long>(1);
+        }
+        Long l = lastChecks.get(repository.getUrl());
+        if(l == null) {
+            lastChecks.put(repository.getUrl(), System.currentTimeMillis());
+            return -1;
+        }
+        return l;
     }
 }

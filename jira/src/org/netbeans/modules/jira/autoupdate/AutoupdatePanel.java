@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import org.netbeans.modules.jira.JiraConfig;
+
 /**
  *
  * @author tomas
@@ -54,6 +56,7 @@ public class AutoupdatePanel extends javax.swing.JPanel {
     /** Creates new form AutoupdatePanel */
     public AutoupdatePanel() {
         initComponents();
+        dontShowCheckBox.setSelected(!JiraConfig.getInstance().getCheckUpdates());
     }
 
     /** This method is called from within the constructor to
@@ -67,7 +70,8 @@ public class AutoupdatePanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        jCheckBox1 = new javax.swing.JCheckBox();
+
+        jScrollPane1.setBorder(null);
 
         jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jTextArea1.setColumns(20);
@@ -78,10 +82,10 @@ public class AutoupdatePanel extends javax.swing.JPanel {
         jTextArea1.setWrapStyleWord(true);
         jScrollPane1.setViewportView(jTextArea1);
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(AutoupdatePanel.class, "AutoupdatePanel.jCheckBox1.text")); // NOI18N
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+        dontShowCheckBox.setText(org.openide.util.NbBundle.getMessage(AutoupdatePanel.class, "AutoupdatePanel.dontShowCheckBox.text")); // NOI18N
+        dontShowCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
+                dontShowCheckBoxActionPerformed(evt);
             }
         });
 
@@ -89,29 +93,31 @@ public class AutoupdatePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jCheckBox1)
-                .addContainerGap(155, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                    .add(dontShowCheckBox))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox1)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dontShowCheckBox)
+                .addContainerGap(21, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox1ActionPerformed
+    private void dontShowCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontShowCheckBoxActionPerformed
+        JiraConfig.getInstance().setCheckUpdates(!dontShowCheckBox.isSelected());
+    }//GEN-LAST:event_dontShowCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBox1;
+    final javax.swing.JCheckBox dontShowCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
