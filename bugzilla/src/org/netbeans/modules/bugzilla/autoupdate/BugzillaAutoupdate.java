@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugzilla.autoupdate;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -45,18 +45,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
-import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.repository.JiraConfiguration;
-import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -64,40 +62,40 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class JiraAutoupdate {
+public class BugzillaAutoupdate {
 
-    static final JiraVersion SUPPORTED_JIRA_VERSION;
+    static final BugzillaVersion SUPPORTED_BUGZILLA_VERSION;
     static {
-        String version = System.getProperty("netbeans.t9y.jira.supported.version");
-        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("3.13.3"); // NOI18N
+        String version = System.getProperty("netbeans.t9y.bugzilla.supported.version"); // NOI18N
+        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : new BugzillaVersion("3.2.2"); // NOI18N
     }
-    static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
+    static final String BUGZILLA_MODULE_CODE_NAME = "org.netbeans.modules.bugzilla"; // NOI18N
 
     private static Map<String, Long> lastChecks = null;
 
     /**
-     * Checks if the remote JIRA has a version higher then actually supported and if
-     * an update is available on the UC.
+     * Checks if the remote Bugzilla repository has a version higher then actually
+     * supported and if an update is available on the UC.
      *
      * @param repository the repository to check the version for
      * @return true if things are ok or if the user desided to continue even with a
      *         outdated version. False in case a new plugin version is abut to be
      *         downloaded
      */
-    public boolean checkAndNotify(JiraRepository repository) {
+    public boolean checkAndNotify(BugzillaRepository repository) {
         if(wasCheckedToday(getLastCheck(repository))) {
             return true;
         }
-        if(!JiraConfig.getInstance().getCheckUpdates()) {
+        if(!BugzillaConfig.getInstance().getCheckUpdates()) {
             return true;
         }
-        if(!checkSupportedJiraServerVersion(repository) && checkNewJiraPluginAvailable()) {
+        if(!checkSupportedBugzillaServerVersion(repository) && checkNewBugzillaPluginAvailable()) {
             AutoupdatePanel panel = new AutoupdatePanel();
-            if(JiraUtils.show(
+            if(BugzillaUtil.show(
                     panel,
-                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
-                    NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"),             // NOI18N
-                    new HelpCtx(JiraAutoupdate.class)))
+                    NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
+                    NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_Yes"),             // NOI18N
+                    new HelpCtx(BugzillaAutoupdate.class)))
             {
                 BugtrackingUtil.openPluginManager();
                 return false;
@@ -106,10 +104,10 @@ public class JiraAutoupdate {
         return true;
     }
 
-    boolean checkNewJiraPluginAvailable() {
+    boolean checkNewBugzillaPluginAvailable() {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
-            if(u.getCodeName().equals(JIRA_MODULE_CODE_NAME)) {
+            if(u.getCodeName().equals(BUGZILLA_MODULE_CODE_NAME)) {
                 List<UpdateElement> elements = u.getAvailableUpdates();
                 if(elements != null) {
                     return elements.size() > 0;
@@ -121,29 +119,22 @@ public class JiraAutoupdate {
         return false;
     }
 
-    boolean checkSupportedJiraServerVersion(JiraRepository repository) {
-        JiraConfiguration conf = repository.getConfiguration();
-        ServerInfo info = null;
-        try {
-            info = conf.getServerInfo(new NullProgressMonitor());
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-            return false;
-        }
-        String v = info.getVersion();
-        JiraVersion version = new JiraVersion(v);
+    boolean checkSupportedBugzillaServerVersion(BugzillaRepository repository) {
+        BugzillaConfiguration conf = repository.getConfiguration();
+        BugzillaVersion version = conf.getInstalledVersion();
+        
         boolean ret = isSupportedVersion(version);
         if(!ret) {
-            Jira.LOG.log(Level.WARNING,
-                         "Supported JIRA versions are <= {0}. JIRA repository [{1}] has version {2}. " +
-                         "Please check the UC for a newer plugin version.", // NOI18N
-                         new Object[] {SUPPORTED_JIRA_VERSION, repository.getUrl(), version});
+            Bugzilla.LOG.log(Level.WARNING,
+                         "Supported Bugzilla versions are <= {0}. The bugzilla repository [{1}] has version {2}. " + // NOI18N
+                         "Please check the UC for a newer plugin.", // NOI18N
+                         new Object[] {SUPPORTED_BUGZILLA_VERSION, repository.getUrl(), version});
         }
         return ret;
     }
 
-    boolean isSupportedVersion(JiraVersion version) {
-        return version.compareTo(SUPPORTED_JIRA_VERSION) <= 0;
+    boolean isSupportedVersion(BugzillaVersion version) {
+        return version.compareTo(SUPPORTED_BUGZILLA_VERSION) <= 0;
     }
 
     boolean wasCheckedToday(long lastCheck) {
@@ -157,7 +148,7 @@ public class JiraAutoupdate {
         return lastCheck > c.getTime().getTime();
     }
 
-    private long getLastCheck(JiraRepository repository) {
+    private long getLastCheck(BugzillaRepository repository) {
         if(lastChecks == null) {
             lastChecks = new HashMap<String, Long>(1);
         }

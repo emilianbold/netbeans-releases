@@ -59,7 +59,7 @@ public class JiraSupportedTest extends JiraPluginUCTestCase {
 
     public void testIsSupportedJIRAVersion() {
         JiraAutoupdate jau = new JiraAutoupdate();
-        assertTrue(jau.checkHigherJiraServerVersion(JiraTestUtil.getRepository()));
+        assertTrue(jau.checkSupportedJiraServerVersion(JiraTestUtil.getRepository()));
     }
 
 }
