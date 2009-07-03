@@ -40,9 +40,13 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -52,9 +56,6 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
-import com.sun.source.tree.Scope;
-import com.sun.source.util.TreePath;
-
 
 /**
  * @author ads
@@ -62,6 +63,8 @@ import com.sun.source.util.TreePath;
  */
 @org.openide.util.lookup.ServiceProvider(service=WebBeansModelProvider.class)
 public class WebBeansModelProviderImpl implements WebBeansModelProvider {
+    
+    private static final String PRODUCER_ANNOTATION = "javax.enterprise.inject.Produces";
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectable(javax.lang.model.type.TypeMirror, org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper)
@@ -72,25 +75,36 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         /* 
          * Element could be injection point. One need first if all to check this.  
          */
+        Element parent = element.getEnclosingElement();
         
-        TreePath path = helper.getCompilationController().getTrees().getPath( element );
-        if ( path == null ){
-            return null;
+        if ( parent instanceof TypeElement){
+            // Probably injected field.
+            List<? extends AnnotationMirror> annotations = 
+                element.getAnnotationMirrors();
+            List<Element> bindings = new LinkedList<Element>();
+            boolean isProducer = false;
+            for (AnnotationMirror annotationMirror : annotations) {
+                DeclaredType type = annotationMirror.getAnnotationType();
+                Element annotationElement = type.asElement();
+                addBinding( annotationElement , bindings );
+            }
         }
-        Scope scope = helper.getCompilationController().getTrees().getScope( path );
-        if ( scope == null ){
-            return null;
+        else if ( parent instanceof ExecutableElement ){
+            // Probably injected field in method. One need to check method.
+            /*
+             * There are two cases where parameter is injected :
+             * 1) Method has some annotation which require from 
+             * parameters to be injection points.
+             * 2) Method is disposer method. In this case injectable
+             * is producer corresponding method.
+             */
+            List<? extends AnnotationMirror> annotations = 
+                element.getAnnotationMirrors();
+            for (AnnotationMirror annotationMirror : annotations) {
+                DeclaredType type = annotationMirror.getAnnotationType();
+            }
         }
-        TypeElement containingClass = scope.getEnclosingClass();
-        System.out.println("%%%%%%%%% containing class : " +containingClass.getQualifiedName());
-        ExecutableElement method = scope.getEnclosingMethod();
-        System.out.println( "^^^^^^^ method : " + method + method== null ?"":method.getSimpleName());
         
-        List<? extends AnnotationMirror> annotations = 
-            element.getAnnotationMirrors();
-        for (AnnotationMirror annotationMirror : annotations) {
-            DeclaredType type = annotationMirror.getAnnotationType();
-        }
         return null;
     }
 
@@ -108,6 +122,19 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
      */
     public TypeMirror resolveType( String fqn , AnnotationModelHelper helper ) {
         return helper.resolveType( fqn );
+    }
+    
+    private void addBinding( Element annotationElement, List<Element> bindings )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    private static final Set<String> BUILT_IN_BINDINGS = new HashSet<String>();
+    static {
+        BUILT_IN_BINDINGS.add("javax.enterprise.inject.Any");
+        BUILT_IN_BINDINGS.add("javax.enterprise.inject.New");
+        BUILT_IN_BINDINGS.add("javax.enterprise.inject.Current");
     }
 
 }
