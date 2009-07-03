@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,39 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.query;
+package org.netbeans.modules.jira.autoupdate;
 
-import javax.swing.ListModel;
-import org.netbeans.modules.bugzilla.TestConstants;
-import org.netbeans.modules.bugzilla.TestUtil;
-import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import java.io.File;
+import java.net.URL;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.netbeans.modules.jira.JiraTestUtil;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author tomas
  */
-public class QueryTestUtil implements TestConstants, QueryConstants {
-    public static void selectTestProject(final BugzillaQuery q) {
-        QueryPanel qp = (QueryPanel) q.getController().getComponent();
-        ListModel model = qp.productList.getModel();
-        for (int i = 0; i < model.getSize(); i++) {
-            QueryParameter.ParameterValue pv = (ParameterValue) model.getElementAt(i);
-            if (pv.getValue().equals(TEST_PROJECT)) {
-                qp.productList.setSelectedIndex(i);
-                break;
-            }
+public class JiraPluginUCTestCase extends NbTestCase {
+    
+    protected static File catalogFile;
+    protected static URL catalogURL;
+    
+    public JiraPluginUCTestCase(String testName) {
+        super(testName);
+    }
+
+    public static class MyProvider extends AutoupdateCatalogProvider {
+        public MyProvider () {
+            super ("test-updates-provider", "test-updates-provider", catalogURL, UpdateUnitProvider.CATEGORY.STANDARD);
         }
     }
 
-    static BugzillaRepository getRepository() {
-        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.clearWorkDir ();
+        catalogFile = new File(getWorkDir(), "updates.xml");
+        if (!catalogFile.exists()) {
+            catalogFile.createNewFile();
+        }
+        catalogURL = catalogFile.toURI().toURL();
+
+        setUserDir (getWorkDirPath ());
+        MainLookup.register(new MyProvider());
+        assert Lookup.getDefault().lookup(MyProvider.class) != null;
+    }
+
+    public static void setUserDir(String path) {
+        System.setProperty ("netbeans.user", path);
     }
 
 }

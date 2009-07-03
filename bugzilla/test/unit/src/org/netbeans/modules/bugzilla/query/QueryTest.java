@@ -86,12 +86,12 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     public void testRefresh() throws MalformedURLException, CoreException, InterruptedException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
-        String id1 = TestUtil.createIssue(getRepository(), summary);
+        String id1 = TestUtil.createIssue(QueryTestUtil.getRepository(), summary);
 
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, ts, false);
         ts = System.currentTimeMillis();
         h.waitUntilDone();
 
@@ -125,13 +125,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     public void testGetIssues() throws MalformedURLException, CoreException {
         long ts = System.currentTimeMillis();
         String summary1 = "somary1" + ts;
-        String id1 = TestUtil.createIssue(getRepository(), summary1);
+        String id1 = TestUtil.createIssue(QueryTestUtil.getRepository(), summary1);
         String summary2 = "somary2" + ts;
-        String id2 = TestUtil.createIssue(getRepository(), summary2);
+        String id2 = TestUtil.createIssue(QueryTestUtil.getRepository(), summary2);
 
         // query for issue1
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary1);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, ts, false);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         Issue[] issues = q.getIssues();
@@ -200,7 +200,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
     // XXX shoud be on the spi
     public void testLastRefresh() {
-        BugzillaQuery q = new BugzillaQuery(getRepository());
+        BugzillaQuery q = new BugzillaQuery(QueryTestUtil.getRepository());
         long lastRefresh = q.getLastRefresh();
         assertEquals(-1, lastRefresh);
 
@@ -222,7 +222,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     public void testSaveAterSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
-        BugzillaRepository repository = getRepository();
+        BugzillaRepository repository = QueryTestUtil.getRepository();
         String id1 = TestUtil.createIssue( repository, summary);
 
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
@@ -263,7 +263,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         h.waitUntilDone();
         assertTrue(q.isSaved());
         // create a new repo instance and check if our query is between them
-        repository = getRepository();
+        repository = QueryTestUtil.getRepository();
         Query[] queries = repository.getQueries();
         boolean bl = false;
         for (Query query : queries) {
@@ -276,12 +276,12 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     public void testSaveBeforeSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
-        String id1 = TestUtil.createIssue(getRepository(), summary);
+        String id1 = TestUtil.createIssue(QueryTestUtil.getRepository(), summary);
 
         LogHandler h = new LogHandler("Finnished populate ", LogHandler.Compare.STARTS_WITH);
 
         // create query
-        BugzillaQuery q = new BugzillaQuery(getRepository());
+        BugzillaQuery q = new BugzillaQuery(QueryTestUtil.getRepository());
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
@@ -315,13 +315,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         // create query
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
-        BugzillaQuery q = new BugzillaQuery(getRepository());
+        BugzillaQuery q = new BugzillaQuery(QueryTestUtil.getRepository());
 
         // get controler and wait until populated with default values
         QueryController c = q.getController();
         h.waitUntilDone();
 
-        Query[] qs = getRepository().getQueries();
+        Query[] qs = QueryTestUtil.getRepository().getQueries();
         int queriesCount = qs.length;
 
         QueryListener ql = new QueryListener();
@@ -332,18 +332,14 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         h.waitUntilDone();
         assertEquals(1, ql.saved);
 
-        qs = getRepository().getQueries();
+        qs = QueryTestUtil.getRepository().getQueries();
         assertEquals(queriesCount + 1, qs.length);
 
         // remove
         remove(c);
         assertEquals(1, ql.removed);
-        qs = getRepository().getQueries();
+        qs = QueryTestUtil.getRepository().getQueries();
         assertEquals(queriesCount, qs.length);
-    }
-
-    private BugzillaRepository getRepository() {
-        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
     private void save(QueryController c, String name) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -371,8 +367,8 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     }
 
     private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
-        getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
-        getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
+        QueryTestUtil.getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
+        QueryTestUtil.getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
     }
 
     private class QueryListener implements PropertyChangeListener {

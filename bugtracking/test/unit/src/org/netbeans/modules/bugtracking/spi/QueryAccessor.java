@@ -37,33 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.query;
-
-import javax.swing.ListModel;
-import org.netbeans.modules.bugzilla.TestConstants;
-import org.netbeans.modules.bugzilla.TestUtil;
-import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+package org.netbeans.modules.bugtracking.spi;
 
 /**
  *
  * @author tomas
  */
-public class QueryTestUtil implements TestConstants, QueryConstants {
-    public static void selectTestProject(final BugzillaQuery q) {
-        QueryPanel qp = (QueryPanel) q.getController().getComponent();
-        ListModel model = qp.productList.getModel();
-        for (int i = 0; i < model.getSize(); i++) {
-            QueryParameter.ParameterValue pv = (ParameterValue) model.getElementAt(i);
-            if (pv.getValue().equals(TEST_PROJECT)) {
-                qp.productList.setSelectedIndex(i);
-                break;
-            }
-        }
+public class QueryAccessor {
+    private final Query query;
+
+    public QueryAccessor(Query query) {
+        this.query = query;
     }
 
-    static BugzillaRepository getRepository() {
-        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
+    public void setSaved(boolean bl) {
+        query.setSaved(bl);
     }
-
 }
