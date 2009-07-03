@@ -42,10 +42,18 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+
+import com.sun.source.tree.Scope;
+import com.sun.source.util.TreePath;
 
 
 /**
@@ -58,16 +66,38 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectable(javax.lang.model.type.TypeMirror, org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper)
      */
-    public TypeMirror getInjectable( TypeMirror typeMirror , 
+    public TypeMirror getInjectable( VariableElement element , 
             AnnotationModelHelper helper) 
     {
+        /* 
+         * Element could be injection point. One need first if all to check this.  
+         */
+        
+        TreePath path = helper.getCompilationController().getTrees().getPath( element );
+        if ( path == null ){
+            return null;
+        }
+        Scope scope = helper.getCompilationController().getTrees().getScope( path );
+        if ( scope == null ){
+            return null;
+        }
+        TypeElement containingClass = scope.getEnclosingClass();
+        System.out.println("%%%%%%%%% containing class : " +containingClass.getQualifiedName());
+        ExecutableElement method = scope.getEnclosingMethod();
+        System.out.println( "^^^^^^^ method : " + method + method== null ?"":method.getSimpleName());
+        
+        List<? extends AnnotationMirror> annotations = 
+            element.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotations) {
+            DeclaredType type = annotationMirror.getAnnotationType();
+        }
         return null;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectables(javax.lang.model.type.TypeMirror, org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper)
      */
-    public List<TypeMirror> getInjectables( TypeMirror typeMirror ,
+    public List<TypeMirror> getInjectables( VariableElement element ,
             AnnotationModelHelper helper )
     {
         return null;

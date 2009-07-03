@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.api.model;
 
 import java.util.List;
 
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
@@ -60,33 +61,33 @@ public final class WebBeansModel {
 
     /**
      * Find injectable type that is used for given injection point.
-     * @param typeMirror injection point
-     * @return type that is used in injected point identified by <code>typeMirror</code>
+     * @param element injection point
+     * @return type that is used in injected point identified by <code>element</code>
      */
-    public TypeMirror getInjectable( TypeMirror typeMirror ){
+    public TypeMirror getInjectable( VariableElement element ){
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectable(typeMirror, getModelUnit().getHelper());
+        return getProvider().getInjectable(element, getModelUnit().getHelper());
     }
     
     /**
      * Find injectable types that could be used for given injection point.
-     * This method differs from {@link #getInjectable(TypeMirror)}
+     * This method differs from {@link #getInjectable(VariableElement)}
      * by injection point type. Injection point could be defined via 
      * programmatic lookup which is dynamically specify injectable type.
      * Such situation appears when injection point uses Instance interface. 
      * In case of @Any binding usage this list will contain all 
-     * possible binding types for <code>typeMirror</code>  ( all beans 
+     * possible binding types for <code>element</code>  ( all beans 
      * that implements or extends type parameter for Instance<> ). 
-     * @param typeMirror injection point
-     * @return types that is used in injected point identified by <code>typeMirror</code>
+     * @param element injection point
+     * @return types that is used in injected point identified by <code>element</code>
      */
-    public List<TypeMirror> getInjectables( TypeMirror typeMirror ){
+    public List<TypeMirror> getInjectables( VariableElement element ){
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectables(typeMirror, getModelUnit().getHelper());
+        return getProvider().getInjectables(element, getModelUnit().getHelper());
     }
     
     /**

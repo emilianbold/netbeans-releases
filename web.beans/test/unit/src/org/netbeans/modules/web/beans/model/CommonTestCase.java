@@ -38,26 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
+package org.netbeans.modules.web.beans.model;
 
-import java.util.List;
+import java.io.IOException;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
+public class CommonTestCase extends JavaSourceTestCase {
 
-    TypeMirror getInjectable( VariableElement element , AnnotationModelHelper helper );
+    public CommonTestCase( String testName ) {
+        super(testName);
+    }
     
-    List<TypeMirror> getInjectables( VariableElement element , 
-            AnnotationModelHelper helper  );
+    protected void setUp() throws Exception {
+        super.setUp();
+        /*URL url = FileUtil.getArchiveRoot(javax.faces.component.FacesComponent.class.getProtectionDomain().
+                getCodeSource().getLocation());
+        addCompileRoots( Collections.singletonList( url ));*/
+    }
     
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
+    public MetadataModel<WebBeansModel> createBeansModel() throws IOException, InterruptedException {
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
+        ModelUnit modelUnit = ModelUnit.create(
+                ClassPath.getClassPath(srcFO, ClassPath.BOOT),
+                ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
+                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
+        return WebBeansModelFactory.createMetaModel(modelUnit);
+    }
+
 }
