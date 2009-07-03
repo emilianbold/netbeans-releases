@@ -307,6 +307,9 @@ class ConfigActionTest extends ConfigAction {
                         + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
                 return;
             }
+            if (!PhpUnit.KEEP_LOGS) {
+                PhpUnit.COVERAGE_LOG.delete();
+            }
             coverageProvider.setCoverage(coverage);
         }
     }

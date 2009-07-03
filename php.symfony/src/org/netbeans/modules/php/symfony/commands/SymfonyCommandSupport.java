@@ -59,6 +59,7 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -84,15 +85,19 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        SymfonyScript symfonyScript = SymfonyScript.getDefault();
-        if (symfonyScript == null || !symfonyScript.isValid()) {
+        SymfonyScript symfonyScript = null;
+        try {
+            symfonyScript = SymfonyScript.getDefault();
+        } catch (InvalidSymfonyScriptException ex) {
             if (warnUser) {
                 UiUtils.invalidScriptProvided(
-                        NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidSymfonyScript"),
+                        ex.getMessage(),
                         SymfonyScript.getOptionsSubPath());
             }
             return null;
         }
+        assert symfonyScript.isValid();
+
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(symfonyScript.getProgram())
                 .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()));
         for (String param : symfonyScript.getParameters()) {
@@ -105,7 +110,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         ExternalProcessBuilder processBuilder = createSilentCommand("list"); // NOI18N
         if (processBuilder == null) {
             UiUtils.invalidScriptProvided(
-                    NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidSymfonyScript"),
+                    SymfonyScript.validateDefault(),
                     SymfonyScript.getOptionsSubPath());
             return null;
         }
