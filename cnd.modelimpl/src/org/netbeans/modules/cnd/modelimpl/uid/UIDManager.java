@@ -157,7 +157,7 @@ public class UIDManager {
                         for (Map.Entry<Class, Integer> e : uidClasses.entrySet()) {
                             System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
                         }
-                        System.out.println("-----------");
+                        System.out.println("-----------"); // NOI18N
                         for (Map.Entry<Class, Integer> e : keyClasses.entrySet()) {
                             System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
                         }

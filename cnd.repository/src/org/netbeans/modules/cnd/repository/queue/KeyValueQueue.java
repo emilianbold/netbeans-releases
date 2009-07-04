@@ -111,7 +111,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
         private final BlockingQueue<Entry<KK, VV>> queue = new LinkedBlockingQueue<Entry<KK, VV>>();
         
         public EventsDispatcher(KeyValueQueue<KK, VV> delegate) {
-            super("CND Repository Queue Dispatcher");
+            super("CND Repository Queue Dispatcher"); // NOI18N
             this.delegate = delegate;
         }
 
