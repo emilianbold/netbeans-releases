@@ -65,6 +65,7 @@ import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 public class WebBeansModelProviderImpl implements WebBeansModelProvider {
     
     private static final String PRODUCER_ANNOTATION = "javax.enterprise.inject.Produces";
+    private static final String BINDING_TYPE_ANNOTATION="javax.enterprise.inject.BindingType";
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectable(javax.lang.model.type.TypeMirror, org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper)
@@ -81,12 +82,19 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
             // Probably injected field.
             List<? extends AnnotationMirror> annotations = 
                 element.getAnnotationMirrors();
-            List<Element> bindings = new LinkedList<Element>();
+            List<TypeElement> bindings = new LinkedList<TypeElement>();
             boolean isProducer = false;
             for (AnnotationMirror annotationMirror : annotations) {
                 DeclaredType type = annotationMirror.getAnnotationType();
-                Element annotationElement = type.asElement();
+                TypeElement annotationElement = (TypeElement)type.asElement();
                 addBinding( annotationElement , bindings );
+                if ( PRODUCER_ANNOTATION.equals( annotationElement.getQualifiedName())){
+                    isProducer = true;
+                }
+            }
+            // producer is not injection point , it is injectable
+            if ( isProducer ){
+                return null;
             }
         }
         else if ( parent instanceof ExecutableElement ){
@@ -124,10 +132,22 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         return helper.resolveType( fqn );
     }
     
-    private void addBinding( Element annotationElement, List<Element> bindings )
-    {
-        // TODO Auto-generated method stub
-        
+    private void addBinding( TypeElement element, List<TypeElement> bindings ){
+        if ( BUILT_IN_BINDINGS.contains( element.getQualifiedName())){
+            bindings.add( element );
+        }
+        else {
+            List<? extends AnnotationMirror> annotations = 
+                element.getAnnotationMirrors();
+            boolean isBindingType = false;
+            boolean hasRequiredRetention = false;
+            boolean hasRequiredTarget = false;
+            for (AnnotationMirror annotationMirror : annotations) {
+                DeclaredType type = annotationMirror.getAnnotationType();
+                TypeElement annotationElement = (TypeElement)type.asElement();
+                System.out.println( annotationElement.getQualifiedName());
+            }
+        }
     }
     
     private static final Set<String> BUILT_IN_BINDINGS = new HashSet<String>();

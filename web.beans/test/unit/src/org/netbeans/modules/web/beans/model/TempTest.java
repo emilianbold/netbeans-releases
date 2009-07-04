@@ -65,12 +65,24 @@ public class TempTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA() throws MetadataModelException, IOException, InterruptedException {
+    public void testA() throws MetadataModelException, IOException, 
+        InterruptedException 
+    {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*;"+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+       
+                "public @interface CustomBinding  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
                 "package foo; " +
+                "import javax.enterprise.inject.*"+
                 "public class CustomClass  {" +
-                " int myField; "+
+                " @foo.CustomBinding int myField; "+
                 " void method( Object param ){}"+
                 "}");
         

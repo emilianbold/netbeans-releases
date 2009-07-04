@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
@@ -63,6 +64,7 @@ public class CommonTestCase extends JavaSourceTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        initAnnotations();
         /*URL url = FileUtil.getArchiveRoot(javax.faces.component.FacesComponent.class.getProtectionDomain().
                 getCodeSource().getLocation());
         addCompileRoots( Collections.singletonList( url ));*/
@@ -75,6 +77,50 @@ public class CommonTestCase extends JavaSourceTestCase {
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
         return WebBeansModelFactory.createMetaModel(modelUnit);
+    }
+    
+    /**
+     * This method should be changed to loading jar which injection annotations
+     * into classpath.   
+     */
+    private void initAnnotations() throws IOException{
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/BindingType.java",
+                "package javax.enterprise.inject; " +
+                "import java.lang.annotation.*; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "public @interface BindingType  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Any.java",
+                "package javax.enterprise.inject; " +
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "public @interface Any  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/New.java",
+                "package javax.enterprise.inject; " +
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "public @interface New  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Current.java",
+                "package javax.enterprise.inject; " +
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "public @interface Current  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Produces.java",
+                "package javax.enterprise.inject; " +
+                "import java.lang.annotation.*; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD }) "+          
+                "public @interface Produces  {}");
     }
 
 }
