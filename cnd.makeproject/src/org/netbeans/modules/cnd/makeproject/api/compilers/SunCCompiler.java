@@ -63,6 +63,8 @@ public class SunCCompiler extends SunCCCCompiler {
     public SunCCompiler createCopy() {
         SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
+        copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
+        copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
         return copy;
     }
 
@@ -76,8 +78,7 @@ public class SunCCompiler extends SunCCCCompiler {
     }
     
     @Override
-    protected void parseCompilerOutput(BufferedReader reader) {
-        
+    protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -88,35 +89,24 @@ public class SunCCompiler extends SunCCCCompiler {
                     int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
-                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                         includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
                     } else {
                         token = line.substring(includeIndex+2);
-                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                         break;
                     }
                 }
-                parseUserMacros(line, systemPreprocessorSymbolsList);
+                parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }
             // Adding "__STDC__=0". It's missing from dryrun output
-            systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
+            pair.systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
             
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
     }
-    
-    private void dumpLists() {
-        System.out.println("==================================" + getDisplayName()); // NOI18N
-        for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
-            System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
-        }
-        for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
-            System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
-        }
-    }
-    
     
     @Override
     protected String getCompilerStderrCommand() {
