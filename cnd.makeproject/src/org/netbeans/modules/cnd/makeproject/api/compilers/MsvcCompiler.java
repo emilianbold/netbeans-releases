@@ -61,6 +61,8 @@ public class MsvcCompiler extends GNUCCompiler {
    public MsvcCompiler createCopy() {
        MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
        copy.setName(getName());
+       copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
+       copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
        return copy;
    }
 
@@ -78,50 +80,26 @@ public class MsvcCompiler extends GNUCCompiler {
     }
 
    @Override
-   public List<String> getSystemIncludeDirectories() {
-       if (systemIncludeDirectoriesList != null){
-           return systemIncludeDirectoriesList;
-       }
-       initSystemIncludeDirectories();
-       return systemIncludeDirectoriesList;
-   }
-
-   private synchronized void initSystemIncludeDirectories() {
-       if (systemIncludeDirectoriesList == null) {
-            systemIncludeDirectoriesList = new PersistentList<String>();
-            String list = System.getenv("INCLUDE"); // NOI18N
-            if (list != null) {
-                StringTokenizer st = new StringTokenizer(list, ";"); // NOI18N
-                while (st.hasMoreTokens()) {
-                    systemIncludeDirectoriesList.add(st.nextToken());
+   protected Pair getFreshSystemIncludesAndDefines() {
+        Pair res = new Pair();
+        List<PredefinedMacro> pm = getDescriptor().getPredefinedMacros();
+        if (pm != null) {
+            for (PredefinedMacro macro : pm) {
+                if (macro.getFlags() == null) {
+                    // TODO macro should be flag dependant
+                    res.systemPreprocessorSymbolsList.add(macro.getMacro());
                 }
             }
-       }
-    }
-
-   @Override
-   public List<String> getSystemPreprocessorSymbols() {
-       if (systemPreprocessorSymbolsList != null){
-           return systemPreprocessorSymbolsList;
-       }
-       initSystemPreprocessorSymbols();
-       return systemPreprocessorSymbolsList;
-   }
-
-   private synchronized void initSystemPreprocessorSymbols() {
-       if (systemPreprocessorSymbolsList == null) {
-            systemPreprocessorSymbolsList = new PersistentList<String>();
-            List<PredefinedMacro> pm = getDescriptor().getPredefinedMacros();
-            if (pm != null) {
-                for (PredefinedMacro macro : pm) {
-                    if (macro.getFlags() == null) {
-                        // TODO macro should be flag dependant
-                        systemPreprocessorSymbolsList.add(macro.getMacro());
-                    }
-                }
+        }
+        String list = System.getenv("INCLUDE"); // NOI18N
+        if (list != null) {
+            StringTokenizer st = new StringTokenizer(list, ";"); // NOI18N
+            while (st.hasMoreTokens()) {
+                res.systemIncludeDirectoriesList.add(st.nextToken());
             }
-       }
-    }
+        }
+        return res;
+   }
 
     @Override
    protected String getUniqueID() {
