@@ -773,10 +773,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (suspended) {
                 //System.err.println("notifyToBeRunning("+getName()+") suspended = false");
                 suspended = false;
-                suspendedNoFire = false;
                 suspendedToFire = Boolean.FALSE;
                 methodInvokingDisabledUntilResumed = false;
             }
+            suspendedNoFire = false;
         } finally {
             accessLock.writeLock().unlock();
         }
