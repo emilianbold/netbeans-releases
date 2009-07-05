@@ -65,8 +65,6 @@ public abstract class SunCCCCompiler extends CCCCompiler {
                 getSystemIncludesAndDefines(getCompilerStderrCommand2(), false, res);
             }
             res.systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
-
-            saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N

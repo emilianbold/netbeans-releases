@@ -84,7 +84,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             if (!containsMacro(res.systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
                 res.systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
             }
-            saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
