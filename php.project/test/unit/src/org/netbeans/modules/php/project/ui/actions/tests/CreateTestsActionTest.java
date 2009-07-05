@@ -40,11 +40,9 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
@@ -55,51 +53,42 @@ public class CreateTestsActionTest extends NbTestCase {
         super(name);
     }
 
-    public void testIncludePaths() throws Exception {
+    public void testRequireOnce() throws Exception {
         List<Crate> cases = new LinkedList<Crate>();
         cases.add(new Crate(
-                "/project1/src/MyClassTest.php",
-                "/project1/test/ClassTest.php",
-                "/project1/test",
-                "../src"));
+                "/project1/src/MyClass.php",
+                "/project1/test/MyClassTest.php",
+                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
         cases.add(new Crate(
-                "/project1/src/a/MyClassTest.php",
-                "/project1/test/a/ClassTest.php",
-                "/project1/test",
-                "../src/a", "../../src/a"));
+                "/project1/src/a/MyClass.php",
+                "/project1/test/a/MyClassTest.php",
+                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../../src/a/MyClass.php"));
         cases.add(new Crate(
-                "/project1/src/a/b/c/MyClassTest.php",
-                "/project1/test/a/b/c/ClassTest.php",
-                "/project1/test",
-                "../src/a/b/c", "../../../../src/a/b/c"));
+                "/project1/src/a/b/c/MyClass.php",
+                "/project1/test/a/b/c/MyClassTest.php",
+                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../../../../src/a/b/c/MyClass.php"));
+        // does not work on linux :/
+//        cases.add(new Crate(
+//                "C:\\project1\\src\\MyClass.php",
+//                "C:\\project1\\test\\MyClassTest.php",
+//                "C:/project1/src/MyClass.php"));
 
         for (Crate crate : cases) {
-            List<String> includePaths = CreateTestsAction.getIncludePaths(crate.generatedFile, crate.testFile, crate.testDirectory);
-            assertTrue(includePaths.size() > 0 && includePaths.size() < 3);
-            assertSame(includePaths.size(), crate.includePaths.size());
-            for (String path : includePaths) {
-                assertTrue(crate.includePaths.contains(path));
-            }
-            assertEquals(crate.generatedFile.getParentFile(),
-                    FileUtil.normalizeFile(new File(crate.testDirectory, includePaths.get(0))));
-            if (includePaths.size() > 1) {
-                assertEquals(crate.generatedFile.getParentFile(),
-                        FileUtil.normalizeFile(new File(crate.testFile.getParentFile(), includePaths.get(1))));
-            }
+            String requireOnce = CreateTestsAction.getRequireOnce(crate.testFile, crate.sourceFile);
+            assertNotNull(requireOnce);
+            assertEquals(crate.requireOnce, requireOnce);
         }
     }
 
     private static final class Crate {
-        public final File generatedFile;
+        public final File sourceFile;
         public final File testFile;
-        public final File testDirectory;
-        public final List<String> includePaths;
+        public final String requireOnce;
 
-        public Crate(String generatedFile, String testFile, String testDirectory, String... includePaths) {
-            this.generatedFile = new File(generatedFile);
+        public Crate(String sourceFile, String testFile, String requireOnce) {
+            this.sourceFile = new File(sourceFile);
             this.testFile = new File(testFile);
-            this.testDirectory = new File(testDirectory);
-            this.includePaths = Arrays.asList(includePaths);
+            this.requireOnce = requireOnce;
         }
     }
 }
