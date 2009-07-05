@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -53,27 +54,46 @@ public class CreateTestsActionTest extends NbTestCase {
         super(name);
     }
 
-    public void testRequireOnce() throws Exception {
-        List<Crate> cases = new LinkedList<Crate>();
-        cases.add(new Crate(
+    public void testRequireOnceUnix() throws Exception {
+        if (!Utilities.isUnix()) {
+            return;
+        }
+        List<Crate> crates = new LinkedList<Crate>();
+        crates.add(new Crate(
                 "/project1/src/MyClass.php",
                 "/project1/test/MyClassTest.php",
                 CreateTestsAction.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
-        cases.add(new Crate(
+        crates.add(new Crate(
                 "/project1/src/a/MyClass.php",
                 "/project1/test/a/MyClassTest.php",
                 CreateTestsAction.REQUIRE_ONCE_REL_PART + "../../src/a/MyClass.php"));
-        cases.add(new Crate(
+        crates.add(new Crate(
                 "/project1/src/a/b/c/MyClass.php",
                 "/project1/test/a/b/c/MyClassTest.php",
                 CreateTestsAction.REQUIRE_ONCE_REL_PART + "../../../../src/a/b/c/MyClass.php"));
-        // does not work on linux :/
-//        cases.add(new Crate(
-//                "C:\\project1\\src\\MyClass.php",
-//                "C:\\project1\\test\\MyClassTest.php",
-//                "C:/project1/src/MyClass.php"));
 
-        for (Crate crate : cases) {
+        verifyCrates(crates);
+    }
+
+    public void testRequireOnceWindows() throws Exception {
+        if (!Utilities.isWindows()) {
+            return;
+        }
+        List<Crate> crates = new LinkedList<Crate>();
+        crates.add(new Crate(
+                "C:\\project1\\src\\MyClass.php",
+                "C:\\project1\\test\\MyClassTest.php",
+                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
+        crates.add(new Crate(
+                "C:\\project1\\src\\MyClass.php",
+                "D:\\project1\\test\\MyClassTest.php",
+                "C:/project1/src/MyClass.php"));
+
+        verifyCrates(crates);
+    }
+
+    private void verifyCrates(List<Crate> creates) {
+        for (Crate crate : creates) {
             String requireOnce = CreateTestsAction.getRequireOnce(crate.testFile, crate.sourceFile);
             assertNotNull(requireOnce);
             assertEquals(crate.requireOnce, requireOnce);
