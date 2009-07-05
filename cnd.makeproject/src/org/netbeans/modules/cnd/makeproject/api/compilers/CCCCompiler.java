@@ -139,12 +139,14 @@ public abstract class CCCCompiler extends BasicCompiler {
             restoreSystemIncludesAndDefines();
             if (compilerDefinitions == null) {
                 compilerDefinitions = getFreshSystemIncludesAndDefines();
+                saveSystemIncludesAndDefines();
             }
         }
     }
 
     public void resetSystemIncludesAndDefines() {
         compilerDefinitions = getFreshSystemIncludesAndDefines();
+        saveSystemIncludesAndDefines();
     }
 
     public String getMTLevelOptions(int value) {
