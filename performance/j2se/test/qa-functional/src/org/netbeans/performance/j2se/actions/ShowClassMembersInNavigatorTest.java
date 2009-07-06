@@ -108,14 +108,15 @@ public class ShowClassMembersInNavigatorTest extends PerformanceTestCase {
         return suite;
     }
 
-    @Override
+    //@Override
     public void prepare() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
+    //@Override
     public ComponentOperator open() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
         class PhaseHandler extends Handler {
@@ -162,7 +163,12 @@ public class ShowClassMembersInNavigatorTest extends PerformanceTestCase {
         d.value = new Long(navigTime[3]);
         d.unit = "ms";
         d.threshold=1000;
-        CommonUtilities.processUnitTestsResults(ShowClassMembersInNavigatorTest.class.getCanonicalName(), d);
+
+        long[] result=new long[2];
+        result[1]=d.value;
+        String pass="failed";
+        if (d.value<=1000) pass="passed";
+        CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "UI Responsiveness J2SE Actions suite", d.name, "org.netbeans.performance.j2se.actions.ShowClassMembersInNavigatorTest" , "org.netbeans.performance.j2se.MeasureJ2SEActionsTest", d.unit, pass, 1000, result, 1);
         openAnotherNode.select();
     }
 
