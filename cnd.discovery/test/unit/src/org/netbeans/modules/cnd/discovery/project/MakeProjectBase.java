@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.discovery.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -331,13 +332,14 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
     }
 
     protected void perform(CsmProject csmProject) {
-        if (TRACE) {
-            System.err.println("Model content:");
-        }
         csmProject.waitParse();
-        for (CsmFile file : csmProject.getAllFiles()) {
+        Collection<CsmFile> col = csmProject.getAllFiles();
+        if (TRACE) {
+            System.err.println("Model has "+col.size()+" files");
+        }
+        for (CsmFile file : col) {
             if (TRACE) {
-                System.err.println("\t"+file.getAbsolutePath());
+                //System.err.println("\t"+file.getAbsolutePath());
             }
             for(CsmInclude include : file.getIncludes()){
                 assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
