@@ -159,15 +159,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             
             if (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) {
                 assert (handler.inclStack != null && !handler.inclStack.isEmpty()) : "must be in sync with inclStack";
-                this.recurseIncludes = new HashMap<CharSequence, Integer>();
-                this.recurseIncludes.putAll(handler.recurseIncludes);
+                this.recurseIncludes = new HashMap<CharSequence, Integer>(handler.recurseIncludes);
             } else {
                 this.recurseIncludes = null;
             }
             if (handler.inclStack != null && !handler.inclStack.isEmpty()) {
                 assert (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) : "must be in sync with recurseIncludes";
-                this.inclStack = new LinkedList<IncludeInfo>();
-                this.inclStack.addAll(handler.inclStack);
+                this.inclStack = new LinkedList<IncludeInfo>(handler.inclStack);
             } else {
                 this.inclStack = null;
             }
