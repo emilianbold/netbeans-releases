@@ -103,7 +103,7 @@ public class FunctionCallImpl extends FunctionCall {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer(getFunction().toString());
+        StringBuilder sb = new StringBuilder(getFunction().toString());
         sb.append(" [ "); // NOI18N
 
         for (FunctionMetric m : metrics.keySet()) {
