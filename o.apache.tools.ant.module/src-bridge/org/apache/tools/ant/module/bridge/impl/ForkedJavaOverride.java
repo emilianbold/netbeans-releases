@@ -70,17 +70,37 @@ public class ForkedJavaOverride extends Java {
 
     @Override
     public void setFork(boolean fork) {
-        // #47465: ignore! Does not work to be set to false.
+        // #47645: ignore! Does not work to be set to false.
     }
 
-    // #121512: NbRedirector does not work with custom input
+    private void useStandardRedirector() { // #121512, #168153
+        if (redirector instanceof NbRedirector) {
+            redirector = new Redirector(this);
+        }
+    }
     public @Override void setInput(File input) {
-        redirector = new Redirector(this);
+        useStandardRedirector();
         super.setInput(input);
     }
     public @Override void setInputString(String inputString) {
-        redirector = new Redirector(this);
+        useStandardRedirector();
         super.setInputString(inputString);
+    }
+    public @Override void setOutput(File out) {
+        useStandardRedirector();
+        super.setOutput(out);
+    }
+    public @Override void setOutputproperty(String outputProp) {
+        useStandardRedirector();
+        super.setOutputproperty(outputProp);
+    }
+    public @Override void setError(File error) {
+        useStandardRedirector();
+        super.setError(error);
+    }
+    public @Override void setErrorProperty(String errorProperty) {
+        useStandardRedirector();
+        super.setErrorProperty(errorProperty);
     }
 
     private class NbRedirector extends Redirector {
