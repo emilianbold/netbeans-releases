@@ -2632,7 +2632,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      *
      */
     private volatile boolean disposing;
-    private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private CharSequence uniqueName = null; // lazy initialized
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     //private ClassifierContainer classifierContainer = new ClassifierContainer();

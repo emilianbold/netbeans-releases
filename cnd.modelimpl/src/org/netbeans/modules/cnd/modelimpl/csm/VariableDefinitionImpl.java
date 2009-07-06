@@ -46,7 +46,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -86,7 +85,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private CsmUID<CsmVariable> declarationUID;
     private CharSequence qualifiedName;
     private final CharSequence[] classOrNspNames;
-    private TemplateDescriptor templateDescriptor;
+    private final TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
     public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name) {

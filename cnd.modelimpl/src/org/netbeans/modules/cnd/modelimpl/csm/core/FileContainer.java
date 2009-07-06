@@ -87,8 +87,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private static final class Lock {}
     private final Object lock = new Lock();
-    private Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
-    private Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
+    private final Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
+    private final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
 
     // empty stub
     private static final FileContainer EMPTY = new FileContainer() {
