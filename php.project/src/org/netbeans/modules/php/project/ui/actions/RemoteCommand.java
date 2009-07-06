@@ -332,12 +332,12 @@ public abstract class RemoteCommand extends Command {
         return true;
     }
 
-    protected static int getTotalSize(Set<TransferFile> files) {
+    protected static int getWorkUnits(Set<TransferFile> files) {
         int totalSize = 0;
         for (TransferFile file : files) {
             totalSize += file.getSize();
         }
-        return totalSize;
+        return totalSize / 1024;
     }
 
     public static final class DefaultOperationMonitor implements RemoteClient.OperationMonitor {
@@ -359,7 +359,7 @@ public abstract class RemoteCommand extends Command {
             if (size > 0) {
                 assert progressHandle != null;
                 progressHandle.progress(NbBundle.getMessage(DefaultOperationMonitor.class, processMessageKey, forFile.getName()), progressSize);
-                progressSize += size;
+                progressSize += size / 1024;
             }
         }
 

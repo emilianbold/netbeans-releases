@@ -125,9 +125,9 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 operationMonitor.progressHandle = progressHandle;
-                int totalSize = getTotalSize(forDownload);
-                if (totalSize > 0) {
-                    progressHandle.start(totalSize);
+                int workUnits = getWorkUnits(forDownload);
+                if (workUnits > 0) {
+                    progressHandle.start(workUnits);
                 } else {
                     progressHandle.start();
                 }
