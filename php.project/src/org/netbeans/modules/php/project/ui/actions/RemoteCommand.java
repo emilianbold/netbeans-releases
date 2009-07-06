@@ -42,10 +42,13 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
@@ -133,9 +136,10 @@ public abstract class RemoteCommand extends Command {
         return io;
     }
 
-    protected RemoteClient getRemoteClient(InputOutput io) {
+    protected RemoteClient getRemoteClient(InputOutput io, RemoteClient.OperationMonitor operationMonitor) {
         return new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
                 .setInputOutput(io)
+                .setOperationMonitor(operationMonitor)
                 .setAdditionalInitialSubdirectory(getRemoteDirectory())
                 .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()))
                 .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(getProject())));
@@ -326,5 +330,40 @@ public abstract class RemoteCommand extends Command {
             }
         }
         return true;
+    }
+
+    protected static int getTotalSize(Set<TransferFile> files) {
+        int totalSize = 0;
+        for (TransferFile file : files) {
+            totalSize += file.getSize();
+        }
+        return totalSize;
+    }
+
+    public static final class DefaultOperationMonitor implements RemoteClient.OperationMonitor {
+        private final String processMessageKey;
+
+        int progressSize = 0;
+        ProgressHandle progressHandle = null;
+
+        public DefaultOperationMonitor(String processMessageKey) {
+            assert processMessageKey != null;
+            this.processMessageKey = processMessageKey;
+        }
+
+        public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
+        }
+
+        public void operationProcess(Operation operation, TransferFile forFile) {
+            long size = forFile.getSize();
+            if (size > 0) {
+                assert progressHandle != null;
+                progressHandle.progress(NbBundle.getMessage(DefaultOperationMonitor.class, processMessageKey, forFile.getName()), progressSize);
+                progressSize += size;
+            }
+        }
+
+        public void operationFinish(Operation operation, Collection<TransferFile> forFiles) {
+        }
     }
 }

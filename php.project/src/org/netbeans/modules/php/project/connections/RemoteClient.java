@@ -81,6 +81,7 @@ import org.openide.windows.InputOutput;
 public final class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
     private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = new AdvancedProperties();
+    private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
     private static final Set<String> IGNORED_REMOTE_DIRS = new HashSet<String>(Arrays.asList(".", "..")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
@@ -93,6 +94,7 @@ public final class RemoteClient implements Cancellable {
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
+    private final OperationMonitor operationMonitor;
     private final String baseRemoteDirectory;
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
     private volatile boolean cancelled = false;
@@ -115,6 +117,13 @@ public final class RemoteClient implements Cancellable {
 
         this.configuration = configuration;
         this.properties = properties;
+
+        OperationMonitor monitor = properties.getOperationMonitor();
+        if (monitor != null) {
+            operationMonitor = monitor;
+        } else {
+            operationMonitor = DEV_NULL_OPERATION_MONITOR;
+        }
 
         // base remote directory
         StringBuilder baseDirBuffer = new StringBuilder(configuration.getInitialDirectory());
@@ -273,12 +282,14 @@ public final class RemoteClient implements Cancellable {
 
         // XXX order filesToUpload?
         try {
+            operationMonitor.operationStart(Operation.UPLOAD, filesToUpload);
             for (TransferFile file : filesToUpload) {
                 if (cancelled) {
                     LOGGER.fine("Upload cancelled");
                     break;
                 }
 
+                operationMonitor.operationProcess(Operation.UPLOAD, file);
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
@@ -290,6 +301,7 @@ public final class RemoteClient implements Cancellable {
                 }
             }
         } finally {
+            operationMonitor.operationFinish(Operation.UPLOAD, filesToUpload);
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -514,12 +526,14 @@ public final class RemoteClient implements Cancellable {
 
         // XXX order filesToDownload?
         try {
+            operationMonitor.operationStart(Operation.DOWNLOAD, filesToDownload);
             for (TransferFile file : filesToDownload) {
                 if (cancelled) {
                     LOGGER.fine("Download cancelled");
                     break;
                 }
 
+                operationMonitor.operationProcess(Operation.DOWNLOAD, file);
                 try {
                     downloadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
@@ -531,6 +545,8 @@ public final class RemoteClient implements Cancellable {
                 }
             }
         } finally {
+            operationMonitor.operationFinish(Operation.DOWNLOAD, filesToDownload);
+
             // refresh filesystem
             FileUtil.refreshFor(baseLocalDir);
 
@@ -1068,7 +1084,16 @@ public final class RemoteClient implements Cancellable {
     public static interface OperationMonitor {
         void operationStart(Operation operation, Collection<TransferFile> forFiles);
         void operationProcess(Operation operation, TransferFile forFile);
-        void operationEnd(Operation operation, Collection<TransferFile> forFiles);
+        void operationFinish(Operation operation, Collection<TransferFile> forFiles);
+    }
+
+    private static final class DevNullOperationMonitor implements OperationMonitor {
+        public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
+        }
+        public void operationProcess(Operation operation, TransferFile forFile) {
+        }
+        public void operationFinish(Operation operation, Collection<TransferFile> forFiles) {
+        }
     }
 
     /**
