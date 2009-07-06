@@ -195,7 +195,6 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
     }
 
     private static TinyCharSequence createFromBytes(byte[] b, int n) {
-        assert b != null;
         if (n < 8) {
             return new Fixed7CharSequenceKey(b, n);
         } else if (n < 16) {
