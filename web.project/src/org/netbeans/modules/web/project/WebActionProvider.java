@@ -276,12 +276,8 @@ class WebActionProvider implements ActionProvider {
 
             if((files != null) && (files.length > 0)) {
                 FileObject file = files[0];
-                if(SourceUtils.getMainClasses(file).isEmpty() == true) {
-                    String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
+                if(SourceUtils.getMainClasses(file).isEmpty()) {
+                    return setupTestSingle(p, files);
                 }
             }
 
@@ -424,11 +420,8 @@ class WebActionProvider implements ActionProvider {
             
             if((files != null) && (files.length > 0)) {
                 FileObject file = files[0];
-                if(SourceUtils.getMainClasses(files[0]).isEmpty() == true) {
-                    String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
+                if(SourceUtils.getMainClasses(files[0]).isEmpty()) {
+                    return setupDebugTestSingle(p, files);
                 }
             }
             

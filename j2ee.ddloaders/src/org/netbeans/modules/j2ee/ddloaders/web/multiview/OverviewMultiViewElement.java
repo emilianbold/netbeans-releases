@@ -148,7 +148,8 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
     }
 
     class OverView extends SectionView {
-        private Node overviewNode, absoluteOrderingNode, contextParamsNode, listenersNode;
+        private Node overviewNode, absoluteOrderingNode, relativeOrderingNode;
+        private Node contextParamsNode, listenersNode;
         OverView(WebApp webApp) {
             super(factory);
             overviewNode = new OverviewNode();
@@ -156,9 +157,16 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
 
             BigDecimal ver = new BigDecimal(webApp.getVersion());
             boolean jee6 = ver.compareTo(new BigDecimal(3.0)) >= 0;
+            boolean fragment = webApp instanceof WebFragment;
             if (jee6) {
-                absoluteOrderingNode = new AbsoluteOrderingNode();
-                addSection(new SectionPanel(this, absoluteOrderingNode, "absoluteOrdering")); //NOI18N
+                if (fragment) {
+                    relativeOrderingNode = new RelativeOrderingNode();
+                    addSection(new SectionPanel(this, relativeOrderingNode, "relativeOrdering")); //NOI18N
+                }
+                else {
+                    absoluteOrderingNode = new AbsoluteOrderingNode();
+                    addSection(new SectionPanel(this, absoluteOrderingNode, "absoluteOrdering")); //NOI18N
+                }
             }
 
             contextParamsNode = new ContextParamsNode();
@@ -168,8 +176,12 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
             addSection(new SectionPanel(this,listenersNode,"listeners")); //NOI18N
 
             Children rootChildren = new Children.Array();
-            if (jee6)
-                rootChildren.add(new Node[]{overviewNode,absoluteOrderingNode,contextParamsNode,listenersNode});
+            if (jee6) {
+                if (fragment)
+                    rootChildren.add(new Node[]{overviewNode,relativeOrderingNode,contextParamsNode,listenersNode});
+                else
+                    rootChildren.add(new Node[]{overviewNode,absoluteOrderingNode,contextParamsNode,listenersNode});
+            }
             else
                 rootChildren.add(new Node[]{overviewNode,contextParamsNode,listenersNode});
             AbstractNode root = new AbstractNode(rootChildren);
@@ -198,6 +210,18 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"absoluteOrderingNode"); //NOI18N
+        }
+    }
+
+    private class RelativeOrderingNode extends org.openide.nodes.AbstractNode {
+        RelativeOrderingNode() {
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Ordering"));
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramsNode.gif"); //NOI18N
+        }
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(HELP_ID_PREFIX+"relativeOrderingNode"); //NOI18N
         }
     }
     

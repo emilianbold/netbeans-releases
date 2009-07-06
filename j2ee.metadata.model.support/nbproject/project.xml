@@ -90,6 +90,7 @@
                 <friend>org.netbeans.modules.j2ee.persistenceapi</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.websvc.restapi</friend>
+		<friend>org.netbeans.modules.web.beans</friend>
                 <package>org.netbeans.modules.j2ee.metadata.model.api.support.annotation</package>
                 <package>org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser</package>
             </friend-packages>

@@ -51,8 +51,15 @@ package org.netbeans.modules.j2ee.dd.api.web;
  */
 public interface WebFragment extends org.netbeans.modules.j2ee.dd.api.common.RootInterface, WebApp {
 
-    // For now, the interface is the same as WebApp
+    // For now, the interface inherits from WebApp interface
     // Later, it can be changed to separate interface
     // (It will require rewriting of a lot of code -- all GUI editors, etc.)
+
+
+    // Methods specific for WebFragment
+
+	RelativeOrdering newRelativeOrdering();
+	RelativeOrdering[] getOrdering();
+	void setOrdering(RelativeOrdering[] value);
 
 }
