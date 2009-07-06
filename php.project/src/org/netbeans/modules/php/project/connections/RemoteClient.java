@@ -1082,8 +1082,25 @@ public final class RemoteClient implements Cancellable {
     }
 
     public static interface OperationMonitor {
+        /**
+         * {@link Operation} started for the files.
+         * @param operation {@link Operation} currently run
+         * @param forFiles collection of files for which the operation started
+         */
         void operationStart(Operation operation, Collection<TransferFile> forFiles);
+
+        /**
+         * {@link Operation} process for the file.
+         * @param operation {@link Operation} currently run
+         * @param forFile files for which the operation is run
+         */
         void operationProcess(Operation operation, TransferFile forFile);
+
+        /**
+         * {@link Operation} finished for the files.
+         * @param operation {@link Operation} currently run
+         * @param forFiles collection of files for which the operation finished
+         */
         void operationFinish(Operation operation, Collection<TransferFile> forFiles);
     }
 
