@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -63,17 +64,20 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- *
  * @author Radek Matous
  */
 public abstract class RemoteCommand extends Command {
     private static final char SEP_CHAR = '='; // NOI18N
     private static final int MAX_TYPE_SIZE = getFileTypeLabelMaxSize() + 2;
+    private static final Color COLOR_SUCCESS = Color.GREEN.darker().darker();
+    private static final Color COLOR_IGNORE = Color.ORANGE.darker();
+
     private static final RequestProcessor RP = new RequestProcessor("Remote connection", 1); // NOI18N
     private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
@@ -201,9 +205,9 @@ public abstract class RemoteCommand extends Command {
         long size = 0;
         int files = 0;
         if (transferInfo.hasAnyTransfered()) {
-            out.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSucceeded"));
+            printSuccess(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSucceeded"));
             for (TransferFile file : transferInfo.getTransfered()) {
-                printSuccess(out, maxRelativePath, file);
+                printSuccess(io, maxRelativePath, file);
                 if (file.isFile()) {
                     size += file.getSize();
                     files++;
@@ -226,9 +230,9 @@ public abstract class RemoteCommand extends Command {
         }
 
         if (transferInfo.hasAnyIgnored()) {
-            err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
+            printIgnore(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
             for (Map.Entry<TransferFile, String> entry : transferInfo.getIgnored().entrySet()) {
-                printError(err, maxRelativePath, entry.getKey(), entry.getValue());
+                printIgnore(io, maxRelativePath, entry.getKey(), entry.getValue());
             }
         }
 
@@ -255,14 +259,35 @@ public abstract class RemoteCommand extends Command {
         out.println(NbBundle.getMessage(RemoteCommand.class, "MSG_RemoteRuntimeAndSize", params));
     }
 
-    private static void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
-        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getRelativePath());
-        writer.println(msg);
+    private static void print(InputOutput io, String message, Color color) {
+        try {
+            IOColorLines.println(io, message, color);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void printSuccess(InputOutput io, String message) {
+        print(io, message, COLOR_SUCCESS);
+    }
+
+    private static void printSuccess(InputOutput io, int maxRelativePath, TransferFile file) {
+        String message = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getRelativePath());
+        printSuccess(io, message);
     }
 
     private static void printError(OutputWriter writer, int maxRelativePath, TransferFile file, String reason) {
         String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRelativePath(), reason);
         writer.println(msg);
+    }
+
+    private static void printIgnore(InputOutput io, String message) {
+        print(io, message, COLOR_IGNORE);
+    }
+
+    private static void printIgnore(InputOutput io, int maxRelativePath, TransferFile file, String reason) {
+        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRelativePath(), reason);
+        printIgnore(io, msg);
     }
 
     private static String getFileTypeLabel(TransferFile file) {
