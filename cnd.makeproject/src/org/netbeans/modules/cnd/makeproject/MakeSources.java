@@ -170,7 +170,7 @@ public class MakeSources implements Sources, AntProjectListener {
 //                }
                 displayName = FilePathAdaptor.naturalize(displayName);
                 h.sourceRoot(name).displayName(displayName).add();
-                h.sourceRoot(name).type("generic").displayName(displayName).add();
+                h.sourceRoot(name).type("generic").displayName(displayName).add(); // NOI18N
             }
         }
         h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
