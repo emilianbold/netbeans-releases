@@ -129,7 +129,7 @@ public class BuiltinTypes {
         }
     }
     
-    private static Map<CharSequence, CsmBuiltIn> types = new HashMap<CharSequence, CsmBuiltIn>();
+    private static final Map<CharSequence, CsmBuiltIn> types = new HashMap<CharSequence, CsmBuiltIn>();
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;

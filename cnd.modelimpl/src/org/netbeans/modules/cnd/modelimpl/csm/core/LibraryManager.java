@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public final class LibraryManager {
 
-    private static LibraryManager instance = new LibraryManager();
+    private static final LibraryManager instance = new LibraryManager();
 
     public static LibraryManager getInstance() {
         return instance;

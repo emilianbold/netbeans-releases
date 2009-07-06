@@ -97,6 +97,7 @@ derby\.log
 ^installer/packages/ubuntu/netbeans-5.5/netbeans-5_5_1-javadoc\.tar\.gz$
 ^installer/profiler/customcode/lib$
 ^j2ee.*\.dd.*/src/.+/impl/.+/model(_[0-9]+)*$
+^j2ee.*\.dd.*/src/.+/impl/.+/model(_[0-9]+)*_frag$
 ^j2ee.dd/test/unit/data/web\.xml$
 ^j2ee.dd/test/unit/data/web\.diff$
 ^j2ee.dd/test/unit/data/invalid/web\.xml$

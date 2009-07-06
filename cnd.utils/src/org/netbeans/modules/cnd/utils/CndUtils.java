@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -84,6 +85,18 @@ public class CndUtils {
             result = Boolean.parseBoolean(text);
         }
         return result;
+    }
+
+    public static void threadsDump(){
+        System.err.println("-----Start Thread Dump-----");
+        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+            System.err.println(entry.getKey().getName());
+            for (StackTraceElement element : entry.getValue()) {
+                System.err.println("\tat " + element.toString());
+            }
+            System.err.println();
+        }
+        System.err.println("-----End Thread Dump-----");
     }
 
     public static void assertTrue(boolean value) {

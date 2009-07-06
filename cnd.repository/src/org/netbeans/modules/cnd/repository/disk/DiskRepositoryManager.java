@@ -79,7 +79,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     private final RepositoryThreadManager threadManager;
     private final Persistent removedObject;
     private final ReadWriteLock queueLock;
-    private Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
+    private final Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
     private static final class UnitLock {}
     private final Object mainUnitLock = new UnitLock();
 
