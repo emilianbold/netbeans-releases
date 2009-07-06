@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +22,9 @@ import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.HostInfoFetcher;
+import org.netbeans.modules.nativeexecution.support.FetchHostInfoTask;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
 
 /**
@@ -40,8 +40,8 @@ public final class HostInfoUtils {
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final Map<String, Boolean> filesExistenceHash =
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
-    private static final Map<ExecutionEnvironment, HostInfoFetcher> hostInfoProviders =
-            new HashMap<ExecutionEnvironment, HostInfoFetcher>();
+    private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
+            new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
 
 
     static {
@@ -80,6 +80,7 @@ public final class HostInfoUtils {
             stream.println("CPU #         : " + hostinfo.getCpuNum()); // NOI18N
             stream.println("shell to use  : " + hostinfo.getShell()); // NOI18N
             stream.println("tmpdir to use : " + hostinfo.getTempDir()); // NOI18N
+            stream.println("tmpdir (file) to use : " + hostinfo.getTempDirFile().toString()); // NOI18N
         }
         stream.println("------------"); // NOI18N
     }
@@ -249,25 +250,7 @@ public final class HostInfoUtils {
      * <tt>false</tt> otherwise.
      */
     public static boolean isHostInfoAvailable(final ExecutionEnvironment execEnv) {
-        HostInfoFetcher infoFetcher;
-
-        synchronized (hostInfoProviders) {
-            infoFetcher = hostInfoProviders.get(execEnv);
-        }
-
-        if (infoFetcher == null) {
-            return false;
-        }
-
-        HostInfo hostInfo = null;
-
-        try {
-            hostInfo = infoFetcher.getInfo(false);
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-
-        return hostInfo != null;
+        return hostInfoCachedProcessor.isResultAvailable(execEnv);
     }
 
     /**
@@ -288,16 +271,17 @@ public final class HostInfoUtils {
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
-        HostInfoFetcher infoFetcher;
-
-        synchronized (hostInfoProviders) {
-            infoFetcher = hostInfoProviders.get(execEnv);
-            if (infoFetcher == null) {
-                infoFetcher = new HostInfoFetcher(execEnv);
-                hostInfoProviders.put(execEnv, infoFetcher);
-            }
+        try {
+            return hostInfoCachedProcessor.compute(execEnv);
+        } catch (InterruptedException ex) {
+            throw new CancellationException("getHostInfo interrupted"); // NOI18N
         }
+    }
 
-        return infoFetcher.getInfo(true);
+    /**
+     * For testing purposes only!
+     */
+    protected static void resetHostsData() {
+        hostInfoCachedProcessor.resetCache();
     }
 }

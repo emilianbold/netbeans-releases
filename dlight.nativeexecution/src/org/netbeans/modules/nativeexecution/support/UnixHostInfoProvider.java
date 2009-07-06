@@ -44,6 +44,7 @@ import com.jcraft.jsch.Session;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import org.netbeans.modules.nativeexecution.spi.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,20 +56,16 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.HostInfo.Bitness;
-import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
-public class HostInfoImpl implements HostInfo {
+@ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.HostInfoProvider.class, position = 100)
+public class UnixHostInfoProvider implements HostInfoProvider {
 
-    private static final File hostinfoScript;
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private static final String UNKNOWN = "UNKNOWN"; // NOI18N
+    private static final File hostinfoScript;
 
 
     static {
@@ -79,38 +76,29 @@ public class HostInfoImpl implements HostInfo {
             log.severe("Unable to find hostinfo.sh script!"); // NOI18N
         }
     }
-    private OS os;
-    private CpuFamily cpuFamily;
-    private String hostname;
-    private String shell;
-    private String tempDir;
-    private int cpuNum;
 
-    private HostInfoImpl() {
-    }
-
-    public static HostInfoImpl getHostInfo(ExecutionEnvironment execEnv) throws IOException {
-        HostInfoImpl hi = new HostInfoImpl();
-        Properties props;
-
+    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         if (hostinfoScript == null) {
-            throw new IOException("Unable to find hostinfo.sh script!"); // NOI18N
+            return null;
         }
 
-        props = execEnv.isLocal()
+        boolean isLocal = execEnv.isLocal();
+
+        if (isLocal && Utilities.isWindows()) {
+            return null;
+        }
+
+        Properties props = execEnv.isLocal()
                 ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
 
-        hi.init(props);
-
-        return hi;
+        return HostInfoFactory.newHostInfo(props);
     }
 
-    private static Properties getLocalHostInfo() throws IOException {
+    private Properties getLocalHostInfo() throws IOException {
         Properties hostInfo = new Properties();
-        boolean isWindows = Utilities.isWindows();
 
         try {
-            String shell = isWindows ? WindowsSupport.getInstance().getShell() : "sh"; // NOI18N
+            String shell = "sh"; // NOI18N
 
             ProcessBuilder pb = new ProcessBuilder(shell, // NOI18N
                     hostinfoScript.getAbsolutePath());
@@ -118,17 +106,13 @@ public class HostInfoImpl implements HostInfo {
             File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
             String tmpDirBase = tmpDirFile.getCanonicalPath();
 
-            if (isWindows) {
-                tmpDirBase = WindowsSupport.getInstance().convertToShellPath(tmpDirBase);
-            }
-
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
             pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
 
             Process hostinfoProcess = pb.start();
 
             // In case of some error goes to stderr, waitFor() will not exit
-            // until error stream is read/closed. (at least on Windows)
+            // until error stream is read/closed.
             // So this case sould be handled.
 
             // We safely can do this in the same thread (in this exact case)
@@ -154,11 +138,6 @@ public class HostInfoImpl implements HostInfo {
             }
 
             hostInfo.load(hostinfoProcess.getInputStream());
-
-            if (isWindows) {
-                hostInfo.setProperty("SH", shell); // NOI18N
-            }
-
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IOException("HostInfo receiving for localhost interrupted " + ex); // NOI18N
@@ -167,13 +146,18 @@ public class HostInfoImpl implements HostInfo {
         return hostInfo;
     }
 
-    private static Properties getRemoteHostInfo(final ExecutionEnvironment execEnv) throws IOException {
+    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException {
+        final ConnectionManager cm = ConnectionManager.getInstance();
+
+        if (!cm.isConnectedTo(execEnv)) {
+            cm.connectTo(execEnv);
+        }
+
         Properties hostInfo = new Properties();
         OutputStream hiOutputStream = null;
         InputStream hiInputStream = null;
 
         try {
-            final ConnectionManager cm = ConnectionManager.getInstance();
             final Session session = ConnectionManagerAccessor.getDefault().
                     getConnectionSession(cm, execEnv, true);
 
@@ -220,118 +204,5 @@ public class HostInfoImpl implements HostInfo {
         }
 
         return hostInfo;
-    }
-
-    private void init(Properties props) {
-        OSImpl _os = new OSImpl();
-        _os.setBitness(getInt(props, "BITNESS", 32)); // NOI18N
-        _os.setFamily(props.getProperty("OSFAMILY", UNKNOWN));
-        _os.setName(props.getProperty("OSNAME", UNKNOWN));
-        _os.setVersion(props.getProperty("OSBUILD", UNKNOWN)); // NOI18N
-        os = _os;
-
-        hostname = props.getProperty("HOSTNAME", UNKNOWN); // NOI18N
-
-        try {
-            cpuFamily = CpuFamily.valueOf(props.getProperty("CPUFAMILY", UNKNOWN).toUpperCase()); // NOI18N
-        } catch (IllegalArgumentException ex) {
-            cpuFamily = CpuFamily.UNKNOWN;
-        }
-
-        shell = props.getProperty("SH", UNKNOWN); // NOI18N
-        tempDir = props.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
-        cpuNum = getInt(props, "CPUNUM", 1); // NOI18N
-    }
-
-    private int getInt(Properties props, String key, int defaultValue) {
-        int result = defaultValue;
-        String value = props.getProperty(key, null);
-        if (value != null) {
-            try {
-                result = Integer.parseInt(value);
-            } catch (NumberFormatException ex) {
-            }
-        }
-
-        return result;
-    }
-
-    public OS getOS() {
-        return os;
-    }
-
-    public CpuFamily getCpuFamily() {
-        return cpuFamily;
-    }
-
-    public OSFamily getOSFamily() {
-        return os.getFamily();
-    }
-
-    public String getHostname() {
-        return hostname;
-    }
-
-    public String getShell() {
-        return shell;
-    }
-
-    public String getTempDir() {
-        return tempDir;
-    }
-
-    public File getTempDirFile() {
-        if (getOSFamily() == OSFamily.WINDOWS) {
-            return new File(WindowsSupport.getInstance().convertToWindowsPath(tempDir));
-        } else {
-            return new File(tempDir);
-        }
-    }
-
-    public int getCpuNum() {
-        return cpuNum;
-    }
-
-    private static final class OSImpl implements OS {
-
-        private OSFamily family = OSFamily.UNKNOWN;
-        private String name = UNKNOWN;
-        private String version = UNKNOWN;
-        private Bitness bitness = Bitness._32;
-
-        public Bitness getBitness() {
-            return bitness;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public OSFamily getFamily() {
-            return family;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        private void setVersion(String version) {
-            this.version = version;
-        }
-
-        private void setBitness(int bitness) {
-            this.bitness = bitness == 64 ? Bitness._64 : Bitness._32;
-        }
-
-        private void setFamily(String family) {
-            try {
-                this.family = OSFamily.valueOf(family.toUpperCase());
-            } catch (IllegalArgumentException ex) {
-            }
-        }
-
-        private void setName(String name) {
-            this.name = name;
-        }
     }
 }

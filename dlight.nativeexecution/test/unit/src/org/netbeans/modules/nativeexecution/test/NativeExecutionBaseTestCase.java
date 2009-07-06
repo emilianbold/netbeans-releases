@@ -65,7 +65,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
 
         File dlightDir = new File(junitWorkdir, "nbbuild/netbeans/dlight1"); // NOI18N
-        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + ":" + dirs); // NOI18N
+        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
 
         Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
         log.setLevel(Level.ALL);

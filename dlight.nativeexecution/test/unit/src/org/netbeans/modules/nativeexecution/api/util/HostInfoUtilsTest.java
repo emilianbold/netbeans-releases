@@ -36,10 +36,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -47,10 +48,12 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,8 +61,16 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
  */
 public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(HostInfoUtilsTest.class);
+    }
+
     public HostInfoUtilsTest(String name) {
         super(name);
+    }
+
+    public HostInfoUtilsTest(String name, ExecutionEnvironment testEnv) {
+        super(name, testEnv);
     }
 
     @BeforeClass
@@ -82,9 +93,11 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         // otherwise FINE and FINEST are never shown, even if correspondent loggers
         // has Level.FINEST or Level.ALL
         Handler handler = new Handler() {
+
             @Override
             public void close() throws SecurityException {
             }
+
             @Override
             public void flush() {
             }
@@ -93,7 +106,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             public void publish(LogRecord record) {
                 System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
             }
-
         };
         Logger parent = Logger.getAnonymousLogger().getParent();
         final Handler[] handlers = parent.getHandlers();
@@ -107,6 +119,140 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
     @Override
     public void tearDown() {
     }
+
+//    @ForAllEnvironments(section = "dlight.nativeexecution.hostinfo")
+//    public void testGetOS() {
+//        try {
+//            System.out.println(HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getOS().getName());
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (CancellationException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//    }
+    /**
+     * This test assures that only first call to getHostInfo does the job.
+     * So any subsequent call should return cached result.
+     * Also it assures that HostInfoUtils.isHostInfoAvailable() works fast and
+     * correct.
+     *
+     * Note: in case of some error during getHostInfo() the result should not be
+     * stored in a cache. So subsequent calls WILL initiate data re-fetching.
+     */
+    public void testMultipleGetInfo() {
+        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
+
+        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+
+        try {
+            // Reset hosts data - it may be already collected in previous tests
+
+            HostInfoUtils.resetHostsData();
+
+            assertFalse(HostInfoUtils.isHostInfoAvailable(local));
+
+            Thread fetchingThread = new Thread(new Runnable() {
+
+                public void run() {
+                    try {
+                        HostInfoUtils.getHostInfo(local);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (CancellationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+
+            fetchingThread.start();
+
+            // As SlowHostInfoProviderEnabled we know that fetching info will
+            // take at least 3 seconds. From the other hand it should not take
+            // more than 10 seconds (as we are on localhost). 
+
+            int count = 20;
+
+            while (!HostInfoUtils.isHostInfoAvailable(local)) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                if (--count == 0) {
+                    break;
+                }
+            }
+
+            try {
+                fetchingThread.interrupt();
+                fetchingThread.join();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            assertTrue("HostInfo MUST be available already (10 seconds passed)", count > 0); // NOI18N
+            assertTrue("HostInfo cannot be available already (only " + ((20 - count) * 2) + " seconds passed)", count < 15); // NOI18N
+
+            long startTime = System.currentTimeMillis();
+            HostInfoUtils.dumpInfo(HostInfoUtils.getHostInfo(local), System.out);
+            long endTime = System.currentTimeMillis();
+
+            assertTrue((endTime - startTime) / 1000 < 2);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "false"); // NOI18N
+        }
+    }
+
+//    public void testGetInfoInterrupting() {
+//        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
+//
+//        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+//        try {
+//            HostInfoUtils.resetHostsData();
+//
+//            assertFalse(HostInfoUtils.isHostInfoAvailable(local));
+//
+//            Thread fetchingThread = new Thread(new Runnable() {
+//
+//                public void run() {
+//                    try {
+//                        HostInfoUtils.getHostInfo(local);
+//                    } catch (IOException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    } catch (CancellationException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                }
+//            });
+//
+//            fetchingThread.start();
+//
+//            fetchingThread.interrupt();
+//
+//            try {
+//                fetchingThread.join();
+//            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            System.out.println(HostInfoUtils.isHostInfoAvailable(local));
+//            try {
+//                HostInfoUtils.dumpInfo(HostInfoUtils.getHostInfo(local), System.out);
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            } catch (CancellationException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//        } finally {
+//            System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "false"); // NOI18N
+//        }
+//    }
 
 //    @Test
 //    public void testGetPlatformLocal() throws Exception {
@@ -155,8 +301,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //        assertTrue(platform.getHardwareType().toString().contains(hardwareTypeShouldContain));
 //        assertTrue(platform.getOSType().toString().contains(osTypeShouldContain));
 //    }
-
-    @Test
     public void testSearchFile() throws Exception {
         System.out.println("Test searchFile()"); // NOI18N
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
