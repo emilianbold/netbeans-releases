@@ -157,7 +157,7 @@ public final class RangeMap {
 
         @Override
         public String toString() {
-            StringBuffer str = new StringBuffer(24);
+            StringBuilder str = new StringBuilder(24);
             str.append("(0x"); // NOI18N
 
             String s = Long.toHexString(begin);

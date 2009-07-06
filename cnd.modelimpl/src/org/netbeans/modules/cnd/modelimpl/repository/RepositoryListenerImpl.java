@@ -85,8 +85,8 @@ public class RepositoryListenerImpl implements RepositoryListener {
      */
     private class UnitTimer implements ActionListener {
 
-        private String unitName;
-        private Timer timer;
+        private final String unitName;
+        private final Timer timer;
 
         public UnitTimer(String unitName, int interval) {
             this.unitName = unitName;

@@ -100,7 +100,7 @@ public final class WebFragmentProvider {
     private WebFragment createWebFragment(InputStream is, String version) throws IOException, SAXException {
         try {
             if (WebFragment.VERSION_3_0.equals(version)) {
-                return org.netbeans.modules.j2ee.dd.impl.web.model_3_0.WebFragment.createGraph(is);
+                return org.netbeans.modules.j2ee.dd.impl.web.model_3_0_frag.WebFragment.createGraph(is);
             } else {
                 throw new IOException("Unsupported version of web-fragment.xml found! Version: "+version);
             }
