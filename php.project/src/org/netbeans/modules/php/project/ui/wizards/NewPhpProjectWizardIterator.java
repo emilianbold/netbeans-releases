@@ -447,11 +447,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
         RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, RemoteClient.AdvancedProperties.create(
-                    remoteLog,
-                    projectProperties.getRemoteDirectory(),
-                    false,
-                    false));
+        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
+                    .setInputOutput(remoteLog)
+                    .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
+                    .setPreservePermissions(false));
         DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), false, sources, sources);
 
         remoteMonitor.finishingDownload();
