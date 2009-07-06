@@ -98,7 +98,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations;
     
     private final TreeMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> nsDefinitions;
-    private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     
     private final boolean global;

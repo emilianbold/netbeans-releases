@@ -251,7 +251,7 @@ public final class Unresolved implements Disposable {
     // doesn't need Repository Keys
     private final UnresolvedNamespace unresolvedNamespace;
     // doesn't need Repository Keys
-    private Map<CharSequence, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<CharSequence, Reference<UnresolvedClass>>();
+    private final Map<CharSequence, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<CharSequence, Reference<UnresolvedClass>>();
     
     public Unresolved(ProjectBase project) {
         this.projectUID = UIDCsmConverter.projectToUID(project);

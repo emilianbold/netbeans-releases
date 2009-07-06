@@ -72,7 +72,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
             DEFAULT_SLICE_CAPACITY = 128;
         }
     }
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
     private final SlicedLongHashMap<Key> map = new SlicedLongHashMap<Key>(DEFAULT_SLICE_COUNT, DEFAULT_SLICE_CAPACITY);
     

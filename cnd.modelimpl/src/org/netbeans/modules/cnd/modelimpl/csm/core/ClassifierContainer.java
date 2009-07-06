@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
     private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
     private final Map<CharSequence, CsmUID<CsmClassifier>> typedefs;
-    private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
 
     // empty stub
     private static final ClassifierContainer EMPTY = new ClassifierContainer() {
