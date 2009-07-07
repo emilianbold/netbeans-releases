@@ -574,6 +574,15 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     private ProjectBase _getProject() {
+        Object o = projectRef;
+        if (o instanceof ProjectBase) {
+            return (ProjectBase) o;
+        } else if (o instanceof Reference) {
+            ProjectBase prj = (ProjectBase)((Reference) o).get();
+            if (prj != null) {
+                return prj;
+            }
+        }
         projectLock.readLock().lock();
         try {
             ProjectBase prj = null;

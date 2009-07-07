@@ -265,6 +265,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private ProjectBase _getProject(boolean assertNotNull) {
+        Object o = projectRef;
+        if (o instanceof ProjectBase) {
+            return (ProjectBase) o;
+        } else if (o instanceof Reference) {
+            ProjectBase prj = (ProjectBase)((Reference) o).get();
+            if (prj != null) {
+                return prj;
+            }
+        }
         projectLock.readLock().lock();
         try {
             ProjectBase prj = null;
@@ -1399,10 +1408,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
+        NameSortedKey key = new NameSortedKey(macro);
         assert macroUID != null;
         try {
             macrosLock.writeLock().lock();
-            macros.put(new NameSortedKey(macro), macroUID);
+            macros.put(key, macroUID);
         } finally {
             macrosLock.writeLock().unlock();
         }

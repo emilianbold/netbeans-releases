@@ -160,7 +160,7 @@ public class ProjectTab extends TopComponent
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
         map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-        map.put("delete", new DelegatingAction(ActionProvider.COMMAND_DELETE, ExplorerUtils.actionDelete(manager, true)));
+        map.put("delete", ExplorerUtils.actionDelete(manager, true));
         
         initComponents();
 
@@ -718,81 +718,6 @@ public class ProjectTab extends TopComponent
         
     }
     
-    private class DelegatingAction extends AbstractAction implements PropertyChangeListener {
-        
-        private Action explorerAction;
-        private String projectAction;
-        
-        public DelegatingAction(String projectAction, Action explorerAction) {
-            this.projectAction = projectAction;
-            this.explorerAction = explorerAction;
-            
-            manager.addPropertyChangeListener(this);
-            explorerAction.addPropertyChangeListener(this);
-        }
-        
-        private boolean isProject() {
-            Node[] nodes = manager.getSelectedNodes();
-            
-            if (nodes.length == 1) {
-                return nodes[0].getParentNode() == rootNode;
-            }
-            
-            return false;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            if (isProject()) {
-                Node[] nodes = manager.getSelectedNodes();
-                Project p = nodes[0].getLookup().lookup(Project.class);
-                
-                assert p != null;
-                
-                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-                
-                ap.invokeAction(projectAction, nodes[0].getLookup());
-            } else {
-                explorerAction.actionPerformed(e);
-            }
-        }
-        
-        public void updateIsEnabled() {
-            if (isProject()) {
-                Node[] nodes = manager.getSelectedNodes();
-                Project p = nodes[0].getLookup().lookup(Project.class);
-                
-                if (p == null) {
-                    setEnabled(false);
-                    return ;
-                }
-                
-                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-                
-                //Fix for #60946: check whether the action is supported before asking whether it is enabled:
-                String[] sa = ap != null ? ap.getSupportedActions() : new String[0];
-                int k = sa.length;
-                
-                for (int i = 0; i < k; i++) {
-                    if (ActionProvider.COMMAND_DELETE.equals(sa [i])) {
-                        setEnabled(ap.isActionEnabled(projectAction, nodes[0].getLookup()));
-                        return ;
-                    }
-                }
-                
-                setEnabled(false);
-            } else {
-                setEnabled(explorerAction.isEnabled());
-            }
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ((evt.getSource() == manager && evt.getPropertyName() != ExplorerManager.PROP_EXPLORED_CONTEXT)
-                    || (evt.getSource() == explorerAction && evt.getPropertyName().equals("enabled"))) { // NOI18N
-                updateIsEnabled();
-            }
-        }
-        
-    }
 
     // showing popup on right click in projects tab when label <No Project Open> is shown
     private class LabelPopupDisplayer extends MouseAdapter {

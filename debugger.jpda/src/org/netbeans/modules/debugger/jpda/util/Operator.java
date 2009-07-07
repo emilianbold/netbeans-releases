@@ -233,6 +233,48 @@ public class Operator {
                              }
                          }
                      }
+
+                     // Notify threads about suspend state, but do not fire any events yet.
+                     boolean resume = true, startEventOnly = true;
+                     int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
+                     boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
+                     JPDAThreadImpl suspendedThread = null;
+                     Lock eventAccessLock = null;
+                     try {
+                     if (!silent && suspendedAll) {
+                         eventAccessLock = debugger.accessLock.writeLock();
+                         eventAccessLock.lock();
+                         logger.finer("Write access lock TAKEN "+eventAccessLock+" on whole debugger.");
+                         debugger.notifySuspendAllNoFire();
+                     }
+                     if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
+                         ThreadReference tref = null;
+                         for (Event e: eventSet) {
+                            tref = getEventThread(e);
+                            if (tref != null) {
+                                break;
+                            }
+                         }
+                         if (tref != null && !silent) {
+                            suspendedThread = debugger.getThread(tref);
+                            eventAccessLock = suspendedThread.accessLock.writeLock();
+                            eventAccessLock.lock();
+                            if (!ThreadReferenceWrapper.isSuspended(tref)) {
+                                // Can not do anything, someone already resumed the thread in the mean time.
+                                // The event is missed. We will therefore ignore it.
+                                logger.warning("!!\nMissed event "+eventSet+" thread "+tref+" is not suspended!\n");
+                                continue;
+                            }
+                            if (logger.isLoggable(Level.FINE)) {
+                                try {
+                                    logger.finer("Write access lock TAKEN "+eventAccessLock+" on thread "+tref);
+                                    logger.fine(" event thread "+tref.name()+" is suspended = "+tref.isSuspended());
+                                } catch (Exception ex) {}
+                            }
+                            suspendedThread.notifySuspendedNoFire();
+                         }
+                     }
+
                      Map<Event, Executor> eventsToProcess = new HashMap<Event, Executor>();
                      for (Event e: eventSet) {
                          EventRequest r = EventWrapper.request(e);
@@ -247,39 +289,16 @@ public class Operator {
                          }
                      }
                      if (eventsToProcess.size() == 0) {
+                         // Notify Resumed No Fire
+                         if (!silent && suspendedAll) {
+                             //TODO: Not really all might be suspended!
+                             debugger.notifyToBeResumedAllNoFire();
+                         }
+                         if (!silent && suspendedThread != null) {
+                             resume = resume && suspendedThread.notifyToBeResumedNoFire();
+                         }
                          EventSetWrapper.resume(eventSet);
                          continue;
-                     }
-                     boolean resume = true, startEventOnly = true;
-                     int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
-                     boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
-                     JPDAThreadImpl suspendedThread = null;
-                     Lock eventAccessLock = null;
-                     try {
-                     if (!silent && suspendedAll) {
-                         eventAccessLock = debugger.accessLock.writeLock();
-                         eventAccessLock.lock();
-                         debugger.notifySuspendAll();
-                     }
-                     if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
-                         ThreadReference tref = null;
-                         for (Event e: eventSet) {
-                            tref = getEventThread(e);
-                            if (tref != null) {
-                                break;
-                            }
-                         }
-                         if (tref != null && !silent) {
-                            suspendedThread = debugger.getThread(tref);
-                            eventAccessLock = suspendedThread.accessLock.writeLock();
-                            eventAccessLock.lock();
-                            if (logger.isLoggable(Level.FINE)) {
-                                try {
-                                    logger.fine(" event thread "+tref.name()+" is suspended = "+tref.isSuspended());
-                                } catch (Exception ex) {}
-                            }
-                            suspendedThread.notifySuspended();
-                         }
                      }
                      if (logger.isLoggable(Level.FINE)) {
                          switch (suspendPolicy) {
@@ -374,16 +393,26 @@ public class Operator {
                      if (resume) {
                          if (!silent && suspendedAll) {
                              //TODO: Not really all might be suspended!
-                             debugger.notifyToBeResumedAll();
+                             debugger.notifyToBeResumedAllNoFire();
                          }
                          if (!silent && suspendedThread != null) {
-                             suspendedThread.notifyToBeResumed();
+                             resume = resume && suspendedThread.notifyToBeResumedNoFire();
+                         }
+                     }
+                     if (!resume) { // resume could be changed above
+                         if (!silent && suspendedAll) {
+                             //TODO: Not really all might be suspended!
+                             debugger.notifySuspendAll();
+                         }
+                         if (!silent && suspendedThread != null) {
+                             suspendedThread.notifySuspended();
                          }
                      }
 
 
                      } finally {
                          if (eventAccessLock != null) {
+                             logger.finer("Write access lock RELEASED:"+eventAccessLock);
                              eventAccessLock.unlock();
                          }
                      }

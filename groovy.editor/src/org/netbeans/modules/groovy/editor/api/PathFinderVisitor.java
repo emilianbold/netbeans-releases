@@ -41,6 +41,7 @@ package org.netbeans.modules.groovy.editor.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
@@ -604,7 +605,10 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         int endLine = node.getLastLineNumber();
         int endColumn = node.getLastColumnNumber();
 
-        LOG.finest("isInside: " + node + " - " + beginLine + ", " + beginColumn + ", " + endLine + ", " + endColumn);
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "isInside: " + node + " - "
+                    + beginLine + ", " + beginColumn + ", " + endLine + ", " + endColumn);
+        }
 
         if (beginLine == -1 || beginColumn == -1 || endLine == -1 || endColumn == -1) {
             // this node doesn't provide its coordinates, some wrappers do that
@@ -634,7 +638,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
 
         if (result && addToPath) {
             path.add(node);
-            LOG.finest("Path:" + path);
+            LOG.log(Level.FINEST, "Path: {0}", path);
         }
 
         // if addToPath is false, return result, we want to know real state of affairs

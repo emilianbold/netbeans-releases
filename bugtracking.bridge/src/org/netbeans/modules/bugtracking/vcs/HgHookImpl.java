@@ -77,7 +77,7 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public HgHookContext beforeCommit(HgHookContext context) throws IOException {
-        Repository selectedRepository = panel.getSelectedRepository();
+        Repository selectedRepository = getSelectedRepository();
 
         if(context.getFiles().length == 0) {
 
@@ -100,7 +100,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg beforeCommit start for " + file);                // NOI18N
 
-        if(panel.addIssueCheckBox.isSelected()) {
+        if (isAddIssueSelected()) {
             String msg = context.getMessage();
 
             Format format = VCSHooksConfig.getInstance().getHgIssueFormat();
@@ -108,7 +108,7 @@ public class HgHookImpl extends HgHook {
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
             
-            Issue issue = panel.getIssue();
+            Issue issue = getIssue();
             if (issue == null) {
                 LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
                 return null;
@@ -133,11 +133,11 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public void afterCommit(HgHookContext context) {
-        VCSHooksConfig.getInstance().setHgAddMsg(panel.addCommentCheckBox.isSelected());
-        VCSHooksConfig.getInstance().setHgAddIssue(panel.addIssueCheckBox.isSelected());
-        VCSHooksConfig.getInstance().setHgAddRev(panel.addRevisionCheckBox.isSelected());
-        VCSHooksConfig.getInstance().setHgResolve(panel.resolveCheckBox.isSelected());
-        VCSHooksConfig.getInstance().setHgAfterCommit(panel.commitRadioButton.isSelected());
+        VCSHooksConfig.getInstance().setHgAddMsg(isAddCommentSelected());
+        VCSHooksConfig.getInstance().setHgAddIssue(isAddIssueSelected());
+        VCSHooksConfig.getInstance().setHgAddRev(isAddRevisionSelected());
+        VCSHooksConfig.getInstance().setHgResolve(isResolveSelected());
+        VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
 
         if(context.getFiles().length == 0) {
             LOG.warning("calling hg afterCommit for zero files");               // NOI18N
@@ -147,25 +147,25 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg afterCommit start for " + file);                // NOI18N
 
-        if(!panel.addCommentCheckBox.isSelected() &&
-           !panel.addRevisionCheckBox.isSelected() &&
-           !panel.resolveCheckBox.isSelected())
+        if (!isAddCommentSelected() &&
+            !isAddRevisionSelected() &&
+            !isResolveSelected())
         {
             LOG.log(Level.FINER, " nothing to do in hg afterCommit for " + file);   // NOI18N
             return;
         }
 
-        Issue issue = panel.getIssue();
+        Issue issue = getIssue();
         if (issue == null) {
             LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
             return;
         }
 
         String msg = context.getMessage();
-        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) { // NOI18N
+        if(!isAddCommentSelected() || msg == null || msg.trim().equals("")) { // NOI18N
             msg = null;
         }
-        if(panel.addRevisionCheckBox.isSelected()) {
+        if(isAddRevisionSelected()) {
             String author = context.getLogEntries()[0].getAuthor();
             String changeset = context.getLogEntries()[0].getChangeset();
             Date date = context.getLogEntries()[0].getDate();
@@ -188,11 +188,11 @@ public class HgHookImpl extends HgHook {
 
             LOG.log(Level.FINER, " hg afterCommit message '" + msg + "'");      // NOI18N
         }
-        if(panel.commitRadioButton.isSelected()) {
-            issue.addComment(msg, panel.resolveCheckBox.isSelected());
+        if(isCommitSelected()) {
+            issue.addComment(msg, isResolveSelected());
             issue.open();
         } else {
-            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, panel.resolveCheckBox.isSelected()));
+            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, isResolveSelected()));
             LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
         }
         LOG.log(Level.FINE, "hg afterCommit end for " + file);                  // NOI18N
@@ -237,13 +237,14 @@ public class HgHookImpl extends HgHook {
                 continue;
             }
 
-            issue.addComment(pa.getMsg(), panel.resolveCheckBox.isSelected());
+            issue.addComment(pa.getMsg(), isResolveSelected());
         }
         LOG.log(Level.FINE, "push hook end for " + file);                       // NOI18N
     }
 
     @Override
     public JPanel createComponent(HgHookContext context) {
+        LOG.finer("HgHookImpl.createComponent()");                      //NOI18N
         File referenceFile;
         if(context.getFiles().length == 0) {
             referenceFile = null;
@@ -293,4 +294,33 @@ public class HgHookImpl extends HgHook {
             VCSHooksConfig.getInstance().setHgIssueFormat(p.getFormat());
         }
     }
+
+    private boolean isAddCommentSelected() {
+        return (panel != null) && panel.addCommentCheckBox.isSelected();
+    }
+
+    private boolean isAddIssueSelected() {
+        return (panel != null) && panel.addIssueCheckBox.isSelected();
+    }
+
+    private boolean isAddRevisionSelected() {
+        return (panel != null) && panel.addRevisionCheckBox.isSelected();
+    }
+
+    private boolean isResolveSelected() {
+        return (panel != null) && panel.resolveCheckBox.isSelected();
+    }
+
+    private boolean isCommitSelected() {
+        return (panel != null) && panel.commitRadioButton.isSelected();
+    }
+
+    private Repository getSelectedRepository() {
+        return (panel != null) ? panel.getSelectedRepository() : null;
+    }
+
+    private Issue getIssue() {
+        return (panel != null) ? panel.getIssue() : null;
+    }
+
 }

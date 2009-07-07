@@ -193,26 +193,22 @@ public class RubyRenameHandler implements InstantRenamer {
         if (closest instanceof LocalVarNode || closest instanceof LocalAsgnNode) {
             // A local variable read or a parameter read, or an assignment to one of these
             String name = ((INameNode)closest).getName();
-            Node method = AstUtilities.findMethod(path);
+            Node localScope = AstUtilities.findLocalScope(closest, path);
 
-            if (method == null) {
-                method = AstUtilities.findBlock(path);
-            }
-
-            if (method == null) {
+            if (localScope == null) {
                 // Use parent, possibly Grand Parent if we have a newline node in the way
-                method = path.leafParent();
+                localScope = path.leafParent();
 
-                if (method.getNodeType() == NodeType.NEWLINENODE) {
-                    method = path.leafGrandParent();
+                if (localScope.getNodeType() == NodeType.NEWLINENODE) {
+                    localScope = path.leafGrandParent();
                 }
 
-                if (method == null) {
-                    method = closest;
+                if (localScope == null) {
+                    localScope = closest;
                 }
             }
 
-            addLocals(info, method, name, regions);
+            addLocals(info, localScope, name, regions);
         } else if (closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE) {
             // A dynamic variable read or assignment
             String name = ((INameNode)closest).getName();

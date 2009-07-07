@@ -84,7 +84,8 @@ class ComponentImpl extends PersistentObject implements Component,  Refreshable 
      */
     public boolean refresh( TypeElement type ) {
         Map<String, ? extends AnnotationMirror> types = 
-            getHelper().getAnnotationsByType(type.getAnnotationMirrors());
+            getHelper().getAnnotationsByType(getHelper().
+                    getCompilationController().getElements().getAllAnnotationMirrors(type));
         AnnotationMirror annotationMirror = types.get(
                 "javax.faces.component.FacesComponent");          // NOI18N
         if (annotationMirror == null) {

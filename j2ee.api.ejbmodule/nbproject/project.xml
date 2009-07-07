@@ -214,6 +214,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.j2ee.common</friend>
                 <package>org.netbeans.modules.j2ee.api.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar.support</package>

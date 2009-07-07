@@ -44,6 +44,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -85,7 +86,7 @@ public class OpenFavoritesNode extends LeafNode {
         }
 
         @Override
-        public ActionListener getDefaultAction() {
+        public Action getDefaultAction() {
             return SourceAccessor.getDefault().getOpenFavorites(src);
         }
 }

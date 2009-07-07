@@ -172,6 +172,10 @@ class ClickableIcon extends JLabel implements MouseListener {
             Exceptions.printStackTrace(e);
             return ;
         }
+        if (rp == null) {
+            // debugger finishing?
+            rp = RequestProcessor.getDefault();
+        }
         rp.post(new Runnable() {
             public void run() {
                 if (suspended) {

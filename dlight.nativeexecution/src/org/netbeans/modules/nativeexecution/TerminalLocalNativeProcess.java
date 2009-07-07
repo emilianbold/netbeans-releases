@@ -61,6 +61,7 @@ import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -81,7 +82,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
 
     static {
-        InstalledFileLocator fl = InstalledFileLocator.getDefault();
+        InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
         if (dorunScriptFile != null) {

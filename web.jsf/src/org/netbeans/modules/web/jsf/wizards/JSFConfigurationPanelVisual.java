@@ -53,6 +53,7 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
@@ -77,9 +78,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
     private boolean libsInitialized;
-    private boolean webModule25Version;
     private String serverInstanceID;
-    
+    private boolean faceletsPanelVisible = false;
     
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
@@ -90,7 +90,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
-
+        if (!faceletsPanelVisible)
+            jsfTabbedPane.remove(faceletsConfPanel);
     }
 
     @Override
@@ -294,8 +295,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         faceletsConfPanel.setAlignmentX(0.2F);
         faceletsConfPanel.setAlignmentY(0.2F);
-        faceletsConfPanel.setDoubleBuffered(false);
-        faceletsConfPanel.setEnabled(false);
 
         jcbDebug.setSelected(panel.isDebugFacelets());
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
@@ -581,6 +580,13 @@ private void jcbCreateExampleFilesItemStateChanged(java.awt.event.ItemEvent evt)
 
 private void cbEnableFaceletsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbEnableFaceletsItemStateChanged
     panel.setEnableFacelets(cbEnableFacelets.isSelected());
+    faceletsPanelVisible = cbEnableFacelets.isSelected();
+    if (!faceletsPanelVisible)
+        jsfTabbedPane.remove(faceletsConfPanel);
+    else {
+        jsfTabbedPane.insertTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_FACELETS"),
+                                null,faceletsConfPanel,null, 1);
+    }
 }//GEN-LAST:event_cbEnableFaceletsItemStateChanged
     
     
@@ -654,51 +660,20 @@ private void cbEnableFaceletsItemStateChanged(java.awt.event.ItemEvent evt) {//G
             return true;
         }
 
-        Properties properties = controller.getProperties();
-        String j2eeLevel = (String)properties.getProperty("j2eeLevel"); //NOI18N
-        String currentServerInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
-        if (j2eeLevel != null && currentServerInstanceID != null) {
-            boolean currentWebModule25Version;
-            if (j2eeLevel.equals("1.5")) //NOI81N
-                currentWebModule25Version = true;
-            else
-                currentWebModule25Version = false;
-            if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
-                webModule25Version = currentWebModule25Version;
-                serverInstanceID = currentServerInstanceID;
-                initLibSettings(webModule25Version, serverInstanceID);
-            }
-        }
-        
         if (rbRegisteredLibrary.isSelected()) {
             if (cbLibraries.getItemCount() <= 0) {
                 controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
                 return false;
             }
-            if (!webModule25Version) {
-                if (jsfLibraries.size() == 0) {
-                    return false;
-                }
-                int index = cbLibraries.getSelectedIndex();
-                JSFVersion libraryVersion = jsfLibraries.get(index).getVersion();
-                if (libraryVersion.compareTo(JSFVersion.JSF_1_1) > 0) {
-                    controller.setErrorMessage(NbBundle.getMessage(JSFUtils.class, "ERROR_REQUIRED_JSF_VERSION"));
-                    return false;
-                }
-            }
-            
         }
         
         if (rbNewLibrary.isSelected()) {
             // checking, whether the folder is the right one
             String folder = jtFolder.getText().trim();
             String message;
-            
-            if (webModule25Version) {
-                message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_1_2);
-            } else {
-                message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_1_1);
-            }
+
+            // TODO: perhaps remove the version check at all:
+            message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_0);
             if (message != null) {
                 controller.setErrorMessage(message); 
                 return false;
@@ -749,20 +724,17 @@ private void cbEnableFaceletsItemStateChanged(java.awt.event.ItemEvent evt) {//G
     
     void update() {
         Properties properties = panel.getController().getProperties();
-        if ("1.5".equals((String)properties.getProperty("j2eeLevel"))) //NOI81N
-            webModule25Version = true;
-        else
-            webModule25Version = false;
-        
+        String j2eeLevel = (String)properties.getProperty("j2eeLevel"); // NOI18N
+        Profile prof = j2eeLevel == null ? Profile.JAVA_EE_6_FULL : Profile.fromPropertiesString(j2eeLevel);
         serverInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
-        initLibSettings(webModule25Version, serverInstanceID);
+        initLibSettings(prof, serverInstanceID);
     }
     
     /**  Method looks at the project classpath and is looking for javax.faces.FacesException.
      *   If there is not this class on the classpath, then is offered appropriate jsf library
      *   according web module version.
      */
-    private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
+    private void initLibSettings(Profile profile, String serverInstanceID) {
         try {
             File[] cp;
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
@@ -773,44 +745,44 @@ private void cbEnableFaceletsItemStateChanged(java.awt.event.ItemEvent evt) {//G
             else {
                 cp = new File[0];
             }
+
+            // XXX: there should be a utility class for this:
             boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
             boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
             boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-            String libName = "None"; //NOI18N
 
-            if ((isJSF && isJSF12 && webModule25Version) // JSF 1.2 for Java EE 5 
-                    || (isJSF && !webModule25Version)){ // JSF 1.1 for J2EE 1.x
-                if (isJSF && !webModule25Version)
-                    libName = "JSF 1.1"; //NOI18N
-                else if (isJSF20)
-                    libName = "JSF 2.0"; //NOI18N
-                else if (isJSF12)
-                    libName = "JSF 1.2"; //NOI18N
-                rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
-                rbNoneLibrary.setSelected(true);
+            String libName = null; //NOI18N
+            if (isJSF20) {
+                libName = "JSF 2.0"; //NOI18N
+            } else if (isJSF12) {
+                libName = "JSF 1.2"; //NOI18N
+            } else if (isJSF) {
+                libName = "JSF 1.1"; //NOI18N
             } else {
+                rbNoneLibrary.setVisible(false);
                 Library profferedLibrary = null;
-                if (webModule25Version) {
-                    //if the web module follows 2.5 specification, select jsf 1.2, which is budnled
+                if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
+                    profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
+                } else {
                     profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
                 }
-                else {
-                    // select the jsf 1.1 library, if it's installed
-                    profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_1_NAME);
-                }
-                
+
                 if (profferedLibrary != null) {
                     // if there is a proffered library, select
                     rbRegisteredLibrary.setSelected(true);
                     cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
-                }
-                else {
+                } else {
                     // there is not a proffered library -> select one or select creating new one
                     if (jsfLibraries.size() == 0) {
                         rbNewLibrary.setSelected(true);
                     }
                 }
             }
+            if (libName != null) {
+                rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
+                rbNoneLibrary.setSelected(true);
+            }
+
         } catch (IOException exception) {
             Exceptions.printStackTrace(exception);
         }

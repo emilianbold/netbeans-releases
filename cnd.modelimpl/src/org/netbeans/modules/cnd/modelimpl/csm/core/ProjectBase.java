@@ -763,9 +763,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
         List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
         AtomicBoolean enougth = new AtomicBoolean(false);
-        CountDownLatch countDownLatch = new CountDownLatch(items.size());
-        for (NativeFileItem nativeFileItem : items) {
-            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, nativeFileItem, sources, removedFiles,
+        int size = items.size();
+        int threads = CndUtils.getNumberCndWorkerThreads()*3;
+        CountDownLatch countDownLatch = new CountDownLatch(threads);
+        int chunk = (size/threads) + 1;
+        Iterator<NativeFileItem> it = items.iterator();
+        for (int i = 0; i < threads; i++) {
+            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(chunk);
+            for(int j = 0; j < chunk; j++){
+                if(it.hasNext()){
+                    list.add(it.next());
+                } else {
+                    break;
+                }
+            }
+            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, list, sources, removedFiles,
                     validator, reparseOnEdit, reparseOnPropertyChanged, enougth);
             PROJECT_FILES_WORKER.post(r);
         }
@@ -2100,10 +2112,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final void fixFakeRegistration(boolean libsAlreadyParsed){
-        final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
-        CountDownLatch countDownLatch = new CountDownLatch(files.size());
-        for (CsmUID<CsmFile> file : files) {
-            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, file, libsAlreadyParsed);
+        Collection<CsmUID<CsmFile>> files = getAllFilesUID();
+        int size = files.size();
+        int threads = CndUtils.getNumberCndWorkerThreads()*3;
+        CountDownLatch countDownLatch = new CountDownLatch(threads);
+        int chunk = (size/threads) + 1;
+        Iterator<CsmUID<CsmFile>> it = files.iterator();
+        for (int i = 0; i < threads; i++) {
+            ArrayList<CsmUID<CsmFile>> list = new ArrayList<CsmUID<CsmFile>>(chunk);
+            for(int j = 0; j < chunk; j++) {
+                if (it.hasNext()) {
+                    list.add(it.next());
+                } else {
+                    break;
+                }
+            }
+            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed);
             PROJECT_FILES_WORKER.post(r);
         }
         try {
@@ -2828,28 +2852,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private class FixRegistrationRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
-        private final CsmUID<CsmFile> file;
+        private final List<CsmUID<CsmFile>> files;
         private final boolean libsAlreadyParsed;
 
-        private FixRegistrationRunnable(CountDownLatch countDownLatch, CsmUID<CsmFile> file, boolean libsAlreadyParsed){
+        private FixRegistrationRunnable(CountDownLatch countDownLatch, List<CsmUID<CsmFile>> files, boolean libsAlreadyParsed){
             this.countDownLatch = countDownLatch;
-            this.file = file;
+            this.files = files;
             this.libsAlreadyParsed = libsAlreadyParsed;
         }
         public void run() {
             try {
-                if (file == null){
-                    return;
+                for(CsmUID<CsmFile> file : files) {
+                    if (file == null){
+                        return;
+                    }
+                    FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
+                    CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file); // NOI18N
+                    // situation is possible for standalone files which were already replaced
+                    // by real files
+                    if (impl == null) {
+                        return;
+                    }
+                    Thread.currentThread().setName("Fix registration "+file); // NOI18N
+                    impl.onProjectParseFinished(libsAlreadyParsed);
                 }
-                FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
-                CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file); // NOI18N
-                // situation is possible for standalone files which were already replaced
-                // by real files
-                if (impl == null) {
-                    return;
-                }
-                Thread.currentThread().setName("Fix registration "+file); // NOI18N
-                impl.onProjectParseFinished(libsAlreadyParsed);
             } finally {
                 countDownLatch.countDown();
             }
@@ -2858,7 +2884,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private class CreateFileRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
-        private NativeFileItem nativeFileItem;
+        private List<NativeFileItem> nativeFileItems;
         private boolean sources;
         private Set<NativeFileItem> removedFiles;
         private ProjectSettingsValidator validator;
@@ -2866,11 +2892,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         private List<NativeFileItem> reparseOnPropertyChanged;
         private AtomicBoolean enougth;
 
-        private CreateFileRunnable(CountDownLatch countDownLatch, NativeFileItem nativeFileItem, boolean sources,
+        private CreateFileRunnable(CountDownLatch countDownLatch, List<NativeFileItem> nativeFileItems, boolean sources,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
             List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
             this.countDownLatch = countDownLatch;
-            this.nativeFileItem = nativeFileItem;
+            this.nativeFileItems = nativeFileItems;
             this.sources = sources;
             this.removedFiles = removedFiles;
             this.validator = validator;
@@ -2881,8 +2907,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         public void run() {
             try {
-                createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
-                                            reparseOnEdit, reparseOnPropertyChanged, enougth);
+                for(NativeFileItem nativeFileItem : nativeFileItems) {
+                    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
+                                            reparseOnEdit, reparseOnPropertyChanged, enougth)){
+                        return;
+                    }
+                }
             } finally {
                 countDownLatch.countDown();
             }

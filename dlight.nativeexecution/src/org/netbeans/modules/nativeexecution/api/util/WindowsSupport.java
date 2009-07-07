@@ -46,11 +46,13 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -68,6 +70,7 @@ public final class WindowsSupport {
     private ShellType type = ShellType.NO_SHELL;
     private String shell = null;
     private String bin = null;
+    private Properties env = null;
 
     private WindowsSupport() {
         init();
@@ -96,9 +99,9 @@ public final class WindowsSupport {
 
         if (cygwinRoot == null) {
             cygwinRoot = queryWindowsRegistry(
-                "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
-                "rootdir", // NOI18N
-                ".*rootdir.*REG_SZ(.*)"); // NOI18N
+                    "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
+                    "rootdir", // NOI18N
+                    ".*rootdir.*REG_SZ(.*)"); // NOI18N
         }
 
         if (cygwinRoot != null) {
@@ -329,7 +332,7 @@ public final class WindowsSupport {
         if (paths == null) {
             return ""; // NOI18N
         }
-        
+
         String[] origPaths = paths.split(";"); // NOI18N
         List<String> convertedPaths = new ArrayList<String>();
 
@@ -353,6 +356,59 @@ public final class WindowsSupport {
         }
 
         return sb.toString();
+    }
+
+    public synchronized Properties getEnv() {
+        if (env == null) {
+            env = readEnv();
+        }
+
+        return env;
+    }
+
+    private static Properties readEnv() {
+        Properties result = new Properties();
+
+        try {
+            String os = System.getProperty("os.name").toLowerCase(); // NOI18N
+            String cmd = "cmd"; // NOI18N
+
+            if (os.contains("windows 9")) { // NOI18N Win95, Win98.. not supported... but, still...
+                cmd = "command.com"; // NOI18N
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(cmd, "/c", "set"); // NOI18N
+            Process p = pb.start();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                int idx = line.indexOf('=');
+                String key = line.substring(0, idx).trim().toUpperCase();
+                String value = line.substring(idx + 1);
+                result.setProperty(key, value);
+            }
+
+            int exitStatus = -1;
+
+            try {
+                exitStatus = p.waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            if (exitStatus != 0) {
+                log.log(Level.FINE, "Unable to read environment"); // NOI18N
+                br = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                while ((line = br.readLine()) != null) {
+                    log.log(Level.FINE, line); // NOI18N
+                }
+            }
+        } catch (IOException ex) {
+            log.log(Level.FINE, "Unable to read environment", ex); // NOI18N
+        }
+
+        return result;
     }
 
     private class StreamReader implements Callable<List<String>> {

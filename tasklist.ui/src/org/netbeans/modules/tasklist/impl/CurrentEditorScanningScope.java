@@ -56,7 +56,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -107,8 +106,10 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     }
     
     public Lookup getLookup() {
-        if( null == lookup ) {
-            lookup = new AbstractLookup( lookupContent );
+        synchronized( this ) {
+            if( null == lookup ) {
+                lookup = new AbstractLookup( lookupContent );
+            }
         }
         return lookup;
     }

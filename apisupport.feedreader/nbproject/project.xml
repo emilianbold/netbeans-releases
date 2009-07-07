@@ -129,6 +129,9 @@ made subject to such option by the copyright holder.
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages/>
