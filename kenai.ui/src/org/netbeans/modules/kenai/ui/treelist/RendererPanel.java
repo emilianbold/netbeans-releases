@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui.treelist;
 
+import java.awt.event.MouseEvent;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -48,13 +49,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
@@ -97,7 +99,7 @@ final class RendererPanel extends JPanel {
         isRoot = node.getParent() == null;
         setOpaque(!isRoot || !isAqua || !node.isExpandable());
         if( node.isExpandable() ) {
-            expander = new LinkButton(EMPTY_ICON, new ActionListener() {
+            expander = new LinkButton(EMPTY_ICON, new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     node.setExpanded( !node.isExpanded() );
                 }
@@ -156,6 +158,18 @@ final class RendererPanel extends JPanel {
         } else {
             super.paintComponent(g);
         }
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        Component c = SwingUtilities.getDeepestComponentAt(this, event.getX(), event.getY());
+        if( c instanceof JComponent ) {
+            JComponent jc = (JComponent) c;
+            String tooltip = jc.getToolTipText();
+            if( null != tooltip )
+                return tooltip;
+        }
+        return super.getToolTipText(event);
     }
 
     /**

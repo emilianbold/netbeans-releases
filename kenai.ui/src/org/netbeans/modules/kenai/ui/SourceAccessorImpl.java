@@ -40,7 +40,6 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +47,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -67,7 +68,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -114,18 +114,18 @@ public class SourceAccessorImpl extends SourceAccessor {
     }
 
     @Override
-    public ActionListener getOpenSourcesAction(SourceHandle srcHandle) {
+    public Action getOpenSourcesAction(SourceHandle srcHandle) {
         return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
     }
 
     @Override
-    public ActionListener getDefaultAction(SourceHandle srcHandle) {
+    public Action getDefaultAction(SourceHandle srcHandle) {
         return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
     }
 
     @Override
-    public ActionListener getDefaultAction(final NbProjectHandle prj) {
-        return new ActionListener() {
+    public Action getDefaultAction(final NbProjectHandle prj) {
+        return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 Project project = ((NbProjectHandleImpl) prj).getProject();
@@ -169,9 +169,9 @@ public class SourceAccessorImpl extends SourceAccessor {
     }
 
     @Override
-    public ActionListener getOpenOtherAction(final SourceHandle src) {
+    public Action getOpenOtherAction(final SourceHandle src) {
 
-        return new ActionListener() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 ProjectChooser.setProjectsFolder(src.getWorkingDirectory());
                 JFileChooser chooser = ProjectChooser.projectChooser();
@@ -214,9 +214,9 @@ public class SourceAccessorImpl extends SourceAccessor {
     }
 
     @Override
-    public ActionListener getOpenFavorites(final SourceHandle src) {
+    public Action getOpenFavorites(final SourceHandle src) {
 
-        return new ActionListener() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 WindowManager.getDefault().findTopComponent("favorites").requestActive();
                 try {
