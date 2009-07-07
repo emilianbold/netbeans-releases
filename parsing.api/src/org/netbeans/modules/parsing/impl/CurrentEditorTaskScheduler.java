@@ -79,7 +79,7 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
                     Document document = currentEditor.getDocument ();
                     FileObject fileObject = NbEditorUtilities.getFileObject (document);
                     if (fileObject == null) {
-                        System.out.println("no file object for " + document);
+//                        System.out.println("no file object for " + document);
                         return;
                     }
                 }
