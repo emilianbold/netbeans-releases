@@ -116,7 +116,7 @@ public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
             {"TestStartupEJB1","Enterprise Beans|TestSession2SB"},
             {"TestStartupEJB1","Enterprise Beans|TestMessageMDB"},
             {"TestStartupEJB1","Enterprise Beans|TestEntityEB"},
-// TODO - uncomment when Web Services node becomes fixed
+//  uncomment when Web Services node becomes fixed
 //            {"TestStartupEJB2","Web Services|TestWebService1"},
 //            {"TestStartupEJB2","Web Services|TestWebService2"}
         };

@@ -168,18 +168,7 @@ public class JSPCompletionInJspEditorTest extends PerformanceTestCase {
     }
     
     protected void initialize() {
-/*        jspOptions().setCaretBlinkRate(0);
-        // delay between the caret stops and the update of his position in status bar
-        jspOptions().setStatusBarCaretDelay(0);
-//        jspOptions().setCodeFoldingEnable(false);
-        jspOptions().setCompletionAutoPopupDelay(0);
-        jspOptions().setJavaDocAutoPopup(false);
-        javaOptions().setCompletionAutoPopupDelay(0);
-        javaOptions().setJavaDocAutoPopup(false);
-        // turn off the error hightlighting feature
-        /* TODO doesn't work after retouche integration
-        javaSettings().setParsingErrors(0);
-        */ 
+
         
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().
             getProjectRootNode("TestWebProject"),"Web Pages|index.jsp"));

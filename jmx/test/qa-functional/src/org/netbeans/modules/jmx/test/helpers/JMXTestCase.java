@@ -61,14 +61,16 @@ import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.NewFileAction;
+import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
@@ -128,8 +130,8 @@ public abstract class JMXTestCase extends JellyTestCase {
         project.selectCategory(category);
         project.selectProject(type);
         project.next();
-        NewFileNameLocationStepOperator projectName =
-                new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator projectName =
+                new NewJavaFileNameLocationStepOperator();
         projectName.setObjectName(name);
         project.finish();
         setWaitFocusTimeout(project, 10000);
@@ -140,8 +142,8 @@ public abstract class JMXTestCase extends JellyTestCase {
      * Compile the specified project.
      */
     public void compileProject(String name) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(name);
+        JavaProjectsTabOperator pto = new JavaProjectsTabOperator();
+        JavaProjectRootNode prn = pto.getJavaProjectRootNode(name);
         prn.select();
         prn.buildProject();
     }
@@ -199,14 +201,14 @@ public abstract class JMXTestCase extends JellyTestCase {
         return nfwo;
     }
     
-    public NewFileNameLocationStepOperator nameAndLocationWizard(
+    public NewJavaFileNameLocationStepOperator nameAndLocationWizard(
             String objectName,
             String packageName,
             String description,
             String classToWrap,
             boolean objectWrappedAsMXBean) {
-        NewFileNameLocationStepOperator wizard =
-                new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator wizard =
+                new NewJavaFileNameLocationStepOperator();
         
         if (objectName != null) {
             wizard.setObjectName(objectName);
@@ -234,7 +236,7 @@ public abstract class JMXTestCase extends JellyTestCase {
     /**
      * Name and Location wizard.
      */
-    public NewFileNameLocationStepOperator nameAndLocationWizard(
+    public NewJavaFileNameLocationStepOperator nameAndLocationWizard(
             String objectName,
             String packageName) {
         return nameAndLocationWizard(objectName, packageName, null, null, false);

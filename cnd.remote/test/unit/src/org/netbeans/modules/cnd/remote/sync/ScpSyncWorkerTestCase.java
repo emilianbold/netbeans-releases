@@ -118,7 +118,7 @@ public class ScpSyncWorkerTestCase extends RemoteTestBase {
     }
 
     private String getDestDir(ExecutionEnvironment execEnv) {
-        return  "/tmp/" + execEnv.getUser() + "/sync-worker-test";
+        return  "/tmp/" + execEnv.getUser() + "/sync-worker-test/" + Math.random() + "/";
     }
 
 //    public void testSyncWorker_2() throws Exception {

@@ -40,12 +40,24 @@
  */
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
+
 
 /**
  * This class gives methods to annotation access. 
  * @author ads
  *
  */
-public abstract class AbstractJsfModel {
+public abstract class AbstractJsfModel implements JsfModel {
+    
+    protected abstract List<AnnotationBehaviorRenderer> getClientBehaviorRenderers(
+            String renderKitId );
+    
+    protected abstract List<AnnotationRenderer> getRenderers( String renderKitId);
+    
+    protected abstract List<SystemEventListener> getSystemEventListeners();
 
 }

@@ -1889,41 +1889,55 @@ class DTDParser extends Object {
                 }
                 
                 return null; // Doesn't match at all                
-            } else { // only '&' remains: if( type == '&' ) {
+            } else if(type == '&') {
                 for( int index = 0; index < content.length; index++ ) {
                     DTD.Content sub = content[index].reduce( elementName );
                     if( sub == EMPTY_CONTENT ) {
+                        //element reduced completely, return the unresolved part
                         int newLen = content.length - 1;
-                        if( newLen > 1 ) {
+                        if( newLen == 0 ) {
+                            //all contents reduced
+                            return EMPTY_CONTENT;
+                        } else {
+                            //something left
                             DTD.Content[] newSub = new DTD.Content[ newLen ];
+                            //copy all before the reduced element
                             System.arraycopy( content, 0, newSub, 0, index );
+                            //and all behind
                             if( index < newSub.length ) {
                                 System.arraycopy( content, index + 1, newSub, index, newLen - index );
                             }
                             return new MultiContentNodeImpl( '&', newSub );
-                        } else {
-                            return content[ 1 - index];
                         }
                     }
                     if( sub != null ) {
-                        DTD.Content right;
-                        if( content.length > 1 ) {
-                            int newLen = content.length - 1;
+                        //element resolved and modified
+                        int newLen = content.length - 1;
+                        if(newLen == 0) {
+                            //just the modified content left
+                            return sub;
+                        } else {
                             DTD.Content[] newSub = new DTD.Content[ newLen ];
+                            //copy all before the reduced element
                             System.arraycopy( content, 0, newSub, 0, index );
+                            //and all behind
                             if( index < newSub.length ) {
                                 System.arraycopy( content, index + 1, newSub, index, newLen - index );
                             }
-                            right = new MultiContentNodeImpl( '&', newSub );
-                        } else {
-                            right = content[ 1 - index ];
-                        }
-                        return new MultiContentNodeImpl( ',', new DTD.Content[] { sub, right } );
+                            DTD.Content right = new MultiContentNodeImpl( '&', newSub );
+                            return new MultiContentNodeImpl( '&', new DTD.Content[] { sub, right } );
+                        } 
                     }
                 }
                 return null;
                 
+            } else {
+                //unknown operator
+                assert false : "Unknown operator '" + type + "' found in the DTD file when trying to reduce " + elementName;
             }
+
+            return null;
+            
         }
 
         public Set getPossibleElements() {

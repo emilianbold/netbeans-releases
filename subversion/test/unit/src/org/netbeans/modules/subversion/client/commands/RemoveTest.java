@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -54,8 +54,29 @@ public class RemoveTest extends AbstractCommandTest {
         super(testName);
     }
     
-    public void testRemoveFile() throws Exception {                                        
-        File file = createFile("file");
+    public void testRemoveFile() throws Exception {
+        testRemoveFile("file");
+    }
+
+    public void testRemoveFileWithAtSign() throws Exception {
+        testRemoveFile("@file");
+        testRemoveFile("fi@le");
+        testRemoveFile("file@");
+    }
+
+    public void testRemoveFileInDir() throws Exception {
+        testRemoveFile("folder/file");
+    }
+
+    public void testRemoveFileWithAtSignInDir() throws Exception {
+        testRemoveFile("folder/@file");
+        testRemoveFile("folder/fi@le");
+        testRemoveFile("folder/file@");
+    }
+
+    private void testRemoveFile(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         add(file);
         commit(file);
                 
@@ -69,8 +90,18 @@ public class RemoveTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {file});        
     }            
     
-    public void testRemoveFolder() throws Exception {                                        
-        File folder = createFolder("folder");
+    public void testRemoveFolder() throws Exception {
+        testRemoveFolder("folder");
+    }
+
+    public void testRemoveFolderWithAtSign() throws Exception {
+        testRemoveFolder("@folder");
+        testRemoveFolder("fol@der");
+        testRemoveFolder("folder@");
+    }
+
+    private void testRemoveFolder(String folderName) throws Exception {
+        File folder = createFolder(folderName);
         add(folder);
         commit(folder);
                 
@@ -84,10 +115,28 @@ public class RemoveTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {folder});        
     }            
     
-    public void testRemoveFileTree() throws Exception {                                        
-        File folder = createFolder("folder");
-        File file1 = createFile(folder, "file1");
-        File file2 = createFile(folder, "file2");
+    public void testRemoveFileTree() throws Exception {
+        testRemoveFileTree("folder", "file1", "file2");
+    }
+
+    public void testRemoveFileTreeWithAtSigns() throws Exception {
+        testRemoveFileTree("@folder1", "@file1", "@file2");
+        testRemoveFileTree("@folder2", "fi@le1", "fi@le2");
+        testRemoveFileTree("@folder3", "file1@", "file2@");
+        testRemoveFileTree("fol@der1", "@file1", "@file2");
+        testRemoveFileTree("fol@der2", "fi@le1", "fi@le2");
+        testRemoveFileTree("fol@der3", "file1@", "file2@");
+        testRemoveFileTree("folder1@", "@file1", "@file2");
+        testRemoveFileTree("folder2@", "fi@le1", "fi@le2");
+        testRemoveFileTree("folder3@", "file1@", "file2@");
+    }
+
+    public void testRemoveFileTree(String folderName,
+                                   String fileName1,
+                                   String fileName2) throws Exception {
+        File folder = createFolder(folderName);
+        File file1 = createFile(folder, fileName1);
+        File file2 = createFile(folder, fileName2);
         add(folder);
         commit(folder);
                 

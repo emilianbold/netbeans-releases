@@ -50,6 +50,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -57,16 +59,18 @@ import org.openide.NotifyDescriptor;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.*;
+import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
 
 public class AddViewDialog {
 
     private static final Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
 
-    boolean result = false;
     Dialog dialog = null;
     JTextField namefld;
     JTextArea tarea;
+    private DialogDescriptor descriptor = null;
+    private NotificationLineSupport statusLine;
 
     public AddViewDialog(final Specification spec, final String schemaName) {
         try {
@@ -101,6 +105,21 @@ public class AddViewDialog {
             label.setLabelFor(namefld);
             layout.setConstraints(namefld, con);
             pane.add(namefld);
+            DocumentListener docListener = new DocumentListener() {
+
+                public void insertUpdate(DocumentEvent e) {
+                    validate();
+                }
+
+                public void removeUpdate(DocumentEvent e) {
+                    validate();
+                }
+
+                public void changedUpdate(DocumentEvent e) {
+                    validate();
+                }
+            };
+            namefld.getDocument().addDocumentListener(docListener);
 
             // Items list title
 
@@ -122,6 +141,7 @@ public class AddViewDialog {
             tarea.setToolTipText(NbBundle.getMessage (AddViewDialog.class, "ACS_AddViewTextAreaA11yDesc"));
             tarea.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AddViewDialog.class, "ACS_AddViewTextAreaA11yName"));
             label.setLabelFor(tarea);
+            tarea.getDocument().addDocumentListener(docListener);
 
             con.weightx = 1.0;
             con.weighty = 1.0;
@@ -148,8 +168,6 @@ public class AddViewDialog {
                                 }
                             });
 
-                            result = !wasException;
-                            
                             if (!wasException) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
@@ -169,27 +187,18 @@ public class AddViewDialog {
 
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddViewDialog.class, "ACS_AddViewDialogA11yDesc")); //NOI18N
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddViewDialog.class, "AddViewTitle"), true, listener); //NOI18N
+            descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddViewDialog.class, "AddViewTitle"), true, listener); //NOI18N
+            statusLine = descriptor.createNotificationLineSupport();
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
+            validate();
         } catch (MissingResourceException e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean run()
-    {
-        if (dialog != null) dialog.setVisible(true);
-        return result;
-    }
-
-    public void setViewName(String name)
-    {
-        namefld.setText(name);
     }
 
     public String getViewName()
@@ -200,5 +209,42 @@ public class AddViewDialog {
     public String getViewCode()
     {
         return tarea.getText();
+    }
+
+    /** Validate and update state of UI. */
+    private void validate() {
+        assert statusLine != null : "Notification status line not available";  //NOI18N
+
+        String message = null;
+
+        String viewName = getViewName();
+        if (viewName == null || viewName.length() == 0) {
+            message = NbBundle.getMessage(AddViewDialog.class, "AddViewMissingViewName");
+        } else if (getViewCode() == null || getViewCode().length() == 0) {
+            message = NbBundle.getMessage(CreateTableDialog.class, "AddViewMissingViewCode");
+        }
+
+        if (message == null) {
+            statusLine.clearMessages();
+            descriptor.setValid(true);
+        } else {
+            statusLine.setInformationMessage(message);
+            descriptor.setValid(false);
+        }
+    }
+
+    /**
+     *  Shows Create View dialog and creates a new view in specified schema.
+     * @param spec DB specification
+     * @param schema DB schema to create table in
+     * @return true if new view successfully created, false if cancelled
+     */
+    public static boolean showDialogAndCreate(final Specification spec, final String schema) {
+        final AddViewDialog panel = new AddViewDialog(spec, schema);
+        panel.dialog.setVisible(true);
+        if (panel.descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            return true;
+        }
+        return false;
     }
 }

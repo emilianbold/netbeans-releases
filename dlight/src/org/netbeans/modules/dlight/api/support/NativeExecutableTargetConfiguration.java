@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.support;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
@@ -62,6 +63,8 @@ public final class NativeExecutableTargetConfiguration {
     private boolean x11forwarding;
     private final Map<String, String> info = new ConcurrentHashMap<String, String>();
     private ExecutionEnvironment execEnv;
+    private LineConvertorFactory outConvertorFactory;
+    private LineConvertorFactory errConvertorFactory;
 
     /**
      * Creates new configuration for {@link org.netbeans.modules.dlight.api.support.NativeExecutableTarget}
@@ -107,6 +110,30 @@ public final class NativeExecutableTargetConfiguration {
      */
     public void setX11Forwarding(boolean forwarding) {
         this.x11forwarding = forwarding;
+    }
+
+    /*
+     * use it to specify Output line convertor.
+     * Will NOT be used in case external terminal is defined!
+     */
+    public void setOutConvertorFactory(LineConvertorFactory lineConvertorFactory) {
+        this.outConvertorFactory = lineConvertorFactory;
+    }
+
+    public LineConvertorFactory getOutConvertorFactory() {
+        return outConvertorFactory;
+    }
+
+    /*
+     * use it to specify Error line convertor.
+     * Will NOT be used in case external terminal is defined!
+     */
+    public void setErrConvertorFactory(LineConvertorFactory lineConvertorFactory) {
+        this.errConvertorFactory = lineConvertorFactory;
+    }
+
+    public LineConvertorFactory getErrConvertorFactory() {
+        return errConvertorFactory;
     }
 
     /**

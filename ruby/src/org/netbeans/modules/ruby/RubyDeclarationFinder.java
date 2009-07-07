@@ -794,6 +794,9 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         String[] result = new String[2];
         
         Node root = AstUtilities.getRoot(info);
+        if (root == null) {
+            return result;
+        }
         AstPath path = new AstPath(root, astOffset);
         Iterator<Node> it = path.leafToRoot();
         Node prev = null;

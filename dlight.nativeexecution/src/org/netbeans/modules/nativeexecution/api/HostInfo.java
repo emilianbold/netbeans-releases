@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
+import java.io.File;
+
 public interface HostInfo {
 
     public static enum CpuFamily {
@@ -110,4 +112,6 @@ public interface HostInfo {
     public String getShell();
 
     public String getTempDir();
+
+    public File getTempDirFile();
 }

@@ -157,12 +157,16 @@ public class ProjectSettingsValidator {
 	assert data != null;
 	long savedCrc = data.getCrc(item.getFile().getAbsolutePath());
 	long currentCrc = calculateCrc(item);
-	if( TRACE ) System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getFile().getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
+	if( TRACE ) {
+            System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getFile().getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
+        }
 	return savedCrc != currentCrc;
     }
     
     private long calculateCrc(NativeFileItem item) {
-	if( TRACE ) System.err.printf(">>> CRC %s\n", item.getFile().getName());
+	if( TRACE ) {
+            System.err.printf(">>> CRC %s\n", item.getFile().getName());
+        }
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, item.getLanguage().toString());
 	updateCrc(checksum, item.getLanguageFlavor().toString());
@@ -170,13 +174,17 @@ public class ProjectSettingsValidator {
 	updateCrc(checksum, item.getUserIncludePaths());
 	updateCrc(checksum, item.getSystemMacroDefinitions());
 	updateCrc(checksum, item.getUserMacroDefinitions());
-	if( TRACE ) System.err.printf("<<< CRC %s %d\n", item.getFile().getName(), checksum.getValue());
+	if( TRACE ) {
+            System.err.printf("<<< CRC %s %d\n", item.getFile().getName(), checksum.getValue());
+        }
 	return checksum.getValue();
     }
     
     private void updateCrc(Checksum checksum, String s) {
 	checksum.update(s.getBytes(), 0, s.length());
-	if( TRACE ) System.err.printf("\tupdateCrc %s -> %d\n", s, checksum.getValue());
+	if( TRACE ) {
+            System.err.printf("\tupdateCrc %s -> %d\n", s, checksum.getValue());
+        }
     }
     
     private void updateCrc(Checksum checksum, List<String> strings) {
@@ -247,7 +255,7 @@ public class ProjectSettingsValidator {
 	}
     }
 	    
-    private ProjectBase csmProject;
+    private final ProjectBase csmProject;
     private NativeProject nativeProject;    
     private Data data;
 }

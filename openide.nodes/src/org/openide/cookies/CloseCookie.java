@@ -40,14 +40,11 @@
  */
 package org.openide.cookies;
 
+import org.netbeans.api.actions.Closable;
 import org.openide.nodes.Node;
 
 
 /** Permits an object which was {@link OpenCookie opened} to be closed.
 */
-public interface CloseCookie extends Node.Cookie {
-    /** Closes the object if it is open.
-    * @return <code>true</code> if it was really closed; <code>false</code> if the user cancelled the request
-    */
-    public boolean close();
+public interface CloseCookie extends Closable, Node.Cookie {
 }

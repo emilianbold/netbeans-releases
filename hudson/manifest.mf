@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.hudson
 OpenIDE-Module-Install: org/netbeans/modules/hudson/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/hudson/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hudson/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 

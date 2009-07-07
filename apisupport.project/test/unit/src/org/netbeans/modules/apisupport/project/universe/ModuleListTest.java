@@ -69,6 +69,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
 
 /**
@@ -218,7 +219,8 @@ public class ModuleListTest extends TestBase {
 
     }
 
-    public void testConcurrentScanning() throws Exception {
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    public void testConcurrentScanningNBOrg() throws Exception {
         ModuleList.refresh();
         final ModuleList mlref[] = new ModuleList[1];
         Logger logger = Logger.getLogger(ModuleList.class.getName());
@@ -249,13 +251,25 @@ public class ModuleListTest extends TestBase {
             assertNotNull("Module list for root " + nbRootFile() + " returned null", mlref[0]);
             assertTrue("No projects scanned.", handler.scannedDirs.size() > 0);
             System.out.println("Total " + handler.scannedDirs.size() + " project folders scanned.");
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(origLevel);
+        }
+    }
 
-            // now testing scan of binary clusters
-            ModuleList.refresh();
-            handler.scannedDirs.clear();
-            mlref[0] = null;
-            assertTrue("NB dest. dir does not exist: " + destDirF, destDirF.exists());
-            t = new Thread() {
+    public void testConcurrentScanningBinary() throws Exception {
+        // now testing scan of binary clusters
+        ModuleList.refresh();
+        final ModuleList mlref[] = new ModuleList[1];
+        Logger logger = Logger.getLogger(ModuleList.class.getName());
+        Level origLevel = logger.getLevel();
+        ModuleListLogHandler handler = new ModuleListLogHandler();
+        assertTrue("NB dest. dir exists: " + destDirF, destDirF.exists());
+        try {
+            logger.setLevel(Level.ALL);
+            logger.addHandler(handler);
+
+            Thread t = new Thread() {
 
                 @Override
                 public void run() {
@@ -266,9 +280,9 @@ public class ModuleListTest extends TestBase {
                     }
                 }
             };
-            start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             t.start();
-            ml = ModuleList.findOrCreateModuleListFromBinaries(destDirF);
+            ModuleList ml = ModuleList.findOrCreateModuleListFromBinaries(destDirF);
             t.join();
             System.out.println("Concurrent scans took " + (System.currentTimeMillis() - start) + "msec.");
             assertNull(handler.error, handler.error);   // error is non-null when duplicate scan detected

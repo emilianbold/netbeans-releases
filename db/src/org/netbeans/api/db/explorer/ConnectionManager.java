@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,9 +41,6 @@
 
 package org.netbeans.api.db.explorer;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.DBConnection;
@@ -180,13 +177,8 @@ public final class ConnectionManager {
             throw new IllegalStateException("This method can not be called on the event dispatch thread."); // NOI18N
         }
 
-        Connection conn = dbconn.getJDBCConnection();
-        try {
-            if (conn != null && (! conn.isClosed())) {
-                return true;
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.FINE, null, e);
+        if (org.netbeans.modules.db.explorer.DatabaseConnection.isVitalConnection(dbconn.getJDBCConnection(), null)) {
+            return true;
         }
 
         dbconn.getDelegate().connectSync();

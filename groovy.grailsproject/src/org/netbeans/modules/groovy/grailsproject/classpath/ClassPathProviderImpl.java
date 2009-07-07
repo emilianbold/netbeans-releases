@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * @todo runtime classpath
- * 
+ *
  * Defines the various class paths for a EJB project.
  */
 public final class ClassPathProviderImpl implements ClassPathProvider {
@@ -62,7 +62,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final File projectDirectory;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
-    
+
     /**
      * Cache for classpaths:
      * <dl>
@@ -94,27 +94,27 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         FileObject fo = this.dirCache.get(propname);
         return fo;
     }
-    
+
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();
     }
-    
+
     private FileObject[] getTestSrcDir() {
          return this.testSourceRoots.getRoots();
     }
-    
+
     private FileObject getBuildClassesDir() {
         return getDir("build.classes.dir");    //NOI18N
     }
-    
+
     private FileObject getBuildJar() {
         return getDir("dist.jar");            //NOI18N
     }
-    
+
     private FileObject getBuildTestClassesDir() {
         return getDir("build.test.classes.dir"); // NOI18N
     }
-    
+
     /**
      * Find what a given file represents.
      * @param file a file in the project
@@ -134,7 +134,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (root.equals(file) || FileUtil.isParentOf(root, file)) {
                 return 0;
             }
-        }        
+        }
         srcPath = getTestSrcDir();
         for (int i=0; i< srcPath.length; i++) {
             FileObject root = srcPath[i];
@@ -156,30 +156,25 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         return -1;
     }
-    
+
     private ClassPath getCompileTimeClasspath(FileObject file) {
         int type = getType(file);
         return this.getCompileTimeClasspath(type);
     }
-    
-    private synchronized ClassPath getCompileTimeClasspath(int type) {        
+
+    private synchronized ClassPath getCompileTimeClasspath(int type) {
         if (type < 0 || type > 1) {
             // Not a source file.
             return null;
         }
         ClassPath cp = cache[2+type];
         if ( cp == null) {
-            if (type == 0) {
-                cp = ClassPathFactory.createClassPath(ProjectClassPathImplementation.forProject(project));
-            }
-            else {
-                cp = ClassPathFactory.createClassPath(ProjectClassPathImplementation.forProject(project));
-            }
-            cache[2+type] = cp;
+            cp = ClassPathFactory.createClassPath(ProjectClassPathImplementation.forProject(project));
+            cache[2 + type] = cp;
         }
         return cp;
     }
-    
+
     private synchronized ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 4) {
@@ -187,39 +182,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         } else if (type > 1) {
             type -= 2;
         }
-        
+
         ClassPath cp = cache[4+type];
-        if (cp == null) {
-//            if (type == 0) {
-//                // XXX: should return run.classpath, but since there's no run classpath,
-//                // in and EJB project, using debug.classpath instead
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {"debug.classpath"})); // NOI18N
-//            }
-//            else if (type == 1) {
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {"run.test.classpath"})); // NOI18N
-//            }
-//            else if (type == 2) {
-//                //Only to make the CompiledDataNode hapy
-//                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {"dist.jar"})); // NOI18N
-//            }
-//            
-//            cache[4+type] = cp;
-        }
         return cp;
     }
-    
+
     private ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
         return this.getSourcepath(type);
     }
-    
+
     private synchronized ClassPath getSourcepath(int type) {
         if (type < 0 || type > 1) {
             return null;
@@ -228,10 +200,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots));
+                    cp = ClassPathFactory.createClassPath(
+                            SourcePathImplementation.forProject(project, this.sourceRoots));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    cp = ClassPathFactory.createClassPath(
+                            SourcePathImplementation.forProject(project, this.testSourceRoots));
                     break;
             }
         }
@@ -247,7 +221,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         return cp;
     }
-    
+
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
@@ -261,7 +235,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return null;
         }
     }
-    
+
     /**
      * Returns array of all classpaths of the given type in the project.
      * The result is used for example for GlobalPathRegistry registrations.

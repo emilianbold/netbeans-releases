@@ -45,7 +45,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
@@ -96,22 +97,25 @@ public class TestPlatform extends J2eePlatformImpl {
     }
 
     @Override
-    public Set getSupportedModuleTypes() {
-        Set moduleTypes = new HashSet(1);
-        moduleTypes.add(J2eeModule.WAR);
-        moduleTypes.add(J2eeModule.EJB);
-        moduleTypes.add(J2eeModule.EAR);
-        moduleTypes.add(J2eeModule.CLIENT);
-        return moduleTypes;
+    public Set<Type> getSupportedTypes() {
+        Set<Type> types = new HashSet<Type>();
+        types.add(Type.WAR);
+        types.add(Type.EJB);
+        types.add(Type.EAR);
+        types.add(Type.CAR);
+        types.add(Type.RAR);
+        return types;
     }
 
     @Override
-    public Set getSupportedSpecVersions() {
-        Set specVersions = new HashSet(3);
-        specVersions.add(J2eeModule.J2EE_13);
-        specVersions.add(J2eeModule.J2EE_14);
-        specVersions.add(J2eeModule.JAVA_EE_5);
-        return specVersions;
+    public Set<Profile> getSupportedProfiles() {
+        Set<Profile> profiles = new HashSet<Profile>();
+        profiles.add(Profile.J2EE_13);
+        profiles.add(Profile.J2EE_14);
+        profiles.add(Profile.JAVA_EE_5);
+        profiles.add(Profile.JAVA_EE_6_FULL);
+        profiles.add(Profile.JAVA_EE_6_WEB);
+        return profiles;
     }
 
     @Override

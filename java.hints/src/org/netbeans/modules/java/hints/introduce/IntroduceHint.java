@@ -164,6 +164,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
     }
 
     static TreePath validateSelection(CompilationInfo ci, int start, int end) {
+        return validateSelection(ci, start, end, NOT_ACCEPTED_TYPES);
+    }
+
+    public static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
         TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
 
         for ( ; tp != null; tp = tp.getParentPath()) {
@@ -188,7 +192,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 type = ci.getTrees().getOriginalType((ErrorType) type);
             }
 
-            if (type == null || NOT_ACCEPTED_TYPES.contains(type.getKind()))
+            if (type == null || ignoredTypes.contains(type.getKind()))
                 continue;
 
             if(tp.getLeaf().getKind() == Kind.ASSIGNMENT)
@@ -237,7 +241,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return null;
     }
 
-    static TreePathHandle validateSelectionForIntroduceMethod(CompilationInfo ci, int start, int end, int[] statementsSpan) {
+    public static TreePathHandle validateSelectionForIntroduceMethod(CompilationInfo ci, int start, int end, int[] statementsSpan) {
         int[] span = ignoreWhitespaces(ci, Math.min(start, end), Math.max(start, end));
 
         start = span[0];

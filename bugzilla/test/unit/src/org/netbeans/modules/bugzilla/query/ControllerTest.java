@@ -84,7 +84,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         LogHandler h = new LogHandler("Finnished populate query controller");
         Bugzilla.LOG.addHandler(h);
         String parametersUrl = getParametersUrl();
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), parametersUrl, System.currentTimeMillis(), false);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), parametersUrl, System.currentTimeMillis(), false);
         QueryController c = q.getController();
         
         // wait while populate
@@ -153,10 +153,6 @@ public class ControllerTest extends NbTestCase implements TestConstants {
                     "&chfield=votes" +
                     "&chfield=status_whiteboard" +
                     "&chfieldvalue=xxx";
-    }
-
-    private BugzillaRepository getRepository() {
-        return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
     private class LogHandler extends Handler {

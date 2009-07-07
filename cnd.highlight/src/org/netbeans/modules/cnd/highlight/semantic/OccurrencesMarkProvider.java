@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
 
 public class OccurrencesMarkProvider extends MarkProvider {
     
-    private static Map<Document, Reference<OccurrencesMarkProvider>> providers = new WeakHashMap<Document, Reference<OccurrencesMarkProvider>>();
+    private static final Map<Document, Reference<OccurrencesMarkProvider>> providers = new WeakHashMap<Document, Reference<OccurrencesMarkProvider>>();
     
     public static synchronized OccurrencesMarkProvider get(Document doc) {
         Reference<OccurrencesMarkProvider> ref = providers.get(doc);

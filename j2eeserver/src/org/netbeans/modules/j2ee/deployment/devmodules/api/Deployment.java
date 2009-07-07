@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import org.netbeans.api.j2ee.core.Profile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;

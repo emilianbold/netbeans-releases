@@ -65,11 +65,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -123,7 +123,7 @@ public class SftpClient implements RemoteClient {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Login as " + username);
         }
-        if (!PhpProjectUtils.hasText(identityFile) && !PhpProjectUtils.hasText(password)) {
+        if (!StringUtils.hasText(identityFile) && !StringUtils.hasText(password)) {
             password = PASSWORDS.get(configuration.hashCode());
             if (password == null) {
                 PasswordPanel passwordPanel = new PasswordPanel(configuration.getDisplayName(), username);
@@ -140,13 +140,13 @@ public class SftpClient implements RemoteClient {
         try {
             JSch.setLogger(sftpLogger);
             sftpSession = jsch.getSession(username, host, port);
-            if (PhpProjectUtils.hasText(knownHostsFile)) {
+            if (StringUtils.hasText(knownHostsFile)) {
                 jsch.setKnownHosts(knownHostsFile);
             }
-            if (PhpProjectUtils.hasText(identityFile)) {
+            if (StringUtils.hasText(identityFile)) {
                 jsch.addIdentity(identityFile);
             }
-            if (PhpProjectUtils.hasText(password)) {
+            if (StringUtils.hasText(password)) {
                 sftpSession.setPassword(password);
             }
             sftpSession.setUserInfo(new SftpUserInfo(configuration.getDisplayName(), username));

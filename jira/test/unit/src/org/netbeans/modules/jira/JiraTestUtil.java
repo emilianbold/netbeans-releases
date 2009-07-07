@@ -92,6 +92,10 @@ public class JiraTestUtil {
     private static TaskRepository taskRepository;
     private static JiraRepository repository;
 
+    public static RepositoryResponse createIssue(String summary, String desc, String typeName) throws CoreException, JiraException {
+        return createIssue(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), getProject(getClient()), summary, desc, typeName);
+    }
+
     public static RepositoryResponse createIssue(JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project, String summary, String desc, String typeName) throws CoreException, JiraException {
         // project
         project.setVersions(new Version[0]); // XXX HACK

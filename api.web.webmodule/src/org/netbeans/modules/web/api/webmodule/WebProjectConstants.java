@@ -46,7 +46,7 @@ package org.netbeans.modules.web.api.webmodule;
  *
  * @author  Milan Kuchtiak
  */
-public class WebProjectConstants {
+public final class WebProjectConstants {
 
     private WebProjectConstants () {}
 

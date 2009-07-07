@@ -54,6 +54,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -171,12 +172,12 @@ public class TestBase extends NbTestCase {
         }
     }
 
-    private static String convertEjbVersionToJavaEEVersion(String ejbVersion) {
+    private static Profile convertEjbVersionToJavaEEVersion(String ejbVersion) {
         double version = Double.parseDouble(ejbVersion);
         if (version > 2.1) {
-            return EjbProjectConstants.JAVA_EE_5_LEVEL;
+            return Profile.JAVA_EE_5;
         } else {
-            return EjbProjectConstants.J2EE_14_LEVEL;
+            return Profile.J2EE_14;
         }
     }
     

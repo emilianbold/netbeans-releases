@@ -301,7 +301,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         if (maintainVarStack) {
-            String className = CodeUtils.extractClassName(node);
+            String className = CodeUtils.extractUnqualifiedClassName(node);
             String fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
@@ -441,7 +441,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(CatchClause node) {
-        String type = CodeUtils.extractTypeName(node);
+        String type = CodeUtils.extractUnqualifiedTypeName(node);
         Variable var = node.getVariable();
         varStack.addVariableDefinition(var, type);
         super.visit(node);

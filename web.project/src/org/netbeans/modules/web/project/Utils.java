@@ -54,6 +54,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -445,7 +446,7 @@ public class Utils {
     public static LibraryChooser.Filter getFilter(WebProject p) {
         LibraryChooser.Filter filter = null;
         WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
-        if (wm != null && WebModule.J2EE_13_LEVEL.equals(wm.getJ2eePlatformVersion())) { // NOI18N
+        if (wm != null && Profile.J2EE_13.equals(wm.getJ2eeProfile())) { // NOI18N
             filter = new LibraryChooser.Filter() {
                 public boolean accept(Library library) {
                     if ("javascript".equals(library.getType())) { //NOI18N

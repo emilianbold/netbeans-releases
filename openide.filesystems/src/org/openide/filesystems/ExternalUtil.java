@@ -136,14 +136,12 @@ final class ExternalUtil extends Object {
         }
     }
 
-    private static AtomicReference<FileSystem> ADD_FS;
+    private static final AtomicReference<Object> ADD_FS = new AtomicReference<Object>();
+    static {
+        ADD_FS.set(ADD_FS);
+    }
     static synchronized final boolean addFileSystemDelayed(FileSystem fs) {
-        if (ADD_FS == null) {
-            return true;
-        }
-        assert ADD_FS.get() == null;
-        ADD_FS.set(fs);
-        return false;
+        return !ADD_FS.compareAndSet(ADD_FS, fs);
     }
     
     
@@ -158,17 +156,14 @@ final class ExternalUtil extends Object {
         }
 
         if (r == null) {
-            assert ADD_FS == null;
-            ADD_FS = new AtomicReference<FileSystem>();
             Repository registeredRepository = lkp.lookup(Repository.class);
             Repository realRepository = assignRepository(registeredRepository);
             
             
-            FileSystem fs = ADD_FS.get();
+            FileSystem fs = (FileSystem)ADD_FS.getAndSet(null);
             if (fs != null) {
                 addFS(realRepository, fs);
             }
-            ADD_FS = null;
         }
     }
     

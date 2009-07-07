@@ -726,12 +726,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 if (argsNode instanceof ListNode) {
                     ListNode args = (ListNode)argsNode;
-
-                    if (args.size() > 0) {
-                        Node n = args.get(0);
-
+                    for (Node n : args.childNodes()) {
                         if (n instanceof Colon2Node) {
-                            includes.add(AstUtilities.getFqn((Colon2Node)n));
+                            includes.add(AstUtilities.getFqn((Colon2Node) n));
                         } else if (n instanceof INameNode) {
                             includes.add(AstUtilities.getName(n));
                         }

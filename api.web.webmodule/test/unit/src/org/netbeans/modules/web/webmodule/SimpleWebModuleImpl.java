@@ -27,16 +27,17 @@
  */
 package org.netbeans.modules.web.webmodule;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SimpleWebModuleImpl implements WebModuleImplementation {
+public class SimpleWebModuleImpl implements WebModuleImplementation2 {
 
     public String getContextPath() {
         return null;
@@ -46,7 +47,7 @@ public class SimpleWebModuleImpl implements WebModuleImplementation {
         return null;
     }
 
-    public String getJ2eePlatformVersion() {
+    public Profile getJ2eeProfile() {
         return null;
     }
 

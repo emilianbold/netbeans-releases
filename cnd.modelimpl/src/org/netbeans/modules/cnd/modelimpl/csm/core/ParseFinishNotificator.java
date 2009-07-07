@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.util.WeakList;
 public class ParseFinishNotificator {
 
     private static final ParseFinishNotificator instance = new ParseFinishNotificator();
-    private WeakList<CsmProject> waitingProjects = new WeakList<CsmProject>();
+    private final WeakList<CsmProject> waitingProjects = new WeakList<CsmProject>();
 
     private ParseFinishNotificator() {
     }

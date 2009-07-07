@@ -73,6 +73,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -131,10 +133,12 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbac
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -290,7 +294,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new String[] {"debug.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"run.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
         ejbModule = new EjbJarProvider(this, helper, cpProvider);
-        apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
+        apiEjbJar = EjbJarFactory.createEjbJar(new EjbJarImpl2(ejbModule));
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
         jaxwsSupport = new EjbProjectJAXWSSupport(this, helper);
         ejbJarWebServicesClientSupport = new EjbJarWebServicesClientSupport(this, helper, refHelper);
@@ -414,6 +418,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 EjbJarSupport.createEjbJarProvider(this, apiEjbJar),
                 EjbJarSupport.createEjbJarsInProject(apiEjbJar),
                 ejbModule, //implements J2eeModuleProvider
+                // FIXME this is just fallback for code searching for the old SPI in lookup
+                // remove in next release
+                new EjbJarImpl(apiEjbJar),
                 new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
@@ -1567,7 +1574,67 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
     }
 
+    // FIXME this is just fallback for code searching for the old SPI in lookup
+    // remove in next release
+    @SuppressWarnings("deprecation")
+    private class EjbJarImpl implements EjbJarImplementation {
 
+        private final EjbJar apiModule;
+
+        public EjbJarImpl(EjbJar apiModule) {
+            this.apiModule = apiModule;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return apiModule.getDeploymentDescriptor();
+        }
+
+        public String getJ2eePlatformVersion() {
+            return apiModule.getJ2eePlatformVersion();
+        }
+
+        public FileObject[] getJavaSources() {
+            return apiModule.getJavaSources();
+        }
+
+        public FileObject getMetaInf() {
+            return apiModule.getMetaInf();
+        }
+
+        public MetadataModel<EjbJarMetadata> getMetadataModel() {
+            return apiModule.getMetadataModel();
+        }
+    }
+
+    private class EjbJarImpl2 implements EjbJarImplementation2 {
+
+        private final EjbJarProvider provider;
+
+        public EjbJarImpl2(EjbJarProvider provider) {
+            this.provider = provider;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return provider.getDeploymentDescriptor();
+        }
+
+        public Profile getJ2eeProfile() {
+            return provider.getJ2eeProfile();
+        }
+
+        public FileObject[] getJavaSources() {
+            return provider.getJavaSources();
+        }
+
+        public FileObject getMetaInf() {
+            return provider.getMetaInf();
+        }
+
+        public MetadataModel<EjbJarMetadata> getMetadataModel() {
+            return provider.getMetadataModel();
+        }
+
+    }
 
     private class EjbExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..

@@ -115,7 +115,7 @@ public class CreatingPropertiesFileFromExplorer1Test extends PropertiesEditorTes
          * 2nd step of testcase
          * Type name to appeared wizard.
          */
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(FILE_NAME);
         
         

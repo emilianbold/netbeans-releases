@@ -518,7 +518,8 @@ public final class SourcesHelper {
      * Source root is a top-level folder which may
      * contain sources that should be considered part of the project.
      * <p>
-     * If the actual value of the <code>location</code> parameter is inside the project directory,
+     * If the actual value of the <code>location</code> parameter is inside the project directory
+     * and the root is not {@link SourceRootConfig#type typed},
      * this is simply ignored; so it safe to configure source roots
      * for any source directory which might be set to use an external path, even
      * if the common location is internal.

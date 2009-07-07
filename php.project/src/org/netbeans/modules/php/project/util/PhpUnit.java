@@ -53,6 +53,8 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -61,6 +63,8 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class PhpUnit extends PhpProgram {
+    // for keeping log files to able to evaluate and fix issues
+    public static final boolean KEEP_LOGS = Boolean.getBoolean("org.netbeans.modules.php.project.util.PhpUnit.keepLogs");
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
@@ -190,7 +194,7 @@ public final class PhpUnit extends PhpProgram {
 
         static int[] match(String text) {
             assert text != null;
-            if (PhpProjectUtils.hasText(text)) {
+            if (StringUtils.hasText(text)) {
                 Matcher matcher = PHPUNIT_VERSION.matcher(text);
                 if (matcher.find()) {
                     int major = Integer.parseInt(matcher.group(1));

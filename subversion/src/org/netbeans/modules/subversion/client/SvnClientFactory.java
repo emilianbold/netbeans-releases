@@ -53,6 +53,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -529,6 +530,7 @@ public class SvnClientFactory {
     private void checkVersion() throws SVNClientException {
         CommandlineClient cc = new CommandlineClient();
         try {
+            setConfigDir(cc);
             cc.checkSupportedVersion();
         } catch (SVNClientException e) {
             LOG.log(Level.FINE, "checking version", e);
@@ -540,6 +542,18 @@ public class SvnClientFactory {
         return SvnClientAdapterFactory.getInstance().isSupportedJavahlVersion();
     }
 
+    private void setConfigDir (ISVNClientAdapter client) {
+        if (client != null) {
+            File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
+            try {
+                client.setConfigDirectory(configDir);
+            } catch (SVNClientException ex) {
+                // not interested, just log
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
+    }
+
     private abstract class ClientAdapterFactory {
 
         abstract protected ISVNClientAdapter createAdapter();
@@ -549,7 +563,9 @@ public class SvnClientFactory {
 
         SvnClient createSvnClient() {
             SvnClientInvocationHandler handler = getInvocationHandler(createAdapter(), createDescriptor(null), null, -1);
-            return createSvnClient(handler);
+            SvnClient client = createSvnClient(handler);
+            setConfigDir(client);
+            return client;
         }
 
         /**

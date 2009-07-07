@@ -52,12 +52,12 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -144,7 +144,7 @@ public class J2EEValidation extends JellyTestCase {
         String webApplicationLabel = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web/emptyWeb.xml");
         npwo.selectProject(webApplicationLabel);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewWebProjectNameLocationStepOperator npnlso = new NewWebProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_WEB_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.next();
@@ -184,7 +184,7 @@ public class J2EEValidation extends JellyTestCase {
         // insert error statement
         editor.insert("<%= nonExistentVar %>", 12, 1);
         
-        CompileAction compileAction = new CompileAction();
+        CompileJavaAction compileAction = new CompileJavaAction();
         compileAction.perform(jspNode);
         // "SampleWebProject (compile-single-jsp)"
         String outputTarget = Bundle.getString(

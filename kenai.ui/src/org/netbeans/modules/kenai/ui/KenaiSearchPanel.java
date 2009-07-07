@@ -367,6 +367,7 @@ public class KenaiSearchPanel extends JPanel {
                                 add(BorderLayout.CENTER, badRequestPanel);
                                 revalidate();
                                 repaint();
+                                searchTextField.requestFocus();
                             }
                         });
                         return;
@@ -400,6 +401,7 @@ public class KenaiSearchPanel extends JPanel {
                             add(BorderLayout.CENTER, noMatchingLabelPanel);
                             revalidate();
                             repaint();
+                            searchTextField.requestFocus();
                         }
                     });
                 }
@@ -447,6 +449,8 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
 
+        private boolean itemSelected = false;
+
         private boolean stopLoading;
 
         public KenaiProjectsListModel(Iterator<KenaiProject> projects, final String pattern) {
@@ -474,7 +478,7 @@ public class KenaiSearchPanel extends JPanel {
                         }
                     }
                     Thread.yield();
-                    if (stopLoading) {
+                    if (loadingStopped()) {
                         return;
                     }
                 }
@@ -485,10 +489,19 @@ public class KenaiSearchPanel extends JPanel {
             stopLoading = true;
         }
 
+        public synchronized boolean loadingStopped() {
+            return stopLoading;
+        }
+
         private void addElementLater(final KenaiProjectSearchInfo kenaiProjectSearchInfo) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     addElement(kenaiProjectSearchInfo);
+                    if (!itemSelected) {
+                        kenaiProjectsList.requestFocus();
+                        kenaiProjectsList.setSelectedIndex(0);
+                        itemSelected = true;
+                    }
                 }
             });
         }

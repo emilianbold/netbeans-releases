@@ -36,12 +36,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author joelle
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.OpenProjectsTrampoline.class)
+@ServiceProvider(service=OpenProjectsTrampoline.class)
 public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
     /** Property change listeners registered through API */
     private PropertyChangeSupport pchSupport;
@@ -58,7 +59,7 @@ public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
         return projects;
     }
 
-    public void openAPI(Project[] projects, boolean openRequiredProjects) {
+    public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
         Project[] oldProjects = getOpenProjectsAPI();
         for (Project project : projects) {
             openProjects.add(project);

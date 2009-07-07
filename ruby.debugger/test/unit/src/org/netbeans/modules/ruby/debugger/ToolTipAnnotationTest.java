@@ -41,24 +41,24 @@
 
 package org.netbeans.modules.ruby.debugger;
 
-import junit.framework.TestCase;
+import org.netbeans.modules.ruby.RubyTestBase;
+import org.openide.filesystems.FileObject;
 
-public class ToolTipAnnotationTest extends TestCase {
+public class ToolTipAnnotationTest extends RubyTestBase {
 
     public ToolTipAnnotationTest(String testName) {
         super(testName);
     }
 
     public void testGetExpressionToEvaluate() {
-        String line = "    @a1, @a1_gem = util_gem 'a', '1' do |s| s.executables << 'a_bin' end\n";
-        assertEquals("variable parsed", "@a1_gem", ToolTipAnnotation.getExpressionToEvaluate(line, 13));
-        String line2 = "while eof?\n";
-        assertEquals("question mark parsed", "eof?", ToolTipAnnotation.getExpressionToEvaluate(line2, 8));
+        FileObject fo = getTestFile("testfiles/tooltipevaluate.rb");
+        assertEquals("variable parsed", "@a1_gem", ToolTipAnnotation.getExpressionToEvaluate(fo, 13));
+        assertEquals("$global", ToolTipAnnotation.getExpressionToEvaluate(fo, 74));
+        assertNull(ToolTipAnnotation.getExpressionToEvaluate(fo, 104));
+        assertEquals("@var", ToolTipAnnotation.getExpressionToEvaluate(fo, 116));
+        assertEquals("var2", ToolTipAnnotation.getExpressionToEvaluate(fo, 126));
+        assertNull(ToolTipAnnotation.getExpressionToEvaluate(fo, 140));
     }
 
-    public void testIsRubyIdentifier() {
-        assertTrue("@ is identifier", ToolTipAnnotation.isRubyIdentifier('@'));
-        assertTrue("? is identifier", ToolTipAnnotation.isRubyIdentifier('?'));
-    }
 
 }

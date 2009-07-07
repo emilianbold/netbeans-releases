@@ -61,7 +61,9 @@ public class OneColumnClioParser implements CLIOParser {
         }
 
         public DataRow process(String line) {
-            DLightLogger.instance.fine(getClass().getSimpleName() + ": " + line); //NOI18N
+            if (DLightLogger.instance.isLoggable(Level.FINE)) {
+                DLightLogger.instance.fine(getClass().getSimpleName() + ": " + line); //NOI18N
+            }
             if (line == null) {
                 return null;
             }

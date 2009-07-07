@@ -107,24 +107,22 @@ public class HostInfoImpl implements HostInfo {
 
     private static Properties getLocalHostInfo() throws IOException {
         Properties hostInfo = new Properties();
+        boolean isWindows = Utilities.isWindows();
 
         try {
-            String shell = "sh"; // NOI18N
-
-            if (Utilities.isWindows()) {
-                shell = WindowsSupport.getInstance().getShell();
-            }
+            String shell = isWindows ? WindowsSupport.getInstance().getShell() : "sh"; // NOI18N
 
             ProcessBuilder pb = new ProcessBuilder(shell, // NOI18N
                     hostinfoScript.getAbsolutePath());
 
-            String tmpBase = System.getProperty("java.io.tmpdir"); // NOI18N
+            File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+            String tmpDirBase = tmpDirFile.getCanonicalPath();
 
-            if (Utilities.isWindows()) {
-                tmpBase = WindowsSupport.getInstance().convertToShellPath(tmpBase);
+            if (isWindows) {
+                tmpDirBase = WindowsSupport.getInstance().convertToShellPath(tmpDirBase);
             }
 
-            pb.environment().put("TMPBASE", tmpBase); // NOI18N
+            pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
             pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
 
             Process hostinfoProcess = pb.start();
@@ -157,9 +155,10 @@ public class HostInfoImpl implements HostInfo {
 
             hostInfo.load(hostinfoProcess.getInputStream());
 
-            if (Utilities.isWindows()) {
+            if (isWindows) {
                 hostInfo.setProperty("SH", shell); // NOI18N
             }
+
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IOException("HostInfo receiving for localhost interrupted " + ex); // NOI18N
@@ -279,6 +278,14 @@ public class HostInfoImpl implements HostInfo {
 
     public String getTempDir() {
         return tempDir;
+    }
+
+    public File getTempDirFile() {
+        if (getOSFamily() == OSFamily.WINDOWS) {
+            return new File(WindowsSupport.getInstance().convertToWindowsPath(tempDir));
+        } else {
+            return new File(tempDir);
+        }
     }
 
     public int getCpuNum() {

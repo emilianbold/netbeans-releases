@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
@@ -87,7 +86,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         if (workingDirectory != null) {
             workingDirectory = new File(workingDirectory).getAbsolutePath();
-            workingDirectory = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPath(workingDirectory);
         }
 
         final MacroMap env = info.getEnvVariables();
@@ -118,7 +116,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         ew.write(env);
 
         if (workingDirectory != null) {
-            processInput.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
+            processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
         }
 
         String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N

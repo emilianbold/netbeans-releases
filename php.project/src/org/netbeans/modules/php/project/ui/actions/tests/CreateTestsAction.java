@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.PhpUnitSupport;
@@ -208,7 +209,7 @@ public final class CreateTestsAction extends NodeAction {
             }
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            CommandUtils.processExecutionException(ex);
+            UiUtils.processExecutionException(ex);
         }
 
         if (!failed.isEmpty()) {

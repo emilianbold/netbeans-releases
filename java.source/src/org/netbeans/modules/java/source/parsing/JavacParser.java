@@ -553,7 +553,7 @@ public class JavacParser extends Parser {
                 currentPhase = Phase.UP_TO_DATE;
             }
         } catch (CouplingAbort a) {
-            TreeLoader.dumpCouplingAbort(a, currentInfo.jfo);
+            TreeLoader.dumpCouplingAbort(a, null);
             currentInfo.needsRestart = true;
             return currentPhase;            
         } catch (CancelAbort ca) {

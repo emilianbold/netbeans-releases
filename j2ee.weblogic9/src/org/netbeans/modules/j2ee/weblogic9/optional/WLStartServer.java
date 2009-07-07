@@ -220,13 +220,7 @@ public class WLStartServer extends StartServer {
      * @return if the server is local, its true, false otherwise
      */
     public boolean supportsStartDeploymentManager() {
-        // if the server is local we can start it
-        if (dm.getInstanceProperties().getProperty(
-                WLPluginProperties.IS_LOCAL_ATTR).equals("true")) {   // NOI18N
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
 
     /**

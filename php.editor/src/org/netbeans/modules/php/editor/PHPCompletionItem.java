@@ -58,6 +58,8 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -351,14 +353,25 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
-                builder.append(getName());
+                ElementHandle element = getElement();
+                if (element instanceof IndexedClass) {
+                    String namespaceName = ((IndexedClass) element).getNamespaceName();
+                    if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                        QualifiedName qn = QualifiedName.create(namespaceName);
+                        qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
+                        builder.append(qn.toString());
+
+                    } else {
+                        builder.append(getName());
+                    }
+                } else {
+                    builder.append(getName());
+                }
                 builder.append("::${cursor}"); //NOI18N
                 return builder.toString();
             }
             return super.getCustomInsertTemplate();
         }
-
-
     }
 
     public static ImageIcon getInterfaceIcon() {
@@ -382,6 +395,27 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
             return INTERFACE_ICON;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            ElementHandle element = getElement();
+            if (element instanceof IndexedInterface) {
+                String namespaceName = ((IndexedInterface) element).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    QualifiedName qn = QualifiedName.create(namespaceName);
+                    qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
+                    builder.append(qn.toString());
+
+                } else {
+                    builder.append(getName());
+                }
+            } else {
+                builder.append(getName());
+            }
+            return builder.toString();
+        }
+    
 
         @Override
         public ImageIcon getIcon() {
@@ -544,6 +578,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (getElement() instanceof IndexedFunction && getElement().getIn() != null) {
+                String namespaceName = ((IndexedFunction)getElement()).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    QualifiedName qn = QualifiedName.create(namespaceName);
+                    qn = qn.append(QualifiedName.createUnqualifiedName(getElement().getIn())).toFullyQualified();
+                    formatter.appendText(qn.toString());
+                    return formatter.getText();
+                }
+            } 
+            return super.getRhsHtml(formatter);
+        }
+
+
+        @Override
         public String getName() {
             String in = getElement().getIn();
             return (in != null) ? in : super.getName();
@@ -573,7 +622,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            template.append(getName());
+            ElementHandle element = getElement();
+            if (element instanceof IndexedFunction) {
+                String namespaceName = ((IndexedFunction)element).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    QualifiedName qn = QualifiedName.create(namespaceName);
+                    qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
+                    template.append(qn.toString());
+
+                } else {
+                    template.append(getName());
+                }
+            } else {
+                template.append(getName());
+            }
             template.append("("); //NOI18N
 
             List<String> params = getInsertParams();

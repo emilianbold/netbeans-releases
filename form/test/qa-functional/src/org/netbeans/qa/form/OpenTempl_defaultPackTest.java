@@ -50,7 +50,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -128,10 +128,10 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         npwo.selectProject("Java Application");
         npwo.next();
 
-        NewProjectNameLocationStepOperator tfo_name = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator tfo_name = new NewJavaProjectNameLocationStepOperator();
         tfo_name.txtProjectName().setText(DATA_PROJECT_NAME);
 
-        NewProjectNameLocationStepOperator tfo1_location = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator tfo1_location = new NewJavaProjectNameLocationStepOperator();
         tfo_name.txtLocation().setText(workdirpath);
         JButtonOperator bo = new JButtonOperator(npwo, "Finish");
         //bo.getSource().requestFocus();

@@ -67,7 +67,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         LOG.log(Level.FINE, "index({0})", context.getRootURI());
         try {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
-            cim.reserveWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
                     File cacheFolder = JavaIndex.getClassFolder(context.getRootURI());

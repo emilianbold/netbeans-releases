@@ -114,6 +114,8 @@ public class TreeList extends JList {
                         ActionListener al = node.getDefaultAction();
                         if( null != al )
                             al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
+                    } else if( null != node && node.isExpandable() ) {
+                        node.setExpanded(!node.isExpanded());
                     }
                 }
             }
