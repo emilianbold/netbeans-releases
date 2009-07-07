@@ -93,7 +93,8 @@ class ManagedBeanImpl extends PersistentObject  implements FacesManagedBean,
      */
     public boolean refresh( TypeElement type ) {
         Map<String, ? extends AnnotationMirror> types = 
-            getHelper().getAnnotationsByType(type.getAnnotationMirrors());
+            getHelper().getAnnotationsByType(getHelper().getCompilationController()
+                    .getElements().getAllAnnotationMirrors(type));
         AnnotationMirror annotationMirror = types.get(
                 "javax.faces.bean.ManagedBean");                         // NOI18N
         if (annotationMirror == null) {

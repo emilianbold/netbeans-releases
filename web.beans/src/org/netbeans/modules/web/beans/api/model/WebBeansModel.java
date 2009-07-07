@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.api.model;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -55,8 +56,8 @@ import org.openide.util.Lookup;
  */
 public final class WebBeansModel {
     
-    WebBeansModel( ModelUnit unit ){
-        myUnit = unit;
+    WebBeansModel( AbstractModelImplementation impl ){
+        myImpl = impl;
     }
 
     /**
@@ -64,11 +65,11 @@ public final class WebBeansModel {
      * @param element injection point
      * @return type that is used in injected point identified by <code>element</code>
      */
-    public TypeMirror getInjectable( VariableElement element ){
+    public Element getInjectable( VariableElement element ){
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectable(element, getModelUnit().getHelper());
+        return getProvider().getInjectable(element, getModelImplementation());
     }
     
     /**
@@ -83,11 +84,11 @@ public final class WebBeansModel {
      * @param element injection point
      * @return types that is used in injected point identified by <code>element</code>
      */
-    public List<TypeMirror> getInjectables( VariableElement element ){
+    public List<Element> getInjectables( VariableElement element ){
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectables(element, getModelUnit().getHelper());
+        return getProvider().getInjectables(element, getModelImplementation());
     }
     
     /**
@@ -101,16 +102,16 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().resolveType(fqn, getModelUnit().getHelper());
+        return getProvider().resolveType(fqn, getModelImplementation().getHelper());
     }
     
-    public ModelUnit getModelUnit(){
-        return myUnit;
+    public AbstractModelImplementation getModelImplementation(){
+        return myImpl;
     }
     
     private WebBeansModelProvider getProvider(){
         return Lookup.getDefault().lookup( WebBeansModelProvider.class);
     }
     
-    private ModelUnit myUnit;
+    private AbstractModelImplementation myImpl;
 }
