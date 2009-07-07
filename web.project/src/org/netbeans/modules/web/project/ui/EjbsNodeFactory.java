@@ -86,7 +86,7 @@ public class EjbsNodeFactory implements NodeFactory {
 
         public List<String> keys() {
             Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
-            if (profile == Profile.JAVA_EE_6_FULL){
+            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
                 return Collections.singletonList(KEY_EJBS);
             }else{
                 return Collections.EMPTY_LIST;
