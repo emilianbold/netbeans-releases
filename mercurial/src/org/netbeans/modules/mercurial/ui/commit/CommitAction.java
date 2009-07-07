@@ -136,14 +136,10 @@ public class CommitAction extends ContextAction {
         final CommitPanel panel = new CommitPanel();
         final List<HgHook> hooks = Mercurial.getInstance().getHooks();
 
-        panel.initHooks(hooks, new HgHookContext(ctx.getRootFiles().toArray( new File[ctx.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
+        panel.setHooks(hooks, new HgHookContext(ctx.getRootFiles().toArray( new File[ctx.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
 
         panel.setCommitTable(data);
-
-        JComponent component = data.getComponent();
-        panel.filesPanel.setLayout(new BorderLayout());
-        panel.filesPanel.add(component, BorderLayout.CENTER);
 
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
@@ -187,7 +183,7 @@ public class CommitAction extends ContextAction {
         if (dd.getValue() == commitButton) {
 
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
-            final String message = panel.messageTextArea.getText();
+            final String message = panel.getCommitMessage();
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
