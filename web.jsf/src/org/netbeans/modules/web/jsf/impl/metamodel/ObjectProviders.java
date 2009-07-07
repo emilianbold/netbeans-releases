@@ -409,7 +409,8 @@ class ObjectProviders {
 
         public List<T> createObjects(TypeElement type) {
             final List<T> result = new ArrayList<T>();
-            if (getHelper().hasAnnotation(type.getAnnotationMirrors(), 
+            if (getHelper().hasAnnotation(getHelper().getCompilationController().
+                    getElements().getAllAnnotationMirrors( type ), 
                     getAnnotationName())) 
             {
                 if ( checkType ( type )){

@@ -84,37 +84,6 @@ public class AnnotationScanner {
     }
     
     /**
-     * Finds all elements annotated with the given annotation including derived 
-     * types ( child types ) if annotation has @Inherited annotation. This methods gets
-     * the name of the searched annotation and an instance of the
-     * {@link ElementAnnotationHandler} interface which will be used to
-     * pass the found annotation elements back to the caller.
-     * <p>
-     * For finding annotated types {@link #TYPE_KINDS TYPE_KINDS} constant can be useful.
-     *
-     * @param  searchedTypeName the fully-qualified name of the annotation
-     *         to be searched for. Cannot be <code>null</code>.
-     * @param  kinds the set of kinds to be searched for.
-     *         Cannot be neither <code>null</code> nor empty.
-     * @param  handler a {@link ElementAnnotationHandler}. Its <code>elementAnnotation</code>
-     *         method will be invoked once for each element annotated with the annotation
-     *         passed in the <code>searchedTypeName</code> parameter, with
-     *         the <code>element</code> parameter set to the annotated element, and the
-     *         <code>annotation</code> parameter set to an {@link AnnotationMirror}
-     *         (of type <code>searchedTypeName</code>) which that type is annotated with.
-     *         Cannot be null.
-     * @throws InterruptedException when the search was interrupted (for 
-     *         example because {@link org.netbeans.api.java.source.ClassIndex#getElements}
-     *         was interrupted).
-     */
-    public void findAllAnnotations(final String searchedTypeName, 
-            Set<ElementKind> kinds, final AnnotationHandler handler) 
-                    throws InterruptedException 
-    {
-        findAnnotations(searchedTypeName, kinds, handler, true);
-    }
-    
-    /**
      * Finds all elements annotated with the given annotation. This methods gets
      * the name of the searched annotation and an instance of the
      * {@link ElementAnnotationHandler} interface which will be used to
@@ -141,7 +110,7 @@ public class AnnotationScanner {
             Set<ElementKind> kinds, final AnnotationHandler handler) 
             throws InterruptedException 
     {
-        findAnnotations(searchedTypeName, kinds, handler, true);
+        findAnnotations(searchedTypeName, kinds, handler, false);
     }
 
     /**
@@ -199,9 +168,9 @@ public class AnnotationScanner {
         nonTypeKinds.removeAll(TYPE_KINDS);
         Set<ElementKind> typeKinds = EnumSet.copyOf(kinds);
         typeKinds.retainAll(TYPE_KINDS);
-        boolean followDerived = includeDerived;
+        boolean followDerived = includeDerived || checkInheritance( searchedType );
         if ( followDerived ){
-            followDerived = typeKinds.size() >0 && checkInheritance( searchedType );
+            followDerived = typeKinds.size() >0 ;
         }
         for (ElementHandle<TypeElement> elementHandle : elementHandles) {
             LOGGER.log(Level.FINE, "found element {0}", elementHandle.getQualifiedName()); // NOI18N
