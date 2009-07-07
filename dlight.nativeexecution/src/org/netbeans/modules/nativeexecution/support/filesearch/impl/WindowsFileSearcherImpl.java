@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.support.filesearch.impl;
 
-import org.netbeans.modules.nativeexecution.support.filesearch.*;
-import org.netbeans.modules.nativeexecution.support.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -52,6 +50,8 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearcher;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
