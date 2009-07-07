@@ -675,6 +675,18 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * Unsuspends thread.
      */
     public void resume () {
+        boolean can = cleanBeforeResume();
+        if (can) {
+            try {
+                resumeAfterClean();
+                setAsResumed();
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+            } finally {
+                fireAfterResume();
+            }
+        }
+        /* Original code split among 4 methods:
         if (this == debugger.getCurrentThread()) {
             boolean can = debugger.currentThreadToBeResumed();
             if (!can) return ;
@@ -725,6 +737,101 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             pch.firePropertyChange(PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
+        }
+         */
+    }
+
+    private List<PropertyChangeEvent> resumeChangeEvents;
+
+    /**
+     * Acquires necessary locks and cleans the thread state before resume.
+     * This method is expected to be followed by {@link #resumeAfterClean()} and {@link #fireAfterResume()}.
+     * This method MUST be followed by {@link #fireAfterResume()} even if it fails with an exception or error
+     * @return <code>true</code> if caller can procceed with {@link #resumeAfterClean()},
+     *         <code>false</code> when the resume should be abandoned.
+     */
+    public boolean cleanBeforeResume() {
+        if (this == debugger.getCurrentThread()) {
+            boolean can = debugger.currentThreadToBeResumed();
+            if (!can) {
+                return false;
+            }
+        }
+        accessLock.writeLock().lock();
+        waitUntilMethodInvokeDone();
+        setReturnVariable(null); // Clear the return var on resume
+        setCurrentOperation(null);
+        currentBreakpoint = null;
+        if (!doKeepLastOperations) {
+            clearLastOperations();
+        }
+        cleanCachedFrames();
+        JPDABreakpoint brkp = null;
+        synchronized (stepBreakpointLock) {
+            if (stepSuspendedByBreakpoint != null) {
+                brkp = stepSuspendedByBreakpoint;
+                stepSuspendedByBreakpoint = null;
+            }
+        }
+        PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, PROP_SUSPENDED, true, false);
+        if (brkp != null) {
+            PropertyChangeEvent brkpEvt = new PropertyChangeEvent(this, PROP_STEP_SUSPENDED_BY_BREAKPOINT,
+                    brkp,
+                    null);
+            if (isSuspended()) {
+                resumeChangeEvents = Arrays.asList(new PropertyChangeEvent[] {brkpEvt, suspEvt});
+            } else {
+                resumeChangeEvents = Collections.singletonList(brkpEvt);
+            }
+        } else {
+            if (isSuspended()) {
+                resumeChangeEvents = Collections.singletonList(suspEvt);
+            } else {
+                resumeChangeEvents = Collections.emptyList();
+            }
+        }
+        return true;
+    }
+
+    public void resumeAfterClean() throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        logger.fine("Resuming thread "+threadName);
+        boolean resumed = false;
+        try {
+            int count = ThreadReferenceWrapper.suspendCount (threadReference);
+            while (count > 0) {
+                ThreadReferenceWrapper.resume (threadReference); count--;
+            }
+            resumed = true;
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thrown when thread has exited
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } finally {
+            if (!resumed) {
+                // Do not fire PROP_SUSPENDED when not resumed!
+                for (PropertyChangeEvent pchEvt : resumeChangeEvents) {
+                    if (PROP_SUSPENDED.equals(pchEvt.getPropertyName())) {
+                        resumeChangeEvents = new ArrayList<PropertyChangeEvent>(resumeChangeEvents);
+                        resumeChangeEvents.remove(pchEvt);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public void setAsResumed() {
+        suspendCount = 0;
+        //System.err.println("resume("+getName()+") suspended = false");
+        suspended = false;
+        methodInvokingDisabledUntilResumed = false;
+    }
+
+    public void fireAfterResume() {
+        List<PropertyChangeEvent> evts = resumeChangeEvents;
+        resumeChangeEvents = null;
+        accessLock.writeLock().unlock();
+        for (PropertyChangeEvent evt : evts) {
+            pch.firePropertyChange(evt);
         }
     }
     
