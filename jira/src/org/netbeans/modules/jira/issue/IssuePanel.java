@@ -370,8 +370,8 @@ public class IssuePanel extends javax.swing.JPanel {
             int originalEstimate = toInt(originalEstimateTxt);
             int remainintEstimate = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE));
             int timeSpent = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL));
-            if ((originalEstimate == 0) && (remainintEstimate + timeSpent > 0)) {
-                // originalEstimate is sometimes 0 (incorrectly)
+            if ((originalEstimateTxt.length() == 0) && (remainintEstimate + timeSpent > 0)) {
+                // originalEstimate is sometimes empty incorrectly
                 originalEstimate = remainintEstimate + timeSpent;
             }
             int daysPerWeek = issue.getRepository().getConfiguration().getWorkDaysPerWeek();
