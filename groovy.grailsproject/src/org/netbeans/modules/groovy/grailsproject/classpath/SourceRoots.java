@@ -71,6 +71,7 @@ public class SourceRoots {
     }
 
     public FileObject[] getRoots() {
+        // FIXME optimize this
         List<FileObject> result = new ArrayList<FileObject>();
         addGrailsSourceRoots(projectRoot, result);
 
