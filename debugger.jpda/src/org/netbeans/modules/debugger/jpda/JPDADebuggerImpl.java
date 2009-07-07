@@ -1568,8 +1568,29 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     } catch (ObjectCollectedException ocex) {
                         invalid = true;
                     }
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
+                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
-                if (invalid) {
+            }
+        }
+    }
+
+    public void notifySuspendAllNoFire() {
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                int status = ((JPDAThreadImpl) threadOrGroup).getState();
+                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                   status == JPDAThread.STATE_UNKNOWN ||
+                                   status == JPDAThread.STATE_ZOMBIE);
+                if (!invalid) {
+                    try {
+                        ((JPDAThreadImpl) threadOrGroup).notifySuspendedNoFire();
+                    } catch (ObjectCollectedException ocex) {
+                        invalid = true;
+                    }
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
                     threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
             }
@@ -1594,20 +1615,74 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return ;
         }
         setState (STATE_RUNNING);
-        notifyToBeResumedAll();
+        //notifyToBeResumedAll();
         VirtualMachine vm;
         synchronized (virtualMachineLock) {
             vm = virtualMachine;
         }
         if (vm != null) {
             logger.fine("VM resume");
+            List<JPDAThread> allThreads = getAllThreads();
             accessLock.writeLock().lock();
+            logger.finer("Debugger WRITE lock taken.");
+            // We must resume only threads which are regularly suspended.
+            // Otherwise we may unexpectedly resume threads which just hit an event!
+            
+            // However, this can not be done right without an atomic resume of a set of threads.
+            // Since this functionality is not available in the backend, we will
+            // call VirtualMachine.resume() if all threads are suspended
+            // (so that the model of of suspend all/resume all works correctly)
+            // and call ThreadReference.resume() on individual suspended threads
+            // (so that suspend of event thread together with continue works correctly).
+
+            // Other cases (some threads suspended and some running with events suspending all threads)
+            // will NOT WORK CORRECTLY. Because while resuming threads one at a time,
+            // if the first one hits an event which suspends all, other resumes will resume the
+            // suspended threads.
+            // But this looks like a reasonable trade-off considering the available functionality.
+
+            List<JPDAThreadImpl> threadsToResume = new ArrayList<JPDAThreadImpl>();
+            for (JPDAThread t : allThreads) {
+                if (t.isSuspended()) {
+                    threadsToResume.add((JPDAThreadImpl) t);
+                }
+            }
             try {
-                VirtualMachineWrapper.resume(vm);
+                for (int i = 0; i < threadsToResume.size(); i++) {
+                    JPDAThreadImpl t = threadsToResume.get(i);
+                    boolean can = t.cleanBeforeResume();
+                    if (!can) {
+                        threadsToResume.remove(i);
+                        i--;
+                    }
+                }
+                if (allThreads.size() == threadsToResume.size()) {
+                    // Resuming all
+                    VirtualMachineWrapper.resume(vm);
+                    for (JPDAThreadImpl t : threadsToResume) {
+                        t.setAsResumed();
+                    }
+                    logger.finer("All threads resumed.");
+                } else {
+                    for (JPDAThreadImpl t : threadsToResume) {
+                        t.resumeAfterClean();
+                        t.setAsResumed();
+                    }
+                }
             } catch (VMDisconnectedExceptionWrapper e) {
             } catch (InternalExceptionWrapper e) {
             } finally {
                 accessLock.writeLock().unlock();
+                logger.finer("Debugger WRITE lock released.");
+                for (JPDAThreadImpl t : threadsToResume) {
+                    try {
+                        t.fireAfterResume();
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable th) {
+                        Exceptions.printStackTrace(th);
+                    }
+                }
             }
         }
     }
@@ -1660,7 +1735,25 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                    status == JPDAThread.STATE_ZOMBIE);
                 if (!invalid) {
                     ((JPDAThreadImpl) threadOrGroup).notifyToBeResumed();
-                } else {
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
+                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
+                }
+            }
+        }
+    }
+
+    public void notifyToBeResumedAllNoFire() {
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                int status = ((JPDAThreadImpl) threadOrGroup).getState();
+                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                   status == JPDAThread.STATE_UNKNOWN ||
+                                   status == JPDAThread.STATE_ZOMBIE);
+                if (!invalid) {
+                    ((JPDAThreadImpl) threadOrGroup).notifyToBeResumedNoFire();
+                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
                     threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
             }
