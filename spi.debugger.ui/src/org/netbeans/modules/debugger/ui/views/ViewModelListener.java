@@ -60,6 +60,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -588,11 +589,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         //columnModels =          cp.lookup (viewPath, ColumnModel.class);
         //mm =                    cp.lookup (viewPath, Model.class);
 
-        treeModelFilters = excludeKnownFilters(treeModelFilters, treeModelsSet);
-        nodeModelFilters = excludeKnownFilters(nodeModelFilters, nodeModelsSet);
-        tableModelFilters = excludeKnownFilters(tableModelFilters, tableModelsSet);
-        nodeActionsProviderFilters = excludeKnownFilters(nodeActionsProviderFilters, actionModelsSet);
-
         List treeNodeModelsCompound = new ArrayList(11);
         treeNodeModelsCompound.add(treeModels);
         treeNodeModelsCompound.add(treeModelFilters);
@@ -611,17 +607,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         return treeNodeModel;
     }
 
-    private List excludeKnownFilters(List filters, Set knownFilters) {
-        List result = new ArrayList();
-        for (Object obj : filters) {
-            if (!knownFilters.contains(obj)) {
-                result.add(obj);
-                knownFilters.add(obj);
-            }
-        }
-        return result;
-    }
-
     // innerclasses .............................................................
 
     private static class UnionTreeModel implements TreeModel, ExtendedNodeModel,
@@ -631,6 +616,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         private Map<String, CompoundModel> compoundModelsByViewName;
         private List<CompoundModel> orderedModels; // order for getChildren()
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+        private final Map<Object, CompoundModel> objectModels = Collections.synchronizedMap(new WeakHashMap<Object, CompoundModel>());
 
         UnionTreeModel(Map<String, CompoundModel> treeModels, CompoundModel localsCompound) {
             this.compoundModelsByViewName = treeModels;
@@ -644,6 +630,13 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return ROOT;
         }
 
+        private String findViewName(CompoundModel model) {
+            for (String viewName : compoundModelsByViewName.keySet()) {
+                if (compoundModelsByViewName.get(viewName) == model) return viewName;
+            }
+            return null;
+        }
+
         public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
             if (parent == TreeModel.ROOT) {
                 List chList = new ArrayList();
@@ -654,6 +647,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                             // exclude HistoryNode
                             if (!"HistoryNode".equals(children[x].getClass().getSimpleName())) { // NOI18N [TODO]
                                 chList.add(children[x]);
+                                objectModels.put(children[x], model);
                             }
                         }
                     } catch (UnknownTypeException e) {
@@ -672,9 +666,23 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     return result;
                 }
             } else {
+                {
+                    CompoundModel model = objectModels.get(parent);
+                    if (model != null) {
+                        Object[] children = model.getChildren(parent, from, to);
+                        for (int x = 0; x < children.length; x++) {
+                            objectModels.put(children[x], model);
+                        }
+                        return children;
+                    }
+                }
                 for (CompoundModel model : compoundModels) {
                     try {
-                        return model.getChildren(parent, from, to);
+                        Object[] children = model.getChildren(parent, from, to);
+                        for (int x = 0; x < children.length; x++) {
+                            objectModels.put(children[x], model);
+                        }
+                        return children;
                     } catch (UnknownTypeException e) {
                     }
                 }
@@ -683,6 +691,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean isLeaf(Object node) throws UnknownTypeException {
+            {
+                TreeModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.isLeaf(node);
+                }
+            }
             boolean isLeaf = false;
             boolean recognized = false;
             for (TreeModel model : compoundModels) {
@@ -711,6 +725,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 }
                 return count;
             } else {
+                {
+                    CompoundModel model = objectModels.get(node);
+                    if (model != null) {
+                        return model.getChildrenCount(node);
+                    }
+                }
                 for (CompoundModel model : compoundModels) {
                     try {
                         return model.getChildrenCount(node);
@@ -773,6 +793,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean canRename(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.canRename(node);
+                }
+            }
             boolean canRename = false;
             for (CompoundModel model : compoundModels) {
                 try {
@@ -784,17 +810,29 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean canCopy(Object node) throws UnknownTypeException {
-            boolean copyRename = false;
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.canCopy(node);
+                }
+            }
+            boolean canCopy = false;
             for (CompoundModel model : compoundModels) {
                 try {
-                    copyRename |= model.canCopy(node);
+                    canCopy |= model.canCopy(node);
                 } catch (UnknownTypeException e) {
                 }
             }
-            return copyRename;
+            return canCopy;
         }
 
         public boolean canCut(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.canCut(node);
+                }
+            }
             boolean canCut = false;
             for (CompoundModel model : compoundModels) {
                 try {
@@ -806,6 +844,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.clipboardCopy(node);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.clipboardCopy(node);
@@ -816,6 +860,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.clipboardCut(node);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.clipboardCut(node);
@@ -826,6 +876,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.getPasteTypes(node, t);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.getPasteTypes(node, t);
@@ -836,6 +892,13 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void setName(Object node, String name) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    model.setName(node, name);
+                    return;
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     model.setName(node, name);
@@ -848,6 +911,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.getIconBaseWithExtension(node);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.getIconBaseWithExtension(node);
@@ -858,6 +927,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public String getDisplayName(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.getDisplayName(node);
+                }
+            }
             String result = null;
             for (CompoundModel model : compoundModels) {
                 try {
@@ -876,6 +951,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public String getIconBase(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.getIconBase(node);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.getIconBase(node);
@@ -886,6 +967,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public String getShortDescription(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.getShortDescription(node);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.getShortDescription(node);
@@ -896,6 +983,13 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void performDefaultAction(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    model.performDefaultAction(node);
+                    return ;
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     model.performDefaultAction(node);
@@ -907,6 +1001,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public Action[] getActions(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.getActions(node);
+                }
+            }
             boolean nodeRecognized = false;
             List<Action> actionsList = new ArrayList();
             for (CompoundModel model : compoundModels) {
@@ -941,6 +1041,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    String viewName = findViewName(model);
+                    String c = adjustColumn(viewName, columnID);
+                    return model.getValueAt(node, c);
+                }
+            }
             for (String viewName : compoundModelsByViewName.keySet()) {
                 CompoundModel model = compoundModelsByViewName.get(viewName);
                 String c = adjustColumn(viewName, columnID);
@@ -953,6 +1061,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    String viewName = findViewName(model);
+                    String c = adjustColumn(viewName, columnID);
+                    return model.isReadOnly(node, c);
+                }
+            }
             for (String viewName : compoundModelsByViewName.keySet()) {
                 CompoundModel model = compoundModelsByViewName.get(viewName);
                 String c = adjustColumn(viewName, columnID);
@@ -965,6 +1081,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    String viewName = findViewName(model);
+                    String c = adjustColumn(viewName, columnID);
+                    model.setValueAt(node, c, value);
+                    return;
+                }
+            }
             for (String viewName : compoundModelsByViewName.keySet()) {
                 CompoundModel model = compoundModelsByViewName.get(viewName);
                 String c = adjustColumn(viewName, columnID);
@@ -978,6 +1103,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean isExpanded(Object node) throws UnknownTypeException {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    return model.isExpanded(node);
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 try {
                     return model.isExpanded(node);
@@ -988,15 +1119,34 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void nodeExpanded(Object node) {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    model.nodeExpanded(node);
+                    return ;
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 model.nodeExpanded(node);
             }
         }
 
         public void nodeCollapsed(Object node) {
+            {
+                CompoundModel model = objectModels.get(node);
+                if (model != null) {
+                    model.nodeCollapsed(node);
+                    return ;
+                }
+            }
             for (CompoundModel model : compoundModels) {
                 model.nodeCollapsed(node);
             }
+        }
+
+        @Override
+        public String toString () {
+            return super.toString () + "\n" + compoundModelsByViewName.toString();
         }
 
     }
