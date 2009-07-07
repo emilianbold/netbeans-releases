@@ -197,6 +197,9 @@ class J2SEActionProvider implements ActionProvider {
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
 
+    /**Set of commands which need java model up to date*/
+    final Set<String> needJavaModelActions;
+
     /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
     private Set<String> dirty = null;
 
@@ -232,6 +235,13 @@ class J2SEActionProvider implements ActionProvider {
             COMMAND_DEBUG,
             COMMAND_DEBUG_SINGLE,
             COMMAND_DEBUG_STEP_INTO
+        ));
+
+        this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            COMMAND_DEBUG,            //debuger blocks during backgroun scan, todo fix debuger
+            COMMAND_DEBUG_SINGLE,     //debuger blocks during backgroun scan, todo fix debuger
+            COMMAND_DEBUG_STEP_INTO,  //debuger blocks during backgroun scan, todo fix debuger
+            JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
 
         this.updateHelper = updateHelper;
@@ -504,7 +514,7 @@ class J2SEActionProvider implements ActionProvider {
         };
         final Action action = new Action();
 
-        if (JavaProjectConstants.COMMAND_DEBUG_FIX.equals(command) || isCompileOnSaveEnabled) {
+        if (this.needJavaModelActions.contains(command) || isCompileOnSaveEnabled) {
             //Always have to run with java model
             ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command));   //NOI18N
         }
