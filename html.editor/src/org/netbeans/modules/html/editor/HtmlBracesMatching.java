@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
@@ -260,13 +261,35 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
         return ret[0];
     }
 
+    //release67_patch1 hotfix
+    private int[] remove_invalid_pairs(int[] match) {
+        List<Integer> pairs = new ArrayList<Integer>();
+        for(int i = 0; i < match.length;) {
+            int first = match[i++];
+            int second = match[i++];
+
+            if(first < 0 || second < 0 || first >= second) {
+                //invalid, ignore
+            } else {
+                pairs.add(first);
+                pairs.add(second);
+            }
+        }
+        int[] fixed = new int[pairs.size()];
+        for(int i = 0; i < pairs.size(); i++) {
+            fixed[i] = pairs.get(i);
+        }
+        return fixed;
+    }
+
     private int[] translate(int[] match, Result source) {
 
         int[] translation = new int[match.length];
         for (int i = 0; i < match.length; i++) {
             translation[i] = source.getSnapshot().getOriginalOffset(match[i]);
         }
-        return translation;
+        
+        return remove_invalid_pairs(translation);
     }
 
     //BracesMatcherFactory implementation
