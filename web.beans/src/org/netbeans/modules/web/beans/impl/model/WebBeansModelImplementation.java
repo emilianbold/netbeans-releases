@@ -41,11 +41,19 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.io.IOException;
-import java.util.concurrent.Future;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
+import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
@@ -59,8 +67,12 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 public class WebBeansModelImplementation extends AbstractModelImplementation 
     implements MetadataModelImplementation<WebBeansModel>
 {
+
     private WebBeansModelImplementation( ModelUnit unit ){
         super( unit );
+        myBindings = new HashMap<TypeElement, Set<Binding>>();
+        myAnnotatedTypes = new HashMap<String, Set<TypeElement>>();
+        myManagers = new HashMap<String, PersistentObjectManager<Binding>>();
     }
     
     public static MetadataModelImplementation<WebBeansModel> createMetaModel( 
@@ -102,5 +114,73 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
             }
         });
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getHelper()
+     */
+    @Override
+    protected AnnotationModelHelper getHelper() {
+        return super.getHelper();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getModel()
+     */
+    @Override
+    protected WebBeansModel getModel() {
+        return super.getModel();
+    }
+    
+    Map<TypeElement,Set<Binding>> getBindings(){
+        return myBindings;
+    }
+    
+    Map<String,Set<TypeElement>> getAnnotatedTypes(){
+        return myAnnotatedTypes;
+    }
+    
+    Map<String,PersistentObjectManager<Binding>> getManagers(){
+        return myManagers;
+    }
+    
+    PersistentObjectManager<Binding> getManager( String annotationFQN ){
+        PersistentObjectManager<Binding> result = getManagers().get(annotationFQN);
+        if ( result == null ) {
+            result  = getHelper().createPersistentObjectManager( 
+                    new AnnotationObjectProvider( getHelper(), annotationFQN));
+            getManagers().put(  annotationFQN , result);
+        }
+        return result;
+    }
+    
+    void addAnnotatedType( String annotationFQN, TypeElement element ){
+        Set<TypeElement> set = getAnnotatedTypes().get( annotationFQN );
+        if (set == null ){
+            set = new HashSet<TypeElement>();
+            getAnnotatedTypes().put( annotationFQN , set );
+        }
+        set.add(element);
+    }
+    
+    Set<TypeElement> getaddAnnotatedTypes( String annotationFQN){
+        return getaddAnnotatedTypes(annotationFQN);
+    }
+    
+    void addBinding( TypeElement element , Binding binding ){
+        Set<Binding> set = getBindings().get( element );
+        if ( set == null ){
+            set = new HashSet<Binding>();
+            getBindings().put( element ,  set);
+        }
+        set.add( binding );
+    }
+    
+    Set<Binding> getBindings(TypeElement element ){
+        return getBindings().get(element);
+    }
+    
+    private Map<TypeElement,Set<Binding>> myBindings;
+    private Map<String,Set<TypeElement>> myAnnotatedTypes;
+    private Map<String,PersistentObjectManager<Binding>> myManagers;
     
 }

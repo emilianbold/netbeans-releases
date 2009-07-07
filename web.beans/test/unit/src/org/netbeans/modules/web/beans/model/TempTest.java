@@ -44,10 +44,12 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleAnnotationValueVisitor6;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -71,20 +73,35 @@ public class TempTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
                 "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*;"+
                 "import java.lang.annotation.*; "+
                 "@BindingType " +
                 "@Retention(RUNTIME) "+
-                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+       
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "@Inherited "+
                 "public @interface CustomBinding  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*"+
                 "public class CustomClass  {" +
-                " @foo.CustomBinding int myField; "+
+                " @foo.CustomBinding Object myField = new Object(); "+
                 " void method( Object param ){}"+
                 "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "@foo.CustomBinding " +
+                "public class One  {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "public class Two  extends One {}" );
         
         createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 

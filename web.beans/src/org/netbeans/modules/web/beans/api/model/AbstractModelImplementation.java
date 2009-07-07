@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.util.Set;
+
+import javax.lang.model.element.TypeElement;
+
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 
 
@@ -51,7 +55,7 @@ public abstract class AbstractModelImplementation {
     
     protected AbstractModelImplementation( ModelUnit unit ){
         myUnit = unit;
-        myModel = new WebBeansModel(unit);
+        myModel = new WebBeansModel( this );
     }
 
     protected AnnotationModelHelper getHelper(){

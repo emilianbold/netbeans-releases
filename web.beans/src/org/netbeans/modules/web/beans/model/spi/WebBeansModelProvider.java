@@ -42,10 +42,12 @@ package org.netbeans.modules.web.beans.model.spi;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 
 
 /**
@@ -54,10 +56,11 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
  */
 public interface WebBeansModelProvider {
 
-    TypeMirror getInjectable( VariableElement element , AnnotationModelHelper helper );
+    Element getInjectable( VariableElement element , 
+            AbstractModelImplementation modelImpl );
     
-    List<TypeMirror> getInjectables( VariableElement element , 
-            AnnotationModelHelper helper  );
+    List<Element> getInjectables( VariableElement element , 
+            AbstractModelImplementation modelImpl  );
     
     TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
 }
