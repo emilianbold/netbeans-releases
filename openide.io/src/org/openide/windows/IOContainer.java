@@ -146,7 +146,7 @@ public final class IOContainer {
      * @see CallBacks
      */
     public void add(JComponent comp, CallBacks cb) {
-        log("requestVisible()", comp, cb);
+        log("add()", comp, cb);
         provider.add(comp, cb);
     }
 
