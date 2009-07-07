@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.sync;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -223,7 +224,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         }
 
         public DataRow process(String line) {
-            DLightLogger.instance.fine("SyncCLIOParser: " + line); //NOI18N
+            if (DLightLogger.instance.isLoggable(Level.FINE)) {
+                DLightLogger.instance.fine("SyncCLIOParser: " + line); //NOI18N
+            }
 
             /*----- Below is an example of output: -------------------------
             PID USERNAME USR SYS TRP TFL DFL LCK SLP LAT VCX ICX SCL SIG PROCESS/NLWP
