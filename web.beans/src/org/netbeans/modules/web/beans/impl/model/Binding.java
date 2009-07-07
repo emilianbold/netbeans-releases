@@ -38,68 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.impl.metamodel;
+package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Map;
-
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.web.jsf.api.metamodel.Component;
 
 
 /**
  * @author ads
  *
  */
-class ComponentImpl extends PersistentObject implements Component,  Refreshable {
+class Binding extends PersistentObject {
 
-    ComponentImpl( AnnotationModelHelper helper, TypeElement typeElement )
+    Binding( AnnotationModelHelper helper, TypeElement typeElement, 
+            String annotation ) 
     {
         super(helper, typeElement);
-        boolean valid = refresh(typeElement);
-        assert valid;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentClass()
-     */
-    public String getComponentClass() {
-        return myClass;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Component#getComponentType()
-     */
-    public String getComponentType() {
-        return myType;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.impl.metamodel.Refreshable#refresh(javax.lang.model.element.TypeElement)
-     */
-    public boolean refresh( TypeElement type ) {
-        Map<String, ? extends AnnotationMirror> types = 
-            getHelper().getAnnotationsByType(getHelper().
-                    getCompilationController().getElements().getAllAnnotationMirrors(type));
-        AnnotationMirror annotationMirror = types.get(
-                "javax.faces.component.FacesComponent");          // NOI18N
-        if (annotationMirror == null) {
-            return false;
-        }
-        AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString( "value", null );                     // NOI18N
-        ParseResult parseResult = parser.parse(annotationMirror);
-        myType = parseResult.get( "value" , String.class );       // NOI18N
-        myClass = type.getQualifiedName().toString();
-        return true;
+        myAnnotation = annotation;
+        refresh( typeElement);
     }
     
-    private String myType;
-    private String myClass;
+    String getAnnotationName(){
+        return myAnnotation;
+    }
+    
+    TypeElement getType(){
+        return myTypeElement;
+    }
+
+    boolean refresh( TypeElement type ) {
+        myTypeElement = type;
+        // TODO : check presence of annotation at least. One should care about
+        // inherited annotations and @Specialize annotaiton presence as well. 
+        return false;
+    }
+    
+    private String myAnnotation;
+    private TypeElement myTypeElement;
 
 }
