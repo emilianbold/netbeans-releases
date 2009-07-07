@@ -676,6 +676,9 @@ public class ProjectFactorySupport {
                 continue;
             }
             FileObject fo = FileUtil.toFileObject(sourceRootFile);
+            if (fo == null) { // #148256
+                continue;
+            }
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
                 for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
