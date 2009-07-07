@@ -74,26 +74,31 @@ public class J2eeProjectCapabilitiesTest extends NbTestCase {
         assertTrue(cap.isEjb30Supported());
         assertFalse(cap.isEjb31Supported());
         assertFalse(cap.isEjb31LiteSupported());
+
         p = createProject(Profile.JAVA_EE_6_FULL, Type.EJB);
         cap = J2eeProjectCapabilities.forProject(p);
         assertTrue(cap.isEjb30Supported());
         assertTrue(cap.isEjb31Supported());
         assertTrue(cap.isEjb31LiteSupported());
+
         p = createProject(Profile.JAVA_EE_6_WEB, Type.EJB);
         cap = J2eeProjectCapabilities.forProject(p);
         assertFalse(cap.isEjb30Supported());
         assertFalse(cap.isEjb31Supported());
-        assertTrue(cap.isEjb31LiteSupported());
+        assertFalse(cap.isEjb31LiteSupported());
+
         p = createProject(Profile.JAVA_EE_6_WEB, Type.WAR);
         cap = J2eeProjectCapabilities.forProject(p);
         assertFalse(cap.isEjb30Supported());
         assertFalse(cap.isEjb31Supported());
         assertTrue(cap.isEjb31LiteSupported());
+
         p = createProject(Profile.JAVA_EE_6_FULL, Type.WAR);
         cap = J2eeProjectCapabilities.forProject(p);
         assertFalse(cap.isEjb30Supported());
-        assertFalse(cap.isEjb31Supported());
+        assertTrue(cap.isEjb31Supported());
         assertTrue(cap.isEjb31LiteSupported());
+
         p = createProject(Profile.JAVA_EE_5, Type.WAR);
         cap = J2eeProjectCapabilities.forProject(p);
         assertFalse(cap.isEjb30Supported());
