@@ -220,8 +220,6 @@
           <Properties>
             <Property name="alignmentX" type="float" value="0.2"/>
             <Property name="alignmentY" type="float" value="0.2"/>
-            <Property name="doubleBuffered" type="boolean" value="false"/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">

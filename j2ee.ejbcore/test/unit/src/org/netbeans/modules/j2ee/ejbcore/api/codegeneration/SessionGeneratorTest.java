@@ -195,5 +195,68 @@ public class SessionGeneratorTest extends TestBase {
                 );
         assertNull(packageFileObject.getFileObject("TestStatefulLocal.java"));
     }
-    
+
+    public void testGenerateJavaEE60() throws IOException {
+        TestModule testModule = createEjb31Module();
+        FileObject sourceRoot = testModule.getSources()[0];
+        FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE60");
+        if (packageFileObject != null) {
+            packageFileObject.delete();
+        }
+        packageFileObject = sourceRoot.createFolder("testGenerateJavaEE60");
+
+        // Stateless EJB in Java EE 6.0 defined in annotations
+
+        SessionGenerator sessionGenerator = new SessionGenerator("TestStateless", packageFileObject, true, true, Session.SESSION_TYPE_STATELESS, true, false, false, true);
+        sessionGenerator.generate();
+
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessBean.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStatelessBean.java"),
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessLocal.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStatelessLocal.java"),
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatelessRemote.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStatelessRemote.java"),
+                FileUtil.toFile(packageFileObject)
+                );
+
+        // Stateful EJB in Java EE 6.0 defined in annotations
+
+        sessionGenerator = new SessionGenerator("TestStateful", packageFileObject, true, false, Session.SESSION_TYPE_STATEFUL, true, false, false, true);
+        sessionGenerator.generate();
+
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatefulBean.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStatefulBean.java"),
+                FileUtil.toFile(packageFileObject)
+                );
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestStatefulRemote.java")),
+                getGoldenFile("testGenerateJavaEE60/TestStatefulRemote.java"),
+                FileUtil.toFile(packageFileObject)
+                );
+
+        assertNull(packageFileObject.getFileObject("TestStatefulLocal.java"));
+
+        // Singleton EJB in Java EE 6.0 defined in annotations
+
+        sessionGenerator = new SessionGenerator("TestSingleton", packageFileObject, false, false, Session.SESSION_TYPE_SINGLETON, true, false, false, true);
+        sessionGenerator.generate();
+
+        assertFile(
+                FileUtil.toFile(packageFileObject.getFileObject("TestSingletonBean.java")),
+                getGoldenFile("testGenerateJavaEE60/TestSingletonBean.java"),
+                FileUtil.toFile(packageFileObject)
+                );
+        assertNull(packageFileObject.getFileObject("TestSingletonLocal.java"));
+        assertNull(packageFileObject.getFileObject("TestSingletonRemote.java"));
+
+    }
+
 }

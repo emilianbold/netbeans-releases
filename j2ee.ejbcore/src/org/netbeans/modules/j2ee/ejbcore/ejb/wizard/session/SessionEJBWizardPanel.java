@@ -64,9 +64,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         this.project = project;
         initComponents();
 
-        if (!J2eeProjectCapabilities.forProject(project).isEjb31Supported()){
+        if (!J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported()){
             singletonButton.setVisible(false);
             singletonButton.setEnabled(false);
+            localCheckBox.setSelected(true);
         }
 
         localCheckBox.addActionListener(new ActionListener() {
@@ -153,7 +154,6 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         remoteCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Remote")); // NOI18N
 
         localCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Local").charAt(0));
-        localCheckBox.setSelected(true);
         localCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Local")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

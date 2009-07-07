@@ -105,6 +105,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
@@ -1400,7 +1401,7 @@ public final class WebProject implements Project, AntProjectListener {
                 }
 
                 Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
-                isEE6 = profile == Profile.JAVA_EE_6_FULL;
+                isEE6 = (profile == Profile.JAVA_EE_6_FULL) || (profile == Profile.JAVA_EE_6_WEB);
                 isEE5 = profile == Profile.JAVA_EE_5;
                 
                 checked = true;
@@ -2061,7 +2062,7 @@ public final class WebProject implements Project, AntProjectListener {
 
         private void updateLookup(){
             Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
-            if (Profile.JAVA_EE_6_FULL.equals(profile)){
+            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
                 setLookups(base, ee6);
             }else{
                 setLookups(base);

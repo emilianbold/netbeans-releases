@@ -257,7 +257,7 @@ public class Utils {
     }
 
     public static boolean isEE6WebProject(Project enterpriseProject) {
-        return J2eeProjectCapabilities.forProject(enterpriseProject).isEjb31Supported();
+        return J2eeProjectCapabilities.forProject(enterpriseProject).isEjb31LiteSupported();
     }
     
     public static boolean isAppClient(Project project) {
