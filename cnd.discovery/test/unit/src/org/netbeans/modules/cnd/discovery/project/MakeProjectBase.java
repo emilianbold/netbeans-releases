@@ -190,7 +190,7 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
                     } else if ("path".equals(name)) {
                         return path;
                     } else if ("configureName".equals(name)) {
-                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
+                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
                             // run configure only once
                             return null;
