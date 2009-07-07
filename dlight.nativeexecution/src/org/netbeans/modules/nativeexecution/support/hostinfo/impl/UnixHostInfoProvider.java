@@ -57,6 +57,7 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
@@ -70,7 +71,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
 
     static {
-        InstalledFileLocator fl = InstalledFileLocator.getDefault();
+        InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", null, false); // NOI18N
 
         if (hostinfoScript == null) {
