@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.editor.completion;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 
@@ -71,7 +72,24 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         this.component = component;
     }
     
-    public void paintComponent(Graphics g) {
+    public @Override void paint(Graphics g) {
+        Object value = (Map) (Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+        Map renderingHints = (value instanceof Map) ? (java.util.Map) value : null;
+        if (renderingHints != null && g instanceof Graphics2D) {
+            Graphics2D g2d = (Graphics2D) g;
+            RenderingHints oldHints = g2d.getRenderingHints();
+            g2d.setRenderingHints(renderingHints);
+            try {
+                super.paint(g2d);
+            } finally {
+                g2d.setRenderingHints(oldHints);
+            }
+        } else {
+            super.paint(g);
+        }
+    }
+
+    public @Override void paintComponent(Graphics g) {
         // clear background
         g.setColor(getBackground());
         Rectangle r = g.getClipBounds();
@@ -144,7 +162,7 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         return getFontMetrics(font).stringWidth(s);
     }
 
-    public void setFont(Font font) {
+    public @Override void setFont(Font font) {
         super.setFont(font);
         fontMetrics = this.getFontMetrics(font);
         fontHeight = fontMetrics.getHeight();
@@ -157,7 +175,7 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         return drawFont;
     }
 
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         draw(null);
         Insets i = getInsets();
         if (i != null) {
