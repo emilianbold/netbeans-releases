@@ -97,6 +97,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -123,18 +124,23 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
 
@@ -1357,7 +1363,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract Object showDialogAndGetValue(DialogDescriptor dd);
         protected abstract void closeDialog();
         protected abstract void alterMessage(DialogDescriptor dd);
-        protected abstract boolean viewData();
+        protected abstract void viewData();
         protected abstract void assignInternalURL(URL u);
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL, boolean inIDE);
@@ -1644,16 +1650,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
-                if (viewData() && (e.getSource() instanceof AbstractButton)) {
-                    AbstractButton abut = (AbstractButton)e.getSource();
-                    String alt = (String) abut.getClientProperty("alt"); // NOI18N
-                    if (alt != null) {
-                        String now = (String)abut.getClientProperty("now"); // NOI18N
-                        Mnemonics.setLocalizedText(abut, alt);
-                        abut.putClientProperty("alt", now); // NOI18N
-                        abut.putClientProperty("now", alt); // NOI18N
-                    }
-                }
+                viewData();
                 return;
             }
 
@@ -1908,7 +1905,7 @@ public class Installer extends ModuleInstall implements Runnable {
             d = null;
         }
 
-        protected boolean  viewData() {
+        protected void viewData() {
             if (panel == null) {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
@@ -1944,12 +1941,43 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 viewDD = new DialogDescriptor(tabs, NbBundle.getMessage(Installer.class, "VIEW_DATA_TILTE"));
             }
-            viewDD.setModal(true);
-            viewDD.setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION  });
+            viewDD.setModal(false);
+            Object[] closingOption = new Object[] { DialogDescriptor.CANCEL_OPTION  };
+            viewDD.setOptions(closingOption);
+            viewDD.setClosingOptions(closingOption);
+            if (slownData != null){
+                JButton slownButton = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(slownButton, 
+                        NbBundle.getMessage(Installer.class, "SubmitPanel.profileData.text"));
+                slownButton.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        showProfilerSnapshot(e);
+                    }
+                });
+                viewDD.setAdditionalOptions(new Object[]{slownButton});
+            }
             Dialog view = DialogDisplayer.getDefault().createDialog(viewDD);
             view.setVisible(true);
-            return false;
         }
+
+        private void showProfilerSnapshot(ActionEvent e){
+             try {
+                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("slow.nps");
+                OutputStream os = fo.getOutputStream();
+                os.write(slownData.getNpsContent());
+                os.close();
+                final Node obj = DataObject.find(fo).getNodeDelegate();
+                Action a = obj.getPreferredAction();
+                if (a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(obj));
+                }
+                 a.actionPerformed(e);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         protected void assignInternalURL(URL u) {
             if (browser != null) {
                 try {
@@ -2069,9 +2097,8 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void closeDialog() {
         }
 
-        protected boolean viewData() {
+        protected void viewData() {
             assert false;
-            return false;
         }
         protected synchronized void assignInternalURL(URL u) {
             urlComputed = true;

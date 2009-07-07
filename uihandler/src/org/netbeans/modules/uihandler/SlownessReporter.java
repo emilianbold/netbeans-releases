@@ -44,8 +44,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -53,7 +51,6 @@ import java.util.Queue;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -62,65 +59,58 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-
 
 /**
  *
  * @author Jindrich Sedek
  */
 class SlownessReporter {
+
     private final Queue<NotifySnapshot> pending;
     private static final String UI_ACTION_BUTTON_PRESS = "UI_ACTION_BUTTON_PRESS";  //NOI18N
     private static final String UI_ACTION_EDITOR = "UI_ACTION_EDITOR";  //NOI18N
     private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     static final long LATEST_ACTION_LIMIT = 1000;//ms
-    
+
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
     }
 
-    private String getParam(LogRecord rec, int index){
-        if (rec.getParameters() != null && rec.getParameters().length > index){
+    private String getParam(LogRecord rec, int index) {
+        if (rec.getParameters() != null && rec.getParameters().length > index) {
             return rec.getParameters()[index].toString();
-        }else{
+        } else {
             assert rec.getParameters() != null;
             assert rec.getParameters().length > index : Integer.toString(rec.getParameters().length);
         }
         return null;
     }
 
-    String getLatestAction(List<LogRecord> recs, byte[] nps, long time){
+    String getLatestAction(List<LogRecord> recs, byte[] nps, long time) {
         long now = System.currentTimeMillis();
         ListIterator<LogRecord> it = recs.listIterator(recs.size());
         String latestActionClassName = null;
-        while (it.hasPrevious()){
+        while (it.hasPrevious()) {
             LogRecord rec = it.previous();
-            if (Installer.IDE_STARTUP.equals(rec.getMessage())){
+            if (Installer.IDE_STARTUP.equals(rec.getMessage())) {
                 latestActionClassName = NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP");
-            } else if (now - rec.getMillis() - time  > LATEST_ACTION_LIMIT){
+            } else if (now - rec.getMillis() - time > LATEST_ACTION_LIMIT) {
                 break;
             }
             if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
-                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage()))){
+                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage()))) {
                 latestActionClassName = getParam(rec, 4);
-            } else if (UI_ACTION_KEY_PRESS.equals(rec.getMessage())){
+            } else if (UI_ACTION_KEY_PRESS.equals(rec.getMessage())) {
                 latestActionClassName = getParam(rec, 2);
             }
-            if (latestActionClassName != null){
+            if (latestActionClassName != null) {
                 latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N
-                Pattern p  = Pattern.compile(DELEGATE_PATTERN);
+                Pattern p = Pattern.compile(DELEGATE_PATTERN);
                 Matcher m = p.matcher(latestActionClassName);
-                if (m.find()){
+                if (m.find()) {
                     String delegate = m.group();
                     latestActionClassName = delegate.substring(9, delegate.length() - 1);
                 }
@@ -129,8 +119,8 @@ class SlownessReporter {
         }
         return latestActionClassName;
     }
-    
-    void notifySlowness(List<LogRecord> recs, byte[] nps, long time){
+
+    void notifySlowness(List<LogRecord> recs, byte[] nps, long time) {
         String latestActionName = getLatestAction(recs, nps, time);
         pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionName)));
         if (pending.size() > 5) {
@@ -139,6 +129,7 @@ class SlownessReporter {
     }
 
     private static final class NotifySnapshot implements ActionListener, Runnable {
+
         private final Notification note;
         private final SlownessData data;
 
@@ -152,42 +143,23 @@ class SlownessReporter {
         }
 
         public void actionPerformed(ActionEvent e) {
-            try {
-                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("slow.nps");
-                OutputStream os = fo.getOutputStream();
-                os.write(data.getNpsContent());
-                os.close();
-                final Node obj = DataObject.find(fo).getNodeDelegate();
-                Action a = obj.getPreferredAction();
-                if (a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(obj));
-                }
-                a.actionPerformed(e);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            Installer.RP.post(NotifySnapshot.this);
         }
 
         public void clear() {
             note.clear();
         }
 
-        private JComponent createPanel(){
+        private JComponent createPanel() {
             JPanel result = new JPanel();
             result.setOpaque(false);
             result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
             result.add(new JLabel(NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", data.getTime(), data.getTime() / 1000)));
-            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_SeeSnapshot"), this));
-            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_Report"), new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    Installer.RP.post(NotifySnapshot.this);
-                }
-            }));
+            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_Report")));
             return result;
         }
 
-        private JButton createDetails(String text, ActionListener action ) {
+        private JButton createDetails(String text) {
             text = "<html><u>" + text; //NOI18N
             JButton btn = new JButton(text);
             btn.setFocusable(false);
@@ -196,7 +168,7 @@ class SlownessReporter {
             btn.setFocusPainted(false);
             btn.setOpaque(false);
             btn.setContentAreaFilled(false);
-            btn.addActionListener(action);
+            btn.addActionListener(this);
             btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             btn.setForeground(Color.blue);
             return btn;
@@ -206,5 +178,4 @@ class SlownessReporter {
             Installer.displaySummary("ERROR_URL", true, false, true, data); // NOI18N
         }
     }
-
 }
