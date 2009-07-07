@@ -61,6 +61,8 @@ import javax.swing.text.Document;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -141,7 +143,13 @@ public final class CreateTestsAction extends NodeAction {
 
         RUNNABLES.add(new Runnable() {
             public void run() {
-                generateTests(activatedNodes, phpUnit, phpProject);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
+                handle.start();
+                try {
+                    generateTests(activatedNodes, phpUnit, phpProject);
+                } finally {
+                    handle.finish();
+                }
             }
         });
         TASK.schedule(0);
