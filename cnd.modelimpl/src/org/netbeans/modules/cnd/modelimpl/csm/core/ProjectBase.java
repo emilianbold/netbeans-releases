@@ -2100,10 +2100,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final void fixFakeRegistration(boolean libsAlreadyParsed){
-        final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
-        CountDownLatch countDownLatch = new CountDownLatch(files.size());
-        for (CsmUID<CsmFile> file : files) {
-            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, file, libsAlreadyParsed);
+        Collection<CsmUID<CsmFile>> files = getAllFilesUID();
+        int size = files.size();
+        int threads = CndUtils.getNumberCndWorkerThreads()*3;
+        CountDownLatch countDownLatch = new CountDownLatch(threads);
+        int chank = (size/threads) + 1;
+        Iterator<CsmUID<CsmFile>> it = files.iterator();
+        for (int i = 0; i < threads; i++) {
+            ArrayList<CsmUID<CsmFile>> list = new ArrayList<CsmUID<CsmFile>>(chank);
+            for(int j = 0; j < chank; j++) {
+                if (it.hasNext()) {
+                    list.add(it.next());
+                } else {
+                    break;
+                }
+            }
+            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed);
             PROJECT_FILES_WORKER.post(r);
         }
         try {
@@ -2828,28 +2840,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private class FixRegistrationRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
-        private final CsmUID<CsmFile> file;
+        private final List<CsmUID<CsmFile>> files;
         private final boolean libsAlreadyParsed;
 
-        private FixRegistrationRunnable(CountDownLatch countDownLatch, CsmUID<CsmFile> file, boolean libsAlreadyParsed){
+        private FixRegistrationRunnable(CountDownLatch countDownLatch, List<CsmUID<CsmFile>> files, boolean libsAlreadyParsed){
             this.countDownLatch = countDownLatch;
-            this.file = file;
+            this.files = files;
             this.libsAlreadyParsed = libsAlreadyParsed;
         }
         public void run() {
             try {
-                if (file == null){
-                    return;
+                for(CsmUID<CsmFile> file : files) {
+                    if (file == null){
+                        return;
+                    }
+                    FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
+                    CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file); // NOI18N
+                    // situation is possible for standalone files which were already replaced
+                    // by real files
+                    if (impl == null) {
+                        return;
+                    }
+                    Thread.currentThread().setName("Fix registration "+file); // NOI18N
+                    impl.onProjectParseFinished(libsAlreadyParsed);
                 }
-                FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
-                CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file); // NOI18N
-                // situation is possible for standalone files which were already replaced
-                // by real files
-                if (impl == null) {
-                    return;
-                }
-                Thread.currentThread().setName("Fix registration "+file); // NOI18N
-                impl.onProjectParseFinished(libsAlreadyParsed);
             } finally {
                 countDownLatch.countDown();
             }
