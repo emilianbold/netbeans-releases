@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
@@ -58,40 +59,60 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 public final class J2eeProjectCapabilities {
 
     private final J2eeModuleProvider provider;
+    private final Profile ejbJarProfile;
 
-    private J2eeProjectCapabilities(J2eeModuleProvider provider) {
+    private J2eeProjectCapabilities(J2eeModuleProvider provider, Profile ejbJarProfile) {
         this.provider = provider;
+        this.ejbJarProfile = ejbJarProfile;
     }
 
     @CheckForNull
     public static J2eeProjectCapabilities forProject(Project project) {
+        EjbJar[] ejbJars = EjbJar.getEjbJars(project);
+        Profile ejbJarProfile = null;
+        if (ejbJars.length > 0) {
+            // just use first one to test profile:
+            ejbJarProfile =  ejbJars[0].getJ2eeProfile();
+        }
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
             return null;
         }
-        return new J2eeProjectCapabilities(provider);
+        return new J2eeProjectCapabilities(provider, ejbJarProfile);
     }
 
+    /**
+     * EJB 3.0 functionality is supported in EjbJar project which is targetting
+     * JEE5 platform.
+     */
     public boolean isEjb30Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        String version = provider.getJ2eeModule().getModuleVersion();
-        return J2eeModule.Type.EJB.equals(moduleType) && version.startsWith("3.0"); // NOI18N
+        boolean ee5 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_5);
+        return J2eeModule.Type.EJB.equals(moduleType) && ee5;
     }
 
+    /**
+     * EJB 3.1 functionality is supported in EjbJar project which is targetting
+     * full JEE6 platform.
+     */
     public boolean isEjb31Supported() {
-        return isEjb31FullSupported() || isEjb31LiteSupported();
-    }
-
-    public boolean isEjb31FullSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        String version = provider.getJ2eeModule().getModuleVersion();
-        return J2eeModule.Type.EJB.equals(moduleType) && version.startsWith("3.1"); // NOI18N
+        boolean ee6 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_FULL);
+        return J2eeModule.Type.EJB.equals(moduleType) && ee6;
     }
 
+    /**
+     * EJB 3.1 Lite functionality is supported in #1) EjbJar project which is targetting
+     * full JEE6 platform or JEE6 web profile and in #2) Web project targetting full JEE6
+     * or JEE6 web profile.
+     */
     public boolean isEjb31LiteSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        String version = provider.getJ2eeModule().getModuleVersion();
-        return J2eeModule.Type.WAR.equals(moduleType) && version.startsWith("3.0"); // NOI18N
+        boolean ee6 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_FULL);
+        boolean ee6Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_WEB);
+        return isEjb31Supported() || 
+                (J2eeModule.Type.WAR.equals(moduleType) && (ee6 || ee6Web)) ||
+                (J2eeModule.Type.EJB.equals(moduleType) && ee6Web);
     }
 
     public boolean hasDefaultPersistenceProvider() {
