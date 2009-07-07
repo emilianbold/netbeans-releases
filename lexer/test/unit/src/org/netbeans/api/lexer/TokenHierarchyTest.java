@@ -212,7 +212,8 @@ public class TokenHierarchyTest extends NbTestCase {
         List<TokenSequence<?>> ets4 = hi.embeddedTokenSequences(0, true);
         assertEquals("Wrong number of embedded TokenSequences", 0, ets4.size());
 
-        List<TokenSequence<?>> ets5 = hi.embeddedTokenSequences(doc.getLength(), false);
+        // Lexer works over char sequence DocumentUtilities.getText(doc) which is doc.getLength()+1 long
+        List<TokenSequence<?>> ets5 = hi.embeddedTokenSequences(doc.getLength()+1, false);
         assertEquals("Wrong number of embedded TokenSequences", 0, ets5.size());
     }
 

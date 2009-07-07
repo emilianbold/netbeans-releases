@@ -99,7 +99,7 @@ public class JoinSectionsMod2Test extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "a(x)b(y)c", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "a(x)b(y)c\n", -1);
         assertFalse(ts.moveNext());
             TokenSequence<?> ts1 = ts.embedded();
             assertTrue(ts1.moveNext());
@@ -122,7 +122,7 @@ public class JoinSectionsMod2Test extends NbTestCase {
                 LexerTestUtilities.assertTokenEquals(ts3, TestPlainTokenId.WORD, "y", -1);
                 assertFalse(ts3.moveNext());
             assertTrue(ts1.moveNext());
-            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "c", -1);
+            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "c\n", -1);
             assertTrue(ts1.movePrevious());
 
             // Operation on ts2 should not be possible
@@ -145,7 +145,7 @@ public class JoinSectionsMod2Test extends NbTestCase {
         LanguagePath embLP = LanguagePath.get(TestJoinTopTokenId.language()).
                 embedded(TestJoinTextTokenId.inPercentsLanguage);
         List<TokenSequence<?>> tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(0, tsList.size());
+        assertEquals(1, tsList.size()); // Contains single token for extra '\n' in the doc
         LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
         
 //        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
@@ -158,7 +158,7 @@ public class JoinSectionsMod2Test extends NbTestCase {
 
         doc.remove(2, 1);
         tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(0, tsList.size());
+        assertEquals(1, tsList.size()); // Contains single token for extra '\n' in the doc
     }
 
     public void testEmbeddingDynamicUpdate() throws Exception {
@@ -183,7 +183,7 @@ public class JoinSectionsMod2Test extends NbTestCase {
 
         doc.remove(2, 1);
         tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(0, tsList.size());
+        assertEquals(1, tsList.size()); // contains single token for extra '\n' at the end of doc
         
         doc.insertString(2, "%", null); // BTW does not have to be '%'
         tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);

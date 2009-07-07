@@ -90,6 +90,9 @@ public class TokenHierarchyEventTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 7);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "ghi", 8);
+        // Extra newline at doc's end is contained in the DocumentUtilities.getText(doc)
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", 11);
         assertFalse(ts.moveNext());
         
         // Do insert

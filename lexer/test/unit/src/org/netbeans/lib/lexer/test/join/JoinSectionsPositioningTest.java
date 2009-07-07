@@ -103,7 +103,8 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<q>", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "r", -1);
+        // Contains extra '\n' at the end of document
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "r\n", -1);
         assertFalse(ts.moveNext());
         assertEquals(11, ts.tokenCount());
         

@@ -92,7 +92,8 @@ public class TokenHierarchyRebuildTest extends NbTestCase {
         int docLen = doc.getLength();
         TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
         assertEquals(0, evt.affectedStartOffset());
-        assertEquals(docLen, evt.affectedEndOffset());
+        // Extra newline contained in DocumentUtilities.getText(doc) being relexed
+        assertEquals(docLen+1, evt.affectedEndOffset());
         
         try { // ts should no longer work
             ts.moveNext();

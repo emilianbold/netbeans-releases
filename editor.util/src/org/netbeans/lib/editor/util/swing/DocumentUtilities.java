@@ -292,7 +292,9 @@ public final class DocumentUtilities {
      * <br>
      *
      * @param doc document for which the charsequence is being obtained.
-     * @return non-null character sequence.
+     * @return non-null character sequence. Length of the character sequence
+     *  is <code>doc.getLength() + 1</code> where the extra character is '\n'
+     *  (it corresponds to AbstractDocument-based document implementations).
      *  <br>
      *  The returned character sequence should only be accessed under
      *  document's readlock (or writelock).
@@ -312,10 +314,11 @@ public final class DocumentUtilities {
      *
      * @param doc document for which the charsequence is being obtained.
      * @param offset starting offset of the charsequence to obtain.
-     * @param length length of the charsequence to obtain
+     * @param length length of the charsequence to obtain. It must be <code>&gt;= 0</code>
+     *   and <code>&lt;doc.getLength() + 1</code>.
      * @return non-null character sequence.
-     * @exception BadLocationException  some portion of the given range
-     *   was not a valid part of the document.  The location in the exception
+     * @exception BadLocationException some portion of the given range
+     *   was not a valid part of the document. The location in the exception
      *   is the first bad position encountered.
      *  <br>
      *  The returned character sequence should only be accessed under
@@ -663,7 +666,8 @@ public final class DocumentUtilities {
         }
 
         public int length() {
-            return doc.getLength();
+            // Assuming AbstractDocument-based contents which have mandatory extra '\n' at end
+            return doc.getLength() + 1;
         }
 
         public synchronized char charAt(int index) {
