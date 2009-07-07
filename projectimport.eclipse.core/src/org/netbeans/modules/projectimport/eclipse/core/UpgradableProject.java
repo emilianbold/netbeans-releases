@@ -127,7 +127,8 @@ final public class UpgradableProject {
     }
     
     Workspace getWorkspace() {
-        return getEclipseProjectReference().getEclipseProject(false).getWorkspace();
+        EclipseProject prj = getEclipseProject();
+        return prj != null ? prj.getWorkspace() : null;
     }
     
     EclipseProject getEclipseProject() {
