@@ -56,9 +56,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -70,6 +74,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -348,6 +353,16 @@ public final class CreateTestsAction extends NodeAction {
             return null;
         }
         assert testFile.isFile() : "Test file must exist: " + testFile;
+
+        // reformat the file
+        try {
+            reformat(testFile);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        }
+
         return testFile;
     }
 
@@ -406,5 +421,38 @@ public final class CreateTestsAction extends NodeAction {
             LOGGER.info("Cannot delete generated file " + generatedFile);
         }
         return testFile;
+    }
+
+    private void reformat(final File testFile) throws IOException, BadLocationException {
+        FileObject testFileObject = FileUtil.toFileObject(testFile);
+        assert testFileObject != null : "No fileobject for " + testFile;
+
+        final DataObject dataObject = DataObject.find(testFileObject);
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        assert ec != null : "No editorcookie for " + testFileObject;
+
+        Document doc = ec.openDocument();
+        assert doc instanceof BaseDocument;
+
+        // reformat
+        final BaseDocument baseDoc = (BaseDocument) doc;
+        final Reformat reformat = Reformat.get(baseDoc);
+        reformat.lock();
+        // XXX using deprecated api because we need to save document AFTER it is formatted (needs to be synchronous)
+        try {
+            baseDoc.atomicLock();
+            try {
+                reformat.reformat(baseDoc.getStartPosition().getOffset(), baseDoc.getEndPosition().getOffset() - 1);
+            } finally {
+                baseDoc.atomicUnlock();
+            }
+        } finally {
+            reformat.unlock();
+        }
+
+        // save
+        SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+        assert saveCookie != null;
+        saveCookie.save();
     }
 }
