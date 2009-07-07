@@ -244,6 +244,7 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public JPanel createComponent(HgHookContext context) {
+        LOG.finer("HgHookImpl.createComponent()");                      //NOI18N
         File referenceFile;
         if(context.getFiles().length == 0) {
             referenceFile = null;
