@@ -198,9 +198,6 @@ public class Hk2PluginProperties {
             // add webservices.jar if exists
             jars.add("webservices"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jaxb"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            // v3 post b39?? or so
-            jars.add("webservices-osgi"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
-            jars.add("jaxb-osgi"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             //
             // these aren't caught by the filterByManifest method, so we add it 'by hand'
@@ -218,6 +215,29 @@ public class Hk2PluginProperties {
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
                 if ((jar != null) && (jar.exists()))  {
+                    list.add(fileToUrl(jar));
+                }
+            }
+            // prefer the smaller API jars if they are available...
+            File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
+                    "endorsed/webservices-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
+            if (null != jar) {
+                list.add(fileToUrl(jar));
+            } else {
+                jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
+                    "webservices-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
+                if (null != jar) {
+                    list.add(fileToUrl(jar));
+                }
+            }
+            jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
+                    "endorsed/jaxb-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
+            if (null != jar) {
+                list.add(fileToUrl(jar));
+            } else {
+                jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
+                    "jaxb-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
+                if (null != jar) {
                     list.add(fileToUrl(jar));
                 }
             }
