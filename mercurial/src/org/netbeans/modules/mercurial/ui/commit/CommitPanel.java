@@ -135,6 +135,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel2.setText(htmlErrorLabel);
     }    
 
+    @Override
     public void addNotify() {
         super.addNotify();
 
@@ -186,6 +187,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             hideSection(label, panel);
         }
         label.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (panel.isVisible()) {
                     hideSection(label, panel);
@@ -259,6 +261,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         return messageTextArea.getText();
     }
 
+    @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
@@ -372,6 +375,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private void initInteraction() {
         recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         recentLink.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 onBrowseRecentMessages();
             }

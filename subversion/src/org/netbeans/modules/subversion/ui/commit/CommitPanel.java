@@ -140,6 +140,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel2.setText(htmlErrorLabel);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
 
@@ -160,6 +161,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         initCollapsibleSections();
     }
 
+    @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
@@ -360,6 +362,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private void initInteraction() {
         recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         recentLink.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 onBrowseRecentMessages();
             }
