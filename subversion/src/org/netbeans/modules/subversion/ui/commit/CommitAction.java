@@ -51,7 +51,6 @@ import org.netbeans.modules.subversion.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
@@ -95,6 +94,7 @@ public class CommitAction extends ContextAction {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         if(isDeepRefresh()) {
             // allway true as we have will accept and check for external changes
@@ -259,14 +259,22 @@ public class CommitAction extends ContextAction {
         Set<File> ret = new HashSet<File>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : fileList) {
-            File parent = null;;
+            File parent = null;
             while((parent = file.getParentFile()) != null) {
-                if(checked.contains(parent)) break;
+                if (checked.contains(parent)) {
+                    break;
+                }
                 checked.add(parent);
-                if(fileList.contains(parent)) break;
-                if(!SvnUtils.isManaged(parent)) break;
+                if (fileList.contains(parent)) {
+                    break;
+                }
+                if (!SvnUtils.isManaged(parent)) {
+                    break;
+                }
                 FileInformation info = onlyCached ? cache.getCachedStatus(parent) : cache.getStatus(parent);
-                if(info == null) continue;
+                if (info == null) {
+                    continue;
+                }
                 if(info.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY ||
                    info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)
                 {
@@ -480,7 +488,9 @@ public class CommitAction extends ContextAction {
 
         for (SvnFileNode fileNode : files.keySet()) {
             CommitOptions options = files.get(fileNode);
-            if (options == CommitOptions.EXCLUDE) continue;
+            if (options == CommitOptions.EXCLUDE) {
+                continue;
+            }
             stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
