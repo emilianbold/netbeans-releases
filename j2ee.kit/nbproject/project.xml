@@ -44,7 +44,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.ejbverification</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.4.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

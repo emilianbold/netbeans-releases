@@ -8,7 +8,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.0.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -26,7 +26,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.0.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -56,7 +56,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
                     <run-dependency>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>0.1.2</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

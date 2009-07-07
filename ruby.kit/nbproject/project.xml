@@ -188,7 +188,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.ruby.rhtml</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.57.0</specification-version>
+                        <specification-version>0.64.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
