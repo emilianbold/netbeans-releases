@@ -365,13 +365,14 @@ public final class CreateTestsAction extends NodeAction {
         assert testFile.isFile() : "Test file must exist: " + testFile;
 
         // reformat the file
-        try {
-            reformat(testFile);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-        } catch (BadLocationException ex) {
-            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-        }
+// XXX DISABLED DUE TO HTML INDENTER ASSERTION ERROR
+//        try {
+//            reformat(testFile);
+//        } catch (IOException ex) {
+//            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+//        } catch (BadLocationException ex) {
+//            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+//        }
 
         return testFile;
     }
@@ -452,7 +453,7 @@ public final class CreateTestsAction extends NodeAction {
         try {
             baseDoc.atomicLock();
             try {
-                reformat.reformat(baseDoc.getStartPosition().getOffset(), baseDoc.getEndPosition().getOffset() - 1);
+                reformat.reformat(0, baseDoc.getLength());
             } finally {
                 baseDoc.atomicUnlock();
             }
