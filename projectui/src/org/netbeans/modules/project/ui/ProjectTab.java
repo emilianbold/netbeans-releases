@@ -786,8 +786,10 @@ public class ProjectTab extends TopComponent
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            //a bit brute force:
-            updateIsEnabled();
+            if ((evt.getSource() == manager && evt.getPropertyName() != ExplorerManager.PROP_EXPLORED_CONTEXT)
+                    || (evt.getSource() == explorerAction && evt.getPropertyName().equals("enabled"))) { // NOI18N
+                updateIsEnabled();
+            }
         }
         
     }
