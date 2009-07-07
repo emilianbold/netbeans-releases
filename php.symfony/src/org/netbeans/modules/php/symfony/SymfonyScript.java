@@ -228,7 +228,7 @@ public class SymfonyScript extends PhpProgram {
 
     static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
         //                                                              symfony version 1.2.7 (/usr/share/php/symfony)
-        private static final Pattern SYMFONY_VERSION = Pattern.compile("symfony\\s+version\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
+        private static final Pattern SYMFONY_VERSION = Pattern.compile("symfony\\s+version\\s+(\\d+)\\.(\\d+)\\.(\\d+)(?:\\-DEV)?\\s+"); // NOI18N
 
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {

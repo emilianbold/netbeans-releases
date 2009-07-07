@@ -90,5 +90,10 @@ public class SymfonyScriptTest extends NbTestCase {
         version = SymfonyScript.OutputProcessorFactory.match("symfony version 323324.3877987.165456 (/usr/share/php/symfony)");
         assertNotNull(version);
         assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
+
+        // #168211
+        version = SymfonyScript.OutputProcessorFactory.match("symfony version 1.2.8-DEV (/home/kreso/workspace/symfony12/lib)");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {1, 2, 8}, version));
     }
 }
