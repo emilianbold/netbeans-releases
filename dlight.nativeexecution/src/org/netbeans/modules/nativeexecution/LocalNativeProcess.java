@@ -115,7 +115,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         ew.write(env);
 
         if (workingDirectory != null) {
-            processInput.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
+            processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
         }
 
         String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N
