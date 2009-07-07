@@ -101,10 +101,12 @@ public class CommitAction extends ContextAction {
         putValue(Action.NAME, name);
     }
 
+    @Override
     public boolean isEnabled () {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
+        if (HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
+        }
         return true;
     }
 
@@ -131,7 +133,9 @@ public class CommitAction extends ContextAction {
 
     public static void commit(String contentTitle, final VCSContext ctx) {
         final File repository = HgUtils.getRootFile(ctx);
-        if (repository == null) return;
+        if (repository == null) {
+            return;
+        }
 
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
@@ -285,7 +289,9 @@ public class CommitAction extends ContextAction {
         for (HgFileNode fileNode : files.keySet()) {
 
             CommitOptions options = files.get(fileNode);
-            if (options == CommitOptions.EXCLUDE) continue;
+            if (options == CommitOptions.EXCLUDE) {
+                continue;
+            }
             //stickyTags.add(HgUtils.getCopy(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
