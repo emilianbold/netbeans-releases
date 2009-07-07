@@ -40,6 +40,9 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -52,6 +55,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -60,6 +64,12 @@ import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.ProxyInputProcessorFactory;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -72,15 +82,23 @@ public class SymfonyScript extends PhpProgram {
     private static final String PARAM_VERSION = "--version"; // NOI18N
     private static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
+    //                                                              symfony version 1.2.7 (/usr/share/php/symfony)
+    //                                                              symfony version 1.2.8-DEV (/usr/share/php/symfony)
+    private static final Pattern SYMFONY_VERSION = Pattern.compile("symfony\\s+version\\s+(\\d+)\\.(\\d+)\\.(\\d+)(?:\\-DEV)?\\s+"); // NOI18N
 
-    // unknown version
+    // @GuardedBy(CACHE) [key "null" => default symfony script]
+    private static final Map<PhpModule, SymfonyScript> CACHE = new WeakHashMap<PhpModule, SymfonyScript>();
+
+    // script cannot be run at all
+    static final int[] UNDETECTABLE_VERSION = new int[0];
+    // script can be run but the output is not expected
     static final int[] UNKNOWN_VERSION = new int[0];
     /**
      * volatile is enough because:
      *  - never mind if the version is detected 2x
      *  - we don't change array values but only the array itself (local variable created and then assigned to 'version')
      */
-    static volatile int[] version = null;
+    volatile int[] version = null;
 
     public static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
@@ -95,16 +113,59 @@ public class SymfonyScript extends PhpProgram {
      * @throws InvalidSymfonyScriptException if Symfony script is not valid.
      */
     public static SymfonyScript getDefault() throws InvalidSymfonyScriptException {
+        SymfonyScript symfonyScript = null;
+        synchronized (CACHE) {
+            symfonyScript = CACHE.get(null);
+        }
+        if (symfonyScript != null) {
+            return symfonyScript;
+        }
+
         String symfony = SymfonyOptions.getInstance().getSymfony();
         String error = validate(symfony);
         if (error != null) {
             throw new InvalidSymfonyScriptException(error);
         }
-        return new SymfonyScript(symfony);
+        symfonyScript = new SymfonyScript(symfony);
+        synchronized (CACHE) {
+            CACHE.put(null, symfonyScript);
+        }
+        return symfonyScript;
     }
 
-    public static void resetVersion() {
-        version = null;
+    /**
+     * Get the project specific, <b>valid only</b> Symfony script. If not found, the {@link #getDefault() default} Symfony script is returned.
+     * @param phpModule PHP module for which Symfony script is taken
+     * @param warn <code>true</code> if user is warned when the {@link #getDefault() default} Symfony script is returned.
+     * @return the project specific, <b>valid only</b> Symfony script.
+     * @throws InvalidSymfonyScriptException if Symfony script is not valid. If not found, the {@link #getDefault() default} Symfony script is returned.
+     * @see #getDefault()
+     */
+    public static SymfonyScript forPhpModule(PhpModule phpModule, boolean warn) throws InvalidSymfonyScriptException {
+        SymfonyScript symfonyScript = null;
+        synchronized (CACHE) {
+            symfonyScript = CACHE.get(phpModule);
+        }
+        if (symfonyScript != null) {
+            return symfonyScript;
+        }
+
+        String symfony = new File(FileUtil.toFile(phpModule.getSourceDirectory()), SCRIPT_NAME).getAbsolutePath();
+        String error = validate(symfony);
+        if (error != null) {
+            if (warn) {
+                Message message = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(SymfonyScript.class, "MSG_InvalidProjectSymfonyScript", error),
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(message);
+            }
+            return getDefault();
+        }
+        symfonyScript = new SymfonyScript(symfony);
+        synchronized (CACHE) {
+            CACHE.put(phpModule, symfonyScript);
+        }
+        return symfonyScript;
     }
 
     public static String getOptionsPath() {
@@ -141,6 +202,9 @@ public class SymfonyScript extends PhpProgram {
         if (!file.canRead()) {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
         }
+        if (symfonyScript.getVersion() == UNDETECTABLE_VERSION) {
+            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyUndetectableVersion");
+        }
         if (symfonyScript.getVersion() == UNKNOWN_VERSION) {
             return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyUnknownVersion");
         }
@@ -150,7 +214,7 @@ public class SymfonyScript extends PhpProgram {
     public void initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
         SymfonyCommandSupport commandSupport = new SymfonyCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_PROJECT, projectName);
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
         String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
@@ -158,15 +222,23 @@ public class SymfonyScript extends PhpProgram {
     }
 
     public static String getHelp(FrameworkCommand command) {
-        SymfonyScript symfonyScript = null;
         try {
-            symfonyScript = SymfonyScript.getDefault();
+            return getHelp(getDefault(), command);
         } catch (InvalidSymfonyScriptException ex) {
             return ex.getMessage();
         }
+    }
+
+    public static String getHelp(SymfonyScript symfonyScript, FrameworkCommand command) {
+        assert symfonyScript != null;
         assert symfonyScript.isValid();
 
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(symfonyScript.getProgram());
+        String phpInterpreter = Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter();
+        if (phpInterpreter == null) {
+            return NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidPhpInterpreter");
+        }
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(phpInterpreter)
+                .addArgument(symfonyScript.getProgram());
         for (String param : symfonyScript.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
         }
@@ -201,14 +273,19 @@ public class SymfonyScript extends PhpProgram {
 
     private int[] getVersion() {
         if (!super.isValid()) {
-            return UNKNOWN_VERSION;
+            return UNDETECTABLE_VERSION;
         }
         if (version != null) {
             return version;
         }
+        String phpInterpreter = Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter();
+        if (phpInterpreter == null) {
+            return UNDETECTABLE_VERSION;
+        }
 
         version = UNKNOWN_VERSION;
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(getProgram())
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter)
+                .addArgument(getProgram())
                 .addArgument(PARAM_VERSION);
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
@@ -220,17 +297,29 @@ public class SymfonyScript extends PhpProgram {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
-            // ignored
+            version = UNDETECTABLE_VERSION;
             LOGGER.log(Level.INFO, null, ex);
         }
         return version;
     }
 
-    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
-        //                                                              symfony version 1.2.7 (/usr/share/php/symfony)
-        private static final Pattern SYMFONY_VERSION = Pattern.compile("symfony\\s+version\\s+(\\d+)\\.(\\d+)\\.(\\d+)(?:\\-DEV)?\\s+"); // NOI18N
+    static int[] match(String text) {
+        assert text != null;
+        if (StringUtils.hasText(text)) {
+            Matcher matcher = SYMFONY_VERSION.matcher(text);
+            if (matcher.find()) {
+                int major = Integer.parseInt(matcher.group(1));
+                int minor = Integer.parseInt(matcher.group(2));
+                int release = Integer.parseInt(matcher.group(3));
+                return new int[] {major, minor, release};
+            }
+        }
+        return null;
+    }
 
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+    final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {
                 public void processLine(String line) {
                     int[] match = match(line);
@@ -239,24 +328,20 @@ public class SymfonyScript extends PhpProgram {
                     }
                 }
                 public void reset() {
+                    try {
+                        defaultProcessor.reset();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 public void close() {
+                    try {
+                        defaultProcessor.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             });
-        }
-
-        static int[] match(String text) {
-            assert text != null;
-            if (StringUtils.hasText(text)) {
-                Matcher matcher = SYMFONY_VERSION.matcher(text);
-                if (matcher.find()) {
-                    int major = Integer.parseInt(matcher.group(1));
-                    int minor = Integer.parseInt(matcher.group(2));
-                    int release = Integer.parseInt(matcher.group(3));
-                    return new int[] {major, minor, release};
-                }
-            }
-            return null;
         }
     }
 
