@@ -64,7 +64,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         this.project = project;
         initComponents();
 
-        if (!J2eeProjectCapabilities.forProject(project).isEjb31Supported()){
+        if (!J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported()){
             singletonButton.setVisible(false);
             singletonButton.setEnabled(false);
         }
