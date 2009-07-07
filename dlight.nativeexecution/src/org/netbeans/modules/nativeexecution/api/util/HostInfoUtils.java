@@ -1,9 +1,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -11,10 +9,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -22,7 +18,9 @@ import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.FetchHostInfoTask;
+import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchTask;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
@@ -157,69 +155,18 @@ public final class HostInfoUtils {
 
     public static String searchFile(ExecutionEnvironment execEnv,
             List<String> searchPaths, String file, boolean searchInUserPaths) {
-        NativeProcessBuilder npb;
-        BufferedReader br;
-        String line;
-        Process p;
+
+        FileSearchParams fileSearchParams = new FileSearchParams(execEnv,
+                searchPaths, file, searchInUserPaths);
+
+        String result = null;
 
         try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-
-            if (hostInfo == null) {
-                return null;
-            }
-
-            String shell = hostInfo.getShell();
-
-            if (shell == null) {
-                return null;
-            }
-
-            List<String> sp = new ArrayList<String>(searchPaths);
-
-            if (searchInUserPaths) {
-                npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-                npb.setExecutable(shell).setArguments("-c", "echo $PATH"); // NOI18N
-
-                p = npb.call();
-                p.waitFor();
-
-                br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                line = br.readLine();
-
-                if (line != null) {
-                    sp.addAll(Arrays.asList(line.split("[;:]"))); // NOI18N
-                }
-            }
-
-            StringBuilder cmd = new StringBuilder();
-
-            for (Iterator<String> i = sp.iterator(); i.hasNext();) {
-                cmd.append("/bin/ls " + i.next() + "/" + file); // NOI18N
-                if (i.hasNext()) {
-                    cmd.append(" || "); // NOI18N
-                }
-            }
-
-            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(shell).setArguments("-c", cmd.toString()); // NOI18N
-
-            p = npb.call();
-            p.waitFor();
-
-            br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            line = br.readLine();
-
-            return (line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
-        } catch (IOException ex) {
-            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
+            result = new FileSearchTask().compute(fileSearchParams);
         } catch (InterruptedException ex) {
-            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
         }
 
-        log.finest("File " + file + " not found"); // NOI18N
-
-        return null;
+        return result;
     }
 
     /**

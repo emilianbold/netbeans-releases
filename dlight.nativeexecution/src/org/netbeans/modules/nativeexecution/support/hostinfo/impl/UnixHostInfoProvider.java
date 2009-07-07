@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -44,7 +44,7 @@ import com.jcraft.jsch.Session;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import org.netbeans.modules.nativeexecution.spi.HostInfoProvider;
+import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -57,11 +57,12 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.HostInfoProvider.class, position = 100)
+@ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 100)
 public class UnixHostInfoProvider implements HostInfoProvider {
 
     private static final java.util.logging.Logger log = Logger.getInstance();

@@ -36,38 +36,50 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.support.filesearch;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Level;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.spi.HostInfoProvider;
-import org.openide.util.Lookup;
 
-public final class FetchHostInfoTask implements Computable<ExecutionEnvironment, HostInfo> {
+public final class FileSearchParams {
 
-    private static final java.util.logging.Logger log = Logger.getInstance();
+    private final ExecutionEnvironment execEnv;
+    private final List<String> searchPaths;
+    private final String filename;
+    private final boolean searchInUserPaths;
 
-    public final HostInfo compute(ExecutionEnvironment execEnv) throws InterruptedException {
-        final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
-        HostInfo result = null;
+    public FileSearchParams(ExecutionEnvironment execEnv, List<String> searchPaths, String filename, boolean searchInUserPaths) {
+        this.execEnv = execEnv;
+        this.searchPaths = Collections.unmodifiableList(new ArrayList<String>(searchPaths));
+        this.filename = filename;
+        this.searchInUserPaths = searchInUserPaths;
+    }
 
-        for (HostInfoProvider provider : providers) {
-            try {
-                result = provider.getHostInfo(execEnv);
-            } catch (IOException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    String msg = "Exception while recieving hostinfo for " + execEnv.toString(); // NOI18N
-                    log.log(Level.FINE, msg, ex);
-                }
-            }
-            if (result != null) {
-                break;
-            }
-        }
+    public ExecutionEnvironment getExecEnv() {
+        return execEnv;
+    }
 
-        return result;
+    public String getFilename() {
+        return filename;
+    }
+
+    public List<String> getSearchPaths() {
+        return searchPaths;
+    }
+
+    public boolean isSearchInUserPaths() {
+        return searchInUserPaths;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Search env: " + execEnv.toString() + "; "); // NOI18N
+        sb.append("Search paths: " + Arrays.toString(searchPaths.toArray(new String[0])) + "; "); // NOI18N
+        sb.append("Search in PATH: " + (searchInUserPaths ? "yes" : "no")); // NOI18N
+        return sb.toString();
     }
 }

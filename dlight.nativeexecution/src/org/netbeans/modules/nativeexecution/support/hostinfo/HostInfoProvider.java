@@ -36,60 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.util;
+
+package org.netbeans.modules.nativeexecution.support.hostinfo;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
-import org.netbeans.modules.nativeexecution.support.Logger;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 10)
-final public class SlowHostInfoProvider implements HostInfoProvider {
-
-    private static final java.util.logging.Logger log = Logger.getInstance();
-
-    public HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException {
-        boolean enabled = Boolean.getBoolean("dlight.nativeexecution.SlowHostInfoProviderEnabled"); // NOI18N
-
-        if (!enabled) {
-            return null;
-        }
-
-        final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
-        HostInfo result = null;
-        int providerIdx = 0;
-
-        for (HostInfoProvider provider : providers) {
-            if (provider == this) {
-                continue;
-            }
-
-            providerIdx++;
-
-            try {
-                for (int i = 0; i < 3; i++) {
-                    try {
-                        log.info("Trying hard to get some information about the host... Not an easy task... [provider " + providerIdx + "/ delay " + i + "]"); // NOI18N
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        log.log(Level.SEVERE, "InterruptedException", ex); // NOI18N
-                    }
-                }
-                result = provider.getHostInfo(execEnv);
-            } catch (IOException ex) {
-                String msg = "Exception while recieving hostinfo for " + execEnv.toString(); // NOI18N
-                log.log(Level.SEVERE, msg, ex);
-            }
-            if (result != null) {
-                break;
-            }
-        }
-
-        return result;
-    }
+public interface HostInfoProvider {
+    // May return null if provider cannot provide info about requested execution
+    // environment
+    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException;
 }

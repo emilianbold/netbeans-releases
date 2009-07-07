@@ -36,23 +36,21 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Properties;
-import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.spi.HostInfoProvider;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.HostInfoProvider.class, position = 90)
+@ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 90)
 public class WindowsHostInfoProvider implements HostInfoProvider {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
@@ -65,51 +63,6 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         }
 
         return new HostInfoImpl();
-    }
-
-    private static Properties readEnv() {
-        Properties result = new Properties();
-
-        try {
-            String os = System.getProperty("os.name").toLowerCase(); // NOI18N
-            String cmd = "cmd"; // NOI18N
-
-            if (os.contains("windows 9")) { // NOI18N Win95, Win98.. not supported... but, still...
-                cmd = "command.com"; // NOI18N
-            }
-
-            ProcessBuilder pb = new ProcessBuilder(cmd, "/c", "set"); // NOI18N
-            Process p = pb.start();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                int idx = line.indexOf('=');
-                String key = line.substring(0, idx);
-                String value = line.substring(idx + 1);
-                result.setProperty(key, value);
-            }
-
-            int exitStatus = -1;
-
-            try {
-                exitStatus = p.waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            if (exitStatus != 0) {
-                log.log(Level.FINE, "Unable to read environment"); // NOI18N
-                br = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-                while ((line = br.readLine()) != null) {
-                    log.log(Level.FINE, line); // NOI18N
-                }
-            }
-        } catch (IOException ex) {
-            log.log(Level.FINE, "Unable to read environment", ex); // NOI18N
-        }
-
-        return result;
     }
 
     private static class HostInfoImpl implements HostInfo {
@@ -127,7 +80,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final String tmpDir;
 
         public HostInfoImpl() {
-            Properties env = readEnv();
+            Properties env = WindowsSupport.getInstance().getEnv();
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:

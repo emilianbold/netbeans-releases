@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -52,6 +54,9 @@ import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 
@@ -301,22 +306,150 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //        assertTrue(platform.getHardwareType().toString().contains(hardwareTypeShouldContain));
 //        assertTrue(platform.getOSType().toString().contains(osTypeShouldContain));
 //    }
-    public void testSearchFile() throws Exception {
-        System.out.println("Test searchFile()"); // NOI18N
+    @ForAllEnvironments(section = "dlight.nativeexecution.hostinfo")
+    public void testRemoteSearchFile() throws Exception {
+
+        System.out.println("Test testRemoteSearchFile()"); // NOI18N
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        HostInfo info = HostInfoUtils.getHostInfo(env);
+
+        assertNotNull(info);
+
+        HostInfoUtils.dumpInfo(info, System.out);
+        assertNotNull(info.getShell());
+
+        String testDir = info.getTempDir() + "/some dir"; // NOI18N
+        String testFileName = "some (" + new Random().nextInt() + ") file"; // NOI18N
+        CommonTasksSupport.mkDir(env, testDir, null);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.addEnvironmentVariable("PATH", "$PATH:/bin:/usr/bin"); // NOI18N
+        npb.setExecutable("touch").setArguments(testDir + "/" + testFileName); // NOI18N
+        npb.call().waitFor();
+
+        System.out.println("Use file '" + testFileName + "' in '" + testDir + "' for testing"); // NOI18N
+        try {
+            String result = null;
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrong Path", testDir, "/usr/bin"), testFileName, true); // NOI18N
+            assertNotNull(result);
+            assertEquals(result, testDir + "/" + testFileName); // NOI18N
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", false); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", true); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
+            assertNull(result);
+        } finally {
+            CommonTasksSupport.rmDir(env, testDir, true, null);
+        }
+
+    }
+
+    public void testUnixSearchFile() throws Exception {
+        System.out.println("Test testUnixSearchFile()"); // NOI18N
+
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-        String result = null;
+        HostInfo info = HostInfoUtils.getHostInfo(env);
 
-        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N
-        assertNotNull(result);
+        assertNotNull(info);
 
-        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", false); // NOI18N
-        assertNotNull(result);
+        if (info.getShell() == null) {
+            return;
+        }
 
-        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", true); // NOI18N
-        assertNotNull(result);
+        File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
+        testDir.mkdir();
+        File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
+        testFile.createNewFile();
 
-        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
-        assertNull(result);
+        System.out.println("Use file '" + testFile.getAbsolutePath() + "' for testing"); // NOI18N
+
+        try {
+            String result = null;
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrong Path", testDir.getAbsolutePath(), "/usr/bin"), testFile.getName(), true); // NOI18N
+            assertNotNull(result);
+
+            String expectedPath = testFile.getAbsolutePath();
+
+            if (info.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                expectedPath = WindowsSupport.getInstance().convertToShellPath(result);
+            }
+
+            assertEquals(result, expectedPath);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", false); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", true); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
+            assertNull(result);
+        } finally {
+            testFile.delete();
+            testDir.delete();
+        }
+    }
+
+    public void testWindowsSearchFile() throws Exception {
+        System.out.println("Test testWindowsSearchFile()"); // NOI18N
+
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        HostInfo info = HostInfoUtils.getHostInfo(env);
+
+        assertNotNull(info);
+
+        if (info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
+            return;
+        }
+
+        File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
+        testDir.mkdir();
+        File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
+        testFile.createNewFile();
+
+        System.out.println("Use file '" + testFile.getAbsolutePath() + "' for testing"); // NOI18N
+        try {
+
+            String result;
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", testDir.getAbsolutePath()), testFile.getName(), true); // NOI18N
+            assertNotNull(result);
+
+            if (info.getShell() != null) {
+                assertEquals(result, WindowsSupport.getInstance().convertToShellPath(testFile.getCanonicalPath()));
+            } else {
+                assertEquals(result, testFile.getCanonicalPath());
+            }
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", "c:\\Windows\\system32"), "cmd.exe", true); // NOI18N
+            assertNotNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows"), "cmd.exe", true); // NOI18N
+            assertNotNull(result);
+
+            if (info.getShell() != null) {
+                result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", WindowsSupport.getInstance().convertToShellPath("c:\\Windows\\system32")), "cmd.exe", false); // NOI18N
+                assertNotNull(result);
+            }
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows"), "cmd.exe", false); // NOI18N
+            assertNull(result);
+
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "wrongFile", true); // NOI18N
+            assertNull(result);
+        } finally {
+            testFile.delete();
+            testDir.delete();
+        }
     }
 
 //    private void testLoggers() {
