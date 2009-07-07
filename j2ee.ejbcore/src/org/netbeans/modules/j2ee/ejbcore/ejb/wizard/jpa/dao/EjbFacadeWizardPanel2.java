@@ -41,7 +41,7 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     public boolean isValid() {
         getComponent();
         if (!(component.isRemote() || component.isLocal())) {
-            if(J2eeProjectCapabilities.forProject(project).isEjb31Supported())
+            if(J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported())
             {
                 //if it's jee6 project, ejb 3.1 allow to omit any interfaces
                 return true;

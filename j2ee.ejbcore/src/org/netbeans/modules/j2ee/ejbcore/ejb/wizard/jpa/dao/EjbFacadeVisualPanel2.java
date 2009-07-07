@@ -278,7 +278,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
 
     private void updateCheckboxes() {
         //by default for ejb 3.1 no interfaces will be created
-        localCheckBox.setSelected(!J2eeProjectCapabilities.forProject(project).isEjb31Supported());
+        localCheckBox.setSelected(!J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported());
     }
     
 }
