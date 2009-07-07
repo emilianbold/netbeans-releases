@@ -252,7 +252,9 @@ public final class CreateTestsAction extends NodeAction {
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
                 || !CommandUtils.isPhpFile(sourceFo)
-                || proceeded.contains(sourceFo)) {
+                || proceeded.contains(sourceFo)
+                || CommandUtils.isUnderTests(phpProject, sourceFo, false)
+                || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)) {
             return;
         }
         proceeded.add(sourceFo);
@@ -452,7 +454,8 @@ public final class CreateTestsAction extends NodeAction {
 
         // save
         SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
-        assert saveCookie != null;
-        saveCookie.save();
+        if (saveCookie != null) {
+            saveCookie.save();
+        }
     }
 }
