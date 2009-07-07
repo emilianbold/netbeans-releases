@@ -68,27 +68,31 @@ public final class J2eeProjectCapabilities {
 
     @CheckForNull
     public static J2eeProjectCapabilities forProject(Project project) {
-        EjbJar[] ejbJars = EjbJar.getEjbJars(project);
-        Profile ejbJarProfile = null;
-        if (ejbJars.length > 0) {
-            // just use first one to test profile:
-            ejbJarProfile =  ejbJars[0].getJ2eeProfile();
-        }
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
             return null;
+        }
+        Profile ejbJarProfile = null;
+        if (provider.getJ2eeModule().getType() == J2eeModule.Type.EJB ||
+                provider.getJ2eeModule().getType() == J2eeModule.Type.WAR) {
+            EjbJar[] ejbJars = EjbJar.getEjbJars(project);
+            if (ejbJars.length > 0) {
+                // just use first one to test profile:
+                ejbJarProfile =  ejbJars[0].getJ2eeProfile();
+            }
         }
         return new J2eeProjectCapabilities(provider, ejbJarProfile);
     }
 
     /**
      * EJB 3.0 functionality is supported in EjbJar project which is targetting
-     * JEE5 platform.
+     * JEE5 or JEE6 platform.
      */
     public boolean isEjb30Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        boolean ee5 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_5);
-        return J2eeModule.Type.EJB.equals(moduleType) && ee5;
+        boolean eeOk = ejbJarProfile != null && (ejbJarProfile.equals(Profile.JAVA_EE_5) ||
+                ejbJarProfile.equals(Profile.JAVA_EE_6_FULL));
+        return J2eeModule.Type.EJB.equals(moduleType) && eeOk;
     }
 
     /**

@@ -76,7 +76,7 @@ public class J2eeProjectCapabilitiesTest extends NbTestCase {
         assertFalse(cap.isEjb31LiteSupported());
         p = createProject(Profile.JAVA_EE_6_FULL, Type.EJB);
         cap = J2eeProjectCapabilities.forProject(p);
-        assertFalse(cap.isEjb30Supported());
+        assertTrue(cap.isEjb30Supported());
         assertTrue(cap.isEjb31Supported());
         assertTrue(cap.isEjb31LiteSupported());
         p = createProject(Profile.JAVA_EE_6_WEB, Type.EJB);
