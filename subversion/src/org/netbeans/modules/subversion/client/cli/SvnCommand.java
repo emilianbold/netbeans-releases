@@ -427,7 +427,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             if(psswd == null) {
                 psswd = "";
             }
-            if (psswd.trim().equals("")) {
+            if (org.openide.util.Utilities.isWindows() && psswd.trim().equals("")) {
                 psswd = "\"" + psswd + "\"";
             }
             add("--password");                               		

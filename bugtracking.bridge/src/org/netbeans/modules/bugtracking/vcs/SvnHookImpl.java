@@ -204,6 +204,7 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public JPanel createComponent(SvnHookContext context) {
+        LOG.finer("SvnHookImpl.createComponent()");                     //NOI18N
         File referenceFile;
         if(context.getFiles().length == 0) {
             referenceFile = null;
