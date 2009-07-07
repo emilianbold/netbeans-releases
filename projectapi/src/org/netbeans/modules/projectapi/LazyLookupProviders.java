@@ -46,10 +46,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
@@ -140,24 +142,35 @@ public class LazyLookupProviders {
      */
     public static MetaLookupMerger forLookupMerger(final Map<String,Object> attrs) throws ClassNotFoundException {
         return new MetaLookupMerger() {
+            private final String serviceName = (String) attrs.get("service"); // NOI18N
             private LookupMerger<?> delegate;
-            public boolean canNowMerge(Class<?> service) {
-                if (delegate == null && service.getName().equals((String) attrs.get("service"))) { // NOI18N
+            private final ChangeSupport cs = new ChangeSupport(this);
+            public void probing(Class<?> service) {
+                if (delegate == null && service.getName().equals(serviceName)) {
                     try {
                         LookupMerger<?> m = (LookupMerger<?>) attrs.get("lookupMergerInstance"); // NOI18N
                         if (service != m.getMergeableClass()) {
                             throw new ClassCastException(service + " vs. " + m.getMergeableClass()); // NOI18N
                         }
                         delegate = m;
-                        return true;
+                        cs.fireChange();
                     } catch (Exception x) {
                         Exceptions.printStackTrace(x);
                     }
                 }
-                return false;
             }
             public LookupMerger merger() {
                 return delegate;
+            }
+            public void addChangeListener(ChangeListener listener) {
+                cs.addChangeListener(listener);
+                assert cs.hasListeners();
+            }
+            public void removeChangeListener(ChangeListener listener) {
+                cs.removeChangeListener(listener);
+            }
+            public @Override String toString() {
+                return "MetaLookupMerger[" + serviceName + "]";
             }
         };
     }

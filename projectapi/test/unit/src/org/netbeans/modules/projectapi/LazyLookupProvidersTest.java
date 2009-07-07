@@ -67,6 +67,7 @@ public class LazyLookupProvidersTest extends NbTestCase {
         MockLookup.setInstances(l);
         l.assertLoadedClasses();
         Lookup all = LookupProviderSupport.createCompositeLookup(Lookups.fixed("hello"), "Projects/x/Lookup");
+        Lookup all2 = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "Projects/x/Lookup");
         l.assertLoadedClasses();
         assertEquals("hello", all.lookup(String.class));
         l.assertLoadedClasses();
@@ -76,6 +77,12 @@ public class LazyLookupProvidersTest extends NbTestCase {
         l.assertLoadedClasses("Service2", "ServiceImpl2");
         Collection<?> svcs1 = all.lookupAll(l.loadClass(Service1.class.getName()));
         l.assertLoadedClasses("MergedServiceImpl1", "Merger", "Service1", "Service2", "ServiceImpl1a", "ServiceImpl1b", "ServiceImpl2");
+        assertEquals(svcs1.toString(), 1, svcs1.size());
+        assertTrue(svcs1.toString(), svcs1.toString().contains("ServiceImpl1a@"));
+        assertTrue(svcs1.toString(), svcs1.toString().contains("ServiceImpl1b@"));
+        assertTrue(svcs1.toString(), svcs1.toString().contains("Merge["));
+        // #166910: also test subsequent independent lookups (i.e. other projects)
+        svcs1 = all2.lookupAll(l.loadClass(Service1.class.getName()));
         assertEquals(svcs1.toString(), 1, svcs1.size());
         assertTrue(svcs1.toString(), svcs1.toString().contains("ServiceImpl1a@"));
         assertTrue(svcs1.toString(), svcs1.toString().contains("ServiceImpl1b@"));
