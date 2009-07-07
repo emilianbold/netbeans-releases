@@ -36,56 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.support.filesearch;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+public interface FileSearcher {
 
-public class HostInfoFetcher {
-
-    private static final java.util.logging.Logger log = Logger.getInstance();
-    private static final Map<ExecutionEnvironment, HostInfo> hostsInfo =
-            new HashMap<ExecutionEnvironment, HostInfo>();
-    private final ExecutionEnvironment execEnv;
-
-    public HostInfoFetcher(ExecutionEnvironment execEnv) {
-        this.execEnv = execEnv;
-    }
-
-    /**
-     * @param blocking
-     * @return
-     */
-    public HostInfo getInfo(boolean blocking) throws IOException, CancellationException {
-        HostInfo info;
-
-        synchronized (hostsInfo) {
-            info = hostsInfo.get(execEnv);
-        }
-
-        if (info != null || !blocking) {
-            return info;
-        }
-
-        synchronized (this) {
-            ConnectionManager mgr = ConnectionManager.getInstance();
-
-            if (!mgr.isConnectedTo(execEnv)) {
-                mgr.connectTo(execEnv);
-            }
-
-            info = HostInfoImpl.getHostInfo(execEnv);
-
-            synchronized (hostsInfo) {
-                hostsInfo.put(execEnv, info);
-            }
-            
-            return info;
-        }
-    }
+    public String searchFile(FileSearchParams fileSearchParams);
 }
