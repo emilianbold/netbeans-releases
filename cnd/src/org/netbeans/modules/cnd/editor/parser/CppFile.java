@@ -118,8 +118,10 @@ public class CppFile {
     public void startParsing(Document doc) {
 //        int curCount = getCount();
 //        System.out.println("CppFile.startParsing: Parsing " + curCount);
-        log.log(Level.FINE, "CppFile.startParsing: Parsing " + getShortName(doc) +
-                " [" + Thread.currentThread().getName() + "]"); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "CppFile.startParsing: Parsing " + getShortName(doc) +
+                    " [" + Thread.currentThread().getName() + "]"); // NOI18N
+        }
         state = PARSING_STARTED;
         //this.doc = doc;
 
@@ -233,7 +235,9 @@ public class CppFile {
      *  to move the offset before the opening brace (otherwise its following the brace).
      */
     private void addNewFold(StyledDocument doc, CppFoldRecord fold) {
-        log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
+        if (log.isLoggable(Level.FINEST)) {
+            log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
+        }
         int startOffset = fold.getStartOffset();
         int endOffset = fold.getEndOffset();
         try {
@@ -265,7 +269,9 @@ public class CppFile {
                         break;
                 }
             } else {
-                log.log(Level.FINE, "CppFile.addNewFold: Skipping fold record on line " + startLine);
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "CppFile.addNewFold: Skipping fold record on line " + startLine);
+                }
             }
         } catch (IndexOutOfBoundsException ex) {
             log.log(Level.FINE, "CppFile.addNewFold: fold was created for old size of document - ignored");
