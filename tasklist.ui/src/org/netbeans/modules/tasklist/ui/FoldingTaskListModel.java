@@ -60,7 +60,7 @@ import org.netbeans.modules.tasklist.trampoline.TaskGroup;
  */
 class FoldingTaskListModel extends TaskListModel {
     
-    private LinkedList<FoldingGroup> groups = new LinkedList<FoldingGroup>();
+    private final LinkedList<FoldingGroup> groups = new LinkedList<FoldingGroup>();
     private HashMap<String,FoldingGroup> groupMap = new HashMap<String,FoldingGroup>(10);
     
     /** Creates a new instance of FoldingTaskListModel */
@@ -77,8 +77,10 @@ class FoldingTaskListModel extends TaskListModel {
         if( null == list )
             return 0;
         int count = 0;
-        for( FoldingGroup g : groups ) {
-            count += g.getRowCount();
+        synchronized( groups ) {
+            for( FoldingGroup g : groups ) {
+                count += g.getRowCount();
+            }
         }
         return count;
     }
@@ -95,10 +97,12 @@ class FoldingTaskListModel extends TaskListModel {
         if( isGroupRow( row ) )
             return null;
         int groupRow = 0;
-        for( FoldingGroup g : groups ) {
-            if( row < groupRow+g.getRowCount() )
-                return g.getTaskAt( row-groupRow-1 );
-            groupRow += g.getRowCount();
+        synchronized( groups ) {
+            for( FoldingGroup g : groups ) {
+                if( row < groupRow+g.getRowCount() )
+                    return g.getTaskAt( row-groupRow-1 );
+                groupRow += g.getRowCount();
+            }
         }
         return null;
     }
@@ -120,12 +124,14 @@ class FoldingTaskListModel extends TaskListModel {
     
     FoldingGroup getGroupAtRow( int row ) {
         int groupRow = 0;
-        for( FoldingGroup g : groups ) {
-            if( g.isEmpty() )
-                continue;
-            if( row == groupRow )
-                return g;
-            groupRow += g.getRowCount();
+        synchronized( groups ) {
+            for( FoldingGroup g : groups ) {
+                if( g.isEmpty() )
+                    continue;
+                if( row == groupRow )
+                    return g;
+                groupRow += g.getRowCount();
+            }
         }
         return null;
     }
@@ -136,10 +142,12 @@ class FoldingTaskListModel extends TaskListModel {
             TaskGroup tg = Accessor.getGroup( t );
             FoldingGroup group = groupMap.get( tg.getName() );
             if( null == group ) {
-                group = new FoldingGroup( tg );
-                groupMap.put( tg.getName(), group );
-                groups.add( group );
-                Collections.sort( groups );
+                synchronized( groups ) {
+                    group = new FoldingGroup( tg );
+                    groupMap.put( tg.getName(), group );
+                    groups.add( group );
+                    Collections.sort( groups );
+                }
             }
             List<Task> tasksInGroup = grouppedTasksMap.get( group );
             if( null == tasksInGroup ) {
@@ -175,8 +183,10 @@ class FoldingTaskListModel extends TaskListModel {
 
     @Override
     public void cleared() {
-        for( FoldingGroup fg : groups ) {
-            fg.clear();
+        synchronized( groups ) {
+            for( FoldingGroup fg : groups ) {
+                fg.clear();
+            }
         }
     }
     
@@ -194,9 +204,11 @@ class FoldingTaskListModel extends TaskListModel {
         if( fg.isEmpty() )
             return -1;
         int startingRow = 0;
-        int groupIndex = groups.indexOf( fg );
-        for( int i=0; i<groupIndex; i++ ) {
-            startingRow += groups.get( i ).getRowCount();
+        synchronized( groups ) {
+            int groupIndex = groups.indexOf( fg );
+            for( int i=0; i<groupIndex; i++ ) {
+                startingRow += groups.get( i ).getRowCount();
+            }
         }
         return startingRow;
     }
@@ -222,8 +234,10 @@ class FoldingTaskListModel extends TaskListModel {
             break;
         }
         if( null != groups ) {
-            for( FoldingGroup fg : groups ) {
-                fg.setComparator( comparator );
+            synchronized( groups ) {
+                for( FoldingGroup fg : groups ) {
+                    fg.setComparator( comparator );
+                }
             }
 
             Settings.getDefault().setSortingColumn( sortingCol );
@@ -330,9 +344,11 @@ class FoldingTaskListModel extends TaskListModel {
             Settings.getDefault().setGroupExpanded( tg.getName(), isExpanded );
             
             int firstRow = 0;
-            int groupIndex = groups.indexOf( this );
-            for( int i=0; i<groupIndex; i++ ) {
-                firstRow += groups.get( i ).getRowCount();
+            synchronized( groups ) {
+                int groupIndex = groups.indexOf( this );
+                for( int i=0; i<groupIndex; i++ ) {
+                    firstRow += groups.get( i ).getRowCount();
+                }
             }
             int lastRow = firstRow + getTaskCount();
             firstRow += 1;
@@ -390,9 +406,11 @@ class FoldingTaskListModel extends TaskListModel {
                     Collections.sort( tasks, getComparator() );
                     if( isExpanded() ) {
                         int firstRow = 0;
-                        int groupIndex = groups.indexOf( this );
-                        for( int i=0; i<groupIndex; i++ ) {
-                            firstRow += groups.get( i ).getRowCount();
+                        synchronized( groups ) {
+                            int groupIndex = groups.indexOf( this );
+                            for( int i=0; i<groupIndex; i++ ) {
+                                firstRow += groups.get( i ).getRowCount();
+                            }
                         }
                         int lastRow = firstRow + getTaskCount();
                         firstRow += 1;
