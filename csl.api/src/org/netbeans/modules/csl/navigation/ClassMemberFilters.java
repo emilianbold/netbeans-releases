@@ -110,7 +110,7 @@ public final class ClassMemberFilters {
 
         List<StructureItem> result = new ArrayList<StructureItem>(original.size());
       
-        if (disableFiltering) {
+        if (!disableFiltering) {
             for (StructureItem description : original) {
 
                 // I default no access modifier to mean public, unlike the Java version where it means package protected
