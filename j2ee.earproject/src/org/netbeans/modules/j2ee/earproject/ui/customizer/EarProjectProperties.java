@@ -979,15 +979,28 @@ public final class EarProjectProperties {
         File asRoot = j2eePlatform.getPlatformRoots()[0];
         InstanceProperties ip = InstanceProperties.getInstanceProperties(serverInstanceID);
         //check if we have AS
-        if (ip != null && new File(asRoot, "lib/admin-cli.jar").exists()) { // NOI18N
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            if (exFile.exists()) {
-                ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-apps").getAbsolutePath()); // NOI18N
-            } else {
-                ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-apps").getAbsolutePath()); // NOI18N
-            }
+        if (ip != null) {
+            // Pre-v3
+            if (new File(asRoot, "lib/admin-cli.jar").exists()) {
+                File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
+                if (exFile.exists()) {
+                    // GF v1, v2
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
+                            new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-apps").getAbsolutePath()); // NOI18N
+                } else {
+                    // SJSAS 8.x
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
+                            new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-apps").getAbsolutePath()); // NOI18N
+                }
+             } else {
+                String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME,
+                        J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+                if (copyProperty != null) {
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM, copyProperty);
+                } else {
+                    ep.remove(APPCLIENT_WA_COPY_CLIENT_JAR_FROM);
+                }
+             }
         } else {
             ep.remove(APPCLIENT_WA_COPY_CLIENT_JAR_FROM);
         }
