@@ -50,20 +50,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class NativeExecutionBaseTestCase extends NbTestCase {
 
     static {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
-
-        while (true) {
-            String dirName = junitWorkdir.getName();
-            junitWorkdir = junitWorkdir.getParentFile();
-            if ("dlight.nativeexecution".equals(dirName) || "".equals(dirName)) { // NOI18N
-                break;
-            }
-        }
-
-        File dlightDir = new File(junitWorkdir, "nbbuild/netbeans/dlight1"); // NOI18N
-        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
-
         Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
         log.setLevel(Level.ALL);
 //

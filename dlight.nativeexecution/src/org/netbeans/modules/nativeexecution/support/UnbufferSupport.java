@@ -88,7 +88,7 @@ public class UnbufferSupport {
         }
 
         if (unbufferLib != null && unbufferPath != null) {
-            InstalledFileLocator fl = InstalledFileLocator.getDefault();
+            InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
             File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
 
             log.fine("Look for unbuffer library here: " + unbufferPath + "/" + unbufferLib); // NOI18N
