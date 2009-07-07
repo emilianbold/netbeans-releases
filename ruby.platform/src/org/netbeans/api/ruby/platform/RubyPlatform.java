@@ -862,15 +862,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = isRubinius() ? null : getLibDirFO();
         FileObject rubyStubs = getRubyStubs();
-        FileObject gemHome = getGemManager() != null ? getGemManager().getGemHomeFO() : null;
-
-        //        FileObject jar = FileUtil.getArchiveFile(file);
-        //        if (jar != null) {
-        //            file = jar;
-        //        }
+        FileObject gemHome = getGemHome();
 
         while (file != null) {
-            if (file.equals(rubyLibFo) || file.equals(rubyStubs) || file.equals(gemHome)) {
+            if (file.equals(rubyLibFo) || file.equals(rubyStubs) || isGemRoot(file) || file.equals(gemHome)) {
                 return file;
             }
 
@@ -878,6 +873,23 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         }
 
         return null;
+    }
+
+    private FileObject getGemHome() {
+        return getGemManager() != null ? getGemManager().getGemHomeFO() : null;
+    }
+
+    /**
+     * @return true if the given file represents the lib dir of a gem, e.g.
+     * <code>$GEM_HOME/mygem-0.1/lib</code>, false otherwise. This is useful 
+     * for {@link #getSystemRoot(libDirFO)} to be able to return an indexed root 
+     * (the lib dirs of gems are indexed roots). See also IZ 167814.
+     */
+    private boolean isGemRoot(FileObject file) {
+        for (int i = 0; i < 3 && file != null; i++) {
+            file = file.getParent();
+        }
+        return file != null && file.isFolder() && file.equals(getGemHome());
     }
 
     private void updateIndexRoots() {
