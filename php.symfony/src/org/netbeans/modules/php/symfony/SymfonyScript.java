@@ -168,6 +168,12 @@ public class SymfonyScript extends PhpProgram {
         return symfonyScript;
     }
 
+    public static void resetDefault() {
+        synchronized (CACHE) {
+            CACHE.remove(null);
+        }
+    }
+
     public static String getOptionsPath() {
         return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
     }
