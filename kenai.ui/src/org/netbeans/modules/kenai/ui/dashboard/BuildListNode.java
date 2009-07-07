@@ -43,9 +43,9 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -106,7 +106,7 @@ public class BuildListNode extends SectionNode {
         }
 
         @Override
-        public ActionListener getDefaultAction() {
+        public Action getDefaultAction() {
             return BuildAccessor.getDefault().getNewBuildAction(project);
         }
     }
