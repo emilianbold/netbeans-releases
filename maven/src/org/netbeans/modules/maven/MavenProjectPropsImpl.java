@@ -66,13 +66,13 @@ public class MavenProjectPropsImpl {
     static String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
     static String ROOT = "properties"; //NOI18N
 
-    private Project prj;
+    private final Project prj;
     private boolean transaction = false;
     private TreeMap<String, String> transPropsShared;
     private TreeMap<String, String> transPropsPrivate;
     private AuxiliaryConfiguration aux;
     private boolean sharedChanged;
-    private NbMavenProject nbprj;
+    private final NbMavenProject nbprj;
 
     MavenProjectPropsImpl(Project project, AuxiliaryConfiguration aux, NbMavenProject pr) {
         prj = project;

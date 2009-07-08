@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author mkleint
  */
 public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private HashMap<URL, Res> results;
     
     /** Creates a new instance of MavenBinaryForSourceQueryImpl */

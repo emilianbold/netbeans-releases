@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class POHImpl extends ProjectOpenedHook {
-    private Project project;
+    private final Project project;
     private J2eeLookupProvider.Provider provider;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;

@@ -73,7 +73,7 @@ import org.openide.filesystems.FileUtil;
 public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementation,
         JavadocForBinaryQueryImplementation {
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private final HashMap<String, BinResult> map;
     /** Creates a new instance of MavenSourceForBinaryQueryImpl */
     public MavenForBinaryQueryImpl(NbMavenProjectImpl proj) {

@@ -63,7 +63,7 @@ public class UserActionGoalProvider extends AbstractMavenActionsProvider {
     
     public static final String FILENAME = "nbactions.xml"; //NOI18N
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
     /** Creates a new instance of UserActionGoalProvider */

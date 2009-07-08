@@ -72,7 +72,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static final String ARTIFACTID = "artifactId";//NOI18N
     private static final String CLASSPATHSCOPE = "classPathScope";//NOI18N
     private static final String GROUPID = "groupId";//NOI18N
-    private Project project;
+    private final Project project;
     private static final String CLASSNAME = "className";//NOI18N
     private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
     private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
