@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.Collection;
+import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.File;
@@ -107,7 +109,8 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
-        RemoteClient remoteClient = getRemoteClient(remoteLog);
+        DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor("LBL_Uploading"); // NOI18N
+        RemoteClient remoteClient = getRemoteClient(remoteLog, uploadOperationMonitor);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -137,7 +140,8 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             if (forUpload.size() > 0) {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
-                progressHandle.start();
+                uploadOperationMonitor.progressHandle = progressHandle;
+                progressHandle.start(getWorkUnits(forUpload));
                 transferInfo = remoteClient.upload(sources, forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
