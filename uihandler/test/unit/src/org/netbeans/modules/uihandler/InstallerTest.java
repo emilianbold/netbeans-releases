@@ -100,7 +100,7 @@ public class InstallerTest extends NbTestCase {
     }
     
     public void testEmptyLog() throws Exception {
-        List<LogRecord> list = ScreenSizeTest.removeScreenSizeLogs(Installer.getLogs());
+        List<LogRecord> list = ScreenSizeTest.removeExtraLogs(Installer.getLogs());
         assertEquals("Empty", 0, list.size());
         list.add(null);
         assertEquals("One", 1, list.size());
@@ -116,20 +116,21 @@ public class InstallerTest extends NbTestCase {
         
         installer.restored();
         UIHandler.waitFlushed();
-        assertEquals("One log is available: " + Installer.getLogs(), 1, InstallerTest.getLogsSize());
+        assertEquals("One log is available: " + getLogs(), 1, getLogsSize());
+        
         assertEquals("The right message is there", 
-            "Something happened", Installer.getLogs().get(1).getMessage()
+            "Something happened", getLogs().get(0).getMessage()
         );
         log.warning("Something happened");
         log.warning("Something happened");
         log.warning("Something happened");
-        assertEquals("Four logs available: " + Installer.getLogs(), 4, InstallerTest.getLogsSize());
+        assertEquals("Four logs available: " + getLogs(), 4, getLogsSize());
         
         // upload done
         Installer.clearLogs();
         
         log.warning("Something happened");
-        assertEquals("One log available: " + Installer.getLogs(), 1, InstallerTest.getLogsSize());
+        assertEquals("One log available: " + getLogs(), 1, getLogsSize());
         
     }
 
@@ -566,8 +567,14 @@ public class InstallerTest extends NbTestCase {
 
     static int getLogsSize(){
         List<LogRecord> logs = Installer.getLogs();
-        logs = ScreenSizeTest.removeScreenSizeLogs(logs);
+        logs = ScreenSizeTest.removeExtraLogs(logs);
         return logs.size();
+    }
+
+    static List<LogRecord> getLogs() {
+        List<LogRecord> logs = Installer.getLogs();
+        logs = ScreenSizeTest.removeExtraLogs(logs);
+        return logs;
     }
 
 }

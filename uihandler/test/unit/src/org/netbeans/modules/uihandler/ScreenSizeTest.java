@@ -90,11 +90,15 @@ public class ScreenSizeTest extends NbTestCase {
         }
     }
 
-    public static List<LogRecord> removeScreenSizeLogs(List<LogRecord> logs){
+    public static List<LogRecord> removeExtraLogs(List<LogRecord> logs){
         Iterator<LogRecord> it = logs.iterator();
         while (it.hasNext()){
             LogRecord logRecord = it.next();
             if (logRecord.getMessage().equals(ScreenSize.MESSAGE)) {
+                it.remove();
+            } else if (logRecord.getMessage().equals(CPUInfo.MESSAGE)){
+                it.remove();
+            } else if (logRecord.getMessage().equals(Installer.IDE_STARTUP)){
                 it.remove();
             }
         }
