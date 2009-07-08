@@ -54,7 +54,6 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -175,23 +174,12 @@ public final class PhpCoverageProvider implements CoverageProvider {
     static FileCoverageSummary getFileCoverageSummary(FileVO file) {
         assert file != null;
         FileObject fo = FileUtil.toFileObject(new File(file.getPath()));
-        int executedLineCount = getExecutedLineCount(file);
         return new FileCoverageSummary(
                 fo,
                 fo.getNameExt(),
-                file.getMetrics().loc,
-                executedLineCount,
-                file.getMetrics().loc - executedLineCount,
+                file.getMetrics().statements,
+                file.getMetrics().coveredStatements,
+                -1,
                 -1);
-    }
-
-    private static int getExecutedLineCount(FileVO file) {
-        int executed = file.getMetrics().loc;
-        for (LineVO line : file.getLines()) {
-            if (line.count == 0) {
-                executed--;
-            }
-        }
-        return executed;
     }
 }
