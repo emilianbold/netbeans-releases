@@ -54,7 +54,7 @@ public class CPUInfo {
     static void logCPUInfo() {
         LogRecord log = new LogRecord(Level.FINEST, MESSAGE); // NOI18N
         OperatingSystemMXBean bean = ManagementFactory.getOperatingSystemMXBean();
-        Object [] params = new Object[]{bean.getAvailableProcessors(), bean.getSystemLoadAverage()};
+        Object [] params = new Object[]{bean.getAvailableProcessors()};
         log.setParameters(params);
         Logger.getLogger("org.netbeans.ui.performance").log(log);
     }
