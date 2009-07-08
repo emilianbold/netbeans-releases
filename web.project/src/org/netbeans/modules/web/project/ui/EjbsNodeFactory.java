@@ -49,7 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -85,8 +85,8 @@ public class EjbsNodeFactory implements NodeFactory {
         }
 
         public List<String> keys() {
-            Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
-            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
+            J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
+            if (projectCap.isEjb31LiteSupported()){
                 return Collections.singletonList(KEY_EJBS);
             }else{
                 return Collections.EMPTY_LIST;

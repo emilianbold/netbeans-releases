@@ -73,5 +73,15 @@ made subject to such option by the copyright holder.
             </xml-rule>
         </resolver>       
     </file>    
+    <file>
+        <ext name="xml"/>
+            <resolver mime="text/x-jsf+xml">
+            <xml-rule>
+            	<element name="faces-config" ns="http://java.sun.com/xml/ns/javaee">
+                    <attr name="version" text="2.0"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
         
 </MIME-resolver>
