@@ -284,7 +284,9 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
                 DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(_component.getDocument());
                 swingDoc.putProperty(Document.StreamDescriptionProperty, context.getDataObject());
                 int offset = CodeUtils.getMethodOffset(context);
+                String text = textPane.getText();
                 DialogBinding.bindComponentToFile(context.getDataObject().getPrimaryFile(), offset, 0, textPane);
+                textPane.setText(text);
             }
         }
     }
