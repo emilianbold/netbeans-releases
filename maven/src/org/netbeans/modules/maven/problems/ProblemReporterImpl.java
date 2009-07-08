@@ -81,7 +81,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private static final String MISSINGJ2EE = "MISSINGJ2EE"; //NOI18N
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
-    private NbMavenProjectImpl nbproject;
+    private final NbMavenProjectImpl nbproject;
     private ModuleInfo j2eeInfo;
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {

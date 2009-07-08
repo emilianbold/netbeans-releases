@@ -84,17 +84,17 @@ public class J2eeLookupProvider implements LookupProvider {
     }
     
     public static class Provider extends AbstractLookup implements  PropertyChangeListener {
-        private Project project;
-        private InstanceContent content;
+        private final Project project;
+        private final InstanceContent content;
         private String lastType = NbMavenProject.TYPE_JAR;
         private Object lastInstance = null;
         private CopyOnSave copyOnSave;
-        private WebReplaceTokenProvider replacer;
-        private EntRefContainerImpl webEnt;
-        private EjbEntRefContainerImpl ejbEnt;
-        private JPAStuffImpl jpa;
-        private EMGSResolverImpl resolver;
-        private MavenPersistenceProviderSupplier supplier;
+        private final WebReplaceTokenProvider replacer;
+        private final EntRefContainerImpl webEnt;
+        private final EjbEntRefContainerImpl ejbEnt;
+        private final JPAStuffImpl jpa;
+        private final EMGSResolverImpl resolver;
+        private final MavenPersistenceProviderSupplier supplier;
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
             project = proj;

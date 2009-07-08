@@ -38,11 +38,18 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dialog;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Date;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -50,6 +57,7 @@ import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class WorkLogPanel extends javax.swing.JPanel {
     private NbJiraIssue issue;
+    private boolean initialized;
 
     public WorkLogPanel(NbJiraIssue issue) {
         this.issue = issue;
@@ -66,6 +75,22 @@ public class WorkLogPanel extends javax.swing.JPanel {
         startDateField.setValue(new Date());
 
         // Leave estimate choice
+        int estimate = getCurrentRemainingEstimate();
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        int daysPerWeek = config.getWorkDaysPerWeek();
+        int hoursPerDay = config.getWorkHoursPerDay();
+        String pattern = NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text"); // NOI18N
+        String leaveEstimateText = MessageFormat.format(pattern, JiraUtils.getWorkLogText(estimate, daysPerWeek, hoursPerDay, true));
+        leaveEstimateChoice.setText(leaveEstimateText);
+
+        // Listeners
+        timeSpentField.getDocument().addDocumentListener(new WorkLogFormatListener());
+
+        updateMessagePanel();
+        initialized = true;
+    }
+
+    private int getCurrentRemainingEstimate() {
         String estimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
         int estimate = 0;
         if (estimateTxt != null) {
@@ -75,12 +100,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
                 estimate = 0;
             }
         }
-        JiraConfiguration config = issue.getRepository().getConfiguration();
-        int daysPerWeek = config.getWorkDaysPerWeek();
-        int hoursPerDay = config.getWorkHoursPerDay();
-        String pattern = NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text"); // NOI18N
-        String leaveEstimateText = MessageFormat.format(pattern, JiraUtils.getWorkLogText(estimate, daysPerWeek, hoursPerDay, true));
-        leaveEstimateChoice.setText(leaveEstimateText);
+        return estimate;
     }
 
     public boolean showDialog() {
@@ -114,6 +134,58 @@ public class WorkLogPanel extends javax.swing.JPanel {
         return workDescriptionArea.getText();
     }
 
+    public int getRemainingEstimate() {
+        if (autoAdjustChoice.isSelected()) {
+            return -1;
+        } else if (leaveEstimateChoice.isSelected()) {
+            return getCurrentRemainingEstimate();
+        } else if (setEstimatedTimeChoice.isSelected()) {
+            JiraConfiguration config = issue.getRepository().getConfiguration();
+            int daysPerWeek = config.getWorkDaysPerWeek();
+            int hoursPerDay = config.getWorkHoursPerDay();
+            return JiraUtils.getWorkLogSeconds(setEstimatedTimeField.getText(), daysPerWeek, hoursPerDay);
+        } else {
+            assert reduceEstimatedTimeChoice.isSelected();
+            JiraConfiguration config = issue.getRepository().getConfiguration();
+            int daysPerWeek = config.getWorkDaysPerWeek();
+            int hoursPerDay = config.getWorkHoursPerDay();
+            return Math.max(0, getCurrentRemainingEstimate()-JiraUtils.getWorkLogSeconds(reduceEstimatedTimeField.getText(), daysPerWeek, hoursPerDay));
+        }
+    }
+
+    private boolean timeSpentFormat;
+    private boolean timeSpentZero = true;
+
+    void updateMessagePanel() {
+        messagePanel.removeAll();
+        if (timeSpentFormat) {
+            JLabel timeSpentFormatLbl = new JLabel();
+            timeSpentFormatLbl.setText(NbBundle.getMessage(IssuePanel.class, "WorkLogPanel.timeSpentFormat")); // NOI18N
+            messagePanel.add(timeSpentFormatLbl);
+        }
+        if (timeSpentZero) {
+            JLabel timeSpentZeroLbl = new JLabel();
+            timeSpentZeroLbl.setText(NbBundle.getMessage(IssuePanel.class, "WorkLogPanel.timeSpentZero")); // NOI18N
+            messagePanel.add(timeSpentZeroLbl);
+        }
+        if (timeSpentFormat || timeSpentZero) {
+            String iconRes = initialized ? "org/netbeans/modules/jira/resources/error.gif" : "org/netbeans/modules/jira/resources/info.png"; // NOI18N
+            Icon icon = new ImageIcon(ImageUtilities.loadImage(iconRes));
+            for (Component comp : messagePanel.getComponents()) {
+                ((JLabel)comp).setIcon(icon);
+                if (initialized) {
+                    comp.setForeground(Color.RED);
+                }
+            }
+            messagePanel.setVisible(true);
+            submitButton.setEnabled(false);
+            messagePanel.revalidate();
+        } else {
+            messagePanel.setVisible(false);
+            submitButton.setEnabled(true);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -144,6 +216,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
         workDescriptionLabel = new javax.swing.JLabel();
         workDescriptionScrollPane = new javax.swing.JScrollPane();
         workDescriptionArea = new javax.swing.JTextArea();
+        messagePanel = new javax.swing.JPanel();
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.submitButton.text")); // NOI18N
 
@@ -189,6 +262,8 @@ public class WorkLogPanel extends javax.swing.JPanel {
         workDescriptionArea.setRows(5);
         workDescriptionScrollPane.setViewportView(workDescriptionArea);
 
+        messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.LINE_AXIS));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -196,6 +271,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(messagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(hintLabel)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
@@ -267,7 +343,8 @@ public class WorkLogPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(workDescriptionLabel)
                     .add(workDescriptionScrollPane))
-                .add(0, 0, 0))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(messagePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -280,6 +357,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JLabel hintLabel;
     private javax.swing.JRadioButton leaveEstimateChoice;
+    private javax.swing.JPanel messagePanel;
     private javax.swing.JRadioButton reduceEstimatedTimeChoice;
     private javax.swing.JTextField reduceEstimatedTimeField;
     private javax.swing.JRadioButton setEstimatedTimeChoice;
@@ -295,5 +373,29 @@ public class WorkLogPanel extends javax.swing.JPanel {
     private javax.swing.JLabel workDescriptionLabel;
     private javax.swing.JScrollPane workDescriptionScrollPane;
     // End of variables declaration//GEN-END:variables
+
+    class WorkLogFormatListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            int timeSpent = getTimeSpent();
+            if ((timeSpent < 0) != timeSpentFormat) {
+                timeSpentFormat = (timeSpent < 0);
+                updateMessagePanel();
+            }
+            if ((timeSpent == 0) != timeSpentZero) {
+                timeSpentZero = (timeSpent == 0);
+                updateMessagePanel();
+            }
+        }
+
+    }
 
 }

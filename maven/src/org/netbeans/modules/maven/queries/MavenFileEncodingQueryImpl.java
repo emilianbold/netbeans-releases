@@ -59,7 +59,7 @@ import org.openide.util.Exceptions;
  */
 public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation {
 
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private static final String ENCODING_PARAM = "encoding"; //NOI18N
     
     public MavenFileEncodingQueryImpl(NbMavenProjectImpl proj) {

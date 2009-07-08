@@ -73,9 +73,8 @@ public class UIHandlerWhenInterruptedTest extends NbTestCase {
     }
 
     public void testPublishWhenInterupted() {
-        // log no 0 is screen size log
         
-        for (int i = 1; i < 800; i++) {
+        for (int i = 0; i < 800; i++) {
             LogRecord rec2 = new LogRecord(Level.FINER, "" + i); // NOI18N
             Thread.currentThread().interrupt();
             UILOG.log(rec2);        
@@ -85,7 +84,7 @@ public class UIHandlerWhenInterruptedTest extends NbTestCase {
         while (cnt-- > 0 && Installer.getLogsSize() < 800) {
             // ok, repeat
         }
-        List<LogRecord> logs = Installer.getLogs();
+        List<LogRecord> logs = InstallerTest.getLogs();
         assertEquals("One log: " + logs, 800, logs.size());
         
         for (int i = 1; i < 800; i++) {

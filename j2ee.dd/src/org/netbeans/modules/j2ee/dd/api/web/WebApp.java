@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 
 /**
  * Generated interface for WebApp element.<br>
@@ -183,13 +184,13 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     void setLoginConfig(LoginConfig value);
     LoginConfig getSingleLoginConfig();
 
-    void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
-    org.netbeans.modules.j2ee.dd.api.common.SecurityRole getSecurityRole(int index);
-    void setSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] value);
-    org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] getSecurityRole();
+    void setSecurityRole(int index, SecurityRole valueInterface);
+    SecurityRole getSecurityRole(int index);
+    void setSecurityRole(SecurityRole[] value);
+    SecurityRole[] getSecurityRole();
     int sizeSecurityRole();
-    int addSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
-    int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
+    int addSecurityRole(SecurityRole valueInterface);
+    int removeSecurityRole(SecurityRole valueInterface);
 
     void setEnvEntry(int index, EnvEntry valueInterface);
     EnvEntry getEnvEntry(int index);

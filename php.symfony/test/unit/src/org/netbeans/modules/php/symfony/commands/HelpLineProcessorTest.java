@@ -43,6 +43,8 @@ import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Tomas Mysik
@@ -54,7 +56,7 @@ public class HelpLineProcessorTest extends NbTestCase {
     }
 
     public void testCommands() {
-        SymfonyCommandSupport.CommandsLineProcessor processor = new SymfonyCommandSupport.CommandsLineProcessor();
+        SymfonyCommandSupport.CommandsLineProcessor processor = new SymfonyCommandSupport(new PhpModuleImpl()).new CommandsLineProcessor();
         for (String s : getCommands()) {
             processor.processLine(s);
         }
@@ -107,5 +109,28 @@ public class HelpLineProcessorTest extends NbTestCase {
         commands.add("  :functional                  Launches functional tests (test-functional)");
         commands.add("  :unit                        Launches unit tests (test-unit)");
         return commands;
+    }
+
+    private static final class PhpModuleImpl extends PhpModule {
+
+        @Override
+        public String getName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public FileObject getSourceDirectory() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public FileObject getTestDirectory() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }

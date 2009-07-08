@@ -46,7 +46,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
-import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -103,6 +102,11 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public String getErrorMessage() {
-        return SymfonyScript.validate(SymfonyOptions.getInstance().getSymfony());
+        try {
+            SymfonyScript.getDefault();
+        } catch (InvalidSymfonyScriptException ex) {
+            return ex.getMessage();
+        }
+        return null;
     }
 }

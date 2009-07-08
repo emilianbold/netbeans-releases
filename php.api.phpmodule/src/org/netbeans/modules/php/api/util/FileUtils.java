@@ -78,7 +78,11 @@ public final class FileUtils {
         for (String d : dirs) {
             File file = new File(d, filename);
             if (file.isFile()) {
-                found.add(FileUtil.normalizeFile(file).getAbsolutePath());
+                String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
+                // not optimal but should be ok
+                if (!found.contains(absolutePath)) {
+                    found.add(absolutePath);
+                }
             }
         }
         return found;

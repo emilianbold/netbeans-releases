@@ -67,6 +67,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -382,10 +383,11 @@ public class IssuePanel extends javax.swing.JPanel {
             fixPrefSize(originalEstimateField);
             fixPrefSize(remainingEstimateField);
             fixPrefSize(timeSpentField);
-            int scale = Math.max(originalEstimate, timeSpent);
-            setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
-            setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
-            setupWorkLogPanel(timeSpentPanel, TIME_SPENT_COLOR, Color.lightGray, timeSpent, scale-timeSpent);
+            int scale = Math.max(originalEstimate, timeSpent+remainintEstimate);
+            Color bgColor = UIManager.getDefaults().getColor("EditorPane.background"); // NOI18N
+            setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, Color.lightGray, originalEstimate, scale-originalEstimate, 0);
+            setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, bgColor, timeSpent, remainintEstimate, scale-timeSpent-remainintEstimate);
+            setupWorkLogPanel(timeSpentPanel, TIME_SPENT_COLOR, Color.lightGray, bgColor, timeSpent, remainintEstimate, scale-timeSpent-remainintEstimate);
 
             // Comments
             commentsPanel.setIssue(issue);
@@ -509,7 +511,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
-    private void setupWorkLogPanel(JPanel panel, Color color1,  Color color2, int val1, int val2) {
+    private void setupWorkLogPanel(JPanel panel, Color color1,  Color color2, Color color3, int val1, int val2, int val3) {
         panel.setLayout(new GridBagLayout());
 
         JLabel label1 = new JLabel();
@@ -529,6 +531,15 @@ public class IssuePanel extends javax.swing.JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = val2;
         panel.add(label2, c);
+
+        JLabel label3 = new JLabel();
+        label3.setOpaque(true);
+        label3.setBackground(color3);
+        label3.setPreferredSize(new Dimension(0,10));
+        c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = val3;
+        panel.add(label3, c);
     }
 
     private List<org.eclipse.mylyn.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
@@ -1521,7 +1532,10 @@ public class IssuePanel extends javax.swing.JPanel {
             submitChange(new Runnable() {
                 public void run() {
                     issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
-                    // PENDING update remaining estimate
+                    int remainingEstimate = panel.getRemainingEstimate();
+                    if (remainingEstimate != -1) { // -1 means auto-adjust
+                        issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, (remainingEstimate+panel.getTimeSpent())+""); // NOI18N
+                    }
                     issue.submitAndRefresh();
                 }
             }, message);

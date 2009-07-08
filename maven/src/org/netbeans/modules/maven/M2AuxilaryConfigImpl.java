@@ -80,7 +80,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private static final String AUX_CONFIG = "AuxilaryConfiguration"; //NOI18N
     private static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
     private static final int SAVING_DELAY = 100;
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private RequestProcessor.Task savingTask;
     private Document scheduledDocument;
     private Date timeStamp = new Date(0);
