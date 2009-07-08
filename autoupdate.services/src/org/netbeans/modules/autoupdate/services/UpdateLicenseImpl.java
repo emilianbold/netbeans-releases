@@ -78,11 +78,12 @@ public final class UpdateLicenseImpl {
     }
 
     public String getAgreement () {
-        return AutoupdateCatalogCache.getDefault().getLicense(name,url);
+        return (name == null) ? null :
+            AutoupdateCatalogCache.getDefault().getLicense(name,url);
     }
     
     public void setAgreement (String content) {
-        if(content!=null) {
+        if(content!=null && name!=null) {
             AutoupdateCatalogCache.getDefault().storeLicense(name,content);
         }
     }    
