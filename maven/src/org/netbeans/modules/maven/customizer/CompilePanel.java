@@ -84,7 +84,6 @@ import org.openide.util.WeakListeners;
  * @author mkleint
  */
 public class CompilePanel extends javax.swing.JPanel implements WindowFocusListener {
-    private ModelHandle handle;
     private static final String[] LABELS = new String[] {
         NbBundle.getMessage(CompilePanel.class, "COS_ALL"),
         NbBundle.getMessage(CompilePanel.class, "COS_APP"),
@@ -107,7 +106,8 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
     private static final int COS_NONE = 3;
 
     private ComboBoxUpdater<String> listener;
-    private Project project;
+    private final ModelHandle handle;
+    private final Project project;
     private CheckBoxUpdater debugUpdater;
     private CheckBoxUpdater deprecateUpdater;
     private static boolean warningShown = false;
@@ -185,7 +185,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     //just reset the value, no need to persist default.
                     value = null;
                 }
-                if (VALUES[0].equals(value) || VALUES[1].equals(value)) {
+                if (VALUES[COS_ALL].equals(value) || VALUES[COS_APP].equals(value)) {
                     if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutApplicationCoS()) {
                         WarnPanel panel = new WarnPanel(NbBundle.getMessage(CompilePanel.class, "HINT_ApplicationCoS"));
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
