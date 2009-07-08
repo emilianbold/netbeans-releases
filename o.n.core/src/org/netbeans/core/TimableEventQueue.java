@@ -74,7 +74,7 @@ implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
     private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
     private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 100); // NOI18N
-    private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 1000); // NOI18N
+    private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 3000); // NOI18N
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
     private static final int CLEAR = Integer.getInteger("org.netbeans.core.TimeableEventQueue.clear", 60000); // NOI18N
 
