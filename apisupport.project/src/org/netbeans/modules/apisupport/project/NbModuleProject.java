@@ -58,6 +58,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -65,6 +67,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
@@ -174,7 +177,7 @@ public final class NbModuleProject implements Project {
         List<String> to = new ArrayList<String>();
         from.add("${src.dir}/*.java"); // NOI18N
         to.add("${build.classes.dir}/*.class"); // NOI18N
-        for (String type : supportedTestTypes()) {
+        for (String type : supportedTestTypes(false)) {
             from.add("${test." + type + ".src.dir}/*.java"); // NOI18N
             to.add("${build.test." + type + ".classes.dir}/*.class"); // NOI18N
         }
@@ -185,24 +188,27 @@ public final class NbModuleProject implements Project {
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
-        sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages"), null, null); // #56457
-        for (String type : supportedTestTypes()) {
-            sourcesHelper.addPrincipalSourceRoot("${test." + type + ".src.dir}", NbBundle.getMessage(NbModuleProject.class, "LBL_" + type + "_test_packages"), null, null); // #68727
+        sourcesHelper.sourceRoot("${src.dir}")// NOI18N
+                .hint(JavaProjectConstants.SOURCES_HINT_MAIN)
+                .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages")).add() // as principal root
+                .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // as typed root
+        for (String type : supportedTestTypes(false)) {
+            sourcesHelper.sourceRoot("${test." + type + ".src.dir}")// NOI18N
+                    .hint(JavaProjectConstants.SOURCES_HINT_TEST)
+                    .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_" + type + "_test_packages")).add() // as principal root
+                    .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // as typed root
         }
-        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages"), null, null);
         // XXX other principal source roots, as needed...
-        for (String type : supportedTestTypes()) {
-            sourcesHelper.addTypedSourceRoot("${test." + type + ".src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_" + type + "_test_packages"), null, null);
-        }
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
-            sourcesHelper.addTypedSourceRoot("javahelp", SOURCES_TYPE_JAVAHELP, NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages"), null, null);
+            sourcesHelper.sourceRoot("javahelp").type(SOURCES_TYPE_JAVAHELP)
+                    .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages")).add();
         }
         for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
             Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = Util.findText(pkgrootEl);
-            sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA,
-                    /* XXX should schema incl. display name? */entry.getKey().getNameExt(), null, null);
+            sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA)
+                    .displayName(/* XXX should schema incl. display name? */entry.getKey().getNameExt()).add();
         }
         // #56457: support external source roots too.
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -230,6 +236,13 @@ public final class NbModuleProject implements Project {
     }
 
     private Lookup createLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
+        Sources srcs = sourcesHelper.createSources();
+        srcs.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                // added source root, probably via SourceGroupModifiedImplementation
+                getLookup().lookup(ModuleActions.class).refresh();
+            }
+        });
         ic.add(this);
         ic.add(info);
         ic.add(aux);
@@ -251,7 +264,8 @@ public final class NbModuleProject implements Project {
                     // currently these are hardcoded
                     "build", // NOI18N
                 }));
-        ic.add(sourcesHelper.createSources());
+        ic.add(srcs);
+        ic.add(sourcesHelper.createSourceGroupModifierImplementation());    // XXX only for unit tests, will need custom impl for qa-functional
         ic.add(new AntArtifactProviderImpl(this, helper, evaluator()));
         ic.add(new CustomizerProviderImpl(this, getHelper(), evaluator()));
         ic.add(typeProvider);
@@ -333,7 +347,7 @@ public final class NbModuleProject implements Project {
     public String getSourceDirectoryPath() {
         return evaluator().getProperty("src.dir"); // NOI18N
     }
-    
+
     private NbModuleProvider.NbModuleType getModuleType() {
         Element data = getPrimaryConfigurationData();
         if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
@@ -383,6 +397,11 @@ public final class NbModuleProject implements Project {
     
     public FileObject getTestSourceDirectory(String type) {
         return getDir("test." + type + ".src.dir"); // NOI18N
+    }
+
+    private File getTestSourceDirectoryFile(String type) {
+        String dir = evaluator().getProperty("test." + type + ".src.dir"); // NOI18N
+        return dir != null ? helper.resolveFile(dir) : null;
     }
     
     public File getClassesDirectory() {
@@ -572,9 +591,15 @@ public final class NbModuleProject implements Project {
     }
     
     public List<String> supportedTestTypes() {
+        return supportedTestTypes(true);
+    }
+
+    public List<String> supportedTestTypes(boolean mustExist) {
         List<String> types = new ArrayList<String>();
         for (String type : COMMON_TEST_TYPES) {
-            if (getTestSourceDirectory(type) != null && !Boolean.parseBoolean(evaluator().getProperty("disable." + type + ".tests"))) {
+            if (((mustExist && getTestSourceDirectory(type) != null)
+                        || (! mustExist && getTestSourceDirectoryFile(type) != null))
+                    && !Boolean.parseBoolean(evaluator().getProperty("disable." + type + ".tests"))) {
                 types.add(type);
             }
         }

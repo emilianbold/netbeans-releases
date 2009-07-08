@@ -391,6 +391,8 @@ public class AntProjectHelperTest extends NbTestCase {
         File somethingElseF = new File(scratchF.getParentFile(), "nonexistent-file-path");
         assertEquals("absolute (nonexistent) path is left alone", somethingElseF, h.resolveFile(somethingElseF.getAbsolutePath()));
         assertEquals("absolute (nonexistent) path has no file object", null, h.resolveFileObject(somethingElseF.getAbsolutePath()));
+        assertEquals("URI already normalized (Unix-style)", h.resolveFile("../proj").toURI().normalize().toURL(), h.resolveFile("../proj").toURI().toURL());
+        assertEquals("URI already normalized (DOS-style)", h.resolveFile("..\\proj").toURI().normalize().toURL(), h.resolveFile("..\\proj").toURI().toURL());
     }
     
     /**
