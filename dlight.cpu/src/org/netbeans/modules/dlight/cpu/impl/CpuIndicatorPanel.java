@@ -42,7 +42,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
@@ -58,9 +60,9 @@ public class CpuIndicatorPanel {
     private static final Color COLOR_SYS = GraphConfig.COLOR_3;
     private static final Color COLOR_USR = GraphConfig.COLOR_1;
     private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(
-            COLOR_SYS, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.system"), GraphDescriptor.Kind.REL_SURFACE);//NOI18N
+            COLOR_SYS, getMessage("graph.description.system"), GraphDescriptor.Kind.REL_SURFACE);//NOI18N
     private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(
-            COLOR_USR, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.user"), GraphDescriptor.Kind.REL_SURFACE);//NOI18N
+            COLOR_USR, getMessage("graph.description.user"), GraphDescriptor.Kind.REL_SURFACE);//NOI18N
     private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
     private static final int SECONDS_PER_MINUTE = 60;
 
@@ -68,10 +70,10 @@ public class CpuIndicatorPanel {
     private final Legend legend;
     private final GraphPanel<PercentageGraph, Legend> panel;
 
-    /*package*/ CpuIndicatorPanel() {
+    /*package*/ CpuIndicatorPanel(Action action) {
         graph = createGraph();
         legend = createLegend();
-        panel = new GraphPanel<PercentageGraph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis());
+        panel = new GraphPanel<PercentageGraph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis(), createButton(action));
     }
 
     public GraphPanel getPanel() {
@@ -79,7 +81,7 @@ public class CpuIndicatorPanel {
     }
 
     private static String getTitle() {
-        return NbBundle.getMessage(CpuIndicatorPanel.class, "indicator.title"); // NOI18N
+        return getMessage("indicator.title"); // NOI18N
     }
 
     private static PercentageGraph createGraph() {
@@ -96,9 +98,16 @@ public class CpuIndicatorPanel {
 
     private static Legend createLegend() {
         Legend legend = new Legend(Arrays.asList(USR_DESCRIPTOR, SYS_DESCRIPTOR),
-                Collections.singletonMap(TIME_DETAIL_ID, NbBundle.getMessage(CpuIndicatorPanel.class, "label.time"))); // NOI18N
+                Collections.singletonMap(TIME_DETAIL_ID, getMessage("label.time"))); // NOI18N
         legend.updateDetail(TIME_DETAIL_ID, formatTime(0));
         return legend;
+    }
+
+    private static JButton createButton(Action action) {
+        JButton button = new JButton(action);
+        button.setText(getMessage("button.text")); // NOI18N
+        button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
+        return button;
     }
 
     /*package*/ void addData(int sys, int usr) {
@@ -119,5 +128,9 @@ public class CpuIndicatorPanel {
 
     private static String formatTime(int seconds) {
         return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(CpuIndicatorPanel.class, name);
     }
 }

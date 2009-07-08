@@ -56,6 +56,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -147,6 +150,13 @@ public class AddWatchAction extends CallableSystemAction {
         watchHistory = watch;
         
         // open watches view
+        TopComponent watchesView = WindowManager.getDefault().findTopComponent("watchesView"); // NOI18N
+        if (watchesView != null && watchesView.isOpened()) {
+            Mode mw = WindowManager.getDefault().findMode(watchesView);
+            if (mw != null && mw.getSelectedTopComponent() == watchesView) {
+                return ; // Watches is already selected
+            }
+        }
         String viewName = VariablesViewButtons.isWatchesViewNested() ? "localsView" : "watchesView";
         ViewActions.openComponent (viewName, false).requestVisible();
     }

@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.Graph;
@@ -18,18 +20,18 @@ import org.openide.util.NbBundle;
     private static final Color LOCKS_COLOR = GraphConfig.COLOR_1;
 
     private static final GraphDescriptor THREADS_DESCRIPTOR = new GraphDescriptor(
-            THREADS_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.threads"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
+            THREADS_COLOR, getMessage("graph.description.threads"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
     private static final GraphDescriptor LOCKS_DESCRIPTOR = new GraphDescriptor(
-            LOCKS_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
+            LOCKS_COLOR, getMessage("graph.description.locks"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
 
     private final Graph graph;
     private final Legend legend;
     private final GraphPanel<Graph, Legend> panel;
 
-    /*package*/ SyncIndicatorPanel() {
+    /*package*/ SyncIndicatorPanel(Action action) {
         graph = createGraph();
         legend = createLegend();
-        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis());
+        panel = new GraphPanel<Graph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis(), createButton(action));
     }
 
     public GraphPanel getPanel() {
@@ -37,7 +39,7 @@ import org.openide.util.NbBundle;
     }
 
     private static String getTitle() {
-        return NbBundle.getMessage(SyncIndicatorPanel.class, "indicator.title"); // NOI18N
+        return getMessage("indicator.title"); // NOI18N
     }
 
     private static Graph createGraph() {
@@ -57,6 +59,13 @@ import org.openide.util.NbBundle;
         return legend;
     }
 
+    private static JButton createButton(Action action) {
+        JButton button = new JButton(action);
+        button.setText(getMessage("button.text")); // NOI18N
+        button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
+        return button;
+    }
+
     public void addData(int locks, int threads) {
         int upperLimit = graph.getUpperLimit();
         while (upperLimit < threads) {
@@ -64,5 +73,9 @@ import org.openide.util.NbBundle;
         }
         graph.setUpperLimit(upperLimit);
         graph.addData(threads, locks);
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(SyncIndicatorPanel.class, name);
     }
 }
