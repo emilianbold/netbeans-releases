@@ -150,21 +150,18 @@ public class SymfonyOptionsPanel extends JPanel {
         symfonyTextField = new JTextField();
         browseButton = new JButton();
         searchButton = new JButton();
+        symfonyScriptUsageLabel = new JLabel();
+        runningInfoLabel = new JLabel();
+        noteLabel = new JLabel();
         includePathInfoLabel = new JLabel();
         installationInfoLabel = new JLabel();
         learnMoreLabel = new JLabel();
-        symfonyScriptUsageLabel = new JLabel();
-        runningInfoLabel = new JLabel();
         errorLabel = new JLabel();
 
         symfonyLabel.setLabelFor(symfonyTextField);
 
 
-
-
-
-
-        Mnemonics.setLocalizedText(symfonyLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text"));
+        Mnemonics.setLocalizedText(symfonyLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.browseButton.text"));
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -177,6 +174,15 @@ public class SymfonyOptionsPanel extends JPanel {
                 searchButtonActionPerformed(evt);
             }
         });
+        Mnemonics.setLocalizedText(symfonyScriptUsageLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyScriptUsageLabel.text"));
+        symfonyScriptUsageLabel.setEnabled(false);
+
+
+
+
+
+        Mnemonics.setLocalizedText(runningInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.text"));
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.noteLabel.text"));
         Mnemonics.setLocalizedText(includePathInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.includePathInfoLabel.text"));
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.installationInfoLabel.text"));
         Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.learnMoreLabel.text"));
@@ -188,8 +194,6 @@ public class SymfonyOptionsPanel extends JPanel {
                 learnMoreLabelMousePressed(evt);
             }
         });
-        Mnemonics.setLocalizedText(symfonyScriptUsageLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyScriptUsageLabel.text"));
-        Mnemonics.setLocalizedText(runningInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.text"));
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -198,34 +202,40 @@ public class SymfonyOptionsPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(0, 0, 0)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(symfonyScriptUsageLabel)
-                        .addContainerGap())
                     .add(layout.createParallelGroup(GroupLayout.LEADING)
                         .add(layout.createSequentialGroup()
                             .add(runningInfoLabel)
                             .addContainerGap())
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(installationInfoLabel)
-                                .add(18, 18, 18)
-                                .add(learnMoreLabel)
-                                .add(64, 64, 64))
+                        .add(layout.createSequentialGroup()
+                            .add(errorLabel)
+                            .add(447, 447, 447))
+                        .add(layout.createSequentialGroup()
+                            .add(symfonyLabel)
+                            .addPreferredGap(LayoutStyle.RELATED)
                             .add(layout.createParallelGroup(GroupLayout.LEADING)
                                 .add(layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(GroupLayout.LEADING)
-                                        .add(errorLabel)
-                                        .add(includePathInfoLabel))
-                                    .add(23, 23, 23))
-                                .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                                    .add(symfonyLabel)
-                                    .addPreferredGap(LayoutStyle.RELATED)
-                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                                    .add(symfonyScriptUsageLabel)
+                                    .addContainerGap())
+                                .add(layout.createSequentialGroup()
+                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                                     .addPreferredGap(LayoutStyle.RELATED)
                                     .add(browseButton)
                                     .addPreferredGap(LayoutStyle.RELATED)
                                     .add(searchButton)
-                                    .add(12, 12, 12)))))))
+                                    .add(12, 12, 12)))))
+                    .add(noteLabel)))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(includePathInfoLabel)
+                .addContainerGap(309, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(installationInfoLabel)
+                .addContainerGap(377, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(learnMoreLabel)
+                .addContainerGap(680, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -235,16 +245,18 @@ public class SymfonyOptionsPanel extends JPanel {
                     .add(symfonyTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(searchButton)
                     .add(browseButton))
-                .addPreferredGap(LayoutStyle.UNRELATED)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(symfonyScriptUsageLabel)
+                .add(18, 18, 18)
+                .add(runningInfoLabel)
+                .add(18, 18, 18)
+                .add(noteLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(includePathInfoLabel)
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(installationInfoLabel)
-                    .add(learnMoreLabel))
-                .add(18, 18, 18)
-                .add(symfonyScriptUsageLabel)
+                .add(installationInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(runningInfoLabel)
+                .add(learnMoreLabel)
                 .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(errorLabel)
                 .add(0, 0, 0))
@@ -311,6 +323,7 @@ public class SymfonyOptionsPanel extends JPanel {
     private JLabel includePathInfoLabel;
     private JLabel installationInfoLabel;
     private JLabel learnMoreLabel;
+    private JLabel noteLabel;
     private JLabel runningInfoLabel;
     private JButton searchButton;
     private JLabel symfonyLabel;
