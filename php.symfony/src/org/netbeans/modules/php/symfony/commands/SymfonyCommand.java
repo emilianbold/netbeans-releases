@@ -39,23 +39,33 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 
 /**
  * @author Tomas Mysik
  */
 public class SymfonyCommand extends FrameworkCommand {
+    private final PhpModule phpModule;
     private final String preview;
 
-    public SymfonyCommand(String command, String description, String displayName) {
+    public SymfonyCommand(PhpModule phpModule, String command, String description, String displayName) {
         super(command, description, displayName);
+        assert phpModule != null;
+
+        this.phpModule = phpModule;
         preview = SymfonyScript.SCRIPT_NAME + " " + getCommand(); // NOI18N
     }
 
     @Override
     protected String getHelpInternal() {
-        return SymfonyScript.getHelp(this);
+        try {
+            return SymfonyScript.getHelp(SymfonyScript.forPhpModule(phpModule, false), this);
+        } catch (InvalidSymfonyScriptException ex) {
+            return ex.getMessage();
+        }
     }
 
     @Override

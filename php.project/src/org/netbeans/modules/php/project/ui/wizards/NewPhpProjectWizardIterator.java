@@ -63,6 +63,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
+import org.netbeans.modules.php.project.ui.actions.RemoteCommand.DefaultOperationMonitor;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
@@ -447,12 +448,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
         RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, RemoteClient.AdvancedProperties.create(
-                    remoteLog,
-                    projectProperties.getRemoteDirectory(),
-                    false,
-                    false));
-        DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), false, sources, sources);
+        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
+        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
+                    .setInputOutput(remoteLog)
+                    .setOperationMonitor(downloadOperationMonitor)
+                    .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
+                    .setPreservePermissions(false));
+        DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), false, sources, sources);
 
         remoteMonitor.finishingDownload();
     }

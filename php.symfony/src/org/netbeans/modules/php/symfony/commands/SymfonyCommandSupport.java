@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
@@ -61,6 +62,7 @@ import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -68,6 +70,8 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class SymfonyCommandSupport extends FrameworkCommandSupport {
+    static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
+    static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
 
     public SymfonyCommandSupport(PhpModule phpModule) {
         super(phpModule);
@@ -85,9 +89,16 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
+        String phpInterpreter = Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter();
+        if (phpInterpreter == null) {
+            if (warnUser) {
+                UiUtils.invalidScriptProvided(NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_InvalidPhpInterpreter"));
+            }
+            return null;
+        }
         SymfonyScript symfonyScript = null;
         try {
-            symfonyScript = SymfonyScript.getDefault();
+            symfonyScript = SymfonyScript.forPhpModule(phpModule, warnUser);
         } catch (InvalidSymfonyScriptException ex) {
             if (warnUser) {
                 UiUtils.invalidScriptProvided(
@@ -98,7 +109,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         }
         assert symfonyScript.isValid();
 
-        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(symfonyScript.getProgram())
+        ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter)
+                .addArgument(symfonyScript.getProgram())
                 .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()));
         for (String param : symfonyScript.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);
@@ -107,7 +119,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     }
 
     protected List<FrameworkCommand> getFrameworkCommandsInternal() throws InterruptedException, ExecutionException {
-        ExternalProcessBuilder processBuilder = createSilentCommand("list"); // NOI18N
+        ExternalProcessBuilder processBuilder = createCommand("list"); // NOI18N
         if (processBuilder == null) {
             UiUtils.invalidScriptProvided(
                     SymfonyScript.validateDefault(),
@@ -133,10 +145,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return freshCommands;
     }
 
-    static class CommandsLineProcessor implements LineProcessor {
+    class CommandsLineProcessor implements LineProcessor {
 
-        private static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
-        private static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
         private List<FrameworkCommand> commands = Collections.synchronizedList(new ArrayList<FrameworkCommand>());
         private String prefix;
 
@@ -154,7 +164,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
                 if (commandMatcher.matches()) {
                     String command = prefix + ":" + commandMatcher.group(1); // NOI18N
                     String description = commandMatcher.group(2);
-                    commands.add(new SymfonyCommand(command, description, command));
+                    commands.add(new SymfonyCommand(phpModule, command, description, command));
                 }
             }
         }

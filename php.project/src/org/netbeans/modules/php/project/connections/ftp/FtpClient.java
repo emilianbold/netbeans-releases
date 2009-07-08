@@ -74,14 +74,12 @@ public class FtpClient implements RemoteClient {
     };
 
     private final FtpConfiguration configuration;
-    private final InputOutput io;
     private final FTPClient ftpClient;
 
 
     public FtpClient(FtpConfiguration configuration, InputOutput io) {
         assert configuration != null;
         this.configuration = configuration;
-        this.io = io;
 
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = new FTPClient();
