@@ -144,7 +144,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -1197,27 +1196,15 @@ public final class WebProject implements Project, AntProjectListener {
         "simple-files"          // NOI18N
     };
 
-    private static final String[] JAVAEE6_TYPES = new String[] {
-        "java-classes",         // NOI18N
-        "java-main-class",      // NOI18N
-        "java-forms",           // NOI18N
-        "java-beans",           // NOI18N
-        "persistence",          // NOI18N
-        "oasis-XML-catalogs",   // NOI18N
-        "XML",                  // NOI18N
-        "ant-script",           // NOI18N
-        "ant-task",             // NOI18N
-        "servlet-types",        // NOI18N
-        "web-types",            // NOI18N
-        "web-types-server",     // NOI18N
-        "web-services",         // NOI18N
-        "web-service-clients",  // NOI18N
-        "wsdl",                 // NOI18N
-        "junit",                // NOI18N
-        "simple-files",         // NOI18N
-        
+    private static final String[] TYPES_EJB = new String[] {
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
+    };
+
+    private static final String[] TYPES_EJB_LITE = new String[] {
+        "ejb-types",            // NOI18N
         "ejb-types_3_0",        // NOI18N
         "ejb-types_3_1"         // NOI18N
     };
@@ -1252,144 +1239,116 @@ public final class WebProject implements Project, AntProjectListener {
         "Templates/WebServices/WebServiceClient",   // NOI18N  
         "Templates/WebServices/RestServicesFromEntities", // NOI18N
         "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
-        "Templates/Other/Folder",                   // NOI18N
+        "Templates/Other/Folder"                   // NOI18N
     };
 
-    private static final String[] PRIVILEGED_NAMES_EE6 = new String[] {
-        "Templates/JSP_Servlet/JSP.jsp",            // NOI18N
-        "Templates/JSP_Servlet/Html.html",          // NOI18N
-        "Templates/JSP_Servlet/Servlet.java",       // NOI18N
-        "Templates/Classes/Class.java",             // NOI18N
-        "Templates/Classes/Package",                // NOI18N
+    private static final String[] PRIVILEGED_NAMES_EE6_FULL = new String[] {
         "Templates/J2EE/Session", // NOI18N
-        "Templates/J2EE/Message", // NOI18N
-        "Templates/Persistence/Entity.java", // NOI18N
-        "Templates/Persistence/RelatedCMP", // NOI18N
-        "Templates/Persistence/JsfFromDB", // NOI18N
-        "Templates/WebServices/WebService.java",    // NOI18N
-        "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
-        "Templates/WebServices/WebServiceClient",   // NOI18N
-        "Templates/WebServices/RestServicesFromEntities", // NOI18N
-        "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
-        "Templates/Other/Folder",                   // NOI18N
+        "Templates/J2EE/Message"  // NOI18N
+    };
+
+    private static final String[] PRIVILEGED_NAMES_EE6_WEB = new String[] {
+        "Templates/J2EE/Session"  // NOI18N
     };
 
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
-        "Templates/JSP_Servlet/webXml",     // NOI18N  --- 
+        "Templates/JSP_Servlet/webXml"     // NOI18N  --- 
     };
     
     // guarded by this, #115809
-    private String[] privilegedTemplatesEE5 = null;
-    private String[] privilegedTemplatesEE6 = null;
-    private String[] privilegedTemplates = null;
+    private List<String> privilegedTemplatesEE5 = null;
+    private List<String> privilegedTemplates = null;
 
     // Path where instances of privileged templates are registered
     private static final String WEBTEMPLATE_PATH = "j2ee/webtier/templates"; //NOI18N
     
-    synchronized String[] getPrivilegedTemplates() {
+    synchronized List<String> getPrivilegedTemplates() {
         ensureTemplatesInitialized();
         return privilegedTemplates;
     }
 
-    synchronized String[] getPrivilegedTemplatesEE5() {
+    synchronized List<String> getPrivilegedTemplatesEE5() {
         ensureTemplatesInitialized();
         return privilegedTemplatesEE5;
     }
 
-    synchronized String[] getPrivilegedTemplatesEE6() {
-        ensureTemplatesInitialized();
-        return privilegedTemplatesEE6;
-    }
-    
     public synchronized void resetTemplates() {
         privilegedTemplates = null;
         privilegedTemplatesEE5 = null;
-        privilegedTemplatesEE6 = null;
     }
     
     private void ensureTemplatesInitialized() {
         assert Thread.holdsLock(this);
         if (privilegedTemplates != null
                 && privilegedTemplatesEE5 != null
-                && privilegedTemplatesEE6 != null) {
+                ) {
             return;
         }
         
-        ArrayList<String>templatesEE5 = new ArrayList<String>(PRIVILEGED_NAMES_EE5.length + 1);
-        ArrayList<String>templatesEE6 = new ArrayList<String>(PRIVILEGED_NAMES_EE6.length + 1);
-        ArrayList<String>templates = new ArrayList<String>(PRIVILEGED_NAMES.length + 1);
+        privilegedTemplatesEE5 = new ArrayList<String>();
+        privilegedTemplates = new ArrayList<String>();
 
-        // how many templates are added
-        int countTemplate = 0;
-        
         for (WebPrivilegedTemplates webPrivililegedTemplates : Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class)) {
             String[] addedTemplates = webPrivililegedTemplates.getPrivilegedTemplates(apiWebModule);
             if (addedTemplates != null && addedTemplates.length > 0){
-                countTemplate = countTemplate + addedTemplates.length;
                 List<String> addedList = Arrays.asList(addedTemplates);
-                templatesEE5.addAll(addedList);
-                templatesEE6.addAll(addedList);
-                templates.addAll(addedList);
+                privilegedTemplatesEE5.addAll(addedList);
+                privilegedTemplates.addAll(addedList);
             }
         }
 
-        if(countTemplate > 0){
-            templatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
-            privilegedTemplatesEE5 = templatesEE5.toArray(new String[templatesEE5.size()]);
-            templatesEE6.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6));
-            privilegedTemplatesEE6 = templatesEE5.toArray(new String[templatesEE6.size()]);
-            templates.addAll(Arrays.asList(PRIVILEGED_NAMES));
-            privilegedTemplates = templates.toArray(new String[templates.size()]);
-        }
-        else {
-            privilegedTemplatesEE5 = PRIVILEGED_NAMES_EE5;
-            privilegedTemplatesEE6 = PRIVILEGED_NAMES_EE6;
-            privilegedTemplates = PRIVILEGED_NAMES;
-        }
-
+        privilegedTemplatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+        privilegedTemplates.addAll(Arrays.asList(PRIVILEGED_NAMES));
     }
     
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         private WebProject project;
+        private J2eeProjectCapabilities projectCap;
         
         RecommendedTemplatesImpl (WebProject project) {
             this.project = project;
         }
         
-        private boolean isEE5 = false;
-        private boolean isEE6 = false;
         private boolean checked = false;
         private boolean isArchive = false;
+        private boolean isEE5 = false;
 
         public String[] getRecommendedTypes() {
-            String[] retVal = null;
             checkEnvironment();
             if (isArchive) {
-                retVal = TYPES_ARCHIVE;
-            } else if (isEE6){
-                retVal = JAVAEE6_TYPES;
+                return TYPES_ARCHIVE;
+            } else if (projectCap.isEjb31Supported()){
+                List<String> list = new ArrayList(Arrays.asList(TYPES));
+                list.addAll(Arrays.asList(TYPES_EJB));
+                return list.toArray(new String[list.size()]);
+            }else if(projectCap.isEjb31LiteSupported()){
+                List<String> list = new ArrayList(Arrays.asList(TYPES));
+                list.addAll(Arrays.asList(TYPES_EJB_LITE));
+                return list.toArray(new String[list.size()]);
             }else{
-                retVal = TYPES;
+                return TYPES;
             }
-           
-            return retVal;
         }
         
         public String[] getPrivilegedTemplates() {
-            String[] retVal = null;
             checkEnvironment();
             if (isArchive) {
-                retVal = PRIVILEGED_NAMES_ARCHIVE;
+                return PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                if (isEE5) {
-                    retVal = getPrivilegedTemplatesEE5();
-                } else if (isEE6){
-                    retVal = getPrivilegedTemplatesEE6();
+                List<String> list;
+                if (projectCap.isEjb31Supported()) {
+                    list = getPrivilegedTemplatesEE5();
+                    list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
+                } else if (projectCap.isEjb31LiteSupported()){
+                    list = getPrivilegedTemplatesEE5();
+                    list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
+                } else if (isEE5){
+                    list = getPrivilegedTemplatesEE5();
                 } else {
-                    retVal = WebProject.this.getPrivilegedTemplates();
+                    list = WebProject.this.getPrivilegedTemplates();
                 }
+                return list.toArray(new String[list.size()]);
             }
-            return retVal;
         }
         
         private void checkEnvironment() {
@@ -1399,11 +1358,9 @@ public final class WebProject implements Project, AntProjectListener {
                 if ("false".equals(srcType)) {
                     isArchive = true;
                 }
-
+                projectCap = J2eeProjectCapabilities.forProject(project);
                 Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
-                isEE6 = (profile == Profile.JAVA_EE_6_FULL) || (profile == Profile.JAVA_EE_6_WEB);
                 isEE5 = profile == Profile.JAVA_EE_5;
-                
                 checked = true;
             }
         }
