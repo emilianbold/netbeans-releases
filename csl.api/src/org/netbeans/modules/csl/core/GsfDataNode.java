@@ -101,6 +101,7 @@ public class GsfDataNode extends DataNode {
 
                     for (i = 0; i < k; i++) {
                         InstanceCookie ic = dob[i].getCookie(InstanceCookie.class);
+                        assert ic != null : "InstanceCookie is null. dob[" + i + "]:" + dob[i];
                         Class clazz = ic.instanceClass();
 
                         if (JSeparator.class.isAssignableFrom(clazz)) {
