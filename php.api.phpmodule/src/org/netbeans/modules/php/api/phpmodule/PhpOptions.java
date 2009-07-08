@@ -37,54 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.util;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Parameters;
+package org.netbeans.modules.php.api.phpmodule;
 
 /**
- * Miscellaneous file utilities.
+ * Instance of this class can be found in global lookup.
  * @author Tomas Mysik
+ * @since 1.1
  */
-public final class FileUtils {
-
-    private FileUtils() {
-    }
+public interface PhpOptions {
 
     /**
-     * Find all the files (absolute path) with the given "filename" os user's PATH.
-     * <p>
-     * This method is suitable for *nix as well as windows.
-     * @param filename the name of a file to find.
-     * @return list of absolute paths of found files.
+     * Get the PHP interpreter file path.
+     * @return the PHP interpreter file path or <code>null</code> if none is found.
      */
-    public static List<String> findFileOnUsersPath(String filename) {
-        Parameters.notNull("filename", filename);
-
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            return Collections.<String>emptyList();
-        }
-        // on linux there are usually duplicities in PATH
-        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> found = new ArrayList<String>(dirs.size());
-        for (String d : dirs) {
-            File file = new File(d, filename);
-            if (file.isFile()) {
-                String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
-                // not optimal but should be ok
-                if (!found.contains(absolutePath)) {
-                    found.add(absolutePath);
-                }
-            }
-        }
-        return found;
-    }
+    String getPhpInterpreter();
 }
