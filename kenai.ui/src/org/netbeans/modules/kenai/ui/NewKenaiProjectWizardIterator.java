@@ -132,6 +132,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
         if (KenaiService.Names.SUBVERSION.equals(newPrjScmType)) {
             if (!Subversion.isClientAvailable(autoCommit)) {
+                ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG,
+                        Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE);
                 throw new IOException(Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE);
             }
         }
