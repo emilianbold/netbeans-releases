@@ -37,54 +37,17 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.util;
+package org.netbeans.modules.php.project.ui.options;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Miscellaneous file utilities.
  * @author Tomas Mysik
  */
-public final class FileUtils {
+@ServiceProvider(service = org.netbeans.modules.php.api.phpmodule.PhpOptions.class)
+public class PhpOptionsImpl implements org.netbeans.modules.php.api.phpmodule.PhpOptions {
 
-    private FileUtils() {
-    }
-
-    /**
-     * Find all the files (absolute path) with the given "filename" os user's PATH.
-     * <p>
-     * This method is suitable for *nix as well as windows.
-     * @param filename the name of a file to find.
-     * @return list of absolute paths of found files.
-     */
-    public static List<String> findFileOnUsersPath(String filename) {
-        Parameters.notNull("filename", filename);
-
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            return Collections.<String>emptyList();
-        }
-        // on linux there are usually duplicities in PATH
-        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> found = new ArrayList<String>(dirs.size());
-        for (String d : dirs) {
-            File file = new File(d, filename);
-            if (file.isFile()) {
-                String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
-                // not optimal but should be ok
-                if (!found.contains(absolutePath)) {
-                    found.add(absolutePath);
-                }
-            }
-        }
-        return found;
+    public String getPhpInterpreter() {
+        return PhpOptions.getInstance().getPhpInterpreter();
     }
 }
