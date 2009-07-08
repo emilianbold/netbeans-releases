@@ -763,9 +763,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
         List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
         AtomicBoolean enougth = new AtomicBoolean(false);
-        CountDownLatch countDownLatch = new CountDownLatch(items.size());
-        for (NativeFileItem nativeFileItem : items) {
-            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, nativeFileItem, sources, removedFiles,
+        int size = items.size();
+        int threads = CndUtils.getNumberCndWorkerThreads()*3;
+        CountDownLatch countDownLatch = new CountDownLatch(threads);
+        int chunk = (size/threads) + 1;
+        Iterator<NativeFileItem> it = items.iterator();
+        for (int i = 0; i < threads; i++) {
+            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(chunk);
+            for(int j = 0; j < chunk; j++){
+                if(it.hasNext()){
+                    list.add(it.next());
+                } else {
+                    break;
+                }
+            }
+            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, list, sources, removedFiles,
                     validator, reparseOnEdit, reparseOnPropertyChanged, enougth);
             PROJECT_FILES_WORKER.post(r);
         }
@@ -2104,11 +2116,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         int size = files.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
         CountDownLatch countDownLatch = new CountDownLatch(threads);
-        int chank = (size/threads) + 1;
+        int chunk = (size/threads) + 1;
         Iterator<CsmUID<CsmFile>> it = files.iterator();
         for (int i = 0; i < threads; i++) {
-            ArrayList<CsmUID<CsmFile>> list = new ArrayList<CsmUID<CsmFile>>(chank);
-            for(int j = 0; j < chank; j++) {
+            ArrayList<CsmUID<CsmFile>> list = new ArrayList<CsmUID<CsmFile>>(chunk);
+            for(int j = 0; j < chunk; j++) {
                 if (it.hasNext()) {
                     list.add(it.next());
                 } else {
@@ -2872,7 +2884,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private class CreateFileRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
-        private NativeFileItem nativeFileItem;
+        private List<NativeFileItem> nativeFileItems;
         private boolean sources;
         private Set<NativeFileItem> removedFiles;
         private ProjectSettingsValidator validator;
@@ -2880,11 +2892,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         private List<NativeFileItem> reparseOnPropertyChanged;
         private AtomicBoolean enougth;
 
-        private CreateFileRunnable(CountDownLatch countDownLatch, NativeFileItem nativeFileItem, boolean sources,
+        private CreateFileRunnable(CountDownLatch countDownLatch, List<NativeFileItem> nativeFileItems, boolean sources,
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
             List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
             this.countDownLatch = countDownLatch;
-            this.nativeFileItem = nativeFileItem;
+            this.nativeFileItems = nativeFileItems;
             this.sources = sources;
             this.removedFiles = removedFiles;
             this.validator = validator;
@@ -2895,8 +2907,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         public void run() {
             try {
-                createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
-                                            reparseOnEdit, reparseOnPropertyChanged, enougth);
+                for(NativeFileItem nativeFileItem : nativeFileItems) {
+                    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
+                                            reparseOnEdit, reparseOnPropertyChanged, enougth)){
+                        return;
+                    }
+                }
             } finally {
                 countDownLatch.countDown();
             }
