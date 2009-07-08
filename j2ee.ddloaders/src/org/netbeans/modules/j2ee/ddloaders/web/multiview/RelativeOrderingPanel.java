@@ -425,6 +425,8 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
         RelativeOrderItemPanel p = new RelativeOrderItemPanel(value);
         DialogDescriptor dd = new DialogDescriptor(p,
                 NbBundle.getMessage(RelativeOrderingPanel.class, "TTL_Ordering"));
+        dd.createNotificationLineSupport();
+        p.setDlgSupport(dd);
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
             return p.getResult();

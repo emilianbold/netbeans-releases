@@ -73,8 +73,16 @@ class CompletionContextFinder {
     private static final List<Object[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NEW},
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+    );
+
+    private static final List<Object[]> QUALIFIED_CLASS_NAME_TOKENCHAINS = Collections.singletonList(
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
+    );
+
+    private static final List<Object[]> NAMESPACE_ONLY_TOKENS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
     );
 
     private static final List<Object[]> TYPE_TOKENCHAINS = Arrays.asList(
@@ -176,7 +184,8 @@ class CompletionContextFinder {
 
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_ELEMENT,
+        NAMESPACE_CLASS_ELEMENT, NAMESPACE_ONLY};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
@@ -222,6 +231,8 @@ class CompletionContextFinder {
             return CompletionContext.NEW_CLASS;
         } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.CLASS_MEMBER;
+        } else if (acceptTokenChains(tokenSequence, QUALIFIED_CLASS_NAME_TOKENCHAINS)){
+            return CompletionContext.NAMESPACE_CLASS_ELEMENT;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
         } else if (tokenId == PHPTokenId.PHP_COMMENT) {
@@ -265,6 +276,11 @@ class CompletionContextFinder {
                 new PHPTokenId[] {PHPTokenId.PHP_GLOBAL, PHPTokenId.WHITESPACE})) {
             return CompletionContext.GLOBAL;
         }
+
+        if (consumeNameSpace(tokenSequence)){
+            return CompletionContext.NAMESPACE_ELEMENT;
+        }
+
         return CompletionContext.EXPRESSION;
     }
 
@@ -379,9 +395,14 @@ class CompletionContextFinder {
     }
 
     private static boolean consumeNameSpace(TokenSequence tokenSequence){
+        boolean hadNSSeparator = false;
         if (tokenSequence.token().id() != PHPTokenId.PHP_NS_SEPARATOR
                 && tokenSequence.token().id() != PHPTokenId.PHP_STRING) {
             return false;
+        }
+
+        if (tokenSequence.token().id() == PHPTokenId.PHP_NS_SEPARATOR) {
+            hadNSSeparator = true;
         }
 
         do {
@@ -389,10 +410,14 @@ class CompletionContextFinder {
                 return false;
             }
 
+            if (tokenSequence.token().id() == PHPTokenId.PHP_NS_SEPARATOR){
+                hadNSSeparator = true;
+            }
+
         } while (tokenSequence.token().id() == PHPTokenId.PHP_NS_SEPARATOR
                 || tokenSequence.token().id() == PHPTokenId.PHP_STRING);
 
-        return true;
+        return hadNSSeparator;
     }
 
     private static Token[] getLeftPreceedingTokens(TokenSequence tokenSequence){
