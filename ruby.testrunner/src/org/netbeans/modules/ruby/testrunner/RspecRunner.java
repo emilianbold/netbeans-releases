@@ -355,6 +355,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
             }
         });
         TestExecutionManager.getInstance().init(taskDescriptor);
+        session.setRerunHandler(TestExecutionManager.getInstance());
     }
 
     private static class RSpecTaskEvaluator implements DefaultTaskEvaluator {
