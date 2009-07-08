@@ -78,7 +78,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -423,14 +422,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 localMonitor.extending(frameworkProvider.getName());
                 PhpModuleExtender phpModuleExtender = entry.getValue();
                 if (phpModuleExtender != null) {
-                    try {
-                        Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
-                        assert newFiles != null;
-                        assert frameworkProvider.isInPhpModule(phpModule);
-                        filesToOpen.addAll(newFiles);
-                    } catch (Exception exception) {
-                        Exceptions.printStackTrace(exception);
-                    }
+                    Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
+                    assert newFiles != null;
+                    assert frameworkProvider.isInPhpModule(phpModule);
+                    filesToOpen.addAll(newFiles);
                 }
             }
         }
