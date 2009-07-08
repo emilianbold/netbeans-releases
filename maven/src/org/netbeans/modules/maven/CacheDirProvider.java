@@ -51,7 +51,7 @@ import org.openide.filesystems.FileUtil;
  * @author mkleint
  */
 public class CacheDirProvider implements CacheDirectoryProvider {
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
 
     CacheDirProvider(NbMavenProjectImpl prj) {
         project = prj;

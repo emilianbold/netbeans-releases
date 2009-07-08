@@ -89,7 +89,7 @@ import org.openide.windows.OutputWriter;
  */
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
-    private Project project;
+    private final Project project;
     public static final String DEV_NULL = "DEV-NULL"; //NOI18N
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N

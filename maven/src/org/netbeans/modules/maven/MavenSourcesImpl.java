@@ -99,7 +99,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String NAME_TESTSOURCE = "2TestSourceRoot"; //NOI18N
     public static final String NAME_GENERATED_SOURCE = "6GeneratedSourceRoot"; //NOI18N
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private final List<ChangeListener> listeners;
     
     private Map<String, SourceGroup> javaGroup;

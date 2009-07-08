@@ -84,8 +84,8 @@ public class J2eeLookupProvider implements LookupProvider {
     }
     
     public static class Provider extends AbstractLookup implements  PropertyChangeListener {
-        private Project project;
-        private InstanceContent content;
+        private final Project project;
+        private final InstanceContent content;
         private String lastType = NbMavenProject.TYPE_JAR;
         private Object lastInstance = null;
         private CopyOnSave copyOnSave;

@@ -718,7 +718,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
     static class CosPOH extends ProjectOpenedHook {
 
-        private Project project;
+        private final Project project;
 
         CosPOH(Project prj) {
             project = prj;
