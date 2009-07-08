@@ -42,6 +42,12 @@
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Petr Slechta
@@ -49,6 +55,7 @@ import javax.swing.JPanel;
 class RelativeOrderItemPanel extends JPanel {
 
     public static final String OTHERS = "<others>"; // NOI18N
+    private DialogDescriptor desc;
 
     public RelativeOrderItemPanel(String item) {
         initComponents();
@@ -60,8 +67,45 @@ class RelativeOrderItemPanel extends JPanel {
             tfNameRef.setEnabled(false);
             rbOthers.setSelected(true);
         }
+        tfNameRef.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                check();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                check();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                check();
+            }
+        });
     }
-    
+
+    void setDlgSupport(DialogDescriptor desc) {
+        this.desc = desc;
+    }
+
+    private void check() {
+        if (desc == null)
+            return;
+
+        NotificationLineSupport supp = desc.getNotificationLineSupport();
+        if (rbName.isSelected()) {
+            String s = tfNameRef.getText();
+            if (s == null || s.length() < 1) {
+                supp.setInformationMessage(NbBundle.getMessage(RelativeOrderItemPanel.class, "ERR_NO_NAME"));
+                desc.setValid(false);
+                return;
+            }
+            if (!Utilities.isJavaIdentifier(s)) {
+                supp.setErrorMessage(NbBundle.getMessage(RelativeOrderItemPanel.class, "ERR_WRONG_NAME"));
+                desc.setValid(false);
+                return;
+            }
+        }
+        supp.clearMessages();
+        desc.setValid(true);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      */
@@ -117,6 +161,7 @@ class RelativeOrderItemPanel extends JPanel {
 
     private void rbNameStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbNameStateChanged
         tfNameRef.setEnabled(rbName.isSelected());
+        check();
     }//GEN-LAST:event_rbNameStateChanged
 
     public String getResult() {
