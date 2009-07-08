@@ -161,6 +161,13 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "CreateMethodFix:action(java.lang.Runnable aThis)void:test.Test",
                        "package test;public class Test {public static void method() {final Test ac = new Test();new Runnable() {public void run() {ac.action(this);}};} private void action(Runnable aThis) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
     }
+
+    public void testCreateMethodWithEnumParam() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { enum Paddle{UP, DOWN} public void foo() {f|ff(Paddle.UP);}}",
+                       "CreateMethodFix:fff(test.Test.Paddle UP)void:test.Test",
+                       "package test; public class Test { private void fff(Paddle paddle) { throw new UnsupportedOperationException(\"Not yet implemented\"); } enum Paddle{UP, DOWN} public void foo() {fff(Paddle.UP);}}");
+    }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);

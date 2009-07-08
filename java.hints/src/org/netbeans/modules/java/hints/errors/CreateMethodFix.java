@@ -30,9 +30,11 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -45,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
@@ -59,6 +62,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -189,9 +193,19 @@ public final class CreateMethodFix implements Fix {
                 
                 while (typeIt.hasNext() && nameIt.hasNext()) {
                     TypeMirrorHandle tmh = typeIt.next();
-                    String           argName = nameIt.next();
+                    TypeMirror tm = tmh.resolve(working);
+                    String argName;
+
+                    Element elem = working.getTypes().asElement(tm);
+                    if (elem != null && elem.getKind() == ElementKind.ENUM) {
+                        StringBuffer buf = new StringBuffer(elem.getSimpleName().toString());
+                        buf.setCharAt(0, Character.toLowerCase(buf.charAt(0)));
+                        argName = buf.toString();
+                    } else {
+                        argName = nameIt.next();
+                    }
                     
-                    argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tmh.resolve(working)), null));
+                    argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tm), null));
                 }
                 
                 BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, returnType) : null;
