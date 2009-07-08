@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 
     CpuIndicator(CpuIndicatorConfiguration configuration, Set<String> sysColumns) {
         super(configuration);
-        panel = new CpuIndicatorPanel();
+        panel = new CpuIndicatorPanel(getDefaultAction());
         acceptedColumnNames = new HashSet<String>();
         for (Column c : getMetadataColumns()) {
             acceptedColumnNames.add(c.getColumnName());

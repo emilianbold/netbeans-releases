@@ -70,7 +70,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
 
     public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
         super(configuration);
-        this.panel = new MemoryIndicatorPanel();
+        this.panel = new MemoryIndicatorPanel(getDefaultAction());
         this.acceptedColumnNames = new HashSet<String>();
         for (Column column : getMetadataColumns()) {
             acceptedColumnNames.add(column.getColumnName());
