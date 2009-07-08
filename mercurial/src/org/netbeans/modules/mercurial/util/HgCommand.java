@@ -1009,30 +1009,6 @@ public class HgCommand {
    }
 
     /**
-     * Determines whether repository requires a merge - has more than 1 heads
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return Boolean which is true if the repository needs a merge
-     */
-    public static Boolean isMergeRequired(File repository) {
-        if (repository == null ) return false;
-
-        try {
-            List<String> list = getHeadRevisions(repository);
-
-            if (!list.isEmpty() && list.size() > 1){
-                Mercurial.LOG.log(Level.FINE, "isMergeRequired(): TRUE " + list); // NOI18N
-                return true;
-            }else{
-                Mercurial.LOG.log(Level.FINE, "isMergeRequired(): FALSE " + list); // NOI18N
-                return false;
-            }
-        } catch (HgException e) {
-            return false;
-        }
-    }
-
-    /**
      * Determines whether anything has been committed to the repository
      *
      * @param File repository of the mercurial repository's root directory
@@ -2038,131 +2014,6 @@ public class HgCommand {
     }
 
     /**
-     * Get the revisions this file has been modified in.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param files to query revisions for
-     * @param Int limit on nunmber of revisions (-1 for no limit)
-     * @return List<String> cmdOutput of the revisions of the file - {<rev>:<short cset hash>}
-     *         or null if no commits made yet.
-     */
-    public static List<String> getRevisionsForFile(File repository, File[] files, int limit) {
-        if (repository == null) return null;
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_LOG_CMD);
-        if (limit >= 0) {
-                command.add(HG_LOG_LIMIT_CMD);
-                command.add(Integer.toString(limit));
-        }
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add(HG_CSET_TARGET_TEMPLATE_CMD);
-        if(files != null) {
-            for (File file : files) {
-                command.add(file.getAbsolutePath());
-            }
-        }
-
-        List<String> list = new ArrayList<String>();
-        try {
-            list = exec(command);
-        } catch (HgException ex) {
-            // Ignore Exception
-        }
-        return list == null || list.isEmpty()? null: list;
-    }
-
-    /**
-     * Get the revisions for a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return List<String> cmdOutput of the revisions of the repository - {<rev>:<short cset hash>}
-     *         or null if no commits made yet.
-     */
-    public static List<String> getRevisions(File repository, int limit) {
-        if (repository == null) return null;
-        return getRevisionsForFile(repository, null, limit);
-    }
-
-    /**
-     * Returns the mercurial branch name if any for a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return String branch name or null if not named
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static String getBranchName(File repository) throws HgException {
-        if (repository == null) return null;
-
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_BRANCH_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty()){
-            return list.get(0);
-        }else{
-            return null;
-        }
-    }
-
-    /**
-     * Returns the mercurial branch revision for a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return int value of revision for repository tip
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static int getBranchRev(File repository) throws HgException {
-        if (repository == null) return -1;
-
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_BRANCH_REV_CMD);
-        command.add(HG_BRANCH_REV_TEMPLATE_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty()){
-            return Integer.parseInt(list.get(0));
-        }else{
-            return -1;
-        }
-    }
-
-    /**
-     * Returns the mercurial branch name if any for a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return String branch short change set hash
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static String getBranchShortChangesetHash(File repository) throws HgException {
-        if (repository == null) return null;
-
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_BRANCH_REV_CMD);
-        command.add(HG_BRANCH_SHORT_CS_TEMPLATE_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty()){
-            return list.get(0);
-        }else{
-            return null;
-        }
-    }
-    /**
      * Returns the mercurial branch info for a repository
      *
      * @param File repository of the mercurial repository's root directory
@@ -2210,18 +2061,6 @@ public class HgCommand {
         return  getHeadInfo(repository, HG_REV_TEMPLATE_CMD);
     }
 
-    /**
-     * Returns the changeset for the the heads in a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File file of the file whose last changeset is to be returned.
-     * @return List<String> of changeset ids.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> getHeadChangeSetIds(File repository) throws HgException {
-        return  getHeadInfo(repository, HG_CSET_TARGET_TEMPLATE_CMD);
-    }
-
     private static List<String> getHeadInfo(String repository, String template) throws HgException {
         if (repository == null) return null;
 
@@ -2251,18 +2090,6 @@ public class HgCommand {
      */
     public static String getLastRevision(File repository, File file) throws HgException {
         return  getLastChange(repository, file, HG_REV_TEMPLATE_CMD);
-    }
-
-    /**
-     * Returns the changeset for the last change to a file
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File file of the file whose last changeset is to be returned.
-     * @return String in the form of a changeset id.
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static String getLastChangeSetId(File repository, File file) throws HgException {
-        return  getLastChange(repository, file, HG_CSET_TEMPLATE_CMD);
     }
 
     private static String getLastChange(File repository, File file, String template) throws HgException {
@@ -2351,29 +2178,6 @@ public class HgCommand {
     }
 
     /**
-     * Returns the mercurial status for all files in a given repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return Map of files and status for all files under the repository root
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getAllStatus(File repository)  throws HgException{
-        return getAllStatusWithFlags(repository, HG_STATUS_FLAG_ALL_CMD, true);
-    }
-
-    /**
-     * Returns the mercurial status for only files of interest to us in a given repository
-     * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return Map of files and status for all files of interest under the repository root
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getAllInterestingStatus(File repository)  throws HgException{
-        return getAllStatusWithFlags(repository, HG_STATUS_FLAG_INTERESTING_CMD, true);
-    }
-
-    /**
      * Returns the mercurial status for only files of interest to us in a given directory in a repository
      * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
      *
@@ -2384,31 +2188,6 @@ public class HgCommand {
      */
     public static Map<File, FileInformation> getInterestingStatus(File repository, File dir)  throws HgException{
         return getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_INTERESTING_CMD, true);
-    }
-
-    /**
-     * Returns the mercurial status for only files of interest to us in a given repository
-     * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return Map of files and status for all files of interest under the repository root
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getAllRemovedDeletedStatus(File repository)  throws HgException{
-        return getAllStatusWithFlags(repository, HG_STATUS_FLAG_REM_DEL_CMD, true);
-    }
-
-    /**
-     * Returns the mercurial status for only files of interest to us in a given directory in a repository
-     * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File dir of the directory of interest
-     * @return Map of files and status for all files of interest in the specified directory, map contains normalized files as keys
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getRemovedDeletedStatus(File repository, File dir)  throws HgException{
-        return getDirStatusWithFlags(repository, dir, HG_STATUS_FLAG_REM_DEL_CMD, true);
     }
 
     /**
@@ -2430,17 +2209,6 @@ public class HgCommand {
              }
         }
         return files;
-    }
-
-    /**
-     * Returns the unknown files under a mercurial repository root
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return Map of files and status for all files under the repository root
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getAllUnknownStatus(File repository)  throws HgException{
-        return getUnknownStatus(repository, null);
     }
 
     /**
@@ -2633,14 +2401,6 @@ public class HgCommand {
         return list;
     }
 
-    /**
-     * Returns Map of mercurial file and status for files in a given repository as specified by the status flags
-     * Returned map contains normalized files as keys
-     */
-    private static Map<File, FileInformation> getAllStatusWithFlags(File repository, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
-        return getDirStatusWithFlags(repository, null, statusFlags, bIgnoreUnversioned);
-    }
-
     private static Map<File, FileInformation> getDirStatusWithFlags(File repository, File dir, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
 
@@ -2759,7 +2519,7 @@ public class HgCommand {
      */
     private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
         List<String> command = new ArrayList<String>();
-
+        
         command.add(getHgCommand());
         command.add(HG_STATUS_CMD);
         command.add(HG_STATUS_FLAG_ALL_CMD);
