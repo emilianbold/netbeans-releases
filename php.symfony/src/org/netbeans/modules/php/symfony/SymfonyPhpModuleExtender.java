@@ -49,6 +49,7 @@ import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptExcept
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -105,7 +106,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         try {
             SymfonyScript.getDefault();
         } catch (InvalidSymfonyScriptException ex) {
-            return ex.getMessage();
+            return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
         return null;
     }

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.symfony;
 
-import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
@@ -64,36 +63,5 @@ public class SymfonyScriptTest extends NbTestCase {
 
         symfonyScript = new SymfonyScript("/a/b/c/DDD");
         assertFalse(symfonyScript.isValid());
-    }
-
-    public void testVersion() {
-        int[] version = SymfonyScript.match("symfony version 1.2 (/usr/share/php/symfony)");
-        assertNull(version);
-
-        version = SymfonyScript.match("symfony version A1.2.7 (/usr/share/php/symfony)");
-        assertNull(version);
-
-        version = SymfonyScript.match("symfony version 1.2x.7 (/usr/share/php/symfony)");
-        assertNull(version);
-
-        version = SymfonyScript.match("symfony version 1.2.7b (/usr/share/php/symfony)");
-        assertNull(version);
-
-        version = SymfonyScript.match("symfony version 1.2.7 (/usr/share/php/symfony)");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {1, 2, 7}, version));
-
-        version = SymfonyScript.match("symfony    version    1.2.7    (/usr/share/php/symfony)");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {1, 2, 7}, version));
-
-        version = SymfonyScript.match("symfony version 323324.3877987.165456 (/usr/share/php/symfony)");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
-
-        // #168211
-        version = SymfonyScript.match("symfony version 1.2.8-DEV (/home/kreso/workspace/symfony12/lib)");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {1, 2, 8}, version));
     }
 }
