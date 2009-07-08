@@ -41,6 +41,7 @@ package org.netbeans.modules.php.symfony;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -58,7 +59,7 @@ import org.openide.util.NbBundle;
 public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
-    public Set<FileObject> extend(PhpModule phpModule) {
+    public Set<FileObject> extend(PhpModule phpModule) throws ExtendingException {
         // init project
         SymfonyScript symfonyScript = null;
         try {
@@ -69,8 +70,12 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
         assert symfonyScript.isValid() : "Symfony script has to be valid!";
 
-        symfonyScript.initProject(phpModule);
-
+        if (!symfonyScript.initProject(phpModule)) {
+            // can happen if symfony script was not chosen
+            Logger.getLogger(SymfonyPhpModuleExtender.class.getName())
+                    .info("Framework Symfony not found in newly created project " + phpModule.getDisplayName());
+            throw new ExtendingException(NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_NotExtended"));
+        }
         // prefetch commands
         FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(null);
 

@@ -148,14 +148,15 @@ public class SymfonyScript extends PhpProgram {
         return null;
     }
 
-    public void initProject(PhpModule phpModule) {
+    public boolean initProject(PhpModule phpModule) {
         String projectName = phpModule.getDisplayName();
         SymfonyCommandSupport commandSupport = SymfonyCommandSupport.forCreatingProject(phpModule);
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
         String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
-        runService(processBuilder, executionDescriptor, tabTitle);
+        runService(processBuilder, executionDescriptor, tabTitle, false);
+        return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
 
     public static String getHelp(PhpModule phpModule, FrameworkCommand command) {
@@ -174,11 +175,11 @@ public class SymfonyScript extends PhpProgram {
                 return InputProcessors.bridge(lineProcessor);
             }
         }));
-        runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview()); // NOI18N
+        runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview(), true); // NOI18N
         return lineProcessor.getHelp();
     }
 
-    private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) {
+    private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
         final ExecutionService service = ExecutionService.newService(
                 processBuilder,
                 executionDescriptor,
@@ -187,7 +188,9 @@ public class SymfonyScript extends PhpProgram {
         try {
             result.get();
         } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
+            if (warnUser) {
+                UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }

@@ -71,9 +71,12 @@ import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -422,15 +425,22 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 localMonitor.extending(frameworkProvider.getName());
                 PhpModuleExtender phpModuleExtender = entry.getValue();
                 if (phpModuleExtender != null) {
-                    Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
-                    assert newFiles != null;
-                    assert frameworkProvider.isInPhpModule(phpModule);
-                    filesToOpen.addAll(newFiles);
+                    try {
+                        Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
+                        assert newFiles != null;
+                        filesToOpen.addAll(newFiles);
+                    } catch (ExtendingException ex) {
+                        warnUser(ex.getFailureMessage());
+                    }
                 }
             }
         }
 
         localMonitor.finishingExtending();
+    }
+
+    private void warnUser(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
