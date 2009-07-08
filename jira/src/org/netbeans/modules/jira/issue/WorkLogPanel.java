@@ -66,6 +66,16 @@ public class WorkLogPanel extends javax.swing.JPanel {
         startDateField.setValue(new Date());
 
         // Leave estimate choice
+        int estimate = getCurrentRemainingEstimate();
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        int daysPerWeek = config.getWorkDaysPerWeek();
+        int hoursPerDay = config.getWorkHoursPerDay();
+        String pattern = NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text"); // NOI18N
+        String leaveEstimateText = MessageFormat.format(pattern, JiraUtils.getWorkLogText(estimate, daysPerWeek, hoursPerDay, true));
+        leaveEstimateChoice.setText(leaveEstimateText);
+    }
+
+    private int getCurrentRemainingEstimate() {
         String estimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
         int estimate = 0;
         if (estimateTxt != null) {
@@ -75,12 +85,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
                 estimate = 0;
             }
         }
-        JiraConfiguration config = issue.getRepository().getConfiguration();
-        int daysPerWeek = config.getWorkDaysPerWeek();
-        int hoursPerDay = config.getWorkHoursPerDay();
-        String pattern = NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text"); // NOI18N
-        String leaveEstimateText = MessageFormat.format(pattern, JiraUtils.getWorkLogText(estimate, daysPerWeek, hoursPerDay, true));
-        leaveEstimateChoice.setText(leaveEstimateText);
+        return estimate;
     }
 
     public boolean showDialog() {
@@ -112,6 +117,25 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
     public String getDescription() {
         return workDescriptionArea.getText();
+    }
+
+    public int getRemainingEstimate() {
+        if (autoAdjustChoice.isSelected()) {
+            return -1;
+        } else if (leaveEstimateChoice.isSelected()) {
+            return getCurrentRemainingEstimate();
+        } else if (setEstimatedTimeChoice.isSelected()) {
+            JiraConfiguration config = issue.getRepository().getConfiguration();
+            int daysPerWeek = config.getWorkDaysPerWeek();
+            int hoursPerDay = config.getWorkHoursPerDay();
+            return JiraUtils.getWorkLogSeconds(setEstimatedTimeField.getText(), daysPerWeek, hoursPerDay);
+        } else {
+            assert reduceEstimatedTimeChoice.isSelected();
+            JiraConfiguration config = issue.getRepository().getConfiguration();
+            int daysPerWeek = config.getWorkDaysPerWeek();
+            int hoursPerDay = config.getWorkHoursPerDay();
+            return Math.max(0, getCurrentRemainingEstimate()-JiraUtils.getWorkLogSeconds(reduceEstimatedTimeField.getText(), daysPerWeek, hoursPerDay));
+        }
     }
 
     /** This method is called from within the constructor to

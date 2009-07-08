@@ -1532,7 +1532,10 @@ public class IssuePanel extends javax.swing.JPanel {
             submitChange(new Runnable() {
                 public void run() {
                     issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
-                    // PENDING update remaining estimate
+                    int remainingEstimate = panel.getRemainingEstimate();
+                    if (remainingEstimate != -1) { // -1 means auto-adjust
+                        issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, (remainingEstimate+panel.getTimeSpent())+""); // NOI18N
+                    }
                     issue.submitAndRefresh();
                 }
             }, message);
