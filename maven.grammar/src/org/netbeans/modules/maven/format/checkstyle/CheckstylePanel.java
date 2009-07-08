@@ -6,7 +6,12 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.ReportPlugin;
+import org.netbeans.modules.maven.model.pom.Reporting;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 
 /**
@@ -22,11 +27,24 @@ http://checkstyle.sourceforge.net/config_whitespace.html#ParenPad
  */
 public class CheckstylePanel extends javax.swing.JPanel {
     private final ModelHandle handle;
+    private final ProjectCustomizer.Category category;
+    private boolean generated = false;
 
 
     CheckstylePanel(ModelHandle handle, ProjectCustomizer.Category cat) {
         initComponents();
         this.handle = handle;
+        category = cat;
+
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        boolean defines = AuxPropsImpl.definesCheckStyle(handle.getProject());
+        boolean missing = !defines && !generated;
+        lblMissing.setVisible(missing);
+        btnMissing.setVisible(missing);
     }
 
 
@@ -41,11 +59,22 @@ public class CheckstylePanel extends javax.swing.JPanel {
 
         cbEnable = new javax.swing.JCheckBox();
         lblHint = new javax.swing.JLabel();
+        lblMissing = new javax.swing.JLabel();
+        btnMissing = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbEnable, org.openide.util.NbBundle.getMessage(CheckstylePanel.class, "CheckstylePanel.cbEnable.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(CheckstylePanel.class, "CheckstylePanel.lblHint.text")); // NOI18N
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblMissing, org.openide.util.NbBundle.getMessage(CheckstylePanel.class, "CheckstylePanel.lblMissing.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnMissing, org.openide.util.NbBundle.getMessage(CheckstylePanel.class, "CheckstylePanel.btnMissing.text")); // NOI18N
+        btnMissing.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMissingActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -56,8 +85,12 @@ public class CheckstylePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(21, 21, 21)
-                        .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE))
-                    .add(cbEnable))
+                        .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE))
+                    .add(cbEnable)
+                    .add(layout.createSequentialGroup()
+                        .add(lblMissing)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnMissing)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -67,14 +100,48 @@ public class CheckstylePanel extends javax.swing.JPanel {
                 .add(cbEnable)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 162, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 62, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblMissing)
+                    .add(btnMissing))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnMissingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMissingActionPerformed
+        generated = true;
+        //generate now
+        POMModel mdl = handle.getPOMModel();
+        Reporting rep = mdl.getProject().getReporting();
+        if (rep == null) {
+            rep = mdl.getFactory().createReporting();
+            mdl.getProject().setReporting(rep);
+        }
+        ReportPlugin plg = rep.findReportPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_CHECKSTYLE);
+        if (plg == null) {
+            plg = mdl.getFactory().createReportPlugin();
+            plg.setGroupId(Constants.GROUP_APACHE_PLUGINS);
+            plg.setArtifactId(Constants.PLUGIN_CHECKSTYLE);
+            Configuration conf = mdl.getFactory().createConfiguration();
+            conf.setSimpleParameter("configLocation", "config/sun_checks.xml"); //NOI18N
+            plg.setConfiguration(conf);
+            rep.addReportPlugin(plg);
+        }
+        handle.markAsModified(handle.getPOMModel());
+        
+        //hide the button, we're done
+        lblMissing.setVisible(false);
+        btnMissing.setVisible(false);
+
+
+    }//GEN-LAST:event_btnMissingActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMissing;
     private javax.swing.JCheckBox cbEnable;
     private javax.swing.JLabel lblHint;
+    private javax.swing.JLabel lblMissing;
     // End of variables declaration//GEN-END:variables
 
 }

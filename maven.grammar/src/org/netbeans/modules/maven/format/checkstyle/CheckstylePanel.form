@@ -16,14 +16,19 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="lblHint" pref="359" max="32767" attributes="0"/>
+                      <Component id="lblHint" pref="401" max="32767" attributes="0"/>
                   </Group>
                   <Component id="cbEnable" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="lblMissing" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnMissing" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -36,7 +41,12 @@
               <Component id="cbEnable" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="lblHint" min="-2" pref="162" max="-2" attributes="0"/>
-              <EmptySpace pref="99" max="32767" attributes="0"/>
+              <EmptySpace pref="62" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblMissing" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnMissing" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,6 +66,23 @@
         </Property>
         <Property name="verticalAlignment" type="int" value="1"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblMissing">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/format/checkstyle/Bundle.properties" key="CheckstylePanel.lblMissing.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnMissing">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/format/checkstyle/Bundle.properties" key="CheckstylePanel.btnMissing.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMissingActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

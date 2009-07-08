@@ -14,7 +14,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -85,9 +88,12 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                     return cache;
                 } else {
                     //TODO we should also check the plugin's classpath for the file.
-                    String loc = PluginPropertyUtils.getReportPluginProperty(project, "org.apache.maven.plugins", "maven-checkstyle-plugin", "configLocation", null);
+                    String loc = PluginPropertyUtils.getReportPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_CHECKSTYLE, "configLocation", null);
+                    if (loc == null && definesCheckStyle(project)) {
+                        loc = "config/sun_checks.xml"; //this is the default NOI18N
+                    }
                     if (loc != null && defaults.contains(loc)) {
-                        InputStream in = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/checkstylebridge/" + loc);
+                        InputStream in = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/" + loc);
                         fo = copyToCacheDir(in);
                     } else if (loc != null) {
                         //find in local fs
@@ -109,6 +115,25 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
             Exceptions.printStackTrace(io);
         }
         return new Properties();
+    }
+
+    static boolean definesCheckStyle(Project prj) {
+        NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
+        assert project != null : "Requires a maven project instance"; //NOI18N
+        return definesCheckStyle(project.getMavenProject());
+    }
+
+    static boolean definesCheckStyle(MavenProject prj) {
+        if (prj.getReportPlugins() != null) {
+            for (Object obj : prj.getReportPlugins()) {
+                ReportPlugin plug = (ReportPlugin) obj;
+                if (Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId()) &&
+                        Constants.PLUGIN_CHECKSTYLE.equals(plug.getArtifactId())) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     synchronized Properties getCache() {
