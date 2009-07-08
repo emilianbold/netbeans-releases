@@ -1215,8 +1215,8 @@ public final class NbMavenProjectImpl implements Project {
             "simple-files"   //NOPMD       // NOI18N
 
         };
-        private List<String> prohibited;
-        private NbMavenProjectImpl project;
+        private final List<String> prohibited;
+        private final NbMavenProjectImpl project;
 
         RecommendedTemplatesImpl(NbMavenProjectImpl proj) {
             project = proj;
