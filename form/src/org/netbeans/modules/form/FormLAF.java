@@ -149,6 +149,10 @@ public class FormLAF {
                             }
                             // Remove listeners added by NimbusLookAndFeel.initialize()
                             UIManager.removePropertyChangeListener(listener);
+                        }
+                    }
+                    for (PropertyChangeListener listener : UIManager.getDefaults().getPropertyChangeListeners()) {
+                        if (listener.getClass().getName().contains("NimbusDefaults")) { // NOI18N
                             UIManager.getDefaults().removePropertyChangeListener(listener);
                         }
                     }
@@ -206,7 +210,16 @@ public class FormLAF {
 
     private static void initialize() throws Exception {
         initialized = true;
-        UIManager.getDefaults(); // Force initialization
+        UIDefaults defaults = UIManager.getDefaults(); // Force initialization
+
+        // Resolve lazy values
+        Set<Object> keySet = new HashSet<Object>(defaults.keySet());
+        // We cannot iterate directly over defaults.keySet() because
+        // defaults.get(key) can modify the map (which leads
+        // to ConcurrentModificationException).
+        for (Object key : keySet) {
+            defaults.get(key);
+        }
 
         LookAndFeel laf = UIManager.getLookAndFeel();
         ideLafIsMetal = laf instanceof MetalLookAndFeel;
@@ -655,6 +668,21 @@ public class FormLAF {
                 set.addAll(preview.keySet());
             } else {
                 set = ide.keySet();
+            }
+            return set;
+        }
+
+        @Override
+        public Set<Map.Entry<Object,Object>> entrySet() {
+            Set<Map.Entry<Object,Object>> set;
+            if (delegating) {
+                set = new HashSet<Map.Entry<Object,Object>>(classLoaderLAFDefaults.entrySet());
+                set.addAll(original.entrySet());
+            } else if (previewing) {
+                set = new HashSet<Map.Entry<Object,Object>>(classLoaderLAFDefaults.entrySet());
+                set.addAll(preview.entrySet());
+            } else {
+                set = ide.entrySet();
             }
             return set;
         }
