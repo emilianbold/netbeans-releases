@@ -96,27 +96,24 @@ public final class J2eeProjectCapabilities {
     }
 
     /**
-     * EJB 3.1 functionality is supported in EjbJar project which is targetting
+     * EJB 3.1 functionality is supported in EjbJar and Web project which is targetting
      * full JEE6 platform.
      */
     public boolean isEjb31Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         boolean ee6 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_FULL);
-        return J2eeModule.Type.EJB.equals(moduleType) && ee6;
+        return ee6 && (J2eeModule.Type.EJB.equals(moduleType) ||
+                J2eeModule.Type.WAR.equals(moduleType));
     }
 
     /**
-     * EJB 3.1 Lite functionality is supported in #1) EjbJar project which is targetting
-     * full JEE6 platform or JEE6 web profile and in #2) Web project targetting full JEE6
-     * or JEE6 web profile.
+     * EJB 3.1 Lite functionality is supported in Web project targetting JEE6
+     * web profile and wherever full EJB 3.1 is supported.
      */
     public boolean isEjb31LiteSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        boolean ee6 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_FULL);
         boolean ee6Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_WEB);
-        return isEjb31Supported() || 
-                (J2eeModule.Type.WAR.equals(moduleType) && (ee6 || ee6Web)) ||
-                (J2eeModule.Type.EJB.equals(moduleType) && ee6Web);
+        return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6Web);
     }
 
     public boolean hasDefaultPersistenceProvider() {
