@@ -64,7 +64,7 @@ import org.openide.filesystems.FileObject;
 public class MavenFileLocator implements LineConvertors.FileLocator {
 
     private ClassPath classpath;
-    private Project project;
+    private final Project project;
     private static final Object LOCK = new Object();
 
     public MavenFileLocator(Project project) {

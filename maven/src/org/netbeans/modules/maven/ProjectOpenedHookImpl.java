@@ -65,7 +65,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * openhook implementation, register global classpath and also
@@ -78,7 +77,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
     private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private List<URI> uriReferences = new ArrayList<URI>();
 
     // ui logging

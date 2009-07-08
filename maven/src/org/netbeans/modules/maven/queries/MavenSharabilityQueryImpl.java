@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation {
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     /** Creates a new instance of MavenSharabilityQueryImpl */
     public MavenSharabilityQueryImpl(NbMavenProjectImpl proj) {
         project = proj;
