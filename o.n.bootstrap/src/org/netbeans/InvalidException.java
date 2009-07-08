@@ -91,6 +91,7 @@ public final class InvalidException extends IOException {
     /** The manifest that caused this exception. Can be null, if the
      * manifest cannot be obtained.
      * @return manifest that contains error
+     * @since 2.20
      */
     public Manifest getManifest() {
         if (man != null) {
