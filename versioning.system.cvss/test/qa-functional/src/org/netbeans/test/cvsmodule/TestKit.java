@@ -59,9 +59,9 @@ import javax.swing.JCheckBoxMenuItem;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -154,7 +154,7 @@ public class TestKit {
         npwo.selectCategory(category);
         npwo.selectProject(project);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath()); // NOI18N
         new JTextFieldOperator(npnlso, 0).setText(project_name); // NOI18N
         //new JTextFieldOperator(npnlso, 2).setText(folder); // NOI18N
@@ -194,7 +194,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(pack);
         nfnlso.finish();
@@ -204,7 +204,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass");
         nfnlso.selectPackage(pack);
@@ -215,7 +215,7 @@ public class TestKit {
         nfwo.selectCategory("Swing GUI Forms");
         nfwo.selectFileType("JFrame Form");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewJFrame");
         nfnlso.selectPackage(pack);
@@ -230,7 +230,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(pack);
         nfnlso.finish();
@@ -240,7 +240,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass");
         nfnlso.selectPackage(pack);
@@ -251,7 +251,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass2");
         nfnlso.selectPackage(pack);
@@ -262,7 +262,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass3");
         nfnlso.selectPackage(pack);
@@ -273,7 +273,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass4");
         nfnlso.selectPackage(pack);
@@ -288,7 +288,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("aa");
         nfnlso.finish();
@@ -299,7 +299,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("bb");
         nfnlso.finish();
@@ -309,7 +309,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass");
         nfnlso.selectPackage("aa");
@@ -321,7 +321,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass2");
         nfnlso.selectPackage("aa");
@@ -332,7 +332,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass");
         nfnlso.selectPackage("bb");
@@ -343,7 +343,7 @@ public class TestKit {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
-        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("NewClass2");
         nfnlso.selectPackage("bb");

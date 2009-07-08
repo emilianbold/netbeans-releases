@@ -36,58 +36,40 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.test;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
-    
+
     static {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
-        
-        while (true) {
-            String dirName = junitWorkdir.getName();
-            junitWorkdir = junitWorkdir.getParentFile();
-            if ("dlight.nativeexecution".equals(dirName) || "".equals(dirName)) { // NOI18N
-                break;
-            }
-        }
-
-        File dlightDir = new File(junitWorkdir, "nbbuild/netbeans/dlight1"); // NOI18N
-        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + ":" + dirs); // NOI18N
-
         Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
         log.setLevel(Level.ALL);
-
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-
-            }
-        });
+//
+//        log.addHandler(new Handler() {
+//
+//            @Override
+//            public void publish(LogRecord record) {
+//                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
+//            }
+//
+//            @Override
+//            public void flush() {
+//            }
+//
+//            @Override
+//            public void close() throws SecurityException {
+//
+//            }
+//        });
     }
-
     private final ExecutionEnvironment testExecutionEnvironment;
 
     public NativeExecutionBaseTestCase(String name) {
@@ -108,7 +90,6 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
     }
-
 
     @Override
     protected void setUp() throws Exception {
@@ -139,7 +120,6 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
-
     public static void writeFile(File file, CharSequence content) throws IOException {
         Writer writer = new FileWriter(file);
         writer.write(content.toString());
@@ -149,7 +129,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     public static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
         File tmpFile = File.createTempFile(prefix, suffix);
         if (directory) {
-            if(!(tmpFile.delete())) {
+            if (!(tmpFile.delete())) {
                 throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath()); // NOI18N
             }
             if (!(tmpFile.mkdir())) {
@@ -159,5 +139,4 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         tmpFile.deleteOnExit();
         return tmpFile;
     }
-
 }

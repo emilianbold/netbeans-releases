@@ -50,5 +50,9 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 public interface FacesConverter extends JsfModelElement {
     
     String getConverterForClass();
+    
+    String getConverterClass();
+    
+    String getConverterId();
 
 }

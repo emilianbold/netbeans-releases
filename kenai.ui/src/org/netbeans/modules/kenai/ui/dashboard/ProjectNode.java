@@ -44,7 +44,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -150,7 +149,7 @@ public class ProjectNode extends TreeListNode {
     }
 
     @Override
-    public ActionListener getDefaultAction() {
+    public Action getDefaultAction() {
         return accessor.getDefaultAction(project);
     }
 
@@ -167,6 +166,7 @@ public class ProjectNode extends TreeListNode {
         refreshChildren();
     }
 
+    @Override
     protected void dispose() {
         super.dispose();
         if( null != project )

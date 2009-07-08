@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.maven.api.Constants;
@@ -72,7 +73,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntr
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -83,7 +84,7 @@ import org.openide.filesystems.URLMapper;
  * implementation of ejb netbeans functionality
  * @author Milos Kleint 
  */
-public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementation2, ModuleChangeReporter {
+public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementation2, ModuleChangeReporter {
     
     private Project project;
     private List versionListeners;
@@ -107,23 +108,18 @@ public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementatio
         //TODO any checks necessary??.
         return true;
     }
-    
-    /** J2EE platform version - one of the constants
-     * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
-     * @return J2EE platform version
-     */
-    
-    public String getJ2eePlatformVersion() {
+
+    public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
         String version = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_J2EE_VERSION, true);
         if (version != null) {
-            return version;
+            return Profile.fromPropertiesString(version);
         }
         //TODO??
         if (EjbJar.VERSION_3_0.equals(getModuleVersion())) {
-            return EjbProjectConstants.JAVA_EE_5_LEVEL;
+            return Profile.JAVA_EE_5;
         }
-        return EjbProjectConstants.J2EE_14_LEVEL;
+        return Profile.J2EE_14;
     }
     
     /** META-INF folder for the web module.

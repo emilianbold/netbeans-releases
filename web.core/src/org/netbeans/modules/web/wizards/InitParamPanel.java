@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.wizards;
 
 import java.awt.GridBagConstraints;
@@ -54,226 +53,227 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 /**
  * Wizard panel that collects deployment data for Servlets and Filters
  * @author Ana von Klopp 
  */
-class InitParamPanel extends JPanel implements ActionListener, 
-						ListSelectionListener { 
+class InitParamPanel extends JPanel implements ActionListener,
+        ListSelectionListener {
 
-    private final static String ADD = "add"; 
-    private final static String EDIT = "edit"; 
-    private final static String REMOVE = "remove"; 
-    private ServletData deployData; 
-    private BaseWizardPanel parent; 
+    private final static String ADD = "add";
+    private final static String EDIT = "edit";
+    private final static String REMOVE = "remove";
+    private ServletData deployData;
+    private BaseWizardPanel parent;
     private JLabel jLinitparams;
-    private DDTable table; 
-    private JButton jBnew; 
-    private JButton jBedit; 
-    private JButton jBdelete; 
-    private JScrollPane scrollP; 
-
+    private DDTable table;
+    private JButton jBnew;
+    private JButton jBedit;
+    private JButton jBdelete;
+    private JScrollPane scrollP;
+    private TemplateWizard wizard;
     private static final long serialVersionUID = -5803905591685582710L;
-    
-    public InitParamPanel(ServletData deployData, BaseWizardPanel parent) { 
-	this.deployData = deployData; 
-	this.parent = parent; 
-	initComponents ();
+
+    public InitParamPanel(ServletData deployData, BaseWizardPanel parent, TemplateWizard wizard) {
+        this.deployData = deployData;
+        this.parent = parent;
+        this.wizard = wizard;
+        initComponents();
     }
 
-    private void initComponents () {
-	// Layout description
-	setLayout(new java.awt.GridBagLayout());
+    private void initComponents() {
+        // Layout description
+        setLayout(new java.awt.GridBagLayout());
 
-	// Entity covers entire row
-	GridBagConstraints fullRowC = new GridBagConstraints();
-	fullRowC.gridx = 0;
+        // Entity covers entire row
+        GridBagConstraints fullRowC = new GridBagConstraints();
+        fullRowC.gridx = 0;
         fullRowC.gridy = 0;
-	fullRowC.gridwidth = 2;
-	fullRowC.anchor = GridBagConstraints.WEST;
-	fullRowC.fill = GridBagConstraints.HORIZONTAL;
-	fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.gridwidth = 2;
+        fullRowC.anchor = GridBagConstraints.WEST;
+        fullRowC.fill = GridBagConstraints.HORIZONTAL;
+        fullRowC.insets = new Insets(4, 0, 4, 60);
 
-	// Button
-	GridBagConstraints bC = new GridBagConstraints();
-	bC.gridx = 1;
+        // Button
+        GridBagConstraints bC = new GridBagConstraints();
+        bC.gridx = 1;
         bC.gridy = 1;
-	bC.weightx = 0.1;
-	bC.fill = GridBagConstraints.HORIZONTAL;
-	bC.insets = new Insets(4, 20, 4, 60);
+        bC.weightx = 0.1;
+        bC.fill = GridBagConstraints.HORIZONTAL;
+        bC.insets = new Insets(4, 20, 4, 60);
 
-	// Table panel 
-	GridBagConstraints tableC = new GridBagConstraints();
-	tableC.gridx = 0;
-        tableC.gridy = 1; 
-	tableC.gridheight = 4;
-	tableC.fill = GridBagConstraints.BOTH; 
-	tableC.weightx = 0.9;
-	tableC.weighty = 1.0; 
-	tableC.anchor = GridBagConstraints.WEST; 
-	tableC.insets = new Insets(4, 0, 4, 0);
+        // Table panel
+        GridBagConstraints tableC = new GridBagConstraints();
+        tableC.gridx = 0;
+        tableC.gridy = 1;
+        tableC.gridheight = 4;
+        tableC.fill = GridBagConstraints.BOTH;
+        tableC.weightx = 0.9;
+        tableC.weighty = 1.0;
+        tableC.anchor = GridBagConstraints.WEST;
+        tableC.insets = new Insets(4, 0, 4, 0);
 
-	// Filler panel 
-	GridBagConstraints fillerC = new GridBagConstraints();
-	fillerC.gridx = 1;
-        fillerC.gridy = GridBagConstraints.RELATIVE; 
-	fillerC.fill = GridBagConstraints.BOTH; 
-	fillerC.weighty = 1.0; 
-	fillerC.insets = new Insets(4, 0, 4, 0);
-        
-	// Component Initialization by row
-	// 1. Init parameter
-	jLinitparams = new JLabel(NbBundle.getMessage(InitParamPanel.class, "LBL_initparamsL"));
-	jLinitparams.setDisplayedMnemonic(NbBundle.getMessage (InitParamPanel.class, "LBL_initparams_mnemonic").charAt(0));
-	// PENDING 
-	this.add(jLinitparams, fullRowC); 
+        // Filler panel
+        GridBagConstraints fillerC = new GridBagConstraints();
+        fillerC.gridx = 1;
+        fillerC.gridy = GridBagConstraints.RELATIVE;
+        fillerC.fill = GridBagConstraints.BOTH;
+        fillerC.weighty = 1.0;
+        fillerC.insets = new Insets(4, 0, 4, 0);
 
-	// 2. Table row
+        // Component Initialization by row
+        // 1. Init parameter
+        jLinitparams = new JLabel(NbBundle.getMessage(InitParamPanel.class, "LBL_initparamsL"));
+        jLinitparams.setDisplayedMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_initparams_mnemonic").charAt(0));
+        // PENDING
+        this.add(jLinitparams, fullRowC);
 
-	String[] headers = { "paramname", "paramvalue" };
-	table = new DDTable(headers, "LBL_initparams", Editable.BOTH); 
+        // 2. Table row
 
-	jLinitparams.setLabelFor(table);
+        String[] headers = {"paramname", "paramvalue"};
+        table = new DDTable(headers, "LBL_initparams", Editable.BOTH);
 
-	// Enable the buttons according to the row selected
-	table.getSelectionModel().addListSelectionListener(this); 
-	table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparams_desc")); // NOI18N
-	table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparams")); // NOI18N
+        jLinitparams.setLabelFor(table);
+
+        // Enable the buttons according to the row selected
+        table.getSelectionModel().addListSelectionListener(this);
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparams_desc")); // NOI18N
+        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparams")); // NOI18N
 
 
-	table.getModel().addTableModelListener(new TableModelListener() { 
-	    public void tableChanged(TableModelEvent evt) {
-		updateInitParams();
-	    }}); 
+        table.getModel().addTableModelListener(new TableModelListener() {
 
-	scrollP = new JScrollPane(table); 
-	this.add(scrollP, tableC); 
+            public void tableChanged(TableModelEvent evt) {
+                updateInitParams();
+            }
+        });
 
-	jBnew = new JButton(); 
-	jBnew.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_new")); 
-	jBnew.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_new_mnemonic").charAt(0));
-	jBnew.addActionListener(this); 
-	jBnew.setActionCommand(ADD); 
-	jBnew.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparam_new")); // NOI18N
-	this.add(jBnew, bC); 
+        scrollP = new JScrollPane(table);
+        this.add(scrollP, tableC);
 
-	bC.gridy++; 
-	jBedit = new JButton(); 
-	jBedit.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_edit")); 
-	jBedit.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_edit_mnemonic").charAt(0));
-	jBedit.addActionListener(this);
-	jBedit.setActionCommand(EDIT); 
-	jBedit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparam_edit")); // NOI18N
-	jBedit.setEnabled(false); 
-	this.add(jBedit, bC); 
+        jBnew = new JButton();
+        jBnew.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_new"));
+        jBnew.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_new_mnemonic").charAt(0));
+        jBnew.addActionListener(this);
+        jBnew.setActionCommand(ADD);
+        jBnew.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparam_new")); // NOI18N
+        this.add(jBnew, bC);
 
-	bC.gridy++; 
-	jBdelete = new JButton(); 
-	jBdelete.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_delete")); 
-	jBdelete.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_delete_mnemonic").charAt(0));
-	jBdelete.addActionListener(this);
-	jBdelete.setActionCommand(REMOVE); 
-	jBdelete.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparam_delete")); // NOI18N
-	jBdelete.setEnabled(false); 
-	this.add(jBdelete, bC);
-        
-        this.add(new javax.swing.JPanel(),fillerC);
+        bC.gridy++;
+        jBedit = new JButton();
+        jBedit.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_edit"));
+        jBedit.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_edit_mnemonic").charAt(0));
+        jBedit.addActionListener(this);
+        jBedit.setActionCommand(EDIT);
+        jBedit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparam_edit")); // NOI18N
+        jBedit.setEnabled(false);
+        this.add(jBedit, bC);
+
+        bC.gridy++;
+        jBdelete = new JButton();
+        jBdelete.setText(NbBundle.getMessage(InitParamPanel.class, "LBL_delete"));
+        jBdelete.setMnemonic(NbBundle.getMessage(InitParamPanel.class, "LBL_delete_mnemonic").charAt(0));
+        jBdelete.addActionListener(this);
+        jBdelete.setActionCommand(REMOVE);
+        jBdelete.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamPanel.class, "ACSD_initparam_delete")); // NOI18N
+        jBdelete.setEnabled(false);
+        this.add(jBdelete, bC);
+
+        this.add(new javax.swing.JPanel(), fillerC);
     }
 
-    public void setEnabled() { 
-	boolean enable = deployData.makeEntry(); 
-    
-	jLinitparams.setEnabled(enable);
-	jBnew.setEnabled(enable); 
-	if(enable) { 
-	    ListSelectionModel lsm = table.getSelectionModel(); 
-	    if (lsm.isSelectionEmpty()) {
-		jBdelete.setEnabled(false); 
-		jBedit.setEnabled(false); 
-	    }
-	    else { 
-		jBdelete.setEnabled(true);
-		jBedit.setEnabled(true);  
-	    }
-	}
-	else { 
-	    jBdelete.setEnabled(false); 
-	    jBedit.setEnabled(false); 
-	}
-	table.setEditable(enable ? Editable.BOTH : Editable.NEITHER); 
-    } 
+    public void setEnabled() {
+        boolean enable = deployData.makeEntry() || Utilities.isJavaEE6(wizard);
 
-    public void actionPerformed(ActionEvent evt) { 
-	int row = -1; 
-	if(evt.getSource() instanceof JButton) { 
-	    if(evt.getActionCommand() == ADD) { 
-		String[] values= { 
-		    NbBundle.getMessage(InitParamPanel.class, "LBL_paramname"), 
-		    NbBundle.getMessage(InitParamPanel.class, "LBL_paramvalue"), 
-		}; 
-		row = table.addRow(values); 
-		table.setRowSelectionInterval(row, row);
-	    } 
-	    else if (evt.getActionCommand() == REMOVE) { 
-		row = table.getSelectedRow(); 
-		table.removeRow(row); 
+        jLinitparams.setEnabled(enable);
+        jBnew.setEnabled(enable);
+        if (enable) {
+            ListSelectionModel lsm = table.getSelectionModel();
+            if (lsm.isSelectionEmpty()) {
+                jBdelete.setEnabled(false);
+                jBedit.setEnabled(false);
+            } else {
+                jBdelete.setEnabled(true);
+                jBedit.setEnabled(true);
+            }
+        } else {
+            jBdelete.setEnabled(false);
+            jBedit.setEnabled(false);
+        }
+        table.setEditable(enable ? Editable.BOTH : Editable.NEITHER);
+    }
+
+    public void actionPerformed(ActionEvent evt) {
+        int row = -1;
+        if (evt.getSource() instanceof JButton) {
+            if (evt.getActionCommand() == ADD) {
+                String[] values = {
+                    NbBundle.getMessage(InitParamPanel.class, "LBL_paramname"),
+                    NbBundle.getMessage(InitParamPanel.class, "LBL_paramvalue"),};
+                row = table.addRow(values);
+                table.setRowSelectionInterval(row, row);
+            } else if (evt.getActionCommand() == REMOVE) {
+                row = table.getSelectedRow();
+                table.removeRow(row);
                 setEnabled();
-	    }
-	    else if (evt.getActionCommand() == EDIT) { 
-		row = table.getSelectedRow(); 
-		String name = (String)(table.getValueAt(row, 0)); 
-		String value = (String)(table.getValueAt(row, 1)); 
-		String title =  NbBundle.getMessage(DDTable.class, "LBL_initparams_edit"); //NOI18N
-		TableRowDialog d =
-		    new TableRowDialog(name, value, Editable.BOTH, 
-				       TableRowDialog.Condition.NONE, title);
-		d.showDialog();
-		if(d.getDialogOK()) {
-		    table.setData(d.getName(), d.getValue(), row); 
-		}
-		else 
-		    table.setData(name, value, row); 
-	    }
-	    scrollP.revalidate(); 
-	} 
+            } else if (evt.getActionCommand() == EDIT) {
+                row = table.getSelectedRow();
+                String name = (String) (table.getValueAt(row, 0));
+                String value = (String) (table.getValueAt(row, 1));
+                String title = NbBundle.getMessage(DDTable.class, "LBL_initparams_edit"); //NOI18N
+                TableRowDialog d =
+                        new TableRowDialog(name, value, Editable.BOTH,
+                        TableRowDialog.Condition.NONE, title);
+                d.showDialog();
+                if (d.getDialogOK()) {
+                    table.setData(d.getName(), d.getValue(), row);
+                } else {
+                    table.setData(name, value, row);
+                }
+            }
+            scrollP.revalidate();
+        }
     }
 
     public void valueChanged(ListSelectionEvent e) {
-	//Ignore extra messages.
-	if (e.getValueIsAdjusting()) return;
-	setEnabled(); 
-	updateInitParams(); 
-    } 
+        //Ignore extra messages.
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
+        setEnabled();
+        updateInitParams();
+    }
 
-    private void updateInitParams() { 
-	if(deployData.makeEntry()) { 
-	    int numInitParams = table.getRowCount(); 
-	    String[][] param = new String[numInitParams][2]; 
-	    boolean isOK = true; 
-	    for(int i=0; i<numInitParams; ++i) { 
-		param[i][0] = (String)(table.getModel().getValueAt(i,0)); 
-		if(param[i][0].length() == 0)
-                    isOK = false; 
-		param[i][1] = (String)(table.getModel().getValueAt(i,1)); 
-	    } 
-            
+    private void updateInitParams() {
+        if (deployData.makeEntry() || Utilities.isJavaEE6(wizard)) {
+            int numInitParams = table.getRowCount();
+            String[][] param = new String[numInitParams][2];
+            boolean isOK = true;
+            for (int i = 0; i < numInitParams; ++i) {
+                param[i][0] = (String) (table.getModel().getValueAt(i, 0));
+                if (param[i][0].length() == 0) {
+                    isOK = false;
+                }
+                param[i][1] = (String) (table.getModel().getValueAt(i, 1));
+            }
+
             // test parameters for duplicities
             String duplicitParam = null;
-            for (int i=0,maxi=param.length; i<maxi; i++) {
+            for (int i = 0, maxi = param.length; i < maxi; i++) {
                 String param1name = param[i][0];
-                for (int j=i+1; j<maxi; j++) {
+                for (int j = i + 1; j < maxi; j++) {
                     if (param1name.equals(param[j][0])) {
                         duplicitParam = param1name;
                         break;
                     }
                 }
             }
-            
-	    deployData.setInitParams(param, isOK, duplicitParam);
-	    parent.fireChangeEvent();
-	}
-    }	    
-    
+
+            deployData.setInitParams(param, isOK, duplicitParam);
+            parent.fireChangeEvent();
+        }
+    }
 }

@@ -46,7 +46,6 @@ import java.awt.*;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
-import org.netbeans.modules.xml.multiview.Utils;
 
 /**
  * This class acts as a container for <code>NodeSectionPanel</code>s. Generally

@@ -651,12 +651,19 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                     SystemUtils.getCurrentPlatform())));
                             addProductCheckBox(glassfishesAppservers, gfLocation);
                         }
-
                         String gfModLocation = NetBeansUtils.getJvmOption(
                                 installLocation, GLASSFISH_MOD_JVM_OPTION_NAME);
                         if (gfModLocation != null) {
-                            addProductCheckBox(Registry.getInstance().getProducts("glassfish-mod-sun"), gfModLocation);
+                            List<Product> glassfishV3servers = Registry.getInstance().queryProducts(
+                                    new OrFilter(
+                                    new ProductFilter("glassfish-mod",
+                                    SystemUtils.getCurrentPlatform()),
+                                    new ProductFilter("glassfish-mod-sun",
+                                    SystemUtils.getCurrentPlatform())));
+
+                            addProductCheckBox(glassfishV3servers, gfModLocation);
                         }
+
 
                         String tomcatLocation = NetBeansUtils.getJvmOption(
                                 installLocation, TOMCAT_JVM_OPTION_NAME_HOME);
@@ -906,7 +913,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
     public static final String GLASSFISH_MOD_JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3.installRoot"; //NOI18N
+            "-Dorg.glassfish.v3ee6.installRoot"; //NOI18N
     public static final String TOMCAT_JVM_OPTION_NAME_HOME =
             "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
 }

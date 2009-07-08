@@ -43,7 +43,7 @@ import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentManager;
 
 /**
  *
@@ -53,7 +53,7 @@ public class TestPlatformFactory extends J2eePlatformFactory {
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        String property = ((DepManager) dm).getInstanceProperties().getProperty(DepManager.PLATFORM_ROOT_PROPERTY);
+        String property = ((TestDeploymentManager) dm).getInstanceProperties().getProperty(TestDeploymentManager.PLATFORM_ROOT_PROPERTY);
         if (property == null) {
             property = System.getProperty("java.io.tmpdir", null);
         }

@@ -284,8 +284,8 @@ public final class GeneratedFilesHelper {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
-                    if (h != null && h.isProjectXmlModified()) {
-                        throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
+                    if (h != null) {
+                        h.possiblyThrowProjectXmlModified("Cannot generate build scripts from a modified project"); // NOI18N
                     }
                     // Need to use an atomic action since otherwise creating new build scripts might
                     // cause them to not be recognized as Ant scripts.
@@ -575,8 +575,8 @@ public final class GeneratedFilesHelper {
         try {
             return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Integer>() {
                 public Integer run() throws IOException {
-                    if (h != null && h.isProjectXmlModified()) {
-                        throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
+                    if (h != null) {
+                        h.possiblyThrowProjectXmlModified("Cannot generate build scripts from a modified project"); // NOI18N
                     }
                     FileObject script = dir.getFileObject(path);
                     if (script == null || /* #55164 */script.isVirtual()) {

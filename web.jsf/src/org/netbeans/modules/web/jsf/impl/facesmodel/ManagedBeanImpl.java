@@ -43,11 +43,13 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesManagedProperty;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.ListEntries;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
@@ -256,6 +258,19 @@ public class ManagedBeanImpl extends IdentifiableDescriptionGroupImpl implements
         return Boolean.valueOf( eager );
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean#getManagedProperties()
+     */
+    public List<ManagedProperty> getManagedProperties() {
+        /*
+         * This method is unneeded in this implementation.
+         * But is should be implemented due presence in interface.
+         * It present in interface as consequence of annotation interface.  
+         */
+        List<FacesManagedProperty> props = getChildren( FacesManagedProperty.class);
+        return new ArrayList<ManagedProperty>( props );
+    }
+    
     @Override
     protected Map<String, Integer> getOrderedMapOfLocalNames(){
         return SORTED_ELEMENTS;
@@ -277,4 +292,5 @@ public class ManagedBeanImpl extends IdentifiableDescriptionGroupImpl implements
                 ManagedBeanProps.class+ "  superclass";       // NOI18N
         return propName;
     }
+
 }

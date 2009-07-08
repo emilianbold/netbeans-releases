@@ -233,7 +233,7 @@ public final class GsfTaskProvider extends PushTaskScanner  {
                     Collections.<String> emptyList (),
                     Collections.<String> emptyList ()
                 );
-
+                
                 String relativePath = null;
                 for(FileObject root : roots) {
                     if (null != (relativePath = FileUtil.getRelativePath(root, file))) {
@@ -242,7 +242,6 @@ public final class GsfTaskProvider extends PushTaskScanner  {
                 }
 
                 LOG.log(Level.FINE, "Querying TL index for {0}", relativePath); //NOI18N
-                assert relativePath != null : "File " + file + " not under roots: " + roots; //NOI18N
                 if (relativePath != null) {
                     try {
                         QuerySupport querySupport = QuerySupport.forRoots (

@@ -559,14 +559,26 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         {
             if (evt.getOldValue() instanceof JTextComponent) {
                 JTextComponent jtc = (JTextComponent) evt.getOldValue();
-                components = Collections.singletonList(jtc);
                 handleActiveDocumentChange(jtc.getDocument(), null);
             }
             
+        } else if (evt.getPropertyName().equals(EditorRegistry.COMPONENT_REMOVED_PROPERTY)) {
+            if (evt.getOldValue() instanceof JTextComponent) {
+                JTextComponent jtc = (JTextComponent) evt.getOldValue();
+                components = Collections.singletonList(jtc);
+            }
+
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
             if (evt.getNewValue() instanceof JTextComponent) {
                 JTextComponent jtc = (JTextComponent) evt.getNewValue();
                 handleActiveDocumentChange(null, jtc.getDocument());
+                JTextComponent activeComponent = activeComponentRef == null ? null : activeComponentRef.get();
+                if (activeComponent != jtc) {
+                    if (activeComponent != null)
+                        components = Collections.singletonList(activeComponent);
+                    activeComponentRef = new WeakReference<JTextComponent>(jtc);
+                }
+
             }
 
         } else if (evt.getPropertyName().equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
@@ -592,8 +604,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         long version = DocumentUtilities.getDocumentVersion(d);
                         Long lastIndexedVersion = (Long) d.getProperty(PROP_LAST_INDEXED_VERSION);
                         boolean reindex = false;
-
-                        if (jtc.isShowing()) {
+                        
+                        boolean openedInEditor = EditorRegistry.componentList().contains(jtc);
+                        if (openedInEditor) {
                             if (lastIndexedVersion == null) {
                                 Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
                                 reindex = lastDirtyVersion != null;
@@ -615,7 +628,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             FileListWork job = jobs.get(root);
                             if (job == null) {
-                                job = new FileListWork(root, Collections.singleton(f), false, jtc.isShowing(), true, sourcesForBinaryRoots.contains(root));
+                                job = new FileListWork(root, Collections.singleton(f), false, openedInEditor, true, sourcesForBinaryRoots.contains(root));
                                 jobs.put(root, job);
                             } else {
                                 // XXX: strictly speaking we should set 'checkEditor' for each file separately
@@ -704,6 +717,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private volatile Task worker;
 
     private volatile Reference<Document> activeDocumentRef = null;
+    private volatile Reference<JTextComponent> activeComponentRef = null;
     private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
     private IndexingController controller;
 

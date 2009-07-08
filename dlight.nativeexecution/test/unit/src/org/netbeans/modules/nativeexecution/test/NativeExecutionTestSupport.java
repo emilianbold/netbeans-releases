@@ -41,6 +41,7 @@ package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -195,5 +196,23 @@ public class NativeExecutionTestSupport {
      */
     public static String getMspec(ExecutionEnvironment execEnv) {
         return env2spec.get(execEnv);
+    }
+
+    public static boolean getBoolean(String condSection, String condKey) {
+        return getBoolean(condSection, condKey, false);
+    }
+
+    public static boolean getBoolean(String condSection, String condKey, boolean defaultValue) {
+        try {
+            String value = getRcFile().get(condSection, condKey);
+            return (value == null) ? defaultValue : Boolean.parseBoolean(value);
+        } catch (FileNotFoundException ex) {
+            // silently: just no file => condition is false, that's it
+            return defaultValue;
+        } catch (IOException ex) {
+            return defaultValue;
+        } catch (RcFile.FormatException ex) {
+            return defaultValue;
+        }
     }
 }

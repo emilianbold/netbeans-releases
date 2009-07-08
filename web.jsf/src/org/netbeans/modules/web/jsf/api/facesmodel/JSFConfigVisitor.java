@@ -82,7 +82,7 @@ public interface JSFConfigVisitor {
     void visit( Others others );
     void visit( AbsoluteOrdering absoluteOrdering );
     void visit( Factory factory );
-    void visit( ValidatorId id );
+    void visit( FacesValidatorId id );
     void visit( ApplicationFactory factory );
     void visit( ExceptionHandlerFactory factory );
     void visit( ExternalContextFactory factory );
@@ -239,7 +239,7 @@ public interface JSFConfigVisitor {
             visitChild();
         }
         
-        public void visit( ValidatorId id ) {
+        public void visit( FacesValidatorId id ) {
             visitChild();
         }
         

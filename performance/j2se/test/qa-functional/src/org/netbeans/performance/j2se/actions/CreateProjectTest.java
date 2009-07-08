@@ -46,7 +46,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -59,7 +59,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreateProjectTest extends PerformanceTestCase {
     
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewJavaProjectNameLocationStepOperator wizard_location;
     private String category, project, project_name, project_type;
     
     /**
@@ -114,7 +114,7 @@ public class CreateProjectTest extends PerformanceTestCase {
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location = new NewJavaProjectNameLocationStepOperator();
         String directory = System.getProperty("nbjunit.workdir");
         wizard_location.txtProjectLocation().setText("");
         wizard_location.txtProjectLocation().setText(directory);

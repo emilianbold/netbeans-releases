@@ -2691,15 +2691,36 @@ lazy_template_argument_list
  *  x<(1+2)> ==> ok.
  */
 template_argument
-	:
+    :
+        // IZ 167547 : 100% CPU core usage with C++ project.
+        // This is check for too complicated tecmplates.
+        // If template depth is more then 20 we just skip it.
+        ((SCOPE)? (ID SCOPE)* ID templateDepthChecker[20]) => (SCOPE)? (ID SCOPE)* ID templateDepthChecker[20]
+    |
         // IZ 140991 : Parser "hangs" on Loki.
         // This is predicate for fast T<T<...>> pattern recognition.
-        (ID simpleBalanceLessthanGreaterthanInExpression (COMMA | GREATERTHAN)) => type_name
+        ((SCOPE)? (ID SCOPE)* ID simpleBalanceLessthanGreaterthanInExpression (COMMA | GREATERTHAN)) => type_name
     |
         (type_name (COMMA | GREATERTHAN)) => type_name
     |
         template_param_expression
 ;
+
+templateDepthChecker[int i]
+    :
+        LESSTHAN
+        (
+            (   {(i > 0)}? (~(LESSTHAN | GREATERTHAN | RCURLY | LCURLY))*
+                templateDepthChecker[i - 1]
+                (~(GREATERTHAN | RCURLY | LCURLY))*
+            |
+                {(i <= 0)}? (   ~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY)
+                |   templateDepthChecker[i - 1]
+                )*
+            )
+        )
+        GREATERTHAN
+    ;
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -3299,11 +3320,11 @@ balanceLessthanGreaterthanInExpression
 simpleBalanceLessthanGreaterthanInExpression
     :
         LESSTHAN
-        (   ID (simpleBalanceLessthanGreaterthanInExpression)?
+        (   (SCOPE)? (ID SCOPE)* ID (simpleBalanceLessthanGreaterthanInExpression)?
         |   constant
         )?
         (   COMMA 
-            (   ID (simpleBalanceLessthanGreaterthanInExpression)?
+            (   (SCOPE)? (ID SCOPE)* ID (simpleBalanceLessthanGreaterthanInExpression)?
             |   constant
             )
         )*

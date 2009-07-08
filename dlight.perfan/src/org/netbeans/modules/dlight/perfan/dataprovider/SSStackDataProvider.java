@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -336,7 +337,9 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         public List<FunctionCall> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
-            log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+            }
 
             Metrics metrics = taskArguments.metrics;
 

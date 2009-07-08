@@ -93,15 +93,6 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"/>
             </file>
-            <file name="ejbFacade">
-                <attr name="position" intvalue="500"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.dao.Bundle"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="ejb-types_3_0,ejb-types_3_1"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/wizard/dao/ejbFacade.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
-            </file>
         </folder>    
     </folder>
     

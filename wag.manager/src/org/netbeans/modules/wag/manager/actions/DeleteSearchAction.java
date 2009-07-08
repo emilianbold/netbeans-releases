@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.wag.manager.actions;
 
 import java.util.ArrayList;
@@ -56,19 +55,19 @@ import org.openide.util.*;
  * @author  peterliu
  */
 public class DeleteSearchAction extends NodeAction {
-    
+
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         return true;
     }
-    
+
     public org.openide.util.HelpCtx getHelpCtx() {
         return new HelpCtx(DeleteSearchAction.class);
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(DeleteSearchAction.class, "DeleteSearchAction");
     }
-    
+
     protected void performAction(final Node[] nodes) {
         if (nodes == null) {
             return;
@@ -85,26 +84,21 @@ public class DeleteSearchAction extends NodeAction {
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object response = DialogDisplayer.getDefault().notify(d);
         if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    Collection<WagSearchResult> searchesToRemove = new ArrayList<WagSearchResult>();
+            Collection<WagSearchResult> searchesToRemove = new ArrayList<WagSearchResult>();
 
-                    for (int i = 0; i < nodes.length; i++) {
-                        searchesToRemove.add(nodes[i].getLookup().lookup(WagSearchResult.class));
-                    }
+            for (int i = 0; i < nodes.length; i++) {
+                searchesToRemove.add(nodes[i].getLookup().lookup(WagSearchResult.class));
+            }
 
-                    results.removeResults(searchesToRemove);
-                }
-            });
+            results.removeResults(searchesToRemove);
         }
     }
-    
+
     protected boolean asynchronous() {
         return false;
     }
-    
+
     protected String iconResource() {
         return "org/netbeans/modules/wag/manager/resources/restservice.png"; // NOI18N
     }
-    
 }

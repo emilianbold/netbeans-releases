@@ -366,11 +366,8 @@ public class Controller {
                 if (tab == null) {
                     tab = createOutputTab(io);
                 }
-                ioContainer.open();
                 if (io.isFocusTaken()) {
                     ioContainer.requestActive();
-                } else {
-                    ioContainer.requestVisible();
                 }
                 ioContainer.select(tab);
                 break;

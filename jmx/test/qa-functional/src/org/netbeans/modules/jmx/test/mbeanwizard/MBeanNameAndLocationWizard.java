@@ -42,7 +42,7 @@
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
 import javax.swing.JLabel;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.MBean;
@@ -170,7 +170,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
         checkNewFileWizardValues(nfwo, fileType);
         nfwo.next();
         
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(null, null);
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(null, null);
         
         // Check name and location wizard components
         checkNameAndLocationWizardComponents(nfnlso, fileType, null);
@@ -258,7 +258,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
      * Check name and location wizard components are enabled/disabled
      */
     private void checkNameAndLocationWizardComponents(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             String fileType,
             MBean mbean) {
         
@@ -312,7 +312,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
      * Check name and location wizard values
      */
     private void checkNameAndLocationWizardValues(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             String fileType,
             String projectName,
             MBean mbean) {
@@ -365,7 +365,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
      * - default package
      */
     private void checkNameAndLocationWizardWarnings(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             String fileType) {
         
         JLabel jl = null;
@@ -419,7 +419,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
      * Update name and location wizard values
      */
     private void updateNameAndLocationWizardValues(
-            NewFileNameLocationStepOperator nfnlso,
+            NewJavaFileNameLocationStepOperator nfnlso,
             String fileType,
             MBean mbean) {
         

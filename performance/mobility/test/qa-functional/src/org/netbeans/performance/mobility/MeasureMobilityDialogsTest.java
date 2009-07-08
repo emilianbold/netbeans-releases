@@ -62,7 +62,6 @@ public class MeasureMobilityDialogsTest  {
         System.setProperty("suitename", MeasureMobilityDialogsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Mobility Dialogs suite");
 
-        // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(NewConfigurationDialogTest.class)
                 .addTest(MobilityDeploymentManagerDialogTest.class, "measureTime")
                 .addTest(QuickRunDialogTest.class)

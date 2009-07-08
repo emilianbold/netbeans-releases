@@ -61,6 +61,18 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class HelpOperatorTest extends JellyTestCase {
 
+
+    private static final String[] tests = new String[]
+    {
+           "testInvoke",
+           "testContentsSelection",
+           "testSearchFind",
+           "testPreviousAndNext",
+           "testPrint",
+           "testPageSetup",
+           "testClose",
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -70,28 +82,8 @@ public class HelpOperatorTest extends JellyTestCase {
     
     /** method used for explicit testsuite definition
      */
-    public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new HelpOperatorTest("testInvoke"));
-        suite.addTest(new HelpOperatorTest("testContentsSelection"));
-        suite.addTest(new HelpOperatorTest("testSearchFind"));
-        suite.addTest(new HelpOperatorTest("testPreviousAndNext"));
-        suite.addTest(new HelpOperatorTest("testPrint"));
-        suite.addTest(new HelpOperatorTest("testPageSetup"));
-        suite.addTest(new HelpOperatorTest("testClose"));
-        return suite;
-         */
-        return (NbTest) NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(HelpOperatorTest.class).
-                addTest("testInvoke").
-                addTest("testContentsSelection").
-                addTest("testSearchFind").
-                addTest("testPreviousAndNext").
-                addTest("testPrint").
-                addTest("testPageSetup").
-                addTest("testClose").
-                enableModules(".*").clusters(".*"));
+    public static Test suite() {        
+        return createModuleTest(HelpOperatorTest.class, tests);
     }
     
     /** Print out test name. */
@@ -139,7 +131,7 @@ public class HelpOperatorTest extends JellyTestCase {
     public void testContentsSelection() {
         String text = help.getContentText();
         help.treeContents().selectRow(0);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(5000);
         assertTrue(!text.equals(help.getContentText()));
     }
     
@@ -147,10 +139,10 @@ public class HelpOperatorTest extends JellyTestCase {
      */
     public void testSearchFind() {
         help.searchFind("help");
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(5000);
         String text=help.getContentText();
         help.searchFind("menu");
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(5000);
         assertTrue(!text.equals(help.getContentText()));
     }
     

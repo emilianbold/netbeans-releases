@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -219,7 +220,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
         }
         
         private void writeDD(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule) throws IOException {
-            if (isDescriptorMandatory(ejbModule.getJ2eePlatformVersion())) {
+            if (isDescriptorMandatory(ejbModule.getJ2eeProfile())) {
                 FileObject fo = ejbModule.getDeploymentDescriptor();
                 if (fo != null){
                     DDProvider.getDefault().getDDRoot(fo).write(fo);
@@ -383,11 +384,8 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return getUnigueName(messageDestRefNames, originalValue);
         }
         
-        private static boolean isDescriptorMandatory(String j2eeVersion) {
-            if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) {
-                return true;
-            }
-            return false;
+        private static boolean isDescriptorMandatory(Profile j2eeVersion) {
+            return Profile.J2EE_13.equals(j2eeVersion) || Profile.J2EE_14.equals(j2eeVersion);
         }
         
     }

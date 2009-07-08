@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -69,7 +68,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                     final String workingDirectory = info.getWorkingDirectory(true);
 
                     if (workingDirectory != null) {
-                        streams.in.write(("cd " + CommandLineHelper.getInstance(execEnv).toShellPath(workingDirectory) + "\n").getBytes()); // NOI18N
+                        streams.in.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
                         streams.in.flush();
                     }
 

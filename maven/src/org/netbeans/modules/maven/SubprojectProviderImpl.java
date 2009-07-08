@@ -68,8 +68,8 @@ import org.openide.util.WeakListeners;
  */
 public class SubprojectProviderImpl implements SubprojectProvider {
 
-    private NbMavenProjectImpl project;
-    private NbMavenProject watcher;
+    private final NbMavenProjectImpl project;
+    private final NbMavenProject watcher;
     private List<ChangeListener> listeners;
     private ChangeListener listener2;
     private PropertyChangeListener propertyChange;

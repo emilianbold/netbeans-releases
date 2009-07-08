@@ -78,7 +78,7 @@ public class RefineSearchDlg extends JPanel implements ActionListener {
         this.searchResults = results;
         this.searchResult = result;
         initComponents();
-        myInitComponents();        
+        myInitComponents();
     }
 
     private void setErrorMessage(String msg) {
@@ -152,11 +152,7 @@ public class RefineSearchDlg extends JPanel implements ActionListener {
         dialog.setVisible(true);
 
         if (dlg.getValue() == DialogDescriptor.OK_OPTION) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    refineSearchResult();
-                }
-            });
+            refineSearchResult();
         }
     }
 

@@ -16,28 +16,6 @@
                     public int getStatus() {
                         return STATE_VALID;
                     }
-                    // due to compatibility with servlet2.3
-                    public void setTaglib(int index, org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
-                    public org.netbeans.modules.j2ee.dd.api.web.Taglib getTaglib(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
-                    public void setTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
-                    public org.netbeans.modules.j2ee.dd.api.web.Taglib[] getTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
-                    public int sizeTaglib() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
-                    public int addTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
-                    public int removeTaglib(org.netbeans.modules.j2ee.dd.api.web.Taglib valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_5);
-                    }
                     public void setJspConfig(org.netbeans.modules.j2ee.dd.api.web.JspConfig value) {
                         if (value==null) setJspConfig(new org.netbeans.modules.j2ee.dd.api.web.JspConfig[]{});
                         else setJspConfig(new org.netbeans.modules.j2ee.dd.api.web.JspConfig[]{value});
@@ -91,6 +69,21 @@
                         org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList[] values = getLocaleEncodingMappingList();
                         if (values==null || values.length==0) return null;
                         else return values[0];
+                    }
+                    public void setName(String[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
+                    public String[] getName() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering newAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
+                    public void setAbsoluteOrdering(org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
+                    }
+                    public org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering[] getAbsoluteOrdering() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_2_5);
                     }
             </user-code>
         </meta-element>

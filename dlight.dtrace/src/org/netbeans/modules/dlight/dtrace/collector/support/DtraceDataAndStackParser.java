@@ -161,8 +161,10 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     }
                 } else {
                     currData = processDataLine(line);
-                    DLightLogger.assertTrue(currData != null,
+                    if (currData == null) {
+                        DLightLogger.assertTrue(false,
                             "could not parse line " + line); // NOI18N
+                    }
                 }
                 //currStack.clear();
                 state = State.WAITING_STACK;

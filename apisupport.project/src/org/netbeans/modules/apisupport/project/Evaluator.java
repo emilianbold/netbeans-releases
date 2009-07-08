@@ -740,43 +740,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         StringBuilder extra = new StringBuilder();
         if (!fullySpecified) {
             // Old module which failed to specify all its test dependencies.
-            if (ml.getEntry("org.netbeans.libs.junit4") == null) {
-                // Old platform. For compatibility, compute a basic unit test lib classpath.
-                String[] testLibJars = {
-                    "${nb_all}/xtest/lib/insanelib.jar", // NOI18N
-                    "${nb_all}/xtest/lib/junit.jar", // NOI18N
-                    "${nb_all}/xtest/lib/nbjunit-ide.jar", // NOI18N
-                    "${nb_all}/xtest/lib/nbjunit.jar", // NOI18N
-                    "${netbeans.dest.dir}/../../xtest/lib/insanelib.jar", // NOI18N
-                    "${netbeans.dest.dir}/../../xtest/lib/junit.jar", // NOI18N
-                    "${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar", // NOI18N
-                    "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar", // NOI18N
-                    "${netbeans.dest.dir}/java2/modules/ext/junit-3.8.2.jar", // NOI18N
-                    "${netbeans.dest.dir}/java2/modules/ext/junit-4.1.jar", // NOI18N
-                    "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar", // NOI18N
-                    "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar", // NOI18N
-                    "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar", // NOI18N
-                    "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
-                    "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar", // NOI18N
-                    "${netbeans.home}/../java2/modules/ext/junit-3.8.2.jar", // NOI18N
-                    "${netbeans.home}/../java2/modules/ext/junit-4.1.jar", // NOI18N
-                    "${netbeans.home}/../testtools/modules/ext/insanelib.jar", // NOI18N
-                    "${netbeans.home}/../testtools/modules/ext/nbjunit.jar", // NOI18N
-                    "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit-ide.jar", // NOI18N
-                    "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
-                    "${netbeans.user}/modules/ext/insanelib.jar", // NOI18N
-                    "${netbeans.user}/modules/ext/nbjunit.jar", // NOI18N
-                    "${netbeans.user}/modules/org-netbeans-modules-nbjunit-ide.jar", // NOI18N
-                    "${netbeans.user}/modules/org-netbeans-modules-nbjunit.jar", // NOI18N
-                };
-                for (String jar : testLibJars) {
-                    extra.append(":");
-                    extra.append(jar);
-                }
-                if (ttName.startsWith("qa-")) {
-                    extra.append(":${nb_all}/jemmy/builds/jemmy.jar:${nb_all}/jellytools/builds/jelly2-nb.jar");
-                }
-            } else {
+            if (ml.getEntry("org.netbeans.libs.junit4") != null) {
                 // Basic dependencies many tests use:
                 for (String library : new String[] {"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
                     compileCnbs.add(library);

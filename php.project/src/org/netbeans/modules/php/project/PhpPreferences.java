@@ -45,10 +45,13 @@ import org.openide.util.NbPreferences;
 /**
  * @author Radek Matous
  */
-public class PhpPreferences {
+public final class PhpPreferences {
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing private preferences which are not imported
     private static final String PRIVATE_PREFERENCES_PATH = "private";//NOI18N
+
+    private PhpPreferences() {
+    }
 
     /**
      * @param importEnabled true means that preferences in this preferences node are

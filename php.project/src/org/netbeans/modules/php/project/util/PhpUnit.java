@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -53,6 +54,9 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.api.util.PhpProgram;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -61,6 +65,8 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public final class PhpUnit extends PhpProgram {
+    // for keeping log files to able to evaluate and fix issues
+    public static final boolean KEEP_LOGS = Boolean.getBoolean("org.netbeans.modules.php.project.util.PhpUnit.keepLogs");
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
@@ -173,7 +179,7 @@ public final class PhpUnit extends PhpProgram {
         //                                                              PHPUnit 3.3.1 by Sebastian Bergmann.
         private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
 
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {
                 public void processLine(String line) {
                     int[] match = match(line);
@@ -182,15 +188,25 @@ public final class PhpUnit extends PhpProgram {
                     }
                 }
                 public void reset() {
+                    try {
+                        defaultProcessor.reset();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 public void close() {
+                    try {
+                        defaultProcessor.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             });
         }
 
         static int[] match(String text) {
             assert text != null;
-            if (PhpProjectUtils.hasText(text)) {
+            if (StringUtils.hasText(text)) {
                 Matcher matcher = PHPUNIT_VERSION.matcher(text);
                 if (matcher.find()) {
                     int major = Integer.parseInt(matcher.group(1));

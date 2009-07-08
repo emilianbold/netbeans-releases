@@ -41,65 +41,27 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik
  */
 public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    private static final String TAB_FOLDER = "org.netbeans.modules.php/options/"; // NOI18N
-    private final PhpOptionsPanel phpOptionsPanel = new PhpOptionsPanel();
-    private final Collection<? extends AdvancedOption> options;
+    private PhpOptionsPanel phpOptionsPanel = null;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    // @GuardedBy(this)
-    private Map<OptionsPanelController, AdvancedOption> controllers2Options;
-    private JTabbedPane pane;
-    private boolean changed;
-
-    public PhpOptionsPanelController() {
-        options = Lookups.forPath(TAB_FOLDER).lookupAll(AdvancedOption.class);
-        phpOptionsPanel.addChangeListener(this);
-    }
-
-    private synchronized Map<OptionsPanelController, AdvancedOption> getControllers2Options() {
-        if (controllers2Options == null) {
-            controllers2Options = new LinkedHashMap<OptionsPanelController, AdvancedOption>();
-            for (AdvancedOption o : options) {
-                OptionsPanelController c = o.create();
-                controllers2Options.put(c, o);
-            }
-        }
-
-        return controllers2Options;
-    }
-
-    private Set<OptionsPanelController> getControllers() {
-        return getControllers2Options().keySet();
-    }
+    private volatile boolean changed;
 
     @Override
     public void update() {
-        for (OptionsPanelController c : getControllers()) {
-            c.update();
-        }
-
         phpOptionsPanel.setPhpInterpreter(getPhpOptions().getPhpInterpreter());
         phpOptionsPanel.setOpenResultInOutputWindow(getPhpOptions().isOpenResultInOutputWindow());
         phpOptionsPanel.setOpenResultInBrowser(getPhpOptions().isOpenResultInBrowser());
@@ -116,10 +78,6 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public void applyChanges() {
-        for (OptionsPanelController c : getControllers()) {
-            c.applyChanges();
-        }
-
         getPhpOptions().setPhpInterpreter(phpOptionsPanel.getPhpInterpreter());
         getPhpOptions().setOpenResultInOutputWindow(phpOptionsPanel.isOpenResultInOutputWindow());
         getPhpOptions().setOpenResultInBrowser(phpOptionsPanel.isOpenResultInBrowser());
@@ -138,78 +96,25 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public void cancel() {
-        for (OptionsPanelController c : getControllers()) {
-            c.cancel();
-        }
     }
 
     @Override
     public boolean isValid() {
-        for (OptionsPanelController c : getControllers()) {
-            if (!c.isValid()) {
-                return false;
-            }
-        }
-
         return validateComponent();
     }
 
     @Override
     public boolean isChanged() {
-        for (OptionsPanelController c : getControllers()) {
-            if (c.isChanged()) {
-                return true;
-            }
-        }
-
-        if (!phpOptionsPanel.getPhpInterpreter().equals(getPhpOptions().getPhpInterpreter())) {
-            return true;
-        }
-        if (getPhpOptions().isOpenResultInOutputWindow() != phpOptionsPanel.isOpenResultInOutputWindow()) {
-            return true;
-        }
-        if (getPhpOptions().isOpenResultInBrowser() != phpOptionsPanel.isOpenResultInBrowser()) {
-            return true;
-        }
-        if (getPhpOptions().isOpenResultInEditor() != phpOptionsPanel.isOpenResultInEditor()) {
-            return true;
-        }
-
-        Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
-        if (debuggerPort != null && getPhpOptions().getDebuggerPort() != debuggerPort) {
-            return true;
-        }
-        String debuggerSessionId = phpOptionsPanel.getDebuggerSessionId();
-        if (debuggerSessionId != null && !getPhpOptions().getDebuggerSessionId().equals(debuggerSessionId)) {
-            return true;
-        }
-        if (getPhpOptions().isDebuggerStoppedAtTheFirstLine() != phpOptionsPanel.isDebuggerStoppedAtTheFirstLine()) {
-            return true;
-        }
-
-        if (!phpOptionsPanel.getPhpUnit().equals(getPhpOptions().getPhpUnit())) {
-            return true;
-        }
-
-        if (!getPhpOptions().getPhpGlobalIncludePath().equals(phpOptionsPanel.getPhpGlobalIncludePath())) {
-            return true;
-        }
-        return false;
+        return changed;
     }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-         if (pane == null) {
-            pane = new JTabbedPane();
-            pane.add(NbBundle.getMessage(PhpOptionsPanelController.class, "LBL_GeneralOPtions"), phpOptionsPanel);
-
-            for (Entry<OptionsPanelController, AdvancedOption> e : getControllers2Options().entrySet()) {
-                OptionsPanelController controller = e.getKey();
-                AdvancedOption option = e.getValue();
-                pane.add(option.getDisplayName(), controller.getComponent(controller.getLookup()));
-            }
+         if (phpOptionsPanel == null) {
+            phpOptionsPanel = new PhpOptionsPanel();
+            phpOptionsPanel.addChangeListener(this);
         }
-        return pane;
+        return phpOptionsPanel;
     }
 
     @Override

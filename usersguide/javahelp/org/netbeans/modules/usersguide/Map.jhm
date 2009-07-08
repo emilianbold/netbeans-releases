@@ -506,6 +506,7 @@
 <mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="collab/csh/issues_html_response.html" />
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
 <mapID target="org.netbeans.modules.bugtracking.patchContextChooser" url="collab/csh/issues_patchcontextchooser.html" />
+<mapID target="org.netbeans.modules.bugtracking.issueChooser" url="collab/csh/issues_issuechooser.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />

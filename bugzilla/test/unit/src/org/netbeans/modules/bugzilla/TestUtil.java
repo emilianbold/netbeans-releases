@@ -43,6 +43,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.ListModel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
@@ -54,6 +55,9 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.query.QueryPanel;
+import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
@@ -151,5 +155,5 @@ public class TestUtil implements TestConstants {
             handleException(ex);
         }
     }
-
+    
 }

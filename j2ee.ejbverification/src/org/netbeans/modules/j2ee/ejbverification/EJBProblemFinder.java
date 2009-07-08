@@ -43,13 +43,13 @@ package org.netbeans.modules.j2ee.ejbverification;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -62,7 +62,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -109,12 +108,8 @@ public abstract class EJBProblemFinder {
             }
             J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
-                // logging for #156889
                 J2eeModule module = provider.getJ2eeModule();
-                if (module == null) {
-                    NullPointerException npe = new NullPointerException("null J2eeModule from " + provider);
-                    LOG.log(Level.WARNING, npe.getMessage(), npe);
-                } else {
+                if (module != null) {
                     if (J2eeModule.Type.EJB.equals(module.getType())) {
                         isEjb = true;
                     }
@@ -127,7 +122,7 @@ public abstract class EJBProblemFinder {
 
             EjbJar ejbModule = EjbJar.getEjbJar(file);
             if (ejbModule == null
-                    || !EjbProjectConstants.JAVA_EE_5_LEVEL.equals(ejbModule.getJ2eePlatformVersion())) {
+                    || !Profile.JAVA_EE_5.equals(ejbModule.getJ2eeProfile())) {
                 return; // EJB version is not supported
             }
 

@@ -42,12 +42,14 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import java.awt.Component;
+import java.awt.Container;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.StringSelector;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import javax.swing.event.TableModelListener;
@@ -59,6 +61,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.util.Collections;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -94,49 +98,38 @@ import static org.jdesktop.layout.LayoutStyle.RELATED;
 public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener {
 
     static final Object EVENT_SETTINGS_CHANGED = new Object();
+    private static final boolean DEFAULT_DISPLAY_FILES = true;
+    private static final boolean DEFAULT_DISPLAY_HOOKS = false;
 
     final JLabel filesLabel = new JLabel();
-    final JPanel filesPanel = new JPanel();
-    final JLabel filesSectionButton = new JLabel();
-    final JPanel filesSectionPanel = new JPanel();
-    final JLabel hooksSectionButton = new JLabel();
-    final PlaceholderPanel hooksSectionPanel = new PlaceholderPanel();
-    final JTabbedPane hooksTabbedPane = new JTabbedPane();
-    final JLabel jLabel1 = new JLabel();
-    final JLabel jLabel2 = new JLabel();
-    final JScrollPane jScrollPane1 = new JScrollPane();
-    final JTextArea messageTextArea = new JTextArea();
-    final JLabel recentLink = new JLabel();
+    private final JPanel filesPanel = new JPanel(new GridLayout(1, 1));
+    private final JLabel filesSectionButton = new JLabel();
+    private final JPanel filesSectionPanel = new JPanel();
+    private final JLabel hooksSectionButton = new JLabel();
+    private final PlaceholderPanel hooksSectionPanel = new PlaceholderPanel();
+    private final JLabel jLabel1 = new JLabel();
+    private final JLabel jLabel2 = new JLabel();
+    private final JScrollPane jScrollPane1 = new JScrollPane();
+    private final JTextArea messageTextArea = new JTextArea();
+    private final JLabel recentLink = new JLabel();
+    private Icon expandedIcon, collapsedIcon;
 
     private CommitTable commitTable;
-    private boolean hooksOn;
+    private List<SvnHook> hooks = Collections.emptyList();
+    private SvnHookContext hookContext;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
         initComponents();
+        initInteraction();
     }
 
-    void initHooks(List<SvnHook> hooks, SvnHookContext context) {
-        if(hooks.size() < 1) {
-            hooksSectionButton.setVisible(false);
-            hooksSectionPanel.setVisible(false);
-            hooksOn = false;
-            return;
+    void setHooks(List<SvnHook> hooks, SvnHookContext context) {
+        if (hooks == null) {
+            hooks = Collections.emptyList();
         }
-        hooksOn = true;
-        if (hooks.size() == 1) {
-            SvnHook hook = hooks.get(0);
-            hooksSectionPanel.add(hook.createComponent(context));
-            hooksSectionButton.setText(hook.getDisplayName());
-        } else {
-            hooksSectionPanel.add(hooksTabbedPane);
-            hooksSectionButton.setText(getMessage("LBL_Advanced"));
-            for (SvnHook hook : hooks) {
-                hooksTabbedPane.add(hook.createComponent(context), hook.getDisplayName());
-            }
-        }
-        hooksSectionPanel.setVisible(false);
-        hooksSectionButton.setVisible(true);
+        this.hooks = hooks;
+        this.hookContext = context;
     }
 
     void setCommitTable(CommitTable commitTable) {
@@ -147,21 +140,14 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel2.setText(htmlErrorLabel);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
-
-        filesPanel.setPreferredSize(new Dimension(0, 2 * messageTextArea.getPreferredSize().height));
 
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
 
-        recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        recentLink.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                onBrowseRecentMessages();
-            }
-        });
         final List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -172,40 +158,119 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             }
         });
 
-        if(hooksOn) {
-            JTree tv = new JTree();
-            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
-            final Icon ei = tvui.getExpandedIcon();
-            final Icon ci = tvui.getCollapsedIcon();
-            filesSectionButton.setIcon(ei);
-            hooksSectionButton.setIcon(ci);
-            hooksSectionPanel.setVisible(false);
+        initCollapsibleSections();
+    }
 
-            initSectionButton(filesSectionButton, filesSectionPanel, ci, ei);
-            initSectionButton(hooksSectionButton, hooksSectionPanel, ci, ei);
+    @Override
+    public void removeNotify() {
+        commitTable.getTableModel().removeTableModelListener(this);
+        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        super.removeNotify();
+    }
+
+    private void initCollapsibleSections() {
+        JTree tv = new JTree();
+        BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+        expandedIcon = tvui.getExpandedIcon();
+        collapsedIcon = tvui.getCollapsedIcon();
+
+        initSectionButton(filesSectionButton, filesSectionPanel,
+                          "initFilesPanel",                             //NOI18N
+                          DEFAULT_DISPLAY_FILES);
+        if(!hooks.isEmpty()) {
+            hooksSectionButton.setText((hooks.size() == 1)
+                                       ? hooks.get(0).getDisplayName()
+                                       : getMessage("LBL_Advanced"));   //NOI18N
+            initSectionButton(hooksSectionButton, hooksSectionPanel,
+                              "initHooksPanel",                         //NOI18N
+                              DEFAULT_DISPLAY_HOOKS);
+        } else {
+            hooksSectionButton.setVisible(false);
         }
     }
 
-    private void initSectionButton(final JLabel label, final JPanel panel, final Icon ci, final Icon ei) {
+    private void initSectionButton(final JLabel label,
+                                   final JPanel panel,
+                                   final String initPanelMethodName,
+                                   final boolean defaultSectionDisplayed) {
+        if (defaultSectionDisplayed) {
+            displaySection(label, panel, initPanelMethodName);
+        } else {
+            hideSection(label, panel);
+        }
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (panel.isVisible()) {
-                    panel.setVisible(false);
-                    label.setIcon(ci);
+                    hideSection(label, panel);
                 } else {
-                    panel.setVisible(true);
-                    label.setIcon(ei);
-                    enlargeVerticallyAsNecessary();
+                    displaySection(label, panel, initPanelMethodName);
                 }
             }
         });
     }
 
-    public void removeNotify() {
-        commitTable.getTableModel().removeTableModelListener(this);
-        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
-        super.removeNotify();
+    private void displaySection(JLabel sectionButton,
+                                Container sectionPanel,
+                                String initPanelMethodName) {
+        if (sectionPanel.getComponentCount() == 0) {
+            invokeInitPanelMethod(initPanelMethodName);
+        }
+        sectionPanel.setVisible(true);
+        sectionButton.setIcon(expandedIcon);
+        enlargeVerticallyAsNecessary();
+    }
+
+    private void hideSection(JLabel sectionButton,
+                             JPanel sectionPanel) {
+        sectionPanel.setVisible(false);
+        sectionButton.setIcon(collapsedIcon);
+    }
+
+    private void invokeInitPanelMethod(String methodName) {
+        try {
+            getClass().getDeclaredMethod(methodName).invoke(this);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void initFilesPanel() {
+
+        /* this method is called using reflection from 'invokeInitPanelMethod()' */
+
+        filesPanel.add(commitTable.getComponent());
+        filesPanel.setPreferredSize(new Dimension(0, 2 * messageTextArea.getPreferredSize().height));
+
+        filesSectionPanel.setLayout(new BoxLayout(filesSectionPanel, Y_AXIS));
+        filesSectionPanel.add(filesLabel);
+        filesSectionPanel.add(makeVerticalStrut(filesLabel, filesPanel, RELATED));
+        filesSectionPanel.add(filesPanel);
+
+        filesLabel.setAlignmentX(LEFT_ALIGNMENT);
+        filesPanel.setAlignmentX(LEFT_ALIGNMENT);
+    }
+
+    private void initHooksPanel() {
+
+        /* this method is called using reflection from 'invokeInitPanelMethod()' */
+
+        assert !hooks.isEmpty();
+
+        if (hooks.size() == 1) {
+            hooksSectionPanel.add(hooks.get(0).createComponent(hookContext));
+        } else {
+            JTabbedPane hooksTabbedPane = new JTabbedPane();
+            for (SvnHook hook : hooks) {
+                hooksTabbedPane.add(hook.createComponent(hookContext),
+                                    hook.getDisplayName());
+            }
+            hooksSectionPanel.add(hooksTabbedPane);
+        }
+    }
+
+    String getCommitMessage() {
+        return messageTextArea.getText();
     }
 
     private void onBrowseRecentMessages() {
@@ -253,13 +318,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         Mnemonics.setLocalizedText(filesSectionButton, getMessage("LBL_CommitDialog_FilesToCommit")); // NOI18N
         Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit")); // NOI18N
 
-        filesSectionPanel.setLayout(new BoxLayout(filesSectionPanel, Y_AXIS));
-        filesSectionPanel.add(filesLabel);
-        filesSectionPanel.add(makeVerticalStrut(filesLabel, filesPanel, RELATED));
-        filesSectionPanel.add(filesPanel);
-        filesLabel.setAlignmentX(LEFT_ALIGNMENT);
-        filesPanel.setAlignmentX(LEFT_ALIGNMENT);
-
         Mnemonics.setLocalizedText(hooksSectionButton, getMessage("LBL_Advanced")); // NOI18N
 
         JPanel topPanel = new VerticallyNonResizingPanel();
@@ -300,6 +358,16 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog")); // NOI18N
         getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
     }// </editor-fold>
+
+    private void initInteraction() {
+        recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        recentLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onBrowseRecentMessages();
+            }
+        });
+    }
 
     private Component makeVerticalStrut(JComponent compA,
                                         JComponent compB,

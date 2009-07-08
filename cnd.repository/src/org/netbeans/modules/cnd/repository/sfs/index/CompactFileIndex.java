@@ -60,10 +60,19 @@ import org.netbeans.modules.cnd.repository.util.SlicedLongHashMap;
 public class CompactFileIndex implements FileIndex, SelfPersistent {
     private static final int shift = 37;
     private static final long mask = (1L<<shift)-1;
-    private static final int DEFAULT_SLICE_CAPACITY = 1024;
-    private static final int DEFAULT_SLICE_COUNT = 29;
-
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final int DEFAULT_SLICE_CAPACITY;
+    private static final int DEFAULT_SLICE_COUNT;
+    static {
+        int nrProc = Runtime.getRuntime().availableProcessors();
+        if (nrProc <= 4) {
+            DEFAULT_SLICE_COUNT = 32;
+            DEFAULT_SLICE_CAPACITY = 512;
+        } else {
+            DEFAULT_SLICE_COUNT = 128;
+            DEFAULT_SLICE_CAPACITY = 128;
+        }
+    }
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
     private final SlicedLongHashMap<Key> map = new SlicedLongHashMap<Key>(DEFAULT_SLICE_COUNT, DEFAULT_SLICE_CAPACITY);
     

@@ -75,7 +75,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -83,6 +83,7 @@ import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
+import org.openide.util.WeakSet;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -183,6 +184,7 @@ public final class AntProjectHelper {
      * Xerces' DOM is not thread-safe <em>even for reading<em> (#50198).
      */
     private final Set<String> modifiedMetadataPaths = new HashSet<String>();
+    private Throwable addedProjectXmlPath; // #155010
     
     /**
      * Registered listeners.
@@ -198,8 +200,8 @@ public final class AntProjectHelper {
     /** Listener to XML files; needs to be held as an instance field so it is not GC'd */
     private final FileChangeListener fileListener;
     
-    /** True if currently saving XML files. */
-    private boolean writingXML = false;
+    /** Atomic actions in use to save XML files. */
+    private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
     
     /**
      * Hook waiting to be called. See issue #57794.
@@ -308,14 +310,19 @@ public final class AntProjectHelper {
         }
         return null;
     }
-    
+
+    private void runSaveAA(AtomicAction action) throws IOException {
+        synchronized (saveActions) {
+            saveActions.add(action);
+        }
+        dir.getFileSystem().runAtomicAction(action);
+    }
     /**
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.
      */
     private FileLock saveXml(final Document doc, final String path) throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
-        assert !writingXML;
         assert Thread.holdsLock(modifiedMetadataPaths);
         try {
             ProjectXMLCatalogReader.validate(doc.getDocumentElement());
@@ -324,80 +331,75 @@ public final class AntProjectHelper {
             throw (IOException) new IOException(x.getMessage()).initCause(x);
         }
         final FileLock[] _lock = new FileLock[1];
-        writingXML = true;
-        try {
-            dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-                    final byte[] data = baos.toByteArray();
-                    final FileObject xml = FileUtil.createData(dir, path);
+        runSaveAA(new AtomicAction() {
+            public void run() throws IOException {
+                // Keep a copy of xml *while holding modifiedMetadataPaths monitor*.
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+                final byte[] data = baos.toByteArray();
+                final FileObject xml = FileUtil.createData(dir, path);
+                try {
+                    _lock[0] = xml.lock(); // unlocked by {@link #save}
+                    OutputStream os = xml.getOutputStream(_lock[0]);
                     try {
-                        _lock[0] = xml.lock(); // unlocked by {@link #save}
-                        OutputStream os = xml.getOutputStream(_lock[0]);
-                        try {
-                            os.write(data);
-                        } finally {
-                            os.close();
-                        }
-                    } catch (UserQuestionException uqe) { // #46089
-                        needPendingHook();
-                        UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
-                            public void accepted() {
-                                // Try again.
-                                assert !writingXML;
-                                writingXML = true;
-                                try {
-                                    FileLock lock = xml.lock();
-                                    try {
-                                        OutputStream os = xml.getOutputStream(lock);
+                        os.write(data);
+                    } finally {
+                        os.close();
+                    }
+                } catch (UserQuestionException uqe) { // #46089
+                    needPendingHook();
+                    UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                        public void accepted() {
+                            // Try again.
+                            try {
+                                runSaveAA(new AtomicAction() {
+                                    public void run() throws IOException {
+                                        FileLock lock = xml.lock();
                                         try {
-                                            os.write(data);
+                                            OutputStream os = xml.getOutputStream(lock);
+                                            try {
+                                                os.write(data);
+                                            } finally {
+                                                os.close();
+                                            }
                                         } finally {
-                                            os.close();
+                                            lock.releaseLock();
                                         }
-                                    } finally {
-                                        lock.releaseLock();
+                                        maybeCallPendingHook();
                                     }
-                                    maybeCallPendingHook();
-                                } catch (IOException e) {
-                                    // Oh well.
-                                    ErrorManager.getDefault().notify(e);
-                                    reload();
-                                } finally {
-                                    writingXML = false;
-                                }
-                            }
-                            public void denied() {
-                                reload();
-                            }
-                            public void error(IOException e) {
+                                });
+                            } catch (IOException e) {
+                                // Oh well.
                                 ErrorManager.getDefault().notify(e);
                                 reload();
                             }
-                            private void reload() {
-                                // Revert the save.
-                                if (path.equals(PROJECT_XML_PATH)) {
-                                    synchronized (modifiedMetadataPaths) {
-                                        projectXmlValid = false;
-                                    }
-                                } else {
-                                    assert path.equals(PRIVATE_XML_PATH) : path;
-                                    synchronized (modifiedMetadataPaths) {
-                                        privateXmlValid = false;
-                                    }
+                        }
+                        public void denied() {
+                            reload();
+                        }
+                        public void error(IOException e) {
+                            ErrorManager.getDefault().notify(e);
+                            reload();
+                        }
+                        private void reload() {
+                            // Revert the save.
+                            if (path.equals(PROJECT_XML_PATH)) {
+                                synchronized (modifiedMetadataPaths) {
+                                    projectXmlValid = false;
                                 }
-                                fireExternalChange(path);
-                                cancelPendingHook();
+                            } else {
+                                assert path.equals(PRIVATE_XML_PATH) : path;
+                                synchronized (modifiedMetadataPaths) {
+                                    privateXmlValid = false;
+                                }
                             }
-                        });
-                    }
+                            fireExternalChange(path);
+                            cancelPendingHook();
+                        }
+                    });
                 }
-            });
-        } finally {
-            writingXML = false;
-        }
+            }
+        });
         return _lock[0];
     }
     
@@ -446,7 +448,9 @@ public final class AntProjectHelper {
     
     /**
      * Fire a change of external provenance to all listeners.
-     * Acquires write access.
+     * When run under read or write access to <code>ProjectManager.mutex()</code>
+     * property change is fired synchronously, otherwise fire asynchronously
+     * under acquired read lock.
      * @param path path to the changed file (XML or properties)
      */
     void fireExternalChange(final String path) {
@@ -511,10 +515,16 @@ public final class AntProjectHelper {
     private void modifying(String path) {
         assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
-        synchronized (modifiedMetadataPaths) {
-            modifiedMetadataPaths.add(path);
-        }
+        addModifiedMetadataPath(path);
         fireChange(path, true);
+    }
+    private void addModifiedMetadataPath(String path) {
+        synchronized (modifiedMetadataPaths) {
+            boolean added = modifiedMetadataPaths.add(path);
+            if (added && path.equals(PROJECT_XML_PATH)) {
+                addedProjectXmlPath = new Throwable();
+            }
+        }
     }
     
     /**
@@ -543,9 +553,7 @@ public final class AntProjectHelper {
         assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
         // To make sure projectXmlSaved is called:
-        synchronized (modifiedMetadataPaths) {
-            modifiedMetadataPaths.add(PROJECT_XML_PATH);
-        }
+        addModifiedMetadataPath(PROJECT_XML_PATH);
     }
     
     /**
@@ -553,9 +561,15 @@ public final class AntProjectHelper {
      * to <code>project.xml</code>.
      * Access from GeneratedFilesHelper.
      */
-    boolean isProjectXmlModified() {
+    void possiblyThrowProjectXmlModified(String msg) throws IllegalStateException {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        return modifiedMetadataPaths.contains(PROJECT_XML_PATH);
+        if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
+            IllegalStateException ise = new IllegalStateException(msg);
+            if (addedProjectXmlPath != null) {
+                ise.initCause(addedProjectXmlPath);
+            }
+            throw ise;
+        }
     }
     
     /**
@@ -604,7 +618,7 @@ public final class AntProjectHelper {
                         }
                     } catch (IOException e) {
                         // Treat it as still modified.
-                        modifiedMetadataPaths.add(PROJECT_XML_PATH);
+                        addModifiedMetadataPath(PROJECT_XML_PATH);
                         throw e;
                     }
                 }
@@ -793,8 +807,12 @@ public final class AntProjectHelper {
         public FileListener() {}
         
         private void change(FileEvent fe) {
-            if (writingXML) {
-                return;
+            synchronized (saveActions) {
+                for (AtomicAction a : saveActions) {
+                    if (fe.firedFrom(a)) {
+                        return;
+                    }
+                }
             }
             String path;
             File f = FileUtil.toFile(fe.getFile());

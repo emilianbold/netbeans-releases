@@ -46,7 +46,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -98,7 +98,7 @@ public class BasicsTest extends JellyTestCase {
         npwo.selectCategory(standard);
         npwo.selectProject(javaApp);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME_F1);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.finish();

@@ -106,9 +106,9 @@ public class FileElementsCollector {
         }
     }
 
-    private LinkedHashSet<CsmNamespace> globalDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
+    private final LinkedHashSet<CsmNamespace> globalDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
     private final LinkedHashSet<CsmUsingDirective> globalUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
-    private LinkedHashSet<CsmNamespaceAlias> globalNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
+    private final LinkedHashSet<CsmNamespaceAlias> globalNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
     private final LinkedHashSet<CsmUsingDeclaration> globalUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
 
     private LinkedHashSet<CsmNamespace> localDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
@@ -116,7 +116,7 @@ public class FileElementsCollector {
     private LinkedHashSet<CsmNamespaceAlias> localNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
     private LinkedHashSet<CsmUsingDeclaration> localUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
 
-    private LinkedHashSet<CsmNamespaceDefinition> globalDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
+    private final LinkedHashSet<CsmNamespaceDefinition> globalDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
     private LinkedHashSet<CsmNamespaceDefinition> localDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
 
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {

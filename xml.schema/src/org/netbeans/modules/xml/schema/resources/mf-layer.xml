@@ -220,7 +220,6 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
                         <attr name="position" intvalue="2200"/>
@@ -280,7 +279,6 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="2300"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.instance_hidden"/>
                 </folder>
             </folder>
         </folder>

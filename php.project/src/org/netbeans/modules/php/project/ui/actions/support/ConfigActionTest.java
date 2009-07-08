@@ -52,12 +52,12 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
-import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.DialogDisplayer;
@@ -225,7 +225,7 @@ class ConfigActionTest extends ConfigAction {
 
         public ExecutionDescriptor getDescriptor() throws IOException {
             ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                    .optionsPath(PHPOptionsCategory.PATH_IN_LAYER)
+                    .optionsPath(UiUtils.OPTIONS_PATH)
                     .frontWindow(!phpUnit.supportedVersionFound())
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .showProgress(true);
@@ -306,6 +306,9 @@ class ConfigActionTest extends ConfigAction {
                 LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
                         + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
                 return;
+            }
+            if (!PhpUnit.KEEP_LOGS) {
+                PhpUnit.COVERAGE_LOG.delete();
             }
             coverageProvider.setCoverage(coverage);
         }

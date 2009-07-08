@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -102,7 +102,8 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
     }
     
     public boolean supportsDefaultProvider() {
-        return Capabilities.forProject(project).hasDefaultPersistenceProvider();
+        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
+        return capabilities != null && capabilities.hasDefaultPersistenceProvider();
     }
     
 

@@ -47,9 +47,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -230,6 +233,9 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testWhenScanFinished() throws Exception {
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
+        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.COMPILE) });
+        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.BOOT) });
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final CountDownLatch startLatch = new CountDownLatch(1);
@@ -266,12 +272,19 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.start();
+
+        // create something to workaround issue #167933
+        TestUtilities.copyStringToFileObject(srcFO, "foo/X.java",
+                "package foo;" +
+                "public interface X {" +
+                "}");
+
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         TestUtilities.copyStringToFileObject(srcFO, "Person.java",
                 "public interface Person {" +
                 "   String getName();" +
                 "}");
-        scanBlockingLatch.await();
+        assertTrue("operation timed out", scanBlockingLatch.await(10, TimeUnit.SECONDS));
         assertSame(result, futureRef.get().get());
         t.join();
     }

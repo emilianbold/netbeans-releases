@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -60,6 +61,7 @@ import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -78,16 +80,19 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final boolean isWindows;
     private final boolean isMacOS;
 
-    static {
-        InstalledFileLocator fl = InstalledFileLocator.getDefault();
-        dorunScript = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
-        if (dorunScript != null) {
+    static {
+        InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
+        File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
+
+        if (dorunScriptFile != null) {
             CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
-                    dorunScript.getAbsolutePath(), 0755, null);
+                    dorunScriptFile.getAbsolutePath(), 0755, null);
         } else {
             log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }
+
+        dorunScript = dorunScriptFile;
     }
 
     public TerminalLocalNativeProcess(
@@ -99,7 +104,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
         isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
         isMacOS = hostInfo != null && hostInfo.getOSFamily() == OSFamily.MACOSX;
-
     }
 
     protected void create() throws Throwable {
@@ -114,7 +118,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             final String commandLine = info.getCommandLineForShell();
             String wDir = info.getWorkingDirectory(true);
-            
+
             String workingDirectory;
 
             if (wDir == null || isWindows) {
@@ -123,13 +127,14 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 workingDirectory = new File(wDir).getAbsolutePath();
             }
 
-            File pidFile = File.createTempFile("dlight", "termexec"); // NOI18N
-            pidFile.deleteOnExit();
+            File pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
+            File envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
+            pidFileFile.deleteOnExit();
 
-            resultFile = new File(pidFile.getAbsolutePath() + ".res"); // NOI18N
+            String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getAbsolutePath()) : pidFileFile.getAbsolutePath();
+            String envFile = pidFile + ".env"; // NOI18N
 
-            String pidFileName = pidFile.toString();
-            String envFileName = pidFileName + ".env"; // NOI18N
+            resultFile = new File(pidFileFile.getAbsolutePath() + ".res"); // NOI18N
 
             final ExternalTerminalAccessor terminalInfo =
                     ExternalTerminalAccessor.getDefault();
@@ -138,22 +143,21 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 terminal = terminal.setTitle(commandLine);
             }
 
-            String cmd = commandLine;
+            List<String> terminalArgs = new ArrayList<String>();
 
-            if (isWindows) {
-                pidFileName = pidFileName.replaceAll("\\\\", "/"); // NOI18N
-                envFileName = envFileName.replaceAll("\\\\", "/"); // NOI18N
-            }
+            terminalArgs.addAll(Arrays.asList(
+                    dorunScript.getAbsolutePath(),
+                    "-w", workingDirectory, // NOI18N
+                    "-e", envFile, // NOI18N
+                    "-p", pidFile, // NOI18N
+                    "-x", terminalInfo.getPrompt(terminal))); // NOI18N
+
+            terminalArgs.addAll(info.getCommandListForShell());
 
             List<String> command = terminalInfo.wrapCommand(
                     info.getExecutionEnvironment(),
                     terminal,
-                    dorunScript.getAbsolutePath(),
-                    "-w", workingDirectory, // NOI18N
-                    "-e", envFileName, // NOI18N
-                    "-p", pidFileName, // NOI18N
-                    "-x", terminalInfo.getPrompt(terminal), // NOI18N
-                    cmd);
+                    terminalArgs);
 
             ProcessBuilder pb = new ProcessBuilder(command);
             LOG.log(Level.FINEST, "Command: {0}", command);
@@ -199,8 +203,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 // Always prepend /bin and /usr/bin to PATH
                 env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
-                File envFile = new File(envFileName);
-                OutputStream fos = new FileOutputStream(envFile);
+                OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos);
                 ew.write(env);
                 fos.close();
@@ -214,7 +217,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             processError = new ByteArrayInputStream(new byte[0]);
 
-            waitPID(pb.start(), pidFile);
+            waitPID(pb.start(), pidFileFile);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
             processError = new ByteArrayInputStream(msg.getBytes());
@@ -225,7 +228,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public void cancel() {
-        sendSignal(9);
+        sendSignal(15);
     }
 
     private synchronized int sendSignal(int signal) {

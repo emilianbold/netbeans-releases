@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  */
 class SynchronizedFileIndex implements FileIndex {
     
-    private FileIndex delegate;
-    private ReadWriteLock indexLock = new ReentrantReadWriteLock();
+    private final FileIndex delegate;
+    private final ReadWriteLock indexLock = new ReentrantReadWriteLock();
     
     public SynchronizedFileIndex(FileIndex delegate) {
 	this.delegate = delegate;

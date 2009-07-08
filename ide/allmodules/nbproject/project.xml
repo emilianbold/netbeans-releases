@@ -97,6 +97,7 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.callgraph</project>
                 <project>../../cnd.classview</project>
                 <project>../../cnd.completion</project>
+                <project>../../cnd.debugger.common</project>
                 <project>../../cnd.debugger.gdb</project>
                 <project>../../cnd.discovery</project>
                 <project>../../cnd.dwarfdiscovery</project>
@@ -201,6 +202,7 @@ made subject to such option by the copyright holder.
                 <project>../../el.lexer</project>
                 <project>../../extbrowser</project>
                 <project>../../extexecution</project>
+                <project>../../extexecution.destroy</project>
                 <project>../../favorites</project>
                 <project>../../form</project>
                 <project>../../form.j2ee</project>
@@ -255,6 +257,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2ee.archive</project>
                 <project>../../j2ee.clientproject</project>
                 <project>../../j2ee.common</project>
+                <project>../../j2ee.core</project>
                 <project>../../j2ee.core.utilities</project>
                 <project>../../j2ee.dd</project>
                 <project>../../j2ee.dd.webservice</project>
@@ -330,13 +333,17 @@ made subject to such option by the copyright holder.
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
                 <project>../../jellytools</project>
+                <project>../../jellytools.cnd</project>
+                <project>../../jellytools.enterprise</project>
+                <project>../../jellytools.ide</project>
+                <project>../../jellytools.java</project>
                 <project>../../jellytools.platform</project>
+                <project>../../jellytools.ruby</project>
                 <project>../../jemmy</project>
                 <project>../../jsp.lexer</project>
                 <project>../../jumpto</project>
                 <project>../../junit</project>
                 <project>../../kenai</project>
-                <project>../../kenai.collab</project>
                 <project>../../kenai.ui</project>
                 <project>../../languages</project>
                 <project>../../languages.diff</project>
@@ -471,6 +478,7 @@ made subject to such option by the copyright holder.
                 <project>../../options.editor</project>
                 <project>../../options.keymap</project>
                 <project>../../parsing.api</project>
+                <project>../../php.api.phpmodule</project>
                 <project>../../php.dbgp</project>
                 <project>../../php.editor</project>
                 <project>../../php.help</project>
@@ -478,6 +486,7 @@ made subject to such option by the copyright holder.
                 <project>../../php.project</project>
                 <project>../../php.refactoring</project>
                 <project>../../php.samples</project>
+                <project>../../php.symfony</project>
                 <project>../../print</project>
                 <project>../../print.editor</project>
                 <project>../../profiler</project>
@@ -600,6 +609,8 @@ made subject to such option by the copyright holder.
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
                 <project>../../web.examples</project>
+                <project>../../web.facelets.lib</project>
+                <project>../../web.facelets010114</project>
                 <project>../../web.fake</project>
                 <project>../../web.flyingsaucer</project>
                 <project>../../web.freeform</project>
@@ -609,6 +620,7 @@ made subject to such option by the copyright holder.
                 <project>../../web.jsf.navigation</project>
                 <project>../../web.jsf12</project>
                 <project>../../web.jsf12ri</project>
+                <project>../../web.jsf20</project>
                 <project>../../web.jspparser</project>
                 <project>../../web.jstl11</project>
                 <project>../../web.kit</project>
@@ -668,6 +680,7 @@ made subject to such option by the copyright holder.
                 <project>../../xml.catalog</project>
                 <project>../../xml.core</project>
                 <project>../../xml.jaxb</project>
+                <project>../../xml.jaxb.api</project>
                 <project>../../xml.lexer</project>
                 <project>../../xml.multiview</project>
                 <project>../../xml.retriever</project>

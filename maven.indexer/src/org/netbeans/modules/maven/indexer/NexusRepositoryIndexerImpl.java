@@ -589,6 +589,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     for (RepositoryInfo repo : repos) {
                         if (repo.isLocal() || repo.isRemoteDownloadable()) {
                             IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
+                            if (context == null) {
+                                continue; //#167884
+                            }
                             Set<String> all = context.getAllGroups();
                             if (all.size() > 0) {
                                 if (prefix.length() == 0) {

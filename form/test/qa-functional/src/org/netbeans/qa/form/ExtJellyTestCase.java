@@ -50,13 +50,13 @@ import java.util.Date;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -161,7 +161,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         String fileName = name + String.valueOf(new Date().getTime());
 
         if (beanName == null) {
-            NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+            NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
             nfnlso.txtObjectName().clearText();
             nfnlso.txtObjectName().typeText(fileName);
             nfnlso.setPackage(packageName);
@@ -224,7 +224,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         op.lstPaletteCategories().selectItem(SelectPaletteCategoryOperator.ITEM_BEANS);
         op.ok();
 
-        CompileAction compAct = new CompileAction();
+        CompileJavaAction compAct = new CompileJavaAction();
         compAct.perform(fileNode);
         waitAMoment();
     }

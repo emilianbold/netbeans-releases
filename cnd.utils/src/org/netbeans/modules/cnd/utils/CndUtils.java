@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -86,12 +87,34 @@ public class CndUtils {
         return result;
     }
 
+    public static void threadsDump(){
+        System.err.println("-----Start Thread Dump-----");
+        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+            System.err.println(entry.getKey().getName());
+            for (StackTraceElement element : entry.getValue()) {
+                System.err.println("\tat " + element.toString());
+            }
+            System.err.println();
+        }
+        System.err.println("-----End Thread Dump-----");
+    }
+
     public static void assertTrue(boolean value) {
         if (isDebugMode()) {
             assertTrue(value, "Assertion error"); //NOI18N
         }
     }
 
+    public static int getNumberCndWorkerThreads() {
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
+                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
+        return Math.max(threadCount, 1);
+    }
+
+    public static int getConcurrencyLevel() {
+        return getNumberCndWorkerThreads();
+    }
+    
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
            assertTrue(!value, "Assertion error"); //NOI18N

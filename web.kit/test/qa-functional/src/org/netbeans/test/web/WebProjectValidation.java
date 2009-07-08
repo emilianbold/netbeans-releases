@@ -57,9 +57,9 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -401,7 +401,7 @@ public class WebProjectValidation extends J2eeTestCase {
         nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName(pkgName);
         nfnlso.finish();
     }
@@ -416,7 +416,7 @@ public class WebProjectValidation extends J2eeTestCase {
     public void testBuildProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         Util.cleanStatusBar();
-        new BuildProjectAction().perform(rootNode);
+        new BuildJavaProjectAction().perform(rootNode);
         MainWindowOperator.getDefault().waitStatusText("Finished building");
         ref(Util.dumpFiles(new File(PROJECT_FOLDER)));
         //compareReferenceFiles();

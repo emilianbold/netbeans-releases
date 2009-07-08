@@ -42,9 +42,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
 
 /**
  *
@@ -55,6 +55,7 @@ import java.util.concurrent.FutureTask;
 public final class TasksCachedProcessor<P, R>
         implements Computable<P, R> {
 
+    private static final java.util.logging.Logger log = Logger.getInstance();
     private final ConcurrentMap<P, Future<R>> cache =
             new ConcurrentHashMap<P, Future<R>>();
     private final Computable<P, R> computable;
@@ -65,6 +66,16 @@ public final class TasksCachedProcessor<P, R>
         this.removeOnCompletion = removeOnCompletion;
     }
 
+    public boolean isResultAvailable(final P arg) {
+        Future<R> res = cache.get(arg);
+
+        if (res == null) {
+            return false;
+        }
+
+        return res.isDone() && !res.isCancelled();
+    }
+
     /**
      * Here I implemented following logic:
      * if it is requested to fetch the data and the same request is in progress -
@@ -73,42 +84,38 @@ public final class TasksCachedProcessor<P, R>
      *
      */
     public R compute(final P arg) throws InterruptedException {
-        while (true) {
-            Future<R> f = cache.get(arg);
+        Future<R> f = cache.get(arg);
+
+        if (f == null) {
+            Callable<R> evaluation = new Callable<R>() {
+
+                public R call() throws InterruptedException {
+                    return computable.compute(arg);
+                }
+            };
+
+            FutureTask<R> ft = new FutureTask<R>(evaluation);
+            f = cache.putIfAbsent(arg, ft);
 
             if (f == null) {
-                Callable<R> evaluation = new Callable<R>() {
+                f = ft;
+                ft.run();
+            }
+        }
 
-                    public R call() throws InterruptedException {
-                        return computable.compute(arg);
-                    }
-                };
+        try {
+            return f.get();
+        } catch (Throwable th) {
+            cache.remove(arg, f);
 
-                FutureTask<R> ft = new FutureTask<R>(evaluation);
-                f = cache.putIfAbsent(arg, ft);
-
-                if (f == null) {
-                    f = ft;
-                    ft.run();
-                }
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "TasksCachedProcessor: exception while task execution:", th); // NOI18N
             }
 
-            try {
-                return f.get();
-            } catch (CancellationException e) {
+            throw new CancellationException(th.getMessage());
+        } finally {
+            if (removeOnCompletion) {
                 cache.remove(arg, f);
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof CancellationException) {
-                    cache.remove(arg, f);
-                    throw new CancellationException();
-                } else {
-                    Logger.getInstance().fine("!!! " + e.getMessage()); // NOI18N
-//                    e.printStackTrace(System.err);
-                }
-            } finally {
-                if (removeOnCompletion) {
-                    cache.remove(arg, f);
-                }
             }
         }
     }
@@ -119,7 +126,13 @@ public final class TasksCachedProcessor<P, R>
         if (f != null && !f.isDone()) {
             f.cancel(true);
         }
-        
+
         cache.remove(param);
+    }
+
+    public void resetCache() {
+        // Even if some tasks are in progress it's OK just to clear the cache.
+        // Tasks will not be terminated though...
+        cache.clear();
     }
 }

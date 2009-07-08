@@ -45,7 +45,7 @@ import java.io.File;
 import java.util.ArrayList;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -178,7 +178,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
                 FILE_TYPE_JAVA_CLASS);
         nfwo.next();
         // Name and Location wizard
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 javaClassName, PACKAGE_COM_FOO_BAR);
         nfnlso.finish();
     }
@@ -202,7 +202,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
         
         // Name and Location wizard execution
         // ----------------------------------
-        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
                 mbean.getName(),
                 mbean.getPackage(),
                 mbean.getDescription(),
@@ -304,7 +304,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
      * Basic Name and Location wizard check.
      */
     protected void checkNameAndLocationWizard(
-            NewFileNameLocationStepOperator nfnlso, MBean mbean) {
+            NewJavaFileNameLocationStepOperator nfnlso, MBean mbean) {
         // Check description field
         assertEquals(mbean.getDescription(),
                 getTextFieldContent(MBEAN_DESCRIPTION_TEXT_FIELD, nfnlso));
@@ -324,7 +324,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
      * Basic Attributes wizard check.
      */
     protected void checkMBeanAttributesWizard(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
+            NewJavaFileNameLocationStepOperator nfnlso, String fileType) {
         
         String tableOperator = null;
         String removeButton = null;
@@ -349,7 +349,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
      * Basic Operations wizard check.
      */
     protected void checkMBeanOperationsWizard(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
+            NewJavaFileNameLocationStepOperator nfnlso, String fileType) {
         
         String tableOperator = null;
         String removeButton = null;
