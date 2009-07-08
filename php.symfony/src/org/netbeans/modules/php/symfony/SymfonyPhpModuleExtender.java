@@ -44,6 +44,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileObject;
@@ -69,6 +70,9 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         assert symfonyScript.isValid() : "Symfony script has to be valid!";
 
         symfonyScript.initProject(phpModule);
+
+        // prefetch commands
+        FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(null);
 
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
