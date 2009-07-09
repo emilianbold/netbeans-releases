@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial;
 
-import java.util.regex.Matcher;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
 import org.netbeans.modules.mercurial.ui.create.CreateAction;
