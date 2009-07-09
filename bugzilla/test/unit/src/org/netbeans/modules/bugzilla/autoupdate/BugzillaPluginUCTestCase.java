@@ -75,7 +75,7 @@ public class BugzillaPluginUCTestCase extends NbTestCase {
         }
         catalogURL = catalogFile.toURI().toURL();
 
-        setUserDir (getWorkDirPath ());
+        setUserDir (getWorkDir().getAbsolutePath());
         MainLookup.register(new MyProvider());
         assert Lookup.getDefault().lookup(MyProvider.class) != null;
     }
