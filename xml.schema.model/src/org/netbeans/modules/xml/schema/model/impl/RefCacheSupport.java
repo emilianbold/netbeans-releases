@@ -88,6 +88,22 @@ public class RefCacheSupport {
     }
 
     /**
+     * Checks that all cached schema model references relate to the cache's owner model.
+     * It is mainly intended to be used by JUnit tests.
+     *
+     * @return count of unappropriate items in the cache
+     */
+    public int checkKeys() {
+        int wrongModelCounter = 0;
+        for (SchemaModelReference smr : refModelCache.keySet()) {
+            if (smr.getModel() != mSModel) {
+                wrongModelCounter++;
+            }
+        }
+        return wrongModelCounter;
+    }
+
+    /**
      * It is mainly intended to be used by JUnit tests.
      * @return
      */
