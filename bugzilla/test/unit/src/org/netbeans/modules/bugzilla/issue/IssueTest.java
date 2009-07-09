@@ -85,6 +85,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
