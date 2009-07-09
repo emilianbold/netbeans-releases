@@ -138,11 +138,11 @@ public final class FrameworkCommandChooser extends JPanel {
 
     public static CommandDescriptor select(final PhpModule phpModule, String frameworkName) {
         assert EventQueue.isDispatchThread() : "must be called from EDT";
-        final JButton runButton = new JButton(getMessage("FrameworkCommandChooser.runButton"));
+        final JButton runButton = new JButton(getMessage("FrameworkCommandChooser.runButton")); // NOI18N
         final FrameworkCommandChooser chooserPanel = new FrameworkCommandChooser(phpModule, runButton, frameworkName);
-        String title = getMessage("FrameworkCommandChooser.title", frameworkName, phpModule.getDisplayName());
+        String title = getMessage("FrameworkCommandChooser.title", frameworkName, phpModule.getDisplayName()); // NOI18N
 
-        runButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName));
+        runButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName)); // NOI18N
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -154,8 +154,8 @@ public final class FrameworkCommandChooser extends JPanel {
         });
 
         final JButton refreshButton = new JButton();
-        Mnemonics.setLocalizedText(refreshButton, getMessage("FrameworkCommandChooser.refreshButton"));
-        refreshButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));
+        Mnemonics.setLocalizedText(refreshButton, getMessage("FrameworkCommandChooser.refreshButton")); // NOI18N
+        refreshButton.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));  // NOI18N
         refreshButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refreshButton.setEnabled(false);
@@ -180,8 +180,8 @@ public final class FrameworkCommandChooser extends JPanel {
                 options, runButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
         descriptor.setClosingOptions(new Object[] {runButton, DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleName(getMessage("FrameworkCommandChooser.accessibleName", frameworkName));
-        dialog.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.accessibleDescription", frameworkName));
+        dialog.getAccessibleContext().setAccessibleName(getMessage("FrameworkCommandChooser.accessibleName", frameworkName)); // NOI18N
+        dialog.getAccessibleContext().setAccessibleDescription(getMessage("FrameworkCommandChooser.accessibleDescription", frameworkName)); // NOI18N
 
         if (chooserPanel.refreshNeeded) {
             refreshButton.setEnabled(false);
@@ -402,7 +402,7 @@ public final class FrameworkCommandChooser extends JPanel {
             taskParamLabel, taskParametersComboBox, taskHint
         };
         setEnabled(comps, false);
-        matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkName)});
+        matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkName)}); // NOI18N
 
         FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(new Runnable() {
             public void run() {
@@ -719,15 +719,14 @@ public final class FrameworkCommandChooser extends JPanel {
         }
 
         private Pattern getPattern() {
-            if (filter.contains("?") || filter.contains("*")) {
+            if (filter.contains("?") || filter.contains("*")) { // NOI18N
                 String reFilter = removeRegexpEscapes(filter);
                 reFilter = reFilter.replace(".", "\\."); // NOI18N
                 reFilter = reFilter.replace("?", "."); // NOI18N
                 reFilter = reFilter.replace("*", ".*"); // NOI18N
                 return Pattern.compile(".*" + reFilter + ".*", Pattern.CASE_INSENSITIVE); // NOI18N
-            } else {
-                return null;
             }
+            return null;
         }
 
         private static String removeRegexpEscapes(String text) {
@@ -736,7 +735,7 @@ public final class FrameworkCommandChooser extends JPanel {
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
                 switch (c) {
-                    case '\\':
+                    case '\\': // NOI18N
                         continue;
                     default:
                         sb.append(c);
@@ -770,6 +769,5 @@ public final class FrameworkCommandChooser extends JPanel {
         public Set<String> getParams() {
             return params;
         }
-
     }
 }
