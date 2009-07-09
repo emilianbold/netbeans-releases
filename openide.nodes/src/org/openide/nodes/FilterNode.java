@@ -1379,13 +1379,7 @@ public class FilterNode extends Node {
                     nodeL = null;
                 }
 
-                if (this.original.getChildren().isLazy() || 
-                        this.original.getChildren().isLazy() != original.getChildren().isLazy()) {
-                    changeSupport(original);
-                } else {
-                    // reset the original node
-                    this.original = original;
-                }
+                changeSupport(original);
 
                 if (wasAttached) {
                     addNotifyImpl();
