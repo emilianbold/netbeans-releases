@@ -146,7 +146,7 @@ public final class Kenai {
                 xmppConnection = new XMPPConnection(XMPP_SERVER);
                 try {
                     xmppConnection.connect();
-                    xmppConnection.login(shortName, new String(password));
+                    xmppConnection.login(shortName, new String(password), "NetBeans"); //NOI18N
                 } catch (XMPPException xMPPException) {
                     new KenaiException(xMPPException);
                 }
