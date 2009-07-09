@@ -45,6 +45,8 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -68,6 +70,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -109,6 +115,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
     private boolean skipReload;
+    private boolean reloading;
     private Map<NbJiraIssue.IssueField,Object> initialValues = new HashMap<NbJiraIssue.IssueField,Object>();
 
     public IssuePanel() {
@@ -129,6 +136,7 @@ public class IssuePanel extends javax.swing.JPanel {
         BugtrackingUtil.issue163946Hack(environmentScrollPane);
         BugtrackingUtil.issue163946Hack(addCommentScrollPane);
         initAttachmentsPanel();
+        attachFieldStatusListeners();
     }
 
     @Override
@@ -240,10 +248,26 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyCommentPanel, commentsPanel);
     }
 
+    private void attachFieldStatusListeners() {
+        issueTypeCombo.addActionListener(new CancelHighlightListener(issueTypeLabel));
+        statusCombo.addActionListener(new CancelHighlightListener(statusLabel));
+        statusCombo.addActionListener(new CancelHighlightListener(resolutionLabel));
+        priorityCombo.addActionListener(new CancelHighlightListener(priorityLabel));
+        dueField.getDocument().addDocumentListener(new CancelHighlightListener(dueLabel));
+        assigneeField.getDocument().addDocumentListener(new CancelHighlightListener(assigneeLabel));
+        summaryField.getDocument().addDocumentListener(new CancelHighlightListener(summaryLabel));
+        environmentArea.getDocument().addDocumentListener(new CancelHighlightListener(environmentLabel));
+        componentList.addListSelectionListener(new CancelHighlightListener(componentLabel));
+        affectsVersionList.addListSelectionListener(new CancelHighlightListener(affectsVersionLabel));
+        fixVersionList.addListSelectionListener(new CancelHighlightListener(fixVersionLabel));
+    }
+
     private void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
+        reloading = true;
+
         boolean isNew = issue.getTaskData().isNew();
         headerLabel.setVisible(!isNew);
         createdLabel.setVisible(!isNew);
@@ -401,6 +425,7 @@ public class IssuePanel extends javax.swing.JPanel {
             BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         }
         updateFieldStatuses();
+        reloading = false;
     }
     private JComponent dummyCancelButton = new JLabel();
     private JComponent dummyActionPanel = new JLabel();
@@ -713,6 +738,13 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    private void cancelHighlight(JLabel label) {
+        if (!reloading) {
+            label.setOpaque(false);
+            label.getParent().repaint();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -1282,6 +1314,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         String msgPattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectMetaData"); // NOI18N
         String msg = MessageFormat.format(msgPattern, project.getName());
+        final boolean wasReloading = reloading;
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msg);
         handle.start();
         handle.switchToIndeterminate();
@@ -1302,6 +1335,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 EventQueue.invokeLater(new Runnable() {
                     public void run () {
+                        boolean oldReloading = reloading;
+                        reloading = wasReloading;
+
                         // --- Reload dependent combos
                         JiraConfiguration config =  issue.getRepository().getConfiguration();
                         issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes(project)));
@@ -1327,6 +1363,8 @@ public class IssuePanel extends javax.swing.JPanel {
                         reloadField(affectsVersionList, versionsByIds(project.getId(), affectsVersionIds),NbJiraIssue.IssueField.AFFECTSVERSIONS);
                         List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
                         reloadField(fixVersionList, versionsByIds(project.getId(), fixVersionIds), NbJiraIssue.IssueField.FIXVERSIONS);
+
+                        reloading = oldReloading;
 
                         TaskData data = issue.getTaskData();
                         if (data.isNew()) {
@@ -1615,5 +1653,36 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JTextField updatedField;
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
+
+    class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {
+        private JLabel label;
+
+        CancelHighlightListener(JLabel label) {
+            this.label = label;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            cancelHighlight(label);
+        }
+
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            cancelHighlight(label);
+        }
+    }
 
 }
