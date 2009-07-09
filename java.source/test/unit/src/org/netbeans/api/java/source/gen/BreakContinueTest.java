@@ -77,7 +77,7 @@ public class BreakContinueTest extends GeneratorTest {
 
     public void XtestBreak158130() throws Exception {
         String test = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { b|reak loop; } } } }";
-        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break ; } } } }";
+        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break; } } } }";
         testHelper(test, golden, Kind.BREAK, new Delegate() {
 
             public void run(WorkingCopy copy, Tree tree) {
@@ -91,7 +91,7 @@ public class BreakContinueTest extends GeneratorTest {
 
     public void testBreak158130b() throws Exception {
         String test = "public class Test { void m(int p) { loop: while (true) { i|f (p == 0) { break loop; } else { break ; } } } }";
-        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break ; } } } }";
+        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break; } } } }";
         testHelper(test, golden, Kind.IF, new Delegate() {
 
             public void run(WorkingCopy copy, Tree tree) {
@@ -104,7 +104,7 @@ public class BreakContinueTest extends GeneratorTest {
 
     public void testContinue158130() throws Exception {
         String test = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { con|tinue loop; } } } }";
-        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { continue ; } } } }";
+        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { continue; } } } }";
         testHelper(test, golden, Kind.CONTINUE, new Delegate() {
 
             public void run(WorkingCopy copy, Tree tree) {
@@ -113,6 +113,41 @@ public class BreakContinueTest extends GeneratorTest {
                 ContinueTree modified = make.Continue(null);
                 copy.rewrite(original, modified);
             }
+        });
+    }
+
+    public void testBreak166327() throws Exception {
+        String test =
+                "public class Test {" +
+                "    public static void test(int y) {" +
+                "        for (int u = y;;) {" +
+                "            if (y == 0)" +
+                "                br|eak;" +
+                "            else" +
+                "                y++;" +
+                "        }" +
+                "    }" +
+                "}";
+        String golden = 
+                "public class Test {" +
+                "    public static void test(int y) {" +
+                "        for (int u = y;;) {" +
+                "            if (y == 0)" +
+                "                break;" +
+                "            else" +
+                "                y++;" +
+                "        }" +
+                "    }" +
+                "}";
+
+        testHelper(test, golden, Kind.BREAK, new Delegate() {
+
+            public void run(WorkingCopy copy, Tree tree) {
+                BreakTree oldBt = (BreakTree) tree;
+                BreakTree newBt = copy.getTreeMaker().Break(null);
+                copy.rewrite(oldBt, newBt);
+            }
+            
         });
     }
 
