@@ -100,11 +100,15 @@ public final class RubyIndexerHelper {
      * @param doc
      * @return An updated signature, or null if this method should be removed from index
      */
-    public static String getMethodSignature(AstElement child, Node root,
-            int flags, String signature, FileObject fo, ParserResult parserResult) {
-        if (parserResult.getSnapshot() == null) { // tests?
+    public static String getMethodSignature(AstElement child, int flags,
+            String signature, FileObject fo, ContextKnowledge knowledge) {
+        
+        if (knowledge.getParserResult().getSnapshot() == null) { // tests?
             return signature;
         }
+
+        ParserResult parserResult = knowledge.getParserResult();
+        Node root = knowledge.getRoot();
 
         try {
             String hashNames = "";
@@ -325,7 +329,7 @@ public final class RubyIndexerHelper {
 
             RubyType returnType = child.getType().isKnown()
                     ? child.getType()
-                    : getReturnTypes(root, child, rdocs, parserResult);
+                    : getReturnTypes(child, rdocs, knowledge);
 
             if (returnType.isKnown()) {
                 child.setType(returnType);
@@ -463,14 +467,16 @@ public final class RubyIndexerHelper {
         return signature;
 
     }
-    static String getMethodSignatureForUserSources(Node root, AstElement methodElement, String signature, int flags, ParserResult result) {
+    static String getMethodSignatureForUserSources( AstElement methodElement,
+            String signature, int flags, ContextKnowledge knowledge) {
+
         RubyType type = methodElement.getType();
         if (!type.isKnown()) {
             List<String> rdocs = null;
             if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                rdocs = AstUtilities.gatherDocumentation(result.getSnapshot(), methodElement.getNode());
+                rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodElement.getNode());
             }
-            type = getReturnTypes(root, methodElement, rdocs, result);
+            type = getReturnTypes(methodElement, rdocs, knowledge);
         }
         if (type.isKnown()) {
             methodElement.setType(type);
@@ -479,7 +485,7 @@ public final class RubyIndexerHelper {
         return signature;
     }
 
-    private static RubyType getReturnTypes(Node root, AstElement methodElement, List<String> callseq, ParserResult result) {
+    private static RubyType getReturnTypes(AstElement methodElement, List<String> callseq, ContextKnowledge knowledge) {
 
         if (callseq != null) {
             RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
@@ -490,8 +496,7 @@ public final class RubyIndexerHelper {
         
         if (TypeInferenceSettings.getDefault().getMethodTypeInference()) {
             AstPath path = new AstPath();
-            path.descend(root);
-            ContextKnowledge knowledge = new ContextKnowledge(null, root, result);
+            path.descend(knowledge.getRoot());
             RubyTypeInferencer typeInferencer = RubyTypeInferencer.create(knowledge);
             return typeInferencer.inferType(methodElement.getNode());
         }
