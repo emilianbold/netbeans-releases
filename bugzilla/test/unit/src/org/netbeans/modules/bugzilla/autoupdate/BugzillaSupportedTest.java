@@ -55,6 +55,7 @@ public class BugzillaSupportedTest extends BugzillaPluginUCTestCase implements T
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         System.setProperty("netbeans.t9y.bugzilla.supported.version", "9999.9999.9999"); // should be enough
         super.setUp();
     }

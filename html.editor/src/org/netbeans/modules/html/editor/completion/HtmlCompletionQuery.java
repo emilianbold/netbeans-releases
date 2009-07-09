@@ -92,6 +92,9 @@ public class HtmlCompletionQuery extends UserTask {
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
         Parser.Result parserResult = resultIterator.getParserResult(offset);
+        if(parserResult == null) {
+            return ;
+        }
         if (parserResult.getSnapshot().getMimeType().equals("text/html")) {
             //proceed only on html content
             this.completionResult = query((HtmlParserResult) parserResult);
@@ -195,8 +198,8 @@ public class HtmlCompletionQuery extends UserTask {
             result = getPossibleEndTags(node, offset, preText);
 
         } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-            //TODO: fix end tag autocompletion
-//            result = getAutocompletedEndTag(parserResult, offset, dtd);
+            anchor = offset;
+            result = getAutocompletedEndTag(node, astOffset, offset);
         } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
             /*Argument finder */
 
@@ -332,30 +335,26 @@ public class HtmlCompletionQuery extends UserTask {
         return null;
     }
 
-//    public List getAutocompletedEndTag(Document doc, int offset, DTD dtd) {
-//        List l = new ArrayList();
-//        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-//        try {
-//            SyntaxElement elem = sup.getElementChain(offset - 1);
-//            if (elem != null && elem.getType() == SyntaxElement.TYPE_TAG) {
-//                String tagName = ((SyntaxElement.Named) elem).getName();
-//                //check if the tag has required endtag
-//                Element dtdElem = dtd.getElement(tagName);
-//                if (!((SyntaxElement.Tag) elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
-//                    if (dtdElem != null) {
-//                        //change case
-//                        tagName = lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName.toUpperCase(Locale.ENGLISH);
-//                    }
-//
-//                    CompletionItem eti = HtmlCompletionItem.createAutocompleteEndTag(tagName, offset);
-//                    l.add(eti);
-//                }
-//            }
-//        } catch (BadLocationException e) {
-//            //just ignore
-//        }
-//        return l;
-//    }
+    public List<HtmlCompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset) {
+        //check for open tags only
+        //the test node.endOffset() == astOffset is required since the given node
+        //is the most leaf OPEN TAG node for the position. But if there is some
+        //unresolved (no-DTD) node at the position it would autocomplete the open
+        //tag: <div> <bla>| + ACC would complete </div>
+        if(node.type() == AstNode.NodeType.OPEN_TAG && node.endOffset() == astOffset) {
+            //I do not check if the tag is closed already since
+            //when more tags of the same type are nested,
+            //the matches can be created so the current node
+            //appear to be matched even if the user just typed it
+
+            //test if the tag is an empty tag <div/> and whether the open tag has forbidden end tag
+            if(!node.isEmpty() && !AstNodeUtils.hasForbiddenEndTag(node)) {
+                return Collections.singletonList(HtmlCompletionItem.createAutocompleteEndTag(node.name(), documentOffset));
+            }
+        }
+        return Collections.emptyList();
+    }
+
     private int getLastCommonCharIndex(String base, String pattern) {
         int i = 0;
         for (; i < base.length() && i < pattern.length(); i++) {

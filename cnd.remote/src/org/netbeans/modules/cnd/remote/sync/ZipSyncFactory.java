@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,34 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
+package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
-import java.util.*;
-import org.openide.filesystems.FileObject;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
- * Make it possible to hide contructors and factory methods in VCSContext.
- * 
- * @author Maros Sandor
+ *
+ * @author Vladimir Kvashin
  */
-public abstract class Accessor {
-    
-    public static Accessor VCSContextAccessor;
-    
-    static {
-        // invokes static initializer of VCSContext.class
-        // that will assign value to the DEFAULT field above
-        Class c = VCSContext.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=5)
+class ZipSyncFactory extends RemoteSyncFactory {
+
+    @Override
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
+    }
+
+    @Override
+    public String getDisplayName() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        return NbBundle.getMessage(getClass(), "ZIP_Factory_Name");
+    }
+
+    @Override
+    public String getDescription() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        return NbBundle.getMessage(getClass(), "ZIP_Factory_Description");
+    }
+
+    @Override
+    public String getID() {
+        return "zip"; //NOI18N
+    }
+
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        if (Boolean.getBoolean("cnd.remote.sync.zip")) {
+            return ! RemoteUtil.isForeign(execEnv);
+        } else {
+            return false;
         }
     }
-    
-    public abstract VCSContext createContextForFiles(Set<File> files, Set<? extends FileObject> originalFiles);
 }

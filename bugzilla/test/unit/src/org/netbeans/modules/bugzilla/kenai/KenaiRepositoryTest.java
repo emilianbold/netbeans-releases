@@ -80,7 +80,7 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();

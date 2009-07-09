@@ -1970,7 +1970,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 final Node obj = DataObject.find(fo).getNodeDelegate();
                 Action a = obj.getPreferredAction();
                 if (a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(obj));
+                    a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
                 }
                  a.actionPerformed(e);
             } catch (IOException ex) {

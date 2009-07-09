@@ -77,6 +77,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         try {
+            System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
             System.setProperty("kenai.com.url","http://testkenai.com");
             instance = Kenai.getDefault();
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));

@@ -68,7 +68,7 @@ public class ThreadMapDataProviderFactory implements DataProviderFactory {
 
     public ThreadMapDataProviderFactory(){
         supportedStorageTypes = new ArrayList<DataStorageType>(1);
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType("threadmap"));
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType("threadmap")); //NOI18N
         providedSchemas = new ArrayList<DataModelScheme>(1);
         providedSchemas.add(DataModelSchemeProvider.getInstance().getScheme("model:threadmap")); //NOI18N
     }
