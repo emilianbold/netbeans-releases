@@ -48,6 +48,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
+import org.netbeans.modules.php.symfony.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -57,6 +58,8 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class SymfonyPhpModuleExtender extends PhpModuleExtender {
+    //@GuardedBy(this)
+    private NewProjectConfigurationPanel panel = null;
 
     @Override
     public Set<FileObject> extend(PhpModule phpModule) throws ExtendingException {
@@ -76,6 +79,12 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
                     .info("Framework Symfony not found in newly created project " + phpModule.getDisplayName());
             throw new ExtendingException(NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_NotExtended"));
         }
+
+        // generate apps
+        for (String app : getPanel().getApps()) {
+            symfonyScript.initApp(phpModule, app);
+        }
+
         // prefetch commands
         FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(null);
 
@@ -89,15 +98,17 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public void addChangeListener(ChangeListener listener) {
+        getPanel().addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
+        getPanel().removeChangeListener(listener);
     }
 
     @Override
     public JComponent getComponent() {
-        return null;
+        return getPanel();
     }
 
     @Override
@@ -107,7 +118,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public boolean isValid() {
-        return getErrorMessage() == null;
+        return getErrorMessage() == null && getPanel().validateData() == null;
     }
 
     @Override
@@ -117,6 +128,13 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         } catch (InvalidSymfonyScriptException ex) {
             return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
-        return null;
+        return getPanel().validateData();
+    }
+
+    private synchronized NewProjectConfigurationPanel getPanel() {
+        if (panel == null) {
+            panel = new NewProjectConfigurationPanel();
+        }
+        return panel;
     }
 }

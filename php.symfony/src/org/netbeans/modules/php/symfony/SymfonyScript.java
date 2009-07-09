@@ -74,6 +74,7 @@ public class SymfonyScript extends PhpProgram {
 
     public static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
+    public static final String CMD_INIT_APP = "generate:app"; // NOI18N
 
     public SymfonyScript(String command) {
         super(command);
@@ -157,6 +158,17 @@ public class SymfonyScript extends PhpProgram {
         String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
         runService(processBuilder, executionDescriptor, tabTitle, false);
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
+    }
+
+    public void initApp(PhpModule phpModule, String app) {
+        assert StringUtils.hasText(app);
+
+        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
+        ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, app);
+        assert processBuilder != null;
+        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
+        String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_APP, app); // NOI18N
+        runService(processBuilder, executionDescriptor, tabTitle, true);
     }
 
     public static String getHelp(PhpModule phpModule, FrameworkCommand command) {
