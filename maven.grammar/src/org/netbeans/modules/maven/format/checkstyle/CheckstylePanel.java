@@ -8,8 +8,10 @@ package org.netbeans.modules.maven.format.checkstyle;
 
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.model.pom.ReportPlugin;
 import org.netbeans.modules.maven.model.pom.Reporting;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -29,13 +31,82 @@ public class CheckstylePanel extends javax.swing.JPanel {
     private final ModelHandle handle;
     private final ProjectCustomizer.Category category;
     private boolean generated = false;
+    private final CheckBoxUpdater checkboxUpdater;
 
 
-    CheckstylePanel(ModelHandle handle, ProjectCustomizer.Category cat) {
+    CheckstylePanel(ModelHandle hndl, ProjectCustomizer.Category cat) {
         initComponents();
-        this.handle = handle;
+        this.handle = hndl;
         category = cat;
+        checkboxUpdater = new CheckBoxUpdater(cbEnable) {
+            @Override
+            public Boolean getValue() {
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                String val = null;
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
+                    if (props != null && props.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING) != null) {
+                        val = prof.getProperties().getProperty(Constants.HINT_CHECKSTYLE_FORMATTING);
+                    }
+                }
+                if (val == null) {
+                    Properties props = handle.getPOMModel().getProject().getProperties();
+                    if (props != null) {
+                        val = props.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING);
+                    }
+                }
+                if (val == null) {
+                    val = handle.getRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+                }
+                if (val != null) {
+                    Boolean ret = Boolean.parseBoolean(val);
+                    return ret;
+                }
+                return null;
+            }
 
+            @Override
+            public boolean getDefaultValue() {
+                return Boolean.FALSE;
+            }
+
+            @Override
+            public void setValue(Boolean value) {
+                String val = value != null ? value.toString() : null;
+                boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, true) != null;
+                //TODO also try to take the value in pom vs inherited pom value into account.
+
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING) != null) {
+                        profprops.setProperty(Constants.HINT_CHECKSTYLE_FORMATTING, val);
+                        if (hasConfig) {
+                            // in this case clean up the auxiliary config
+                            handle.setRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, null, true);
+                        }
+                        handle.markAsModified(handle.getProfileModel());
+                        return;
+                    }
+                }
+
+                if (handle.getProject().getProperties().containsKey(Constants.HINT_CHECKSTYLE_FORMATTING)) {
+                    Properties modprops = handle.getPOMModel().getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = handle.getPOMModel().getFactory().createProperties();
+                        handle.getPOMModel().getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_CHECKSTYLE_FORMATTING, val); //NOI18N
+                    handle.markAsModified(handle.getPOMModel());
+                    if (hasConfig) {
+                        // in this case clean up the auxiliary config
+                        handle.setRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, null, true);
+                    }
+                    return;
+                }
+                handle.setRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, val, true);
+            }
+        };
     }
 
     @Override
