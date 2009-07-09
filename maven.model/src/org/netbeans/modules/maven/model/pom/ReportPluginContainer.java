@@ -44,30 +44,13 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Reporting extends POMComponent, ReportPluginContainer {
+public interface ReportPluginContainer extends POMComponent {
 
-//  <!--xs:complexType name="Reporting">
-//    <xs:all>
-//      <xs:element name="excludeDefaults" minOccurs="0" type="xs:boolean" default="false">
-//      <xs:element name="outputDirectory" minOccurs="0" type="xs:string">
-//      <xs:element name="plugins" minOccurs="0">
-//            <xs:element name="plugin" minOccurs="0" maxOccurs="unbounded" type="ReportPlugin"/>
-//    </xs:all>
-//  </xs:complexType-->
+    
+    List<ReportPlugin> getReportPlugins();
+    void addReportPlugin(ReportPlugin plugin);
+    void removeReportPlugin(ReportPlugin plugin);
 
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    Boolean isExcludeDefaults();
-    void setExcludeDefaults(Boolean exclude);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    String getOutputDirectory();
-    void setOutputDirectory(String directory);
+    ReportPlugin findReportPluginById(String groupId, String artifactId);
 
 }
