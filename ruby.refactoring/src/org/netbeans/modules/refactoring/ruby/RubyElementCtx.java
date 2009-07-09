@@ -402,7 +402,7 @@ public class RubyElementCtx {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge =
-                            new ContextKnowledge(null, method, node, astOffset, lexOffset, doc, null);
+                            new ContextKnowledge(null, method, node, astOffset, lexOffset, info);
                         RubyTypeInferencer rti = RubyTypeInferencer.create(knowledge);
                         types = rti.inferType(lhs);
                     }
