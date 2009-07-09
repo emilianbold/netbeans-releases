@@ -395,7 +395,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge = new ContextKnowledge(
-                                index, root, method, astOffset, lexOffset, doc, RubyUtils.getFileObject(parserResult));
+                                index, root, method, astOffset, lexOffset, parserResult);
                         RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
                         type = inferencer.inferType(lhs);
                     }
@@ -1166,7 +1166,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
                     ContextKnowledge knowledge = new ContextKnowledge(
-                            index, root, method, astOffset, lexOffset, (BaseDocument) doc, RubyUtils.getFileObject(parserResult));
+                            index, root, method, astOffset, lexOffset, AstUtilities.getParseResult(parserResult));
                     RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
                     type = inferencer.inferType(lhs);
                 }
