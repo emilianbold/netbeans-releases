@@ -71,14 +71,16 @@ import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -426,16 +428,19 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                     try {
                         Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
                         assert newFiles != null;
-                        assert frameworkProvider.isInPhpModule(phpModule);
                         filesToOpen.addAll(newFiles);
-                    } catch (Exception exception) {
-                        Exceptions.printStackTrace(exception);
+                    } catch (ExtendingException ex) {
+                        warnUser(ex.getFailureMessage());
                     }
                 }
             }
         }
 
         localMonitor.finishingExtending();
+    }
+
+    private void warnUser(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
