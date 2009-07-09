@@ -491,7 +491,7 @@ public final class FrameworkCommandChooser extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.text")); // NOI18N
 
         splitPane.setBorder(null);
-        splitPane.setDividerLocation(200);
+        splitPane.setDividerLocation(150);
         splitPane.setDividerSize(5);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
