@@ -53,7 +53,6 @@ import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPan
  * @author Dmitry Lipin
  */
 public class CreateBundleSequence extends WizardSequence {
-    private ComponentsSelectionPanel componentsSelectionPanel;
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
     private DownloadInstallationDataAction downloadInstallationDataAction;
     private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
@@ -63,7 +62,6 @@ public class CreateBundleSequence extends WizardSequence {
     private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
 
     public CreateBundleSequence() {
-        componentsSelectionPanel = new ComponentsSelectionPanel ();
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
         downloadInstallationDataAction = new DownloadInstallationDataAction();
         preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
@@ -82,7 +80,6 @@ public class CreateBundleSequence extends WizardSequence {
         getChildren().clear();
 
         // we're creating a bundle - we only need to download and package things
-        addChild(componentsSelectionPanel);
         addChild(preCreateBundleSummaryPanel);
         addChild(downloadConfigurationLogicAction);
         addChild(downloadInstallationDataAction);

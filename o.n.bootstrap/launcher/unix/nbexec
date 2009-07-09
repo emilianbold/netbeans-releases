@@ -189,7 +189,7 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
 fi
 
 # if heap dump on OOME is supported enable it
-if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError > /dev/null ; then
+if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError > /dev/null 2>&1 ; then
    jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
    if ! echo $jargs | grep -- "-XX:HeapDumpPath=" > /dev/null ; then
       jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""

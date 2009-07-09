@@ -86,6 +86,12 @@ public class RailsProjectCreateData {
      * the newest available versions should be used.
      */
     private final String railsVersion;
+
+    /**
+     * Additional options passed to the rails generator, such as --with-dispatchers.
+     */
+    private final String options;
+    
     /**
      * Constructs a new RailsProjectCreateData instance.
      * @param dir the top-level directory for the project 
@@ -104,7 +110,7 @@ public class RailsProjectCreateData {
      */
     public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
             RailsDatabaseConfiguration database, boolean deploy, String serverInstanceId, 
-            String railsVersion) {
+            String railsVersion, String options) {
         this.platform = platform;
         this.dir = dir;
         this.name = name;
@@ -113,6 +119,7 @@ public class RailsProjectCreateData {
         this.deploy = deploy;
         this.serverInstanceId = serverInstanceId;
         this.railsVersion = railsVersion;
+        this.options = options;
     }
 
     /**
@@ -171,7 +178,13 @@ public class RailsProjectCreateData {
         return railsVersion;
     }
 
-    
+    /**
+     * @see #options
+     */
+    public String getOptions() {
+        return options;
+    }
+
     
 }
 

@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.DefaultLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
@@ -51,12 +52,14 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 
-public class LocaleConfigImpl extends JSFConfigComponentImpl implements LocaleConfig {
+public class LocaleConfigImpl extends IdentifiableComponentImpl 
+    implements LocaleConfig 
+{
     
-    protected static final List<String> SORTED_ELEMENTS = new ArrayList<String>();
+    protected static final List<String> SORTED_ELEMENTS = new ArrayList<String>(2);
     static { 
         SORTED_ELEMENTS.add(JSFConfigQNames.DEFAULT_LOCALE.getLocalName());
         SORTED_ELEMENTS.add(JSFConfigQNames.SUPPORTED_LOCALE.getLocalName());
@@ -79,7 +82,12 @@ public class LocaleConfigImpl extends JSFConfigComponentImpl implements LocaleCo
     }
 
     public void setDefaultLocale(DefaultLocale locale) {
-        setChildElementText(DEFAULT_LOCALE, locale.getLocale(), JSFConfigQNames.DEFAULT_LOCALE.getQName(getNamespaceURI()));
+        /* It seems wrong code. <code>locale</code> is not set here as child.
+         * it is used ONLY as information conteiner. It's bad. 
+         * setChildElementText(DEFAULT_LOCALE, locale.getLocale(), 
+                JSFConfigQNames.DEFAULT_LOCALE.getQName(getNamespaceURI()));*/
+        setChild( DefaultLocale.class, DEFAULT_LOCALE, locale, Collections.EMPTY_LIST);
+        reorderChildren();
     }
 
     public List<SupportedLocale> getSupportedLocales() {
@@ -93,7 +101,16 @@ public class LocaleConfigImpl extends JSFConfigComponentImpl implements LocaleCo
     public void addSupportedLocales(int index, SupportedLocale locale) {
         insertAtIndex(SUPPORTED_LOCALE, locale, index, SupportedLocale.class);
     }
-
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig#removeSupportedLocales(org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale)
+     */
+    public void removeSupportedLocale( SupportedLocale locale ) {
+        removeChild( SUPPORTED_LOCALE, locale );
+    }
+
+    protected List<String> getSortedListOfLocalNames(){
+        return SORTED_ELEMENTS;
+    }
 
 }

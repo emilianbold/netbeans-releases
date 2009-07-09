@@ -69,6 +69,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
@@ -77,7 +78,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
@@ -184,7 +184,7 @@ public class SendEmailCodeGenerator implements CodeGenerator {
                 }
                 
                 String jndiName = null;
-                if (!Utils.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+                if (!Util.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
                     jndiName = generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName().toString());
                 }
                 
@@ -355,7 +355,7 @@ public class SendEmailCodeGenerator implements CodeGenerator {
         if (platform == null) {
             return true;
         }
-        if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+        if (!platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
             return false;
         }
         return ElementKind.INTERFACE != typeElement.getKind();

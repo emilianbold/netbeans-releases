@@ -268,20 +268,16 @@ final class Call implements CallDescriptor {
                 break;
             case INSTANCE_INIT:
             case STATIC_INIT:
-                member = "&lt;init&gt;"; // NOI18N
+                member = NbBundle.getMessage(Call.class, "Call.staticInitializerHtmlHeader");
                 break;
             default:
                 member = ElementHeaders.getHeader(e, javac, ElementHeaders.NAME);
         }
         
-        String encloser = String.format("<font color=%s>%s</font>", TYPE_COLOR,
+        String encloser = String.format("<font color=%s>%s</font>", TYPE_COLOR, // NOI18N
                 javac.getElements().getBinaryName((TypeElement) e.getEnclosingElement()).toString());
         
-        String occurrencesHeader = occurrences > 1
-                ? ", " + occurrences + " occurrences"
-                : ""; // NOI18N
-        
-        return String.format("<html>%s :: %s%s</html>", member, encloser, occurrencesHeader);
+        return NbBundle.getMessage(Call.class, "Call.htmlHeader", member, encloser, occurrences);
     }
     /**
      * Creates HTML display name of the Executable element

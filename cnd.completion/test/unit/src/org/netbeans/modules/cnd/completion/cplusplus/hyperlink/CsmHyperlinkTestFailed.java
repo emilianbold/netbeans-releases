@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CsmHyperlinkTestFailed extends BaseTestSuite {
+public class CsmHyperlinkTestFailed extends CndBaseTestSuite {
     
     public CsmHyperlinkTestFailed() {
         super("C/C++ Failed Hyperlink");

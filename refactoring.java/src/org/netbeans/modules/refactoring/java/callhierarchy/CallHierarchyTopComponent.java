@@ -434,14 +434,12 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
     
     private void switchRootNode() {
-        if (model != null) {
-            Node root = CallNode.createRoot(model);
-            manager.setRootContext(root);
-            try {
-                manager.setSelectedNodes(new Node[]{root});
-            } catch (PropertyVetoException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        Node root = CallNode.createRoot(model);
+        manager.setRootContext(root);
+        try {
+            manager.setSelectedNodes(new Node[]{root});
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

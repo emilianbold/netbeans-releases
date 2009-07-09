@@ -85,9 +85,11 @@ made subject to such option by the copyright holder.
         <file name="D-A.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectAllAction.instance"/>
         </file>
+        <!--
         <file name="DS-5.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
         </file>
+        -->
     </folder>
 
     <folder name="Templates">
@@ -104,7 +106,8 @@ made subject to such option by the copyright holder.
         <folder name="modeling">  
             <folder name="x-class-element">
                 <folder name="Popup">
-                    <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance">
+                    <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
                         <attr name="position" intvalue="360"/>
                     </file>
                 </folder>
@@ -124,15 +127,25 @@ made subject to such option by the copyright holder.
     <folder name="contextmenu">
         <folder name="uml">
             <folder name="element">
-                <file name="org-netbeans-modules-uml-drawingarea-actions-CreateDiagramFromSelectedElementsAction.instance"/>
-                <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance"/>
+                <file name="org-netbeans-modules-uml-drawingarea-actions-CreateDiagramFromSelectedElementsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-CreateDiagramFromSelectedElementsAction.instance"/>
+                </file>
+                <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance"/>
+                </file>
                 <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.REOperationAction.instance"/>
-                <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+                <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+                </file>
             </folder>
             <folder name="diagram">
-                <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance"/>
+                <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance"/>
+                </file>
                 <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.REOperationAction.instance"/>
-                <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+                <file name="org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin.RedefineOperationsAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>

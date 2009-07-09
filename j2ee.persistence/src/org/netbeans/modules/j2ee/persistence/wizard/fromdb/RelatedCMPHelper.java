@@ -44,7 +44,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import java.util.*;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.DbSchemaEjbGenerator;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation;

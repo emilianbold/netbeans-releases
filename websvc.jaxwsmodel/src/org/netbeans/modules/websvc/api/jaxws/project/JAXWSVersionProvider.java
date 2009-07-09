@@ -50,6 +50,7 @@ public interface JAXWSVersionProvider {
     
     public static final String JAXWS20 = "jaxws20";
     public static final String JAXWS21 = "jaxws21";
+    public static final String JAXWS22 = "jaxws22";
     
     public String getJAXWSVersion();
     

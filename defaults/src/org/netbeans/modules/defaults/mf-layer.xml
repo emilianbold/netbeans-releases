@@ -45,8 +45,14 @@ made subject to such option by the copyright holder.
     <folder name="Keymaps">
         <folder name="Emacs">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+            <file name="COPY.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+            </file>
+            <file name="FIND.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
@@ -122,12 +128,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="DS-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
-            </file>
-            <file name="FIND.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
-            </file>
-            <file name="COPY.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
             </file>
             <file name="DS-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
@@ -333,8 +333,17 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="NetBeans55">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+            <file name="COPY.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+            </file>
+            <file name="D-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="FIND.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
@@ -431,16 +440,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="D-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
-            </file>
-            <file name="FIND.instance">
-                <!-- #32733 - Find shortcut should be CTRL-F unless kbd has a Find key -->
-                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
-            </file>
-            <file name="COPY.instance">
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-            </file>
-            <file name="D-INSERT.instance">
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
             </file>
             <file name="DS-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
@@ -601,8 +600,17 @@ made subject to such option by the copyright holder.
         
         <folder name="NetBeans">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+            <file name="COPY.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="D-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
             <file name="DS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+            </file>
+            <file name="FIND.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
             </file>
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
@@ -696,16 +704,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="D-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
-            </file>
-            <file name="FIND.instance">
-                <!-- #32733 - Find shortcut should be CTRL-F unless kbd has a Find key -->
-                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
-            </file>
-            <file name="COPY.instance">
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-            </file>
-            <file name="D-INSERT.instance">
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
             </file>
             <file name="DS-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
@@ -879,6 +877,9 @@ made subject to such option by the copyright holder.
             <file name="A-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
+            <file name="FIND.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+            </file>
             <file name="OS-Right.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
             </file>
@@ -914,9 +915,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="CS-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
-            </file>
-            <file name="FIND.instance">
-                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
             </file>
             <file name="C-L.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>

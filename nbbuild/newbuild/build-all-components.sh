@@ -184,6 +184,9 @@ if [ "${TEST_CODE}" = 1 ]; then
     exit 1;
 fi
 
+#Remove file created during commit validation
+rm -rf $NB_ALL/nbbuild/netbeans/nb?.*/servicetag
+
 #Build XML modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.xml -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?

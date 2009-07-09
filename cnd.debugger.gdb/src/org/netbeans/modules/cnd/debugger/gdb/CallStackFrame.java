@@ -89,7 +89,7 @@ import org.openide.util.Exceptions;
  *
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
-public class CallStackFrame {
+public class CallStackFrame extends org.netbeans.modules.cnd.debugger.common.CallStackFrame {
     public static boolean enableMacros = Boolean.getBoolean("gdb.autos.macros");
 
     private final GdbDebugger debugger;

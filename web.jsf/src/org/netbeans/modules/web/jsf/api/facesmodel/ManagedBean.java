@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
+import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
@@ -54,9 +58,11 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * the nested managed-property elements can be used to
  * initialize the contents of settable JavaBeans properties of
  * the created instance.
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public interface ManagedBean extends JSFConfigComponent, DescriptionGroup{
+public interface ManagedBean extends FacesConfigElement, DescriptionGroup, 
+    IdentifiableElement , FacesManagedBean
+{
     /**
      * Defines the legal values for the &lt;managed-bean-scope&gt;
      * element's body content, which includes all of the scopes
@@ -68,6 +74,7 @@ public interface ManagedBean extends JSFConfigComponent, DescriptionGroup{
         REQUEST("request"),
         SESSION("session"),
         APPLICATION("application"),
+        VIEW("view"),
         NONE("none");
         
         private String scope;
@@ -81,22 +88,30 @@ public interface ManagedBean extends JSFConfigComponent, DescriptionGroup{
         }
     }
     
-    public static final String MANAGED_BEAN_NAME = JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName();
-    public static final String MANAGED_BEAN_CLASS = JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName();
-    public static final String MANAGED_BEAN_SCOPE = JSFConfigQNames.MANAGED_BEAN_SCOPE.getLocalName();
+    String MANAGED_BEAN_CLASS = JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName();
+    String MANAGED_BEAN_SCOPE = JSFConfigQNames.MANAGED_BEAN_SCOPE.getLocalName();
+    String MANAGED_BEAN_EXTENSION = JSFConfigQNames.MANAGED_BEAN_EXTENSION.getLocalName();
+    String MANAGED_PROPERTY = JSFConfigQNames.MANAGED_PROPERTY.getLocalName();
+    String MAP_ENTRIES = JSFConfigQNames.MAP_ENTRIES.getLocalName();
+    String LIST_ENTRIES = JSFConfigQNames.LIST_ENTRIES.getLocalName();
     
-    String getManagedBeanName();
     void setManagedBeanName(String name);
     
-    String getManagedBeanClass();
     void setManagedBeanClass(String beanClass);
     
-    /**
-     * Obtaining scope for the managed bean
-     * @return The scope of the managed bean. If in the document is not supported value, then null
-     * is returned. 
-     */
-    ManagedBean.Scope getManagedBeanScope();
     void setManagedBeanScope(ManagedBean.Scope scope);
     
+    void setManagedBeanScope( String scope);
+    
+    List<ManagedBeanExtension> getManagedBeanExtensions();
+    void addManagedBeanExtension( ManagedBeanExtension  extension );
+    void removeManagedBeanExtension( ManagedBeanExtension extension );
+    void addManagedBeanExtension( int index , ManagedBeanExtension extension );
+    
+    List<ManagedBeanProps> getManagedProps();
+    void addManagedBeanProps( ManagedBeanProps props );
+    void removeManagedBeanProps( ManagedBeanProps props );
+    void addManagedBeanProps( int index , ManagedBeanProps props );
+    
+    void setEager( Boolean eager );
 }

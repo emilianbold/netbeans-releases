@@ -42,7 +42,6 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collection;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -50,7 +49,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 interface VariableContainerImpl  {
-    VariableNameImpl createElement(Program program, Variable node);
+    VariableNameImpl createElement(Variable node);
     public Collection<? extends VariableName> getAllVariablesImpl();
     public Collection<? extends VariableName> getVariablesImpl(final String... queryName);
     public Collection<? extends VariableName> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName);

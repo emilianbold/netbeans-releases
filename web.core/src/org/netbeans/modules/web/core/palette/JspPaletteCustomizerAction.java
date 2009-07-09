@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.core.palette;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
-/**
- *
- * @author lk155162
- */
-public class JspPaletteCustomizerAction extends CallableSystemAction {
+public final class JspPaletteCustomizerAction implements ActionListener {
 
-    private static String name;
-    
-    public JspPaletteCustomizerAction () {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    /** Human presentable name of the action. This should be
-     * presented as an item in a menu.
-     * @return the name of the action
-     */
-    public String getName() {
-        if (name == null)
-            name = NbBundle.getBundle(JspPaletteCustomizerAction.class).getString("ACT_OpenJSPCustomizer"); // NOI18N
-        
-        return name;
-    }
-
-    /** Help context where to find more about the action.
-     * @return the help context for this action
-     */
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    /** This method is called by one of the "invokers" as a result of
-     * some user's action that should lead to actual "performing" of the action.
-     */
-    public void performAction() {
+    public void actionPerformed(ActionEvent e) {
         try {
             JspPaletteFactory.getPalette().showCustomizer();
         }
@@ -94,5 +54,4 @@ public class JspPaletteCustomizerAction extends CallableSystemAction {
             Logger.getLogger("global").log(Level.WARNING, null, ioe);
         }
     }
-
 }

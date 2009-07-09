@@ -54,7 +54,7 @@ public class SelectQuoteTestCase extends SelectTestBase {
 
     @Override
     protected File getProjectRoot() {
-        return new File(getDataFile("common"), "quote_syshdr");
+        return new File(getDataFile("common"), "quote_nosyshdr");
     }
 
 //    @Test

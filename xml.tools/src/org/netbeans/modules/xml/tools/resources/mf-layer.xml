@@ -66,20 +66,24 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="Hidden">
             <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
                 &dtd-action-attributes;
             </file>            
-            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
-                &xml-action-attributes;
+            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+            </file>            
+            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance"/>
             </file>
-            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance">
-                &dtd-action-attributes;
+            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
             </file>            
-            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
-                &xml-action-attributes;
+            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
             </file>
-            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance">
-                &dtd-action-attributes;
-            </file>            
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance"/>
+            </file>
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance">
                 &xml-cookie-attributes;
             </file>
@@ -87,10 +91,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance">
                 &dtd-cookie-attributes;
             </file>
-            -->
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance">
-                &xml-action-attributes;
-            </file>            
+            -->            
         </folder>
 
     </folder>
@@ -110,12 +111,12 @@ made subject to such option by the copyright holder.
 
    
     <folder name="Shortcuts">
-        <file name="O-F9.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction"/>
-	</file>
-        <file name="O-S-F9.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.ValidateAction"/>
-	</file>        
+        <file name="O-F9.shadow">
+            <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+        </file>        
+        <file name="O-S-F9.shadow">
+            <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+        </file>
     </folder> <!-- Shortcuts -->
 
     
@@ -131,11 +132,14 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="19100"/>
                         </file>
                         
-                        <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
+                        
+                        
+                        <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
                             <attr name="position" intvalue="19200"/>
                         </file>
-                        
-                        <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
+                        <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
                             <attr name="position" intvalue="19300"/>
                         </file>
                     </folder> <!-- Default -->
@@ -153,7 +157,8 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="19100"/>
                         </file>
                         
-                        <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance">
+                        <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance"/>
                             <attr name="position" intvalue="19200"/>
                         </file>
                     </folder> <!-- Default -->

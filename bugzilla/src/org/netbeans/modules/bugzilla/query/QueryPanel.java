@@ -62,7 +62,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 import org.openide.util.ImageUtilities;
 
@@ -143,7 +143,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         versionList.setCellRenderer(new ParameterValueCellRenderer());
         statusList.setCellRenderer(new ParameterValueCellRenderer());
         resolutionList.setCellRenderer(new ParameterValueCellRenderer());
-        priorityList.setCellRenderer(new ParameterValueCellRenderer());
+        priorityList.setCellRenderer(new QueryParameter.PriorityRenderer());
         changedList.setCellRenderer(new ParameterValueCellRenderer());
 
         saveErrorLabel.setForeground(ERROR_COLOR);
@@ -243,6 +243,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
         noContentPanel = new javax.swing.JPanel();
         noContentLabel = new javax.swing.JLabel();
 
@@ -1028,6 +1029,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(refreshCheckBox, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel7.text")); // NOI18N
+        jLabel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        org.openide.awt.Mnemonics.setLocalizedText(findIssuesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.findIssuesButton.text")); // NOI18N
+        findIssuesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findIssuesButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout queryHeaderPanelLayout = new org.jdesktop.layout.GroupLayout(queryHeaderPanel);
         queryHeaderPanel.setLayout(queryHeaderPanelLayout);
         queryHeaderPanelLayout.setHorizontalGroup(
@@ -1056,7 +1067,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .add(5, 5, 5)
                         .add(jLabel6)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel7)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(findIssuesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         queryHeaderPanelLayout.setVerticalGroup(
@@ -1080,11 +1095,13 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .add(modifyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(seenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(seenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel7)
+                    .add(findIssuesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
-        queryHeaderPanelLayout.linkSize(new java.awt.Component[] {jLabel4, jLabel5, jLabel6, modifyButton, refreshButton, removeButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        queryHeaderPanelLayout.linkSize(new java.awt.Component[] {jLabel4, jLabel5, jLabel6, jLabel7, modifyButton, refreshButton, removeButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         seenButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshButton.AccessibleContext.accessibleDescription")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -1163,6 +1180,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         // TODO add your handling code here:
     }//GEN-LAST:event_refreshConfigurationButtonActionPerformed
 
+    private void findIssuesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findIssuesButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_findIssuesButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JCheckBox bugAssigneeCheckBox = new javax.swing.JCheckBox();
@@ -1197,6 +1218,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JPanel criteriaPanel;
     final javax.swing.JComboBox filterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel filterLabel;
+    public final org.netbeans.modules.bugtracking.util.LinkButton findIssuesButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
     final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
     final javax.swing.JTextField idTextField = new javax.swing.JTextField();
@@ -1206,6 +1228,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JScrollPane jScrollPane2 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane3 = new HackedScrollPane();
@@ -1464,8 +1487,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private static class FilterCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Query.Filter) {
-                value = ((Query.Filter)value).getDisplayName();
+            if(value instanceof Filter) {
+                value = ((Filter)value).getDisplayName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

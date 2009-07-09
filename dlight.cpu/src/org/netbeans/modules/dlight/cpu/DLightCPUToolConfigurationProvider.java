@@ -117,7 +117,7 @@ public final class DLightCPUToolConfigurationProvider
             ((CallersCalleesVisualizerConfiguration) detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
         } else {
             FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
-            detailsVisualizerConfigSS = new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadataSS, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_iUser, SunStudioDCConfiguration.c_eUser));
+            detailsVisualizerConfigSS = new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadataSS, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
             ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setColumnsUIMapping(columnsUIMapping);
             ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
             ((FunctionsListViewVisualizerConfiguration) detailsVisualizerConfigSS).setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N

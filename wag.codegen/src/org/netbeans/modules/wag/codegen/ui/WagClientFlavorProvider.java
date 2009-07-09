@@ -57,11 +57,10 @@ public class WagClientFlavorProvider implements ConsumerFlavorProvider {
     }
 
     public Transferable addDataFlavors(Transferable transferable) {
-        System.out.println("addDataFlavors()");
         try {
             if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR)) {
                 Object data = transferable.getTransferData(ConsumerFlavorProvider.WAG_SERVICE_FLAVOR);
-                System.out.println("data = " + data);
+        
                 if (data instanceof WagService) {
                     WagService service = (WagService) data;
                     ExTransferable t = ExTransferable.create(transferable);

@@ -679,7 +679,7 @@ is divided into following sections:
             </xsl:comment>
             
             <xsl:call-template name="deps.target">
-                <xsl:with-param name="targetname" select="'deps-jar'"/>
+                <xsl:with-param name="kind" select="'jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
             
@@ -1433,7 +1433,7 @@ is divided into following sections:
             </xsl:comment>
             
             <xsl:call-template name="deps.target">
-                <xsl:with-param name="targetname" select="'deps-clean'"/>
+                <xsl:with-param name="kind" select="'clean'"/>
             </xsl:call-template>
             
             <target name="-do-clean">
@@ -1452,6 +1452,24 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-clean,-do-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
+
+            <target name="-check-call-dep">
+                <property file="${{call.built.properties}}" prefix="already.built."/>
+                <condition property="should.call.dep">
+                    <not>
+                        <isset property="already.built.${{call.subproject}}"/>
+                    </not>
+                </condition>
+                <!--<echo message="I am {$codename}; should.call.dep=${{should.call.dep}} due to already.built.${{call.subproject}}"/><echoproperties prefix="already.built."/>-->
+            </target>
+            <target name="-maybe-call-dep" depends="-check-call-dep" if="should.call.dep">
+                <ant target="${{call.target}}" antfile="${{call.script}}" inheritall="false">
+                    <propertyset>
+                        <propertyref prefix="transfer."/>
+                        <mapper type="glob" from="transfer.*" to="*"/>
+                    </propertyset>
+                </ant>
+            </target>
             
         </project>
         
@@ -1460,17 +1478,33 @@ is divided into following sections:
     <!---
     Generic template to build subdependencies of a certain type.
     Feel free to copy into other modules.
-    @param targetname required name of target to generate
+    @param kind required end of name of target to generate
     @param type artifact-type from project.xml to filter on; optional, if not specified, uses
                 all references, and looks for clean targets rather than build targets
     @return an Ant target which builds (or cleans) all known subprojects
     -->
     <xsl:template name="deps.target">
-        <xsl:param name="targetname"/>
+        <xsl:param name="kind"/>
         <xsl:param name="type"/>
-        <target name="{$targetname}">
-            <xsl:attribute name="depends">init</xsl:attribute>
+        <target name="-deps-{$kind}-init" unless="built-{$kind}.properties">
+            <property name="built-{$kind}.properties" location="${{build.dir}}/built-{$kind}.properties"/>
+            <delete file="${{built-{$kind}.properties}}" quiet="true"/>
+        </target>
+        <target name="deps-{$kind}" depends="init,-deps-{$kind}-init">
             <xsl:attribute name="unless">no.deps</xsl:attribute>
+
+            <mkdir dir="${{build.dir}}"/>
+            <touch file="${{built-{$kind}.properties}}" verbose="false"/>
+            <property file="${{built-{$kind}.properties}}" prefix="already.built.{$kind}."/>
+            <!--<echo message="from deps-{$kind} of {/p:project/p:configuration/j2seproject3:data/j2seproject3:name}:"/><echoproperties prefix="already.built.{$kind}."/>-->
+            <fail message="Cycle detected: {/p:project/p:configuration/j2seproject3:data/j2seproject3:name} was already built">
+                <condition>
+                    <isset property="already.built.{$kind}.${{basedir}}"/>
+                </condition>
+            </fail>
+            <propertyfile file="${{built-{$kind}.properties}}">
+                <entry key="${{basedir}}" value=""/>
+            </propertyfile>
             
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">
@@ -1488,14 +1522,25 @@ is divided into following sections:
                 <xsl:variable name="script" select="projdeps2:script"/>
                 <xsl:choose>
                     <xsl:when test="projdeps2:properties">
-                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                        <antcall target="-maybe-call-dep">
+                            <param name="call.built.properties" value="${{built-{$kind}.properties}}"/>
+                            <param name="call.subproject" location="${{project.{$subproj}}}"/>
+                            <param name="call.script" location="{$script}"/>
+                            <param name="call.target" value="{$subtarget}"/>
+                            <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                             <xsl:for-each select="projdeps2:properties/projdeps2:property">
-                                <property name="{@name}" value="{.}"/>
+                                <param name="transfer.{@name}" value="{.}"/>
                             </xsl:for-each>
-                        </ant>
+                        </antcall>
                     </xsl:when>
-                    <xsl:otherwise>
-                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                    <xsl:otherwise> <!-- XXX maybe just fold into former? projdeps2:properties/projdeps2:property select nothing? -->
+                        <antcall target="-maybe-call-dep">
+                            <param name="call.built.properties" value="${{built-{$kind}.properties}}"/>
+                            <param name="call.subproject" location="${{project.{$subproj}}}"/>
+                            <param name="call.script" location="{$script}"/>
+                            <param name="call.target" value="{$subtarget}"/>
+                            <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
+                        </antcall>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:for-each>
@@ -1514,7 +1559,13 @@ is divided into following sections:
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                <antcall target="-maybe-call-dep">
+                    <param name="call.built.properties" value="${{built-{$kind}.properties}}"/>
+                    <param name="call.subproject" location="${{project.{$subproj}}}"/>
+                    <param name="call.script" location="${{project.{$subproj}}}/{$script}"/>
+                    <param name="call.target" value="{$subtarget}"/>
+                    <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
+                </antcall>
             </xsl:for-each>
             
         </target>

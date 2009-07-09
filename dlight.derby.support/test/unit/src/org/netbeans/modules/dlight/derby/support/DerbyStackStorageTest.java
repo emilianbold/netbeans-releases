@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.derby.support;
 
 import java.sql.SQLException;
@@ -57,8 +56,11 @@ public class DerbyStackStorageTest extends CommonStackDataStorageTests {
         }
     }
 
-    protected void flush(StackDataStorage db) {
-        ((DerbyDataStorage)db).flush();
+    protected boolean shutdownStorage(StackDataStorage db) {
+        return ((DerbyDataStorage) db).shutdown();
     }
 
+    protected void flush(StackDataStorage db) {
+        ((DerbyDataStorage) db).flush();
+    }
 }

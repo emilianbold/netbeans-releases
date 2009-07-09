@@ -44,13 +44,13 @@ import java.util.List;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue.Entry;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue.Position;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public class ParserQueueTest extends BaseTestCase {
+public class ParserQueueTest extends CndBaseTestCase {
 
     private final ParserQueue queue;
     private TestModelHelper helper;

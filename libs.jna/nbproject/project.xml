@@ -51,6 +51,10 @@ made subject to such option by the copyright holder.
                 <friend>org.jruby</friend>
                 <friend>org.netbeans.modules.python.qshell</friend>
                 <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>org.netbeans.modules.maven.killer</friend>
+                <friend>org.netbeans.modules.extexecution.destroy</friend>
+                <!-- maven.killer can be deleted once extexecution.destroy is in place -->
+                <friend>org.netbeans.modules.maven.killer</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
                 <package>com.sun.jna.win32</package>

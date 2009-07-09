@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.websvc.metro.samples;
 
+import java.util.Collections;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -95,8 +97,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         serverInstanceComboBox.removeAllItems();
         ServerWrapper bestServer = null;
         String[] sIDs = Deployment.getDefault().getServerInstanceIDs(
-                            new Object[] {J2eeModule.WAR}, 
-                            J2eeModule.JAVA_EE_5, 
+                            Collections.singleton(J2eeModule.Type.WAR),
+                            Profile.JAVA_EE_5,
                             new String[] {J2eePlatform.TOOL_JSR109});
         for (String serverInstanceID : sIDs) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);

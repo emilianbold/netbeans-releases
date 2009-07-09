@@ -47,26 +47,28 @@ import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRuleExtension;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public class NavigationRuleImpl extends DescriptionGroupImpl implements NavigationRule{
+class NavigationRuleImpl extends IdentifiableDescriptionGroupImpl implements NavigationRule{
     
-    protected static final List<String> NAVIGATION_RULE_SORTED_ELEMENTS = new ArrayList();
+    protected static final List<String> NAVIGATION_RULE_SORTED_ELEMENTS = 
+        new ArrayList<String>( DESCRIPTION_GROUP_SORTED_ELEMENTS.size() +2 );
     static {
-        NAVIGATION_RULE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
+        NAVIGATION_RULE_SORTED_ELEMENTS.addAll(DESCRIPTION_GROUP_SORTED_ELEMENTS);
         NAVIGATION_RULE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_VIEW_ID.getLocalName());
         NAVIGATION_RULE_SORTED_ELEMENTS.add(JSFConfigQNames.NAVIGATION_CASE.getLocalName());
     }
     
-    public NavigationRuleImpl(JSFConfigModelImpl model, Element element) {
+    NavigationRuleImpl(JSFConfigModelImpl model, Element element) {
         super(model, element);
     }
     
-    public NavigationRuleImpl(JSFConfigModelImpl model) {
+    NavigationRuleImpl(JSFConfigModelImpl model) {
         this(model, createElementNS(model, JSFConfigQNames.NAVIGATION_RULE));
     }
     
@@ -94,11 +96,45 @@ public class NavigationRuleImpl extends DescriptionGroupImpl implements Navigati
         setChildElementText(FROM_VIEW_ID, fromView, JSFConfigQNames.FROM_VIEW_ID.getQName(getNamespaceURI()));
     }
     
+    public void accept(JSFConfigVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule#addNavigationRuleExtension(org.netbeans.modules.web.jsf.api.facesmodel.NavigationRuleExtension)
+     */
+    public void addNavigationRuleExtension( NavigationRuleExtension extension )
+    {
+        appendChild( NAVIGATION_RULE_EXTENSION,  extension );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule#addNavigationRuleExtension(int, org.netbeans.modules.web.jsf.api.facesmodel.NavigationRuleExtension)
+     */
+    public void addNavigationRuleExtension( int index,
+            NavigationRuleExtension extension )
+    {
+        insertAtIndex( NAVIGATION_RULE_EXTENSION, extension, index, 
+                NavigationRuleExtension.class);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule#getNavigationRuleExtensions()
+     */
+    public List<NavigationRuleExtension> getNavigationRuleExtensions() {
+        return getChildren( NavigationRuleExtension.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule#removeNavigationRuleExtension(org.netbeans.modules.web.jsf.api.facesmodel.NavigationRuleExtension)
+     */
+    public void removeNavigationRuleExtension( NavigationRuleExtension extension )
+    {
+        removeChild( NAVIGATION_RULE_EXTENSION, extension );
+    }
+    
     protected List<String> getSortedListOfLocalNames() {
         return NAVIGATION_RULE_SORTED_ELEMENTS;
     }
     
-    public void accept(JSFConfigVisitor visitor) {
-        visitor.visit(this);
-    }
 }

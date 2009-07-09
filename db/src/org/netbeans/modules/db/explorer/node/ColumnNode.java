@@ -80,6 +80,9 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private static final String PRIMARY = "org/netbeans/modules/db/resources/columnPrimary.gif";
     private static final String INDEX = "org/netbeans/modules/db/resources/columnIndex.gif";
     private static final String FOLDER = "Column"; //NOI18N
+    private static final String TOOLTIP_COLUMN = NbBundle.getMessage(ColumnNode.class, "ND_Column");
+    private static final String TOOLTIP_PRIMARY = NbBundle.getMessage(ColumnNode.class, "ND_PrimaryKey");
+    private static final String TOOLTIP_INDEX = NbBundle.getMessage(ColumnNode.class, "ND_Index");
 
     /**
      * Create an instance of ColumnNode.
@@ -95,6 +98,8 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     private String name = ""; // NOI18N
     private String icon;
+    /** Description used for tooltip. */
+    private String description = TOOLTIP_COLUMN;
     private final MetadataElementHandle<Column> columnHandle;
     private final DatabaseConnection connection;
     private boolean isTableColumn = true;
@@ -143,6 +148,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                                             if (c.getName().equals(column.getName())) {
                                                 found = true;
                                                 icon = PRIMARY;
+                                                description = TOOLTIP_PRIMARY;
                                                 break;
                                             }
                                         }
@@ -156,6 +162,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                                                 if (c.getName().equals(column.getName())) {
                                                     found = true;
                                                     icon = INDEX;
+                                                    description = TOOLTIP_INDEX;
                                                     break;
                                                 }
                                             }
@@ -302,7 +309,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage (ColumnNode.class, "ND_Column"); //NOI18N
+        return description;
     }
 
     @Override

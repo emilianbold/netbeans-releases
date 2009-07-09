@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.customizer;
 
 import hidden.org.codehaus.plexus.util.StringUtils;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -55,6 +56,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -67,6 +69,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -83,9 +86,9 @@ import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
@@ -233,8 +236,7 @@ public class ActionMappings extends javax.swing.JPanel {
                         return Boolean.valueOf(val);
                     }
                 }
-                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                val = props.get(Constants.HINT_USE_EXTERNAL, true, false);
+                val = handle.getRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, true);
                 if (val != null) {
                     return Boolean.valueOf(val);
                 }
@@ -242,8 +244,7 @@ public class ActionMappings extends javax.swing.JPanel {
             }
 
             public void setValue(Boolean value) {
-                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                boolean hasConfig = props.get(Constants.HINT_USE_EXTERNAL, true, false) != null;
+                boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
                 org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
@@ -253,7 +254,7 @@ public class ActionMappings extends javax.swing.JPanel {
                         prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
                         if (hasConfig) {
                         // in this case clean up the auxiliary config
-                            props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                            handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
                         }
                     }
                     handle.markAsModified(handle.getProfileModel());
@@ -270,11 +271,11 @@ public class ActionMappings extends javax.swing.JPanel {
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                        handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, null, true);
                     }
                     return;
                 }
-                props.put(Constants.HINT_USE_EXTERNAL, value == null ? null : value.toString(), true);
+                handle.setRawAuxiliaryProperty(Constants.HINT_USE_EXTERNAL, value == null ? null : value.toString(), true);
             }
 
             public boolean getDefaultValue() {
@@ -670,6 +671,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         menu.add(new SkipTestsAction(taProperties));
         menu.add(new DebugMavenAction(taProperties));
         menu.add(new EnvVarAction(taProperties));
+        menu.add(createGlobalVarSubmenu(taProperties));
         menu.add(new PluginPropertyAction(taProperties, txtGoals, project));
         menu.show(btnAddProps, btnAddProps.getSize().width, 0);
 
@@ -1190,7 +1192,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         private NbMavenProjectImpl project;
 
         PluginPropertyAction(JTextArea area, JTextField goals, NbMavenProjectImpl prj) {
-            putValue(Action.NAME, "Plugin Expression Property");
+            putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "TXT_PLUGIN_EXPRESSION"));
             this.area = area;
             this.goals = goals;
             this.project = prj;
@@ -1200,7 +1202,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
             if (provider != null) {
                 AddPropertyDialog panel = new AddPropertyDialog(project, goals.getText());
-                DialogDescriptor dd = new DialogDescriptor(panel, "Add Plugin Expression Property");
+                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ActionMappings.class, "TIT_PLUGIN_EXPRESSION"));
                 dd.setOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 dd.setClosingOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 DialogDisplayer.getDefault().notify(dd);
@@ -1245,6 +1247,44 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             area.requestFocusInWindow();
         }
     }
+
+    private JMenu createGlobalVarSubmenu(JTextArea area) {
+        JMenu menu = new JMenu();
+            menu.setText(NbBundle.getMessage(ActionMappings.class, "ActionMappings.globalVar"));
+        Map<String, String> vars = DefaultReplaceTokenProvider.readVariables();
+        boolean hasAny = false;
+        for (Map.Entry<String, String> ent : vars.entrySet()) {
+            hasAny = true;
+            menu.add(new UseGlobalVarAction(area, ent.getKey()));
+        }
+        if (!hasAny) {
+            menu.setEnabled(false);
+        }
+        return menu;
+    }
+
+    static class UseGlobalVarAction extends AbstractAction {
+        private JTextArea area;
+        private final String key;
+
+        UseGlobalVarAction(JTextArea area, String key) {
+            putValue(Action.NAME, "${" + key + "}"); //NOI18N
+            this.area = area;
+            this.key = key;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                area.getDocument().insertString(area.getCaretPosition(), "${" + key + "}", null); //NOI18N
+            } catch (BadLocationException ex) {
+                String text = area.getText();
+                text = text + "${" + key + "}"; //NOI18N
+                area.setText(text);
+                area.requestFocusInWindow();
+            }
+        }
+    }
+
 
     private static void replacePattern(String pattern, JTextArea area, String replace, boolean select) {
         String props = area.getText();

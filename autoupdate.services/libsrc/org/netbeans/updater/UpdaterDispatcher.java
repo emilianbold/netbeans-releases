@@ -151,14 +151,18 @@ public final class UpdaterDispatcher implements Runnable {
     }
     
     public static void touchLastModified (File cluster) {
+        if(!cluster.exists()) {
+            return;
+        }
         try {
             File stamp = new File (cluster, LAST_MODIFIED);
-            if (! stamp.createNewFile ()) {
+            if(!stamp.exists() && !stamp.createNewFile ()) {
+                throw new IOException("Can`t create stamp file " + stamp);
+            }
+            if(!stamp.setLastModified (System.currentTimeMillis ())) {
+                stamp.delete ();
+                stamp.createNewFile ();
                 stamp.setLastModified (System.currentTimeMillis ());
-                if (! stamp.setLastModified (System.currentTimeMillis ())) {
-                    stamp.delete ();
-                    stamp = new File (cluster, LAST_MODIFIED);
-                }
             }
         } catch (IOException ex) {
             ex.printStackTrace ();

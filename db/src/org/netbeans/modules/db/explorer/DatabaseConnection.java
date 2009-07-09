@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.ObjectStreamException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -267,10 +267,33 @@ public class DatabaseConnection implements DBConnection {
     public MetadataModel getMetadataModel() {
         return metadataModel;
     }
+
+    public static boolean isVitalConnection(Connection conn, DatabaseConnection dbconn) {
+        if (conn == null) {
+            return false;
+        }
+        try {
+            SQLWarning warnings = conn.getWarnings();
+            if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
+                LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
+            }
+            return true;
+        } catch (SQLException ex) {
+            if (dbconn != null) {
+                try {
+                    dbconn.disconnect();
+                } catch (DatabaseException ex1) {
+                    LOGGER.log(Level.FINE, "While trying vitality of connection: " + ex1.getLocalizedMessage(), ex1);
+                }
+            }
+            LOGGER.log(Level.FINE, "While trying vitality of connection: " + ex.getLocalizedMessage(), ex);
+            return false;
+        }
+    }
     
     public static boolean test(Connection conn, String connectionName) {
         try {
-            if (conn == null || conn.isClosed()) {
+            if (! isVitalConnection(conn, null)) {
                 return false;
             }
 
@@ -858,44 +881,49 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public void selectInExplorer() {
-        ConnectionNode node = null;
-        try {
-            node = findConnectionNode(getName());
-        } catch (DatabaseException e) {
-            Exceptions.printStackTrace(e);
-            return;
-        }
-
-        // find the Runtime panel top component
-        // quite hacky, but it will be replaced by the Server Navigator
-
-        TopComponent runtimePanel = null;
-        ExplorerManager runtimeExplorer = null;
-
+        TopComponent servicesTab = null;
+        ExplorerManager explorer = null;
         for (TopComponent component : TopComponent.getRegistry().getOpened()) {
-            Component[] children = component.getComponents();
-            if (children.length > 0) {
-                ExplorerManager explorer = ExplorerManager.find(children[0]);
-                if ("Runtime".equals(explorer.getRootContext().getName())) { // NOI18N
-                    runtimePanel = component;
-                    runtimeExplorer = explorer;
-                    break;
-                }
+            if (component.getClass().getName().equals("org.netbeans.core.ide.ServicesTab")) {  //NOI18N
+                servicesTab = component;
+                assert servicesTab instanceof ExplorerManager.Provider;
+                explorer = ((ExplorerManager.Provider) servicesTab).getExplorerManager();
+                break;
             }
         }
-
-        if (runtimePanel == null) {
+        if (explorer == null) {
+            // Services tab not open
             return;
         }
-
+        // find connection node in explorer
+        Node root = explorer.getRootContext();
+        Node databasesNode = null;
+        Node connectionNode = null;
+        Node[] children = root.getChildren().getNodes();
+        for (Node node : children) {
+            if (node.getName().equals("Databases")) {  //NOI18N
+                databasesNode = node;
+                break;
+            }
+        }
+        assert databasesNode != null;
+        children = databasesNode.getChildren().getNodes();
+        for (Node node : children) {
+            if (node.getName().equals(getName())) {
+                connectionNode = node;
+                break;
+            }
+        }
+        // select node
         try {
-            runtimeExplorer.setSelectedNodes(new Node[] { node });
+            if (connectionNode != null) {
+                explorer.setSelectedNodes(new Node[] { connectionNode });
+                servicesTab.requestActive();
+            }
         } catch (PropertyVetoException e) {
             Exceptions.printStackTrace(e);
             return;
         }
-
-        runtimePanel.requestActive();
     }
 
     public void showConnectionDialog() {

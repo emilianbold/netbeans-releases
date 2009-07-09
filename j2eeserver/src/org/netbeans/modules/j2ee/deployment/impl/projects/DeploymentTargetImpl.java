@@ -44,11 +44,11 @@ package org.netbeans.modules.j2ee.deployment.impl.projects;
 import java.io.File;
 import java.io.IOException;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -110,7 +110,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
                 J2eeApplication jmc = (J2eeApplication) ear.getJ2eeModule();
                 J2eeModule[] modules = jmc.getModules();
                 for (int i=0; i<modules.length; i++) {
-                    if (J2eeModule.WAR.equals(modules[i].getModuleType())) {
+                    if (J2eeModule.Type.WAR.equals(modules[i].getType())) {
                         clientModule = modules[i];
                         break;
                     }
@@ -161,7 +161,8 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             return mods[0];
         }
 
-        mods[0].initDelegate((ModuleType) getModule().getModuleType());
+
+        mods[0].initDelegate(J2eeModuleAccessor.getDefault().getJsrModuleType(getModule().getType()));
         return mods[0];
     }
 

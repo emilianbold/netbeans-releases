@@ -60,14 +60,42 @@ public class KenaiHudsonBuildAssociation extends ProjectHudsonProvider {
         if (loc instanceof String) {
             try {
                 KenaiProject p = KenaiProject.forRepository((String) loc);
-                if (p != null) {
-                    for (KenaiFeature feature : p.getFeatures(Type.HUDSON)) {
-                        String server = feature.getWebLocation().toString();
-                        return Association.fromString(server);
-                    }
+                Association a = findAssociation(p);
+                if (a != null) {
+                    return a;
                 }
             } catch (KenaiException x) {
                 LOG.log(Level.FINE, "Looking up association for " + project, x);
+            }
+        }
+        /* XXX to be considered in case PE.RL proves unreliable:
+        File wd = FileUtil.toFile(project.getProjectDirectory());
+        if (wd != null) {
+            for (ProjectHandle handle : Dashboard.getDefault().getOpenProjects()) {
+                for (SourceHandle source : SourceAccessor.getDefault().getSources(handle)) {
+                    if (wd.equals(source.getWorkingDirectory())) {
+                        try {
+                            KenaiProject p = Kenai.getDefault().getProject(handle.getId());
+                            Association a = findAssociation(p);
+                            if (a != null) {
+                                return a;
+                            }
+                        } catch (KenaiException x) {
+                            LOG.log(Level.FINE, "Looking up association for " + project, x);
+                        }
+                    }
+                }
+            }
+        }
+         */
+        return null;
+    }
+
+    private Association findAssociation(KenaiProject p) throws KenaiException {
+        if (p != null) {
+            for (KenaiFeature feature : p.getFeatures(Type.HUDSON)) {
+                String server = feature.getWebLocation().toString();
+                return Association.fromString(server);
             }
         }
         return null;

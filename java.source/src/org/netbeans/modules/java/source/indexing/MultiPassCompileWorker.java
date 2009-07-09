@@ -47,11 +47,8 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
@@ -59,18 +56,18 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
-import org.netbeans.modules.java.source.tasklist.RebuildOraculum;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -79,10 +76,13 @@ import org.openide.filesystems.FileUtil;
  */
 final class MultiPassCompileWorker extends CompileWorker {
 
-    ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends Indexable> files) {
-        final LinkedList<Indexable> toProcess = new LinkedList<Indexable>();
-        for (Indexable i : files) {
-            if (!previous.finishedFiles.contains(i)) {
+    private static final int MEMORY_LOW = 1;
+    private static final int ERR = 2;
+
+    ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+        final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
+        for (CompileTuple i : files) {
+            if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
             }
         }
@@ -91,8 +91,6 @@ final class MultiPassCompileWorker extends CompileWorker {
         }
         
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
-        final Set<Indexable> finished = previous.finishedFiles;
-        final Map<URL, Set<URL>> root2Rebuild = previous.root2Rebuild;
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
 
         final LowMemoryListenerImpl mem = new LowMemoryListenerImpl();
@@ -107,30 +105,23 @@ final class MultiPassCompileWorker extends CompileWorker {
             boolean isBigFile = false;
 
             while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
-// TODO:
-//                    if (canceled != null && canceled.getAndSet(false)) {
-//                        return toRefresh;
-//                    }
-//                    if (ideClosed != null && ideClosed.get()) {
-//                        return toRefresh;
-//                    }
                 try {
                     if (mem.isLowMemory()) {
                         dumpSymFiles(fileManager, jt);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             break;
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
                     }
                     if (active == null) {
                         if (!toProcess.isEmpty()) {
-                            active = createTuple(context, javaContext, toProcess.removeFirst());
+                            active = toProcess.removeFirst();
                             if (active == null)
                                 continue;
                             isBigFile = false;
@@ -138,13 +129,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                             active = bigFiles.removeFirst();
                             isBigFile = true;
                         }
-//                            if (CALLBACK != null) {
-//                                CALLBACK.willCompile(activeTuple.jfo);
-//                            }
                     }
                     if (jt == null) {
                         jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum);
-//                            jt.setTaskListener(listener);
                         if (JavaIndex.LOG.isLoggable(Level.FINER)) {
                             JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
                         }
@@ -156,16 +143,16 @@ final class MultiPassCompileWorker extends CompileWorker {
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             if (isBigFile) {
                                 break;
                             } else {
                                 bigFiles.add(active);
                                 active = null;
-                                state = 0;
+                                state &= ~MEMORY_LOW;
                             }
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
@@ -178,16 +165,16 @@ final class MultiPassCompileWorker extends CompileWorker {
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
                         types = null;
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             if (isBigFile) {
                                 break;
                             } else {
                                 bigFiles.add(active);
                                 active = null;
-                                state = 0;
+                                state &= ~MEMORY_LOW;
                             }
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
@@ -200,40 +187,30 @@ final class MultiPassCompileWorker extends CompileWorker {
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
                         types = null;
-                        if (state == 1) {
+                        if ((state & MEMORY_LOW) != 0) {
                             if (isBigFile) {
                                 break;
                             } else {
                                 bigFiles.add(active);
                                 active = null;
-                                state = 0;
+                                state &= ~MEMORY_LOW;
                             }
                         } else {
-                            state = 1;
+                            state |= MEMORY_LOW;
                         }
                         System.gc();
                         continue;
                     }
                     boolean[] main = new boolean[1];
-                    javaContext.sa.analyse(trees, jt, fileManager, false, true, active.jfo, previous.addedTypes, main);
-//                        if (activeTuple.file != null) {
-                    //When the active file is not set (generated virtual source) ignore executable flag
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.jfo.toUri().toURL(), main[0]);
-//                        }
-//                        Log.instance(jt.getContext()).nerrors = 0;
-//                        if (compiledFiles != null && !activeTuple.virtual) {
-//                            //compiledFiles are not tracked for virtual sources
-//                            compiledFiles.add(activeTuple.file);
-//                        }
-                    if (!context.isSupplementaryFilesIndexing() /*&& !activeTuple.virtual*/) {
-                        for (Map.Entry<URL, Collection<URL>> toRebuild : RebuildOraculum.findFilesToRebuild(context.getRootURI(), active.jfo.toUri().toURL(), javaContext.cpInfo, jt.getElements(), types).entrySet()) {
-                            Set<URL> urls = root2Rebuild.get(toRebuild.getKey());
-                            if (urls == null) {
-                                root2Rebuild.put(toRebuild.getKey(), urls = new HashSet<URL>());
-                            }
-                            urls.addAll(toRebuild.getValue());
-                        }
+                    if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing() || context.isAllFilesIndexing()) {
+                        javaContext.sa.analyse(trees, jt, fileManager, active, previous.addedTypes, main);
+                    } else {
+                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
+                        javaContext.sa.analyse(trees, jt, fileManager, active, aTypes, main);
+                        previous.addedTypes.addAll(aTypes);
+                        previous.modifiedTypes.addAll(aTypes);
                     }
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
                     for (JavaFileObject generated : jt.generate(types)) {
                         if (generated instanceof OutputFileObject) {
                             previous.createdFiles.add(((OutputFileObject) generated).getFile());
@@ -241,17 +218,28 @@ final class MultiPassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                    if (!active.virtual) {
+                        TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                    }
                     Log.instance(jt.getContext()).nerrors = 0;
-                    finished.add(active.indexable);
+                    previous.finishedFiles.add(active.indexable);
                     active = null;
                     state  = 0;
                 } catch (CouplingAbort ca) {
                     //Coupling error
-                    TreeLoader.dumpCouplingAbort(ca, active.jfo);
+                    TreeLoader.dumpCouplingAbort(ca, null);
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
-                    state = 0;
+                    if ((state & ERR) != 0) {
+                        //When a javac failed with the Exception mark a file
+                        //causing this exceptin as compiled
+                        if (active != null)
+                            previous.finishedFiles.add(active.indexable);
+                        active = null;
+                        state = 0;
+                    } else {
+                        state |= ERR;
+                    }
                 } catch (OutputFileManager.InvalidSourcePath isp) {
                     //Deleted project - log & ignore
                     if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -267,6 +255,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                     );
                         JavaIndex.LOG.log(Level.FINEST, message, isp);
                     }
+                    return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
                 } catch (MissingPlatformError mpe) {
                     //No platform - log & ignore
                     if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -282,6 +271,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                     );
                         JavaIndex.LOG.log(Level.FINEST, message, mpe);
                     }
+                    return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
                 } catch (Throwable t) {
                     if (t instanceof ThreadDeath) {
                         throw (ThreadDeath) t;
@@ -300,25 +290,28 @@ final class MultiPassCompileWorker extends CompileWorker {
                                         );
                             JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
                         }
-                        //When a javac failed with the Exception mark a file
-                        //causing this exceptin as compiled
-                        //otherwise tasklist will reschedule the parse again
-                        //and the RepositoryUpdater ends in infinite loop of reparse.
-                        if (active != null)
-                            finished.add(active.indexable);
-                        diagnosticListener.cleanDiagnostics();
                         jt = null;
-                        active = null;
+                        diagnosticListener.cleanDiagnostics();
+                        if ((state & ERR) != 0) {
+                            //When a javac failed with the Exception mark a file
+                            //causing this exceptin as compiled
+                            if (active != null)
+                                previous.finishedFiles.add(active.indexable);
+                            active = null;
+                            state = 0;
+                        } else {
+                            state |= ERR;
+                        }
                     }
                 }
             }
-            if (state == 1) {
+            if ((state & MEMORY_LOW) != 0) {
                 JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
             }
         } finally {
             LowMemoryNotifier.getDefault().removeLowMemoryListener(mem);
         }
-        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, finished, previous.root2Rebuild);
+        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
     }
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti) throws IOException {

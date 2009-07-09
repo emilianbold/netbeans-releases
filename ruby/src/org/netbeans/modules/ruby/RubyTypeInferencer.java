@@ -38,28 +38,26 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ReturnNode;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 public final class RubyTypeInferencer {
 
     private final ContextKnowledge knowledge;
     private RubyTypeAnalyzer analyzer;
-    private final boolean fast;
 
-    public static RubyTypeInferencer fast(ContextKnowledge knowledge) {
-        return new RubyTypeInferencer(knowledge, true);
+    public static RubyTypeInferencer create(ContextKnowledge knowledge) {
+        return new RubyTypeInferencer(knowledge);
     }
 
-    public static RubyTypeInferencer normal(ContextKnowledge knowledge) {
-        return new RubyTypeInferencer(knowledge, false);
-    }
-
-    private RubyTypeInferencer(final ContextKnowledge knowledge, boolean fast) {
+    private RubyTypeInferencer(final ContextKnowledge knowledge) {
         this.knowledge = knowledge;
-        this.fast = fast;
     }
 
     private void initializeAnalyzer() {
@@ -145,9 +143,14 @@ public final class RubyTypeInferencer {
                 ReturnNode retNode = (ReturnNode) node;
                 type = inferType(retNode.getValueNode());
                 break;
+            case DEFNNODE:
+            case DEFSNODE:
+                MethodDefNode methodDefNode = (MethodDefNode) node;
+                type = inferMethodNode(methodDefNode);
+                break;
         }
         if (type == null && AstUtilities.isCall(node)) {
-            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
+            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge);
         }
         if (type == null) {
             type = getTypeForLiteral(node);
@@ -158,6 +161,30 @@ public final class RubyTypeInferencer {
         return type;
     }
 
+    private RubyType inferMethodNode(MethodDefNode methodDefNode) {
+        String name = methodDefNode.getName();
+        RubyType fastType = RubyMethodTypeInferencer.fastCheckType(name);
+        if (fastType != null) {
+            return fastType;
+        }
+        if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
+            List<String> rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodDefNode);
+            if (rdocs != null) {
+                RubyType type = RDocAnalyzer.collectTypesFromComment(rdocs);
+                if (type != null && type.isKnown()) {
+                    return type;
+                }
+            }
+        }
+        // this can be very time consuming, return if TI is not enabled
+        RubyType result = new RubyType();
+        Set<Node> exits = new LinkedHashSet<Node>();
+        AstUtilities.findExitPoints(methodDefNode, exits);
+        for (Node exit : exits) {
+            result.append(inferType(exit));
+        }
+        return result;
+    }
     /**
      * Returns type for Ruby built-in literal, like String, Array, Hash, Regexp,
      * etc.
@@ -213,6 +240,6 @@ public final class RubyTypeInferencer {
     public String toString() {
         return "RubyTypeAnalyzer[knowledge:" + knowledge + ']'; // NOI18N
     }
-    
+
 }
 

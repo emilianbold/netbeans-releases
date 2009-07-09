@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -52,7 +52,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Voskresensky
  */
-public class CndDocumentProviderTestCase extends BaseTestCase {
+public class CndDocumentProviderTestCase extends CndBaseTestCase {
 
     private static final boolean TRACE = false;
 

@@ -255,12 +255,11 @@ public class RubyStructureAnalyzer implements StructureScanner {
         requires = new HashSet<String>();
         methods = new ArrayList<AstMethodElement>();
         haveAccessModifiers = new HashSet<AstClassElement>();
-
         
         AstPath path = new AstPath();
         path.descend(root);
-        ContextKnowledge knowledge = new ContextKnowledge(index, root);
-        this.typeInferencer = RubyTypeInferencer.normal(knowledge);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, result);
+        this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
         path.ascend();
@@ -587,17 +586,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             }
 
-            if (node instanceof DefnNode) {
-                String name = AstUtilities.getName(node);
-                DefnNode defNode = (DefnNode) node;
-                Set<Node> exits = new LinkedHashSet<Node>();
-                AstUtilities.findExitPoints(defNode, exits);
+            if (node instanceof DefnNode || node instanceof DefsNode) {
                 RubyType type = new RubyType();
-                for (Node exitPoint : exits) {
-                    if (exitPoint.getNodeType() != NodeType.FCALLNODE) {
-                        type.append(typeInferencer.inferType(exitPoint));
-                    }
-                }
+                type.append(typeInferencer.inferType(node));
                 co.setType(type);
             }
 
@@ -734,12 +725,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 if (argsNode instanceof ListNode) {
                     ListNode args = (ListNode)argsNode;
-
-                    if (args.size() > 0) {
-                        Node n = args.get(0);
-
+                    for (Node n : args.childNodes()) {
                         if (n instanceof Colon2Node) {
-                            includes.add(AstUtilities.getFqn((Colon2Node)n));
+                            includes.add(AstUtilities.getFqn((Colon2Node) n));
                         } else if (n instanceof INameNode) {
                             includes.add(AstUtilities.getName(n));
                         }

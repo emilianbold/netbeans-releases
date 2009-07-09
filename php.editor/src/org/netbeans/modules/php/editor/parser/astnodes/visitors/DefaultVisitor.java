@@ -104,7 +104,7 @@ public class DefaultVisitor implements Visitor {
         scan(node.getBody());
     }
 
-    public void visit(ClassConstantDeclaration node) {
+    public void visit(ConstantDeclaration node) {
         scan(node.getNames());
         scan(node.getInitializers());
     }
@@ -380,5 +380,37 @@ public class DefaultVisitor implements Visitor {
 
     public void visit(PHPVarComment node) {
         scan(node.getVariable());
+    }
+
+    public void visit(NamespaceName namespaceName) {
+        scan(namespaceName.getSegments());
+    }
+
+    public void visit(NamespaceDeclaration declaration) {
+        scan(declaration.getName());
+        scan(declaration.getBody());
+    }
+
+    public void visit(GotoLabel label) {
+        scan(label.getName());
+    }
+
+    public void visit(GotoStatement statement) {
+        scan(statement.getLabel());
+    }
+
+    public void visit(LambdaFunctionDeclaration declaration) {
+        scan(declaration.getFormalParameters());
+        scan(declaration.getLexicalVariables());
+        scan(declaration.getBody());
+    }
+
+    public void visit(UseStatement statement) {
+        scan(statement.getParts());
+    }
+
+    public void visit(UseStatementPart statementPart) {
+        scan(statementPart.getName());
+        scan(statementPart.getAlias());
     }
 }

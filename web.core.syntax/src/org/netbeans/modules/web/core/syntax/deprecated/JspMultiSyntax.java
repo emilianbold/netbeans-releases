@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.ext.html.HtmlTokenContext;
+import org.netbeans.modules.web.core.syntax.deprecated.HtmlTokenContext;
 
 /**
 * Syntax for JSP files. This is a MultiSyntax consisting of three slave syntaxes:

@@ -81,7 +81,8 @@ class IndexedStorageFile extends FileStorage {
     // used to accumulate the total currently used chunk suze;
     // is necessary for tracking fragmentation
     private long usedSize;
-    private Object writeLock = new Object();
+    private static final class Lock {}
+    private final Object writeLock = new Lock();
 
     public IndexedStorageFile(final File basePath, final String name, final boolean create) throws IOException {
         dataFile = new File(basePath, name + "-data"); // NOI18N

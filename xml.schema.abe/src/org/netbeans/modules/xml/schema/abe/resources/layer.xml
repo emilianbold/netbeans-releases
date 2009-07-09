@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -41,10 +40,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-xml-schema-abe-action-PaletteCustomizerAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Navigator">
 	<folder name="Panels">
 	    <folder name="application">
@@ -58,7 +61,8 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-xml-schema-abe-action-PaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-xml-schema-abe-action-PaletteCustomizerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-xml-schema-abe-action-PaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="1300"/>
                 </file>
             </folder>
@@ -68,8 +72,7 @@ made subject to such option by the copyright holder.
     
     <folder name="xmlschema-abe-palette">
 	<folder name="XMLComponents">
-            <attr name="SystemFileSystem.localizingBundle"
-            stringvalue="org.netbeans.modules.xml.schema.abe.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.abe.resources.Bundle"/>
             <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_XML_COMPONENTS"/> 
 	    <file name="Element.xml" url="../palette/ElementPaletteItem.xml">
                 <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ELEMENT"/> 
@@ -79,8 +82,7 @@ made subject to such option by the copyright holder.
 	    </file>
 	</folder>
 	<folder name="XMLSchemaComponents">
-            <attr name="SystemFileSystem.localizingBundle"
-            stringvalue="org.netbeans.modules.xml.schema.abe.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.abe.resources.Bundle"/>
             <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_XML_SCHEMA_COMPONENTS"/> 
 	    <file name="Sequence.xml" url="../palette/SequencePaletteItem.xml">
                 <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_SEQUENCE"/> 

@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
         <folder name="Actions">
             <file name="org-netbeans-modules-versioning-ProjectMenuItem.instance">
                 <attr name="position" intvalue="300"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
         </folder>
     </folder>
@@ -97,6 +98,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-versioning-VersioningMainMenu.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.VersioningMainMenu"/>
                 <attr name="position" intvalue="100"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
         </folder>
         

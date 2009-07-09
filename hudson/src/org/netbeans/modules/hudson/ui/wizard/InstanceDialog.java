@@ -103,8 +103,8 @@ public class InstanceDialog extends DialogDescriptor {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    URL u = new URL(panel.getUrl() + "?checking=redirects"); // NOI18N
-                    HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(u).httpConnection();
+                    URL u = new URL(panel.getUrl());
+                    HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(new URL(u, "?checking=redirects")).httpConnection(); // NOI18N
                     String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
                     connection.disconnect();
                     if (sVersion == null) {

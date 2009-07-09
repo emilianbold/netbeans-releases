@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE taglib
+PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"
+"http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd">
+
+<taglib>
+
+<!-- ============== Tag Library Description Elements ============= -->
+
+<tlib-version>1.0</tlib-version>
+<jsp-version>2.1</jsp-version>
+<short-name>ui</short-name>
+<uri>http://java.sun.com/jsf/facelets</uri>
+<description>
+  
+</description>
+
+
+<!-- ===================== Facelets UI Tags ====================== -->
+
+  <tag>
+    <name>component</name>
+    <tag-class></tag-class>
+    <description>
+      <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-component">5.2.&nbsp;&lt;ui:component/&gt;</a></h2></div></div><div></div><div class="table"><a id="N10816"></a><p class="title"><a id="N10816"><b>Table&nbsp;5.1.&nbsp;Component Tag Attributes</b></a></p><table xmlns="" summary="Component Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>id</td><td>false</td><td>A unique id may be provided, otherwise Facelets will automatically assign one under the same logic it uses for all <code class="literal">UIComponents</code>.</td><td xmlns="">mainMenu</td></tr><tr><td>binding</td><td>false</td><td>This binding attribute is used the same as with any other <code class="literal">UIComponent</code> such that it allows you to reference them as a property of a JavaBean.  If that target property did not have a <code xmlns="" class="literal">UIComponent</code> instance assigned already, JavaServer Faces will lazily create an instance for you and set it on your JavaBean before continuing with building the tree.</td><td xmlns="">#{page.menu}</td></tr></tbody></table></div><p>
+
+<a id="N10816">			The <code class="literal">component</code> tag and the <code class="literal">composition</code> tag (below) behave exactly the same, except the <code class="literal">component</code> tag will insert a new <code class="literal">UIComponent</code> instance into the tree as the root of all the child components/fragments it has.
+		</a></p><pre class="programlisting"><a id="N10816">Text before will be removed.
+&lt;ui:component binding="#{backingBean.menu}"&gt;
+
+  &lt;ul id="mainMenu"&gt;
+  &lt;c:forEach var="link" items="#{menuOptions[role]}"&gt;
+	&lt;c:choose&gt;
+	  &lt;c:when test="#{link.id == page}"&gt;
+		&lt;li class="current"&gt;&lt;a href="#{link.uri}"&gt;#{link.text}&lt;/a&gt;&lt;/li&gt;
+
+	  &lt;/c:when&gt;
+	  &lt;c:otherwise&gt;
+		&lt;li&gt;&lt;a href="#{link.uri}"&gt;#{link.text}&lt;/a&gt;&lt;/li&gt;
+	  &lt;/c:otherwise&gt;
+	&lt;/c:choose&gt;
+
+  &lt;/c:forEach&gt;
+  &lt;/ul&gt;
+&lt;/ui:component&gt;
+Text after will be removed.</a></pre><p>
+<a id="N10816">			Using the ability to use Tag files in your tag libraries, see </a><a href="#taglib-create-source" title="3.5.5.&nbsp;Tag (Source) Files">Section&nbsp;3.5.5, ?Tag (Source) Files?</a>, you could include the above <code class="literal">component</code> into your pages while having the attributes automatically made available as variables within the document above:
+		</p><pre class="programlisting">...
+
+&lt;span id="header"&gt;
+  &lt;my:mainMenu page="home" role="#{user.role}"/&gt;
+&lt;/span&gt;
+...</pre><p>
+			Pretty cool eh?
+		</p></div>]]>
+    </description>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[A unique id may be provided, otherwise Facelets will automatically assign one under the same logic it uses for all UIComponents.
+          Example: mainMenu]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[This binding attribute is used the same as with any other UIComponent such that it allows you to reference them as a property of a JavaBean. If that target property did not have a UIComponent instance assigned already, JavaServer Faces will lazily create an instance for you and set it on your JavaBean before continuing with building the tree.
+          Example: #{page.menu}]]>
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>composition</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-composition">5.3.&nbsp;&lt;ui:composition/&gt;</a></h2></div></div><div></div><div class="table"><a id="N1086B"></a><p class="title"><a id="N1086B"><b>Table&nbsp;5.2.&nbsp;Composition Tag Attributes</b></a></p><table xmlns="" summary="Composition Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>template</td><td>false</td><td>The resolvable URI of the template to use.  The content within the <code class="literal">composition</code> tag will be used in populating the template specified.</td><td xmlns="">/WEB-INF/templates/detal-template.xhtml</td></tr></tbody></table></div><p>
+
+<a id="N1086B">			Facelets is founded on the idea of compositions. This means that a <code class="literal">UIComponent</code> tree can be defined in multiple Facelet pages and executed in part or whole. Some other frameworks, like Tapestry (http://jakarta.apache.org/tapestry), may define a single component within a page, Facelets instead marks the start of a branch of child <code class="literal">UIComponents</code>-- a composition if you will.
+		</a></p><pre class="programlisting"><a id="N1086B">Text before will be removed.
+&lt;ui:composition&gt;
+  #{dynamic.text}
+  &lt;h:inputText id="myText" value="#{foo.bar}"/&gt;
+&lt;/ui:composition&gt;
+Text after will be removed.</a></pre><p>
+
+<a id="N1086B">			This means you can start a full XHTML document in your favorite visual tool with CSS definitions, but have Facelets trim everything outside of the <code class="literal">&lt;ui:composition/&gt;</code> tag.  Here's a simple example of using a composition in separate document:
+		</a></p><pre class="programlisting"><a id="N1086B">...
+&lt;h:column&gt;
+  &lt;ui:include src="/composition.xhtml"/&gt;
+&lt;/h:column&gt;
+...</a></pre><p>
+<a id="N1086B">			Lets say this composition was included inside of a <code class="literal">&lt;h:column/&gt;</code> tag/component; it would gain two children based on the above example: <code class="literal">#{dynamic.text}</code> and the <code class="literal">&lt;h:inputText/&gt;</code>.
+		</a></p>]]>
+    </description>
+    <attribute>
+      <name>template</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        <![CDATA[The resolvable URI of the template to use. The content within the composition tag will be used in populating the template specified.
+        Example: /WEB-INF/templates/detal-template.xhtml]]>  
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>debug</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-debug">5.4.&nbsp;&lt;ui:debug/&gt;</a></h2></div></div><div></div><div class="table"><a id="N108B8"></a><p class="title"><a id="N108B8"><b>Table&nbsp;5.3.&nbsp;Debug Tag Attributes</b></a></p><table xmlns="" summary="Debug Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>hotkey</td><td>false</td><td>The hot key to use in combination with 'CTRL' + 'SHIFT' to launch the debug window.  By default, when the <code class="literal">debug</code> tag is used, you may launch the debug window with 'CTRL' + 'SHIFT' + 'D'.  This value cannot be an EL expression.</td><td xmlns="">d</td></tr></tbody></table></div><p>
+
+<a id="N108B8">			The <code class="literal">debug</code> tag will capture the component tree and variables when it is encoded, storing the data for retrieval later.  You may launch the debug window at any time from your browser by pressing 'CTRL' + 'SHIFT' + 'D' (by default).
+		</a></p><pre class="programlisting"><a id="N108B8">...
+  &lt;ui:debug hotkey="d" rendered="#{initParam.debugMode}"/&gt;
+ &lt;/body&gt;
+&lt;/html&gt;
+...</a></pre><p>
+<a id="N108B8">			In the above example, we use the hot key 'd' to launch the debug window.  Creating debug output on every request adds some overhead, so you can use the <code class="literal">UIComponent</code> <code class="literal">rendered</code> property to turn debugging on or off based on some expression.  In this example, debugging is backed by an entry in the <code class="literal">web.xml</code>.
+		</a></p><p>
+
+<a id="N108B8">			The <code class="literal">debug</code> tag doesn't need to be used with the <code class="literal">facelet.DEVELOPMENT</code> parameter.  The best place to put this tag is in your site's main template where it can be enabled/disabled across your whole application.  If your application uses multiple windows, you might want to assign different hot keys to each one.
+		</a></p></div>]]>
+    </description>
+    <attribute>
+      <name>hotkey</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The hot key to use in combination with 'CTRL' + 'SHIFT' to launch the debug window. By default, when the debug tag is used, you may launch the debug window with 'CTRL' + 'SHIFT' + 'D'. This value cannot be an EL expression.
+          Example: d]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>decorate</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="templating-decorate">5.5.&nbsp;&lt;ui:decorate/&gt;</a></h2></div></div><div></div><div class="table"><a id="N108FA"></a><p class="title"><a id="N108FA"><b>Table&nbsp;5.4.&nbsp;Decorate Tag Attributes</b></a></p><table xmlns="" summary="Decorate Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>template</td><td>true</td><td>The resolvable URI of the template to use.  The content within the <code class="literal">decorate</code> tag will be used in populating the template specified.</td><td xmlns="">/WEB-INF/templates/sideBox.xhtml</td></tr></tbody></table></div><p>
+
+<a id="N108FA">			The <code class="literal">decorate</code> tag acts the same as a <code class="literal">composition</code> tag, but it will not trim everything outside of it.  This is useful in cases where you have a list of items in a document, which you would like to be decorated or framed.  The sum of it all is that you can take any element in the document and decorate it with some external logic as provided by the <code class="literal">template</code>.
+		</a></p><pre class="programlisting"><a id="N108FA">Text before will stay.
+&lt;ui:decorate template="/WEB-INF/templates/sideBox.xhtml"&gt;
+  &lt;ui:define name="title"&gt;Product Search&lt;/ui:define&gt;
+
+  &lt;ui:define name="body"&gt;
+    ...
+  &lt;/ui:define&gt;
+&lt;/ui:decorate&gt;
+Text after will stay.</a></pre><p>
+<a id="N108FA">			In some cases, it would make sense to externalize your "Product Search" box into a separate file, in other cases it doesn't and the <code class="literal">decorate</code> tag allows you to inline as such.
+		</a></p>]]>
+    </description>
+    <attribute>
+      <name>template</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The resolvable URI of the template to use. The content within the decorate tag will be used in populating the template specified.
+          Example: /WEB-INF/templates/sideBox.xhtml]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>define</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-define">5.6.&nbsp;&lt;ui:define/&gt;</a></h2></div></div><div></div><div class="table"><a id="N1093B"></a><p class="title"><a id="N1093B"><b>Table&nbsp;5.5.&nbsp;Define Tag Attributes</b></a></p><table xmlns="" summary="Define Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>name</td><td>true</td><td>The literal name for this definition.  This name will match up with a <code class="literal">&lt;ui:insert/&gt;</code> tag in a target template.</td><td xmlns="">header</td></tr></tbody></table></div><p>
+
+<a id="N1093B">			The <code class="literal">define</code> tag can be used within tags that allow templating.  This includes <code class="literal">composition</code> and <code class="literal">decorate</code> tags.
+		</a></p><pre class="programlisting"><a id="N1093B">Text before will stay.
+&lt;ui:decorate template="/WEB-INF/templates/sideBox.xhtml"&gt;
+  &lt;ui:define name="title"&gt;Product Search&lt;/ui:define&gt;
+
+  &lt;ui:define name="body"&gt;
+    ...
+  &lt;/ui:define&gt;
+&lt;/ui:decorate&gt;
+Text after will stay.</a></pre><p>
+<a id="N1093B">			The use of this tag will be familiar to those that have used Struts Tiles, for example.  The <code class="literal">define</code> tag is used in conjuction with the target template's <code class="literal">insert</code> tag.
+		</p></div>]]>
+    </description>
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The literal name for this definition.  This name will match up with a <code class="literal">&lt;ui:insert/&gt;</code> tag in a target template.
+          Example: header]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>fragment</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-fragment">5.7.&nbsp;&lt;ui:fragment/&gt;</a></h2></div></div><div></div><div class="table"><a id="N1097A"></a><p class="title"><a id="N1097A"><b>Table&nbsp;5.6.&nbsp;Fragment Tag Attributes</b></a></p><table xmlns="" summary="Fragment Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>id</td><td>false</td><td>A unique id may be provided, otherwise Facelets will automatically assign one under the same logic it uses for all <code class="literal">UIComponents</code>.</td><td xmlns="">mainMenu</td></tr><tr><td>binding</td><td>false</td><td>This binding attribute is used the same as with any other <code class="literal">UIComponent</code> such that it allows you to reference them as a property of a JavaBean.  If that target property did not have a <code xmlns="" class="literal">UIComponent</code> instance assigned already, JavaServer Faces will lazily create an instance for you and set it on your JavaBean before continuing with building the tree.</td><td xmlns="">#{uiCache['searchResults']}</td></tr></tbody></table></div><p>
+
+<a id="N1097A">			Just like <code class="literal">composition</code> has <code class="literal">decorate</code> as a non-trimming version of the same behavior, <code class="literal">component</code> has <code class="literal">fragment</code>.  This allows you to logically insert a <code class="literal">UIComponent</code> into the tree and possibly bind this fragment to a JavaBean property or Map for management.
+		</a></p><pre class="programlisting"><a id="N1097A">The Text above will be used.
+
+&lt;ui:fragment binding="#{uiCache['searchResult']}"&gt;
+  &lt;div id="searchResults"&gt;
+	...
+  &lt;/div&gt;
+&lt;/ui:fragment&gt;
+The Text below will be used.</a></pre><p>
+<a id="N1097A">			The <code class="literal">fragment</code> tag was also added to Facelets to get around some of the optimizations used in handling text within your document.  If you are using components such as <code class="literal">&lt;f:panelGrid/&gt;</code>, which renders its children, you may want more control over the building process that Facelets does and using a <code class="literal">fragment</code> tag will help guarantee parent/child relationships for you.
+		</a></p></div>]]>
+    </description>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[A unique id may be provided, otherwise Facelets will automatically assign one under the same logic it uses for all UIComponents
+          Example: mainMenu]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[This binding attribute is used the same as with any other UIComponent such that it allows you to reference them as a property of a JavaBean. If that target property did not have a UIComponent instance assigned already, JavaServer Faces will lazily create an instance for you and set it on your JavaBean before continuing with building the tree.
+          Example: #{uiCache['searchResults']}]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>include</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-include">5.8.&nbsp;&lt;ui:include/&gt;</a></h2></div></div><div></div><div class="table"><a id="N109D3"></a><p class="title"><a id="N109D3"><b>Table&nbsp;5.7.&nbsp;Include Tag Attributes</b></a></p><table xmlns="" summary="Include Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>src</td><td>true</td><td>A literal or EL expression that specifies the target Facelet that you would like to include into your document.</td><td>anotherPage.xhtml</td></tr></tbody></table></div><p>
+<a id="N109D3">			This tag should be familiar to most.  The <code class="literal">include</code> tag can point at any Facelet which might use the <code class="literal">composition</code> tag, <code class="literal">component</code> tag, or simply be straight XHTML/XML. 
+		</a></p><p>
+
+<a id="N109D3">			It should be noted that the <code class="literal">src</code> path does allow relative path names, but they will always be resolved against the original Facelet requested.
+		</a></p><pre class="programlisting"><a id="N109D3">&lt;span id="header"&gt;
+  &lt;ui:include src="#{backingBean.headerSource}"/&gt;
+&lt;/span&gt;</a></pre><p>
+<a id="N109D3">			The <code class="literal">include</code> tag can be used in conjunction with multiple <code class="literal">&lt;ui:param/&gt;</code> tags to pass EL expressions/values to the target page.
+		</p></div>]]>
+    </description>
+    <attribute>
+      <name>src</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[	A literal or EL expression that specifies the target Facelet that you would like to include into your document.
+          Example: anotherPage.xhtml]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>insert</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-insert">5.9.&nbsp;&lt;ui:insert/&gt;</a></h2></div></div><div></div><div class="table"><a id="N10A14"></a><p class="title"><a id="N10A14"><b>Table&nbsp;5.8.&nbsp;Insert Tag Attributes</b></a></p><table xmlns="" summary="Insert Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>name</td><td>false</td><td>The optional name attribute matches the associated <code class="literal">&lt;ui:define/&gt;</code> tag in this template's client.  If no name is specified, it's expected that the whole template client will be inserted.</td><td xmlns="">header</td></tr></tbody></table></div><p>
+
+<a id="N10A14">			The <code class="literal">insert</code> tag is used within your templates to declare spots of replaceable data.
+		</a></p><pre class="programlisting"><a id="N10A14">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" /&gt;
+&lt;title&gt;&lt;ui:insert name="title"&gt;Default Title&lt;/ui:insert&gt;&lt;/title&gt;
+
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Here is the Page Header&lt;/h1&gt;
+&lt;ui:insert name="body"&gt;
+  Default Body
+&lt;/ui:insert&gt;
+&lt;/body&gt;
+&lt;/html&gt;</a></pre><p>
+
+<a id="N10A14">			As you can see, these <code class="literal">insert</code> tags indicate to the Facelets compiler where to insert content from the template client.  If the template client doesn't specify content for the specified name, then the body of the ui:insert tag in the template is used.
+		</a></p></div>]]>
+    </description>
+    <attribute>
+      <name>name</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The optional name attribute matches the associated <code class="literal">&lt;ui:define/&gt;</code> tag in this template's client.  If no name is specified, it's expected that the whole template client will be inserted.<br/>
+          Example: header]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>param</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-param">5.10.&nbsp;&lt;ui:param/&gt;</a></h2></div></div><div></div><div class="table"><a id="N10A44"></a><p class="title"><a id="N10A44"><b>Table&nbsp;5.9.&nbsp;Param Tag Attributes</b></a></p><table xmlns="" summary="Param Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>name</td><td>true</td><td>The name of the variable to pass to the included Facelet.</td><td>user</td></tr><tr><td>value</td><td>true</td><td>The literal or EL expression value to assign to the named variable.</td><td>#{sessionScope.user}</td></tr></tbody></table></div><p>
+
+<a id="N10A44">			From reading about Facelets templating, you've probably become familiar with passing fragments of content between pages.  With the <code class="literal">param</code> tag, you can pass objects as variables instead of just fragments of content.  You can use the <code class="literal">param</code> tag wherever a <code class="literal">define</code> tag is used within <code class="literal">composition</code> or <code class="literal">decorate</code> tags, in addition to passing objects to an <code class="literal">include</code> tag.
+		</a></p><pre class="programlisting"><a id="N10A44">&lt;span id="leftNav"&gt;
+
+  &lt;ui:include src="/WEB-INF/siteNav.xhtml"&gt;
+    &lt;ui:param name="user" value="#{currentUser}"/&gt;
+    &lt;ui:param name="page" value="home"/&gt;
+  &lt;/ui:include&gt;
+&lt;/span&gt;</a></pre><p>
+<a id="N10A44">			In the above example, when <code class="literal">siteNav.xhtml</code> is used, it will have <code class="literal">user</code> and <code class="literal">page</code> variables available for use which will reference the the <code class="literal">currentUser</code> object and the <code class="literal">home</code> string literal.
+		</a></p></div>]]>
+    </description>
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The name of the variable to pass to the included Facelet.<br/>
+          Example: user]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>value</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The literal or EL expression value to assign to the named variable.<br/>
+          Example: #{sessionScope.user}]]>
+      </description>
+    </attribute>
+    
+  </tag>
+  <tag>
+    <name>remove</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-remove">5.11.&nbsp;&lt;ui:remove/&gt;</a></h2></div></div><div></div><p>
+<a id="template-remove">			The <code class="literal">remove</code> tag does not have any attributes and is used to remove chunks of XML content from a Facelet at compilation time.  The <code class="literal">remove</code> tag is often used in conjunction with the <code class="literal">jsfc</code> feature, see </a><a href="#taglib-use-jsfc" title="3.1.2.&nbsp;Using 'jsfc'">Section&nbsp;3.1.2, “Using 'jsfc'”</a>. 
+		</p><pre class="programlisting">...
+
+&lt;ui:remove&gt;
+  This will be removed.
+&lt;/ui:remove&gt;
+...
+&lt;span jsfc="ui:remove"&gt;
+	This won't be compiled either &lt;h:outputText value="#{foo.bar}"/&gt;
+&lt;/span&gt;
+...</pre><p>
+
+			There are times in development when you need to quickly remove parts of the document just for testing purposes, or you would like to leave a 'template-model' in your document, but don't want it to be part of the final Facelet.
+		</p></div>]]>
+    </description>    
+  </tag>
+  <tag>
+    <name>repeat</name>
+    <tag-class></tag-class>
+    <description>
+        <![CDATA[<div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both;"><a id="template-repeat">5.12.&nbsp;&lt;ui:repeat/&gt;</a></h2></div></div><div></div><div class="table"><a id="N10AB7"></a><p class="title"><a id="N10AB7"><b>Table&nbsp;5.10.&nbsp;Repeat Tag Attributes</b></a></p><table xmlns="" summary="Repeat Tag Attributes" border="1"><colgroup><col><col><col><col></colgroup><thead><tr><th>Attribute</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>value</td><td>true</td><td>Expression for the List of items to iterate over</td><td>#{blog.currentEntries}</td></tr><tr><td>var</td><td>true</td><td>The literal name of the variable to use while iterating</td><td>entry</td></tr></tbody></table></div><p>
+
+<a id="N10AB7">			The <code class="literal">repeat</code> tag should be used in almost all cases instead of the <code class="literal">c:forEach</code> to iterate over content with JSF.  The <code class="literal">repeat</code> tag is often used in conjunction with the <code class="literal">jsfc</code> feature, see </a><a href="#taglib-use-jsfc" title="3.1.2.&nbsp;Using 'jsfc'">Section&nbsp;3.1.2, “Using 'jsfc'”</a>. 
+		</p><pre class="programlisting">...
+
+&lt;dl&gt;
+    &lt;ui:repeat value="#{company.departments}" var="dept"&gt;
+    &lt;dt&gt;#{dept.name}&lt;/dt&gt;
+	    &lt;ui:repeat value="#{dept.employees}" var="emp"&gt;
+		&lt;dd&gt;#{emp.lastName}, #{emp.firstName}&lt;/dd&gt;
+
+		&lt;/ui:repeat&gt;
+    &lt;/ui:repeat&gt;
+&lt;/dl&gt;
+...</pre><p>
+			While this is a great step for JSF compositions, we can do better with the <code class="literal">jsfc</code> attribute where the <code class="literal">repeat</code> tag will provide some special behavior inclusive of the declared tag.
+		</p><pre class="programlisting">...
+
+&lt;table&gt;
+&lt;tr jsfc="ui:repeat" value="#{dept.employees}" var="emp" class="#{emp.manager ? 'mngr' : 'peon'}"&gt;
+   &lt;td&gt;#{emp.lastName}&lt;/td&gt;&lt;td&gt;#{emp.firstName}&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+...</pre></div></div>]]>
+    </description>
+    <attribute>
+      <name>value</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[Expression for the List of items to iterate over.<br/>
+          Example: #{blog.currentEntries}]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>var</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+          <![CDATA[The literal name of the variable to use while iterating.<br/>
+          Example: entry]]>
+      </description>
+    </attribute>
+    
+  </tag>
+</taglib>

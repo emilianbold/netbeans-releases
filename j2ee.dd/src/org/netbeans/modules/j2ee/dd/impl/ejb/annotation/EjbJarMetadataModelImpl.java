@@ -68,7 +68,7 @@ public class EjbJarMetadataModelImpl implements MetadataModelImplementation<EjbJ
     public EjbJarMetadataModelImpl(MetadataUnit metadataUnit) {
         ClasspathInfo cpi = ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
         helper = AnnotationModelHelper.create(cpi);
-        
+
         EjbJar ddRoot = null;
         FileObject ddFO = metadataUnit.getDeploymentDescriptor();
         if (ddFO != null) {

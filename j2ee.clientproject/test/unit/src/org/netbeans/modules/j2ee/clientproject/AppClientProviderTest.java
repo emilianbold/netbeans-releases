@@ -42,19 +42,20 @@
 package org.netbeans.modules.j2ee.clientproject;
 
 import java.io.File;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Andrei Badea
@@ -71,6 +72,8 @@ public class AppClientProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
+
+        MockLookup.setLayersAndInstances();
     }
     
     /**
@@ -78,7 +81,7 @@ public class AppClientProviderTest extends NbTestCase {
      */
     public void testPathsAreReturned() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        Project project = (Project) ProjectSupport.openProject(f);
         // XXX should not cast a Project
         AntProjectHelper helper = ((AppClientProject) project).getAntProjectHelper();
         
@@ -100,7 +103,7 @@ public class AppClientProviderTest extends NbTestCase {
     
     public void testMetadataModel() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        Project project = (Project) ProjectSupport.openProject(f);
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
         assertNotNull(j2eeModule.getMetadataModel(AppClientMetadata.class));
@@ -112,7 +115,7 @@ public class AppClientProviderTest extends NbTestCase {
         File prjDirF = TestUtil.copyFolder(getWorkDir(), prjDirOrigF);
         TestUtil.deleteRec(new File(new File(prjDirF, "src"), "conf"));
         
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
+        Project project = (Project) ProjectSupport.openProject(prjDirF);
         
         // ensure deployment descriptor file is returned
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -125,15 +128,15 @@ public class AppClientProviderTest extends NbTestCase {
     
     public void testNeedConfigurationFolder() {
         assertTrue("1.3 needs configuration folder",
-                AppClientProvider.needConfigurationFolder(EjbProjectConstants.J2EE_13_LEVEL));
+                AppClientProvider.needConfigurationFolder(Profile.J2EE_13));
         assertTrue("1.4 needs configuration folder",
-                AppClientProvider.needConfigurationFolder(EjbProjectConstants.J2EE_14_LEVEL));
+                AppClientProvider.needConfigurationFolder(Profile.J2EE_14));
         assertFalse("5.0 does not need configuration folder",
-                AppClientProvider.needConfigurationFolder(EjbProjectConstants.JAVA_EE_5_LEVEL));
+                AppClientProvider.needConfigurationFolder(Profile.JAVA_EE_5));
         assertFalse("Anything else does not need configuration folder",
-                AppClientProvider.needConfigurationFolder("5.0"));
+                AppClientProvider.needConfigurationFolder(Profile.JAVA_EE_6_FULL));
         assertFalse("Anything else does not need configuration folder",
-                AppClientProvider.needConfigurationFolder("6.0.hmmm?"));
+                AppClientProvider.needConfigurationFolder(Profile.JAVA_EE_6_WEB));
         assertFalse("Even null does not need configuration folder",
                 AppClientProvider.needConfigurationFolder(null));
     }

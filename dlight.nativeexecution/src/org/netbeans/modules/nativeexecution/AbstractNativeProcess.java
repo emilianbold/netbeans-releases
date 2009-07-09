@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 public abstract class AbstractNativeProcess extends NativeProcess {
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
+    protected final static java.util.logging.Logger LOG = Logger.getInstance();
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
@@ -78,14 +78,19 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
-        id = info.getCommandLineForShell();
+        id = info.getExecutionEnvironment().toString() + ' ' + info.getCommandLineForShell();
         stateLock = new String("StateLock: " + id); // NOI18N
 
         HostInfo hinfo = null;
         try {
             hinfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
-        } catch (IOException ex) {
         } catch (CancellationException ex) {
+            // no logging for cancellation
+        } catch (InterruptedIOException ex) {
+            // no logging for interrupting
+        } catch (IOException ex) {
+//            log.log(Level.INFO, "Exception while getting host info:", ex); //NOI18N
+            ex.printStackTrace();
         }
         hostInfo = hinfo;
 
@@ -105,9 +110,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             create();
             setState(State.RUNNING);
         } catch (Throwable ex) {
-            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            //String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
             //log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
-            log.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex);
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex);
             setState(State.ERROR);
             interrupt();
         }
@@ -303,7 +308,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 }
 
                 if (!isInterrupted()) {
-                    log.finest(this.toString() + " State change: " + // NOI18N
+                    LOG.finest(this.toString() + " State change: " + // NOI18N
                             this.state + " -> " + state); // NOI18N
                 }
 

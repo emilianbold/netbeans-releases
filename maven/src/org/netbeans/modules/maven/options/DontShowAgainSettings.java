@@ -75,4 +75,11 @@ public final class DontShowAgainSettings {
         getPreferences().putBoolean("showEmbeddedBuildWarning", false);//NOI18N
     }
 
+    public boolean showWarningAboutApplicationCoS() {
+        return getPreferences().getBoolean("showApplicationCompileOnSave", true);//NOI18N
+    }
+
+    public void dontshowWarningAboutApplicationCoSAnymore() {
+        getPreferences().putBoolean("showApplicationCompileOnSave", false);//NOI18N
+    }
 }

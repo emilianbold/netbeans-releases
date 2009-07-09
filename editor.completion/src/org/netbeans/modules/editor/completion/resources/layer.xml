@@ -47,14 +47,17 @@ made subject to such option by the copyright holder.
         <folder name="Source">
             <file name="org-netbeans-modules-editor-completion-CompletionActionsMainMenu$CompletionShow.instance">
                 <attr name="position" intvalue="2100"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
 
             <file name="org-netbeans-modules-editor-completion-CompletionActionsMainMenu$ToolTipShow.instance">
                 <attr name="position" intvalue="2500"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
             
             <file name="org-netbeans-modules-editor-completion-CompletionActionsMainMenu$DocumentationShow.instance">
                 <attr name="position" intvalue="2700"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
             
         </folder>

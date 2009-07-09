@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**
@@ -91,6 +93,16 @@ public class ConfigurationMakefileWriterTest {
     public void tearDown() {
     }
 
+    public static File getBaseFolder(){
+        String dataPath = System.getProperty("java.io.tmpdir");
+        if (!dataPath.endsWith(File.separator)) {
+            dataPath += File.separator;
+        }
+        dataPath += "Xxx";
+        File fileDataPath = new File(dataPath);
+        return FileUtil.normalizeFile(fileDataPath);
+    }
+
     private void testAppWithLibraries(String testName, String flavorName, int platform, String golden) {
         if (TRACE) {
             System.out.println("-----------------------------------------------------" + testName);
@@ -110,8 +122,9 @@ public class ConfigurationMakefileWriterTest {
         } else if (platform == Platform.PLATFORM_WINDOWS) {
             libsuffix = "dll";
         }
-        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor("/tmp/Xxx");
-        MakeConfiguration conf = new MakeConfiguration("/tmp/Xxx", "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
+        File folderBase = getBaseFolder();
+        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBase.getAbsolutePath());
+        MakeConfiguration conf = new MakeConfiguration(folderBase.getAbsolutePath(), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
         LibraryItem.ProjectItem projectItem;
@@ -139,7 +152,7 @@ public class ConfigurationMakefileWriterTest {
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet("/tmp", flavor, "MyCompilerSet");
+        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
         CompilerSet compilerSetold = CompilerSetManager.getDefault().getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
             CompilerSetManager.getDefault().remove(compilerSetold);
@@ -199,13 +212,14 @@ public class ConfigurationMakefileWriterTest {
         }
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         // Setup project
-        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor("/tmp/Xxx");
+        File folderBase = getBaseFolder();
+         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBase.getAbsolutePath());
         MakeConfiguration conf = new MakeConfiguration("/tmp/Xxx", "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet("/tmp", flavor, "MyCompilerSet");
+        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
         CompilerSet compilerSetold = CompilerSetManager.getDefault().getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
             CompilerSetManager.getDefault().remove(compilerSetold);

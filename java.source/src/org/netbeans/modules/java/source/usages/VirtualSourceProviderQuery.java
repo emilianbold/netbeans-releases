@@ -50,7 +50,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.tools.JavaFileObject;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -95,13 +97,21 @@ public final class VirtualSourceProviderQuery {
         return getExt2ProvMap().keySet().contains(extension);
     }
     
-    public static Iterable<Binding> translate (final Iterable<? extends File> files, final File root) throws IOException {
-        Parameters.notNull("files", files);     //NOI18N
+    public static boolean hasVirtualSource (final Indexable indexable) {
+        Parameters.notNull("indexable", indexable);
+        final String extension = FileObjects.getExtension(indexable.getURL().getFile());
+        return hasVirtualSource(extension);
+    }
+    
+    public static Collection<? extends CompileTuple> translate (final Iterable<? extends Indexable> indexables, final File root) throws IOException {
+        Parameters.notNull("files", indexables);     //NOI18N
         Parameters.notNull("root", root);       //NOI18N
         final Map<String,Pair<VirtualSourceProvider,List<File>>> m = new HashMap<String,Pair<VirtualSourceProvider,List<File>>>();
         final Map<String,VirtualSourceProvider> e2p = getExt2ProvMap();
-        for (File f : files) {
-           final String ext = FileObjects.getExtension(f.getName());
+        final Map<File,Indexable> file2indexables = new HashMap<File, Indexable>();
+        for (Indexable indexable : indexables) {
+
+           final String ext = FileObjects.getExtension(indexable.getURL().getPath());
            final VirtualSourceProvider prov = e2p.get(ext);
            if (prov != null) {
                Pair<VirtualSourceProvider,List<File>> p = m.get(ext);
@@ -113,11 +123,13 @@ public final class VirtualSourceProviderQuery {
                else {
                    l = p.second;
                }
-               l.add(f);
+               final File file = new File(URI.create(indexable.getURL().toString()));
+               l.add(file);
+               file2indexables.put(file, indexable);
            }
         }
         
-        final R r = new R (root);        
+        final R r = new R (root, file2indexables);
         for (Pair<VirtualSourceProvider,List<File>> p : m.values()) {
             final VirtualSourceProvider prov = p.first;
             final List<File> tf = p.second;
@@ -126,22 +138,7 @@ public final class VirtualSourceProviderQuery {
         }
         return r.getResult();
     }
-    
-    public static final class Binding {
-        public final FileObjects.InferableJavaFileObject virtual;
-        public final File original;
-        public final boolean index;
-        
-        public Binding (final File original, final FileObjects.InferableJavaFileObject virtual, final VirtualSourceProvider provider) {
-            assert virtual != null;
-            assert original != null;
-            assert provider != null;
-            this.virtual = virtual;
-            this.original = original;
-            this.index = provider.index();
-        }
-    }
-    
+
     private static Map<String,VirtualSourceProvider> getExt2ProvMap () {
         synchronized (VirtualSourceProviderQuery.class) {
             if (ext2prov != null) {
@@ -161,7 +158,7 @@ public final class VirtualSourceProviderQuery {
             return ext2prov;
         }
     }
-    
+
     private static synchronized void reset () {
         ext2prov = null;
     }
@@ -169,20 +166,24 @@ public final class VirtualSourceProviderQuery {
     private static class R implements VirtualSourceProvider.Result {
         
         private final File root;
-        private String rootURL;
+        private final Map<? extends File,Indexable> file2indexables;
+        private final String rootURL;
         private VirtualSourceProvider currentProvider;
-        final List<Binding> res = new LinkedList<Binding>();
+        final List<CompileTuple> res = new LinkedList<CompileTuple>();
         
-        public R (final File root) throws IOException {
+        public R (final File root, final Map<? extends File, Indexable> file2indexables) throws IOException {
             assert root != null;
+            assert file2indexables != null;
             this.root = root;
-            this.rootURL = root.toURI().toURL().toString();
-            if (!rootURL.endsWith("/")) {   //NOI18N
-                rootURL = rootURL + '/';    //NOI18N
+            String _rootURL = root.toURI().toURL().toString();
+            if (!_rootURL.endsWith("/")) {   //NOI18N
+                _rootURL = _rootURL + '/';    //NOI18N
             }
+            this.rootURL = _rootURL;
+            this.file2indexables = file2indexables;
         }
         
-        public List<Binding> getResult () {
+        public List<CompileTuple> getResult () {
             this.currentProvider = null;
             return res;
         }
@@ -194,11 +195,14 @@ public final class VirtualSourceProviderQuery {
 
         public void add(final File source, final String packageName, final String relativeName, final CharSequence content) {
             try {
-                final String baseName = relativeName + JavaFileObject.Kind.SOURCE.extension; 
-                res.add(new Binding(source,
-                        FileObjects.memoryFileObject(packageName, baseName,
-                    new URI(rootURL + FileObjects.convertPackage2Folder(packageName) + '/' + baseName),
-                    System.currentTimeMillis(), content),this.currentProvider));
+                final String baseName = relativeName + JavaFileObject.Kind.SOURCE.extension;
+                final Indexable indexable = this.file2indexables.get(source);
+                assert indexable != null : "Unknown file: " + source.getAbsolutePath();
+                res.add(new CompileTuple(
+                        FileObjects.memoryFileObject(packageName,
+                            baseName,new URI(rootURL + FileObjects.convertPackage2Folder(packageName) + '/' + baseName),
+                            System.currentTimeMillis(), content),
+                        indexable,true, this.currentProvider.index()));
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }

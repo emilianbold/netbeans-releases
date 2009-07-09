@@ -297,7 +297,7 @@ void resolveTestJVM(LauncherProperties * props) {
         WCHAR * dir = getParentDirectory(testJVMFile);
         WCHAR * ptr = testJVMFile;
         do {
-            ptr = wcsstr(ptr, CLASS_SUFFIX); // check if ptr contains .class
+            ptr = searchW(ptr, CLASS_SUFFIX); // check if ptr contains .class
             if(ptr==NULL) { // .jar or .zip file
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... testJVM is : ZIP/JAR file", 1);
                 testJVMClassPath = appendStringW(NULL, testJVMFile);
@@ -380,9 +380,9 @@ void findSuitableJava(LauncherProperties * props) {
 
 void resolveLauncherStringProperty(LauncherProperties * props, WCHAR ** result) {
     if(*result!=NULL) {
-        WCHAR * propStart = wcsstr(*result, L"$P{");
+        WCHAR * propStart = searchW(*result, L"$P{");
         if(propStart!=NULL) {
-            WCHAR * propEnd = wcsstr(propStart + 3, L"}");
+            WCHAR * propEnd = searchW(propStart + 3, L"}");
             if(propEnd!=NULL) {
                 WCHAR * propName;
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... resolving string property", 1);
@@ -395,10 +395,9 @@ void resolveLauncherStringProperty(LauncherProperties * props, WCHAR ** result) 
                     char * name = toChar(propName);
                     const WCHAR * propValue = getI18nProperty(props, name);
                     if(propValue!=NULL) {
-                        WCHAR * tmp = newpWCHAR(getLengthW(*result) - getLengthW(propName) - 4 + getLengthW(propValue));
-                        wcsncat(tmp, *result, getLengthW(*result) - getLengthW(propStart));
-                        wcscat(tmp, propValue);
-                        wcsncat(tmp, propEnd + 1, getLengthW(propEnd + 1));
+                        WCHAR * tmp = appendStringNW(NULL, 0, *result, getLengthW(*result) - getLengthW(propStart));
+                        tmp = appendStringW(tmp, propValue); 
+                        tmp = appendStringW(tmp, propEnd + 1);
                         FREE(*result);
                         *result = tmp;
                     }
@@ -412,9 +411,9 @@ void resolveLauncherStringProperty(LauncherProperties * props, WCHAR ** result) 
 
 void resolveLauncherProperties(LauncherProperties * props, WCHAR **result) {
     if(*result != NULL) {
-        WCHAR * propStart = wcsstr(*result, L"$L{");
+        WCHAR * propStart = searchW(*result, L"$L{");
         if(propStart!=NULL) {
-            WCHAR * propEnd = wcsstr(propStart + 3, L"}");
+            WCHAR * propEnd = searchW(propStart + 3, L"}");
             if(propEnd!=NULL) {
                 WCHAR * propName = appendStringNW(NULL, 0, propStart + 3 , getLengthW(propStart + 3) - getLengthW(propEnd));
                 if(propName!=NULL) {
@@ -434,11 +433,9 @@ void resolveLauncherProperties(LauncherProperties * props, WCHAR **result) {
                     
                     
                     if(propValue!=NULL) {
-                        WCHAR * tmp = newpWCHAR(getLengthW(*result) - getLengthW(propName) - 3 + getLengthW(propValue));
-                        wcsncat(tmp, *result, getLengthW(*result) - getLengthW(propStart));
-                        wcscat(tmp, propValue);
-                        wcsncat(tmp, propEnd + 1, getLengthW(propEnd + 1));
-                        
+                        WCHAR * tmp = appendStringNW(NULL, 0, *result, getLengthW(*result) - getLengthW(propStart));
+                        tmp = appendStringW(tmp, propValue);
+                        tmp = appendStringW(tmp, propEnd + 1);                        
                         FREE(*result);
                         FREE(propValue);
                         *result = tmp;
@@ -560,7 +557,7 @@ void setAdditionalArguments(LauncherProperties * props) {
         // get number for array creation
         for(i=0;i<cmd->size;i++) {
             if(cmd->items[i]!=NULL) {
-                if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
+                if(searchW(cmd->items[i], javaParameterPrefix)!=NULL) {
                     jArg++;
                 } else {
                     aArg++;
@@ -592,7 +589,7 @@ void setAdditionalArguments(LauncherProperties * props) {
         
         for(i=0;i<cmd->size;i++) {
             if(cmd->items[i]!=NULL) {
-                if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
+                if(searchW(cmd->items[i], javaParameterPrefix)!=NULL) {
                     javaArgs [ props->jvmArguments->size + jArg] = appendStringW(NULL, cmd->items[i] + getLengthW(javaParameterPrefix));
                     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding JVM argument : ", 0);
                     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, javaArgs [ props->jvmArguments->size + jArg], 1);
@@ -689,11 +686,11 @@ void executeMainClass(LauncherProperties * props) {
                 DWORD showMessage = 0;
                 char * ptr = error;
                 while(ptr!=NULL) {
-                    if(strstr(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) {
+                    if(searchA(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) {
                         showMessage = 1;
                         break;
                     }
-                    ptr = strstr(ptr, "\n");
+                    ptr = searchA(ptr, "\n");
                     if(ptr!=NULL) ptr++;
                 }
                 

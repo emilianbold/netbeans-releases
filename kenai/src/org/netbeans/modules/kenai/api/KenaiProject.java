@@ -49,7 +49,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.ProjectData;
-import org.netbeans.modules.kenai.ProjectFeatureCreateData;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**

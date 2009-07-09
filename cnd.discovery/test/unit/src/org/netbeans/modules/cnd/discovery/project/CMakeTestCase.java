@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import org.junit.Test;
+
 /**
  *
  * @author Alexander Simon
@@ -49,6 +51,7 @@ public class CMakeTestCase extends MakeProjectBase {
         super("CMake");
     }
 
+    @Test
     public void testCmake(){
         performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null);
     }

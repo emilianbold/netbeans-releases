@@ -57,7 +57,8 @@ public final class APTFileCacheManager {
 
     private static Reference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(null);
     private static ConcurrentMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>();
-    private static final Object aptCachesLock = new Object();
+    private static final class Lock {}
+    private static final Object aptCachesLock = new Lock();
 
     private static ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(CharSequence file, Boolean createAndClean) {
         if (createAndClean == null) {
@@ -124,27 +125,38 @@ public final class APTFileCacheManager {
         return out;
     }
 
-    public static APTFileCacheEntry getEntry(CharSequence file, APTPreprocHandler preprocHandler, boolean createExclusiveIfAbsent) {
+    /**
+     *
+     * @param file
+     * @param preprocHandler
+     * @param createExclusiveIfAbsent pass null if only interested in existing entry,
+     *          Boolean.TRUE means to create non-concurrent entry
+     *          Boolean.FALSE menas to create concurrent entry and remember it in cache
+     * @return
+     */
+    public static APTFileCacheEntry getEntry(CharSequence file, APTPreprocHandler preprocHandler, Boolean createExclusiveIfAbsent) {
         APTIncludeHandler.State key = getKey(preprocHandler);
         ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(file, Boolean.FALSE);
         APTFileCacheEntry out = cache.get(key);
-        if (out == null) {
-            if (createExclusiveIfAbsent) {
-                out = APTFileCacheEntry.createSerialEntry(file);
+        if (createExclusiveIfAbsent != null) {
+            if (out == null) {
+                if (createExclusiveIfAbsent == Boolean.TRUE) {
+                    out = APTFileCacheEntry.createSerialEntry(file);
+                } else {
+                    // we do remember concurrent entries
+                    out = APTFileCacheEntry.createConcurrentEntry(file);
+                    APTFileCacheEntry prev = cache.putIfAbsent(key, out);
+                    if (prev != null) {
+                        out = prev;
+                    }
+                }
             } else {
-                // we do remember concurrent entries
-                out = APTFileCacheEntry.createConcurrentEntry(file);
-                APTFileCacheEntry prev = cache.putIfAbsent(key, out);
-                if (prev != null) {
-                    out = prev;
+                if (APTTraceFlags.TRACE_APT_CACHE) {
+                    System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", file, cache.size(), "", "");
                 }
             }
-        } else {
-            if (APTTraceFlags.TRACE_APT_CACHE) {
-                System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", file, cache.size(), "", "");
-            }
         }
-        assert out != null;
+        assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
 
@@ -157,7 +169,10 @@ public final class APTFileCacheManager {
     }
 
     public static void invalidate(APTFileBuffer buffer) {
-        getAPTCache(buffer.getAbsolutePath(), null);
+        ConcurrentMap<State, APTFileCacheEntry> fileEntry = getAPTCache(buffer.getAbsolutePath(), null);
+        if (fileEntry != null) {
+            fileEntry.clear();
+        }
     }
 
     public static void invalidateAll() {

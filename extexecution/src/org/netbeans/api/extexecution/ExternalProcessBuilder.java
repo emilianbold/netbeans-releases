@@ -47,12 +47,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.extexecution.WrapperProcess;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -229,7 +231,8 @@ public final class ExternalProcessBuilder implements Callable<Process> {
 
     /**
      * Creates the new {@link Process} based on the properties configured
-     * in this builder.
+     * in this builder. Created process will try to kill all its children on
+     * call to {@link Process#destroy()}.
      * <p>
      * Process is created by executing the executable with configured arguments.
      * If custom working directory is specified it is used otherwise value
@@ -282,10 +285,13 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         Map<String, String> pbEnv = pb.environment();
         Map<String, String> env = buildEnvironment(pbEnv);
         pbEnv.putAll(env);
+        String uuid = UUID.randomUUID().toString();
+        pbEnv.put(WrapperProcess.KEY_UUID, uuid);
         adjustProxy(pb);
         pb.redirectErrorStream(redirectErrorStream);
         logProcess(Level.FINE, pb);
-        return pb.start();
+        WrapperProcess wp = new WrapperProcess(pb.start(), uuid);
+        return wp;
     }
 
     /**
@@ -472,4 +478,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
             return this;
         }
     }
+
+
 }

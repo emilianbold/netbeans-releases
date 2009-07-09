@@ -99,41 +99,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         return "<?\n" + s + "\n?>";
     }
     
-    public void match(String original) throws BadLocationException {
-        super.assertMatches(wrapAsPhp(original));
-        /*
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-
-        original = wrapAsPhp(original);
-        int caretPos = original.indexOf('^');
-        
-        original = original.substring(0, caretPos) + original.substring(caretPos+1);
-        int matchingCaretPos = original.indexOf('^');
-        assert caretPos < matchingCaretPos;
-        original = original.substring(0, matchingCaretPos) + original.substring(matchingCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        OffsetRange range = bc.findMatching(doc, caretPos);
-        
-        assertNotSame("Didn't find matching token for " + LexUtilities.getToken(doc, caretPos).text().toString(), 
-                OffsetRange.NONE, range);
-        assertEquals("forward match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " +
-                LexUtilities.getToken(doc, matchingCaretPos).text().toString(), 
-                matchingCaretPos, range.getStart());
-        
-        // Perform reverse match
-        range = bc.findMatching(doc, matchingCaretPos);
-        
-        assertNotSame(OffsetRange.NONE, range);
-        assertEquals("reverse match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " + 
-                LexUtilities.getToken(doc, caretPos).text().toString(), 
-                caretPos, range.getStart());
-         */
-    }
-    
     @Override
     public void insertBreak(String original, String expected) throws Exception {
         super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
@@ -243,22 +208,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 
     public void testInsertBreakInSwitch3() throws Exception {
         insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n        break 1;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch4() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        echo 'a';\n    break;^\n}", "switch ($a) {\n    case 'a':\n        echo 'a';\n    break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch5() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;) {\n            echo 'a';\n        }\n        break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch6() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;^\n}", "switch ($a) {\n    case 'a':\n        for (;;):\n            echo 'a';\n        endfor;\n        break;\n    ^\n}");
-    }
-
-    public void testInsertBreakInSwitch7() throws Exception {
-        insertBreak("switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;^\n}", "switch ($a) {\n    case 'a':\n        switch ($b) {\n            case 'b':\n                echo 'b';\n                break;\n        }\n       \n    break;\n    ^\n}");
     }
 
     public void testInsertBreakInSwitch8() throws Exception {
@@ -596,14 +545,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
 //    }
     
-    public void testFindMatching2() throws Exception {
-        match("x=^(true^)\ny=5");
-    }
-    
-    public void testFindMatching3() throws Exception {
-        match("x=^(true || (false)^)\ny=5");
-    }
-
 // XXX: ruby specific, we don't support this kind of markings; perhaps should be part of mark occurences
 //    public void testFindMatching1() throws Exception {
 //        match("^if true\n^end");
@@ -699,23 +640,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         }
     }
     
-    public void testContComment2() throws Exception {
-        // No auto-// on new lines
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-            insertBreak("   //  ^", "   //  \n   //  ^");
-        } else {
-            insertBreak("   //  ^", "   //  \n   ^");
-        }
-    }
-    
-    public void testContComment3() throws Exception {
-        // No auto-// on new lines
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-            insertBreak("   //\t^", "   //\t\n   //\t^");
-        } else {
-            insertBreak("   //\t^", "   //\t\n   ^");
-        }
-    }
 // XXX: currently failing, but should be fixed
 //    public void testContComment4() throws Exception {
 //        insertBreak("// foo\n^", "// foo\n\n^");
@@ -1010,55 +934,6 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         // exception is fixed the test won't actually pass; that's an expected
         // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
-    }
-    
-    
-    public void test110332() throws Exception {
-        String before = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0, ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        String after = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0, \n      ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        insertBreak(before, after);
-    }
-    
-    public void test110332b() throws Exception {
-        String before = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0,^ :compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        String after = "args = {\n" +
-            "      :name => args[:name],\n" +
-            "      :status => :missing,\n" +
-            "      :s2_test_comments => comments, \n" +
-            "      :metric => '', \n" +
-            "      :duration => '', \n" +
-            "      :setback? => true,\n" +
-            "      :progress? => false, :compare_metric => 0,\n      ^:compare_duration => 0}\n" +
-            "    OpenStruct.new\n" +
-                            "";
-        insertBreak(before, after);
     }
     
 //    public void testLogicalRange1() throws Exception {

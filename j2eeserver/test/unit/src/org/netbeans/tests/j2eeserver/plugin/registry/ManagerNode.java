@@ -53,7 +53,7 @@ import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
 public class ManagerNode extends AbstractNode {
     static java.util.Collection bogusNodes = java.util.Arrays.asList(new Node[] { Node.EMPTY, Node.EMPTY });
 
-    public ManagerNode(DepManager manager) {
+    public ManagerNode(TestDeploymentManager manager) {
         super(new MyChildren(bogusNodes));
         setDisplayName("Original:"+manager.getName());
         setIconBase("org/netbeans/tests/j2eeserver/plugin/registry/manager");

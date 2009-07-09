@@ -40,7 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
@@ -67,20 +66,24 @@ made subject to such option by the copyright holder.
     <folder name="contextmenu">
         <folder name="uml">
             <folder name="element">
-            <file name="org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.instance"/>
             <!-- conover - replaced with a new version 
             <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.GenerateCodeAction.instance"/>
             -->
             <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/-->
             <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/-->
+                <file name="org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Modeling/org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.instance"/>
+                </file>
             </folder>
             <folder name="diagram">
-            <file name="org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.instance"/>
             <!-- conover - replaced with a new version 
             <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.GenerateCodeAction.instance"/>
             -->
             <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.REOperationAction.instance"/-->
             <!--file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance"/-->
+                <file name="org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Modeling/org.netbeans.modules.uml.ui.addins.associateDialog.AssociateAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>

@@ -83,7 +83,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     @Override
     public synchronized JComponent getComponent() {
         if (panel == null) {
-            panel = new SyncIndicatorPanel();
+            panel = new SyncIndicatorPanel(getDefaultAction());
         }
         return panel.getPanel();
     }

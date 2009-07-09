@@ -487,6 +487,15 @@ public class Utils {
             case ASTPHP5Symbols.T_XOR_EQUAL:
                 name = "T_XOR_EQUAL";
                 break;
+            case ASTPHP5Symbols.T_GOTO:
+                name = "T_GOTO";
+                break;
+            case ASTPHP5Symbols.T_NAMESPACE:
+                name = "T_NAMESPACE";
+                break;
+            case ASTPHP5Symbols.T_NS_SEPARATOR:
+                name = "T_NS_SEPARATOR";
+                break;
             default:
                 name = "unknown";
         }

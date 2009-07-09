@@ -101,11 +101,10 @@ public class JaxwsWsdlModelProvider implements WsdlModelProvider {
     private boolean isRPCEncoded(URL url) {
         try {
             FileObject wsdlFO = FileUtil.toFileObject(new File(url.toURI()));
-            ;
             WSDLModel model = WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, false));
             return isRPCEncoded(model);
         } catch (Exception ex) {
-            Logger.global.log(Level.INFO, "", ex);
+            Logger.getLogger(JaxwsWsdlModelProvider.class.getName()).log(Level.INFO, "", ex);
         }
         return false;
     }

@@ -338,7 +338,9 @@ public class AutoupdateSettings {
                 err.log (Level.FINER, null, ex);
             } finally {
                 try {
-                    is.close ();
+                    if(is!=null) {
+                        is.close ();
+                    }
                 } catch (IOException ex) {
                     // let's ignore it
                     err.log (Level.FINER, null, ex);

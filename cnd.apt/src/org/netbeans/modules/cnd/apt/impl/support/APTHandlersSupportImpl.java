@@ -44,15 +44,17 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -78,7 +80,7 @@ public class APTHandlersSupportImpl {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
     
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<CharSequence> sysIncludePaths, List<CharSequence> userIncludePaths) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
     }
 
@@ -108,24 +110,16 @@ public class APTHandlersSupportImpl {
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
     }
 
-    public static String getMacroMapID(APTPreprocHandler.State state){
+    public static StateKey getMacroMapID(APTPreprocHandler.State state){
         assert state != null;
         APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        Map<CharSequence, APTMacro> tree = new TreeMap<CharSequence, APTMacro>();
-        APTMacroMapSnapshot.addAllMacros(macro.snap, tree);
-        StringBuilder buf = new StringBuilder();
-        buf.append(macro.sysMacroMap.hashCode());
-        buf.append(';');
-        for(Map.Entry<CharSequence, APTMacro> entry : tree.entrySet()){
-            buf.append((char)entry.getValue().getKind().ordinal());
-            buf.append(entry.getValue().getName().getOffset());
-            buf.append(entry.getKey());
-            buf.append('=');
-            buf.append(APTUtils.debugString(entry.getValue().getBody()));
-            buf.append(';');
-        }
-        return buf.toString();
+        return macro.getStateKey();
+    }
 
+    public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {
+        assert state != null;
+        APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl) state).macroState;
+        return macro.isEmptyActiveMacroMap();
     }
 
     public static int getMacroSize(APTPreprocHandler.State state) {
@@ -140,11 +134,12 @@ public class APTHandlersSupportImpl {
         return incl == null ? 0 : incl.getIncludeStackDepth();
     }
 
-    public static List<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
+    private static final LinkedList<APTIncludeHandler.IncludeInfo> EMPLY_LINKED_LIST = new LinkedList<APTIncludeHandler.IncludeInfo>();
+
+    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         assert state != null;
         List<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
-        return inclStack == null ? Collections.<APTIncludeHandler.IncludeInfo>emptyList() : 
-            new ArrayList<APTIncludeHandler.IncludeInfo>(inclStack);
+        return inclStack == null ? EMPLY_LINKED_LIST : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
 
     public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
@@ -162,7 +157,7 @@ public class APTHandlersSupportImpl {
 	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
     }
     
-    private static List<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
+    private static LinkedList<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
     }
     

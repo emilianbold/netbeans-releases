@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -121,7 +122,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int SOURCE_C_FILE = 2;
     public static final int SOURCE_CPP_FILE = 3;
     public static final int HEADER_FILE = 4;
-    private static long parseCount = 1;
+    private static volatile long parseCount = 1;
 
     public static int getParseCount() {
         return (int) (parseCount & 0xFFFFFFFFL);
@@ -167,7 +168,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+    private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
@@ -175,7 +176,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
     private final Set<ErrorDirectiveImpl> errors = createErrors();
     private final ReadWriteLock errorsLock = new ReentrantReadWriteLock();
-    private Map<NameSortedKey, CsmUID<CsmMacro>> macros = createMacros();
+    private final TreeMap<NameSortedKey, CsmUID<CsmMacro>> macros;
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int errorCount = 0;
@@ -205,7 +206,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private volatile State state;
     private volatile ParsingState parsingState;
     private FileType fileType = FileType.UNDEFINED_FILE;
-    private final Object stateLock = new Object();
+    private static final class StateLock {}
+    private final Object stateLock = new StateLock();
     private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
@@ -215,8 +217,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
-    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
+    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs;
     private final ReadWriteLock staticLock = new ReentrantReadWriteLock();
     private Reference<List<CsmReference>> lastMacroUsages = null;
     private ChangeListener fileBufferChangeListener = new ChangeListener() {
@@ -236,6 +238,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
+        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+        macros = createMacros();
+        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
@@ -259,6 +265,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private ProjectBase _getProject(boolean assertNotNull) {
+        Object o = projectRef;
+        if (o instanceof ProjectBase) {
+            return (ProjectBase) o;
+        } else if (o instanceof Reference) {
+            ProjectBase prj = (ProjectBase)((Reference) o).get();
+            if (prj != null) {
+                return prj;
+            }
+        }
         projectLock.readLock().lock();
         try {
             ProjectBase prj = null;
@@ -585,7 +600,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return true;
         }
     }
-    private final Object changeStateLock = new Object();
+    private static final class ChangeStateLock {}
+    private final Object changeStateLock = new ChangeStateLock();
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
@@ -630,6 +646,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     private void render(AST tree) {
         new AstRenderer(this).render(tree);
+        parseCount++;
     }
 
     private APTFile getFullAPT() {
@@ -699,8 +716,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Collection<CsmUID<CsmOffsetableDeclaration>> uids;
         try {
             declarationsLock.writeLock().lock();
-            uids = declarations.values();
-            declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
+            declarations.clear();
+            //declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
             sortedDeclarations = null;
         } finally {
             declarationsLock.writeLock().unlock();
@@ -726,12 +744,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void _clearMacros() {
-        Collection<CsmUID<CsmMacro>> copy = macros.values();
-        macros = createMacros();
+        Collection<CsmUID<CsmMacro>> copy;
+        try {
+            macrosLock.writeLock().lock();
+            copy = new ArrayList<CsmUID<CsmMacro>>(macros.values());
+            macros.clear();
+        } finally {
+            macrosLock.writeLock().unlock();
+        }
         RepositoryUtils.remove(copy);
     }
 
-    private Map<NameSortedKey, CsmUID<CsmMacro>> createMacros() {
+    private TreeMap<NameSortedKey, CsmUID<CsmMacro>> createMacros() {
         return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>();
     }
 
@@ -828,13 +852,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, false);
+        // ask for concurrent entry if absent
+        APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder,cacheEntry);
         tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
+        // remember walk info
         setAPTCacheEntry(preprocHandler, cacheEntry, false);
         return true;
-    }    
-    private final Object tokStreamLock = new Object();
+    }
+    private static final class TokenStreamLock {}
+    private final Object tokStreamLock = new TokenStreamLock();
     private Reference<FileTokenStreamCache> tsRef = new SoftReference<FileTokenStreamCache>(null);
     /**
      *
@@ -917,12 +944,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler, boolean serial) {
+    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler, Boolean createExclusiveIfAbsent) {
         if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
-        APTFileCacheEntry out = APTFileCacheManager.getEntry(getAbsolutePath(), preprocHandler, serial);
-        assert out != null;
+        APTFileCacheEntry out = APTFileCacheManager.getEntry(getAbsolutePath(), preprocHandler, createExclusiveIfAbsent);
+        assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
 
@@ -948,23 +975,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
         }
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
-        APTPreprocHandler preprocHandler = getPreprocHandler();
-        APTPreprocHandler.State ppState = preprocHandler.getState();
-        ProjectBase startProject = ProjectBase.getStartProject(ppState);
+//        APTPreprocHandler preprocHandler = getPreprocHandler();
+//        APTPreprocHandler.State ppState = preprocHandler.getState();
+//        ProjectBase startProject = ProjectBase.getStartProject(ppState);
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         if (!TraceFlags.TRACE_ERROR_PROVIDER) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
         try {
-            APTFile aptFull = getFullAPT();
-            if (aptFull != null) {
-                APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, false);
-                APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null, cacheEntry);
-                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
+            // use cached TS
+            TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
+            if (tokenStream != null) {
+                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), tokenStream, flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
                 parser.translation_unit();
-                setAPTCacheEntry(preprocHandler, cacheEntry, false);
                 return new ParserBasedTokenBuffer(parser);
             }
         } catch (Error ex) {
@@ -1024,29 +1049,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, true);
+            // ask for concurrent entry if absent
+            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
             }
 
-//            if (reportParse && logEmptyTokenStream) {
-//                APTParseFileWalker walker2 = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
-//                walker2.addMacroAndIncludes(false);
-//                TokenStream  ts = walker2.getFilteredTokenStream(getLanguageFilter(ppState));
-//                try {
-//                    boolean empty = ts.nextToken().getType() == APTToken.EOF_TYPE;
-//                    System.err.printf("\tFile %s empty tokens ? %b (Thread=%s)\n",
-//                            getAbsolutePath(), empty, Thread.currentThread().getName());
-//                } catch (TokenStreamException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             FilePreprocessorConditionState pcState = pcBuilder.build();
-            if(false)setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
+            if (false) {
+                setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
+            }
             startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
@@ -1089,7 +1104,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (aHook != null) {
             aHook.parsingFinished(this, preprocHandler);
         }
-        parseCount++;
+//        parseCount++;
         return ast;
     }
 
@@ -1393,10 +1408,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
+        NameSortedKey key = new NameSortedKey(macro);
         assert macroUID != null;
         try {
             macrosLock.writeLock().lock();
-            macros.put(new NameSortedKey(macro), macroUID);
+            macros.put(key, macroUID);
         } finally {
             macrosLock.writeLock().unlock();
         }
@@ -1439,7 +1455,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         NameSortedKey to = NameSortedKey.getEndKey(name);
         try {
             macrosLock.readLock().lock();
-            for (Map.Entry<NameSortedKey, CsmUID<CsmMacro>> entry : ((TreeMap<NameSortedKey, CsmUID<CsmMacro>>) macros).subMap(from, to).entrySet()) {
+            for (Map.Entry<NameSortedKey, CsmUID<CsmMacro>> entry : macros.subMap(from, to).entrySet()) {
                 uids.add(entry.getValue());
             }
         } finally {
@@ -1774,6 +1790,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
             System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
+            if (CndUtils.isDebugMode() && !firstDump){
+                firstDump = true;
+                CndUtils.threadsDump();
+            }
             curState = State.PARSED;
         }
         output.writeByte(curState.ordinal());
@@ -1785,6 +1805,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             staticLock.readLock().unlock();
         }
     }
+    private static boolean firstDump = false;
+
 
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);
@@ -1792,10 +1814,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         PersistentUtils.readErrorDirectives(this.errors, input);
 
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.readOffsetSortedToUIDMap(this.declarations, input, null);
+        this.declarations = factory.readOffsetSortedToUIDMap(input, null);
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.brokenIncludes, input);
-        factory.readNameSortedToUIDMap(this.macros, input, DefaultCache.getManager());
+        this.macros = factory.readNameSortedToUIDMap(input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         //state = State.valueOf(input.readUTF());
         fileType = FileType.values()[input.readByte()];
@@ -1814,8 +1836,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         lastParseTime = input.readInt();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+        } else {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input, collSize);
+        collSize = input.readInt();
+        if (collSize <= 0) {
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+        } else {
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(collSize);
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input, collSize);
     }
 
     public 
@@ -1906,11 +1940,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private final FileStateCache stateCache = new FileStateCache(this);
-    /*package-local*/ void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler) {
-        stateCache.cacheVisitedState(inputState, outputHandler);
+    /*package-local*/ void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler, FilePreprocessorConditionState pcState) {
+        stateCache.cacheVisitedState(inputState, outputHandler, pcState);
     }
 
-    /*package-local*/ APTPreprocHandler.State getCachedVisitedState(APTPreprocHandler.State inputState) {
+    /*package-local*/ PreprocessorStatePair getCachedVisitedState(APTPreprocHandler.State inputState) {
         return stateCache.getCachedVisitedState(inputState);
     }
 

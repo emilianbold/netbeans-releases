@@ -17,7 +17,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
 
@@ -67,7 +67,7 @@ public abstract class EntityManagerGenerationTestSupport  extends SourceTestSupp
      * @return a persistence unit with name "MyPersistenceUnit". 
      */ 
     protected PersistenceUnit getPersistenceUnit(){
-        PersistenceUnit punit = new PersistenceUnit();
+        PersistenceUnit punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         punit.setName("MyPersistenceUnit");
         return punit;
     }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<javacard-app version="3.0"
+              xmlns="http://java.sun.com/xml/ns/javacard"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javacard http://java.sun.com/xml/ns/javacard/javacard-app_3_0.xsd">
+	<description>Just a place holder. Nothing to configure for this sample.
+                     This file is optional.</description>
+</javacard-app>

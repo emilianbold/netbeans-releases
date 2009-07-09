@@ -302,12 +302,41 @@ public class KenaiTest extends NbTestCase {
         KenaiProject prj = instance.getProject(name);
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_READ);
-        System.out.println("Read? " + authorized);
+        System.out.println("Forum - Read? " + authorized);
         assertTrue(authorized);
 
         authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_ADMIN);
-        System.out.println("Admin? " + authorized);
+        System.out.println("Forum - Admin? " + authorized);
         assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.ISSUES_READ);
+        System.out.println("Issues - Read? " + authorized);
+        assertTrue(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.ISSUES_WRITE);
+        System.out.println("Issues - Write? " + authorized);
+        assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.WIKI_READ);
+        System.out.println("Wiki - Read? " + authorized);
+        assertTrue(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.WIKI_WRITE);
+        System.out.println("Wiki - Write? " + authorized);
+        assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_CREATE);
+        System.out.println("Project - Create? " + authorized);
+        assertTrue(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_DELETE);
+        System.out.println("Projects - Delete? " + authorized);
+        assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.SOURCE_WRITE);
+        System.out.println("Source - Write? " + authorized);
+        assertFalse(authorized);
+
     }
 
 //    @Test
@@ -384,7 +413,7 @@ public class KenaiTest extends NbTestCase {
             displayName = "Feature 2b";
             description = "Test Description - chat";
             feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.CHAT.getId(), null, null, null);
-            assert feature.getName().equals(name);
+            assert feature.getName().equals(UNITTESTUNIQUENAME);
             assert feature.getDisplayName().equals(displayName);
 
             name = "unittestfeature03";
@@ -618,13 +647,11 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testPasswordAuthentication"));
         _suite.addTest(new KenaiTest("testCreateProject"));
         _suite.addTest(new KenaiTest("testCreateFeature"));
-        _suite.addTest(new KenaiTest("testIsAuthorized"));
-//        _suite.addTest(new KenaiTest("testIsAuthorized2"));
-//        _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
         _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }
     ;

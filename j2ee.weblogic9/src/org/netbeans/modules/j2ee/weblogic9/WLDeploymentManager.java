@@ -41,13 +41,24 @@
 package org.netbeans.modules.j2ee.weblogic9;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.Collections;
+import java.util.Enumeration;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -135,16 +146,134 @@ public class WLDeploymentManager implements DeploymentManager {
             if (vendorDeploymentManager == null) {
                 if (isConnected) {
                     vendorDeploymentManager = new SafeDeploymentManager(
-                            factory.getVendorDeploymentManager(uri, username, password, host, port));
+                            getVendorDeploymentManager(uri, username, password, host, port));
                 } else {
                     vendorDeploymentManager = new SafeDeploymentManager(
-                            factory.getVendorDisconnectedDeploymentManager(uri));
+                            getVendorDisconnectedDeploymentManager(uri));
                 }
 
             }
             return vendorDeploymentManager;
         }
     }
+
+    private static WLClassLoader wlloader;
+
+    private static synchronized ClassLoader getWLClassLoader (String serverRoot) {
+        if (wlloader == null) {
+            try {
+                URL[] urls = new URL[] { new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
+                wlloader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
+        }
+        return wlloader;
+    }
+
+    private static class WLClassLoader extends URLClassLoader {
+
+        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
+            super(urls, parent);
+        }
+
+        public void addURL(File f) throws MalformedURLException {
+            if (f.isFile()) {
+                addURL(f.toURL());
+            }
+        }
+
+        @Override
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
+            Permissions p = new Permissions();
+            p.add(new AllPermission());
+            return p;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+
+            return super.getResources(name);
+        }
+    }
+
+    private static DeploymentManager getVendorDeploymentManager(String uri, String username, String password, String host, String port) throws DeploymentManagerCreationException {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "getDM, uri:" + uri+" username:" + username+" password:"+password+" host:"+host+" port:"+port); // NOI18N
+        }
+
+        DeploymentManagerCreationException dmce = null;
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        try {
+            String serverRoot = InstanceProperties.getInstanceProperties(uri).
+                                    getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            // if serverRoot is null, then we are in a server instance registration process, thus this call
+            // is made from InstanceProperties creation -> WLPluginProperties singleton contains
+            // install location of the instance being registered
+            if (serverRoot == null)
+                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+
+            ClassLoader loader = getWLClassLoader(serverRoot);
+            Thread.currentThread().setContextClassLoader(loader);
+            Class helperClazz = Class.forName("weblogic.deploy.api.tools.SessionHelper", false, loader); //NOI18N
+            Method m = helperClazz.getDeclaredMethod("getDeploymentManager", new Class [] {String.class,String.class,String.class,String.class}); // NOI18N
+            Object o = m.invoke(null, new Object [] {host, port, username, password});
+            if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
+                return (DeploymentManager) o;
+            } else {
+                dmce = new DeploymentManagerCreationException ("Instance created by weblogic is not DeploymentManager instance.");
+            }
+        } catch (Exception e) {
+            dmce = new DeploymentManagerCreationException ("Cannot create weblogic DeploymentManager instance.");
+            dmce.initCause(e);
+        } catch (NoClassDefFoundError err) {
+            dmce = new DeploymentManagerCreationException("Cannot create weblogic DeploymentManager instance.");
+            dmce.initCause(err);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
+        throw dmce;
+    }
+
+    private static DeploymentManager getVendorDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
+        DeploymentManagerCreationException dmce = null;
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        try {
+            String serverRoot = InstanceProperties.getInstanceProperties(uri).
+                                    getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            // if serverRoot is null, then we are in a server instance registration process, thus this call
+            // is made from InstanceProperties creation -> WLPluginProperties singleton contains
+            // install location of the instance being registered
+            if (serverRoot == null)
+                serverRoot = WLPluginProperties.getInstance().getInstallLocation();
+
+            ClassLoader loader = getWLClassLoader(serverRoot);
+            Thread.currentThread().setContextClassLoader(loader);
+            Class helperClazz = Class.forName("weblogic.deploy.api.tools.SessionHelper", false, loader); //NOI18N
+            Method m = helperClazz.getDeclaredMethod("getDisconnectedDeploymentManager", new Class [] {}); // NOI18N
+            Object o = m.invoke(null, new Object [] {});
+            if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
+                return (DeploymentManager) o;
+            } else {
+                dmce = new DeploymentManagerCreationException ("Instance created by weblogic is not disconnected DeploymentManager instance.");
+            }
+        } catch (Exception e) {
+            dmce = new DeploymentManagerCreationException ("Cannot create weblogic disconnected DeploymentManager instance.");
+            dmce.initCause(e);
+        } catch (NoClassDefFoundError err) {
+            dmce = new DeploymentManagerCreationException("Cannot create weblogic DeploymentManager instance.");
+            dmce.initCause(err);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
+        throw dmce;
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////
     // Connection data methods
     ////////////////////////////////////////////////////////////////////////////
@@ -182,9 +311,6 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
-    public boolean isLocal () {
-        return Boolean.valueOf(getInstanceProperties().getProperty(WLPluginProperties.IS_LOCAL_ATTR)).booleanValue();
-    }
     /**
      * Returns the InstanceProperties object for the current server instance
      */
@@ -226,21 +352,8 @@ public class WLDeploymentManager implements DeploymentManager {
     public ProgressObject distribute(Target[] target, File file, File file2)
             throws IllegalStateException {
 
-        if (isLocal()) {
-            //autodeployment version
-            return new WLDeployer(uri).deploy(target, file, file2, getHost(), getPort());
-        } else {
-            //weblogic jsr88 version
-            ClassLoader original = modifyLoader();
-            try {
-                return new DelegatingProgressObject(getDeploymentManager().distribute(target, file, null));
-            } catch (DeploymentManagerCreationException ex) {
-                return new FinishedProgressObject(ActionType.EXECUTE, CommandType.DISTRIBUTE,
-                        NbBundle.getMessage(WLDeploymentManager.class, "MSG_Deployment_Failed"), null, true);
-            } finally {
-                originalLoader(original);
-            }
-        }
+        //autodeployment
+        return new WLDeployer(uri).deploy(target, file, file2, getHost(), getPort());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -256,7 +369,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (serverRoot == null)
             serverRoot = WLPluginProperties.getInstance().getInstallLocation();
 
-        Thread.currentThread().setContextClassLoader(WLDeploymentFactory.getWLClassLoader(serverRoot));
+        Thread.currentThread().setContextClassLoader(getWLClassLoader(serverRoot));
         return originalLoader;
     }
     private void originalLoader(ClassLoader originalLoader) {

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -42,7 +41,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <filesystem>
     <folder name="Templates">
         <folder name="UML">
@@ -50,23 +48,23 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="0"/>
                 <folder name="Java">     
                     <file name="CompilationUnit.java" url="templates/java/CompilationUnit_java">
-                        <attr name="template" boolvalue="true" />
+                        <attr name="template" boolvalue="true"/>
                         <attr name="templateCategory" stringvalue="uml-java-templates"/>
                     </file>
                     <file name="NormalClassDeclaration.java" url="templates/java/NormalClassDeclaration_java">
-                        <attr name="template" boolvalue="true" />
+                        <attr name="template" boolvalue="true"/>
                         <attr name="templateCategory" stringvalue="uml-java-templates"/>
                     </file>
                     <file name="EnumDeclaration.java" url="templates/java/EnumDeclaration_java">
-                        <attr name="template" boolvalue="true" />
+                        <attr name="template" boolvalue="true"/>
                         <attr name="templateCategory" stringvalue="uml-java-templates"/>
                     </file>
                     <file name="InterfaceDeclaration.java" url="templates/java/InterfaceDeclaration_java">
-                        <attr name="template" boolvalue="true" />
+                        <attr name="template" boolvalue="true"/>
                         <attr name="templateCategory" stringvalue="uml-java-templates"/>
                     </file>
                     <file name="DeclLib.ftl" url="templates/java/DeclLib_ftl">
-                        <attr name="template" boolvalue="true" />
+                        <attr name="template" boolvalue="true"/>
                         <attr name="templateCategory" stringvalue="uml-java-templates"/>
                     </file>
                 </folder>
@@ -106,13 +104,19 @@ made subject to such option by the copyright holder.
     <folder name="contextmenu">
         <folder name="uml">
             <folder name="generate">
-                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+                </file>
             </folder>
             <folder name="element">
-                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+                </file>
             </folder>
             <folder name="diagram">
-                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>

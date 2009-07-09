@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.deployment.config;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,6 +71,15 @@ public abstract class J2eeApplicationAccessor {
      *
      * @param impl SPI J2eeApplicationImplementation object
      * @return J2eeApplication
+     * @deprecated use {@link #createJ2eeApplication(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2)}
      */
     public abstract J2eeApplication createJ2eeApplication(J2eeApplicationImplementation impl);
+
+    /**
+     * Factory method that creates a J2eeApplication for the J2eeApplicationImplementation2.
+     *
+     * @param impl SPI J2eeApplicationImplementation2 object
+     * @return J2eeApplication
+     */
+    public abstract J2eeApplication createJ2eeApplication(J2eeApplicationImplementation2 impl);
 }

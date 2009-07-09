@@ -69,7 +69,6 @@ public class NbMainSequence extends WizardSequence {
 
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
     private LicensesPanel licensesPanel;
-    private NbWelcomePanel nbWelcomePanel;
     private NbPreInstallSummaryPanel nbPreInstallSummaryPanel;
     private UninstallAction uninstallAction;
     private DownloadInstallationDataAction downloadInstallationDataAction;
@@ -82,7 +81,6 @@ public class NbMainSequence extends WizardSequence {
     private Map<Product, ProductWizardSequence> productSequences;
 
     public NbMainSequence() {
-        nbWelcomePanel = new NbWelcomePanel();
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
         licensesPanel = new LicensesPanel();
         nbPreInstallSummaryPanel = new NbPreInstallSummaryPanel();
@@ -117,7 +115,6 @@ public class NbMainSequence extends WizardSequence {
         // each selected component and then download and install; if we're creating
         // a bundle, we only need to download and package things
 
-        addChild(nbWelcomePanel);
         if (toInstall.size() > 0) {
             addChild(downloadConfigurationLogicAction);
             addChild(licensesPanel);

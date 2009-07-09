@@ -76,10 +76,11 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="Tools">
-            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance">
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-favorites-templates-TemplatesAction.instance"/>
                 <attr name="position" intvalue="1000"/>
             </file>
-            </folder>
+        </folder>
       <folder name="Window">
             <file name="ViewFavoritesTabAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
@@ -104,7 +105,7 @@ made subject to such option by the copyright holder.
     <folder name="Favorites">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
         <file name="Home.shadow">
-            <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.Favorites.getHome"/>
+            <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.FavoritesNode.getHome"/>
             <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem"/>
         </file>
     </folder>

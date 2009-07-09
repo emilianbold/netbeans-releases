@@ -52,12 +52,13 @@ import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
  * @author Tomas Stupka
  */
 public class FormatPanel extends javax.swing.JPanel {
+    private final Format defaultFormat;
 
     /** Creates new form FormatPanel */
-    FormatPanel(Format format) {
+    FormatPanel(Format format, Format defaultFormat) {
         initComponents();
-        jTextArea1.setText(format.getFormat());
-        aboveRadio.setSelected(format.isAbove());
+        setFormat(format);
+        this.defaultFormat = defaultFormat;
     }
 
     Format getFormat() {
@@ -80,13 +81,13 @@ public class FormatPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         aboveRadio = new javax.swing.JRadioButton();
         beloveRadio = new javax.swing.JRadioButton();
-        jButton1 = new javax.swing.JButton();
+        resetButton = new javax.swing.JButton();
 
         jLabel1.setLabelFor(jTextArea1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
 
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13));
         jTextArea1.setRows(5);
         jTextArea1.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.toolTipText")); // NOI18N
         jScrollPane1.setViewportView(jTextArea1);
@@ -106,7 +107,12 @@ public class FormatPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(resetButton, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.resetButton.text")); // NOI18N
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -117,9 +123,9 @@ public class FormatPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addContainerGap(438, Short.MAX_VALUE))
+                        .addContainerGap(514, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
@@ -128,7 +134,7 @@ public class FormatPanel extends javax.swing.JPanel {
                             .add(beloveRadio)
                             .add(aboveRadio))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 169, Short.MAX_VALUE)
-                        .add(jButton1)
+                        .add(resetButton)
                         .add(20, 20, 20))))
         );
         layout.setVerticalGroup(
@@ -140,7 +146,7 @@ public class FormatPanel extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButton1)
+                    .add(resetButton)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel2)
@@ -152,7 +158,7 @@ public class FormatPanel extends javax.swing.JPanel {
 
         aboveRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N
         beloveRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.AccessibleContext.accessibleDescription")); // NOI18N
-        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        resetButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -161,16 +167,24 @@ public class FormatPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_beloveRadioActionPerformed
 
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        setFormat(defaultFormat);
+    }//GEN-LAST:event_resetButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton aboveRadio;
     private javax.swing.JRadioButton beloveRadio;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JButton resetButton;
     // End of variables declaration//GEN-END:variables
 
+    private void setFormat(Format format) {
+        jTextArea1.setText(format.getFormat());
+        aboveRadio.setSelected(format.isAbove());
+    }
 
 }

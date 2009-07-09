@@ -1100,13 +1100,24 @@ public class Utilities {
     }
 
     public static String debugPosition(BaseDocument doc, int offset) {
+        return debugPosition(doc, offset, ":");
+    }
+
+    /**
+     * @param doc non-null document.
+     * @param offset offset to translate to line and column info.
+     * @param separator non-null separator of line and column info (either single charater or a string).s
+     * @return non-null line and column info for the given offset.
+     * @since 1.40
+     */
+    public static String debugPosition(BaseDocument doc, int offset, String separator) {
         String ret;
 
         if (offset >= 0) {
             try {
                 int line = getLineOffset(doc, offset) + 1;
                 int col = getVisualColumn(doc, offset) + 1;
-                ret = String.valueOf(line) + ":" + String.valueOf(col); // NOI18N
+                ret = String.valueOf(line) + separator + String.valueOf(col); // NOI18N
             } catch (BadLocationException e) {
                 ret = NbBundle.getBundle(BaseKit.class).getString( WRONG_POSITION_LOCALE )
                       + ' ' + offset + " > " + doc.getLength(); // NOI18N

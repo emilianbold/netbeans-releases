@@ -86,9 +86,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Toolbars">
-        <!-- remove workspace switcher and status line from toolbars for ide -->
-        <folder name="WorkspaceSwitcher_hidden"/>
-        <folder name="StatusLine_hidden"/>
         <!-- specify toolbar config for ide, overrides configuration from core/ui.
              if you modify this file, please review
              org/netbeans/core/ui/resources/Standard.xml also, and sync

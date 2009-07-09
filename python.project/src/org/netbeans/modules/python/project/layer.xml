@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-python-project-ui-ChangePackageViewTypeAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-python">
@@ -53,7 +58,8 @@
     </folder>
 
     <folder name="ProjectsTabActions">
-        <file name="org-netbeans-modules-python-project-ui-ChangePackageViewTypeAction.instance">
+        <file name="org-netbeans-modules-python-project-ui-ChangePackageViewTypeAction.shadow">
+            <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-python-project-ui-ChangePackageViewTypeAction.instance"/>
             <attr name="position" intvalue="1603"/>
         </file>
     </folder>

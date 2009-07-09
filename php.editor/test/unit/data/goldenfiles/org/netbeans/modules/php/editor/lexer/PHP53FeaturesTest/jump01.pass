@@ -33,7 +33,7 @@ token #31 WHITESPACE
 token #32 PHP_NUMBER 3
 token #33 PHP_TOKEN )
 token #34 WHITESPACE  
-token #35 PHP_STRING goto
+token #35 PHP_GOTO goto
 token #36 WHITESPACE  
 token #37 PHP_STRING L1
 token #38 PHP_SEMICOLON ;

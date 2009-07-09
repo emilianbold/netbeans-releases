@@ -81,8 +81,8 @@ public class WebServiceMetadataReader extends CommonBeanReader {
             if(dc != null) {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {
-                    Object moduleType = module.getModuleType();
-                    if(J2eeModule.WAR.equals(moduleType) || J2eeModule.EJB.equals(moduleType)) {
+                    Object moduleType = module.getType();
+                    if(J2eeModule.Type.WAR.equals(moduleType) || J2eeModule.Type.EJB.equals(moduleType)) {
                         result = readWebservicesMetadata(module.getMetadataModel(WebservicesMetadata.class));
                         if(result != null && result.size() > 0) {
                             filterInvalidServices(result, moduleType);
@@ -109,7 +109,7 @@ public class WebServiceMetadataReader extends CommonBeanReader {
      * @param moduleType Type of module being examined (WAR or EJB JAR only)
      */
     private void filterInvalidServices(Map<String, Object> annotationMap, Object moduleType) {
-        String invalidBindingType = J2eeModule.WAR.equals(moduleType) ? DDBinding.PROP_EJB_LINK : DDBinding.PROP_SERVLET_LINK;
+        String invalidBindingType = J2eeModule.Type.WAR.equals(moduleType) ? DDBinding.PROP_EJB_LINK : DDBinding.PROP_SERVLET_LINK;
         
         List<String> servicesToRemove = new ArrayList<String>();
         for(Map.Entry<String, Object> serviceEntry: annotationMap.entrySet()) {

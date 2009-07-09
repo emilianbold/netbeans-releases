@@ -90,7 +90,14 @@
                 </Include>
             </ExpressionStatement>
             <ASTError start='97' end='125'/>
-            <ASTError start='126' end='193'/>
+            <ExpressionStatement start='126' end='193'>
+                <Quote start='126' end='192' type='HEREDOC'>
+                    <Expressions>
+                        <Scalar start='143' end='191' type='STRING' value='If you see this, something&apos;s wrong.\n'/>
+                    </Expressions>
+                </Quote>
+            </ExpressionStatement>
+            <ASTError start='0' end='193'/>
             <EmptyStatement start='196' end='197'/>
             <ExpressionStatement start='199' end='217'>
                 <FunctionInvocation start='199' end='216'>
@@ -101,7 +108,9 @@
                         <InfixExpression start='205' end='216' operator='CONCAT'>
                             <StaticConstantAccess start='205' end='209'>
                                 <ClassName>
-                                    <Identifier start='205' end='206' name='e'/>
+                                    <NamespaceName start='205' end='206' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='205' end='206' name='e'/>
+                                    </NamespaceName>
                                 </ClassName>
                                 <Constant>
                                     <Identifier start='208' end='209' name='E'/>

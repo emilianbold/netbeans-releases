@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
@@ -195,7 +196,15 @@ public final class OptionsChooserPanel extends JPanel {
             }
             // do import
             File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
-            optionsChooserPanel.getOptionsExportModel().doImport(targetUserdir);
+            try {
+                optionsChooserPanel.getOptionsExportModel().doImport(targetUserdir);
+            } catch (IOException ioe) {
+                // report exception and return if import failed
+                Exceptions.attachLocalizedMessage(ioe,
+                        NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.error"));
+                LOGGER.log(Level.SEVERE, ioe.getMessage(), ioe);
+                return;
+            }
             LOGGER.fine("Import finished.");  //NOI18N
             // restart IDE
             if (confirmationPanel.restartNow()) {

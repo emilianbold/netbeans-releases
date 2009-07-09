@@ -75,6 +75,8 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -82,7 +84,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.util.Lookup;
 
 /**
@@ -781,25 +782,28 @@ public class TraceModel extends TraceModelBase {
             //ex.printStackTrace();
         }
     }
-    private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
-
+    private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
+    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
+    
     private APTIncludeHandler getIncludeHandler(File file) {
-        List<CharSequence> sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
-        List<CharSequence> qInc = getQuoteIncludePaths();
+        List<String> systemIncludes = getSystemIncludes();
+        List<IncludeDirEntry> sysIncludes = sysAPTData.getIncludes(systemIncludes.toString(), systemIncludes); // NOI18N
+        List<String> qInc = getQuoteIncludePaths();
         if (isPathsRelCurFile()) {
-            qInc = new ArrayList<CharSequence>(getQuoteIncludePaths().size());
-            for (Iterator<CharSequence> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
-                CharSequence path = it.next();
-                if (!(new File(path.toString()).isAbsolute())) {
+            qInc = new ArrayList<String>(getQuoteIncludePaths().size());
+            for (Iterator<String> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
+                String path = it.next();
+                if (!(new File(path).isAbsolute())) {
                     File dirFile = file.getParentFile();
                     File pathFile = new File(dirFile, path.toString());
                     path = pathFile.getAbsolutePath();
                 }
-                qInc.add(FilePathCache.getManager().getString(path));
+                qInc.add(path);
             }
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, qInc);
+        List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes);
     }
 
     private APTMacroMap getMacroMap(File file) {
@@ -941,7 +945,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
-        FileBuffer buffer = new FileBufferFile(item.getFile());
+        FileBuffer buffer = new FileBufferFile(item.getFile().getAbsolutePath());
         print("Testing APT Parser"); // NOI18N
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         File file = buffer.getFile();
@@ -963,7 +967,7 @@ public class TraceModel extends TraceModelBase {
 
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         File file = item.getFile();
-        FileBuffer buffer = new FileBufferFile(file);
+        FileBuffer buffer = new FileBufferFile(file.getAbsolutePath());
         print("Testing APT: " + file.getName()); // NOI18N
         long minLexer = Long.MAX_VALUE;
         long maxLexer = Long.MIN_VALUE;

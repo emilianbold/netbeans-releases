@@ -43,7 +43,11 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -81,15 +85,24 @@ public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourc
         }
         val = project.evaluator().getProperty(to);
         assert val != null : "No value for " + to + " in " + project;
-        String path = helper.resolvePath(val);
         try {
-            File f = helper.resolveFile(path);
-            if (!f.exists()) {
-                return null;
+            File f = helper.resolveFile(val);
+            if (! f.exists()) {
+                // #143633: need not to exist, ensure proper URI ending with a slash
+                URI u = f.toURI();
+                String path = u.getPath();
+                if (! path.endsWith("/"))
+                    path = path.concat("/");
+                try {
+                    u = new URI(u.getScheme(), u.getHost(), path, u.getFragment());
+                    return new URL[] {u.toURL()};
+                } catch (URISyntaxException ex) {
+                    Logger.getLogger(UnitTestForSourceQueryImpl.class.getName())
+                            .log(Level.WARNING, "Problems getting URI for " + f, ex);
+                }
             }
-            else {
-                return new URL[] {f.toURI().normalize().toURL()};
-            }
+
+            return new URL[] {f.toURI().toURL()};
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
         }

@@ -52,8 +52,7 @@ made subject to such option by the copyright holder.
               <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
             </file>
             <file name="Factory.instance">
-                <attr name="instanceClass" 
-                      stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.DepFactory"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
             </file>
             <file name="TestRegistryNodeFactory.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/> 
@@ -93,8 +92,7 @@ made subject to such option by the copyright holder.
               <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
             </file>
             <file name="Factory.instance">
-                <attr name="instanceClass"
-                      stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.DepFactory"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
             </file>
             <file name="TestRegistryNodeFactory.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/>
@@ -134,7 +132,8 @@ made subject to such option by the copyright holder.
         <file name="FooServerUrl">
             <attr name="url" stringvalue="fooservice"/>
             <attr name="username" stringvalue="Adminuser"/>
-            <attr name="password" stringvalue="Adminpasswd"/> <!-- PENDING encrypt this? -->
+            <attr name="password" stringvalue="Adminpasswd"/>
+            <attr name="displayName" stringvalue="foo"/>
         </file>
     </folder>
     

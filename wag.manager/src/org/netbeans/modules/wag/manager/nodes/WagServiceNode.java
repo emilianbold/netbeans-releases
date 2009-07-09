@@ -42,10 +42,13 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import javax.swing.Action;
+import org.netbeans.modules.wag.manager.actions.ViewApiDocAction;
 import org.netbeans.modules.wag.manager.model.WagService;
 import org.netbeans.modules.wag.manager.util.WagTransferable;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -64,7 +67,7 @@ public class WagServiceNode extends AbstractNode {
     }
 
     WagServiceNode(WagService service, InstanceContent content) {
-        super(new WagServiceNodeChildren(service), new AbstractLookup(content));
+        super(Children.LEAF, new AbstractLookup(content));
         content.add(service);
         this.service = service;
         transferable = ExTransferable.create(
@@ -88,13 +91,10 @@ public class WagServiceNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        /*
-        List<Action> actions = SaasNode.getActions(getLookup());
-        actions.add(SystemAction.get(AddServiceAction.class));
-        actions.add(SystemAction.get(AddGroupAction.class));
-        return actions.toArray(new Action[actions.size()]);
-         */
-        return null;
+        return new Action[] {
+            SystemAction.get(ViewApiDocAction.class)
+        };
+
     }
     static final java.awt.Image ICON =
             ImageUtilities.loadImage("org/netbeans/modules/wag/manager/resources/restservice.png"); //NOI18N

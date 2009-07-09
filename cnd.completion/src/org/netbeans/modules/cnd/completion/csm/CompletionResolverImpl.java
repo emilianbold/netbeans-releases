@@ -285,8 +285,9 @@ public class CompletionResolverImpl implements CompletionResolver {
             // select the best one
             Collection<CsmObject> visibleObjs = new ArrayList<CsmObject>();
             CsmIncludeResolver resolver = CsmIncludeResolver.getDefault();
+            CsmFile startFile = contResolver.getStartFile();
             for (CsmObject obj : toCheck) {
-                if (resolver.isObjectVisible(file, obj)) {
+                if (resolver.isObjectVisible(startFile, obj)) {
                     visibleObjs.add(obj);
                     foundVisible = true;
                     if(!CsmClassifierResolver.getDefault().isForwardClass(obj)) {
@@ -770,20 +771,21 @@ public class CompletionResolverImpl implements CompletionResolver {
         CsmFile contextFile = this.file;
         CsmProject filePrj = contextFile.getProject();
         CsmProject startProject = filePrj;
+        CsmFile startProjectFile = this.file;
         Collection<CsmProject> libs = new ArrayList<CsmProject>();
-        if (startProject.isArtificial()) {
-            for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(file, contextOffset)) {
-                CsmFile startFile = cu.getStartFile();
-                CsmProject prj = startFile == null ? null : startFile.getProject();
-                if (prj != null) {
-                    startProject = prj;
-                    break;
-                }
+        boolean replaceProject = startProject.isArtificial();
+        for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(file, contextOffset)) {
+            CsmFile startFile = cu.getStartFile();
+            CsmProject prj = startFile == null ? null : startFile.getProject();
+            if (prj != null) {
+                startProject = replaceProject ? prj : startProject;
+                startProjectFile = startFile;
+                break;
             }
         }
         // add libararies elements
         libs.addAll(startProject.getLibraries());
-        CsmProjectContentResolver resolver = new CsmProjectContentResolver(filePrj, isCaseSensitive(), isSortNeeded(), isNaturalSort(), libs);
+        CsmProjectContentResolver resolver = new CsmProjectContentResolver(startProjectFile, filePrj, isCaseSensitive(), isSortNeeded(), isNaturalSort(), libs);
         return resolver;
     }
 

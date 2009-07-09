@@ -563,7 +563,8 @@ public class RhtmlKit extends HtmlKit {
                             int textEnd = Utilities.getRowLastNonWhite(doc, textBegin)+1;
                             if (textEnd-textBegin >= ERB_TEXT_LEN) {
                                 CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_TEXT_LEN);
-                                CharSequence maybeLineEnd = DocumentUtilities.getText(doc, textEnd-ERB_SUFFIX_LEN, ERB_SUFFIX_LEN);
+                                String maybeLineEnd =
+                                        DocumentUtilities.getText(doc, textEnd-ERB_SUFFIX_LEN, ERB_SUFFIX_LEN).toString();
                                 if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_TEXT)) {
                                     doc.remove(textBegin, ERB_TEXT_LEN);
                                     if (CharSequenceUtilities.textEquals(maybeLineEnd, ERB_SUFFIX)) {

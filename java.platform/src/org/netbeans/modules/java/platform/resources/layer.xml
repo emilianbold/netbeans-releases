@@ -40,8 +40,19 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-java-platform-ui-PlatformsCustomizerAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.java.platform.ui.Bundle#CTL_PlatformManager"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="org-netbeans-api-java">
         <!-- Platform - related area -->
         <folder name="platform">
@@ -82,8 +93,8 @@ made subject to such option by the copyright holder.
 
     <folder name="Menu">
         <folder name="Tools">            
-            <file name="JavaPlatformsCustomizerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction"/>
+            <file name="JavaPlatformsCustomizerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-platform-ui-PlatformsCustomizerAction.instance"/>
                 <attr name="position" intvalue="300"/>
             </file>
         </folder>

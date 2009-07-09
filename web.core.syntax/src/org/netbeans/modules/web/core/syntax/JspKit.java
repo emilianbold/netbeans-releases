@@ -75,7 +75,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.netbeans.editor.ext.html.HtmlSyntax;
+import org.netbeans.modules.web.core.syntax.deprecated.HtmlSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;

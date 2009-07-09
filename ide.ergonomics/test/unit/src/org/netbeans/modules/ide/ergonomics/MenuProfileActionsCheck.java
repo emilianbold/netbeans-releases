@@ -75,13 +75,17 @@ public class MenuProfileActionsCheck extends NbTestCase {
         class VisitOriginalFile implements Enumerations.Processor<FileObject,FileObject> {
             public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 Object attr = fo.getAttribute("originalFile");
+                if (fo.isFolder()) {
+                    toAdd.addAll(Arrays.asList(fo.getChildren()));
+                    return fo;
+                }
+                if (fo.getPath().startsWith("Menu/Profile/") && !Boolean.TRUE.equals(fo.getAttribute("ergonomics"))) {
+                    return null;
+                }
                 if (attr instanceof String) {
                     FileObject originalFile = FileUtil.getConfigFile((String)attr);
                     assertNotNull("Original file for " + attr + " found", originalFile);
                     toAdd.add(originalFile);
-                }
-                if (fo.isFolder()) {
-                    toAdd.addAll(Arrays.asList(fo.getChildren()));
                 }
                 return fo;
             }
@@ -89,7 +93,9 @@ public class MenuProfileActionsCheck extends NbTestCase {
 
 
         StringBuilder errors = new StringBuilder();
-        Enumeration<? extends FileObject> en = Enumerations.queue(nodes, new VisitOriginalFile());
+        Enumeration<? extends FileObject> en = Enumerations.removeNulls(
+            Enumerations.queue(nodes, new VisitOriginalFile())
+        );
         int all = 0;
         while (en.hasMoreElements()) {
             FileObject fo = en.nextElement();
@@ -98,10 +104,6 @@ public class MenuProfileActionsCheck extends NbTestCase {
                     continue;
                 }
                 // check the root folder for its attributes
-            } else {
-                if (fo.getPath().startsWith("Menu/Profile/") && !Boolean.TRUE.equals(fo.getAttribute("ergonomics"))) {
-                    continue;
-                }
             }
 
             all++;

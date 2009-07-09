@@ -41,13 +41,13 @@ package org.netbeans.modules.cnd.highlight.error;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * A class for "temporary" tests that are to be moved to the main suite
  * @author Vladimir Kvashin
  */
-public class UnresolvedIdentifierFailed extends BaseTestSuite {
+public class UnresolvedIdentifierFailed extends CndBaseTestSuite {
 
     public UnresolvedIdentifierFailed() {
         super("Error Highlighting Failed Code Model");

@@ -42,11 +42,13 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Menu">
         <folder name="Tools">
-            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance">
-                <attr name="position" intvalue="700"/>
-            </file>
             <!-- Temporary UI -->
             <!--
             <file name="org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance"/>
@@ -54,6 +56,10 @@ made subject to such option by the copyright holder.
       <!-- For debug only
             <file name="com-sun-rave-complib-ui-ComplibDebugAction.instance"/>
       -->
+            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance"/>
+                <attr name="position" intvalue="700"/>
+            </file>
         </folder>
     </folder>
     <!--
@@ -77,10 +83,8 @@ made subject to such option by the copyright holder.
 
        <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-visualweb-complib-mime-resolver.xml"
-                  url="complib-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.visualweb.complib.Bundle"/>
+            <file name="org-netbeans-modules-visualweb-complib-mime-resolver.xml" url="complib-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.complib.Bundle"/>
                 <!--<attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/visualweb/palette/resolver-icon.gif"/> -->
                 <attr name="position" intvalue="70002"/>

@@ -43,10 +43,12 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import java.io.Serializable;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -83,16 +85,16 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         assert (false) : "define/undef doesn't support children"; // NOI18N        
     }
 
-    public boolean accept(APTToken token) {
+    public boolean accept(APTFile curFile,APTToken token) {
         if (APTUtils.isID(token)) {
             if (macroName != EMPTY_NAME) {
                 // init macro name only once
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("line %d: warning: extra tokens at end of %s directive\n", // NOI18N
-                            getToken().getLine(), getToken().getText().trim());
+                    System.err.printf("%s, line %d: warning: extra tokens at end of %s directive\n", // NOI18N
+                            APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
-                    APTUtils.LOG.log(Level.WARNING, "line {0}: warning: extra tokens at end of {1} directive", // NOI18N
-                            new Object[] {getToken().getLine(), getToken().getText().trim()} );
+                    APTUtils.LOG.log(Level.WARNING, "{0}, line {1}: warning: extra tokens at end of {2} directive", // NOI18N
+                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()} ); // NOI18N
                 }
             } else {
                 this.macroName = token;

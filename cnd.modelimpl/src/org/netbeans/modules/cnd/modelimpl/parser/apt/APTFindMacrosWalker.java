@@ -85,26 +85,28 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  */
 public final class APTFindMacrosWalker extends APTSelfWalker {
     private final List<CsmReference> references = new ArrayList<CsmReference>();
-
+    private final CsmFile csmFile;
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, csmFile, preprocHandler, cacheEntry);
+        super(apt, preprocHandler, cacheEntry);
+        this.csmFile = csmFile;
     }
 
     @Override
     protected void onDefine(APT apt) {
         APTDefine defineNode = (APTDefine) apt;
-        APTToken name = defineNode.getName();
-        MacroReference mr = null;
-        if (name != null) {
-            mr = new MacroReference(csmFile, name, null, CsmReferenceKind.DECLARATION);
-            references.add(mr);
-        }
+        int index = references.size();
         analyzeList(defineNode.getBody());
         super.onDefine(apt);
-        if (mr != null) {
+        APTToken name = defineNode.getName();
+        if (name != null) {
             APTMacro m = getMacroMap().getMacro(name);
             if (m != null) {
-                mr.setMacro(m);
+                MacroReference mr = new MacroReference(csmFile, name, m, CsmReferenceKind.DECLARATION);
+                if (references.size() == index) {
+                    references.add(mr);
+                } else {
+                    references.add(index, mr);
+                }
             }
         }
     }
@@ -270,7 +272,7 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
 
         private volatile CsmMacro ref = null;
         private final CharSequence macroName;
-        private APTMacro macro;
+        private final APTMacro macro;
         private final CsmReferenceKind kind;
         public MacroReference(CsmFile macroUsageFile, APTToken macroUsageToken, APTMacro macro, CsmReferenceKind kind) {
             super(macroUsageFile, macroUsageToken.getOffset(), macroUsageToken.getEndOffset());
@@ -351,10 +353,6 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CharSequence getText() {
             return macroName;
-        }
-
-        private void setMacro(APTMacro m) {
-            this.macro = m;
         }
     }
 }

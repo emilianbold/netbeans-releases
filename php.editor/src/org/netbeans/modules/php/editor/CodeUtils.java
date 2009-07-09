@@ -39,6 +39,8 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,11 +55,13 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
@@ -71,13 +75,16 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -92,6 +99,101 @@ public class CodeUtils {
     private CodeUtils() {
     }
 
+    //TODO: extracting name needs to be take into account namespaces
+    public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
+        Parameters.notNull("typeName", typeName);
+        if (typeName instanceof Identifier) {
+            return (Identifier) typeName;
+        } else if (typeName instanceof NamespaceName) {
+            return extractUnqualifiedIdentifier((NamespaceName)typeName);
+        } else if (typeName instanceof Variable){
+            return null; // #167863
+        }
+        //TODO: php5.3 !!!
+        assert false : typeName.getClass(); //NOI18N
+        return null;
+    }
+
+    public static String extractUnqualifiedName(Expression typeName) {
+        Parameters.notNull("typeName", typeName);
+        if (typeName instanceof Identifier) {
+            return ((Identifier) typeName).getName();
+        } else if (typeName instanceof NamespaceName) {
+            return extractUnqualifiedName((NamespaceName)typeName);
+        }
+
+        //TODO: php5.3 !!!
+        //assert false : "[php5.3] className Expression instead of Identifier"; //NOI18N
+        return null;
+    }
+
+    public static String extractQualifiedName(Expression typeName) {
+        Parameters.notNull("clsName", typeName);
+        if (typeName instanceof Identifier) {
+            return ((Identifier) typeName).getName();
+        } else if (typeName instanceof NamespaceName) {
+            return extractQualifiedName((NamespaceName)typeName);
+        }
+        assert false : typeName.getClass(); //NOI18N
+        return null;
+    }
+
+    public static String extractUnqualifiedClassName(StaticDispatch dispatch) {
+        Parameters.notNull("dispatch", dispatch);
+        Expression clsName = dispatch.getClassName();
+        return extractUnqualifiedName(clsName);
+    }
+
+    public static String extractUnqualifiedTypeName(FormalParameter param) {
+        Parameters.notNull("param", param);
+        Expression typeName = param.getParameterType();
+        return typeName != null ? extractUnqualifiedName(typeName) : null;
+    }
+
+    public static String extractUnqualifiedTypeName(CatchClause catchClause) {
+        Parameters.notNull("catchClause", catchClause);
+        Expression typeName = catchClause.getClassName();
+        return typeName != null ? extractUnqualifiedName(typeName) : null;
+    }
+
+    public static String extractUnqualifiedSuperClassName(ClassDeclaration clsDeclaration) {
+        Parameters.notNull("clsDeclaration", clsDeclaration);
+        Expression clsName = clsDeclaration.getSuperClass();
+        return clsName != null ? extractUnqualifiedName(clsName) : null;
+    }
+
+    public static String extractUnqualifiedName(NamespaceName namespaceName) {
+        final List<Identifier> segments = namespaceName.getSegments();
+        return segments.get(segments.size() - 1).getName();
+    }
+
+    public static String extractQualifiedName(NamespaceName namespaceName) {
+        Parameters.notNull("namespaceName", namespaceName);
+        StringBuilder sb = new StringBuilder();
+        final List<Identifier> segments = namespaceName.getSegments();
+        for (Iterator<Identifier> it = segments.iterator(); it.hasNext();) {
+            Identifier identifier = it.next();
+            if (sb.length() > 0) {
+                sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+            }
+            sb.append(identifier.getName());
+        }
+        return sb.toString();
+    }
+    
+    public static Identifier extractUnqualifiedIdentifier(NamespaceName name) {
+        if (name instanceof NamespaceName) {
+            NamespaceName namespaceName = (NamespaceName) name;
+            final List<Identifier> segments = namespaceName.getSegments();
+            if (segments.size() >= 1) {
+                return segments.get(segments.size()-1);
+            }
+        }
+        //TODO: php5.3 !!!
+        //assert false : "[php5.3] className Expression instead of Identifier"; //NOI18N
+        return null;
+    }
+    //TODO: rewrite for php53
     public static String extractClassName(ClassName clsName) {
         Expression name = clsName.getName();
         while (name instanceof Variable || name instanceof FieldAccess) {
@@ -102,18 +204,16 @@ public class CodeUtils {
                 FieldAccess fld = (FieldAccess) name;
                 name = fld.getField().getName();
             }
-        }        
+        }
+        if (name instanceof NamespaceName) {
+            return extractUnqualifiedName((NamespaceName)name);
+        }
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
 
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
     }
-    public static String extractSuperClassName(ClassDeclaration clsDeclaration) {
-        Identifier superClass = clsDeclaration.getSuperClass();
-        return (superClass != null) ? superClass.getName():null;
-    }
-
     @CheckForNull // null for RelectionVariable
     public static String extractVariableName(Variable var) {
         if (var instanceof ReflectionVariable) {
@@ -294,11 +394,7 @@ public class CodeUtils {
         if (rightSideExpression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
             Expression className = classInstanceCreation.getClassName().getName();
-
-            if (className instanceof Identifier) {
-                Identifier identifier = (Identifier) className;
-                return identifier.getName();
-            }
+            return CodeUtils.extractUnqualifiedName(className);
         } else if (rightSideExpression instanceof ArrayCreation) {
             return "array"; //NOI18N
         } else if (rightSideExpression instanceof FunctionInvocation) {
@@ -307,7 +403,7 @@ public class CodeUtils {
             return FUNCTION_TYPE_PREFIX + fname;
         } else if (rightSideExpression instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) rightSideExpression;
-            String className = staticMethodInvocation.getClassName().getName();
+            String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
             String methodName = extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null){
@@ -348,8 +444,9 @@ public class CodeUtils {
         if (functionName.getName() instanceof Identifier) {
             Identifier id = (Identifier) functionName.getName();
             return id.getName();
+        } else if (functionName.getName() instanceof NamespaceName) {
+            return extractUnqualifiedName((NamespaceName)functionName.getName());
         }
-
         if (functionName.getName() instanceof Variable) {
             Variable var = (Variable) functionName.getName();
             return extractVariableName(var);

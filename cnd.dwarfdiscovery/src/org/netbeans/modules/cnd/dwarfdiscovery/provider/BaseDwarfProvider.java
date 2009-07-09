@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -87,16 +88,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped = true;
     }
 
-    private int getNumberThreads(){
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
-                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
-        threadCount = Math.min(threadCount, 4);
-        return Math.max(threadCount, 1);
-    }
-
     protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
-        RequestProcessor rp = new RequestProcessor("Parallel analyzing", getNumberThreads()); // NOI18N
+        RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {

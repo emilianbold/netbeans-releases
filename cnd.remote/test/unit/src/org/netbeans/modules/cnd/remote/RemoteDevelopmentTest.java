@@ -39,19 +39,25 @@
 
 package org.netbeans.modules.cnd.remote;
 
+import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends BaseTestSuite {
+public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
 //    static {
 //        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
@@ -59,17 +65,49 @@ public class RemoteDevelopmentTest extends BaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
+    public static final String PLATFORMS_SECTION = "remote.platforms";
+
+    public RemoteDevelopmentTest(Class testClass) {
+        this(testClass.getName(), testClass);
+    }
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RemoteDevelopmentTest(String name, Test... tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RemoteDevelopmentTest(String name, Collection<Test> tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
     public RemoteDevelopmentTest() {
-        super("Remote Development"); // NOI18N
-        addTestSuite(MappingsTestCase.class);
-        addTestSuite(TransportTestCase.class);
-        addTestSuite(RemoteUtilTestCase.class);
-        addTestSuite(ServerListTestCase.class);
+        this("Remote Development", // NOI18N
+             MappingsTestCase.class,
+             TransportTestCase.class,
+             RemoteUtilTestCase.class,
+             ServerListTestCase.class,
+             ScpSyncWorkerTestCase.class,
+             ZipSyncWorkerTestCase.class,
+             HostSetupTestCase.class,
+             RemoteFileTestCase.class);
+    }
+
+
+    private RemoteDevelopmentTest(String name, Class... testClasses) {
+        super(name, PLATFORMS_SECTION, testClasses);
     }
 
     public static Test suite() {
         TestSuite suite = new RemoteDevelopmentTest();
         return suite;
     }
-
 }

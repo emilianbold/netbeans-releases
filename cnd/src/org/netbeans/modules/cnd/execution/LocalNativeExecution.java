@@ -181,8 +181,8 @@ class LocalNativeExecution extends NativeExecution {
                     throw new IOException ("No equal sign in name=value: " + nameval); // NOI18N
                 }
                 e.put(nameval.substring(0, idx), nameval.substring(idx + 1));
+                }
             }
-        }
 
         if (cwd != null) {
             pb.directory(cwd);

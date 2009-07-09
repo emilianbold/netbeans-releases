@@ -112,10 +112,12 @@ made subject to such option by the copyright holder.
                   <file name="RunFile.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlRun"/>
                       <attr name="position" intvalue="500"/>
+                      <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                   <file name="DebugFile.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlDebug"/>
                       <attr name="position" intvalue="600"/>
+                      <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                   <file name="webHtml-project-separator-2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

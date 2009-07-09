@@ -58,8 +58,8 @@ public class StackTraceFinderTest extends TestCase {
         assertEquals(prefix.length(), res.get(0).getStartOffset());
         assertEquals(prefix.length() + st.length(), res.get(0).getEndOffset());
 
-        prefix = " got this bloody stacktrace\n   at ";
-        st ="org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
+        prefix = " got this bloody stacktrace\n";
+        st ="   at org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
             "   at org.netbeans.ProxyClassLoader.getResource(ProxyClassLoader.java:312)\n" +
             "   at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1214)";
         res = StackTraceSupport.find(prefix + st);
@@ -67,12 +67,12 @@ public class StackTraceFinderTest extends TestCase {
         assertEquals(prefix.length(), res.get(0).getStartOffset());
         assertEquals(prefix.length() + st.length(), res.get(0).getEndOffset());
 
-        String prefix1 = " got those 2 stacktraces\nthis one: \n   at ";
-        String st1 = "org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
+        String prefix1 = " got those 2 stacktraces\nthis one: \n";
+        String st1 = "   at org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
             "   at org.netbeans.ProxyClassLoader.getResource(ProxyClassLoader.java:312)\n" +
             "   at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1214)\n";
-        String prefix2 = "\n\nand this another one: \n   at ";
-        String st2 = "org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
+        String prefix2 = "\n\nand this another one: \n";
+        String st2 = "   at org.netbeans.ProxyClassLoader.printDefaultPackageWarning(ProxyClassLoader.java:539)\n" +
             "   at org.netbeans.ProxyClassLoader.getResource(ProxyClassLoader.java:312)\n" +
             "   at java.lang.ClassLoader.getResourceAsStream(ClassLoader.java:1214)";
 

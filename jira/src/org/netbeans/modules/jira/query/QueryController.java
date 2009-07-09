@@ -51,29 +51,40 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.internal.jira.core.model.Version;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ComponentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.DateRangeFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.EstimateVsActualFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
@@ -81,14 +92,17 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.VersionFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -115,16 +129,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
-    private Task task;
 
     private final JiraRepository repository;
     protected JiraQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
-    private QueryTask searchTask;
+
     private QueryTask refreshTask;
     private final boolean modifiable;
     private final JiraFilter jiraFilter;
+    private final IssueTable issueTable;
+    private JiraQueryCellRenderer renderer;
+
+    private static SimpleDateFormat dateRangeDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -136,8 +153,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        panel = new QueryPanel(query.getTableComponent(), this);
-
+        issueTable = new IssueTable(query, query.getColumnDescriptors());
+        setupRenderer(issueTable);
+        panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
@@ -166,7 +184,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reporterTextField.addActionListener(this);
         panel.idTextField.getDocument().addDocumentListener(this);
 
-        panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+        panel.createdFromTextField.getDocument().addDocumentListener(this);
+        panel.createdToTextField.getDocument().addDocumentListener(this);
+        panel.updatedFromTextField.getDocument().addDocumentListener(this);
+        panel.updatedToTextField.getDocument().addDocumentListener(this);
+        panel.dueFromTextField.getDocument().addDocumentListener(this);
+        panel.dueToTextField.getDocument().addDocumentListener(this);
+
+        panel.ratioMinTextField.getDocument().addDocumentListener(this);
+        panel.ratioMaxTextField.getDocument().addDocumentListener(this);
+
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
                     
         if(query.isSaved()) {
             setAsSaved();
@@ -177,6 +205,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             postPopulate((FilterDefinition) jiraFilter, false);
         }
+    }
+
+
+    private static boolean isNamedFilter(JiraFilter jiraFilter) {
+        return jiraFilter instanceof NamedFilter;
+    }
+
+    private void setupRenderer(IssueTable issueTable) {
+        renderer = new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query));
+        issueTable.setRenderer(renderer);
     }
 
     protected JiraFilter getJiraFilter() {
@@ -210,6 +248,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(types.size() > 0) {
             fd.setIssueTypeFilter(new IssueTypeFilter(types.toArray(new IssueType[types.size()])));
         }
+        List<Component> components = getValues(panel.componentsList);
+        if(components.size() > 0) {
+            fd.setComponentFilter(new ComponentFilter(components.toArray(new Component[components.size()])));
+        }
+        List<Version> versions = getValues(panel.fixForList);
+        if(versions.size() > 0) {
+            fd.setFixForVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()])));
+        }
+        versions = getValues(panel.affectsVersionList);
+        if(versions.size() > 0) {
+            fd.setReportedInVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()])));
+        }
         List<JiraStatus> statuses = getValues(panel.statusList);
         if(statuses.size() > 0) {
             fd.setStatusFilter(new StatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
@@ -232,7 +282,54 @@ public class QueryController extends BugtrackingController implements DocumentLi
             fd.setAssignedToFilter(userFilter);
         }
 
+        Long min = getLongValue(panel.ratioMinTextField);
+        Long max = getLongValue(panel.ratioMaxTextField);
+        if(min != null || max != null) {
+            EstimateVsActualFilter estimateFilter = new EstimateVsActualFilter(min != null ? min : 0, max != null ? max : 0);
+            fd.setEstimateVsActualFilter(estimateFilter);
+        }
+
+        DateRangeFilter rf = getDateRangeFilter(panel.createdFromTextField, panel.createdToTextField);
+        if(rf != null) {
+            fd.setCreatedDateFilter(rf);
+        }
+
+        rf = getDateRangeFilter(panel.updatedFromTextField, panel.updatedToTextField);
+        if(rf != null) {
+            fd.setUpdatedDateFilter(rf);
+        }
+
+        rf = getDateRangeFilter(panel.dueFromTextField, panel.dueToTextField);
+        if(rf != null) {
+            fd.setDueDateFilter(rf);
+        }
+
         return fd;
+    }
+
+    private Long getLongValue(JTextField txt) {
+        try {
+            return Long.parseLong(txt.getText().trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Date getDateValue(JTextField txt) {
+        try {
+            return dateRangeDateFormat.parse(txt.getText().trim());
+        } catch (ParseException ex) {
+            return null;
+        }
+    }
+
+    private DateRangeFilter getDateRangeFilter(JTextField fromTxt, JTextField toTxt) {
+        Date from = getDateValue(fromTxt);
+        Date to = getDateValue(toTxt);
+        if (from != null || to != null) {
+            return new DateRangeFilter(from, to);
+        }
+        return null;
     }
 
     private <T> List<T> getValues(JList list) {
@@ -297,6 +394,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
 
                     populateList(panel.projectList, jc.getProjects());
+                    if (panel.projectList.getModel().getSize() > 0) {
+                        panel.projectList.setSelectedIndex(0);
+                        populateProjectDetails((Project)panel.projectList.getSelectedValue());
+                    }
                     if (jc.getProjects().length == 1) {
                         panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
                     } else if (filterDefinition != null) {
@@ -342,6 +443,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(pf != null) {
             setSelected(panel.projectList, pf.getProjects());
         }
+        ComponentFilter compf = fd.getComponentFilter();
+        if(compf != null) {
+            setSelected(panel.componentsList, compf.getComponents());
+        }
+        VersionFilter vf = fd.getFixForVersionFilter();
+        if(vf != null) {
+            setSelected(panel.fixForList, vf.getVersions());
+        }
+        vf = fd.getReportedInVersionFilter();
+        if(vf != null) {
+            setSelected(panel.affectsVersionList, vf.getVersions());
+        }
         IssueTypeFilter itf = fd.getIssueTypeFilter();
         if(itf != null) {
             setSelected(panel.typeList, itf.getIsueTypes());
@@ -376,19 +489,49 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if (uf != null) {
             assigneeUserSearch.setFilter(uf);
         }
-        // find by last change
-        // XXX finish me
+
+        EstimateVsActualFilter estimateFilter = fd.getEstimateVsActualFilter();
+        if(estimateFilter != null) {
+            panel.ratioMinTextField.setText(Long.toString(estimateFilter.getMinVariation()));
+            panel.ratioMaxTextField.setText(Long.toString(estimateFilter.getMaxVariation()));
+        }
+
+        setDateRangeFilter((DateRangeFilter) fd.getCreatedDateFilter(), panel.createdFromTextField, panel.createdToTextField);
+        setDateRangeFilter((DateRangeFilter) fd.getUpdatedDateFilter(), panel.updatedFromTextField, panel.updatedToTextField);
+        setDateRangeFilter((DateRangeFilter) fd.getDueDateFilter(),     panel.dueFromTextField,     panel.dueToTextField);
        
+    }
+
+    private void setDateRangeFilter(DateRangeFilter dateRangeFilter, JTextField fromTxt, JTextField toTxt) {
+        if(dateRangeFilter != null) {
+            Date from = dateRangeFilter.getFromDate();
+            Date to = dateRangeFilter.getToDate();
+            fromTxt.setText(dateRangeDateFormat.format(from));
+            toTxt.setText(dateRangeDateFormat.format(to));
+        }
     }
 
     private void setSelected (JList list, Object[] selectedItems) {
         if(selectedItems != null) {
             List<Integer> toSelect = new ArrayList<Integer>();
             DefaultListModel model = (DefaultListModel) list.getModel();
-            for (Object p : selectedItems) {
-                int idx = model.indexOf(p);
+            for (Object o : selectedItems) {
+                if(o == null) continue;
+                int idx = model.indexOf(o);
                 if (idx > -1) {
                     toSelect.add(idx);
+                } else {
+                    // for whatever reason - component doesn't implement equals.
+                    if(o instanceof Component) {
+                        Component c = (Component) o;
+                        for (int i = 0; i < model.getSize(); i++) {
+                            Component mc = (Component) model.get(i);
+                            if(mc != null && mc.getId().equals(c.getId())) {
+                                toSelect.add(i);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             int[] idx = new int[toSelect.size()];
@@ -433,8 +576,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void closed() {
         onCancelChanges();
-        if(task != null) {
-            task.cancel();
+        if(refreshTask != null) {
+            refreshTask.cancel();
         }
         if(query.isSaved()) {
             repository.stopRefreshing(query);
@@ -499,11 +642,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
-            onFilterChange((Query.Filter)e.getItem());
+            onFilterChange((Filter)e.getItem());
         }
     }
 
-    public void valueChanged(ListSelectionEvent e) {        
+    public void valueChanged(ListSelectionEvent e) {
+        if(e.getSource() == panel.projectList) {
+            onProjectChanged(e);
+        }
         fireDataChanged();            // XXX do we need this ???
     }
 
@@ -522,11 +668,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
-            onSearch();
+            onRefresh();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
         } else if (e.getSource() == panel.searchButton) {
-            onSearch();
+            onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
             onSave();
         } else if (e.getSource() == panel.cancelChangesButton) {
@@ -558,7 +704,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                    e.getSource() == panel.reporterTextField ||
                    e.getSource() == panel.assigneeTextField )
         {
-            onSearch();
+            onRefresh();
         }
     }
 
@@ -580,11 +726,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
            e.getSource() == panel.resolutionList ||
            e.getSource() == panel.priorityList)
         {
-            onSearch();
+            onRefresh();
         }
     }
 
-    private void onFilterChange(Query.Filter filter) {
+    private void onFilterChange(Filter filter) {
         query.setFilter(filter);
     }
 
@@ -640,11 +786,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         query.setSaved(true); // XXX
         setAsSaved();
         if(!query.wasRun()) {
-            if (firstTime) {
-                onSearch();
-            } else {
-                onRefresh();
-            }
+            onRefresh();
         }
     }
 
@@ -663,6 +805,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(filter != null) {
             panel.filterComboBox.setSelectedItem(filter);
         }
+        issueTable.setFilter(filter);
     }
 
     /**
@@ -705,10 +848,68 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void documentChanged (DocumentEvent e) {
-        if (e.getDocument() == panel.idTextField.getDocument()) {
+        final Document document = e.getDocument();
+        panel.searchButton.setEnabled(true);
+        panel.saveButton.setEnabled(true);
+        panel.warningLabel.setVisible(false);
+        panel.warningLabel.setText(""); // NOI18N
+        if (document == panel.idTextField.getDocument()) {
             panel.lblIssueKeyWarning.setVisible(false);
-        } else {
-            fireDataChanged();
+        } else if (document == panel.createdFromTextField.getDocument()) {
+            validateDateField(panel.createdFromTextField);
+        } else if (document == panel.createdToTextField.getDocument()) {
+            validateDateField(panel.createdToTextField);
+        } else if (document == panel.updatedFromTextField.getDocument()) {
+            validateDateField(panel.updatedFromTextField);
+        } else if (document == panel.updatedToTextField.getDocument()) {
+            validateDateField(panel.updatedToTextField);
+        } else if (document == panel.dueFromTextField.getDocument()) {
+            validateDateField(panel.dueFromTextField);
+        } else if (document == panel.dueToTextField.getDocument()) {
+            validateDateField(panel.dueToTextField);
+        } else if (document == panel.ratioMaxTextField.getDocument()) {
+            validateLongField(panel.ratioMaxTextField);
+        } else if (document == panel.ratioMinTextField.getDocument()) {
+            validateLongField(panel.ratioMinTextField);
+        }
+
+        fireDataChanged();
+    }
+
+    private void validateDateField(JTextField txt) {
+        try {
+            String str = txt.getText().trim();
+            if(str.equals("")) {
+                return;
+            }
+            dateRangeDateFormat.parse(str);
+        } catch (ParseException ex) {
+            panel.searchButton.setEnabled(false);
+            panel.saveButton.setEnabled(false);
+            panel.warningLabel.setVisible(true);
+            panel.warningLabel.setText(NbBundle.getMessage(QueryPanel.class, "MSG_VALUE_MUST_BE_A_DATE")); // NOI18N
+        }
+    }
+
+    private void validateLongField(JTextField txt) {
+        String str = txt.getText().trim();
+        if(str.equals("")) {
+            return;
+        }
+        boolean isValid = true;
+        try {
+            long l = Long.parseLong(str);
+            if(l < 0 || l > 100) {
+                isValid = false;
+            }
+        } catch (NumberFormatException ex) {
+            isValid = false;
+        }
+        if(!isValid) {
+            panel.searchButton.setEnabled(false);
+            panel.saveButton.setEnabled(false);
+            panel.warningLabel.setVisible(true);
+            panel.warningLabel.setText(NbBundle.getMessage(QueryPanel.class, "MSG_VALUE_MUST_BE_A_BETWEEN_1_100")); // NOI18N
         }
     }
 
@@ -767,21 +968,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    private void onSearch() {
-        if(searchTask == null) {
-            searchTask = new QueryTask() {
-                public void executeQuery() {
-                    try {
-                        refreshIntern(false);
-                    } finally {
-                        
-                    }
-                }
-            };
-        }
-        post(searchTask);
-    }
-
     public void autoRefresh() {
         onRefresh(true);
     }
@@ -790,34 +976,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         onRefresh(false);
     }
 
-    private void onRefresh(final boolean auto) {
+    private void onRefresh(final boolean autoRefresh) {
         if(refreshTask == null) {            
-            refreshTask = new QueryTask() {
-                public void executeQuery() {
-                    panel.setQueryRunning(true);
-                    try {
-                        refreshIntern(auto);
-                    } finally {
-                        panel.setQueryRunning(false);
-                        task = null;
-                    }
-                }
-            };
+            refreshTask = new QueryTask();
         }
-        post(refreshTask);
-    }
-
-    private void refreshIntern(boolean autoRefresh) {
-        query.refresh(getJiraFilter(), autoRefresh);
-    }
-
-    private void post(Runnable r) {
-        if(task != null) {
-            task.cancel();
-        }
-        task = rp.create(r);
-        task.schedule(0);
-    }
+        refreshTask.post(autoRefresh);
+    }    
 
     private void onModify() {
         panel.setModifyVisible(true);
@@ -873,9 +1037,69 @@ public class QueryController extends BugtrackingController implements DocumentLi
         );
     }
 
+    private void onProjectChanged(ListSelectionEvent e) {
+        Object[] values =  panel.projectList.getSelectedValues();
+        Project[] projects = null;
+        if(values != null) {
+            projects = new Project[values.length];
+            for (int i = 0; i < values.length; i++) {
+                projects[i] = (Project) values[i];
+            }
+        }
+        populateProjectDetails(projects);
+    }
+
+    private void populateProjectDetails(Project... projects) {
+        if(projects == null || projects.length == 0) {
+            return;
+        }
+
+        Set<Version> versions = new HashSet<Version>();
+        Set<Component> components = new HashSet<Component>();
+        for (Project p : projects) {
+            Component[] cs = p.getComponents();
+            if(cs != null) {
+                for (Component c : cs) {
+                    // for what ever reason - component doesn't implement equals!
+                    boolean found = false;
+                    for (Component knownComponent : components) {
+                        if(knownComponent.getId().equals(c.getId())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found) {
+                        components.add(c);
+                    }
+                }
+            }
+            Version[] vs = p.getVersions();
+            if(vs != null) {
+                for (Version v : vs) {
+                    versions.add(v);
+                }
+            }
+        }
+
+        Version[] versionsArray = versions.toArray(new Version[versions.size()]);
+        Component[] componentsArray = components.toArray(new Component[components.size()]);
+        populateList(panel.fixForList, versionsArray);
+        populateList(panel.affectsVersionList, versionsArray);
+        populateList(panel.componentsList, componentsArray);
+
+        panel.fixForScrollPane.setVisible(versionsArray.length != 0);
+        panel.fixForLabel.setVisible(versionsArray.length != 0);
+        panel.affectsVersionsScrollPane.setVisible(versionsArray.length != 0);
+        panel.affectsVersionsLabel.setVisible(versionsArray.length != 0);
+        panel.componentsScrollPane.setVisible(componentsArray.length != 0);
+        panel.componentsLabel.setVisible(componentsArray.length != 0);
+            
+        panel.byDetailsPanel.validate();
+    }
+
     private void remove() {
-        if (task != null) {
-            task.cancel();
+        if (refreshTask != null) {
+            refreshTask.cancel();
         }
         query.remove();
     }
@@ -886,9 +1110,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
+    private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
+        private Task task;
+        private boolean autoRefresh;
 
         public QueryTask() {
             query.addNotifyListener(this);
@@ -907,6 +1133,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     this);
             panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
             handle.start();
+            QueryController.this.renderer.resetDefaultRowHeight();
         }
 
         private void finnishQuery() {
@@ -925,7 +1152,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
-        public abstract void executeQuery();
+        public void executeQuery() {
+            panel.setQueryRunning(true);
+            try {
+                query.refresh(getJiraFilter(), autoRefresh);
+            } finally {
+                panel.setQueryRunning(false);
+                task = null;
+            }
+        }
 
         public void run() {
             startQuery();
@@ -936,11 +1171,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        public boolean cancel() {
+        synchronized void post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
-            finnishQuery();
+            task = rp.create(this);
+            this.autoRefresh = autoRefresh;
+            task.schedule(0);
+        }
+
+        public boolean cancel() {
+            if(task != null) {
+                task.cancel();
+                finnishQuery();
+            }
             return true;
         }
 

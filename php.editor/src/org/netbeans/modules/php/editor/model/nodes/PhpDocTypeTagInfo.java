@@ -43,6 +43,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
@@ -114,6 +115,11 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         }
 
         return value;
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.createUnqualifiedName(getTypeName());
     }
 
     @Override

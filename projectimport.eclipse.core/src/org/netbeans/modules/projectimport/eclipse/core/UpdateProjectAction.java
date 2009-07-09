@@ -46,6 +46,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.projectimport.eclipse.core.spi.UpgradableProjectLookupProvider;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -57,8 +58,6 @@ import org.openide.util.actions.Presenter;
 public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
     
     private Lookup context;
-    private UpgradableProject upgradable;
-    private boolean initialized;
     
     public UpdateProjectAction() {
         this(null);
@@ -76,20 +75,13 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     @Override
     public boolean isEnabled() {
         assert context != null;
-        return getUpgradableProject() != null && getUpgradableProject().isUpgradable();
-    }
-    
-    private UpgradableProject getUpgradableProject() {
-        if (!initialized) {
-            Project p = context.lookup(Project.class);
-            if (p != null) {
-                upgradable = p.getLookup().lookup(UpgradableProject.class);
-            }
-            initialized = true;
+        Project p = context.lookup(Project.class);
+        if (p == null || !UpgradableProjectLookupProvider.isRegistered(p)) {
+            return false;
         }
-        return upgradable;
+        UpgradableProject upgradable = p.getLookup().lookup(UpgradableProject.class);
+        return upgradable != null && upgradable.isUpgradable();
     }
-    
     
     public Action createContextAwareInstance(Lookup actionContext) {
         return new UpdateProjectAction(actionContext);

@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -83,6 +83,7 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.DATANUCLEUS_PROVIDER, "dataNucleusPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
         
@@ -101,7 +102,8 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
     }
     
     public boolean supportsDefaultProvider() {
-        return Capabilities.forProject(project).hasDefaultPersistenceProvider();
+        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
+        return capabilities != null && capabilities.hasDefaultPersistenceProvider();
     }
     
 

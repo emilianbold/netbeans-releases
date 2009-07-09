@@ -59,7 +59,7 @@ import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -199,12 +199,14 @@ class DocRenderer {
             int paramCount = functionDeclaration.getFormalParameters().size();
 
             for (int i = 0; i < paramCount; i++) {
-                FormalParameter param = functionDeclaration.getFormalParameters().get(i);
-
+                FormalParameter param = functionDeclaration.getFormalParameters().get(i);                
                 if (param.getParameterType() != null) {
-                    header.type(true);
-                    header.appendText(param.getParameterType().getName() + " "); //NOI18N
-                    header.type(false);
+                    Identifier paramId = CodeUtils.extractUnqualifiedIdentifier(param.getParameterType());
+                    if (paramId != null) {
+                        header.type(true);
+                        header.appendText(paramId.getName() + " "); //NOI18N
+                        header.type(false);
+                    }
                 }
 
                 header.appendText(CodeUtils.getParamDisplayName(param));
@@ -325,8 +327,8 @@ class DocRenderer {
                         }
                     }
                 }
-            } else if (node instanceof ClassConstantDeclaration) {
-                ClassConstantDeclaration classConstantDeclaration = (ClassConstantDeclaration) node;
+            } else if (node instanceof ConstantDeclaration) {
+                ConstantDeclaration classConstantDeclaration = (ConstantDeclaration) node;
                 int constIdx = -1;
 
                 for (int i = 0; i < classConstantDeclaration.getNames().size(); i++) {

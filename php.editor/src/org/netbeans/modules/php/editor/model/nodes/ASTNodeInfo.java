@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -52,9 +53,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -64,12 +67,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 public class ASTNodeInfo<T extends ASTNode> {
+
     private T node;
     private Kind kind;
 
     public enum Kind {
 
-        IFACE, CLASS, CLASS_INSTANCE_CREATION,
+        NAMESPACE_DECLARATION, IFACE, CLASS, CLASS_INSTANCE_CREATION,
         METHOD, STATIC_METHOD,
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
@@ -87,6 +91,30 @@ public class ASTNodeInfo<T extends ASTNode> {
 
     public String getName() {
         return toName(getOriginalNode());
+    }
+
+    public QualifiedName getQualifiedName() {
+        return toQualifiedName(node);
+    }
+
+    private static QualifiedName toQualifiedName(ASTNode node) {
+        if (node instanceof FunctionInvocation) {
+            FunctionInvocation fi = (FunctionInvocation) node;
+            return QualifiedName.create(fi.getFunctionName().getName());
+        } else if (node instanceof ClassName) {
+            ClassName cname = (ClassName) node;
+            return QualifiedName.create(cname.getName());
+        } else if (node instanceof Identifier) {
+            Identifier cname = (Identifier) node;
+            return QualifiedName.createUnqualifiedName(cname);
+        } else if (node instanceof NamespaceName) {
+            return QualifiedName.create((NamespaceName)node);
+        } else if (node instanceof ClassInstanceCreation) {
+            ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
+            return QualifiedName.create(instanceCreation.getClassName().getName());
+        }
+        String toName = toName(node);
+        return QualifiedName.createUnqualifiedName(toName);
     }
 
     public Kind getKind() {
@@ -145,6 +173,10 @@ public class ASTNodeInfo<T extends ASTNode> {
         return new ASTNodeInfo<Variable>(variable);
     }
 
+    public static ASTNodeInfo<StaticDispatch> create(StaticDispatch staticDispatch) {
+        return new ASTNodeInfo<StaticDispatch>(staticDispatch);
+    }
+
     public static ASTNodeInfo<StaticMethodInvocation> create(StaticMethodInvocation staticMethodInvocation) {
         return new ASTNodeInfo<StaticMethodInvocation>(staticMethodInvocation);
     }
@@ -165,8 +197,12 @@ public class ASTNodeInfo<T extends ASTNode> {
         return new ASTNodeInfo<ClassName>(className);
     }
 
-    public static ASTNodeInfo<Identifier> create(Kind kind, Identifier identifier) {
-        return new ASTNodeInfo<Identifier>(kind, identifier);
+    public static ASTNodeInfo<Expression> create(Kind kind, NamespaceName namespaceName) {
+        return new ASTNodeInfo<Expression>(kind, namespaceName);
+    }
+
+    public static ASTNodeInfo<Expression> create(Kind kind, Identifier identifier) {
+        return new ASTNodeInfo<Expression>(kind, identifier);
     }
 
     public static ASTNodeInfo<Scalar> create(Kind kind, Scalar scalar) {
@@ -231,6 +267,8 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (node instanceof Identifier) {
             Identifier cname = (Identifier) node;
             return cname.getName();
+        } else if (node instanceof NamespaceName) {
+            return toName(CodeUtils.extractUnqualifiedIdentifier((NamespaceName)node));
         } else if (node instanceof Scalar) {
             Scalar scalar = (Scalar) node;
             return NavUtils.isQuoted(scalar.getStringValue()) ? NavUtils.dequote(scalar.getStringValue()) : scalar.getStringValue();
@@ -243,14 +281,12 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (node instanceof ReturnStatement) {
             return "return";//NOI18N
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException(node.getClass().toString());
     }
 
     private static OffsetRange toOffsetRange(ASTNode node) {
         if (node instanceof FunctionInvocation) {
-            FunctionInvocation fi = (FunctionInvocation) node;
-            FunctionName name = fi.getFunctionName();
-            return new OffsetRange(name.getStartOffset(), name.getEndOffset());
+            return toOffsetRange(((FunctionInvocation) node).getFunctionName().getName());
         } else if (node instanceof Variable) {
             Variable var = (Variable) node;
             return toOffsetRangeVar(var);
@@ -268,11 +304,13 @@ public class ASTNodeInfo<T extends ASTNode> {
             Identifier constant = sca.getConstant();
             return new OffsetRange(constant.getStartOffset(), constant.getEndOffset());
         } else if (node instanceof ClassName) {
-            ClassName cname = (ClassName) node;
-            return new OffsetRange(cname.getStartOffset(), cname.getEndOffset());
+            Identifier id = CodeUtils.extractUnqualifiedIdentifier(((ClassName) node).getName());
+            return new OffsetRange(id.getStartOffset(), id.getEndOffset());
         } else if (node instanceof Identifier) {
             Identifier cname = (Identifier) node;
             return new OffsetRange(cname.getStartOffset(), cname.getEndOffset());
+        } else if (node instanceof NamespaceName) {
+            return toOffsetRange(CodeUtils.extractUnqualifiedIdentifier((NamespaceName)node));
         } else if (node instanceof Scalar) {
             Scalar scalar = (Scalar) node;
             if (NavUtils.isQuoted(scalar.getStringValue())) {

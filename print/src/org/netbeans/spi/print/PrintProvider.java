@@ -65,7 +65,7 @@ public interface PrintProvider {
      * <code>1.0</code> - <code>100%</code>,
      * <code>3.1415</code> - <code>314.5%</code> etc.
      *
-     * @return pages being printed for given width, height and zoom
+     * @return pages being printed for the given width, height and zoom
      */
     PrintPage[][] getPages(int width, int height, double zoom);
 

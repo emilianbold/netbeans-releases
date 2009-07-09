@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -51,7 +51,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Voskresensky
  */
-public class CndFileObjectTestCase extends BaseTestCase {
+public class CndFileObjectTestCase extends CndBaseTestCase {
     
     public CndFileObjectTestCase(String testName) {
         super(testName);

@@ -46,7 +46,7 @@ public class StaticConstantAccess extends StaticDispatch {
 
     private Identifier constant;
 
-    public StaticConstantAccess(int start, int end, Identifier className, Identifier constant) {
+    public StaticConstantAccess(int start, int end, Expression className, Identifier constant) {
         super(start, end, className);
         this.constant = constant;
     }

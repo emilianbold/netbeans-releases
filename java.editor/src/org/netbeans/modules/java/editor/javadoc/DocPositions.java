@@ -81,7 +81,7 @@ public final class DocPositions {
     String tokenSequenceDump;
 
     public static final DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
-        return DocPositionsManager.get(javac).get(javadoc, jdts);
+        return DocPositionsManager.get(javac, javadoc, jdts);
     }
     
     private DocPositions(Env env) {
@@ -480,33 +480,29 @@ public final class DocPositions {
     
     private final static class DocPositionsManager {
         
-        private static final Map<CompilationUnitTree, DocPositionsManager> managers
-                = new WeakHashMap<CompilationUnitTree, DocPositions.DocPositionsManager>();
+        private static final Map<CompilationUnitTree, Map<Doc, DocPositions>> cache
+                = new WeakHashMap<CompilationUnitTree, Map<Doc, DocPositions>>();
         
-        private final Map<Doc, DocPositions> cache = new WeakHashMap<Doc, DocPositions>();
-        private final Reference<CompilationInfo> wjavac;
-
-        public DocPositionsManager(CompilationInfo javac) {
-            this.wjavac = new WeakReference<CompilationInfo>(javac);
+        private DocPositionsManager() {
         }
 
-        public static DocPositionsManager get(CompilationInfo javac) {
+        private static Map<Doc, DocPositions> getDocsCache(CompilationInfo javac) {
             CompilationUnitTree cut = javac.getCompilationUnit();
-            DocPositionsManager dpm = managers.get(cut);
-            if (dpm == null) {
-                dpm = new DocPositionsManager(javac);
-                managers.put(cut, dpm);
+            Map<Doc, DocPositions> docsCache = cache.get(cut);
+            if (docsCache == null) {
+                docsCache = new WeakHashMap<Doc, DocPositions>();
+                cache.put(cut, docsCache);
             }
-            return dpm;
+            return docsCache;
         }
         
-        public DocPositions get(Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
-            DocPositions dp = cache.get(javadoc);
+        public static DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
+            Map<Doc, DocPositions> docsCache = getDocsCache(javac);
+            DocPositions dp = docsCache.get(javadoc);
             if (dp == null) {
-                CompilationInfo javac = wjavac.get();
                 Snapshot snapshot = javac.getSnapshot();
                 dp = new DocPositions(new Env(jdts, snapshot, javadoc));
-                cache.put(javadoc, dp);
+                docsCache.put(javadoc, dp);
             }
             return dp;
         }

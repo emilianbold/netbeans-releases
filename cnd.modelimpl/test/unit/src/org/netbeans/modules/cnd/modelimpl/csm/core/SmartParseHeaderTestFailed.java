@@ -41,13 +41,13 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * A class for "temporary" tests that are to be moved to SmartParseHeaderTest
  * @author Vladimir Kvashin
  */
-public class SmartParseHeaderTestFailed extends BaseTestSuite {
+public class SmartParseHeaderTestFailed extends CndBaseTestSuite {
     
     public SmartParseHeaderTestFailed() {
         super("C/C++ Smart Headers Parsing Failedl");

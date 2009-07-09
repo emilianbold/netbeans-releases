@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.kenai.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +58,40 @@ public final class KenaiFeature {
     private FeatureData featureData;
     private URL webL;
     private String loc;
+
+    /**
+     * getSource() returns KenaiFeature <br>
+     * getOldValue() returns null<br>
+     * getNewValue() returns instance of KenaiNotification
+     */
+    public static final String PROP_FEATURE_CHANGED = "feature_change";
+
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
+    }
     
     KenaiFeature(FeatureData data) {
         this.featureData = data;

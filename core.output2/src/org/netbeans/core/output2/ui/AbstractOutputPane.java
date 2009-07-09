@@ -109,9 +109,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     public void setViewFont (Font f) {
-        fontWidth = -1;
-        fontHeight = -1;
         textView.setFont(f);
+        updateFont(getGraphics());
     }
 
     protected abstract JEditorPane createTextView();
@@ -432,11 +431,20 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     @Override
     public final void paint (Graphics g) {
         if (fontHeight == -1) {
-            fontHeight = g.getFontMetrics(textView.getFont()).getHeight();
-            fontWidth = g.getFontMetrics(textView.getFont()).charWidth('m'); //NOI18N
-            getVerticalScrollBar().setUnitIncrement(fontHeight);
+            updateFont(g);
         }
         super.paint(g);
+    }
+
+    void updateFont(Graphics g) {
+        if (g == null) {
+            fontHeight = fontWidth = -1;
+            return;
+        }
+        fontHeight = g.getFontMetrics(textView.getFont()).getHeight();
+        fontWidth = g.getFontMetrics(textView.getFont()).charWidth('m'); //NOI18N
+        getVerticalScrollBar().setUnitIncrement(fontHeight);
+        getHorizontalScrollBar().setUnitIncrement(fontWidth);
     }
 
 //***********************Listener implementations*****************************

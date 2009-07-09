@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.j2ee.persistence.unit;
 
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;

@@ -77,7 +77,7 @@
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.OneToOne;
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.SecondaryTable;
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Table;
-//import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+//import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.j2ee.persistence.editor.completion.AnnotationUtils;
 //import org.netbeans.modules.j2ee.persistence.editor.completion.CompletionContextResolver;
 //import org.netbeans.modules.j2ee.persistence.editor.completion.JMIUtils;

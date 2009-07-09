@@ -41,29 +41,13 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class ResynchronizeEclipseAction extends CallableSystemAction {
+public class ResynchronizeEclipseAction implements ActionListener {
     
-    public ResynchronizeEclipseAction() {
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-    }
-    
-    public void performAction() {
+    public void actionPerformed(ActionEvent e) {
         new UpdateAllProjects().update(false);
     }
     
-    public String getName() {
-        return NbBundle.getMessage(ResynchronizeEclipseAction.class, "CTL_SynchronizeMenuItem"); // NOI18N
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
 }

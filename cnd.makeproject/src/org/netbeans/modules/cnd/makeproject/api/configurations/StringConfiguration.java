@@ -38,81 +38,98 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
 
 public class StringConfiguration {
-    private StringConfiguration master;
-    private String def;;
 
+    private StringConfiguration master;
+    private String def;
+    ;
     private String value;
     private boolean modified;
 
     public StringConfiguration(StringConfiguration master, String def) {
-	this.master = master;
-	this.def = def;
-	reset();
+        this.master = master;
+        this.def = def;
+        reset();
+    }
+
+    public void setMaster(StringConfiguration master) {
+        this.master = master;
     }
 
     public void setValue(String b) {
-	if (b == null)
-	    b = ""; // NOI18N
-	this.value = b;
-	if (master != null)
-	    setModified(true);
-	else
-	    setModified(!b.equals(getDefault()));
+        if (b == null) {
+            b = ""; // NOI18N
+        }
+        this.value = b;
+        if (master != null) {
+            setModified(true);
+        } else {
+            setModified(!b.equals(getDefault()));
+        }
     }
+
     public String getValue() {
-	if (master != null && !getModified())
-	    return master.getValue();
-	else
-	    return value;
+        if (master != null && !getModified()) {
+            return master.getValue();
+        } else {
+            return value;
+        }
     }
+
     public String getValueDef(String def) {
-	if (master != null && !getModified() && !master.getModified() && def != null)
+        if (master != null && !getModified() && !master.getModified() && def != null) {
             return def;
-	if (master != null && !getModified())
-	    return master.getValue();
-	else if (!getModified() && def != null)
+        }
+        if (master != null && !getModified()) {
+            return master.getValue();
+        } else if (!getModified() && def != null) {
             return def;
-        else
-	    return value;
+        } else {
+            return value;
+        }
     }
+
     public String getValue(String delim) {
-	StringBuilder ret = new StringBuilder();
-	StringTokenizer tokenizer = new StringTokenizer(getValue());
-	while (tokenizer.hasMoreTokens()) {
-	    ret.append(tokenizer.nextToken());
-	    if (tokenizer.hasMoreTokens())
-		ret.append(delim);
-	}
-	return ret.toString();
+        StringBuilder ret = new StringBuilder();
+        StringTokenizer tokenizer = new StringTokenizer(getValue());
+        while (tokenizer.hasMoreTokens()) {
+            ret.append(tokenizer.nextToken());
+            if (tokenizer.hasMoreTokens()) {
+                ret.append(delim);
+            }
+        }
+        return ret.toString();
     }
+
     public void setModified(boolean b) {
-	this.modified = b;
+        this.modified = b;
     }
+
     public boolean getModified() {
-	return modified;
+        return modified;
     }
+
     public String getDefault() {
-	return def;
+        return def;
     }
+
     public void reset() {
-	value = getDefault();
-	setModified(false);
+        value = getDefault();
+        setModified(false);
     }
-    
+
     public void setDefaultValue(String def) {
         this.def = def;
     }
 
     // Clone and Assign
     public void assign(StringConfiguration conf) {
-	setValue(conf.getValue());
-	setModified(conf.getModified());
+        setValue(conf.getValue());
+        setModified(conf.getModified());
     }
 
     @Override

@@ -41,15 +41,14 @@ package org.netbeans.modules.bugzilla;
 
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -79,14 +78,6 @@ public class BugzillaConnector extends BugtrackingConnector {
         return Bugzilla.getInstance().getRepositories();
     }
 
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
-    }
-
     public static String getConnectorName() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
 }
@@ -97,6 +88,17 @@ public class BugzillaConnector extends BugtrackingConnector {
             issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
         }
         return issueFinder;
+    }
+
+    public Lookup getLookup() {
+        return Lookups.singleton(getKenaiSupport());
+    }
+
+    private KenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = new KenaiSupportImpl();
+        }
+        return kenaiSupport;
     }
 
 }

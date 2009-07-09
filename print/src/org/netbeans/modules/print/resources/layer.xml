@@ -63,8 +63,8 @@
             </file>
 
             <!-- hide -->
-            <file name="org-openide-actions-PageSetupAction.instance_hidden"/>
-            <file name="org-openide-actions-PrintAction.instance_hidden"/>
+            <file name="org-openide-actions-PageSetupAction.shadow_hidden"/>
+            <file name="org-openide-actions-PrintAction.shadow_hidden"/>
         </folder>
     </folder>
 

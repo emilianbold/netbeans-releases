@@ -83,9 +83,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
 
         FileObject testFile = getProjectDir().getFileObject("/src/org/gjt/sp/jedit/jEdit.java");
 
-        ClasspathInfo cpi = ClasspathInfo.create(getBoot(), getCompile(), getSource());
-
-        JavaSource src = JavaSource.create(cpi, testFile);
+        JavaSource src = JavaSource.forFileObject(testFile);
 
         // find usages of symbols collected below
         final List<TreePathHandle> handle = new ArrayList<TreePathHandle>();

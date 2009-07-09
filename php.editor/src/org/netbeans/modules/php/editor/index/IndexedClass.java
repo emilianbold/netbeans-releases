@@ -64,4 +64,9 @@ public class IndexedClass extends IndexedElement {
     public String getSuperClass(){
         return superClass;
     }
+
+    public String getNamespaceName() {
+        final String retval = getIn();
+        return retval != null ? retval : "";//NOI18N
+    }
 }

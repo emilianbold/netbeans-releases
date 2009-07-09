@@ -514,6 +514,21 @@ org.my.netbeans.extramodule.ExtraTip
         is the result of <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
     </api>
     </li>
+
+    <li>
+    <api type="export" group="property" name="org.openide.util.Lookup.paths" category="devel">
+        Sometimes it may be useful for the Lookup to contains objects from
+        some system file system folder. This can be done with
+        <code>org.openide.util.Lookup.paths=Folder1:Folder2:Folder3</code>.
+        If this property is set prior to first call to
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>,
+        it is split into pieces (separator is <code>':'</code>) and individual
+        parts are then used to construct <code>Lookups.forPath("Folder1")</code>,
+        etc. All these lookups then become part of the
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+        one. This property works since version 7.24
+    </api>
+    </li>
     
   </ul>
  </answer>

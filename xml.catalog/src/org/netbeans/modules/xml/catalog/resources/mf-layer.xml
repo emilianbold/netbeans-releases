@@ -114,10 +114,11 @@ made subject to such option by the copyright holder.
     
     <folder name="Menu">
         <folder name="Tools">
-            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance">
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-xml-catalog-CatalogAction.instance"/>
                 <attr name="position" intvalue="1100"/>
             </file>
-            </folder>
+        </folder>
     </folder>
     
     <folder name="Plugins">

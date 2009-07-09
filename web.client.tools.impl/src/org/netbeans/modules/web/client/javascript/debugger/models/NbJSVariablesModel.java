@@ -157,7 +157,7 @@ public class NbJSVariablesModel implements TreeModel, ExtendedNodeModel,
 	}
 
 	public int getChildrenCount(Object parent) throws UnknownTypeException {
-		if (isSessionSuspended()) {
+		if (!isSessionSuspended()) {
 			return 0;
 		}
 		if (parent == ROOT) {

@@ -43,14 +43,14 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  */
 public abstract class StaticDispatch extends VariableBase {
 
-    private Identifier className;
+    private Expression className;
 
-    public StaticDispatch(int start, int end, Identifier className) {
+    public StaticDispatch(int start, int end, Expression className) {
         super(start, end);
         this.className = className;
     }
 
-    public Identifier getClassName() {
+    public Expression getClassName() {
         return className;
     }
 

@@ -8,6 +8,7 @@ package org.netbeans.modules.kenai.ui.spi;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Action;
 import org.openide.util.Lookup;
 
 /**
@@ -35,7 +36,7 @@ public abstract class BuildAccessor {
                 public List<BuildHandle> getBuilds(ProjectHandle project) {
                     return Collections.emptyList();
                 }
-                public ActionListener getNewBuildAction(ProjectHandle project) {
+                public Action getNewBuildAction(ProjectHandle project) {
                     return null;
                 }
             };
@@ -57,6 +58,6 @@ public abstract class BuildAccessor {
     /**
      * @return Action to invoke when user clicks 'New Build...' button, or null to disable
      */
-    public abstract ActionListener getNewBuildAction( ProjectHandle project );
+    public abstract Action getNewBuildAction( ProjectHandle project );
 
 }

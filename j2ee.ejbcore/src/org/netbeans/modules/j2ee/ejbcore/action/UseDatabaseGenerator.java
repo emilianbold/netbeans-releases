@@ -48,7 +48,6 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -57,6 +56,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
@@ -98,7 +98,7 @@ public final class UseDatabaseGenerator {
         ServiceLocatorStrategy serviceLocatorStrategy = (serviceLocator == null) ? null : 
             ServiceLocatorStrategy.create(project, fileObject, serviceLocator);
         EnterpriseReferenceContainer erc = project.getLookup().lookup(EnterpriseReferenceContainer.class);
-        if (Utils.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
+        if (Util.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
                 InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
             boolean isStatic = InjectionTargetQuery.isStaticReferenceRequired(fileObject, className);
             String fieldName = Utils.jndiNameToCamelCase(datasourceReferenceName, true, null);
@@ -176,12 +176,12 @@ public final class UseDatabaseGenerator {
     }
     
     private boolean isWebOrAppClientModule(J2eeModule module) {
-        Object moduleType = module.getModuleType();
-        return J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType);
+        J2eeModule.Type moduleType = module.getType();
+        return J2eeModule.Type.WAR.equals(moduleType) || J2eeModule.Type.CAR.equals(moduleType);
     }
     
     private boolean isEjbModule(J2eeModule module) {
-        return module.getModuleType().equals(J2eeModule.EJB);
+        return module.getType().equals(J2eeModule.Type.EJB);
     }
     
     private String generateJNDILookup(String datasourceReferenceName, EnterpriseReferenceContainer enterpriseReferenceContainer, 

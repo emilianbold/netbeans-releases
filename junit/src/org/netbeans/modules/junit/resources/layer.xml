@@ -170,9 +170,9 @@ made subject to such option by the copyright holder.
     
     <!-- shortcuts -->
     <folder name="Shortcuts">
-        <file name="DS-U.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.CreateTestAction"/>
-	</file>
+        <file name="DS-U.shadow">
+            <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+        </file>
     </folder>
     
 </filesystem>

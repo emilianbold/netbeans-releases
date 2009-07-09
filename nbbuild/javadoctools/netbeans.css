@@ -42,7 +42,7 @@ h1 {font-size: 17px; font-weight : bold; color: #080c77; line-height: 35px; bord
 h2 {font-size: 15px; font-weight: bold; color: #ee6d06; }
 h3 {font-size: 13px; font-weight: bold; color: #ee6d06; }
 h4 {font-size: 12px; font-weight: normal; color: #ee6d06; }
-h5,h6 {font-size: 11px%; font-weight: normal; color: #ee6d06; }
+h5,h6 {font-size: 11px; font-weight: normal; color: #ee6d06; }
 
 .h1 {font-size: 17px; font-weight : bold; color: #ee6d06;}
 .h2 {font-size: 15px; font-weight: bold; color: #ee6d06; }
@@ -293,7 +293,7 @@ if you need make some changes please edit into netbeans.css*/
 /* Collab css*/
 
 leftnav1, .Footer, .footer1    {
-    font-size:    12px%;
+    font-size:    12px;
     }
 
 .ProjectNameHeader, .Warning, .ProjectHeader    {

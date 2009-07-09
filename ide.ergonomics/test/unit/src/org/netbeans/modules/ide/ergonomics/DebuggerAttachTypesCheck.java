@@ -39,14 +39,9 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.spi.debugger.ui.AttachType;
 
 /**

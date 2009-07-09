@@ -67,6 +67,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         Mercurial.getInstance().addPropertyChangeListener(this);
         Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        Mercurial.getInstance().getMercurialAnnotator().addPropertyChangeListener(this);
     }
 
     @Override
@@ -130,6 +131,8 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
             fireAnnotationsChanged((Set<File>) event.getNewValue());
         } else if (event.getPropertyName().equals(Mercurial.PROP_VERSIONED_FILES_CHANGED)) {
             fireVersionedFilesChanged();
+        } else if (event.getPropertyName().equals(MercurialAnnotator.PROP_ICON_BADGE_CHANGED)) {
+            fireStatusChanged((Set<File>) event.getNewValue());
         }
     }
 

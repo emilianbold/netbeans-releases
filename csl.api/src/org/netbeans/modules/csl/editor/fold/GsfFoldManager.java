@@ -429,6 +429,9 @@ public class GsfFoldManager implements FoldManager {
                     return false;
                 }
                 TokenSequence<?> ts = th.tokenSequence();
+                if (ts == null) {
+                    return false;
+                }
                 
                 while (ts.moveNext()) {
                     Token<?> token = ts.token();

@@ -56,6 +56,7 @@ public abstract class VerifierSupport {
     /**
      * Whether the verifier support this module type; default to supports all types.
      */
+    // FIXME use J2eeModule.Type
     public boolean supportsModuleType(Object moduleType) {
         return true;
     }

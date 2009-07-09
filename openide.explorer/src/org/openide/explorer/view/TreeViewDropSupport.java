@@ -258,7 +258,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         endPointX = endPointX + SHIFT_RIGHT;
 
         // 2.b. check index cookie
-        Index indexCookie = (Index) dropNode.getCookie(Index.class);
+        Index indexCookie = dropNode.getCookie(Index.class);
 
         if (indexCookie != null) {
             if (pointAt == DragDropUtilities.NODE_UP) {
@@ -397,7 +397,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     /** Removes timer and all listeners. */
     private void removeTimer() {
         if (timer != null) {
-            ActionListener[] l = (ActionListener[]) timer.getListeners(ActionListener.class);
+            ActionListener[] l = timer.getListeners(ActionListener.class);
 
             for (int i = 0; i < l.length; i++) {
                 timer.removeActionListener(l[i]);
@@ -492,7 +492,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // has folder a index cookie?
-        Index ic = (Index) folder.getCookie(Index.class);
+        Index ic = folder.getCookie(Index.class);
 
         if (ic == null) {
             return false;
@@ -520,7 +520,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
     private void performReorder(final Node folder, Node[] dragNodes, int lNode, int uNode) {
         try {
-            Index indexCookie = (Index) folder.getCookie(Index.class);
+            Index indexCookie = folder.getCookie(Index.class);
 
             if (indexCookie != null) {
                 int[] perm = new int[indexCookie.getNodesCount()];

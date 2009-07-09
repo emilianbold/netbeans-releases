@@ -194,13 +194,13 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#155122: Completion doesn't work for Qt examples
         performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
         performTest("src/qt_usage.cc", 12, 25, "sys_include2/QObject.h", 4, 5);
-//        performTest("sys_include/QtDecls.h", 2, 30, "sys_include2/QObject.h", 4, 5);
+        performTest("sys_include/QtDecls.h", 2, 30, "sys_include2/QObject.h", 2, 1);
     }
 
     public void test154851() throws Exception {
         // IZ#154851 : Code completion (assistant) failed if using forward reference
-        performTest("src/iz154851.cc", 5, 9, "sys_include/iz154851_2.h", 2, 1);
-        performTest("src/iz154851.cc", 6, 7, "sys_include/iz154851_2.h", 4, 5);
+        performTest("src/iz154851.cc", 6, 9, "sys_include/iz154851_2.h", 2, 1);
+        performTest("src/iz154851.cc", 7, 7, "sys_include/iz154851_2.h", 4, 5);
     }
 
     public void test160829() throws Exception {
@@ -208,6 +208,14 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("sys_include/iz160829_2.h", 4, 11, "sys_include2/iz160829.h", 2, 1);
     }
 
+    public void test167200() throws Exception {
+        // IZ#167200: Class forward declaration is confusing code completion
+        performTest("src/iz154851.h", 4, 10, "src/iz167200.h", 2, 1);
+        performTest("src/iz154851.h", 2, 10, "sys_include/iz154851_2.h", 2, 1);
+        performTest("src/iz154851.cc", 6, 10, "sys_include/iz154851_2.h", 2, 1);
+        performTest("src/iz154851.cc", 8, 10, "src/iz167200.h", 2, 1);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

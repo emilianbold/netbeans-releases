@@ -1,7 +1,7 @@
 token #0 T_INLINE_HTML --TEST--\njump 10: goto with try blocks\n--FILE--\n
 token #1 PHP_OPENTAG <?php
 token #2 WHITESPACE \n
-token #3 PHP_STRING goto
+token #3 PHP_GOTO goto
 token #4 WHITESPACE  
 token #5 PHP_STRING a
 token #6 PHP_SEMICOLON ;
@@ -24,7 +24,7 @@ token #22 WHITESPACE
 token #23 PHP_NUMBER 1
 token #24 PHP_SEMICOLON ;
 token #25 WHITESPACE \n    
-token #26 PHP_STRING goto
+token #26 PHP_GOTO goto
 token #27 WHITESPACE  
 token #28 PHP_STRING b
 token #29 PHP_SEMICOLON ;
@@ -41,7 +41,7 @@ token #39 WHITESPACE
 token #40 PHP_NUMBER 2
 token #41 PHP_SEMICOLON ;
 token #42 WHITESPACE \n        
-token #43 PHP_STRING goto
+token #43 PHP_GOTO goto
 token #44 WHITESPACE  
 token #45 PHP_STRING c
 token #46 PHP_SEMICOLON ;
@@ -65,7 +65,7 @@ token #63 WHITESPACE
 token #64 PHP_NUMBER 3
 token #65 PHP_SEMICOLON ;
 token #66 WHITESPACE \n        
-token #67 PHP_STRING goto
+token #67 PHP_GOTO goto
 token #68 WHITESPACE  
 token #69 PHP_STRING d
 token #70 PHP_SEMICOLON ;
@@ -91,7 +91,7 @@ token #89 WHITESPACE
 token #90 PHP_NUMBER 4
 token #91 PHP_SEMICOLON ;
 token #92 WHITESPACE \n    
-token #93 PHP_STRING goto
+token #93 PHP_GOTO goto
 token #94 WHITESPACE  
 token #95 PHP_STRING e
 token #96 PHP_SEMICOLON ;

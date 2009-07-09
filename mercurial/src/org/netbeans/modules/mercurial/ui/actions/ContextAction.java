@@ -64,7 +64,7 @@ public abstract class ContextAction extends AbstractAction {
         // just them.
         // The same (global save) logic is in CVS, no complaint
         LifecycleManager.getDefault().saveAll();        
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        if(!Mercurial.getInstance().isAvailable(false, true)) return;
         Utils.logVCSActionEvent("HG");
         performAction(event);
     }

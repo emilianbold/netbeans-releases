@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -77,7 +78,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Union2;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
 
@@ -89,6 +89,7 @@ import org.openide.util.io.NbObjectInputStream;
  * @author Petr Nejedly
  */
 final class BinaryFS extends FileSystem {
+    static final Logger LOG = Logger.getLogger(BinaryFS.class.getName());
     /* Format:
      *     MAGIC
      *  4B length of the full image
@@ -97,7 +98,7 @@ final class BinaryFS extends FileSystem {
      *     FS data
      */
 
-    static final byte[] MAGIC = "org.netbeans.core.projects.cache.BinaryV4".getBytes(); // NOI18N
+    static final byte[] MAGIC = "org.netbeans.core.projects.cache.BinaryV5".getBytes(); // NOI18N
 
     /** An empty array of SystemActions. */
     static final SystemAction[] NO_ACTIONS = new SystemAction[0];
@@ -112,7 +113,8 @@ final class BinaryFS extends FileSystem {
 
     private FileObject root;
     /** list of URLs or time of their modification */
-    private final List<Union2<String,Long>> modifications;
+    private final List<String> urls;
+    private final List<Long> modifications;
     private final Date lastModified = new Date();
 
     @SuppressWarnings("deprecation")
@@ -140,16 +142,18 @@ final class BinaryFS extends FileSystem {
         }
         long storedLen = buff.getInt();
         if (buff.limit() != storedLen) {
-            throw new IOException("Corrupted image, correct length=" + storedLen); // NOI18N
+            throw new IOException("Corrupted image, correct length=" + storedLen + ", found=" + buff.limit()); // NOI18N
         }
         LayerCacheManager.err.log(Level.FINER, "Stored Len OK: {0}", storedLen);
 
 
         // fill the modifications array
         int stop = buff.getInt() + 8 + MAGIC.length;
-        modifications = new ArrayList<Union2<String,Long>>();
+        urls = new ArrayList<String>();
+        modifications = new ArrayList<Long>();
         while (buff.position() < stop) {
-            modifications.add(Union2.<String,Long>createFirst(getString(buff)));
+            urls.add(getString(buff));
+            modifications.add(null);
         }
 
 
@@ -367,9 +371,12 @@ final class BinaryFS extends FileSystem {
         public Object getAttribute(String attrName) {
             initialize();
             AttrImpl attr = attrs.get(attrName);
-            if (attr == null && attrName.startsWith("class:")) {
+            if (attr == null && attrName.startsWith("class:")) { // NOI18N
                 attr = attrs.get(attrName.substring(6));
                 return attr == null ? null : attr.getType(this);
+            }
+            if (attr == null && attrName.equals("layers")) { // NOI18N
+                return getLayersAttr();
             }
 
             return (attr != null) ? attr.getValue(this, attrName) : null;
@@ -412,6 +419,12 @@ final class BinaryFS extends FileSystem {
 
             try {
                 ByteBuffer sub = (ByteBuffer)content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
+                if (!isRoot()) {
+                    while (sub.getInt() >= 0) {
+                        // skip URL list
+                    }
+                }
+
                 int attrCount = sub.getInt();
                 if (attrCount > 0) attrs = new HashMap<String, AttrImpl>(attrCount*4/3+1);
 
@@ -437,6 +450,39 @@ final class BinaryFS extends FileSystem {
          * When this method is called, the contentOffset field is already set up.
          */
         protected abstract void doInitialize(ByteBuffer sub) throws Exception;
+
+        private Object getLayersAttr() {
+            // NOI18N
+            List<URL> ret = new ArrayList<URL>();
+            if (isRoot()) {
+                // all layers
+                for (String u : urls) {
+                    try {
+                        ret.add(new URL(u));
+                    } catch (MalformedURLException ex) {
+                        LOG.warning("Cannot create URL: " + u); // NOI18N
+                    }
+                }
+            } else {
+                ByteBuffer sub = (ByteBuffer) content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
+                boolean cont = true;
+                while (cont) {
+                    int index = sub.getInt();
+                    if (index < 0) {
+                        cont = false;
+                    }
+                    if (index <= -10) {
+                        index = -(index + 10);
+                    }
+                    try {
+                        ret.add(new URL(urls.get(index)));
+                    } catch (MalformedURLException ex) {
+                        LOG.warning("Cannot create URL: " + urls.get(index)); // NOI18N
+                    }
+                }
+            }
+            return ret.toArray(new URL[0]);
+        }
     }
 
     static final class AttrImpl {
@@ -506,7 +552,7 @@ final class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
+                LOG.log(Level.WARNING, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
             }
             return null; // problem getting the value...
         }
@@ -537,7 +583,7 @@ final class BinaryFS extends FileSystem {
                 }
             } catch (Exception exc) {
                 Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
-                Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, exc);
+                LOG.log(Level.WARNING, null, exc);
             }
             return null; // problem getting the value...
         }
@@ -728,8 +774,6 @@ final class BinaryFS extends FileSystem {
             } else {
                 sub.position(contentOffset+len);
             }
-            int base = sub.getInt ();
-            lastModified = -10 - base;
         }
 
         // equals compares data: URI or byte contents.
@@ -772,12 +816,16 @@ final class BinaryFS extends FileSystem {
                     if (len == -1) {
                         conn = new URL(uri).openConnection ();
                     } else {
-                        index = ((int)-lastModified) - 10;
-                        Union2<String,Long> obj = modifications.get(index);
-                        if (obj.hasSecond()) {
-                            return new Date(obj.second());
+                        ByteBuffer sub = (ByteBuffer) content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
+                        index = sub.getInt();
+                        if (index <= -10) {
+                            index = -(index + 10);
                         }
-                        conn = new URL(obj.first()).openConnection();
+                        Long obj = modifications.get(index);
+                        if (obj != null) {
+                            return new Date(obj);
+                        }
+                        conn = new URL(urls.get(index)).openConnection();
                     }
 
                     /*
@@ -792,13 +840,13 @@ final class BinaryFS extends FileSystem {
 
                             lastModified = date;
                             if (index >= 0) {
-                                modifications.set(index, Union2.<String,Long>createSecond(date));
+                                modifications.set(index, date);
                             }
                             return new Date(date);
                         }
                     }
                 } catch (Exception e) {
-                    Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                 }
             }
             return super.lastModified ();
@@ -838,11 +886,10 @@ final class BinaryFS extends FileSystem {
             initialize();
             // 145775 - workaround of JDK 1.5 bug 6377302 (toArray is not thread safe)
             // When JDK 1.6 is only supported, use just "return childrenMap.values().toArray(NO_CHILDREN);" instead
-            List<FileObject> list = new ArrayList<FileObject>(childrenMap.values().size());
-            for (FileObject fo : childrenMap.values()) {
-                list.add(fo);
+            // and remove synchronized in doInitialize.
+            synchronized (this) {
+                return childrenMap.values().toArray(NO_CHILDREN);
             }
-            return list.toArray(NO_CHILDREN);
         }
 
         /** Retrieve file or folder contained in this folder by name. */
@@ -863,15 +910,17 @@ final class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
-                for (int i=0; i<files; i++) { //read file desc:
-                    String nm = getString(sub);   // String name
-                    byte isFolder = sub.get();      // boolean isFolder
-                    int off = sub.getInt();          // int contentRef
-                    childrenMap.put(nm, isFolder == 0 ?
-                        new BFSFile(nm, this, off) :
-                        new BFSFolder(nm, this, off));
-                }
+                synchronized (this) {  // 145775
+                    childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
+                    for (int i=0; i<files; i++) { //read file desc:
+                        String nm = getString(sub);   // String name
+                        byte isFolder = sub.get();      // boolean isFolder
+                        int off = sub.getInt();          // int contentRef
+                        childrenMap.put(nm, isFolder == 0 ?
+                            new BFSFile(nm, this, off) :
+                            new BFSFolder(nm, this, off));
+                    }
+                }  // 145775
                 if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
                     LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }
@@ -919,8 +968,22 @@ final class BinaryFS extends FileSystem {
         public Object put(String key, Object value) {
             throw new UnsupportedOperationException();
         }
-
-    }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FileMap) {
+                if (fo.equals(((FileMap)obj).fo)) {
+                    return true;
+                }
+            }
+            return super.equals(obj);
+        }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + (this.fo != null ? this.fo.hashCode() : 0);
+            return hash;
+        }
+    } // end of FileMap
     private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {
         private FileObject fo;
 

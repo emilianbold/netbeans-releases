@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
@@ -68,7 +69,7 @@ public abstract class APTContainerNode extends APTBaseNode implements Serializab
         return child;
     }     
 
-    public boolean accept(APTToken t) {
+    public boolean accept(APTFile curFile,APTToken t) {
         return false;
     }    
     

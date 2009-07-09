@@ -381,11 +381,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         model[i+1] = currentProjects.get(i);
                     }
                     scope.setModel(new DefaultComboBoxModel(model));
-                    int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
-                    scope.setSelectedIndex(defaultItem);
                     scope.setRenderer(new JLabelRenderer());
                     if (defaultScope == Scope.CURRENT) {
                         scopePanel.setVisible(false);
+                        scope.setSelectedIndex(1);
+                    } else {
+                        int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
+                        scope.setSelectedIndex(defaultItem);
                     }
                 } else {
                     scopePanel.setVisible(false);

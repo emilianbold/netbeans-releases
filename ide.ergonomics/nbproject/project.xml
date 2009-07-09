@@ -77,6 +77,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.server</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.spi.debugger.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -153,6 +162,10 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                         <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.server</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>

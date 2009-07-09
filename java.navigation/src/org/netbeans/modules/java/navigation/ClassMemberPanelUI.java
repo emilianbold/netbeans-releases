@@ -19,6 +19,8 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.swing.BorderFactory;
 import javax.swing.SwingUtilities;
@@ -32,8 +34,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
-import org.netbeans.modules.java.navigation.ClassMemberFilters;
-import org.netbeans.modules.java.navigation.ElementNode;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortByNameAction;
@@ -70,6 +70,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     
     private static final Rectangle ZERO = new Rectangle(0,0,1,1);
 
+    private long lastShowWaitNodeTime = -1;
+    private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
@@ -135,6 +137,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             public void run() {
                elementView.setRootVisible(true);
                manager.setRootContext(ElementNode.getWaitNode());
+               lastShowWaitNodeTime = System.currentTimeMillis();
             } 
         });
     }
@@ -177,6 +180,17 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     setScrollOnExpand( false );
                     elementView.expandAll();
                     setScrollOnExpand( scrollOnExpand );
+
+                    if (PERF_LOG.isLoggable(Level.FINE)) {
+                        final long tm2 = System.currentTimeMillis();
+                        final long tm1 = lastShowWaitNodeTime;
+                        if (tm1 != -1) {
+                            lastShowWaitNodeTime = -1;
+                            PERF_LOG.log(Level.FINE,
+                                String.format("ClassMemberPanelUI refresh took: %d ms", (tm2 - tm1)),
+                                new Object[] { description.getFileObject().getName(), (tm2 - tm1) });
+                        }
+                    }
                 }
             } );
             

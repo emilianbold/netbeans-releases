@@ -47,6 +47,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,6 +59,9 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public RubyTypeAnalyzerTest(String testName) {
         super(testName);
+        RubyIndexer.userSourcesTest = true;
+        TypeInferenceSettings.getDefault().setMethodTypeInference(true);
+        TypeInferenceSettings.getDefault().setRdocTypeInference(true);
     }
 
     @Override
@@ -89,8 +93,8 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
             root = method;
         }
 
-        ContextKnowledge knowledge = new ContextKnowledge(index, root, node, caretOffset, caretOffset, doc, fo);
-        return RubyTypeInferencer.normal(knowledge);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, node, caretOffset, caretOffset, parserResult);
+        return RubyTypeInferencer.create(knowledge);
     }
 
     private void assertTypes(final RubyType actualTypes, final String... expectedTypes) {

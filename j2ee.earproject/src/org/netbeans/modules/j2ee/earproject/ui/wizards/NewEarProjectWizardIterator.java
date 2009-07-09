@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun;
@@ -209,7 +209,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setName(warName);
             createData.setServerInstanceID(serverInstanceID);
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
-            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.WAR));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.WAR));
             createData.setContextPath('/' + warName); //NOI18N
             createData.setJavaPlatformName(platformName);
             createData.setSourceLevel(sourceLevel);
@@ -238,7 +238,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setProjectDir(carDir);
             createData.setName(carName);
             createData.setMainClass(mainClass);
-            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.CLIENT));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.CAR));
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
@@ -264,7 +264,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             EjbJarProjectCreateData createData = new EjbJarProjectCreateData();
             createData.setProjectDir(ejbJarDir);
             createData.setName(ejbJarName);
-            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.EJB));
+            createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.EJB));
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);

@@ -144,6 +144,9 @@ Constants {
         Color color
     ) {
         if (text == null) return null;
+        if (text.length() > 6 && text.substring(0, 6).equalsIgnoreCase("<html>")) {
+            return text; // Already HTML
+        }
         StringBuffer sb = new StringBuffer ();
         sb.append ("<html>");
         if (bold) sb.append ("<b>");

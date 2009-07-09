@@ -91,9 +91,9 @@ public final class Utils {
     }
 
     /**
-     * Return <code>true</true> if the URL is valid, <code>false</code> otherwise (as well as for <code>null</code>).
+     * Return <code>true</code> if the URL is valid, <code>false</code> otherwise (as well as for <code>null</code>).
      * @param url URL, can be <code>null</code>.
-     * @return <code>true</true> if the URL is valid, <code>false</code> otherwise.
+     * @return <code>true</code> if the URL is valid, <code>false</code> otherwise.
      */
     public static boolean isValidUrl(String url) {
         if (url == null) {

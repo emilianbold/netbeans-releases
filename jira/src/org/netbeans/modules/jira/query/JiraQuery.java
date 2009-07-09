@@ -58,6 +58,8 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
@@ -137,9 +139,8 @@ public class JiraQuery extends Query {
         throw new IllegalStateException("wrong fileter type : " + jiraFilter.getClass().getName());
     }
 
-    @Override
     public ColumnDescriptor[] getColumnDescriptors() {
-        return NbJiraIssue.getColumnDescriptors();
+        return NbJiraIssue.getColumnDescriptors(repository);
     }
 
     @Override
@@ -181,13 +182,13 @@ public class JiraQuery extends Query {
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
                     if(!ret[0]) {
-                        return;
+                       return;
                     }
 
                     // only issues not returned by the query are archived
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
-                        // ... and store teh actuall state
+                        // ... and store the actuall state
                         repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
                         repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
@@ -267,10 +268,8 @@ public class JiraQuery extends Query {
         super.setSaved(saved);
     }
 
-    @Override
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
-        super.setFilter(filter);
     }
 
     @Override

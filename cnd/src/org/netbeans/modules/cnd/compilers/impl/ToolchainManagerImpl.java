@@ -1160,6 +1160,8 @@ public final class ToolchainManagerImpl {
         Linker linker = new Linker();
         Make make = new Make();
         Debugger debugger = new Debugger();
+        QMake qmake = new QMake();
+        CMake cmake = new CMake();
 
         private CompilerVendor(String fileName) {
             toolChainFileName = fileName;
@@ -1293,6 +1295,18 @@ public final class ToolchainManagerImpl {
      * class package-local for testing only
      */
     static final class Debugger extends Tool {
+    }
+
+    /**
+     * class package-local for testing only
+     */
+    static final class QMake extends Tool {
+    }
+
+    /**
+     * class package-local for testing only
+     */
+    static final class CMake extends Tool {
     }
 
     /**
@@ -1656,6 +1670,34 @@ public final class ToolchainManagerImpl {
                 }
                 return;
             }
+            if (path.indexOf(".qmake.") > 0) { // NOI18N
+                QMake d = v.qmake;
+                if (path.endsWith(".tool")) { // NOI18N
+                    d.name = getValue(attributes, "name"); // NOI18N
+                    d.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
+                } else if (path.endsWith(".version")) { // NOI18N
+                    d.versionFlags = getValue(attributes, "flags"); // NOI18N
+                    d.versionPattern = getValue(attributes, "pattern"); // NOI18N
+                } else if (path.endsWith(".alternative_path")) { // NOI18N
+                    d.alternativePath = new ArrayList<AlternativePath>();
+                } else if (checkAlternativePath(attributes, d.alternativePath)) {
+                }
+                return;
+            }
+            if (path.indexOf(".cmake.") > 0) { // NOI18N
+                CMake d = v.cmake;
+                if (path.endsWith(".tool")) { // NOI18N
+                    d.name = getValue(attributes, "name"); // NOI18N
+                    d.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
+                } else if (path.endsWith(".version")) { // NOI18N
+                    d.versionFlags = getValue(attributes, "flags"); // NOI18N
+                    d.versionPattern = getValue(attributes, "pattern"); // NOI18N
+                } else if (path.endsWith(".alternative_path")) { // NOI18N
+                    d.alternativePath = new ArrayList<AlternativePath>();
+                } else if (checkAlternativePath(attributes, d.alternativePath)) {
+                }
+                return;
+            }
             if (path.indexOf(".scanner.") > 0) { // NOI18N
                 if (!isScanerOverrided) {
                     v.scanner = new Scanner();
@@ -1961,6 +2003,8 @@ public final class ToolchainManagerImpl {
         private ScannerDescriptor scanner;
         private MakeDescriptor make;
         private DebuggerDescriptor debugger;
+        private QMakeDescriptor qmake;
+        private CMakeDescriptor cmake;
 
         private ToolchainDescriptorImpl(CompilerVendor v) {
             this.v = v;
@@ -2086,6 +2130,19 @@ public final class ToolchainManagerImpl {
             return debugger;
         }
 
+        public QMakeDescriptor getQMake() {
+            if (qmake == null) {
+                qmake = new QMakeDescriptorImpl(v.qmake);
+            }
+            return qmake;
+        }
+
+        public CMakeDescriptor getCMake() {
+            if (cmake == null) {
+                cmake = new CMakeDescriptorImpl(v.cmake);
+            }
+            return cmake;
+        }
     }
 
     private static class BaseFolderImpl implements BaseFolder {
@@ -2394,6 +2451,22 @@ public final class ToolchainManagerImpl {
 
         public DebuggerDescriptorImpl(Debugger debugger) {
             super(debugger);
+        }
+    }
+
+    private static final class QMakeDescriptorImpl
+            extends ToolDescriptorImpl<QMake> implements QMakeDescriptor {
+
+        public QMakeDescriptorImpl(QMake qmake) {
+            super(qmake);
+        }
+    }
+
+    private static final class CMakeDescriptorImpl
+            extends ToolDescriptorImpl<CMake> implements CMakeDescriptor {
+
+        public CMakeDescriptorImpl(CMake qmake) {
+            super(qmake);
         }
     }
 }

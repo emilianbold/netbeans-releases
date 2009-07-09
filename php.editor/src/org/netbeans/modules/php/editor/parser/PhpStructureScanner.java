@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -101,42 +102,52 @@ public class PhpStructureScanner implements StructureScanner {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         Model model = ModelFactory.getModel(info);
         FileScope fileScope = model.getFileScope();
-        Collection<? extends FunctionScope> declaredFunctions = fileScope.getDeclaredFunctions();
-        for (FunctionScope fnc : declaredFunctions) {
-            items.add(new PHPFunctionStructureItem(fnc));
-        }
-        Collection<? extends ConstantElement> declaredConstants = fileScope.getDeclaredConstants();
-        for (ConstantElement constant : declaredConstants) {
-            items.add(new PHPSimpleStructureItem(constant, "const"));
-        }
-        Collection<? extends TypeScope> declaredTypes = fileScope.getDeclaredTypes();
-        for (TypeScope type : declaredTypes) {
-            List<StructureItem> children = new ArrayList<StructureItem>();
-            if (type instanceof ClassScope) {
-                items.add(new PHPClassStructureItem((ClassScope) type,children));
-            } else if (type instanceof InterfaceScope) {
-                items.add(new PHPInterfaceStructureItem((InterfaceScope) type,children));
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope nameScope : declaredNamespaces) {
+            List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
+            if (!nameScope.isDefaultNamespace()) {
+                items.add(new PHPNamespaceStructureItem(nameScope, namespaceChildren));
+            } 
+            Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
+            for (FunctionScope fnc : declaredFunctions) {
+                namespaceChildren.add(new PHPFunctionStructureItem(fnc));
             }
-            Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
-            for (MethodScope method : declaredMethods) {
-                if (method.isConstructor()) {
-                    children.add(new PHPConstructorStructureItem(method));
-                } else {
-                    children.add(new PHPMethodStructureItem(method));
+            Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
+            for (ConstantElement constant : declaredConstants) {
+                namespaceChildren.add(new PHPSimpleStructureItem(constant, "const"));
+            }
+            Collection<? extends TypeScope> declaredTypes = nameScope.getDeclaredTypes();
+            for (TypeScope type : declaredTypes) {
+                List<StructureItem> children = new ArrayList<StructureItem>();
+                if (type instanceof ClassScope) {
+                    namespaceChildren.add(new PHPClassStructureItem((ClassScope) type, children));
+                } else if (type instanceof InterfaceScope) {
+                    namespaceChildren.add(new PHPInterfaceStructureItem((InterfaceScope) type, children));
+                }
+                Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
+                for (MethodScope method : declaredMethods) {
+                    if (method.isConstructor()) {
+                        children.add(new PHPConstructorStructureItem(method));
+                    } else {
+                        children.add(new PHPMethodStructureItem(method));
+                    }
+                }
+                Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
+                for (ClassConstantElement classConstant : declaredClsConstants) {
+                    children.add(new PHPSimpleStructureItem(classConstant, "con"));//NOI18N
+                }
+                if (type instanceof ClassScope) {
+                    ClassScope cls = (ClassScope) type;
+                    Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
+                    for (FieldElement filed : declaredFields) {
+                        children.add(new PHPSimpleStructureItem(filed, "field"));//NOI18N
+                    }
                 }
             }
-            Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
-            for (ClassConstantElement classConstant : declaredClsConstants) {
-                children.add(new PHPSimpleStructureItem(classConstant, "con"));//NOI18N
-            }
-            if (type instanceof ClassScope) {
-                ClassScope cls = (ClassScope) type;
-                Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
-                for (FieldElement filed : declaredFields) {
-                    children.add(new PHPSimpleStructureItem(filed, "field"));//NOI18N
-                }
-            }
         }
+
+
+        
         return items;
     }
 
@@ -313,9 +324,9 @@ public class PhpStructureScanner implements StructureScanner {
             return null;
         }
 
-        protected void appendInterfeas(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
+        protected void appendInterfeas(Collection<? extends String> interfaes, HtmlFormatter formatter) {
             boolean first = true;
-            for (InterfaceScope identifier : interfaes) {
+            for (String identifier : interfaes) {
                 if (identifier != null) {
                     if (!first) {
                         formatter.appendText(", ");  //NOI18N
@@ -323,7 +334,7 @@ public class PhpStructureScanner implements StructureScanner {
                     } else {
                         first = false;
                     }
-                    formatter.appendText(identifier.getName());
+                    formatter.appendText(identifier);
                 }
 
             }
@@ -401,6 +412,23 @@ public class PhpStructureScanner implements StructureScanner {
 
     }
 
+    private class PHPNamespaceStructureItem extends PHPStructureItem {
+        public PHPNamespaceStructureItem(NamespaceScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "namespace"); //NOI18N
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            return formatter.getText();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.MODULE;
+        }
+    }
+
     private class PHPClassStructureItem extends PHPStructureItem {
 
         public PHPClassStructureItem(ClassScope elementHandle, List<? extends StructureItem> children) {
@@ -420,7 +448,7 @@ public class PhpStructureScanner implements StructureScanner {
                 formatter.appendText(superCls.getName());
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends InterfaceScope> interfaes = getClassScope().getSuperInterfaces();
+            Collection<? extends String> interfaes = getClassScope().getSuperInterfaceNames();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
                 appendInterfeas(interfaes, formatter);
@@ -490,7 +518,7 @@ public class PhpStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
-            Collection<? extends InterfaceScope> interfaes = getInterfaceScope().getSuperInterfaces();
+            Collection<? extends String> interfaes = getInterfaceScope().getSuperInterfaceNames();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
                 appendInterfeas(interfaes, formatter);

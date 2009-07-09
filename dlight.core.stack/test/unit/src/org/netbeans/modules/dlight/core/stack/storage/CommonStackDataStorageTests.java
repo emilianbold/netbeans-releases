@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -59,12 +60,19 @@ public abstract class CommonStackDataStorageTests {
 
     protected abstract StackDataStorage createStorage();
 
+    protected abstract boolean shutdownStorage(StackDataStorage db);
+
     protected abstract void flush(StackDataStorage db);
 
     @Before
     public void setUp() {
         db = createStorage();
         assertNotNull(db);
+    }
+
+    @After
+    public void tearDown() {
+        assertTrue(shutdownStorage(db));
     }
 
     @Test

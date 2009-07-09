@@ -718,17 +718,16 @@ public final class GemManager {
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
-    public boolean uninstall(Gem[] gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
+    boolean uninstall(List<GemInstallInfo> gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
         if (!checkGemHomePermissions()) {
             return false;
         }
-        List<String> gemNames = mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            gemRunner.uninstallAsynchronously(gemNames, resetCompletionTask(asyncCompletionTask), parent);
+            gemRunner.uninstallAsynchronously(gems, resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = gemRunner.uninstall(gemNames);
+            boolean ok = gemRunner.uninstall(gems);
             resetLocal();
             return ok;
         }

@@ -1573,11 +1573,6 @@
 		};
 		actions = (
 			{
-				name = "AddColumn";
-				class = org.netbeans.modules.db.explorer.actions.AddToIndexAction;
-				perm = "write";
-			},
-			{
 				name = "AddIndex";
 				class = org.netbeans.modules.db.explorer.actions.AddIndexAction;
 				node = ilist;

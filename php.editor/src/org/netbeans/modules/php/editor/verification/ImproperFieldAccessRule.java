@@ -46,6 +46,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -59,7 +60,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorT
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,7 +79,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     
     @Override
     public void visit(ClassDeclaration classDeclaration) {
-        insideClsName = classDeclaration.getName().getName();//NOI18N 
+        insideClsName = CodeUtils.extractClassName(classDeclaration);//NOI18N
         super.visit(classDeclaration);
     }
 
@@ -113,7 +113,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     @Override
     public void visit(StaticFieldAccess staticFieldAccess) {
         Variable field = staticFieldAccess.getField();        
-        String className = staticFieldAccess.getClassName().getName();        
+        String className = CodeUtils.extractUnqualifiedClassName(staticFieldAccess);
         if (className.equals("self")) {//NOI18N
             className = insideClsName;
         }

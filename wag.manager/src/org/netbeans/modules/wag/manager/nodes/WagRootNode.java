@@ -43,6 +43,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.wag.manager.actions.AddSearchAction;
+import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
 import org.netbeans.modules.wag.manager.model.WagSearchResults;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
@@ -90,7 +91,11 @@ public class WagRootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {SystemAction.get(AddSearchAction.class)};
+        return new Action[] {
+            SystemAction.get(AddSearchAction.class),
+            SystemAction.get(ViewZemblyApiBrowserAction.class)
+
+        };
     }
     
     static final java.awt.Image ICON =

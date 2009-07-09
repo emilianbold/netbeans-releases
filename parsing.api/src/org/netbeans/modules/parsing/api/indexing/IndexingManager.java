@@ -79,6 +79,9 @@ public final class IndexingManager {
      * are doen for the files, which means that even files that have not been changed
      * since their last indexing will be reindexed again.
      *
+     * <p>This method simply calls {@link #refreshIndex(java.net.URL, java.util.Collection, boolean)}
+     * with <code>forceRefresh</code> set to <code>true</code>.
+     *
      * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
      * very expensive operation and the more files you ask to reindex the longer the
      * job will take.
@@ -89,7 +92,37 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndex(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false);
+        refreshIndex(root, files, true);
+    }
+
+    /**
+     * Schedules new files for indexing. The set of files passed to this method
+     * will be scheduled for reindexing. That means that all the indexers appropriate
+     * for each file will have a chance to update their index.
+     * 
+     * <p>If <code>forceRefresh</code> parameter is set to <code>true</code>
+     * no timestamp checks will be done for the files passed to this method.
+     * This means that even files that have not been changed since their last indexing
+     * will be reindexed again. On the other hand if <code>forceRefresh</code> is
+     * <code>false</code> the infrastructure will check timestamps and will reindex
+     * only files that have been changed since the last time they were indexed.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param files The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     * @param forceRefresh If <code>true</code> no timestamps check will be done
+     *   on the <code>files</code> passed in and they all will be reindexed. If
+     *   <code>false</code> only changed files will be reindexed.
+     *
+     * @since 1.16
+     */
+    public void refreshIndex(URL root, Collection<? extends URL> files, boolean forceRefresh) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false, forceRefresh);
     }
 
     /**
@@ -107,7 +140,30 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true);
+        refreshIndexAndWait(root, files, true);
+    }
+
+    /**
+     * Schedules new files for indexing and blocks until they are reindexed. This
+     * method does the same thing as {@link #refreshIndex(java.net.URL, java.util.Collection, boolean)  },
+     * but it will block the caller until the index refreshing is done.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param files The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     * @param forceRefresh If <code>true</code> no timestamps check will be done
+     *   on the <code>files</code> passed in and they all will be reindexed. If
+     *   <code>false</code> only changed files will be reindexed.
+     *
+     * @since 1.16
+     */
+    public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean forceRefresh) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, forceRefresh);
     }
 
     /**

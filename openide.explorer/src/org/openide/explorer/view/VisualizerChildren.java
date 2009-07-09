@@ -88,7 +88,7 @@ final class VisualizerChildren extends Object {
                 + " snapshot.size()=" + snapshot.size();
 
         for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            VisualizerNode node = visNodes.get(i);
             if (node != null) {
                 node.indexOf = i;
             }
@@ -125,8 +125,8 @@ final class VisualizerChildren extends Object {
         return visNodes.size();
     }
 
-    public java.util.Enumeration children(final boolean create) {
-        return new java.util.Enumeration() {
+    public java.util.Enumeration<VisualizerNode> children(final boolean create) {
+        return new java.util.Enumeration<VisualizerNode>() {
 
             private int index;
 
@@ -134,8 +134,8 @@ final class VisualizerChildren extends Object {
                 return index < visNodes.size();
             }
 
-            public Object nextElement() {
-                return create ? getChildAt(index++) : visNodes.get(index++);
+            public VisualizerNode nextElement() {
+                return create ? (VisualizerNode) getChildAt(index++) : visNodes.get(index++);
             }
         };
     }
@@ -169,7 +169,7 @@ final class VisualizerChildren extends Object {
     
     private void addVisNodesInfo(StringBuilder sb) {
         for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            VisualizerNode node = visNodes.get(i);
             sb.append("  ").append(i); // NOI18N
             if (node != null) {
                 sb.append(" = ").append(node.toId()); // NOI18N

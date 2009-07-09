@@ -133,6 +133,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
         @Override
         protected void perform() {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); // NOI18N
             SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
@@ -147,10 +148,12 @@ final class DiffResultsViewForLine extends DiffResultsView {
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             leftSource.getMIMEType();  // triggers s1.init()
             if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
             rightSource.getMIMEType();  // triggers s2.init()
             if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
@@ -160,6 +163,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
                 public void run() {
                     try {
                         if (isCanceled()) {
+                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
                         final DiffController view = DiffController.create(leftSource, rightSource);

@@ -42,11 +42,14 @@
 package org.netbeans.modules.debugger.jpda.util;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassLoaderReference;
+import com.sun.jdi.Field;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.request.EventRequestManager;
@@ -55,10 +58,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -77,6 +83,58 @@ public class JPDAUtils {
     public static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
                                                              !System.getProperty("java.version").equals("1.6.0_01");
 
+
+    public static final ReferenceType getPreferredReferenceType(List<ReferenceType> referenceTypes, Logger logger) throws VMDisconnectedExceptionWrapper {
+        ReferenceType preferredType; // The preferred reference type from the list
+        // Thry to find the preferred ReferenceType from the list of ReferenceTypes.
+        // If some class loader has a null parent, it's not the preferred one.
+        if (referenceTypes.size() == 1) {
+            preferredType = null; // referenceTypes.get(0); - not necessary
+        } else {
+            preferredType = null;
+            try {
+                for (ReferenceType referenceType : referenceTypes) {
+                    ClassLoaderReference clr = ReferenceTypeWrapper.classLoader(referenceType);
+                    //clr.invokeMethod(null, null, referenceTypes, lineNumber)
+                    Field parentField;
+                    try {
+                        parentField = ReferenceTypeWrapper.fieldByName(ObjectReferenceWrapper.referenceType(clr), "parent");
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        continue; // Collected - not interesting
+                    }
+                    if (parentField != null) {
+                        Value parent;
+                        try {
+                            parent = ObjectReferenceWrapper.getValue(clr, parentField);
+                        } catch (ObjectCollectedExceptionWrapper ex) {
+                            continue; // Collected - not interesting
+                        }
+                        if (parent != null) {
+                            // The class loader has a parent
+                            if (preferredType != null) {
+                                preferredType = null; // More class loaders with parent => no preferred
+                                break;
+                            } else {
+                                preferredType = referenceType;
+                            }
+                        }
+                        if (logger != null && logger.isLoggable(Level.FINE)) {
+                            logger.fine("Class loader of reference type: "+clr+" have parent class loader: "+parent);
+                        }
+                    } else {
+                        if (logger != null && logger.isLoggable(Level.FINE)) {
+                            logger.fine("Class loader of reference type: "+clr+". Parent class loader - field parent does not exist.");
+                        }
+                    }
+                }
+            } catch (InternalExceptionWrapper iex) {
+                preferredType = null;
+            } catch (ClassNotPreparedExceptionWrapper cnpex) {
+                preferredType = null;
+            }
+        }
+        return preferredType;
+    }
 
     // testing methods .........................................................................
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- random valid XML file -->
+<library version="1.0">
+    <name>javacard_ant_ext</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/modules/javacard/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///ant/nblib/org-netbeans-modules-javacard.jar!/</resource>
+    </volume>
+</library>

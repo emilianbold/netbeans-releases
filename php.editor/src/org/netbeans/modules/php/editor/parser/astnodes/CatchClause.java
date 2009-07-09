@@ -45,11 +45,11 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  */
 public class CatchClause extends Statement {
 
-    private Identifier className;
+    private Expression className;
     private Variable variable;
     private Block body;
 
-    public CatchClause(int start, int end, Identifier className, Variable variable, Block statement) {
+    public CatchClause(int start, int end, Expression className, Variable variable, Block statement) {
         super(start, end);
 
         assert className != null && variable != null && statement != null;
@@ -67,7 +67,7 @@ public class CatchClause extends Statement {
      * 
      * @return the exception variable declaration node
      */
-    public Identifier getClassName() {
+    public Expression getClassName() {
         return this.className;
     }
 

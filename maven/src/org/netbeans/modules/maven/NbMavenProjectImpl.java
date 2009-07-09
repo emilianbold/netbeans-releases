@@ -152,6 +152,8 @@ public final class NbMavenProjectImpl implements Project {
     //TODO remove
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
+    private static RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
+
     private FileObject fileObject;
     private FileObject folderFileObject;
     private File projectFile;
@@ -210,7 +212,7 @@ public final class NbMavenProjectImpl implements Project {
         state = projectState;
         problemReporter = new ProblemReporterImpl(this);
         auxiliary = new M2AuxilaryConfigImpl(this);
-        auxprops = new MavenProjectPropsImpl(this, auxiliary, watcher);
+        auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
 //        if (!SwingUtilities.isEventDispatchThread()) {
@@ -233,16 +235,6 @@ public final class NbMavenProjectImpl implements Project {
         return problemReporter;
     }
 
-    /**
-     * load a project with properties and profiles other than the current ones.
-     * uses default project embedder
-     * @param activeProfiles
-     * @param properties
-     * @return
-     */
-    public synchronized MavenProject loadMavenProject(List<String> activeProfiles, Properties properties) {
-        return loadMavenProject(getEmbedder(), activeProfiles, properties);
-    }
     /**
      * load a project with properties and profiles other than the current ones.
      * @param embedder embedder to use
@@ -515,8 +507,21 @@ public final class NbMavenProjectImpl implements Project {
             });
             return;
         }
+        clearProjectWorkspaceCache();
+        synchronized (this) {
+            oldProject = project;
+            project = null;
+            getOriginalMavenProject(); //#167741 just reload the project here before anything happens.
+        }
+        problemReporter.clearReports(); //#167741 -this will trigger node refresh?
+        ACCESSOR.doFireReload(watcher);
+        projectInfo.reset();
+        doBaseProblemChecks();
+    }
+
+    public void clearProjectWorkspaceCache() {
         //when project gets reloaded (pom.xml file changed, build finished)
-        //we need to dmp the weakly referenced caches and start with a clean room
+        //we need to dump the weakly referenced caches and start with a clean room
         try {
             MavenWorkspaceStore store = (MavenWorkspaceStore) getEmbedder().getPlexusContainer().lookup("org.apache.maven.workspace.MavenWorkspaceStore"); //NOI18N
             if (store instanceof NbMavenWorkspaceStore) {
@@ -525,14 +530,6 @@ public final class NbMavenProjectImpl implements Project {
         } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
         }
-        synchronized (this) {
-            oldProject = project;
-            project = null;
-        }
-        problemReporter.clearReports();
-        ACCESSOR.doFireReload(watcher);
-        projectInfo.reset();
-        doBaseProblemChecks();
     }
     
     
@@ -792,7 +789,7 @@ public final class NbMavenProjectImpl implements Project {
         Set<File> toRet = new HashSet<File>();
         File fil = new File(uri);
         if (fil.exists()) {
-            toRet.addAll(Arrays.asList(fil.listFiles(new FilenameFilter() {
+            File[] fls = fil.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
                     return !("java".equalsIgnoreCase(name)) && //NOI18N
@@ -801,7 +798,11 @@ public final class NbMavenProjectImpl implements Project {
                            !("scala".equalsIgnoreCase(name)) //NOI18N
                        && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
                 }
-            })));
+            });
+            if (fls != null) { //#166709 listFiles() shall not return null for existing folders
+                // but somehow it does, maybe IO problem? do a proper null check.
+                toRet.addAll(Arrays.asList(fls));
+            }
         }
         URI[] res = getResources(test);
         for (URI rs : res) {
@@ -891,7 +892,6 @@ public final class NbMavenProjectImpl implements Project {
                     profileHandler,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
-                    new ProjectOpenedHookImpl(this),
                     new ClassPathProviderImpl(this),
                     sharability,
                     new MavenTestForSourceImpl(this),
@@ -911,6 +911,7 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
+                    new ProjectOpenedHookImpl(this),
 
                     // default mergers..        
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -922,8 +923,9 @@ public final class NbMavenProjectImpl implements Project {
                     new BackwardCompatibilityWithMevenideChecker(),
                     new JarPackagingRunChecker(),
                     new DebuggerChecker(),
-                    new CosChecker(),
+                    new CosChecker(this),
                     CosChecker.createResultChecker(),
+                    CosChecker.createCoSHook(this),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
                     new TestSkippingChecker(),
@@ -1213,8 +1215,8 @@ public final class NbMavenProjectImpl implements Project {
             "simple-files"   //NOPMD       // NOI18N
 
         };
-        private List<String> prohibited;
-        private NbMavenProjectImpl project;
+        private final List<String> prohibited;
+        private final NbMavenProjectImpl project;
 
         RecommendedTemplatesImpl(NbMavenProjectImpl proj) {
             project = proj;
@@ -1294,10 +1296,16 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         public void actionPerformed(java.awt.event.ActionEvent event) {
-            EmbedderFactory.resetProjectEmbedder();
-            for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
-                NbMavenProject.fireMavenProjectReload(prj);
-            }
+            //#166919 - need to run in RP to prevent RPing later in fireProjectReload()
+            RELOAD_RP.post(new Runnable() {
+                public void run() {
+                    EmbedderFactory.resetProjectEmbedder();
+                    for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
+                        NbMavenProject.fireMavenProjectReload(prj);
+                    }
+                }
+            });
+
         }
 
         public Action createContextAwareInstance(Lookup actionContext) {

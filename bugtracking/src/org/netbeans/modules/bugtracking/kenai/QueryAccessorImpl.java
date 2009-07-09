@@ -48,6 +48,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
@@ -55,6 +58,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -169,21 +173,21 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     @Override
-    public ActionListener getFindIssueAction(ProjectHandle project) {
+    public Action getFindIssueAction(ProjectHandle project) {
         final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(project);
             if(jira != null) {
-                return jira.getOpenProjectListener();
+                return new ActionWrapper(jira.getOpenProjectListener());
             }
             return null;
         }
-        return new ActionListener() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
-                        QueryAction.openKenaiQuery(null, repo);
+                        QueryAction.openQuery(null, repo, true);
                     }
                 });          
             }
@@ -191,17 +195,17 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     @Override
-    public ActionListener getCreateIssueAction(ProjectHandle project) {
+    public Action getCreateIssueAction(ProjectHandle project) {
         final Repository repo = KenaiRepositories.getInstance().getRepository(project);
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(project);
             if(jira != null) {
-                return jira.getCreateIssueListener();
+                return new ActionWrapper(jira.getCreateIssueListener());
             }
             return null;
         }
-        return new ActionListener() {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
@@ -213,22 +217,22 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     @Override
-    public ActionListener getOpenQueryResultAction(QueryResultHandle result) {
+    public Action getOpenQueryResultAction(QueryResultHandle result) {
         if(result instanceof QueryResultHandleImpl ||
            result instanceof FakeJiraQueryResultHandle)
         {
-            return (ActionListener) result;
+            return new ActionWrapper((ActionListener) result);
         } else {
             return null;
         }
     }
 
     @Override
-    public ActionListener getDefaultAction(QueryHandle query) {
+    public Action getDefaultAction(QueryHandle query) {
         if(query instanceof QueryHandleImpl ||
            query instanceof FakeJiraQueryHandle)
         {
-            return (ActionListener) query;
+            return new ActionWrapper((ActionListener) query);
         } else {
             return null;
         }
@@ -249,14 +253,24 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             synchronized(queryHandles) {
                 queryHandles.clear();
             }
-        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN) && evt.getNewValue() == null) {
-            ProjectHandleListener[] pls;
-            synchronized(projectListeners) {
-                pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            if(evt.getNewValue() == null) {
+                ProjectHandleListener[] pls;
+                synchronized(projectListeners) {
+                    pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+                }
+                for (ProjectHandleListener pl : pls) {
+                    pl.closeQueries();
+                }
             }
-            for (ProjectHandleListener pl : pls) {
-                pl.closeQueries();
-            }
+            refreshKenaiQueries();
+        }
+    }
+
+    private void refreshKenaiQueries() {
+        Set<QueryTopComponent> tcs = QueryTopComponent.getOpenQueries(); // XXX updates also non kenai TC
+        for (QueryTopComponent tc : tcs) {
+            tc.updateSavedQueries();
         }
     }
     
@@ -299,4 +313,14 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         }
     }
 
+    private static class ActionWrapper extends AbstractAction {
+        private final ActionListener al;
+
+        public ActionWrapper( ActionListener al ) {
+            this.al = al;
+        }
+        public void actionPerformed(ActionEvent e) {
+           al.actionPerformed(e);
+        }
+    }
 }

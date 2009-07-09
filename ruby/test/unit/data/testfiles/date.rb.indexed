@@ -19,12 +19,12 @@ Searchable Keys:
   method : +(n)|DOCUMENTED|
   method : -(x)|DOCUMENTED|
   method : <<(n)|DOCUMENTED|
-  method : <=>(other)|DOCUMENTED|;;NilClass;
-  method : ===(other)|DOCUMENTED|;;FalseClass;
+  method : <=>(other)|DOCUMENTED|;;Fixnum|NilClass;
+  method : ===(other)|DOCUMENTED|;;TrueClass|FalseClass;
   method : >>(n)|DOCUMENTED|
-  method : _dump(limit)|DOCUMENTED|;;IO;
+  method : _dump(limit)|DOCUMENTED|
   method : _load(str)|DOCUMENTED|STATIC|
-  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|
+  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|;;Fixnum;
   method : ajd_to_jd(ajd,of)|DOCUMENTED|STATIC|
   method : ajd|DOCUMENTED|
   method : amjd_to_ajd(amjd)|DOCUMENTED|STATIC|
@@ -38,12 +38,12 @@ Searchable Keys:
   method : cwday|DOCUMENTED|
   method : cweek|DOCUMENTED|
   method : cwyear|DOCUMENTED|
-  method : day_fraction_to_time(fr)|DOCUMENTED|STATIC|
+  method : day_fraction_to_time(fr)|DOCUMENTED|STATIC|;;Array;
   method : day_fraction|DOCUMENTED|
   method : downto(min,&block)|DOCUMENTED|
   method : england|DOCUMENTED|
-  method : eql?(other)|DOCUMENTED|
-  method : gregorian_leap?(y)|DOCUMENTED|STATIC|
+  method : eql?(other)|DOCUMENTED|;;TrueClass|FalseClass;
+  method : gregorian_leap?(y)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : gregorian|DOCUMENTED|
   method : hash|DOCUMENTED|
   method : hour|DOCUMENTED|PRIVATE|
@@ -52,18 +52,18 @@ Searchable Keys:
   method : italy|DOCUMENTED|
   method : jd(jd,sg)|DOCUMENTED|STATIC|
   method : jd_to_ajd(jd,fr,of)|DOCUMENTED|STATIC|
-  method : jd_to_civil(jd,sg)|DOCUMENTED|STATIC|
-  method : jd_to_commercial(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_civil(jd,sg)|DOCUMENTED|STATIC|;;Array;
+  method : jd_to_commercial(jd,sg)|DOCUMENTED|STATIC|;;Array;
   method : jd_to_ld(jd)|DOCUMENTED|STATIC|
   method : jd_to_mjd(jd)|DOCUMENTED|STATIC|
-  method : jd_to_ordinal(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_ordinal(jd,sg)|DOCUMENTED|STATIC|;;Array;
   method : jd_to_wday(jd)|DOCUMENTED|STATIC|
   method : jd|DOCUMENTED|
-  method : julian_leap?(y)|DOCUMENTED|STATIC|
+  method : julian_leap?(y)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : julian|DOCUMENTED|
   method : ld_to_jd(ld)|DOCUMENTED|STATIC|
   method : ld|DOCUMENTED|
-  method : leap?|DOCUMENTED|
+  method : leap?|DOCUMENTED|;;TrueClass|FalseClass;
   method : mday|DOCUMENTED|
   method : min|DOCUMENTED|PRIVATE|
   method : mjd_to_jd(mjd)|DOCUMENTED|STATIC|
@@ -73,15 +73,15 @@ Searchable Keys:
   method : new_offset(of)|PRIVATE|
   method : new_start(sg)|DOCUMENTED|
   method : new_with_hash(elem,sg)|STATIC|
-  method : ns?(jd,sg)|DOCUMENTED|STATIC|
-  method : ns?|DOCUMENTED|
+  method : ns?(jd,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  method : ns?|DOCUMENTED|;;TrueClass|FalseClass;
   method : offset|PRIVATE|
   method : once(*ids)|PRIVATE|STATIC|
   method : ordinal(y,d,sg)|DOCUMENTED|PRIVATE|STATIC|
   method : ordinal_to_jd(y,d,sg)|DOCUMENTED|STATIC|
   method : ordinal|DOCUMENTED|PRIVATE|
-  method : os?(jd,sg)|DOCUMENTED|STATIC|
-  method : os?|DOCUMENTED|
+  method : os?(jd,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  method : os?|DOCUMENTED|;;TrueClass|FalseClass;
   method : parse(str,comp,sg)|DOCUMENTED|STATIC|
   method : sec_fraction|DOCUMENTED|PRIVATE|
   method : sec|DOCUMENTED|PRIVATE|
@@ -91,13 +91,13 @@ Searchable Keys:
   method : succ|DOCUMENTED|
   method : time_to_day_fraction(h,min,s)|DOCUMENTED|STATIC|
   method : time|DOCUMENTED|PRIVATE|
-  method : to_s|DOCUMENTED|
+  method : to_s|DOCUMENTED|;;String;
   method : today(sg)|DOCUMENTED|STATIC|
   method : upto(max,&block)|DOCUMENTED|
-  method : valid_civil?(y,m,d,sg)|DOCUMENTED|STATIC|
-  method : valid_commercial?(y,w,d,sg)|DOCUMENTED|STATIC|
-  method : valid_jd?(jd,sg)|DOCUMENTED|STATIC|
-  method : valid_ordinal?(y,d,sg)|DOCUMENTED|STATIC|
+  method : valid_civil?(y,m,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  method : valid_commercial?(y,w,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  method : valid_jd?(jd,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  method : valid_ordinal?(y,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : wday|DOCUMENTED|
   method : yday|DOCUMENTED|
   method : year|DOCUMENTED|
@@ -115,6 +115,7 @@ Searchable Keys:
   class : Date
   class-ig : date
   fqn : Date
+  require : date
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -122,18 +123,6 @@ Not Searchable Keys:
 
 
 Document 2
-Searchable Keys:
-  class : DateTime
-  class-ig : datetime
-  extends : Date
-  fqn : DateTime
-
-Not Searchable Keys:
-  attrs : |CLASS|
-  requires : date/format,rational
-
-
-Document 3
 Searchable Keys:
   class : DateTime
   class-ig : datetime
@@ -147,8 +136,22 @@ Searchable Keys:
   method : ordinal(y,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
   method : parse(str,comp,sg)|DOCUMENTED|STATIC|
   method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
-  method : valid_time?(h,min,s)|DOCUMENTED|STATIC|
+  method : valid_time?(h,min,s)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
+  require : date
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1138
+  requires : date/format,rational
+
+
+Document 3
+Searchable Keys:
+  class : DateTime
+  class-ig : datetime
+  extends : Date
+  fqn : DateTime
+  require : date
+
+Not Searchable Keys:
+  attrs : |CLASS|
   requires : date/format,rational

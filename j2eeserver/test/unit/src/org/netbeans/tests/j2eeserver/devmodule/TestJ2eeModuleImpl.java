@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.openide.filesystems.FileObject;
@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.SimpleMetadataModelImpl;
  *
  * @author  sherold
  */
-public class TestJ2eeModuleImpl implements J2eeModuleImplementation {
+public class TestJ2eeModuleImpl implements J2eeModuleImplementation2 {
     
     private final FileObject webAppRoot;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -84,8 +84,8 @@ public class TestJ2eeModuleImpl implements J2eeModuleImplementation {
         return webAppRoot;
     }
     
-    public Object getModuleType() {
-        return J2eeModule.EJB;
+    public J2eeModule.Type getModuleType() {
+        return J2eeModule.Type.EJB;
     }
     
     public String getModuleVersion() {

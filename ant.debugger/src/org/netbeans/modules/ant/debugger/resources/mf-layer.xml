@@ -42,6 +42,13 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+
+    <folder name="Actions">
+        <folder name="Build">
+            <file name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance"/>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <folder name="text">
             <folder name="xml">
@@ -58,10 +65,11 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="Popup">
                     <file name="AfterToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="3333"/>
-                    </file>
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
-                        <attr name="position" intvalue="3666"/>
                     </file>                    
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="3666"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="3800"/>
@@ -81,10 +89,11 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-ant+xml">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance">
+                    <file name="org-netbeans-modules-ant-debugger-RunTargetsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-ant-debugger-RunTargetsAction.instance"/>
                         <attr name="position" intvalue="300"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

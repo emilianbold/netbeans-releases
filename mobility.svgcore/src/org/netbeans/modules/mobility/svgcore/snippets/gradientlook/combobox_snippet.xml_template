@@ -7,7 +7,7 @@
                 <rect id="%%COMPONENT_ID%%_border" transform=""   x="5.0" y="0.0" rx="4" ry="4" width="80" height="20" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5"/>
                 <g>
                     <g>
-                        <image id="_0" transform="matrix(18.134119,0.0,0.0,0.67122597,65.99999,2.2920818)"  width="1" height="25"
+                        <image transform="matrix(18.134119,0.0,0.0,0.67122597,65.99999,2.2920818)"  width="1" height="25"
               xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAZCAIAAAB/8tMoAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
               jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAF9JREFU
               GFdFw80KRUAAgNHv/R/FmqWyUOSmRN2bJLEgkvw2Y4xJ2dxTB2MM/zdG6/d9KbQ6uU6JkgIpD4TY
@@ -21,7 +21,7 @@
                         <animate id="%%COMPONENT_ID%%_button_released" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="black"/>
                         </rect>
                 </g>
-                <polygon transform="translate(73.0,8.0)" id="_18"   points="0,0 4,0 2,4" fill="blue" stroke="rgb(73,46,55)" stroke-width="1.5"/>
+                <polygon transform="translate(73.0,8.0)" points="0,0 4,0 2,4" fill="blue" stroke="rgb(73,46,55)" stroke-width="1.5"/>
                 <g id="%%COMPONENT_ID%%_editor">		<!-- this editor is SVGTextField component -->		<!-- Metadata information. Please don't edit. -->
                     <text display="none">type=editor</text>
                     <text display="none">editable=false</text>

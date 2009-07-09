@@ -49,7 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.db.explorer.action.AddDriverAction;
+import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -178,11 +178,11 @@ public final class JDBCDriverManager {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    new AddDriverAction.AddDriverDialogDisplayer().showDialog();
+                    AddDriverDialog.showDialog();
                 }
             });
         } else {
-            new AddDriverAction.AddDriverDialogDisplayer().showDialog();
+            AddDriverDialog.showDialog();
         }
     }
 
@@ -203,7 +203,7 @@ public final class JDBCDriverManager {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The current thread is not the event dispatching thread."); // NOI18N
         }
-        return new AddDriverAction.AddDriverDialogDisplayer().showDialog();        
+        return AddDriverDialog.showDialog();
     }
     
     /**

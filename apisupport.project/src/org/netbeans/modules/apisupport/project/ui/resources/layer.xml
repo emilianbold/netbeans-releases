@@ -40,8 +40,19 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.platform.Bundle#CTL_NbPlatformManager_Menu"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="Project">
             <folder name="APISupport">
@@ -187,6 +198,7 @@ made subject to such option by the copyright holder.
             <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
             <file name="actionListener.java" url="../wizard/action/actionListener.javx"/>
             <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
+            <file name="contextAction.java" url="../wizard/action/contextAction.javx"/>
             <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
 			<file name="quickSearch.java" url="../wizard/quicksearch/quickSearch.javx"/>
             <file name="contextProvider.java" url="../wizard/codegenerator/contextProvider.javx"/>
@@ -240,7 +252,8 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Menu">
         <folder name="Tools">
-            <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance">
+            <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance"/>
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>

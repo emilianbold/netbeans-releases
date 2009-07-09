@@ -43,8 +43,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmKnRName;
@@ -84,7 +84,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         AST krList = null;
         AST prev = null;
         AST token;
-        Stack<AST> lParens = new Stack<AST>();
+        LinkedList<AST> lParens = new LinkedList<AST>();
         for (token = funAST.getFirstChild(); token != null; token = token.getNextSibling()) {
             if (token.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 paramList = token;
@@ -96,7 +96,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
             } else if (token.getType() == CPPTokenTypes.RPAREN) {
                 // could be function without parameters
                 if (!lParens.isEmpty()) {
-                    lParen = lParens.pop();
+                    lParen = lParens.removeLast();
                 }
                 rParen = token;
             } else if (token.getType() == CPPTokenTypes.LITERAL_throw) {
@@ -106,7 +106,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
                     break;
                 }
             } else if (token.getType() == CPPTokenTypes.LPAREN) {
-                lParens.push(token);
+                lParens.addLast(token);
             }
             prev = token;
         }

@@ -44,5 +44,9 @@ package org.netbeans.modules.maven.api.output;
  */
 public interface NotifyFinishOutputProcessor extends OutputProcessor {
 
+    /**
+     * notifies when the build finishes. Be warned that the method is called from
+     * different thread than the rest of the OutputProcessor methods.
+     */
     void buildFinished();
 }

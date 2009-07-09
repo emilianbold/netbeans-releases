@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.dd.impl.web.annotation;
 
 import java.io.File;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -76,7 +77,8 @@ public class WebAppMetadataModelTest extends WebAppTestCase {
         MetadataModel model = createModel(metadataUnit);
         MetadataModelAction<WebAppMetadata, Integer> action = new MetadataModelAction<WebAppMetadata, Integer>() {
             public Integer run(WebAppMetadata metadata) throws Exception {
-                return metadata.getRoot().getServlet().length;
+                WebApp webApp = metadata.getRoot();
+                return (webApp != null) ? webApp.getServlet().length : 0;
             }
         };
         assertEquals(1, model.runReadAction(action));

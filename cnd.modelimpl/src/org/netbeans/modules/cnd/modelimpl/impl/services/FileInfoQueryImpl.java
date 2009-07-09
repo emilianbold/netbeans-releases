@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -188,29 +188,49 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return result;
     }
 
-    private static boolean hasConditionalsDirectives(APTFile apt) {
-        if (apt == null) {
-            return false;
-        }
-        APT node = apt.getFirstChild();
-        while (node != null) {
-            if (node.getType() == APT.Type.CONDITION_CONTAINER || node.getType() == APT.Type.ERROR) {
-                return true;
-            }
-            assert node.getFirstChild() == null;
-            node = node.getNextSibling();
-        }
-        return false;
-    }
+    private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
+    private static final class NamedLock {
+        private final String name;
 
-    private final ConcurrentMap<CsmFile, String> macroUsagesLocks = new ConcurrentHashMap<CsmFile, String>();
+        public NamedLock(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NamedLock other = (NamedLock) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
+    }
     
     public List<CsmReference> getMacroUsages(CsmFile file) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            String lock = new String("getMacroUsages lock for " + file.getAbsolutePath()); // NOI18N
-            String prevLock = macroUsagesLocks.putIfAbsent(fileImpl, lock);
+            Object lock = new NamedLock("getMacroUsages lock for " + file.getAbsolutePath()); // NOI18N
+            Object prevLock = macroUsagesLocks.putIfAbsent(fileImpl, lock);
             lock = prevLock != null ? prevLock : lock;
             try {
                 synchronized (lock) {
@@ -228,17 +248,21 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
                                 APTPreprocHandler handler = handlers.iterator().next();
-                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                // ask for concurrent entry if absent
+                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
                                 APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                 out = walker.collectMacros();
+                                // remember walk info
                                 fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
-                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, true);
+                                    // ask for concurrent entry if absent
+                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
                                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                     result.addAll(walker.collectMacros());
+                                    // remember walk info
                                     fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
                                 }
                                 out = new ArrayList<CsmReference>(result);
@@ -349,7 +373,9 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
-                    for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
+                    Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
+                    while(it.hasNext()){
+                        APTIncludeHandler.IncludeInfo info = it.next();
                         int offset = info.getIncludeDirectiveOffset();
                         CsmInclude find = null;
                         for(CsmInclude inc : startFile.getIncludes()){

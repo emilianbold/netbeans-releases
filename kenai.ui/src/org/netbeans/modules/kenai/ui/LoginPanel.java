@@ -43,6 +43,8 @@ import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ToolTipManager;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
@@ -87,6 +89,7 @@ public class LoginPanel extends javax.swing.JPanel {
         String errorMessage = ex.getMessage();
         if (errorMessage==null || "".equals(errorMessage.trim())) {
             errorMessage = NbBundle.getMessage(LoginPanel.class, "LBL_AuthenticationFailed");
+            Logger.getLogger(LoginPanel.class.getName()).log(Level.INFO, errorMessage, ex);
         }
         error.setText(errorMessage);
         error.setVisible(true);

@@ -45,6 +45,7 @@ import java.lang.ref.*;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.openide.ErrorManager;
 import org.netbeans.junit.*;
@@ -1346,7 +1347,80 @@ class R extends Object implements Runnable {
             x.notifyAll();
         }
     }
-    
+
+    private static class TestHandler extends Handler {
+        boolean stFilled = false;
+        boolean exceptionCaught = false;
+
+        @Override
+        public void publish(LogRecord rec) {
+            if (rec.getThrown() != null) {
+                for (StackTraceElement elem : rec.getThrown().getStackTrace()) {
+                    if (elem.getMethodName().contains("testStackTraceFillingDisabled")) {
+                        stFilled = true;
+                        break;
+                    }
+                }
+                exceptionCaught = true;
+            }
+        }
+
+        public void clear() {
+            stFilled = false;
+            exceptionCaught = false;
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
+
+    public void testStackTraceFillingDisabled() throws InterruptedException {
+        boolean ea = false;
+        assert (ea = true);
+        assertTrue("Test must be run with enabled assertions", ea);
+        Logger l = RequestProcessor.logger();
+        TestHandler handler = new TestHandler();
+        l.addHandler(handler);
+        try {
+            RequestProcessor rp = new RequestProcessor("test rp #1", 1);
+            Task t = rp.post(new Runnable() {
+
+                public void run() {
+                    throw new RuntimeException("Testing filled stacktrace");
+                }
+            });
+//            t.waitFinished(); // does not work, thread gets notified before the exception is logged
+            int timeout = 0;
+            while (! handler.exceptionCaught && timeout++ < 100) {
+                Thread.sleep(50);
+            }
+            assertTrue("Waiting for task timed out", timeout < 100);
+            assertTrue("Our testing method not found in stack trace", handler.stFilled);
+
+            handler.clear();
+            timeout = 0;
+            rp = new RequestProcessor("test rp #2", 1, false, false);
+            t = rp.post(new Runnable() {
+
+                public void run() {
+                    throw new RuntimeException("Testing 'short' stacktrace");
+                }
+            });
+            while (! handler.exceptionCaught && timeout++ < 100) {
+                Thread.sleep(50);
+            }
+            assertTrue("Waiting for task timed out", timeout < 100);
+            assertFalse("Our testing method found in stack trace", handler.stFilled);
+        } finally {
+            l.removeHandler(handler);
+        }
+    }
+
     private static void doGc (int count, Reference toClear) {
         java.util.ArrayList<byte[]> l = new java.util.ArrayList<byte[]> (count);
         while (count-- > 0) {

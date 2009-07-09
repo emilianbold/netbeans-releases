@@ -45,7 +45,7 @@ import java.util.concurrent.CancellationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -56,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportPro
  *
  * @author ak119685
  */
-public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
+public class SolarisPrivilegesSupportTest extends NativeExecutionBaseTestCase {
 
     public SolarisPrivilegesSupportTest(String name) {
         super(name);

@@ -130,6 +130,12 @@ public class BuildExtension {
             // the build xml file is broken... we probably don't want to try to
             // edit it programatically.
             return;
+        }  catch (IOException ex) {
+            Logger.getLogger(BuildExtension.class.getName()).log(Level.FINER,
+                    null,ex);
+            // the build xml file is broken... we probably don't want to try to
+            // edit it programatically.
+            return;
         }
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {

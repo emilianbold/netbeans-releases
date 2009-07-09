@@ -18,7 +18,7 @@ token #16 WHITESPACE
 token #17 PHP_CONSTANT_ENCAPSED_STRING "1: ok\n"
 token #18 PHP_SEMICOLON ;
 token #19 WHITESPACE \n\t\t
-token #20 PHP_STRING goto
+token #20 PHP_GOTO goto
 token #21 WHITESPACE  
 token #22 PHP_STRING L1
 token #23 PHP_SEMICOLON ;

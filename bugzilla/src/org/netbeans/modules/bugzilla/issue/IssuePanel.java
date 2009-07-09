@@ -65,10 +65,12 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -86,6 +88,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -458,6 +461,7 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutions.remove("MOVED"); // NOI18N
         resolutionCombo.setModel(toComboModel(resolutions));
         priorityCombo.setModel(toComboModel(bc.getPriorities()));
+        priorityCombo.setRenderer(new PriorityRenderer());
         severityCombo.setModel(toComboModel(bc.getSeverities()));
         // stausCombo and resolution fields are filled in reloadForm
     }
@@ -1907,4 +1911,14 @@ public class IssuePanel extends javax.swing.JPanel {
 
     }
 
+    private class PriorityRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel renderer = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            renderer.setIcon(BugzillaConfig.getInstance().getPriorityIcon((String)value));
+            return renderer;
+        }
+
+    }
 }

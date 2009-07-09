@@ -934,7 +934,9 @@ public class RegistriesManagerImpl implements RegistriesManager {
                     tempBundlePropertiesFile.getAbsolutePath());
             
             if (results.getErrorCode() != 0) {
-                throw new ManagerException("Could not create bundle - error in running the engine");
+                throw new ManagerException("Could not create bundle - error in running the engine." +
+                        "\nOutput:\n" + results.getStdOut() +
+                        "\nStderr:\n" + results.getStdErr());
             }
             
             FileUtils.deleteFile(tempStatefile);

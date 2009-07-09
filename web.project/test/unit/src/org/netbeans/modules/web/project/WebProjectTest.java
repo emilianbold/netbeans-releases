@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.test.TestUtil;
@@ -76,6 +77,8 @@ public class WebProjectTest extends NbTestCase {
     }
     
     // see #99077, #70052
+    // TODO investigate more
+    @RandomlyFails
     public void testWebProjectIsGCed() throws Exception { // #83128
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         FileObject projdir = FileUtil.toFileObject(f);

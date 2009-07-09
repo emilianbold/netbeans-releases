@@ -42,24 +42,27 @@
 package org.netbeans.modules.j2ee.clientproject.api;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.clientproject.TestPlatformProvider;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Lukas Jungmann
  */
 public class AppClientProjectGeneratorTest extends NbTestCase {
-    
-    private String serverID;
     
     private static final String[] createdFiles = {
         "build.xml",
@@ -89,6 +92,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         "build.dir",
         "build.ear.classes.dir",
         "build.generated.dir",
+        "build.generated.sources.dir",
         "build.sysclasspath",
         "build.test.classes.dir",
         "build.test.results.dir",
@@ -98,7 +102,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         "dist.ear.jar",
         "dist.jar",
         "dist.javadoc.dir",
-        "j2ee.appclient.mainclass.args",
+        //"j2ee.appclient.mainclass.args",
         "j2ee.platform",
         "j2ee.server.type",
         "jar.compress",
@@ -139,6 +143,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         "build.dir",
         "build.ear.classes.dir",
         "build.generated.dir",
+        "build.generated.sources.dir",
         "build.sysclasspath",
         "build.test.classes.dir",
         "build.test.results.dir",
@@ -148,7 +153,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         "dist.ear.jar",
         "dist.jar",
         "dist.javadoc.dir",
-        "j2ee.appclient.mainclass.args",
+        //"j2ee.appclient.mainclass.args",
         "j2ee.platform",
         "j2ee.server.type",
         "jar.compress",
@@ -185,19 +190,20 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
     public AppClientProjectGeneratorTest(String name) {
         super(name);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
+        
+        MockLookup.setLayersAndInstances(new TestPlatformProvider());
     }
-    
+
     public void testCreateProject() throws Exception {
         File root = new File(getWorkDir(), "projects");
         File proj = new File(root, "TestCreateACProject");
         AntProjectHelper aph = AppClientProjectGenerator.createProject(proj, "test-project",
-                "test.MyMain", J2eeModule.JAVA_EE_5, serverID);
+                "test.MyMain", J2eeModule.JAVA_EE_5, TestUtil.SERVER_URL);
         assertNotNull(aph);
         FileObject fo = aph.getProjectDirectory();
         for (int i=0; i<createdFiles.length; i++) {
@@ -222,7 +228,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         File testRoot = new File(proj, "test");
         AntProjectHelper helper = AppClientProjectGenerator.importProject(proj,
                 "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot},
-                confRoot, null, J2eeModule.JAVA_EE_5, serverID);
+                confRoot, null, J2eeModule.JAVA_EE_5, TestUtil.SERVER_URL);
         assertNotNull(helper);
         FileObject importedDirFO = FileUtil.toFileObject(proj);
         for (int i=0; i<createdFilesExtSources.length; i++) {
@@ -275,12 +281,12 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         FileUtil.createFolder(libDir);
         AntProjectHelper helper = AppClientProjectGenerator.importProject(proj,
                 "test-project-ext-src2", new File[] {srcRoot}, new File[] {},
-                confRoot, libDir, J2eeModule.JAVA_EE_5, serverID);
+                confRoot, libDir, J2eeModule.JAVA_EE_5, TestUtil.SERVER_URL);
         assertNotNull(helper);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals("default_platform", ep.getProperty("platform.active"));
-        assertEquals("${default.javac.source}", ep.getProperty("javac.source"));
-        assertEquals("${default.javac.target}", ep.getProperty("javac.target"));
+        assertEquals("1.5", ep.getProperty("javac.source"));
+        assertEquals("1.5", ep.getProperty("javac.target"));
         AppClientProjectGenerator.setPlatform(helper, "ExplicitPlatform", "1.4");
         ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals("ExplicitPlatform", ep.getProperty("platform.active"));

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +46,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -96,7 +94,7 @@ public class KenaiRepositories {
         }
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (BugtrackingConnector c : connectors) {
-            KenaiSupport support = c.getKenaiSupport();
+            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
             if(support != null) {
                 repository = support.createRepository(kp);
                 if(repository != null) {

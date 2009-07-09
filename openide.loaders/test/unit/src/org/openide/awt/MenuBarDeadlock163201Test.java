@@ -50,6 +50,7 @@ import javax.swing.AbstractAction;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
@@ -157,10 +158,7 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
         assertEquals("Named Old", "Old", mb.getMenu(0).getText());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
+    @RandomlyFails // NB-Core-Build #2723
     public void testChangeInNameOfFolderDoesNotDeadlock() throws Throwable {
         class R implements Runnable {
             MenuBar mb2;

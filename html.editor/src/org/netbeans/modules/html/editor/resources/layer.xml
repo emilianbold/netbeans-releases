@@ -183,14 +183,14 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="Popup">
-                    <file name="ViewAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ViewAction"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
                     
                     <file name="SeparatorAfterView.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1166"/>
+                    </file>
+                    <file name="ViewAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="format">
                         <attr name="position" intvalue="1333"/>

@@ -137,7 +137,6 @@ public class JavaEePlatformUiSupport {
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        //    if (j2eePlatform.getSupportedSpecVersions().contains(J2eeModule.JAVA_EE_50)) { // getSupportedModuleTypes().contains(J2eeModule.EJB)) {
                         JavaEePlatformAdapter adapter = new JavaEePlatformAdapter(j2eePlatform);
                         orderedNames.add(adapter);
                         
@@ -150,7 +149,7 @@ public class JavaEePlatformUiSupport {
                         if (firstAdapter == null || !sjasFound) {
                             // try to pick a glassfish instance
                             if (j2eePlatform.getSupportedSpecVersions().contains(J2eeModule.JAVA_EE_5) &&
-                                    j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                                    j2eePlatform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
                                 String shortName = Deployment.getDefault().getServerID(serverInstanceIDs[i]);
                                 if ("J2EE".equals(shortName)) { // NOI18N
                                     firstAdapter = adapter;

@@ -47,7 +47,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  *
  * @author Petr Pisl
  */
-public interface ViewHandler extends FullyQualifiedClassType {
+public interface ViewHandler extends FullyQualifiedClassType, ApplicationElement {
     /**
      * Property of &lt;view-handler&gt; element.
      */ 

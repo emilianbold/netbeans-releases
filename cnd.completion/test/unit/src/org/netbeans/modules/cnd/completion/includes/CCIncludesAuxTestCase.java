@@ -27,13 +27,13 @@
  */
 package org.netbeans.modules.cnd.completion.includes;
 
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CCIncludesAuxTestCase extends BaseTestCase {
+public class CCIncludesAuxTestCase extends CndBaseTestCase {
 
     private static final boolean TRACE = false;
 

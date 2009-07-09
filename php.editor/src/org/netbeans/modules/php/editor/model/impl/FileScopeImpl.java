@@ -48,13 +48,6 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
-import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -62,7 +55,7 @@ import org.openide.util.Union2;
  *
  * @author Radek Matous
  */
-final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContainerImpl {
+final class FileScopeImpl extends ScopeImpl implements FileScope  {
 
     private CachingSupport cachedModelSupport;
     private ParserResult info;
@@ -70,31 +63,14 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
             new HashMap<ModelElement, List<Occurence>>();
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
 
-
-    public VariableNameImpl createElement(Program program, Variable node) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node, true);
-        return retval;
-    }
-
-    ConstantElementImpl createElement(ASTNodeInfo<Scalar> node) {
-        ConstantElementImpl retval = new ConstantElementImpl(this, node);
-        return retval;
-    }
-
-    FunctionScopeImpl createElement(Program program, FunctionDeclaration node) {
-        FunctionScopeImpl retval = new FunctionScopeImpl(this, FunctionDeclarationInfo.create(node),
-                VariousUtils.getReturnTypeFromPHPDoc(program, node));
-        return retval;
-    }
-
     FileScopeImpl(ParserResult info) {
-        this(info, "program", PhpKind.PROGRAM);//NOI18N
-        cachedModelSupport = new CachingSupport(this);
+        this(info, "program");//NOI18N
     }
 
-    private FileScopeImpl(ParserResult info, String name, PhpKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+    private FileScopeImpl(ParserResult info, String name) {
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), PhpKind.PROGRAM);//NOI18N
         this.info = info;
+        this.cachedModelSupport = new CachingSupport(this);
     }
 
     void addCodeMarker(CodeMarkerImpl codeMarkerImpl) {
@@ -142,112 +118,6 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         return getAllOccurences(occurence.getDeclaration());
     }
 
-    public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
-        return filter(getElements(), new ElementFilter<ModelElement>() {
-            public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CLASS);
-            }
-        });
-    }
-
-    /*public List<? extends ClassScopeImpl> findDeclaredClasses(final String... queryName) {
-        return findDeclaredClasses(QuerySupport.Kind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends ClassScopeImpl> findDeclaredClasses(final QuerySupport.Kind nameKind, final String... queryName) {
-        return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElementImpl element) {
-                return element.getPhpKind().equals(PhpKind.CLASS) &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
-            }
-        });
-    }*/
-
-    public Collection<? extends InterfaceScope> getDeclaredInterfaces() {
-        return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.IFACE);
-            }
-        });
-    }
-
-    /*public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final String... queryName) {
-        return findDeclaredInterfaces(QuerySupport.Kind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends InterfaceScopeImpl> findDeclaredInterfaces(final QuerySupport.Kind nameKind, final String... queryName) {
-        return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElementImpl element) {
-                return element.getPhpKind().equals(PhpKind.IFACE) &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
-            }
-        });
-    }*/
-
-    public Collection<? extends ConstantElement> getDeclaredConstants() {
-        return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CONSTANT);
-            }
-        });
-    }
-
-    /*public List<? extends ConstantElementImpl> findDeclaredConstants(String... queryName) {
-        return findDeclaredConstants(QuerySupport.Kind.EXACT_NAME, queryName);
-    }
-
-    public List<? extends ConstantElementImpl> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName) {
-        return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElementImpl element) {
-                return element.getPhpKind().equals(PhpKind.CONSTANT) &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
-            }
-        });
-    }*/
-
-    public Collection<? extends FunctionScope> getDeclaredFunctions() {
-        return filter(getElements(), new ElementFilter() {
-            public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.FUNCTION);
-            }
-        });
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public Collection<? extends TypeScope> getDeclaredTypes() {
-        Collection<? extends ClassScope> classes = getDeclaredClasses();
-        Collection<? extends InterfaceScope> interfaces = getDeclaredInterfaces();
-        return ModelUtils.merge(classes, interfaces);
-    }
-
-
-    public Collection<? extends VariableName> getDeclaredVariables() {
-        return getVariablesImpl();
-    }
-
-
-    public Collection<? extends VariableName> getAllVariablesImpl() {
-        return getVariablesImpl();
-    }
-
-    public Collection<? extends VariableName> getVariablesImpl(String... queryName) {
-        return getVariablesImpl(QuerySupport.Kind.EXACT, queryName);
-    }
-
-    public Collection<? extends VariableName> getVariablesImpl(final QuerySupport.Kind nameKind, final String... queryName) {
-        return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE) &&
-                        (queryName.length == 0 || nameKindMatch(element.getName(), nameKind, queryName));
-            }
-        });
-    }
-
     /**
      * @return the indexScope
      */
@@ -255,8 +125,25 @@ final class FileScopeImpl extends ScopeImpl implements FileScope, VariableContai
         return ModelVisitor.getIndexScope(info);
     }
 
+    public Collection<? extends NamespaceScope> getDeclaredNamespaces() {
+        return filter(getElements(), new ElementFilter<ModelElement>() {
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpKind().equals(PhpKind.NAMESPACE_DECLARATION);
+            }
+        });
+    }
+
     @NonNull
     public CachingSupport getCachingSupport() {
         return cachedModelSupport;
     }
+
+    public NamespaceScope getDefaultDeclaredNamespace() {
+        return ModelUtils.getFirst(ModelUtils.filter(getDeclaredNamespaces(), new ModelUtils.ElementFilter<NamespaceScope>() {
+            public boolean isAccepted(NamespaceScope ns) {
+                return ns.isDefaultNamespace();
+            }
+        }));
+    }
+
 }

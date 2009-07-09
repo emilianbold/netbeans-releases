@@ -95,6 +95,8 @@ public class OptionsDisplayerImpl {
     private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());    
     private boolean modal;
     static final LookupListener lookupListener = new LookupListenerImpl();
+    /** OK button. */
+    private JButton bOK;
     /** Advanced Options button. */
     private JButton bClassic;
     /** Export Options button */
@@ -105,8 +107,8 @@ public class OptionsDisplayerImpl {
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
         try {
-            // 91106 - listen to default FS changes to update Advanced Options button
-            FileUtil.getConfigRoot().getFileSystem().addFileChangeListener(new AdvancedOptionsListener());
+            // 91106 - listen to default FS changes to update Advanced Options, Export and Import buttons
+            FileUtil.getConfigRoot().getFileSystem().addFileChangeListener(new DefaultFSListener());
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -152,15 +154,15 @@ public class OptionsDisplayerImpl {
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
             optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            
-            JButton bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
+            bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
             bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
             bClassic.getAccessibleContext().setAccessibleDescription(loc("ACS_ClassicButton"));//NOI18N
-            setVisibleAdvancedOptionsButton();
             btnExport = (JButton) loc(new JButton(), "CTL_Export");//NOI18N
             btnExport.getAccessibleContext().setAccessibleDescription(loc("ACS_Export"));//NOI18N
             btnImport = (JButton) loc(new JButton(), "CTL_Import");//NOI18N
             btnImport.getAccessibleContext().setAccessibleDescription(loc("ACS_Import"));//NOI18N
+            updateButtons();
             boolean isMac = Utilities.isMac();
             Object[] options = new Object[2];            
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
@@ -195,9 +197,16 @@ public class OptionsDisplayerImpl {
 
     /** Set visibility of Advanced Options button (AKA classic) according to
      * existence of advanced options. */
-    private void setVisibleAdvancedOptionsButton() {
+    private void updateButtons() {
         if(bClassic != null) {
             bClassic.setVisible(advancedOptionsNotEmpty());
+        }
+        boolean optionsExportNotEmpty = optionsExportNotEmpty();
+        if (btnExport != null) {
+            btnExport.setVisible(optionsExportNotEmpty);
+        }
+        if (btnImport != null) {
+            btnImport.setVisible(optionsExportNotEmpty);
         }
     }
 
@@ -213,6 +222,32 @@ public class OptionsDisplayerImpl {
                 Object hidden = advancedOption.getAttribute("hidden");  //NOI18N
                 if(hidden == null || !(Boolean)hidden) {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Returns true if some non hidden files are registered under OptionsExport
+     * folder.
+     * @return true if something is registered under OptionsExport, false otherwise
+     */
+    private boolean optionsExportNotEmpty() {
+        FileObject optionsExportFO = FileUtil.getConfigFile("OptionsExport");  //NOI18N
+        if(optionsExportFO != null) {
+            FileObject[] categories = optionsExportFO.getChildren();
+            for (FileObject category : categories) {
+                Object hiddenCategory = category.getAttribute("hidden");  //NOI18N
+                if (hiddenCategory != null && (Boolean)hiddenCategory) {
+                    // skip hidden category folder
+                    continue;
+                }
+                FileObject[] items = category.getChildren();
+                for (FileObject item : items) {
+                    Object hiddenItem = item.getAttribute("hidden");  //NOI18N
+                    if(hiddenItem == null || !(Boolean)hiddenItem) {
+                        return true;
+                    }
                 }
             }
         }
@@ -300,6 +335,7 @@ public class OptionsDisplayerImpl {
                 Dialog d = dialog;
                 dialog = null;
                 optionsPanel.cancel ();
+                bOK.setEnabled(true);
                 d.dispose ();                
             } else
             if (e.getSource () == bClassic) {
@@ -351,7 +387,7 @@ public class OptionsDisplayerImpl {
     private class MyWindowListener implements WindowListener {        
         private OptionsPanel optionsPanel;
         private Dialog originalDialog;
-        
+
                 
         MyWindowListener (OptionsPanel optionsPanel) {
             this.optionsPanel = optionsPanel;
@@ -362,6 +398,7 @@ public class OptionsDisplayerImpl {
             if (dialog == null) return;
             log.fine("Options Dialog - windowClosing "); //NOI18N
             optionsPanel.cancel ();
+            bOK.setEnabled(true);
             if (this.originalDialog == dialog) {
                 dialog = null;            
             }
@@ -419,31 +456,31 @@ public class OptionsDisplayerImpl {
         
     }
 
-    /** 91106 - used to listen to default FS changes to update Advanced Options button. */
-    private class AdvancedOptionsListener implements FileChangeListener {
+    /** 91106 - used to listen to default FS changes to update Advanced Options, Export and Import buttons. */
+    private class DefaultFSListener implements FileChangeListener {
 
         public void fileRenamed(FileRenameEvent fe) {
-            setVisibleAdvancedOptionsButton();
+            updateButtons();
         }
 
         public void fileChanged(FileEvent fe) {
-            setVisibleAdvancedOptionsButton();
+            updateButtons();
         }
 
         public void fileFolderCreated(FileEvent fe) {
-            setVisibleAdvancedOptionsButton();
+            updateButtons();
         }
 
         public void fileDataCreated(FileEvent fe) {
-            setVisibleAdvancedOptionsButton();
+            updateButtons();
         }
 
         public void fileDeleted(FileEvent fe) {
-            setVisibleAdvancedOptionsButton();
+            updateButtons();
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            setVisibleAdvancedOptionsButton();
+            updateButtons();
         }
     };
 }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
@@ -67,7 +68,7 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
     }
 
     public void testWholeDocumentRange() throws ParseException {
-        assertLogicalRanges("   |   ", new int[][]{}); //no range
+        assertLogicalRanges("   |   ", new int[][]{{0,6}}); //no range
         //                   012 3456
     }
 

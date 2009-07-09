@@ -27,7 +27,9 @@
             <ExpressionStatement start='155' end='165'>
                 <FunctionInvocation start='155' end='164'>
                     <FucntionName start='155' end='162'>
-                        <Identifier start='155' end='162' name='phpinfo'/>
+                        <NamespaceName start='155' end='162' isCurrent='false' isGlobal='false'>
+                            <Identifier start='155' end='162' name='phpinfo'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                     </Parameters>

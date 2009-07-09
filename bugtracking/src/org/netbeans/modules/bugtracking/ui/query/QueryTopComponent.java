@@ -62,6 +62,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
@@ -95,7 +96,7 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class QueryTopComponent extends TopComponent
+public final class QueryTopComponent extends TopComponent
                               implements PropertyChangeListener, QueryNotifyListener, FocusListener {
 
     private static QueryTopComponent instance;
@@ -113,6 +114,7 @@ final class QueryTopComponent extends TopComponent
     private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
     private Task prepareTask;
 
+
     QueryTopComponent() {
         BugtrackingManager.getInstance().addPropertyChangeListener(this);
 
@@ -125,21 +127,23 @@ final class QueryTopComponent extends TopComponent
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
     }
 
-    public static QueryTopComponent forKenai(Query query, Repository toSelect) {
-        QueryTopComponent tc = new QueryTopComponent();
-        tc.init(query, toSelect);
-        tc.repositoryComboBox.setEnabled(false);
-        tc.newButton.setEnabled(false);
-        return tc;
+    public static Set<QueryTopComponent> getOpenQueries() {
+        return openQueries;
     }
-
+    
     private Query getQuery() {
         return query;
     }
 
-    public void init(Query query, Repository toSelect) {
+    void init(Query query, Repository toSelect, boolean suggestedSelectionOnly) {
         this.query = query;
         setNameAndTooltip();
+
+        if(suggestedSelectionOnly) {
+            repositoryComboBox.setEnabled(false);
+            newButton.setEnabled(false);
+        }
+
         if (query != null) {
             setSaved();
             BugtrackingController c = query.getController();
@@ -422,6 +426,7 @@ final class QueryTopComponent extends TopComponent
 //                repositoryComboBox.requestFocusInWindow();
 //            }
 //        });
+        BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} opened", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null});
     }
 
     @Override
@@ -435,6 +440,7 @@ final class QueryTopComponent extends TopComponent
         if(prepareTask != null) {
             prepareTask.cancel();
         }
+        BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} closed", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null});
     }
 
     /** replaces this in object stream */
@@ -459,14 +465,8 @@ final class QueryTopComponent extends TopComponent
                     }
                 });
             }
-        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED) ||
-                  evt.getPropertyName().equals(Kenai.PROP_LOGIN))
-        {
-            rp.post(new Runnable() {
-                public void run() {
-                    updateSavedQueries((Repository) repositoryComboBox.getSelectedItem());
-                }
-            });
+        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+            updateSavedQueries();
         } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
@@ -575,7 +575,7 @@ final class QueryTopComponent extends TopComponent
                     query.addPropertyChangeListener(QueryTopComponent.this);
                     query.addNotifyListener(QueryTopComponent.this);
 
-                    updateSavedQueries(repo);
+                    updateSavedQueriesIntern(repo);
 
                     final BugtrackingController addController = query.getController();
                     SwingUtilities.invokeLater(new Runnable() {
@@ -647,7 +647,17 @@ final class QueryTopComponent extends TopComponent
         }
     }
 
-    private void updateSavedQueries(Repository repo) {
+    public void updateSavedQueries() {
+        final Repository repo = (Repository) repositoryComboBox.getSelectedItem();
+        rp.post(new Runnable() {
+            public void run() {
+                updateSavedQueriesIntern(repo);
+            }
+        });        
+    }
+
+    private void updateSavedQueriesIntern(Repository repo) {
+        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
         if(repo == null) {
             return;
         }
@@ -663,6 +673,7 @@ final class QueryTopComponent extends TopComponent
             savedQueries = queries;
             if(savedQueries == null || savedQueries.length == 0) {
                 queriesPanel.setVisible(false);
+                BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
                 return;
             }
             queriesPanel.setVisible(true);
@@ -691,6 +702,7 @@ final class QueryTopComponent extends TopComponent
                 }
             }
             updateSavedQueriesPanel();
+            BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
         }
     }
 

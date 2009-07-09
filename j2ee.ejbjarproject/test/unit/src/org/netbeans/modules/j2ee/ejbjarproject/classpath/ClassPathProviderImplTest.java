@@ -61,6 +61,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -86,10 +87,8 @@ public class ClassPathProviderImplTest extends TestBase {
         FileObject scratch = TestUtil.makeScratchDir(this);
         FileObject defaultPlatformBootRoot = scratch.createFolder(DEFAULT_PLATFORM_ROOT);
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { defaultPlatformBootRoot.getURL() });
-        
-        setLookup(new Object[] {
-            new TestPlatformProvider(defBCP, defBCP)
-        });
+
+        MockLookup.setLayersAndInstances(new TestPlatformProvider(defBCP, defBCP));
         
         assertTrue("No Java platforms found.", JavaPlatformManager.getDefault().getInstalledPlatforms().length >= 2);
         

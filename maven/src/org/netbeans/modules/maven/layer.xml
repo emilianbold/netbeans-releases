@@ -97,6 +97,11 @@ made subject to such option by the copyright holder.
                 <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
                 <attr name="mavenLicenseURL" stringvalue="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
             </file>
+            <file name="license-mit.txt" url="licenses/mit-license.txt">
+                <attr name="template" boolvalue="true"/>
+                <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
+                <attr name="mavenLicenseURL" stringvalue="http://www.opensource.org/licenses/mit-license.php"/>
+            </file>
         </folder>
         
     </folder>

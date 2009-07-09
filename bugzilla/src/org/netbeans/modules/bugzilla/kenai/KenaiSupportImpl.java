@@ -48,17 +48,19 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -83,37 +85,11 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 if (!KenaiService.Names.BUGZILLA.equals(f.getService())) {
                     return null;
                 }
-                final URL loc;
-                try {
-                    loc = new URL(f.getLocation());
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+
+                KenaiRepository repo = createKenaiRepository(project.getDisplayName(), f.getLocation());
+                if(repo == null) {
                     return null;
                 }
-
-                String host = loc.getHost();
-                String location = f.getLocation();
-                int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
-                if (idx <= 0) {
-                    Bugzilla.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
-                    return null;
-                }
-                String url = location.substring(0, idx);
-                if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
-                    url = "https" + url.substring(4);                           // NOI18N
-                }
-                String productParamUrl = null;
-                String productAttribute = "product=";                           // NOI18N
-                String product = null;
-                idx = location.indexOf(productAttribute);
-                if (idx <= 0) {
-                    Bugzilla.LOG.warning("can't get issue tracker product from [" + project.getName() + ", " + location + "]"); // NOI18N
-                } else {
-                    productParamUrl = location.substring(idx);
-                    product = location.substring(idx + productAttribute.length());
-                }
-
-                KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, productParamUrl, product);
                 synchronized (repositories) {
                     repositories.add(repo);
                 }
@@ -157,6 +133,54 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                 kr.setCredentials(user, psswd);
             }
         }
+    }
+
+    @Override
+    public void setFilter(Query query, Filter filter) {
+        if(query instanceof BugzillaQuery) { // XXX assert instead of if
+            BugzillaQuery bq = (BugzillaQuery) query;
+            bq.setFilter(filter);
+        }
+    }
+
+    private KenaiRepository createKenaiRepository(String displayName, String location) {
+        final URL loc;
+        try {
+            loc = new URL(location);
+        } catch (MalformedURLException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
+
+        String host = loc.getHost();
+        int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
+        if (idx <= 0) {
+            Bugzilla.LOG.warning("can't get issue tracker url from [" + displayName + ", " + location + "]"); // NOI18N
+            return null;
+        }
+        String url = location.substring(0, idx);
+        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+            url = "https" + url.substring(4);                           // NOI18N
+        }
+        String productParamUrl = null;
+        String productAttribute = "product=";                           // NOI18N
+        String product = null;
+        int idxProductStart = location.indexOf(productAttribute);
+        if (idxProductStart <= 0) {
+            Bugzilla.LOG.warning("can't get issue tracker product from [" + displayName + ", " + location + "]"); // NOI18N
+            return null;
+        } else {
+            int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
+            if(idxProductEnd > -1) {
+                productParamUrl = location.substring(idxProductStart, idxProductEnd);
+                product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
+            } else {
+                productParamUrl = location.substring(idxProductStart);
+                product = location.substring(idxProductStart + productAttribute.length());
+            }
+        }
+
+        return new KenaiRepository(displayName, url, host, productParamUrl, product);
     }
 }
 

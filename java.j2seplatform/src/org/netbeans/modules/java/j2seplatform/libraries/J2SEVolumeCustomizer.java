@@ -448,9 +448,10 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 }
                 model.addResource(uri);
             } else {
-                assert f.isAbsolute() : f.getPath();
+                assert f.isAbsolute() : f.getPath(); 
+                f = FileUtil.normalizeFile (f);
                 String jarPath = checkFile(f, volume);
-                uri = FileUtil.normalizeFile(f).toURI();
+                uri = f.toURI();
                 if (FileUtil.isArchiveFile(uri.toURL())) {
                     uri = LibrariesSupport.getArchiveRoot(uri);
                     if (jarPath != null) {

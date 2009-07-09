@@ -41,14 +41,15 @@ package org.netbeans.modules.mobility.svgcore.items.form;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.options.SvgcoreSettings;
-import org.netbeans.modules.mobility.svgcore.snippets.gradientlook.SVGSnipetsProviderGradient;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author akorostelev
@@ -93,11 +94,17 @@ public abstract class SVGFormElement extends SVGComponentDrop{
     @Override
     protected boolean doTransfer(JTextComponent target) {
         SVGDataObject svgDataObject = SVGDataObject.getActiveDataObject(target);
-        SVGFileModel model = svgDataObject.getModel();
+        final SVGFileModel model = svgDataObject.getModel();
         try {
             String id = model.createUniqueId(myIdPrefix, false);
             String snippet = getSnippet(id);
             insertToTextComponent(snippet, target);
+            // #165130
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                    model.forceUpdateModel();
+                }
+            });
             return true;
         } catch (Exception ex) {
             SceneManager.error("Error during image merge", ex); //NOI18N

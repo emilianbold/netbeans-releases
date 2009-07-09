@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.platform;
 
 import com.sun.org.apache.bcel.internal.classfile.SourceFile;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.EventListener;
@@ -68,15 +67,15 @@ public class FileBufferDoc extends AbstractFileBuffer {
     private static final boolean TRACE = false;
     
     private final Document doc;
-    private EventListenerList listeners = new EventListenerList();
+    private final EventListenerList listeners = new EventListenerList();
     private DocumentListener docListener;
     private long lastModified;
     private final ChangedSegment changedSegment;
     private ChangedSegment lastChangedSegment;
     private long changedSegmentTaken;
     
-    public FileBufferDoc(File file, Document doc) {
-        super(file);
+    public FileBufferDoc(CharSequence absPath, Document doc) {
+        super(absPath);
         this.doc = doc;
         changedSegment = new ChangedSegment(doc);
         resetLastModified();

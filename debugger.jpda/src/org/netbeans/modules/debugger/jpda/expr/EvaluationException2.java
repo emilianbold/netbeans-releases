@@ -172,6 +172,8 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("evaluateError"))
 //            return Assert.error(node, "evaluateError", value, ((Token) operators[i-1]).image, next);
             msgParams = new String [] { params[1].toString(), params[0].toString(), params[2].toString() };
+        else if (reason.equals("evaluateErrorUnary"))
+            msgParams = new String [] { params[0].toString(), params[1].toString() };
         else if (reason.equals("notEnclosingType"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("accessInstanceVariableFromStaticContext"))
@@ -204,6 +206,9 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String [] {  };
         else if (reason.equals("localVariableAlreadyDefined"))
             msgParams = new String [] { params[0].toString() };
+        else if (reason.equals("unsupportedStringCreation")) {
+            msgParams = new String [] {  };
+        }
         else {
             msgParams = new String [] { reason };
             reason = "unknownInternalError";

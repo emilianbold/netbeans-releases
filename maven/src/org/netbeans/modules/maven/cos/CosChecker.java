@@ -39,12 +39,9 @@
 package org.netbeans.modules.maven.cos;
 
 import hidden.org.codehaus.plexus.util.DirectoryScanner;
-import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -73,10 +70,12 @@ import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
+import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
@@ -89,6 +88,7 @@ import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -98,17 +98,25 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
-public class CosChecker implements PrerequisitesChecker {
+public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
-    private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
-    private static final String MAVEN_MAIN_COS = ".netbeans_CoS_timestamp_main"; //NOI18N
-    private static final String MAVEN_TEST_COS = ".netbeans_CoS_timestamp_test"; //NOI18N
+    static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
 
 
     public static ExecutionResultChecker createResultChecker() {
         return new COSExChecker();
+    }
+
+    public static ProjectOpenedHook createCoSHook(Project prj) {
+        return new CosPOH(prj);
+    }
+
+    private final Project project;
+
+    public CosChecker(Project prj) {
+        this.project = prj;
     }
 
     public boolean checkRunConfig(RunConfig config) {
@@ -124,74 +132,68 @@ public class CosChecker implements PrerequisitesChecker {
             return false;
         }
 
-        long touch1 = getLastCoSLastTouch(config, true);
-        long touch2 = getLastCoSLastTouch(config, false);
-        if ((touch1 != 0 && touch1 != Long.MAX_VALUE) ||
-                (touch2 != 0 && touch2 != Long.MAX_VALUE)) {
+        return true;
+    }
+
+    public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
+        //deleting the timestamp before every action invokation means
+        // we only can rely on Run via JavaRunner and via DeployOnSave
+        // any other means of long term execution will not keep the CoS stamp around while running..
+        // -->> ONLY DELETE FOR BUILD ACTION
+        if (ActionProvider.COMMAND_BUILD.equals(config.getActionName())) {
+            deleteCoSTimeStamp(config, true);
+            deleteCoSTimeStamp(config, false);
+            //do clean the generated class files everytime, that won't hurt anything
+            // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
             try {
                 cleanGeneratedClassfiles(config);
             } catch (IOException ex) {
                 if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
                     config.getGoals().add(0, "clean"); //NOI18N
-                }
+                    }
                 Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
+            }
+        } else if (!ActionProvider.COMMAND_REBUILD.equals(config.getActionName())) {
+            //now for all custom and non-build only related actions,
+            //make sure we place the stamp files into all opened projects.
+            Project[] opened = OpenProjects.getDefault().getOpenProjects();
+            for (Project openprj : opened) {
+                touchProject(openprj);
             }
         }
         return true;
     }
 
-    private boolean checkAndCopyResources(boolean includeTests, long stamp, RunConfig config) {
-        List<Resource> toprocess = new ArrayList<Resource>();
-        List<Resource> toprocessTests = new ArrayList<Resource>();
+    private boolean hasChangedFilteredResources(boolean includeTests, long stamp, RunConfig config) {
         @SuppressWarnings("unchecked")
         List<Resource> res = config.getMavenProject().getResources();
         for (Resource r : res) {
             if (r.isFiltering()) {
-                if (checkResource(r, null, stamp)) {
-                    return false;
+                if (hasChangedResources(r, stamp)) {
+                    return true;
                 }
                 // if filtering resource not changed, proceed with CoS
                 continue;
             }
-            toprocess.add(r);
         }
         if (includeTests) {
             res = config.getMavenProject().getTestResources();
             for (Resource r : res) {
                 if (r.isFiltering()) {
-                    if (!checkResource(r, null, stamp)) {
-                        return false;
+                    if (hasChangedResources(r, stamp)) {
+                        return true;
                     }
                     // if filtering resource not changed, proceed with CoS
                     continue;
                 }
-                toprocessTests.add(r);
             }
         }
-        String output = config.getMavenProject().getBuild().getOutputDirectory();
-        FileObject outputFO = FileUtilities.convertStringToFileObject(output);
-        if (outputFO == null) {
-            return false;
-        }
-        for (Resource r : toprocess) {
-            checkResource(r, outputFO, stamp);
-        }
-        if (includeTests) {
-            output = config.getMavenProject().getBuild().getTestOutputDirectory();
-            outputFO = FileUtilities.convertStringToFileObject(output);
-            if (outputFO == null) {
-                return false;
-            }
-            for (Resource r : toprocessTests) {
-                checkResource(r, outputFO, stamp);
-            }
-        }
-        return true;
+        return false;
     }
 
-    private static final String[] DEFAULT_INCLUDES = {"**/**"};
+    static final String[] DEFAULT_INCLUDES = {"**"};
 
-    private boolean checkResource(Resource r, FileObject outputDir, long stamp) {
+    private boolean hasChangedResources(Resource r, long stamp) {
         String dir = r.getDirectory();
         File dirFile = FileUtil.normalizeFile(new File(dir));
   //      System.out.println("checkresource dirfile =" + dirFile);
@@ -202,14 +204,14 @@ public class CosChecker implements PrerequisitesChecker {
             //includes/excludes
             @SuppressWarnings("unchecked")
             String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
-            if (incls != null && incls.length > 0) {
+            if (incls.length > 0) {
                 ds.setIncludes(incls);
             } else {
                 ds.setIncludes(DEFAULT_INCLUDES);
             }
             @SuppressWarnings("unchecked")
             String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
-            if (excls != null && excls.length > 0) {
+            if (excls.length > 0) {
                 ds.setExcludes(excls);
             }
             ds.addDefaultExcludes();
@@ -218,65 +220,17 @@ public class CosChecker implements PrerequisitesChecker {
 //            System.out.println("found=" + inclds.length);
             for (String inc : inclds) {
                 File f = new File(dirFile, inc);
-                if (f.lastModified() >= 0) { //XXX TODO stamp) { for some reason, the
-                    // java infrastructure seems to delete the non class files on output dir, we need to copy over
-                    // everytime.
-//                    System.out.println("to copy-" + f);
+                if (f.lastModified() >= stamp) { 
                     toCopy.add(FileUtil.normalizeFile(f));
                 }
             }
             if (toCopy.size() > 0) {
-                if (outputDir != null) {
-                    //copy to output dir
-                    for (File file : toCopy) {
-                        String relPath = FileUtilities.getRelativePath(dirFile, file);
-                        if (relPath == null) {
-                            return false;
-                        }
-                        String targetPath = r.getTargetPath();
-                        if (targetPath != null && targetPath.trim().length() > 0) {
-                            if (!targetPath.endsWith("/")) {
-                                targetPath = targetPath + "/";
-                            }
-                            relPath = targetPath + relPath;
-                        }
-  //                      System.out.println("relpath=" + relPath);
-                        FileObject fo = outputDir.getFileObject(relPath);
-                        if (fo == null) {
-                            File outFile = FileUtil.normalizeFile(new File(FileUtil.toFile(outputDir), relPath));
-                            try {
-                                fo = FileUtil.createData(outFile);
-                            } catch (IOException ex) {
-                                //#162180, #164748
-                                //well, just skip the resource with some logging..
-                                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot create file " + file + ", skipping copying of resource for Compile on Save.", ex); //NOI18N
-                            }
-                        }
-                        if (fo == null) {
-                            continue;
-                        }
-                        FileObject sourceFO = FileUtil.toFileObject(file);
-                        InputStream in = null;
-                        OutputStream out = null;
-                        try {
-                            in = sourceFO.getInputStream();
-                            out = fo.getOutputStream();
-                            FileUtil.copy(in, out);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            IOUtil.close(in);
-                            IOUtil.close(out);
-                        }
-                    }
-                } else {
                     //the case of filtering source roots, here we want to return false
                     //to skip CoS altogether.
-                    return false;
-                }
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
 
@@ -287,10 +241,10 @@ public class CosChecker implements PrerequisitesChecker {
             if ((NbMavenProject.TYPE_JAR.equals(
                     config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
                     (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName)) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName))) ||
                     RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName))) {
-                long stamp = getLastCoSLastTouch(config, true);
+                    DEBUG_MAIN.equals(actionName)) {
+                long stamp = getLastCoSLastTouch(config, false);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
                 if (checkImportantFiles(stamp, config)) {
@@ -298,7 +252,7 @@ public class CosChecker implements PrerequisitesChecker {
                 }
                 //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
-                if (!checkAndCopyResources(false, stamp, config)) {
+                if (hasChangedFilteredResources(false, stamp, config)) {
                     //we have some filtered resources modified or encountered other problem,
                     //skip CoS
                     return true;
@@ -331,6 +285,10 @@ public class CosChecker implements PrerequisitesChecker {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                //make sure to run with the proper jdk
+                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+                params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
+
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
                     String action2Quick = action2Quick(actionName);
@@ -390,7 +348,7 @@ public class CosChecker implements PrerequisitesChecker {
 
             //check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
-            if (!checkAndCopyResources(true, stamp, config)) {
+            if (hasChangedFilteredResources(true, stamp, config)) {
                 //we have some filtered resources modified, skip CoS
                 return true;
             }
@@ -412,6 +370,9 @@ public class CosChecker implements PrerequisitesChecker {
                 }
             }
             params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
+
+            //make sure to run with the proper jdk
+            params.put(JavaRunner.PROP_PLATFORM, cpp.getJavaPlatform());
             
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
@@ -532,11 +493,9 @@ public class CosChecker implements PrerequisitesChecker {
         return true;
     }
 
-    static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
+    private static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
         //we execute normal maven build, but need to clean any
         // CoS classes present.
-        deleteCoSTimeStamp(config, true);
-        deleteCoSTimeStamp(config, false);
         Project p = config.getProject();
         List<ClassPath> executePaths = new ArrayList<ClassPath>();
         for (SourceGroup g : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
@@ -603,82 +562,99 @@ public class CosChecker implements PrerequisitesChecker {
         return ClassPathSupport.createClassPath(AbstractProjectClassPathImpl.getPath(roots.toArray(new URI[0])));
     }
 
+    private static File getCoSFile(RunConfig rc, boolean test) {
+        if (rc.getProject() == null) {
+            return null;
+        }
+        return getCoSFile(rc.getMavenProject(), test);
+    }
+
+    private static File getCoSFile(MavenProject mp, boolean test) {
+        if (mp == null) {
+            return null;
+        }
+        Build build = mp.getBuild();
+        if (build == null) {
+            return null;
+        }
+        String path = test ? build.getTestOutputDirectory() : build.getOutputDirectory();
+        if (path == null) {
+            return null;
+        }
+        File fl = new File(path);
+        fl = FileUtil.normalizeFile(fl);
+        return  new File(fl, NB_COS);
+    }
+
     /**
      * returns the
      * @param rc
      * @param test
      * @return
      */
-    private long getLastCoSLastTouch(RunConfig rc, boolean test) {
-        if (rc.getProject() == null) {
+    private static long getLastCoSLastTouch(RunConfig rc, boolean test) {
+        File fl = getCoSFile(rc, test);
+        if (fl == null) {
             return 0;
         }
-        Build build = rc.getMavenProject().getBuild();
-        if (build == null || build.getDirectory() == null) {
-            return 0;
-        }
-        File fl = new File(build.getDirectory());
-        fl = FileUtil.normalizeFile(fl);
-        if (!fl.exists()) {
+        if (fl.getParentFile() == null || !(fl.getParentFile().exists())) {
             //the project was not built
             return 0;
         }
-        File check = new File(fl, test ? MAVEN_TEST_COS : MAVEN_MAIN_COS);
-        if (!check.exists()) {
+        if (!fl.exists()) {
             //wasn't yet run with CoS, assume it's been built correctly.
             // if CoS fails, we probably want to remove the file to trigger
             // rebuilding by maven
             return Long.MAX_VALUE;
         }
-        return check.lastModified();
+        return fl.lastModified();
     }
 
-    private boolean touchCoSTimeStamp(RunConfig rc, boolean test) {
+    private static boolean touchCoSTimeStamp(RunConfig rc, boolean test) {
         return touchCoSTimeStamp(rc, test, System.currentTimeMillis());
     }
 
-    private boolean touchCoSTimeStamp(RunConfig rc, boolean test, long stamp) {
+    private static boolean touchCoSTimeStamp(RunConfig rc, boolean test, long stamp) {
         if (rc.getProject() == null) {
             return false;
         }
-        Build build = rc.getMavenProject().getBuild();
-        if (build == null || build.getDirectory() == null) {
+        return touchCoSTimeStamp(rc.getMavenProject(), test, stamp);
+    }
+
+    private static boolean touchCoSTimeStamp(MavenProject mvn, boolean test) {
+        return touchCoSTimeStamp(mvn, test, System.currentTimeMillis());
+    }
+
+    private static boolean touchCoSTimeStamp(MavenProject mvn, boolean test, long stamp) {
+        File fl = getCoSFile(mvn, test);
+        if (fl == null) {
             return false;
         }
-        File fl = new File(build.getDirectory());
-        fl = FileUtil.normalizeFile(fl);
-        if (!fl.exists()) {
+        if (fl.getParentFile() == null || !(fl.getParentFile().exists())) {
             //the project was not built
             return false;
         }
-        File check = new File(fl, test ? MAVEN_TEST_COS : MAVEN_MAIN_COS);
-        if (!check.exists()) {
+        if (!fl.exists()) {
             try {
-                return check.createNewFile();
+                return fl.createNewFile();
             } catch (IOException ex) {
                 return false;
             }
         } 
-        return check.setLastModified(stamp);
+        return fl.setLastModified(stamp);
     }
 
     private static void deleteCoSTimeStamp(RunConfig rc, boolean test) {
-        if (rc.getProject() == null) {
-            return;
+        File fl = getCoSFile(rc, test);
+        if (fl != null && fl.exists()) {
+            fl.delete();
         }
-        Build build = rc.getMavenProject().getBuild();
-        if (build == null || build.getDirectory() == null) {
-            return;
-        }
-        File fl = new File(build.getDirectory());
-        fl = FileUtil.normalizeFile(fl);
-        if (!fl.exists()) {
-            //the project was not built
-            return;
-        }
-        File check = new File(fl, test ? MAVEN_TEST_COS : MAVEN_MAIN_COS);
-        if (check.exists()) {
-            check.delete();
+    }
+
+    private static void deleteCoSTimeStamp(MavenProject mp, boolean test) {
+        File fl = getCoSFile(mp, test);
+        if (fl != null && fl.exists()) {
+            fl.delete();
         }
     }
 
@@ -723,13 +699,63 @@ public class CosChecker implements PrerequisitesChecker {
         return null;
     }
 
+    static void touchProject(Project project) {
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        if (prj != null) {
+            MavenProject mvn = prj.getMavenProject();
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+                touchCoSTimeStamp(mvn, false);
+            } else {
+                deleteCoSTimeStamp(mvn, false);
+            }
+            if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
+                touchCoSTimeStamp(mvn, true);
+            } else {
+                deleteCoSTimeStamp(mvn, true);
+            }
+        }
+    }
+
+    static class CosPOH extends ProjectOpenedHook {
+
+        private final Project project;
+
+        CosPOH(Project prj) {
+            project = prj;
+        }
+
+        @Override
+        protected void projectOpened() {
+            touchProject(project);
+        }
+
+        @Override
+        protected void projectClosed() {
+            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                MavenProject mvn = prj.getMavenProject();
+                deleteCoSTimeStamp(mvn, true);
+                deleteCoSTimeStamp(mvn, false);
+
+                //TODO also delete the IDE generated class files now?
+            }
+        }
+    }
+
     private static class COSExChecker implements ExecutionResultChecker {
 
         public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
-            if (resultCode == 0) {
-                // in all those cases, delete the CoS timestamp to allow CoS on the next iteration.
-                CosChecker.deleteCoSTimeStamp(config, false);
-                CosChecker.deleteCoSTimeStamp(config, true);
+            // after each build put the Cos stamp in the output folder to have
+            // the classes really compiled on save.
+            if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                touchCoSTimeStamp(config, false);
+            } else {
+                deleteCoSTimeStamp(config, false);
+            }
+            if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
+                touchCoSTimeStamp(config, true);
+            } else {
+                deleteCoSTimeStamp(config, true);
             }
         }
     }

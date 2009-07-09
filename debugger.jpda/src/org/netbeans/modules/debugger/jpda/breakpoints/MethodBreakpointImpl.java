@@ -45,7 +45,6 @@ import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.BreakpointEvent;
@@ -57,7 +56,6 @@ import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -76,6 +74,7 @@ import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -255,6 +254,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    @Override
     public boolean exec (Event event) {
         try {
             if (event instanceof BreakpointEvent) {
@@ -307,115 +307,136 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     @Override
-    protected void classLoaded (ReferenceType referenceType) {
-        Iterator methods;
-        try {
-            methods = ReferenceTypeWrapper.methods0(referenceType).iterator();
-        } catch (ClassNotPreparedExceptionWrapper ex) {
-            Exceptions.printStackTrace(ex);
-            return ;
-        }
-        MethodEntryRequest entryReq = null;
-        MethodExitRequest exitReq = null;
-        Set<String> entryMethodNames = null;
-        Set<String> exitMethodNames = null;
-        boolean locationEntry = false;
-        String methodName = breakpoint.getMethodName();
-        String constructorName = referenceType.name();
-        int index = constructorName.lastIndexOf('.');
-        if (index > 0) constructorName = constructorName.substring(index + 1);
-        if (methodName.equals(constructorName)) {
-            methodName = "<init>"; // Constructor
-        }
-        String signature = breakpoint.getMethodSignature();
-        while (methods.hasNext ()) {
-            Method method = (Method) methods.next ();
+    protected void classLoaded (List<ReferenceType> referenceTypes) {
+        boolean submitted = false;
+        String invalidMessage = null;
+        for (ReferenceType referenceType : referenceTypes) {
+            Iterator methods;
             try {
-                if (methodName.equals("") || match (TypeComponentWrapper.name (method), methodName) &&
-                                             (signature == null ||
-                                              egualMethodSignatures(signature, TypeComponentWrapper.signature(method)))) {
+                methods = ReferenceTypeWrapper.methods0(referenceType).iterator();
+            } catch (ClassNotPreparedExceptionWrapper ex) {
+                Exceptions.printStackTrace(ex);
+                continue ;
+            }
+            MethodEntryRequest entryReq = null;
+            MethodExitRequest exitReq = null;
+            Set<String> entryMethodNames = null;
+            Set<String> exitMethodNames = null;
+            boolean locationEntry = false;
+            String methodName = breakpoint.getMethodName();
+            String constructorName = referenceType.name();
+            int index = constructorName.lastIndexOf('.');
+            if (index > 0) constructorName = constructorName.substring(index + 1);
+            if (methodName.equals(constructorName)) {
+                methodName = "<init>"; // Constructor
+            }
+            String signature = breakpoint.getMethodSignature();
+            while (methods.hasNext ()) {
+                Method method = (Method) methods.next ();
+                try {
+                    if (methodName.equals("") || match (TypeComponentWrapper.name (method), methodName) &&
+                                                 (signature == null ||
+                                                  egualMethodSignatures(signature, TypeComponentWrapper.signature(method)))) {
 
-                    if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
-                        if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
-                            Location location = MethodWrapper.location(method);
-                            BreakpointRequest br = EventRequestManagerWrapper.
-                                createBreakpointRequest (getEventRequestManager (), location);
-                            addEventRequest (br);
-                            locationEntry = true;
-                        } else {
-                            if (entryReq == null) {
-                                entryReq = EventRequestManagerWrapper.
-                                        createMethodEntryRequest(getEventRequestManager());
-                                MethodEntryRequestWrapper.addClassFilter(entryReq, referenceType);
+                        if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
+                            if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
+                                Location location = MethodWrapper.location(method);
+                                BreakpointRequest br = EventRequestManagerWrapper.
+                                    createBreakpointRequest (getEventRequestManager (), location);
+                                addEventRequest (br);
+                                locationEntry = true;
+                            } else {
+                                if (entryReq == null) {
+                                    entryReq = EventRequestManagerWrapper.
+                                            createMethodEntryRequest(getEventRequestManager());
+                                    MethodEntryRequestWrapper.addClassFilter(entryReq, referenceType);
+                                    JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+                                    if (threadFilters != null && threadFilters.length > 0) {
+                                        for (JPDAThread t : threadFilters) {
+                                            MethodEntryRequestWrapper.addThreadFilter(entryReq, ((JPDAThreadImpl) t).getThreadReference());
+                                        }
+                                    }
+                                    ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+                                    if (varFilters != null && varFilters.length > 0) {
+                                        for (ObjectVariable v : varFilters) {
+                                            MethodEntryRequestWrapper.addInstanceFilter(entryReq, (ObjectReference) ((JDIVariable) v).getJDIValue());
+                                        }
+                                    }
+                                    entryMethodNames = new HashSet<String>();
+                                    EventRequestWrapper.putProperty(entryReq, "methodNames", entryMethodNames);
+                                    EventRequestWrapper.putProperty(entryReq, "ReferenceType", referenceType);
+                                }
+                                entryMethodNames.add(TypeComponentWrapper.name (method));
+                            }
+                        }
+                        if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_EXIT) != 0) {
+                            if (exitReq == null) {
+                                exitReq = EventRequestManagerWrapper.
+                                        createMethodExitRequest(getEventRequestManager());
+                                MethodExitRequestWrapper.addClassFilter(exitReq, referenceType);
                                 JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
                                 if (threadFilters != null && threadFilters.length > 0) {
                                     for (JPDAThread t : threadFilters) {
-                                        MethodEntryRequestWrapper.addThreadFilter(entryReq, ((JPDAThreadImpl) t).getThreadReference());
+                                        MethodExitRequestWrapper.addThreadFilter(exitReq, ((JPDAThreadImpl) t).getThreadReference());
                                     }
                                 }
                                 ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
                                 if (varFilters != null && varFilters.length > 0) {
                                     for (ObjectVariable v : varFilters) {
-                                        MethodEntryRequestWrapper.addInstanceFilter(entryReq, (ObjectReference) ((JDIVariable) v).getJDIValue());
+                                        MethodExitRequestWrapper.addInstanceFilter(exitReq, (ObjectReference) ((JDIVariable) v).getJDIValue());
                                     }
                                 }
-                                entryMethodNames = new HashSet<String>();
-                                EventRequestWrapper.putProperty(entryReq, "methodNames", entryMethodNames);
-                                EventRequestWrapper.putProperty(entryReq, "ReferenceType", referenceType);
+                                exitMethodNames = new HashSet<String>();
+                                EventRequestWrapper.putProperty(exitReq, "methodNames", exitMethodNames);
+                                EventRequestWrapper.putProperty(exitReq, "ReferenceType", referenceType);
                             }
-                            entryMethodNames.add(TypeComponentWrapper.name (method));
+                            exitMethodNames.add(TypeComponentWrapper.name (method));
                         }
                     }
-                    if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_EXIT) != 0) {
-                        if (exitReq == null) {
-                            exitReq = EventRequestManagerWrapper.
-                                    createMethodExitRequest(getEventRequestManager());
-                            MethodExitRequestWrapper.addClassFilter(exitReq, referenceType);
-                            JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
-                            if (threadFilters != null && threadFilters.length > 0) {
-                                for (JPDAThread t : threadFilters) {
-                                    MethodExitRequestWrapper.addThreadFilter(exitReq, ((JPDAThreadImpl) t).getThreadReference());
-                                }
-                            }
-                            ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
-                            if (varFilters != null && varFilters.length > 0) {
-                                for (ObjectVariable v : varFilters) {
-                                    MethodExitRequestWrapper.addInstanceFilter(exitReq, (ObjectReference) ((JDIVariable) v).getJDIValue());
-                                }
-                            }
-                            exitMethodNames = new HashSet<String>();
-                            EventRequestWrapper.putProperty(exitReq, "methodNames", exitMethodNames);
-                            EventRequestWrapper.putProperty(exitReq, "ReferenceType", referenceType);
-                        }
-                        exitMethodNames.add(TypeComponentWrapper.name (method));
+                } catch (InternalExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (VMDisconnectedExceptionWrapper e) {
+                    return ;
+                }
+            }
+            try {
+                if (entryReq != null) {
+                    try {
+                        addEventRequest(entryReq);
+                    } catch (InternalExceptionWrapper e) {
+                        entryReq = null;
+                    } catch (ObjectCollectedExceptionWrapper e) {
+                        entryReq = null;
                     }
                 }
-            } catch (InternalExceptionWrapper e) {
+                if (exitReq != null) {
+                    try {
+                        addEventRequest(exitReq);
+                    } catch (InternalExceptionWrapper e) {
+                        exitReq = null;
+                    } catch (ObjectCollectedExceptionWrapper e) {
+                        exitReq = null;
+                    }
+                }
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             }
-        }
-        try {
-            if (entryReq != null) {
-                addEventRequest(entryReq);
+            if (locationEntry || entryReq != null || exitReq != null) {
+                submitted = true;
+            } else {
+                if (signature == null) {
+                    invalidMessage =
+                            NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethod", referenceType.name(), methodName);
+                } else {
+                    invalidMessage =
+                            NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodSign", referenceType.name(), methodName, signature);
+                }
             }
-            if (exitReq != null) {
-                addEventRequest(exitReq);
-            }
-        } catch (InternalExceptionWrapper e) {
-        } catch (VMDisconnectedExceptionWrapper e) {
-            return ;
         }
-        if (locationEntry || entryReq != null || exitReq != null) {
+        if (submitted) {
             setValidity(VALIDITY.VALID, null);
         } else {
-            if (signature == null) {
-                setValidity(VALIDITY.INVALID,
-                        NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethod", referenceType.name(), methodName));
-            } else {
-                setValidity(VALIDITY.INVALID,
-                        NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodSign", referenceType.name(), methodName, signature));
-            }
+            setValidity(VALIDITY.INVALID, invalidMessage);
         }
     }
     

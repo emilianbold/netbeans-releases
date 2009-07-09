@@ -157,7 +157,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
             String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
             if (servInstDisplayName != null
                     && j2eePlat != null 
-                    && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.WAR))
+                    && j2eePlat.getSupportedTypes().contains(J2eeModule.Type.WAR))
                    /* && j2eePlat.getSupportedSpecVersions().contains(J2eeModule.JAVA_EE_50)) */{ //see #74597
                 servInstIDsList.add(instanceID);
                 servNamesList.add(servInstDisplayName);

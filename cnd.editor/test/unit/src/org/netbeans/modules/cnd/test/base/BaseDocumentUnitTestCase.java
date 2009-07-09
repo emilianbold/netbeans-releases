@@ -50,7 +50,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  * Vladimir Voskresensky copied this class to prevent dependency on editor tests
@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  *
  * @author Miloslav Metelka
  */
-public abstract class BaseDocumentUnitTestCase extends BaseTestCase {
+public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     
     private EditorKit editorKit;
     

@@ -45,11 +45,6 @@ public final class RubyIndexerHelperTest extends RubyTestBase {
     }
 
     public void testPlatformModuleStub() throws Exception {
-        RubyIndexer.preindexingTest = true;
-        try {
-            checkIndexer("testfiles/rubystubs/1.8.7-p72/stub_module.rb");
-        } finally {
-            RubyIndexer.preindexingTest = false;
-        }
+        checkIndexer("testfiles/rubystubs/1.8.7-p72/stub_module.rb");
     }
 }

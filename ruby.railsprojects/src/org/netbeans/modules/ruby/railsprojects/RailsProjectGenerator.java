@@ -125,6 +125,9 @@ public class RailsProjectGenerator {
             if (railsDbArg != null) {
                 argList.add(railsDbArg);
             }
+            if (data.getOptions() != null) {
+                argList.add(data.getOptions());
+            }
             String[] args = argList.toArray(new String[argList.size()]);
             if (runThroughRuby) {
                 desc = new RubyExecutionDescriptor(platform, displayName, pwd, rails);

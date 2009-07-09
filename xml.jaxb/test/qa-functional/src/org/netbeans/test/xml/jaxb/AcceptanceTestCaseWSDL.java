@@ -47,7 +47,7 @@ import javax.swing.tree.TreePath;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -140,7 +140,7 @@ public class AcceptanceTestCaseWSDL extends AcceptanceTestCase {
         opNewProjectWizard.selectProject( JAVA_PROJECT_NAME );
         opNewProjectWizard.next( );
 
-        NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
+        NewJavaProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewJavaProjectNameLocationStepOperator( );
         opNewProjectNameLocationStep.txtProjectLocation( ).setText( System.getProperty( "xtest.workdir" ) );
         opNewProjectNameLocationStep.txtProjectName( ).setText( TEST_JAVA_APP_NAME );
         opNewProjectWizard.finish( );

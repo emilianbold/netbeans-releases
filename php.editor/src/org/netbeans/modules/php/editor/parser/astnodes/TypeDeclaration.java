@@ -47,10 +47,10 @@ import java.util.List;
 public abstract class TypeDeclaration extends Statement {
 
     private Identifier name;
-    private ArrayList<Identifier> interfaces = new ArrayList<Identifier>();
+    private ArrayList<Expression> interfaces = new ArrayList<Expression>();
     private Block body;
 
-    public TypeDeclaration(int start, int end, final Identifier name, final Identifier[] interfaces, final Block body) {
+    public TypeDeclaration(int start, int end, final Identifier name, final Expression[] interfaces, final Block body) {
         super(start, end);
 
         if (name == null || body == null) {
@@ -61,7 +61,7 @@ public abstract class TypeDeclaration extends Statement {
         this.body = body;
 
         if (interfaces != null) {
-            for (Identifier identifier : interfaces) {
+            for (Expression identifier : interfaces) {
                 this.interfaces.add(identifier);
             }
         }
@@ -86,7 +86,7 @@ public abstract class TypeDeclaration extends Statement {
     /**
      * List of interfaces that this type implements / extends
      */
-    public List<Identifier> getInterfaes() {
+    public List<Expression> getInterfaes() {
         return this.interfaces;
     }
 }

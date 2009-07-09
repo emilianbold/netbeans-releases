@@ -151,15 +151,15 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 
     @Override
     public int hashCode() {
-        return hashCode;
+        return (hashCode >> 8) + 37 * (hashCode & 0xff);
     }
 
     private final int _hashCode() {
         int retValue;
 
-        retValue = 17 * super.hashCode() + name.hashCode();
-        retValue = 17 * retValue + startOffset;
-        retValue = 17 * retValue + endOffset;
+        retValue = 19 * super.hashCode() + name.hashCode();
+        retValue = 19 * retValue + startOffset;
+        retValue = 19 * retValue + endOffset - startOffset;
         return retValue;
     }
 

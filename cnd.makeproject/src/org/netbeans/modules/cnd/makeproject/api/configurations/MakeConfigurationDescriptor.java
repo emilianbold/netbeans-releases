@@ -180,14 +180,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         if (confs != null) {
             MakeConfiguration conf = (MakeConfiguration) confs.getActive();
             if (conf == null) {
-                if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                    new Exception("There are no active configuration in the project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+getBaseDir()).printStackTrace(); // NOI18N
+                if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
+                    new Exception("There are no active configuration in the project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + getBaseDir()).printStackTrace(); // NOI18N
                 }
             }
             return conf;
         } else {
-            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                new Exception("There are no configurations in the project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+getBaseDir()).printStackTrace(); // NOI18N
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
+                new Exception("There are no configurations in the project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + getBaseDir()).printStackTrace(); // NOI18N
             }
         }
         return null;
@@ -692,14 +692,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         FileObject fo = null;
         fo = FileUtil.toFileObject(new File(getBaseDir()));
         if (fo != null) {
-            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                System.err.println("Start of writting project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+fo.getName()+" @"+System.identityHashCode(this)); // NOI18N
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
+                System.err.println("Start of writting project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + fo.getName() + " @" + System.identityHashCode(this)); // NOI18N
             }
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
-            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                System.err.println("End of writting project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(this)+" for project "+fo.getName()+" @"+System.identityHashCode(this)); // NOI18N
+            if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
+                System.err.println("End of writting project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + fo.getName() + " @" + System.identityHashCode(this)); // NOI18N
             }
         }
 
@@ -711,6 +711,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     private void ConfigurationProjectXMLWriter() {
         // And save the project
+        if (getProject() == null) {
+            // See http://www.netbeans.org/issues/show_bug.cgi?id=167577
+            // This method uses AntProjectHelper and Project but they are not created (correctly?) under junit tests so this will fail.
+            // It means make dependen project and encoding is not correctly stored in project.xml when running tests.
+            // Fix is to rewrite this method to not use Project and Ant Helper and use DocumentFactory.createInstance().parse instead to open the document.
+            return;
+        }
         try {
             AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
             Element data = helper.getPrimaryConfigurationData(true);
@@ -980,6 +987,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 }
             }
         }
+    }
+
+    public void checkConfigurations(Configuration oldActive, Configuration newActive) {
+        getConfs().fireChangedActiveConfiguration(oldActive, newActive);
     }
 
     /*

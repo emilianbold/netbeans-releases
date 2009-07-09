@@ -88,13 +88,13 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 TypeElement annotated = helper.getCompilationController().getElements().getTypeElement("Annotated");
                 AnnotationMirror annotation = annotated.getAnnotationMirrors().iterator().next();
                 AnnotationParser parser = AnnotationParser.create(helper);
-                parser.expectPrimitive("intValue", Integer.class, parser.defaultValue(0));
-                parser.expectPrimitive("intValue2", Integer.class, parser.defaultValue(Integer.MAX_VALUE));
-                parser.expectPrimitive("intValue3", Integer.class, parser.defaultValue(Integer.MIN_VALUE));
-                parser.expectPrimitive("doubleValue", Double.class, parser.defaultValue(0.0));
-                parser.expectString("stringValue", parser.defaultValue("stringValue"));
-                parser.expectString("stringValue2", parser.defaultValue("stringValue2"));
-                parser.expectString("stringValue3", parser.defaultValue("stringValue3"));
+                parser.expectPrimitive("intValue", Integer.class, AnnotationParser.defaultValue(0));
+                parser.expectPrimitive("intValue2", Integer.class, AnnotationParser.defaultValue(Integer.MAX_VALUE));
+                parser.expectPrimitive("intValue3", Integer.class, AnnotationParser.defaultValue(Integer.MIN_VALUE));
+                parser.expectPrimitive("doubleValue", Double.class, AnnotationParser.defaultValue(0.0));
+                parser.expectString("stringValue", AnnotationParser.defaultValue("stringValue"));
+                parser.expectString("stringValue2", AnnotationParser.defaultValue("stringValue2"));
+                parser.expectString("stringValue3", AnnotationParser.defaultValue("stringValue3"));
                 ParseResult parseResult = parser.parse(annotation);
                 assertEquals(2, (int)parseResult.get("intValue", Integer.class));
                 assertEquals(Integer.MAX_VALUE, (int)parseResult.get("intValue2", Integer.class));
@@ -127,9 +127,9 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 TypeElement annotated = helper.getCompilationController().getElements().getTypeElement("Annotated");
                 AnnotationMirror annotation = annotated.getAnnotationMirrors().iterator().next();
                 AnnotationParser parser = AnnotationParser.create(helper);
-                parser.expectClass("classValue", parser.defaultValue("java.lang.Double"));
-                parser.expectClass("classValue2", parser.defaultValue("java.lang.String"));
-                parser.expectClass("classValue3", parser.defaultValue("java.lang.Integer"));
+                parser.expectClass("classValue", AnnotationParser.defaultValue("java.lang.Double"));
+                parser.expectClass("classValue2", AnnotationParser.defaultValue("java.lang.String"));
+                parser.expectClass("classValue3", AnnotationParser.defaultValue("java.lang.Integer"));
                 ParseResult parseResult = parser.parse(annotation);
                 assertEquals("java.lang.Object", parseResult.get("classValue", String.class));
                 assertEquals("java.lang.String", parseResult.get("classValue2", String.class));
@@ -159,9 +159,9 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 AnnotationMirror annotation = annotated.getAnnotationMirrors().iterator().next();
                 AnnotationParser parser = AnnotationParser.create(helper);
                 TypeMirror rpType = elements.getTypeElement("java.lang.annotation.RetentionPolicy").asType();
-                parser.expectEnumConstant("enumValue", rpType, parser.defaultValue("SOURCE"));
-                parser.expectEnumConstant("enumValue2", rpType, parser.defaultValue("CLASS"));
-                parser.expectEnumConstant("enumValue3", rpType, parser.defaultValue("RUNTIME"));
+                parser.expectEnumConstant("enumValue", rpType, AnnotationParser.defaultValue("SOURCE"));
+                parser.expectEnumConstant("enumValue2", rpType, AnnotationParser.defaultValue("CLASS"));
+                parser.expectEnumConstant("enumValue3", rpType, AnnotationParser.defaultValue("RUNTIME"));
                 ParseResult parseResult = parser.parse(annotation);
                 assertEquals("CLASS", parseResult.get("enumValue", String.class));
                 assertEquals("CLASS", parseResult.get("enumValue2", String.class));
@@ -199,9 +199,9 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                     }
                 };
                 TypeMirror swType = elements.getTypeElement("java.lang.SuppressWarnings").asType();
-                parser.expectAnnotation("annValue", swType, swHandler, parser.defaultValue(defaultValue));
-                parser.expectAnnotation("annValue2", swType, swHandler, parser.defaultValue(defaultValue2));
-                parser.expectAnnotation("annValue3", swType, swHandler, parser.defaultValue(defaultValue3));
+                parser.expectAnnotation("annValue", swType, swHandler, AnnotationParser.defaultValue(defaultValue));
+                parser.expectAnnotation("annValue2", swType, swHandler, AnnotationParser.defaultValue(defaultValue2));
+                parser.expectAnnotation("annValue3", swType, swHandler, AnnotationParser.defaultValue(defaultValue3));
                 ParseResult parseResult = parser.parse(annotation);
                 assertEquals("unchecked", parseResult.get("annValue", String.class));
                 assertEquals("defaultValue2", parseResult.get("annValue2", String.class));
@@ -239,9 +239,9 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                         return result;
                     }
                 };
-                parser.expectStringArray("arrayValue", arrayHandler, parser.defaultValue(defaultValue));
-                parser.expectStringArray("arrayValue2", arrayHandler, parser.defaultValue(defaultValue2));
-                parser.expectStringArray("arrayValue3", arrayHandler, parser.defaultValue(defaultValue3));
+                parser.expectStringArray("arrayValue", arrayHandler, AnnotationParser.defaultValue(defaultValue));
+                parser.expectStringArray("arrayValue2", arrayHandler, AnnotationParser.defaultValue(defaultValue2));
+                parser.expectStringArray("arrayValue3", arrayHandler, AnnotationParser.defaultValue(defaultValue3));
                 ParseResult parseResult = parser.parse(annotation);
                 @SuppressWarnings("unchecked")
                 List list = (List<String>)parseResult.get("arrayValue", List.class);
@@ -284,7 +284,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                         }
                         return result;
                     }
-                }, parser.defaultValue(Collections.emptyList()));
+                }, AnnotationParser.defaultValue(Collections.emptyList()));
                 List<String> defaultValue = new ArrayList<String>();
                 ArrayValueHandler arrayHandler = new ArrayValueHandler() {
                     public Object handleArray(List<AnnotationValue> array) {
@@ -301,7 +301,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 TypeMirror swType = elements.getTypeElement("java.lang.SuppressWarnings").asType();
                 parser.expectAnnotationArray("annotationValue", swType, arrayHandler, null);
                 parser.expectAnnotationArray("annotationValue2", swType, arrayHandler, null);
-                parser.expectAnnotationArray("annotationValue3", swType, arrayHandler, parser.defaultValue(defaultValue));
+                parser.expectAnnotationArray("annotationValue3", swType, arrayHandler, AnnotationParser.defaultValue(defaultValue));
                 ParseResult parseResult = parser.parse(annotation);
                 @SuppressWarnings("unchecked")
                 List list = (List<String>)parseResult.get("annotationValue", List.class);
@@ -311,8 +311,9 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 assertTrue(list.contains("baz"));
                 @SuppressWarnings("unchecked")
                 List list2 = (List<String>)parseResult.get("annotationValue2", List.class);
-                assertEquals(0, list2.size());
-                assertSame(defaultValue, parseResult.get("annotationValue3", List.class));
+                //assertEquals(0, list2.size());
+                assertNull(list2);
+                assertEquals(defaultValue, parseResult.get("annotationValue3", List.class));
             }
         });
     }

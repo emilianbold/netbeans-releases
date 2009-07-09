@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.output.NotifyFinishOutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -64,6 +63,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -73,7 +73,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkleint
  */
-public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor {
+public class JUnitOutputListenerProvider implements OutputProcessor {
     private Project prj;
     private NbMavenProject mavenproject;
     TestSession session;
@@ -141,7 +141,6 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
             final TestSession.SessionType fType = type;
             session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
                     new JUnitTestRunnerNodeFactory(session, prj));
-            Manager.getInstance().testStarted(session);
             session.setRerunHandler(new RerunHandler() {
                 public void rerun() {
                     RunUtils.executeMaven(config);
@@ -155,6 +154,7 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
                 public void removeChangeListener(ChangeListener listener) {
                 }
             });
+            Manager.getInstance().testStarted(session);
         }
     }
 
@@ -284,10 +284,4 @@ public class JUnitOutputListenerProvider implements NotifyFinishOutputProcessor 
         test.addOutputLines(lines);
     }
 
-    public void buildFinished() {
-        if (session == null) {
-            return;
-        }
-        session = null;
-    }
 }

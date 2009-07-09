@@ -127,6 +127,8 @@ made subject to such option by the copyright holder.
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
             <exec.executable>java</exec.executable>
+            <!-- once upgrading to 1.1.2, we can get rid of this -->
+            <exec.classpathScope>runtime</exec.classpathScope>
         </properties>
     </action>
     <action>
@@ -141,6 +143,8 @@ made subject to such option by the copyright holder.
         <properties>
             <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
             <exec.executable>java</exec.executable>
+            <!-- once upgrading to 1.1.2, we can get rid of this -->
+            <exec.classpathScope>runtime</exec.classpathScope>
             <jpda.listen>true</jpda.listen>
         </properties>
     </action>

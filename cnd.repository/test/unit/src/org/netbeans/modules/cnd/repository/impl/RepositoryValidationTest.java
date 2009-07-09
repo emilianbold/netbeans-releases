@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.repository.impl;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
 * @author Sergey Grinev
  */
-public class RepositoryValidationTest extends BaseTestSuite {
+public class RepositoryValidationTest extends CndBaseTestSuite {
 
     static {
         System.setProperty("cnd.modelimpl.parser.threads", "8");

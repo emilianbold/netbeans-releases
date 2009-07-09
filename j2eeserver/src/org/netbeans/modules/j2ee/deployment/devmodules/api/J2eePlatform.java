@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import org.netbeans.api.j2ee.core.Profile;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,20 +50,23 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -396,10 +400,11 @@ public final class J2eePlatform {
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
         if (assertsEnabled) {
-            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+            LOGGER.log(Level.INFO, "Call to deprecated method "
+                    + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
         }
 
-        return impl.getSupportedSpecVersions();
+        return convertProfilesToKnownSpecVersions(getSupportedProfiles());
     }
 
     /**
@@ -411,20 +416,49 @@ public final class J2eePlatform {
      * @return list of supported J2EE specification versions.
      * @deprecated use {@link #getSupportedProfiles(java.lang.Object)}
      */
-    public Set <String> getSupportedSpecVersions(Object moduleType) {
+    public Set<String> getSupportedSpecVersions(Object moduleType) {
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
         if (assertsEnabled) {
-            LOGGER.log(Level.INFO, "Call to deprecated method " + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
+            LOGGER.log(Level.INFO, "Call to deprecated method "
+                    + J2eePlatform.class.getName() + "getSupportedSpecVersions", new Exception());
         }
-        return impl.getSupportedSpecVersions(moduleType);
+
+        J2eeModule.Type type = J2eeModule.Type.fromJsrType(moduleType);
+        if (type != null) {
+            return convertProfilesToKnownSpecVersions(getSupportedProfiles(type));
+        }
+        return Collections.emptySet();
     }
 
+    /**
+     * Returns the set of supported profiles (terminology of Java EE 6). There
+     * are also profiles for J2EE 1.4 and Java EE 5.
+     *
+     * @return set of {@link Profile}s supported by the server.
+     * @see Profile
+     * @since 1.58
+     */
+    // TODO filter out J2EE 1.3 in future
+    @NonNull
     public Set<Profile> getSupportedProfiles() {
         return impl.getSupportedProfiles();
     }
 
-    public Set<Profile> getSupportedProfiles(Object moduleType) {
+    /**
+     * Returns the set of supported profiles (terminology of Java EE 6) for
+     * the given module type (one of {@link J2eeModule#EAR},
+     * {@link J2eeModule#EJB}, {@link J2eeModule#WAR}, {@link J2eeModule#RAR}
+     * and {@link J2eeModule#CAR}).
+     *
+     * @param moduleType type of the module
+     * @return set of {@link Profile}s supported by the server.
+     * @see Profile
+     * @since 1.59
+     */
+    @NonNull
+    // TODO filter out J2EE 1.3 in future
+    public Set<Profile> getSupportedProfiles(@NonNull J2eeModule.Type moduleType) {
         return impl.getSupportedProfiles(moduleType);
     }
 
@@ -434,9 +468,36 @@ public final class J2eePlatform {
      * class.
      *
      * @return list of supported J2EE module types.
+     * @deprecated use {@link #getSupportedTypes()}
      */
-    public Set/*<Object>*/ getSupportedModuleTypes() {
-        return impl.getSupportedModuleTypes();
+    public Set getSupportedModuleTypes() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        if (assertsEnabled) {
+            LOGGER.log(Level.INFO, "Call to deprecated method "
+                    + J2eePlatform.class.getName() + "getSupportedModuleTypes", new Exception());
+        }
+
+        Set ret = new HashSet();
+        for (J2eeModule.Type type : getSupportedTypes()) {
+            Object obj = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
+            if (obj != null) {
+                ret.add(obj);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Return a list of supported module types. Use module types defined in the
+     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type}
+     * class.
+     *
+     * @return set of supported module types
+     * @since 1.59
+     */
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        return impl.getSupportedTypes();
     }
 
     /**
@@ -494,6 +555,7 @@ public final class J2eePlatform {
         impl.removePropertyChangeListener(l);
     }
 
+    @Override
     public String toString() {
         return impl.getDisplayName() + " [" + getClasspathAsString() + "]"; // NOI18N
     }
@@ -586,6 +648,21 @@ public final class J2eePlatform {
      */
     public Lookup getLookup() {
         return impl.getLookup();
+    }
+
+    @NonNull
+    @SuppressWarnings("deprecation")
+    private Set<String> convertProfilesToKnownSpecVersions(Iterable<Profile> profiles) {
+        Set ret = new HashSet();
+        for (Profile profile : profiles) {
+            String str = profile.toPropertiesString();
+            if (J2eeModule.J2EE_13.equals(str)
+                    || J2eeModule.J2EE_14.equals(str)
+                    || J2eeModule.JAVA_EE_5.equals(str)) {
+                ret.add(str);
+            }
+        }
+        return ret;
     }
 
     private FileObject[] getVolumeContent(J2eePlatform platform, String volumeType) {

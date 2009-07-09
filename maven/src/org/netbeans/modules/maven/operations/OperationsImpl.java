@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class OperationsImpl implements DeleteOperationImplementation, MoveOperationImplementation, CopyOperationImplementation {
-    protected NbMavenProjectImpl project;
+    protected final NbMavenProjectImpl project;
     private ProjectState state;
     /** Creates a new instance of AbstractOperation */
     public OperationsImpl(NbMavenProjectImpl proj, ProjectState state) {

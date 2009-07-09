@@ -40,12 +40,16 @@
 package org.netbeans.modules.jira;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
 /**
@@ -61,8 +65,11 @@ public class JiraConfig {
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
-    private static final String DELIMITER           = "<=>";                            // NOI18N
+    private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
 
+    private static final String DELIMITER           = "<=>";                        // NOI18N
+
+    private HashMap<String, Icon> priorityIcons;
     private JiraConfig() { }
 
     public static JiraConfig getInstance() {
@@ -88,6 +95,10 @@ public class JiraConfig {
         getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
     }
 
+    public void setCheckUpdates(boolean bl) {
+        getPreferences().putBoolean(CHECK_UPDATES, bl);
+    }
+
     public int getQueryRefreshInterval() {
         return getPreferences().getInt(QUERY_REFRESH_INT, 30);
     }
@@ -98,6 +109,10 @@ public class JiraConfig {
 
     public boolean getQueryAutoRefresh(String queryName) {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
+    }
+
+    public boolean getCheckUpdates() {
+        return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
     public String getUrlParams(JiraRepository repository, String queryName) {
@@ -181,5 +196,17 @@ public class JiraConfig {
 
     public String getLastChangeFrom() {
         return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
+    }
+
+    public Icon getPriorityIcon(String priorityId) {
+        if(priorityIcons == null) {
+            priorityIcons = new HashMap<String, Icon>();
+            priorityIcons.put(Priority.BLOCKER_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/blocker.png", true));   // NOI18N
+            priorityIcons.put(Priority.CRITICAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/critical.png", true)); // NOI18N
+            priorityIcons.put(Priority.MAJOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/major.png", true));       // NOI18N
+            priorityIcons.put(Priority.MINOR_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/minor.png", true));       // NOI18N
+            priorityIcons.put(Priority.TRIVIAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/trivial.png", true));   // NOI18N
+        }
+        return priorityIcons.get(priorityId);
     }
 }

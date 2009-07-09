@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.loaders;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CndLoadersTest extends BaseTestSuite {
+public class CndLoadersTest extends CndBaseTestSuite {
     
     public CndLoadersTest() {
         super("C/C++ Loaders"); // NOI18N   

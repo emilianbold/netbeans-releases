@@ -1,0 +1,49 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import javacard.framework.*;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends Applet {
+
+    /**
+     * Installs this applet.
+     * 
+     * @param bArray
+     *            the array containing installation parameters
+     * @param bOffset
+     *            the starting offset in bArray
+     * @param bLength
+     *            the length in bytes of the parameter data in bArray
+     */
+    public static void install(byte[] bArray, short bOffset, byte bLength) {
+        new ${name}();
+    }
+
+    /**
+     * Only this class's install method should create the applet object.
+     */
+    protected ${name}() {
+        register();
+    }
+
+    /**
+     * Processes an incoming APDU.
+     * 
+     * @see APDU
+     * @param apdu
+     *            the incoming APDU
+     */
+    public void process(APDU apdu) {
+        //
+    }
+}

@@ -94,7 +94,7 @@ final class ToolbarContainer extends JPanel {
     private final Toolbar toolbar;
     private JComponent dragger;
     private final DnDSupport dnd;
-    private final boolean dragable;
+    private final boolean draggable;
     private DropTarget dropTarget;
 
 
@@ -110,12 +110,12 @@ final class ToolbarContainer extends JPanel {
     /** RIGHT of toolbar empty border. */
     private static final int RIGHT = 3;
 
-    public ToolbarContainer( Toolbar toolbar, final DnDSupport dnd, boolean dragable ) {
+    public ToolbarContainer( Toolbar toolbar, final DnDSupport dnd, boolean draggable ) {
         super( new BorderLayout() );
         setOpaque(false);
         this.toolbar = toolbar;
         this.dnd = dnd;
-        this.dragable = dragable;
+        this.draggable = draggable;
         add( toolbar, BorderLayout.CENTER );
         toolbar.addContainerListener( new ContainerListener() {
 
@@ -157,7 +157,7 @@ final class ToolbarContainer extends JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
-        if( null == dragger && isDragable() ) {
+        if( null == dragger && isDraggable() ) {
             dragger = createDragger();
             dragger.setToolTipText(Actions.cutAmpersand(toolbar.getDisplayName()));
             addToolbarDragger();
@@ -234,7 +234,7 @@ final class ToolbarContainer extends JPanel {
                 continue;
             dnd.register(c);
         }
-        if( isDragable() && null != dragger )
+        if( isDraggable() && null != dragger )
             dnd.register(dragger);
     }
 
@@ -249,8 +249,8 @@ final class ToolbarContainer extends JPanel {
             dnd.unregister(dragger);
     }
 
-    private boolean isDragable() {
-        return dragable;
+    private boolean isDraggable() {
+        return draggable;
     }
 
     private JComponent createDragger() {

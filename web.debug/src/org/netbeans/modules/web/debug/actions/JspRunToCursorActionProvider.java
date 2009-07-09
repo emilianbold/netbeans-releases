@@ -43,8 +43,10 @@ package org.netbeans.modules.web.debug.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -60,6 +62,8 @@ import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
 *
@@ -88,15 +92,19 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         // 1) set breakpoint
         removeBreakpoint();
         createBreakpoint();
-        
         // 2) start debugging of project
-        ((ActionProvider) MainProjectManager.getDefault().
-            getMainProject().getLookup().lookup(
-                ActionProvider.class
-            )).invokeAction (
-                ActionProvider.COMMAND_DEBUG, 
-                MainProjectManager.getDefault ().getMainProject ().getLookup ()
-            );
+        final Lookup lkp = MainProjectManager.getDefault().getMainProject().getLookup();
+        final ActionProvider ap = lkp.lookup(ActionProvider.class);
+        try { // Do that in AWT because of issue #121374.
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    ap.invokeAction(ActionProvider.COMMAND_DEBUG, lkp);
+                }
+            });
+        } catch (InterruptedException ex) {
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     private boolean shouldBeEnabled () {

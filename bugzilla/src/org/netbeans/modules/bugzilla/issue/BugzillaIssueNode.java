@@ -68,6 +68,7 @@ public class BugzillaIssueNode extends IssueNode {
             new SeverityProperty(),
             new PriorityProperty(),
             new StatusProperty(),
+            new AssignedProperty(),
             new ResolutionProperty(),
             new SummaryProperty(),
             new RecentChangesProperty(), // XXX move to issue node
@@ -155,7 +156,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class PriorityProperty extends IssueProperty<String> {
+    public class PriorityProperty extends IssueProperty<String> {
         public PriorityProperty() {
             super(BugzillaIssue.LABEL_NAME_PRIORITY,
                   String.class,
@@ -229,6 +230,25 @@ public class BugzillaIssueNode extends IssueNode {
             if(p == null) return 1;
             String s1 = getIssue().getSummary();
             String s2 = p.getIssue().getSummary();
+            return s1.compareTo(s2);
+        }
+    }
+
+    private class AssignedProperty extends IssueProperty<String> {
+        public AssignedProperty() {
+            super(BugzillaIssue.LABEL_NAME_ASSIGNED_TO,
+                  String.class,
+                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Assigned_Title"), // NOI18N
+                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Assigned_Desc")); // NOI18N
+        }
+        public String getValue() {
+            return getBugzillaIssue().getFieldValue(IssueField.ASSIGNED_TO);
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getBugzillaIssue().getFieldValue(IssueField.ASSIGNED_TO);
+            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(IssueField.ASSIGNED_TO);
             return s1.compareTo(s2);
         }
     }

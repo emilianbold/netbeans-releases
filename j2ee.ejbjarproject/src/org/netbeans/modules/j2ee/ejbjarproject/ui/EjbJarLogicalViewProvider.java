@@ -92,7 +92,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
@@ -486,7 +486,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider2 {
                             "default value will be used instead: "+j2eeProfile); // NOI18N
                     updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.EJB);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.EJB);
                 if (instance != null) {
                     EjbJarProjectProperties.setServerInstance(
                             project, helper, instance);

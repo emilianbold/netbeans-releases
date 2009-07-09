@@ -39,16 +39,20 @@
 
 package org.netbeans.modules.projectapi;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.LookupMerger;
-import org.openide.util.Lookup;
 
 /**
  * @see LazyLookupProviders#forLookupMerger
  */
 public interface MetaLookupMerger {
 
-    boolean canNowMerge(Class<?> service);
+    void probing(Class<?> service);
 
     LookupMerger/*|null*/ merger();
+
+    void addChangeListener(ChangeListener listener);
+
+    void removeChangeListener(ChangeListener listener);
 
 }

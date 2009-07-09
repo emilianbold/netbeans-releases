@@ -78,10 +78,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     private boolean isValid = true;
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
-    private final List<CsmUID<CsmTypedef>> enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
+    private final List<CsmUID<CsmTypedef>> enclosingTypdefs;
 
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
+        enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
         this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
     }
 
@@ -337,7 +338,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (getName().length() == 0) {
             super.readUID(input);
         }
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(enclosingTypdefs, input);
+        int collSize = input.readInt();
+        if (collSize < 0) {
+            enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>(0));
+        } else {
+            enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>(collSize));
+        }
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(enclosingTypdefs, input, collSize);
     }
 
     public Collection<CsmTypedef> getEnclosingTypedefs() {

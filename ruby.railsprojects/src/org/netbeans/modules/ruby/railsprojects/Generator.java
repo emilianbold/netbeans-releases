@@ -69,6 +69,7 @@ public class Generator {
     public static Generator MAILER = new Generator("mailer", null, null, "Views", null, 1); // NOI18N
     public static Generator MIGRATION = new Generator("migration", null, 1); // NOI18N
     public static Generator MODEL = new Generator("model", null, 1); // NOI18N
+    public static Generator METAL = new Generator("metal", null, 1); // NOI18N
     public static Generator PLUGIN = new Generator("plugin", null, 1); // NOI18N
     public static Generator SCAFFOLD_ONE =
         new Generator("scaffold", null, "ModelName", "ScaffControllerName", "ScaffoldActions", 1); // NOI18N

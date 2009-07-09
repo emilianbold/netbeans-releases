@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ThreadDeathEventWrapper;
@@ -109,6 +110,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
                 }
             }
         } catch (InternalExceptionWrapper e) {
+        } catch (ObjectCollectedExceptionWrapper e) {
         } catch (VMDisconnectedExceptionWrapper e) {
         }
     }

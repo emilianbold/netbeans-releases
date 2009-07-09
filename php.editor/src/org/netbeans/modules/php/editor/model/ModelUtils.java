@@ -60,6 +60,72 @@ public class ModelUtils {
     private ModelUtils() {
     }
 
+    public static Collection<? extends TypeScope> getDeclaredTypes(FileScope fileScope) {
+        List<TypeScope> retval = new ArrayList<TypeScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredTypes());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends ClassScope> getDeclaredClasses(FileScope fileScope) {
+        List<ClassScope> retval = new ArrayList<ClassScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredClasses());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends InterfaceScope> getDeclaredInterfaces(FileScope fileScope) {
+        List<InterfaceScope> retval = new ArrayList<InterfaceScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredInterfaces());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends ConstantElement> getDeclaredConstants(FileScope fileScope) {
+        List<ConstantElement> retval = new ArrayList<ConstantElement>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredConstants());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends FunctionScope> getDeclaredFunctions(FileScope fileScope) {
+        List<FunctionScope> retval = new ArrayList<FunctionScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredFunctions());
+        }
+        return retval;
+    }
+
+    public static Collection<? extends VariableName> getDeclaredVariables(FileScope fileScope) {
+        List<VariableName> retval = new ArrayList<VariableName>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredVariables());
+        }
+        return retval;
+    }
+
+    public static List<? extends ModelElement> getElements(Scope scope, boolean resursively) {
+        List<ModelElement> retval = new ArrayList<ModelElement>();
+        List<? extends ModelElement> elements = scope.getElements();
+        retval.addAll(elements);
+        for (ModelElement modelElement : elements) {
+            if (modelElement instanceof Scope) {
+                retval.addAll(getElements((Scope) modelElement, resursively));
+            }
+        }
+        return retval;
+    }
+
     @NonNull
     public static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase) {
         Collection<? extends TypeScope> retval = Collections.emptyList();
@@ -80,10 +146,9 @@ public class ModelUtils {
         Collection<? extends TypeScope> retval = Collections.emptyList();
         VariableScope scp = model.getVariableScope(offset);
         if (scp != null) {
-                FileScope fileScope = ModelUtils.getFileScope(scp);
-                String semiType = VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, scp, fileScope);
+                String semiType = VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, scp);
                 if (semiType != null) {
-                    return VariousUtils.getType(fileScope, scp, semiType, offset, true);
+                    return VariousUtils.getType(ModelUtils.getFileScope(scp), scp, semiType, offset, true);
                 }
 
         }
@@ -91,7 +156,7 @@ public class ModelUtils {
     }
 
     @CheckForNull
-    public static <T extends ModelElement> T getFirst(Collection<? extends T> all) {
+    public static <T> T getFirst(Collection<? extends T> all) {
         if (all instanceof List) {
             return all.size() > 0 ? ((List<T>)all).get(0) : null;
         }
@@ -188,6 +253,34 @@ public class ModelUtils {
         return retval;
     }
 
+    @CheckForNull
+    public static NamespaceScope getNamespaceScope(ModelElement element) {
+        NamespaceScope retval = (element instanceof NamespaceScope) ? (NamespaceScope)element : null;
+        while (retval == null && element != null) {
+            element = element.getInScope();
+            retval = (NamespaceScope) ((element instanceof NamespaceScope) ? element : null);
+        }
+        return retval;
+    }
+
+    @CheckForNull
+    public static TypeScope getTypeScope(ModelElement element) {
+        TypeScope retval = (element instanceof TypeScope) ? (TypeScope)element : null;
+        while (retval == null && element != null) {
+            element = element.getInScope();
+            retval = (TypeScope) ((element instanceof TypeScope) ? element : null);
+        }
+        return retval;
+    }
+    @CheckForNull
+    public static ClassScope getClassScope(ModelElement element) {
+        ClassScope retval = (element instanceof ClassScope) ? (ClassScope)element : null;
+        while (retval == null && element != null) {
+            element = element.getInScope();
+            retval = (ClassScope) ((element instanceof ClassScope) ? element : null);
+        }
+        return retval;
+    }
     @NonNull
     public static IndexScope getIndexScope(ModelElement element) {
         IndexScope retval = (element instanceof IndexScope) ? (IndexScope)element : null;
@@ -204,7 +297,7 @@ public class ModelUtils {
         return retval;
     }
 
-    public static <T extends ModelElement> List<? extends T> filter(final Collection<T> instances, final ElementFilter<T> filter) {
+    public static <T extends ModelElement> List<? extends T> filter(final Collection<? extends T> instances, final ElementFilter<T> filter) {
         List<T> retval = new ArrayList<T>();
         for (T baseElement : instances) {
             boolean accepted = filter.isAccepted(baseElement);
@@ -262,7 +355,11 @@ public class ModelUtils {
         return false;
     }
 
-    private static String toCamelCase(String plainName) {
+    public static String getCamelCaseName(ModelElement element) {
+        return toCamelCase(element.getName());
+    }
+    
+    public static String toCamelCase(String plainName) {
         char[] retval = new char[plainName.length()];
         int retvalSize = 0;
         for (int i = 0; i < retval.length; i++) {

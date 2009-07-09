@@ -139,7 +139,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             register();
         }
     }
-    
+
     private void register() {
         JTextComponent comp = getComponent(); 
         if (comp == null) {
@@ -287,27 +287,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             int rowHeight = 14; //default
             
             hintListComponent =
-                    new ScrollCompletionPane(comp, fixes, null, null, getMaxSizeAt( p ));
+                    new ScrollCompletionPane(comp, fixes, null, null, comp.getPreferredSize());
 
-            Dimension popup = hintListComponent.getPreferredSize();
-            Dimension screen = null;
-            Rectangle bounds;
-            int xOnCurrentScreen = p.x;
-            final GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            //find proper display
-            GraphicsDevice[] screenDevices = graphEnv.getScreenDevices();
-            for (int i = 0; i < screenDevices.length; i++) {
-                bounds = screenDevices[i].getDefaultConfiguration().getBounds();
-                if(bounds.contains(p)) {
-                    screen = bounds.getSize();
-                    if (graphEnv.getDefaultScreenDevice() != screenDevices[i]) {
-                        //shift x coordinate to current display
-                        xOnCurrentScreen -= bounds.x;
-                    }
-                }
-            }
-            
-            boolean exceedsHeight = p.y + popup.height > screen.height;
+            final Dimension hintPopup = hintListComponent.getPreferredSize();
+            Rectangle screen = getScreenBounds();
+            boolean exceedsHeight = p.y + hintPopup.height > screen.height;
 
             try {
                 int pos = javax.swing.text.Utilities.getRowStart(comp, comp.getCaret().getDot());
@@ -315,24 +299,32 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 rowHeight = r.height;
 
                 int y;
+                final Dimension errorPopup = errorTooltip.getPreferredSize();
                 if (exceedsHeight)
                     y = p.y + POPUP_VERTICAL_OFFSET;
                 else
-                    y = p.y-rowHeight-errorTooltip.getPreferredSize().height-POPUP_VERTICAL_OFFSET;
+                    y = p.y-rowHeight-errorPopup.height-POPUP_VERTICAL_OFFSET;
+
+                //shift error popup left if necessary
+                int xPos = p.x;
+                if (p.x - screen.x + errorPopup.width > screen.width) {
+                    xPos -= p.x - screen.x + errorPopup.width - screen.width;
+                }
 
                 tooltipPopup = getPopupFactory().getPopup(
-                        comp, errorTooltip, p.x, y);
+                        comp, errorTooltip, xPos, y);
             } catch( BadLocationException blE ) {
                 ErrorManager.getDefault().notify (blE);
                 errorTooltip = null;
             }
 
             if(exceedsHeight) {
-                p.y -= popup.height + rowHeight + POPUP_VERTICAL_OFFSET;
+                p.y -= hintPopup.height + rowHeight + POPUP_VERTICAL_OFFSET;
             }
 
-            if(xOnCurrentScreen + popup.width > screen.width) { //shift popup left necessary
-                p.x -= p.x + popup.width - screen.width;
+            //shift hint popup left if necessary
+            if(p.x - screen.x + hintPopup.width > screen.width) {
+                p.x -= p.x - screen.x + hintPopup.width - screen.width;
             }
 
             hintListComponent.getView().addMouseListener (this);
@@ -355,20 +347,25 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         }
         return pf;
     }
-    
-    private Dimension getMaxSizeAt( Point p ) {
-        JTextComponent comp = getComponent(); 
+
+    private Rectangle getScreenBounds() throws HeadlessException {
+        JTextComponent comp = getComponent();
         Rectangle screenBounds = null;
-        if( null != comp && null != comp.getGraphicsConfiguration() ) {
+        if (null != comp && null != comp.getGraphicsConfiguration()) {
             screenBounds = comp.getGraphicsConfiguration().getBounds();
         } else {
-            screenBounds = new Rectangle( Toolkit.getDefaultToolkit().getScreenSize() );
+            screenBounds = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
         }
-        Dimension maxSize = screenBounds.getSize();
-        maxSize.width -= p.x - screenBounds.x;
-        maxSize.height -= p.y - screenBounds.y;
-        return maxSize;
+        return screenBounds;
     }
+
+//    private Dimension getMaxSizeAt( Point p ) {
+//        Rectangle screenBounds = getScreenBounds();
+//        Dimension maxSize = screenBounds.getSize();
+//        maxSize.width -= p.x - screenBounds.x;
+//        maxSize.height -= p.y - screenBounds.y;
+//        return maxSize;
+//    }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
         if (e.getSource() == hintListComponent || e.getSource() instanceof ListCompletionView) {

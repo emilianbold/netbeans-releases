@@ -38,9 +38,10 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import org.openide.util.Exceptions;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  *
@@ -48,7 +49,6 @@ import org.openide.util.Exceptions;
  */
 public final class ExperimentStatistics {
 
-    static private final DecimalFormat nf;
     private final Double startTime;
     private final Double endTime;
     private final Double duration;
@@ -63,11 +63,6 @@ public final class ExperimentStatistics {
     private final Double t_usrLock;
     private final Double t_usrLock_p;
 
-
-    static {
-        nf = new DecimalFormat();
-        nf.getDecimalFormatSymbols().setDecimalSeparator(',');
-    }
 
     ExperimentStatistics(String[] toParse) {
         Double _startTime = null;
@@ -91,26 +86,20 @@ public final class ExperimentStatistics {
             }
 
             String id = s.substring(0, scidx).trim();
-            if (id.startsWith("User Lock")) { // NOI18N
-                int bidx = s.lastIndexOf('(');
-                try {
-                    _t_usrLock = nf.parse(s.substring(scidx + 1, bidx).trim()).doubleValue();
-                    _t_usrLock_p = nf.parse(s.substring(bidx + 1).trim()).doubleValue();
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
+            try {
+                if (id.startsWith("User Lock")) { // NOI18N
+                    StringTokenizer t = tokenize(s.substring(scidx + 1));
+                    _t_usrLock = parseDouble(t.nextToken());
+                    _t_usrLock_p = parseDouble(t.nextToken());
+                } else if (id.startsWith("Total Thread Time") || id.startsWith("Total LWP Time")) { // NOI18N
+                    _totalThreadTime = parseDouble(s.substring(scidx + 1));
+                } else if (id.startsWith("Duration")) { // NOI18N
+                    _duration = parseDouble(s.substring(scidx + 1));
                 }
-            } else if (id.startsWith("Total Thread Time") || id.startsWith("Total LWP Time")) { // NOI18N
-                try {
-                    _totalThreadTime = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else if (id.startsWith("Duration")) { // NOI18N
-                try {
-                    _duration = nf.parse(s.substring(scidx + 1).trim()).doubleValue();
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            } catch (NoSuchElementException ex) {
+                DLightLogger.instance.log(Level.INFO, "Failed to parse statistics line", ex); // NOI18N
+            } catch (NumberFormatException ex) {
+                DLightLogger.instance.log(Level.INFO, "Failed to parse statistics line", ex); // NOI18N
             }
         }
 
@@ -139,5 +128,25 @@ public final class ExperimentStatistics {
 
     public Double getULock() {
         return t_usrLock;
+    }
+
+    public Double getULock_p() {
+        return t_usrLock_p;
+    }
+
+    private static StringTokenizer tokenize(String line) {
+        return new StringTokenizer(line, " ()%"); // NOI18N
+    }
+
+    /**
+     * Accepts both '.' and ',' as decimal separator.
+     * Some whitespace around is also allowed.
+     *
+     * @param val  string to parse
+     * @return parsed double value
+     * @throws NumberFormatException
+     */
+    private static double parseDouble(String val) {
+        return Double.parseDouble(val.replace(',', '.'));
     }
 }

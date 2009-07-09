@@ -54,8 +54,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
@@ -81,10 +81,10 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
     
     public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(FileObject target) {
         
-        Object j2eeModuleType = getJ2eeModuleType(target);
+        J2eeModule.Type j2eeModuleType = getJ2eeModuleType(target);
         PersistenceUnit persistenceUnit = getPersistenceUnit(target);
         
-        if (j2eeModuleType == null || !J2eeModule.EJB.equals(j2eeModuleType)) {
+        if (j2eeModuleType == null || !J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             // handle only ejb module
             return null;
         }
@@ -132,7 +132,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
      * @return the J2eeModule associated with the project of our target file or
      *  null if there was no associated J2eeModule.
      */
-    protected Object getJ2eeModuleType(FileObject target){
+    protected J2eeModule.Type getJ2eeModuleType(FileObject target){
         J2eeModule result = null;
         Project project = FileOwnerQuery.getOwner(target);
         J2eeModuleProvider j2eeModuleProvider = null;
@@ -142,7 +142,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         if (j2eeModuleProvider != null) {
             result = j2eeModuleProvider.getJ2eeModule();
         }
-        return result != null ? result.getModuleType() : null;
+        return result != null ? result.getType() : null;
         
     }
     

@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -217,10 +216,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         Iterator<LaunchConfiguration> it = launchConfigurations.iterator();
         while (it.hasNext()) {
             LaunchConfiguration config = it.next();
-            if (!config.getType().equals(LaunchConfiguration.TYPE_LOCAL_JAVA_APPLICATION)) {
-                it.remove();
-            }
-            if (config.getMainType() == null) {
+            if (!config.getType().equals(LaunchConfiguration.TYPE_LOCAL_JAVA_APPLICATION) || config.getMainType() == null) {
                 it.remove();
             }
         }

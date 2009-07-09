@@ -93,7 +93,9 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
-        log.log(Level.FINEST, "start element with the name " + element);//NOI18N
+        if (log.isLoggable(Level.FINEST)) {
+            log.log(Level.FINEST, "start element with the name " + element);//NOI18N
+        }
         if (element.equals(TOOL_ELEMENT)) {
             String toolName = atts.getValue(TOOL_NAME_ATTRIBUTE);
             boolean b = atts.getValue(TOOL_ENABLED_ATTRIBUTE).equals(TRUE_VALUE);
@@ -103,7 +105,9 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void endElement(String element, String currentText) {
-        log.log(Level.FINEST, "end element with the name " + element);//NOI18N
+        if (log.isLoggable(Level.FINEST)) {
+            log.log(Level.FINEST, "end element with the name " + element);//NOI18N
+        }
         if (element.equals(PROFILE_ON_RUN_ELEMENT)) {
             boolean b = currentText.equals(TRUE_VALUE);
             gizmoOptions.getProfileOnRun().setValue(b);
@@ -121,12 +125,13 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         }
         for (String toolName : gizmoOptions.getNames()) {
             BooleanConfiguration conf = gizmoOptions.getConfigurationByName(toolName);
-            if (conf.getModified()) {
+           //if (!gizmoOptions.isDefaultValue(toolName) &&  conf.getModified()) {
+            if (gizmoOptions.isConfigurationModified(toolName)){
                 AttrValuePair[] attributes = new AttrValuePair[2];
                 attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
                 attributes[1] = new AttrValuePair(TOOL_ENABLED_ATTRIBUTE, "" + conf.getValue());
                 xes.element(TOOL_ELEMENT, attributes);
-            }
+          }
         }
         if (gizmoOptions.getDataProvider().getModified()) {
             xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N

@@ -59,8 +59,8 @@ public final class OffsetRange implements Comparable<OffsetRange> {
 
     /** Creates a new instance of OffsetRange */
     public OffsetRange(int start, int end) {
-        assert start >= 0;
-        assert end >= start;
+        assert start >= 0 : "Invalid start:" + start;
+        assert end >= start : "Invalid start:" + start + " end:" + end;
 
         this.start = start;
         this.end = end;

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
+
+
 /**
  *
  * @author Petr Pisl
@@ -61,6 +63,54 @@ public interface JSFConfigVisitor {
     void visit(DefaultLocale component);
     void visit(SupportedLocale component);
     void visit(ResourceBundle component);
+    void visit( ActionListener listener );
+    void visit( DefaultRenderKitId id );
+    void visit( MessageBundle bundle );
+    void visit( NavigationHandler handler );
+    void visit( PartialTraversal traversal );
+    void visit( StateManager traversal );
+    void visit( ElResolver traversal );
+    void visit( PropertyResolver traversal );
+    void visit( VariableResolver traversal );
+    void visit( ResourceHandler traversal );
+    void visit( FacesSystemEventListener listener );
+    void visit( DefaultValidators validators );
+    void visit( Ordering ordering );
+    void visit( After after);
+    void visit( Before before );
+    void visit( Name name);
+    void visit( Others others );
+    void visit( AbsoluteOrdering absoluteOrdering );
+    void visit( Factory factory );
+    void visit( FacesValidatorId id );
+    void visit( ApplicationFactory factory );
+    void visit( ExceptionHandlerFactory factory );
+    void visit( ExternalContextFactory factory );
+    void visit( FacesContextFactory factory);
+    void visit( PartialViewContextFactory factory );
+    void visit( LifecycleFactory factory );
+    void visit( ViewDeclarationLanguageFactory factory );
+    void visit( TagHandlerDelegateFactory factory );
+    void visit( RenderKitFactory factory );
+    void visit( VisitContextFactory factory );
+    void visit( FacesComponent component );
+    void visit( Facet component );
+    void visit( ConfigAttribute attr );
+    void visit( Property property );
+    void visit( FacesManagedProperty property );
+    void visit( ListEntries entries );
+    void visit( MapEntries entries );
+    void visit( If iff );
+    void visit( Redirect redirect);
+    void visit( ViewParam param);
+    void visit( ReferencedBean bean );
+    void visit( RenderKit kit );
+    void visit( FacesRenderer renderer );
+    void visit( FacesClientBehaviorRenderer renderer );
+    void visit( Lifecycle lifecycle );
+    void visit( PhaseListener listener );
+    void visit( FacesValidator validator );
+    void visit ( FacesBehavior behavior );
     
     /**
      * Default shallow visitor.
@@ -96,8 +146,6 @@ public interface JSFConfigVisitor {
         public void visit(Application component) {
             visitChild();
         }
-        protected void visitChild() {
-        }
 
         public void visit(LocaleConfig component) {
             visitChild();
@@ -113,6 +161,201 @@ public interface JSFConfigVisitor {
         
         public void visit(ResourceBundle component) {
             visitChild();
+        }
+        
+        public void visit( ActionListener listener ) {
+            visitChild();            
+        }
+        
+        public void visit( DefaultRenderKitId id ) {
+            visitChild();
+        }
+        
+        public void visit( MessageBundle id ) {
+            visitChild();
+        }
+        
+        public void visit( NavigationHandler handler ){
+            visitChild();
+        }
+        
+        public void visit( PartialTraversal traversal ) {
+            visitChild();
+        }
+        
+        public void visit( StateManager manager ) {
+            visitChild();
+        }
+        
+        public void visit( ElResolver resolver ) {
+            visitChild();
+        }
+        
+        public void visit( PropertyResolver resolver ) {
+            visitChild();
+        }
+        
+        public void visit( VariableResolver resolver ) {
+            visitChild();
+        }
+        
+        public void visit( ResourceHandler handler ) {
+            visitChild();
+        }
+        
+        public void visit( FacesSystemEventListener listener ) {
+            visitChild();
+        }
+        
+        public void visit( DefaultValidators validators ) {
+            visitChild();
+        }
+        
+        public void visit( Ordering ordering ) {
+            visitChild();
+        }
+        
+        public void visit( After after ) {
+            visitChild();
+        }
+        
+        public void visit( Before before ) {
+            visitChild();
+        }
+        
+        public void visit( Name name ) {
+            visitChild();
+        }
+        
+        public void visit( Others others ) {
+            visitChild();
+        }
+        
+        public void visit( AbsoluteOrdering ordering ) {
+            visitChild();
+        }
+        
+        public void visit( Factory factory ) {
+            visitChild();
+        }
+        
+        public void visit( FacesValidatorId id ) {
+            visitChild();
+        }
+        
+        public void visit(ApplicationFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( ExceptionHandlerFactory factory ){
+            visitChild();
+        }
+        
+        public void visit(ExternalContextFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( FacesContextFactory factory){
+            visitChild();
+        }
+        
+        public void visit( PartialViewContextFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( LifecycleFactory factory ){
+            visitChild();
+        }
+        
+        public  void visit( ViewDeclarationLanguageFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( TagHandlerDelegateFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( RenderKitFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( VisitContextFactory factory ){
+            visitChild();
+        }
+        
+        public void visit( FacesComponent component ){
+            visitChild();
+        }
+        
+        public void visit( Facet facet ){
+            visitChild();
+        }
+        
+        public void visit( ConfigAttribute attribute ){
+            visitChild();
+        }
+        
+        public void visit( Property property ){
+            visitChild();
+        }
+        
+        public void visit( FacesManagedProperty property ){
+            visitChild();
+        }
+        
+        public void visit( ListEntries entries ){
+            visitChild();
+        }
+        
+        public void visit( MapEntries entries ){
+            visitChild();
+        }
+        
+        public void visit( If iff ){
+            visitChild();
+        }
+        
+        public void visit( Redirect redirect ){
+            visitChild();
+        }
+        
+        public void visit( ViewParam param ){
+            visitChild();
+        }
+        
+        public void visit( ReferencedBean bean ){
+            visitChild();
+        }
+        
+        public void visit( RenderKit kit ){
+            visitChild();
+        }
+        
+        public void visit( FacesRenderer render ){
+            visitChild();
+        }
+        
+        public void visit( FacesClientBehaviorRenderer render ){
+            visitChild();
+        }
+        
+        public void visit( Lifecycle lifecycle ){
+            visitChild();
+        }
+        
+        public void visit( PhaseListener listener ){
+            visitChild();
+        }
+        
+        public void visit( FacesValidator validator ){
+            visitChild();
+        }
+        
+        public void visit( FacesBehavior behavior ){
+            visitChild();
+        }
+        
+        protected void visitChild() {
         }
     }
     

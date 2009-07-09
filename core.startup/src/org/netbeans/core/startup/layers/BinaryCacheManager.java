@@ -49,6 +49,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
@@ -103,7 +104,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             LayerCacheManager.err.fine("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheLocation());
             os.write(BinaryFS.MAGIC);
             BinaryWriter bw = new BinaryWriter (os, root, fsSize);
-            writeFolder(bw, root);
+            writeFolder(bw, root, true);
         } finally {
             sizes = null; // free the cache
             os.close();
@@ -111,6 +112,11 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
     }
     
     void writeFolder(BinaryWriter bw, MemFolder folder) throws IOException {
+        writeFolder(bw, folder, false);
+    }
+    void writeFolder(BinaryWriter bw, MemFolder folder, boolean emptyURLsAllowed) throws IOException {
+        writeBaseURLs(folder, bw, emptyURLsAllowed);
+        
         if (folder.attrs != null) {
             bw.writeInt(folder.attrs.size()); // attr count
             for (Iterator it = folder.attrs.iterator(); it.hasNext(); ) {
@@ -156,8 +162,24 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             bw.writeInt(0); // no files
         }
     }
+
+    private void writeBaseURLs(MemFileOrFolder folder, BinaryWriter bw, boolean emptyURLsAllowed) throws IOException {
+        List<URL> urls = folder.getURLs();
+        if (urls.size() > 0) {
+            int last = urls.size() - 1;
+            for (int i = 0; i < last; i++) {
+                URL u = urls.get(i);
+                bw.writeBaseURL(u);
+            }
+            bw.writeBaseURL(urls.get(last), true);
+        } else {
+            assert emptyURLsAllowed;
+        }
+    }
     
     private void writeFile(BinaryWriter bw, MemFile file) throws IOException {
+        writeBaseURLs(file, bw, false);
+
         if (file.attrs != null) {
             bw.writeInt(file.attrs.size()); // attr count
             for (Iterator it = file.attrs.iterator(); it.hasNext(); ) {
@@ -177,8 +199,6 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         } else {
             bw.writeInt(0); // empty file
         }
-
-        bw.writeBaseURL (file.base);
     }
 
     private final static String[] ATTR_TYPES = {
@@ -217,7 +237,10 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         Integer i = sizes.get(mf);
         if (i != null) return i;
 
-        int size = 4; // int attrCount
+        // base urls
+        int size = mf.getURLs().size() * 4;
+
+        size += 4; // int attrCount
         if (mf.attrs != null) {
             for (Iterator it = mf.attrs.iterator(); it.hasNext(); ) {
                 size += computeSize((MemAttr)it.next()); // Attribute[attrCount] attrs
@@ -232,8 +255,6 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
              } else if (file.contents != null) {
                  size += file.contents.length;
              } // else size += 0; // no content, no uri
-             // index to url:
-             size += 4;
         } else { // mf instanceof MemFolder
             MemFolder folder = (MemFolder)mf;
             size += 4; // int fileCount
@@ -312,9 +333,16 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         }
         
         void writeBaseURL (java.net.URL url) throws IOException {
+            writeBaseURL(url, false);
+        }
+        void writeBaseURL (java.net.URL url, boolean negative) throws IOException {
             int[] number = (int[])urls.get (url);
             assert number != null : "Should not be null, because it was collected: " + url + " map: " + urls;
-            writeInt (number[0]);
+            int index = number[0];
+            if (negative) {
+                index = -10 - index;
+            }
+            writeInt (index);
         }
         
         private java.util.Map writeBaseUrls (MemFileOrFolder root, int fsSize) throws IOException {
@@ -348,10 +376,10 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         }
         
         private void collectBaseUrls (MemFileOrFolder f, java.util.Map<URL,Object/*int[]*/> map, int[] counter) {
-            if (f.base != null) {
-                int[] exists = (int[])map.get (f.base);
+            for (URL u : f.getURLs()) {
+                int[] exists = (int[])map.get (u);
                 if (exists == null) {
-                    map.put (f.base, counter.clone ());
+                    map.put (u, counter.clone ());
                     counter[0]++;
                 }
             }

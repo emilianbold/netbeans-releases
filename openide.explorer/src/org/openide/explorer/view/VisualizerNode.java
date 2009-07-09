@@ -346,7 +346,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     public void childrenAdded(NodeMemberEvent ev) {
         VisualizerChildren ch = children.get();
 
-        LOG.log(Level.FINER, "childrenAdded {0}", ev); // NOI18N
+        LOG.log(Level.FINER, "childrenAdded event: {0}\n  ch: {1}", new Object[]{ev, ch}); // NOI18N
+
         if (ch == null) {
             LOG.log(Level.FINER, "childrenAdded - exit"); // NOI18N
             return;
@@ -362,7 +363,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     public void childrenRemoved(NodeMemberEvent ev) {
         VisualizerChildren ch = children.get();
 
-        LOG.log(Level.FINER, "childrenRemoved {0}", ev); // NOI18N
+        LOG.log(Level.FINER, "childrenRemoved event: {0}\n  ch: {1}", new Object[]{ev, ch}); // NOI18N
         if (ch == null) {
             LOG.log(Level.FINER, "childrenRemoved - exit"); // NOI18N
             return;
@@ -379,7 +380,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         VisualizerChildren ch = children.get();
 
         int[] perm = ev.getPermutation();
-        LOG.log(Level.FINER, "childrenReordered {0}", perm); // NOI18N
+        LOG.log(Level.FINER, "childrenReordered {0}\n  ch: {1}", new Object[]{perm, ch}); // NOI18N
         if (ch == null) {
             LOG.log(Level.FINER, "childrenReordered - exit"); // NOI18N
             return;

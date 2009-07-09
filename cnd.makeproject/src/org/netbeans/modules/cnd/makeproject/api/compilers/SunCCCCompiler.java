@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.IOException;
-import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -50,103 +49,27 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public abstract class SunCCCCompiler extends CCCCompiler {
-    protected PersistentList<String> systemIncludeDirectoriesList = null;
-    protected PersistentList<String> systemPreprocessorSymbolsList = null;
     
     protected SunCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
-    
-    @Override
-    public boolean setSystemIncludeDirectories(List<String> values) {
-        assert values != null;
-        if (values.equals(systemIncludeDirectoriesList)) {
-            return false;
-        }
-        systemIncludeDirectoriesList = new PersistentList<String>(values);
-        normalizePaths(systemIncludeDirectoriesList);
-        saveSystemIncludesAndDefines();
-        return true;
-    }
-    
-    @Override
-    public boolean setSystemPreprocessorSymbols(List<String> values) {
-        assert values != null;
-        if (values.equals(systemPreprocessorSymbolsList)) {
-            return false;
-        }
-        systemPreprocessorSymbolsList = new PersistentList<String>(values);
-        saveSystemIncludesAndDefines();
-        return true;
-    }
-    
-    @Override
-    public List<String> getSystemPreprocessorSymbols() {
-        if (systemPreprocessorSymbolsList != null) {
-            return systemPreprocessorSymbolsList;
-        }
-        
-        getSystemIncludesAndDefines();
-        return systemPreprocessorSymbolsList;
-    }
-    
-    @Override
-    public List<String> getSystemIncludeDirectories() {
-        if (systemIncludeDirectoriesList != null) {
-            return systemIncludeDirectoriesList;
-        }
-        
-        getSystemIncludesAndDefines();
-        return systemIncludeDirectoriesList;
-    }
-    
-    
-    @Override
-    public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null) {
-            systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        }
-        if (systemPreprocessorSymbolsList != null) {
-            systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-        }
-    }
-    
-    private void restoreSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-    }
-    
-    private void getSystemIncludesAndDefines() {
-        restoreSystemIncludesAndDefines();
-        if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines();
-        }
-    }
-    
     protected abstract String getCompilerStderrCommand();
     protected abstract String getCompilerStderrCommand2();
     
-    private void getFreshSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = new PersistentList<String>();
-        systemPreprocessorSymbolsList = new PersistentList<String>();
+    protected Pair getFreshSystemIncludesAndDefines() {
+        Pair res = new Pair();
         try {
-            getSystemIncludesAndDefines(getCompilerStderrCommand(), false);
+            getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
             if (getCompilerStderrCommand2() != null) {
-                getSystemIncludesAndDefines(getCompilerStderrCommand2(), false);
+                getSystemIncludesAndDefines(getCompilerStderrCommand2(), false, res);
             }
-            systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
-
-            saveSystemIncludesAndDefines();
+            res.systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
-    }
-    
-    @Override
-    public void resetSystemIncludesAndDefines() {
-        getFreshSystemIncludesAndDefines();
+        return res;
     }
 }

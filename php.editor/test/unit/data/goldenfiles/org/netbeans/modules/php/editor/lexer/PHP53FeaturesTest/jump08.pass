@@ -1,7 +1,7 @@
 token #0 T_INLINE_HTML --TEST--\njump 08: goto into loop (forward)\n--FILE--\n
 token #1 PHP_OPENTAG <?php
 token #2 WHITESPACE \n
-token #3 PHP_STRING goto
+token #3 PHP_GOTO goto
 token #4 WHITESPACE  
 token #5 PHP_STRING L1
 token #6 PHP_SEMICOLON ;

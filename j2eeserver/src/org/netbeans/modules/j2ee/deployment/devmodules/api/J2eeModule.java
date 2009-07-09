@@ -49,6 +49,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileObject;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleBase;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.util.Parameters;
 
@@ -71,15 +76,34 @@ public class J2eeModule {
      */
     public static final String MIME_J2EE_MODULE_TARGET = "MIME-org-nb-j2eeserver-J2eeModule-BuildTarget"; //NOI18N
     
-    /** The module is an EAR archive. */
+    /**
+     * The module is an EAR archive.
+     * @deprecated use {@link Type#EAR}
+     */
     public static final Object EAR = ModuleType.EAR;
-    /** The module is an Web Application archive. */
+    
+    /**
+     * The module is an Web Application archive.
+     * @deprecated use {@link Type#WAR}
+     */
     public static final Object WAR = ModuleType.WAR;
-    /** The module is an Enterprise Java Bean archive. */
+
+    /**
+     * The module is an Enterprise Java Bean archive.
+     * @deprecated use {@link Type#EJB}
+     */
     public static final Object EJB = ModuleType.EJB;
-    /** The module is an Connector archive. */
+
+    /**
+     * The module is an Connector archive.
+     * @deprecated use {@link Type#RAR}
+     */
     public static final Object CONN = ModuleType.RAR;
-    /** The module is an Client Application archive. */
+
+    /**
+     * The module is an Client Application archive.
+     * @deprecated use {@link Type#CAR}
+     */
     public static final Object CLIENT = ModuleType.CAR;
     
     /**
@@ -121,17 +145,41 @@ public class J2eeModule {
      * Module version property
      */
     public static final String PROP_MODULE_VERSION = "moduleVersion"; // NOI18N
-    
-    private J2eeModuleProvider j2eeModuleProvider;
 
-    public interface RootedEntry {
-        FileObject getFileObject ();
-        String getRelativePath ();
+    private static final Logger LOGGER = Logger.getLogger(J2eeModule.class.getName());
+
+    static {
+        J2eeModuleAccessor.setDefault(new J2eeModuleAccessor() {
+            public J2eeModule createJ2eeModule(J2eeModuleImplementation impl) {
+                return new J2eeModule(impl);
+            }
+
+            @Override
+            public J2eeModule createJ2eeModule(J2eeModuleImplementation2 impl) {
+                return new J2eeModule(impl);
+            }
+
+            public J2eeModuleProvider getJ2eeModuleProvider(J2eeModule j2eeModule) {
+               return j2eeModule.getJ2eeModuleProvider();
+            }
+
+            public void setJ2eeModuleProvider(J2eeModule j2eeModule, J2eeModuleProvider j2eeModuleProvider) {
+                j2eeModule.setJ2eeModuleProvider(j2eeModuleProvider);
+            }
+
+            @Override
+            public ModuleType getJsrModuleType(Type type) {
+                return type.getJsrType();
+            }
+
+        });
     }
     
-    private final J2eeModuleImplementation impl;
+    private J2eeModuleProvider j2eeModuleProvider;
     
-    J2eeModule(J2eeModuleImplementation impl) {
+    private final J2eeModuleBase impl;
+    
+    J2eeModule(J2eeModuleBase impl) {
         this.impl = impl;
     }
 
@@ -151,9 +199,32 @@ public class J2eeModule {
      * Returns module type.
      * 
      * @return module type.
+     * @deprecated use {@link #getType()}
      */
+    @NonNull
     public Object getModuleType() {
-        return impl.getModuleType();
+        if (impl instanceof J2eeModuleImplementation2) {
+            return ((J2eeModuleImplementation2) impl).getModuleType().getJsrType();
+        } else {
+            return ((J2eeModuleImplementation) impl).getModuleType();
+        }
+    }
+
+    /**
+     * Returns module type.
+     *
+     * @return module type
+     * @since 1.59
+     */
+    @NonNull
+    public Type getType() {
+        if (impl instanceof J2eeModuleImplementation2) {
+            return ((J2eeModuleImplementation2) impl).getModuleType();
+        } else {
+            Type type = Type.fromJsrType(((J2eeModuleImplementation) impl).getModuleType());
+            assert type != null;
+            return type;
+        }
     }
     
     /** 
@@ -267,20 +338,63 @@ public class J2eeModule {
     synchronized void setJ2eeModuleProvider(J2eeModuleProvider j2eeModuleProvider) {
         this.j2eeModuleProvider = j2eeModuleProvider;
     }
-    
-    static {
-        J2eeModuleAccessor.setDefault(new J2eeModuleAccessor() {
-            public J2eeModule createJ2eeModule(J2eeModuleImplementation impl) {
-                return new J2eeModule(impl);
-            }
-            
-            public J2eeModuleProvider getJ2eeModuleProvider(J2eeModule j2eeModule) {
-               return j2eeModule.getJ2eeModuleProvider(); 
-            }
-            
-            public void setJ2eeModuleProvider(J2eeModule j2eeModule, J2eeModuleProvider j2eeModuleProvider) {
-                j2eeModule.setJ2eeModuleProvider(j2eeModuleProvider);
-            }
-        });
+
+    public interface RootedEntry {
+
+        FileObject getFileObject ();
+
+        String getRelativePath ();
+
     }
+
+    public static final class Type {
+
+        public static final Type WAR = new Type(ModuleType.WAR);
+
+        public static final Type EJB = new Type(ModuleType.EJB);
+
+        public static final Type EAR = new Type(ModuleType.EAR);
+
+        public static final Type CAR = new Type(ModuleType.CAR);
+
+        public static final Type RAR = new Type(ModuleType.RAR);
+
+        private final ModuleType jsrType;
+
+        private Type(ModuleType jsrType) {
+            this.jsrType = jsrType;
+        }
+
+        private ModuleType getJsrType() {
+            return jsrType;
+        }
+
+        @SuppressWarnings("deprecation")
+        public static Type fromJsrType(Object type) {
+            // be defensive
+            if (type instanceof Type) {
+                boolean assertsEnabled = false;
+                assert assertsEnabled = true;
+                if (assertsEnabled) {
+                    LOGGER.log(Level.WARNING, "Redundant call to conversion method", new Exception());
+                }
+                return (Type) type;
+            }
+            assert type instanceof ModuleType;
+
+            if (J2eeModule.WAR.equals(type)) {
+                return WAR;
+            } else if (J2eeModule.EJB.equals(type)) {
+                return EJB;
+            } else if (J2eeModule.EAR.equals(type)) {
+                return EAR;
+            } else if (J2eeModule.CLIENT.equals(type)) {
+                return CAR;
+            } else if (J2eeModule.CONN.equals(type)) {
+                return RAR;
+            }
+            return null;
+        }
+    }
+
 }

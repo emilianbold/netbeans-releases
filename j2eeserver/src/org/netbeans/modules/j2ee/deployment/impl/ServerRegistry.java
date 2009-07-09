@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
@@ -166,6 +167,7 @@ public final class ServerRegistry implements java.io.Serializable {
         init();
         return instances;
     }
+
     private void addPlugin(FileObject fo) {
         String name = ""; //NOI18N
         try {
@@ -557,8 +559,8 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private static HashMap configNamesByType = null;
-    private static final Object[] allTypes = new Object[] {
-        J2eeModule.EAR, J2eeModule.CLIENT, J2eeModule.CONN, J2eeModule.EJB, J2eeModule.WAR };
+    private static final J2eeModule.Type[] allTypes = new J2eeModule.Type[] {
+        J2eeModule.Type.EAR, J2eeModule.Type.RAR, J2eeModule.Type.CAR, J2eeModule.Type.EJB, J2eeModule.Type.WAR };
 
     private void initConfigNamesByType() {
         if (configNamesByType != null) {
@@ -580,9 +582,11 @@ public final class ServerRegistry implements java.io.Serializable {
 	    configNamesByType.put(allTypes[i], configNames);
         }
     }
-    public boolean isConfigFileName(String name, Object type) {
+
+    public boolean isConfigFileName(String name, J2eeModule.Type type) {
 	initConfigNamesByType();
-	Set configNames = (Set) configNamesByType.get(type);
+        Object jsrModuleType = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
+	Set configNames = (Set) configNamesByType.get(jsrModuleType);
 	return (configNames != null && configNames.contains(name));
     }
 

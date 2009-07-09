@@ -212,7 +212,13 @@ PropertyChangeListener {
                         lookupIOManager ();
                         if (ioManager == null) return;
                     }
-                    String printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpoint", bp.toString());
+                    String msg = bp.getValidityMessage();
+                    String printText;
+                    if (msg != null && msg.trim().length() > 0) {
+                        printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpointWithReason", bp.toString(), msg);
+                    } else {
+                        printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpoint", bp.toString());
+                    }
                     IOManager.Line line = null;
                     if (bp instanceof LineBreakpoint) {
                         line = new IOManager.Line (

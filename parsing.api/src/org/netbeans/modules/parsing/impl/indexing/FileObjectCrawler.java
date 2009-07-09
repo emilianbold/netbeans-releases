@@ -43,13 +43,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
@@ -65,17 +66,20 @@ public final class FileObjectCrawler extends Crawler {
     private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
     
     private final FileObject root;
+    private final ClassPath.Entry entry;
     private final FileObject[] files;
 
-    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
+    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
         super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
         this.root = root;
+        this.entry = entry;
         this.files = null;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), false, mimeTypesToCheck, cancelRequest);
+    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, Set<String> mimeTypesToCheck, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, mimeTypesToCheck, cancelRequest);
         this.root = root;
+        this.entry = entry;
         this.files = files;
     }
 
@@ -86,9 +90,9 @@ public final class FileObjectCrawler extends Crawler {
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
 
         if (files != null) {
-            finished = collect(files, root, result, supportedMimeTypes, stats);
+            finished = collect(files, root, result, supportedMimeTypes, stats, entry);
         } else {
-            finished = collect(root.getChildren(), root, result, supportedMimeTypes, stats);
+            finished = collect(root.getChildren(), root, result, supportedMimeTypes, stats, entry);
         }
 
         final long tm2 = System.currentTimeMillis();
@@ -120,7 +124,7 @@ public final class FileObjectCrawler extends Crawler {
     private boolean collect (FileObject[] fos, FileObject root,
             final Map<String, Collection<Indexable>> cache,
             final Set<? extends String> supportedMimeTypes,
-            final Stats stats) {
+            final Stats stats, final ClassPath.Entry entry) {
         for (FileObject fo : fos) {
             //keep the same logic like in RepositoryUpdater
             if (isCancelled()) {
@@ -129,8 +133,11 @@ public final class FileObjectCrawler extends Crawler {
             if (!fo.isValid() || !VisibilityQuery.getDefault().isVisible(fo)) {
                 continue;
             }
+            if (entry != null && !entry.includes(fo)) {
+                continue;
+            }
             if (fo.isFolder()) {
-                if (!collect(fo.getChildren(), root, cache, supportedMimeTypes, stats)) {
+                if (!collect(fo.getChildren(), root, cache, supportedMimeTypes, stats, entry)) {
                     return false;
                 }
             } else {
@@ -144,7 +151,7 @@ public final class FileObjectCrawler extends Crawler {
                 if (supportedMimeTypes == null || supportedMimeTypes.contains(mime)) {
                     Collection<Indexable> indexable = cache.get(mime);
                     if (indexable == null) {
-                        indexable = new HashSet<Indexable>();
+                        indexable = new LinkedHashSet<Indexable>();
                         cache.put(mime, indexable);
                     }
 

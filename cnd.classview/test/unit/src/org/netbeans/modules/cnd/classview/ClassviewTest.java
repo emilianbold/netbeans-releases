@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.classview;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ClassviewTest extends BaseTestSuite {
+public class ClassviewTest extends CndBaseTestSuite {
     
     public ClassviewTest() {
         super("C/C++ Class View"); // NOI18N

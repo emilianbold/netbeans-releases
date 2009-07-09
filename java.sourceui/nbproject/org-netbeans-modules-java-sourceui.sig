@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 1.6.1
+#Version 1.7.1
 
 CLSS public java.lang.Object
 cons public Object()
@@ -45,13 +45,14 @@ meth public java.net.URL getURL()
 meth public javax.swing.Action getGotoSourceAction()
 meth public org.netbeans.api.java.source.ui.ElementJavadoc resolveLink(java.lang.String)
 supr java.lang.Object
-hfds API,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,content,cpInfo,docURL,goToSource,linkCounter,links
+hfds API,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,content,cpInfo,docURL,eu,goToSource,linkCounter,links,trees
 
 CLSS public final org.netbeans.api.java.source.ui.ElementOpen
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,javax.lang.model.element.Element)
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
 meth public static boolean open(org.openide.filesystems.FileObject,org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
 supr java.lang.Object
+hfds log
 hcls FindDeclarationVisitor
 
 CLSS public org.netbeans.api.java.source.ui.ScanDialog

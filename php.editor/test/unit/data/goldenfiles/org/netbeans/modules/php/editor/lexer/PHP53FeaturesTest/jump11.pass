@@ -28,7 +28,7 @@ token #26 WHITESPACE             \n
 token #27 PHP_DEFAULT default
 token #28 PHP_TOKEN :
 token #29 WHITESPACE \n                
-token #30 PHP_STRING goto
+token #30 PHP_GOTO goto
 token #31 WHITESPACE  
 token #32 PHP_STRING b
 token #33 PHP_SEMICOLON ;
@@ -52,7 +52,7 @@ token #50 WHITESPACE
 token #51 PHP_CONSTANT_ENCAPSED_STRING "ok!\n"
 token #52 PHP_SEMICOLON ;
 token #53 WHITESPACE \n                    
-token #54 PHP_STRING goto
+token #54 PHP_GOTO goto
 token #55 WHITESPACE  
 token #56 PHP_STRING a
 token #57 PHP_SEMICOLON ;

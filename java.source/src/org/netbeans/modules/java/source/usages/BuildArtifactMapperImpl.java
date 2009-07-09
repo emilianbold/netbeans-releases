@@ -219,7 +219,7 @@ public class BuildArtifactMapperImpl {
         } catch (InterruptedException e) {
             //Not Important
             LOG.log(Level.FINE, null, e);
-            return false;
+            return null;
         }
 
         FileObject[][] sources = new FileObject[1][];
@@ -246,7 +246,7 @@ public class BuildArtifactMapperImpl {
             File index = JavaIndex.getClassFolder(sr.getURL(), true);
 
             if (index == null) {
-                return false;
+                return null;
             }
 
             copyRecursively(index, targetFolder);

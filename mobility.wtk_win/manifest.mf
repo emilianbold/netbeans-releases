@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.mobility.wtk_win
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/wtk_win/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0

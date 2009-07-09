@@ -44,7 +44,7 @@ import java.io.File;
 import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -54,7 +54,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Voskresensky
  */
-public class CndEditorProviderTestCase extends BaseTestCase {
+public class CndEditorProviderTestCase extends CndBaseTestCase {
 
     private static final boolean TRACE = false;
 

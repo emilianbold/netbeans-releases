@@ -157,8 +157,19 @@ public class Utils {
         WebModule wm = WebModule.getWebModule (fo);
         if (wm == null)
             return null;
-        
-        String jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+
+        FileObject docBase = wm.getDocumentBase();
+        String jspRelativePath;
+        if (docBase != null) {
+            jspRelativePath = FileUtil.getRelativePath(docBase, fo);
+            if (jspRelativePath == null) {
+                // fo is not under docBase
+                return null;
+            }
+        } else {
+            // ?
+            jspRelativePath = fo.getPath();
+        }
         String contextPath = wm.getContextPath();
 
         String servletPath = finder.getServletResourcePath(jspRelativePath);      

@@ -44,7 +44,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
@@ -82,33 +84,27 @@ public class QueryAction extends SystemAction {
         openQuery(query, repository);
     }
 
-    public static void openQuery(final Query query, final Repository repository) {
-        openQueryIntern(query, repository, false);
+    public static void openQuery(final Query query, final Repository repositoryToSelect) {
+        openQuery(query, repositoryToSelect, false);
     }
 
-    public static void openKenaiQuery(final Query query, final Repository repository) {
-        openQueryIntern(query, repository, true);
-    }
-
-    private static void openQueryIntern(final Query query, final Repository repository, final boolean forKenai) {
+    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                TopComponent tc = null;
+                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
+                QueryTopComponent tc = null;
                 if(query != null) {
                     tc = QueryTopComponent.find(query);
                 }
                 if(tc == null) {
-                    if(forKenai) {
-                        tc = QueryTopComponent.forKenai(query, repository);
-                    } else {
-                        tc = new QueryTopComponent();
-                        ((QueryTopComponent) tc).init(query, repository);
-                    }
+                    tc = new QueryTopComponent();
+                    tc.init(query, repository, suggestedSelectionOnly);
                 }
                 if(!tc.isOpened()) {
                     tc.open();
                 }
                 tc.requestActive();
+                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
             }
         });
     }

@@ -119,7 +119,7 @@ public class AddIndexDialog {
             con.gridy = 1;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             cbx_uq = new JCheckBox();
-            Mnemonics.setLocalizedText(cbx_uq, NbBundle.getMessage (AddIndexDialog.class, "Unique"));
+            Mnemonics.setLocalizedText(cbx_uq, NbBundle.getMessage (AddIndexDialog.class, "AddIndexUnique"));
             cbx_uq.setToolTipText(NbBundle.getMessage (AddIndexDialog.class, "ACS_UniqueA11yDesc"));
             label_uq.setLabelFor(cbx_uq);
             layout.setConstraints(cbx_uq, con);

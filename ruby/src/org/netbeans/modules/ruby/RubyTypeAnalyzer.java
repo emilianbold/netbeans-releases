@@ -45,6 +45,7 @@ import java.util.Map;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
+import org.openide.filesystems.FileObject;
 
 /**
  * Perform type analysis on a given AST tree, attempting to provide a type
@@ -126,7 +127,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                RubyType type = RubyTypeInferencer.normal(knowledge).inferTypesOfRHS(node);
+                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
 
                 // null element in types set means that we are not able to infer
                 // the expression
@@ -220,13 +221,14 @@ public final class RubyTypeAnalyzer {
      * #RAILS_CONTROLLER_VARS}.
      */
     private static void initFileTypeVars(final ContextKnowledge knowledge) {
-        if (!knowledge.hasFileObject()) {
+        FileObject fo = RubyUtils.getFileObject(knowledge.getParserResult());
+        if (fo == null) {
             return;
         }
 
-        String ext = knowledge.getFileObject().getExt();
+        String ext = fo.getExt();
         if (ext.equals("rb")) {
-            String name = knowledge.getFileObject().getName();
+            String name = fo.getName();
             if (name.endsWith("_controller")) { // NOI18N
                 // request, params, etc.
                 for (int i = 0; i < RAILS_CONTROLLER_VARS.length; i += 2) {

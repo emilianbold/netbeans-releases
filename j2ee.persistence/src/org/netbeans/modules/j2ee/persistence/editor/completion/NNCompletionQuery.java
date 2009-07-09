@@ -64,7 +64,7 @@
 //import org.netbeans.modules.editor.java.NbJavaJMISyntaxSupport;
 //import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
-//import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+//import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.j2ee.persistence.editor.completion.db.DBCompletionContextResolver;
 //import org.netbeans.modules.javacore.JMManager;
 //import org.openide.ErrorManager;

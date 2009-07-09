@@ -56,6 +56,10 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-BringToFrontAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-SendToBackAction.instance"/>
         </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_1PaletteCustomizerAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_2PaletteCustomizerAction.instance"/>
+        </folder>
     </folder>
     
     <!-- XXX Actions for DesignBeanNodes, TODO revise the policy of naming of folders. -->
@@ -221,10 +225,12 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_1PaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_1PaletteCustomizerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_1PaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="500"/>
                 </file>
-                <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_2PaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_2PaletteCustomizerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_2PaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="600"/>
                 </file>
             </folder>

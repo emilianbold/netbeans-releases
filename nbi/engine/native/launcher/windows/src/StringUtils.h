@@ -135,7 +135,9 @@ extern const char * MAIN_WINDOW_TITLE;
     
     WCHAR * newpWCHAR(DWORD length);
     char * newpChar(DWORD length);
-    
+    WCHAR * searchW( const WCHAR * wcs1, const WCHAR * wcs2);
+    char * searchA(const char* str1, const char * str2);
+
     WCHAR ** newppWCHAR(DWORD length);
     char ** newppChar(DWORD length);
     int64t * newint64_t(DWORD low, DWORD high);

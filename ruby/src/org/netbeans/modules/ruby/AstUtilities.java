@@ -509,6 +509,19 @@ public class AstUtilities {
         return null;
     }
 
+    /**
+     * Gets the closest node at the given offset.
+     * 
+     * @param root
+     * @param offset
+     * @return the closest node or <code>null</code>.
+     */
+    public static Node findNodeAtOffset(Node root, int offset) {
+        AstPath path = new AstPath(root, offset);
+        Iterator<Node> it = path.leafToRoot();
+        return it.hasNext() ? it.next() : null;
+    }
+
     public static MethodDefNode findMethodAtOffset(Node root, int offset) {
         AstPath path = new AstPath(root, offset);
         Iterator<Node> it = path.leafToRoot();
@@ -1500,7 +1513,7 @@ public class AstUtilities {
         return new SymbolNode[0];
     }
 
-    static Node getRoot(final FileObject sourceFO) {
+    public static Node getRoot(final FileObject sourceFO) {
         Source source = Source.create(sourceFO);
         final Node[] rootHolder = new Node[1];
         try {

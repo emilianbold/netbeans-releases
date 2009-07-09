@@ -41,22 +41,29 @@
 
 package org.netbeans.modules.web.jsf.xdm.model;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.DefaultLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.Ordering;
+import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 public class ElementOrderingTest extends NbTestCase {
 
@@ -92,7 +99,7 @@ public class ElementOrderingTest extends NbTestCase {
         NodeList nodes = rule.getPeer().getChildNodes();
         assertEquals(nodes.item(1).getNodeName(), "from-view-id");
         assertEquals(nodes.item(5).getNodeName(), "navigation-case");
-        Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
 
     }
     
@@ -132,5 +139,144 @@ public class ElementOrderingTest extends NbTestCase {
         NodeList list2 = newCase.getPeer().getChildNodes();        
         assertEquals(list2.item(1).getNodeName(), "from-outcome");
         assertEquals(list2.item(3).getNodeName(), "to-view-id");
+    }
+    
+    public void testDefaultLocale() throws Exception {
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale.xml");
+        FacesConfig facesConfig = model.getRootComponent();
+        
+        model.startTransaction();
+        Application application = facesConfig.getApplications().get(0);
+        LocaleConfig config = application.getLocaleConfig().get(0);
+        DefaultLocale locale = config.getDefaultLocale();
+        assertNull( "test xml file doesn't containt default-locale element," +
+        		" but its found there", locale );
+        
+        locale = model.getFactory().createDefatultLocale();
+        config.setDefaultLocale(locale);
+        
+        model.endTransaction();
+        model.sync();
+        
+        Element element  = Util.getElement( config.getPeer(), 0 );
+        assertEquals( "Element locale-config should contain " +
+                "default-locale as first child element, " +
+                "but it contians :" +element.getNodeName(), element.getNodeName(), "default-locale");
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
+    }
+    
+    public void testEmptyLocale() throws Exception {
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale.xml");
+        FacesConfig facesConfig = model.getRootComponent();
+        
+        model.startTransaction();
+        Application application = facesConfig.getApplications().get(0);
+        LocaleConfig config = application.getLocaleConfig().get(0);
+        clearConfig(config);
+        
+        SupportedLocale locale = model.getFactory().createSupportedLocale();
+        config.addSupportedLocales(locale);
+        DefaultLocale defaultLocale = model.getFactory().createDefatultLocale();
+        config.setDefaultLocale( defaultLocale );
+        locale = model.getFactory().createSupportedLocale();
+        config.addSupportedLocales( locale );
+        
+        model.endTransaction();
+        model.sync();
+        
+        Element element  = Util.getElement( config.getPeer(), 0 );
+        assertEquals( "Element locale-config should contain " +
+        		"default-locale as first child element, " +
+        		"but it contians :" +element.getNodeName(), element.getNodeName(), "default-locale");
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
+    }
+    
+    public void testOrdering() throws Exception{
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-ordering.xml");
+        FacesConfig facesConfig = model.getRootComponent();
+        
+        model.startTransaction();
+        
+        List<Ordering> orderings = facesConfig.getOrderings();
+        assertEquals( 1, orderings.size());
+        
+        Ordering ordering = orderings.get(0);
+        assertNull(ordering.getAfter());
+        assertNull(ordering.getBefore());
+        
+        ordering.setBefore( model.getFactory().createBefore());
+        ordering.setAfter( model.getFactory().createAfter());
+        
+        assertNotNull(ordering.getAfter());
+        assertNotNull(ordering.getBefore());
+        
+        Element element = Util.getElement( ordering.getPeer(), 0);
+        assertEquals( "after", element.getNodeName());
+        
+        element = Util.getElement( ordering.getPeer(), 1);
+        assertEquals("before", element.getNodeName());
+        
+        model.endTransaction();
+        model.sync();
+        
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
+    }
+    
+    public void testNavigationCase() throws Exception{
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-navigation-case.xml");
+        FacesConfig facesConfig = model.getRootComponent();
+        
+        model.startTransaction();
+        
+        List<NavigationRule> rules = facesConfig.getNavigationRules();
+        assertEquals( 1 , rules.size());
+        
+        NavigationRule rule = rules.get(0);
+        List<NavigationCase> cases = rule.getNavigationCases();
+        assertEquals( 1 , cases.size());
+        
+        NavigationCase caze = cases.get(0);
+        
+        assertNotNull( caze.getRedirect());
+        
+        caze.setToViewId( "toViewId");
+        caze.setIf( model.getFactory().createIf());
+        caze.setFromAction("fromAction");
+        caze.addDescription( model.getFactory().createDescription());
+        
+        model.endTransaction();
+        model.sync();
+        
+        Element element = Util.getElement(caze.getPeer(), 0);
+        assertEquals( "description",  element.getNodeName());
+        
+        element = Util.getElement(caze.getPeer(), 1);
+        assertEquals( "icon",  element.getNodeName());
+        
+        element = Util.getElement(caze.getPeer(), 2);
+        assertEquals( "from-action",  element.getNodeName());
+        
+        element = Util.getElement(caze.getPeer(), 3);
+        assertEquals( "from-outcome",  element.getNodeName());
+        
+        element = Util.getElement(caze.getPeer(), 4);
+        assertEquals( "if",  element.getNodeName());
+        
+        element = Util.getElement(caze.getPeer(), 5);
+        assertEquals( "to-view-id",  element.getNodeName());
+        
+        element = Util.getElement(caze.getPeer(), 6);
+        assertEquals( "redirect",  element.getNodeName());
+        
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
+    }
+
+    private void clearConfig( LocaleConfig config ) {
+        for ( SupportedLocale loc : config.getSupportedLocales() ){
+            config.removeSupportedLocale(loc);
+        }
+        if ( config.getDefaultLocale() != null ){
+            config.setDefaultLocale( null );
+        }
     }
 }

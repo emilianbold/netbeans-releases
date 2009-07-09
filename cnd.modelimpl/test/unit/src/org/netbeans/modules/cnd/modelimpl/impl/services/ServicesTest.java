@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class ServicesTest extends BaseTestSuite {
+public class ServicesTest extends CndBaseTestSuite {
     
     public ServicesTest() {
         super("Model Services Impl");

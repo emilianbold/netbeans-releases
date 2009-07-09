@@ -142,8 +142,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 JPDAWatch w = (JPDAWatch) row;
                 String e = w.getExceptionDescription ();
                 if (e != null)
-                    return ">" + e + "<";
-                    // return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
+                    return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
                 try {
                         return w.getValue ();
                 } finally {

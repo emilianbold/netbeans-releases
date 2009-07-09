@@ -135,7 +135,6 @@ an exception can be made for your code so you do not get further mail about it.
         <exclude name="contrib/docbook/src/org/netbeans/modules/docbook/*-template.xml"/>
         <!-- Similar for things copied to distro and minor examples: -->
         <exclude name="**/release/"/>
-        <exclude name="xtest/examples/"/>
         <!-- Trivial test data: -->
         <exclude name="core/test/unit/src/org/netbeans/core/modules/jars/"/>
         <exclude name="**/test*/**/data/"/>

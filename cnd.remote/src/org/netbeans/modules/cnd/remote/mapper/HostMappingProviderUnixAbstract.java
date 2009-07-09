@@ -65,8 +65,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<String, String>();
-        boolean localhost = execEnv.isLocal();
-        String hostName = localhost ? getLocalHostName() : execEnv.getHost();
+        String hostName = execEnv.isLocal() ? getLocalHostName() : execEnv.getHost();
         if (hostName != null) {
             RunFacade runner = RunFacade.getInstance(execEnv);
             if (runner.run(getShareCommand())) { //NOI18N
@@ -74,10 +73,12 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
                 for (String path : paths) {
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';
                     String netPath = NET + hostName + path;
-                    if (localhost) {
-                        mappings.put(path, netPath);
-                    } else {
-                        mappings.put(netPath, path);
+                    if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
+                        if (execEnv.isLocal()) {
+                            mappings.put(path, netPath);
+                        } else {
+                            mappings.put(netPath, path);
+                        }
                     }
                 }
             }

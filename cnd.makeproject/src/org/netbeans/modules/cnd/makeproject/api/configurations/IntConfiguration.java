@@ -62,6 +62,10 @@ public class IntConfiguration {
     protected IntConfiguration() {
     }
 
+    public void setMaster(IntConfiguration master) {
+        this.master = master;
+    }
+
     public void setValue(int value) {
         this.value = value;
         if (master != null) {

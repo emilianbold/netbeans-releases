@@ -84,22 +84,17 @@ public class BugtrackingRuntime {
         return instance;
     }
 
-    public void init() {
+    private void init() {
         initCacheStore();
         if(SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    initIntern();
+                    initWebUtil();
                 }
             });
         } else {
-            initIntern();
+            initWebUtil();
         }
-    }
-
-    private void initIntern() {
-        WebUtil.init();
-
         // XXX this is dummy
         taskRepositoryManager = new TaskRepositoryManager();
 
@@ -114,6 +109,10 @@ public class BugtrackingRuntime {
 
         IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(externalizationManager, taskRepositoryManager);
         externalizationManager.addParticipant(repositoryParticipant);
+    }
+
+    private void initWebUtil() {
+        WebUtil.init();
     }
 
     public void addRepositoryConnector(AbstractRepositoryConnector rc) {

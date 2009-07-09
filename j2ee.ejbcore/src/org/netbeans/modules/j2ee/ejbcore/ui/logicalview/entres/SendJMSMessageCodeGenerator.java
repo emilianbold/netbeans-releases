@@ -234,14 +234,14 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         if (platform == null) {
             return true;
         }
-        if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+        if (!platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
             return false;
         }
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
-        Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = j2eeModuleProvider.getJ2eeModule().getType();
         if (Util.isJavaEE5orHigher(project) ||
-                (J2eeModule.WAR.equals(moduleType) && WebApp.VERSION_2_4.equals(j2eeVersion)) ||
-                (J2eeModule.EJB.equals(moduleType) && EjbJar.VERSION_2_1.equals(j2eeVersion)))  {
+                (J2eeModule.Type.WAR.equals(moduleType) && WebApp.VERSION_2_4.equals(j2eeVersion)) ||
+                (J2eeModule.Type.EJB.equals(moduleType) && EjbJar.VERSION_2_1.equals(j2eeVersion)))  {
             return ElementKind.INTERFACE != typeElement.getKind();
         }
         return false;

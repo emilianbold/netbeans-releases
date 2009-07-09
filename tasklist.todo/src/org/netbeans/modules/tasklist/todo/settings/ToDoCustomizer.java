@@ -258,6 +258,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             editor.removeCellEditorListener( this );
             changed = true;
             firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
+            firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
         }
 
         public void editingCanceled(ChangeEvent e) {
@@ -278,6 +279,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 editor.removeCellEditorListener( this );
                 changed = true;
                 firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
+                firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
             }
 
             public void editingCanceled(ChangeEvent e) {

@@ -45,8 +45,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -55,12 +57,17 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
@@ -90,10 +97,9 @@ public class HtmlCompletionQueryTest extends TestBase {
         MockServices.setServices(MockMimeLookup.class);
     }
 
-
     public static Test xsuite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlCompletionQueryTest("testFileAttrValue"));
+        suite.addTest(new HtmlCompletionQueryTest("testOpenTagJustAfterText"));
         return suite;
     }
 
@@ -106,7 +112,36 @@ public class HtmlCompletionQueryTest extends TestBase {
 //        testCompletionResults("netbeans.org.html");
 //    }
 
-    public void testTags() throws BadLocationException {
+
+
+    public void testSimpleEndTag() throws BadLocationException, ParseException {
+        assertItems("<div></|", arr("div"), Match.CONTAINS, 7);
+        //           01234567
+    }
+
+    public void testSimpleEndTagBeforeText() throws BadLocationException, ParseException {
+        assertItems("<div></| text ", arr("div"), Match.CONTAINS, 7);
+        //           01234567
+    }
+
+    public void testOpenTagWithCommonPrefix() throws BadLocationException, ParseException {
+        assertItems("<a| ", arr("abbr"), Match.CONTAINS, 1);
+        //           01234567
+    }
+
+    public void testOpenTagJustAfterText() throws BadLocationException, ParseException {
+        assertItems("text<| ", arr("abbr"), Match.CONTAINS, 5);
+        //           01234567
+    }
+
+    //causes: java.lang.AssertionError: content is null after sibling 'meta'
+    public void testOpenTagAtMetaTagEnd() throws BadLocationException, ParseException {
+//        assertItems("<html><head><meta><title></title><| </head></html>", arr("link"), Match.CONTAINS);
+        //           01234567
+    }
+
+
+    public void testTags() throws BadLocationException, ParseException {
         assertItems("<|", arr("div"), Match.CONTAINS, 1);
         assertItems("<|", arr("jindra"), Match.DOES_NOT_CONTAIN);
         assertItems("<d|", arr("div"), Match.CONTAINS, 1);
@@ -118,7 +153,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems("<div></div|", arr("div"), Match.EXACT, 7);
     }
 
-    public void testCompleteTags() throws BadLocationException {
+    public void testCompleteTags() throws BadLocationException, ParseException {
         assertCompletedText("<|", "div", "<div>|");
         assertCompletedText("<di|", "div", "<div>|");
         assertCompletedText("<div|", "div", "<div>|");
@@ -127,27 +162,50 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertCompletedText("<div></d|", "div", "<div></div>|");
         assertCompletedText("<div></div|", "div", "<div></div>|");
     }
+    
+    public void testCompleteTagsBeforeText() throws BadLocationException, ParseException {
+        assertCompletedText("<| ", "div", "<div>| ");
+        assertCompletedText("<di| ", "div", "<div>| ");
+        assertCompletedText("<div| ", "div", "<div>| ");
 
-    public void testTagAttributes() throws BadLocationException {
+        assertCompletedText("<div></| ", "div", "<div></div>| ");
+        assertCompletedText("<div></d| ", "div", "<div></div>| ");
+        assertCompletedText("<div></div| ", "div", "<div></div>| ");
+    }
+
+    public void testTagsBeforeText() throws BadLocationException, ParseException {
+        assertItems("<| ", arr("div"), Match.CONTAINS, 1);
+        assertItems("<| ", arr("jindra"), Match.DOES_NOT_CONTAIN);
+        assertItems("<d| ", arr("div"), Match.CONTAINS, 1);
+        assertItems("<div| ", arr("div"), Match.EXACT, 1);
+
+        //           01234567
+        assertItems("<div></| ", arr("div"), Match.CONTAINS, 7);
+        assertItems("<div></d| ", arr("div"), Match.CONTAINS, 7);
+        assertItems("<div></div| ", arr("div"), Match.EXACT, 7);
+    }
+
+
+    public void testTagAttributes() throws BadLocationException, ParseException {
         //           012345
         assertItems("<col |", arr("align"), Match.CONTAINS, 5);
         assertItems("<col |", arr("jindra"), Match.DOES_NOT_CONTAIN);
         assertItems("<col a|", arr("align"), Match.CONTAINS, 5);
     }
 
-    public void testCompleteTagAttributes() throws BadLocationException {
+    public void testCompleteTagAttributes() throws BadLocationException, ParseException {
         assertCompletedText("<col |", "align", "<col align=\"|\"");
         assertCompletedText("<col a|", "align", "<col align=\"|\"");
     }
 
-    public void testTagAttributeValues() throws BadLocationException {
+    public void testTagAttributeValues() throws BadLocationException, ParseException {
         assertItems("<col align=\"|\"", arr("center"), Match.CONTAINS, 12);
         //           01234567890 12
         assertItems("<col align=\"ce|\"", arr("center"), Match.CONTAINS, 12);
         assertItems("<col align=\"center|\"", arr("center"), Match.EXACT, 12);
     }
 
-    public void testCompleteTagAttributeValues() throws BadLocationException {
+    public void testCompleteTagAttributeValues() throws BadLocationException, ParseException {
         assertCompletedText("<col align=\"|\"", "center", "<col align=\"center|\"");
         assertCompletedText("<col align=\"ce|\"", "center", "<col align=\"center|\"");
 
@@ -162,7 +220,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertCompletedText("<col align=ri|", "right", "<col align=right|");
     }
 
-    public void testCharacterReferences() throws BadLocationException {
+    public void testCharacterReferences() throws BadLocationException, ParseException {
         assertItems("&|", arr("amp"), Match.CONTAINS, 1);
         assertItems("&a|", arr("amp"), Match.CONTAINS, 1);
         assertItems("&amp|", arr("amp"), Match.EXACT, 1);
@@ -171,13 +229,13 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertCompletedText("&am|", "amp", "&amp;|");
     }
 
-    public void testBooleanAttributes() throws BadLocationException {
+    public void testBooleanAttributes() throws BadLocationException, ParseException {
         assertItems("<input d|", arr("disabled"), Match.CONTAINS, 7);
         //           01234567
         assertCompletedText("<input d|", "disabled", "<input disabled|");
     }
 
-    public void testFileAttrValue() throws BadLocationException {
+    public void testFileAttrValue() throws BadLocationException, ParseException {
         String code = "<a href='|'";
         //             01234567890
         //we need a fileobject backed document here
@@ -202,7 +260,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 8);
     }
 
-     public void testFileAttrValueAllTags() throws BadLocationException {
+     public void testFileAttrValueAllTags() throws BadLocationException, ParseException {
         String code = "<link href='|'";
         //             01234567890
         //we need a fileobject backed document here
@@ -219,7 +277,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
      }
 
-    public void testFileAttrValueFolders() throws BadLocationException {
+    public void testFileAttrValueFolders() throws BadLocationException, ParseException {
         String code = "<a href='|'";
         //             01234567890
         //we need a fileobject backed document here
@@ -236,7 +294,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems(doc, arr("another.html"), Match.CONTAINS, 9);
     }
 
-    public void testFileAttrValueWithPrefix() throws BadLocationException {
+    public void testFileAttrValueWithPrefix() throws BadLocationException, ParseException {
         String code = "<a href='ima|'";
         //             01234567890
         //we need a fileobject backed document here
@@ -253,7 +311,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems(doc, arr("image.png"), Match.CONTAINS, 8);
     }
 
-    public void testFileAttrValueUppercase() throws BadLocationException {
+    public void testFileAttrValueUppercase() throws BadLocationException, ParseException {
         String code = "<A HREF='|'";
         //             01234567890
         //we need a fileobject backed document here
@@ -262,6 +320,19 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems(doc, arr("../", "another.html", "image.png"), Match.CONTAINS, 9);
     }
 
+    public void testCompleteAttributesInUnknownTag() throws BadLocationException, ParseException {
+        assertItems("<gggg |", arr(), Match.EMPTY);
+        assertItems("<gggg hhh=|", arr(), Match.EMPTY);
+        assertItems("<gggg hhh='|", arr(), Match.EMPTY);
+    }
+
+    public void testEndTagAutocompletion() throws BadLocationException, ParseException {
+        assertItems("<div>|", arr("div"), Match.EXACT, 5);
+        //test end tag ac for unknown tags
+        assertItems("<div><bla>|", arr(), Match.EMPTY, 0);
+    }
+
+
     //helper methods ------------
 
     //test HTML 4.01
@@ -269,15 +340,15 @@ public class HtmlCompletionQueryTest extends TestBase {
         return "-//W3C//DTD HTML 4.01 Transitional//EN";
     }
 
-    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws BadLocationException {
+    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws BadLocationException, ParseException {
         assertItems(documentText, expectedItemsNames, type, -1);
     }
 
-    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException {
+    private void assertItems(String documentText, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         assertItems(getDocument(documentText), expectedItemsNames, type, expectedAnchor);
     }
 
-    private void assertItems(Document doc, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException {
+    private void assertItems(Document doc, final String[] expectedItemsNames, final Match type, int expectedAnchor) throws BadLocationException, ParseException {
         String content = doc.getText(0, doc.getLength());
 
         final int pipeOffset = content.indexOf("|");
@@ -286,12 +357,9 @@ public class HtmlCompletionQueryTest extends TestBase {
         //remove the pipe
         doc.remove(pipeOffset, 1);
 
-        HtmlCompletionQuery query = new HtmlCompletionQuery();
+        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
-
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
 
         DTD dtd = Registry.getDTD(getPublicID(), null);
         assertNotNull(dtd);
@@ -299,14 +367,28 @@ public class HtmlCompletionQueryTest extends TestBase {
             assertEquals(getPublicID(), dtd.getIdentifier());
         }
 
-        HtmlCompletionQuery.CompletionResult result = query.query(doc, pipeOffset, sup, dtd);
-        assertNotNull(result);
+        final HtmlParserResult[] result = new HtmlParserResult[1];
+        Source source = Source.create(doc);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                result[0] = (HtmlParserResult)resultIterator.getParserResult();
+            }
+        });
 
-        List<CompletionItem> items = result.getItems();
+        assertNotNull(result[0]);
+
+        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
+        if(expectedItemsNames.length == 0 && completionResult == null) {
+            //result may be null if we do not expect any result, nothing to test then
+            return ;
+        }
+
+        Collection<HtmlCompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
         if(expectedAnchor > 0) {
-            assertEquals(expectedAnchor, result.getAnchor());
+            assertEquals(expectedAnchor, completionResult.getAnchor());
         }
 
         try {
@@ -320,7 +402,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     }
 
-    private void assertCompletedText(String documentText, String itemToCompleteName, String expectedText) throws BadLocationException {
+    private void assertCompletedText(String documentText, String itemToCompleteName, String expectedText) throws BadLocationException, ParseException {
         StringBuffer content = new StringBuffer(documentText);
         final int pipeOffset = content.indexOf("|");
         assert pipeOffset >= 0 : "define caret position by pipe character in the document source!";
@@ -335,13 +417,10 @@ public class HtmlCompletionQueryTest extends TestBase {
 
         Document doc = getDocument(content.toString());
 
-        HtmlCompletionQuery query = new HtmlCompletionQuery();
+        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
         component.getCaret().setDot(pipeOffset);
-
-        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
-        assertNotNull(sup);
 
         DTD dtd = Registry.getDTD(getPublicID(), null);
         assertNotNull(dtd);
@@ -349,21 +428,31 @@ public class HtmlCompletionQueryTest extends TestBase {
             assertEquals(getPublicID(), dtd.getIdentifier());
         }
 
-        HtmlCompletionQuery.CompletionResult result = query.query(doc, pipeOffset, sup, dtd);
+         final HtmlParserResult[] result = new HtmlParserResult[1];
+        Source source = Source.create(doc);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                result[0] = (HtmlParserResult)resultIterator.getParserResult();
+            }
+        });
+
+        assertNotNull(result[0]);
+
+        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
+
         assertNotNull(result);
-        List<CompletionItem> items = result.getItems();
+        Collection<HtmlCompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
-        CompletionItem item = null;
-        for (CompletionItem ci : items) {
-            if (ci instanceof HtmlCompletionItem) {
-                HtmlCompletionItem htmlci = (HtmlCompletionItem) ci;
-                if(htmlci.getItemText().equals(itemToCompleteName)) {
-                    item = ci; //found
-                    break;
-                }
+        HtmlCompletionItem item = null;
+        for (HtmlCompletionItem htmlci : items) {
+            if (htmlci.getItemText().equals(itemToCompleteName)) {
+                item = htmlci; //found
+                break;
             }
         }
+
 
         assertNotNull(item);
         assertTrue(item instanceof HtmlCompletionItem);
@@ -375,7 +464,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     }
 
-    private void assertCompletionItemNames(String[] expected, List<CompletionItem> ccresult, Match type) {
+    private void assertCompletionItemNames(String[] expected, Collection<HtmlCompletionItem> ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionItem ccp : ccresult) {
             //check only html items
@@ -407,30 +496,33 @@ public class HtmlCompletionQueryTest extends TestBase {
         return args;
     }
 
-    private void testCompletionResults(String testFile) throws IOException, BadLocationException {
+    private void testCompletionResults(String testFile) throws IOException, BadLocationException, ParseException {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
-        HtmlCompletionQuery query = new HtmlCompletionQuery();
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
 
         StringBuffer output = new StringBuffer();
         for (int i = 0; i < doc.getLength(); i++) {
-            HtmlCompletionQuery.CompletionResult result = query.query(component, i);
+            HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, i).query();
             if (result != null) {
-                List<CompletionItem> items = result.getItems();
+                Collection<HtmlCompletionItem> items = result.getItems();
                 output.append(i + ":");
                 output.append('[');
-                Iterator<CompletionItem> itr = items.iterator();
+                List<HtmlCompletionItem> itemsList = new ArrayList<HtmlCompletionItem>(items);
+                //sort the collection according to the sort text.
+                //normally the html completion infrastr. does this
+                Collections.sort(itemsList, new Comparator<HtmlCompletionItem>() {
+                    public int compare(HtmlCompletionItem o1, HtmlCompletionItem o2) {
+                        return o1.getSortText().toString().compareTo(o2.getSortText().toString());
+                    }
+                });
+                Iterator<HtmlCompletionItem> itr = itemsList.iterator();
                 while (itr.hasNext()) {
-                    CompletionItem ci = itr.next();
-                    if (ci instanceof HtmlCompletionItem) {
-                        //test only html completion items
-                        HtmlCompletionItem htmlci = (HtmlCompletionItem) ci;
-                        output.append(htmlci.getItemText());
-                        if (itr.hasNext()) {
-                            output.append(',');
-                        }
+                    HtmlCompletionItem htmlci = itr.next();
+                    output.append(htmlci.getItemText());
+                    if (itr.hasNext()) {
+                        output.append(',');
                     }
                 }
                 output.append(']');

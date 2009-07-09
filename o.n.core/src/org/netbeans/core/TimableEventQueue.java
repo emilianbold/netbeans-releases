@@ -40,33 +40,27 @@
 package org.netbeans.core;
 
 import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.startup.Main;
-import org.openide.awt.Notification;
-import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
@@ -80,19 +74,19 @@ implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
     private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
     private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 100); // NOI18N
-    private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 1000); // NOI18N
+    private static final int REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", 3000); // NOI18N
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
+    private static final int CLEAR = Integer.getInteger("org.netbeans.core.TimeableEventQueue.clear", 60000); // NOI18N
 
     private final RequestProcessor.Task TIMEOUT;
     private volatile long ignoreTill;
     private volatile long start;
     private volatile ActionListener stoppable;
-    private final Queue<NotifySnapshot> pending;
+    private volatile boolean isWaitCursor;
 
     public TimableEventQueue() {
         TIMEOUT = RP.create(this);
         TIMEOUT.setPriority(Thread.MIN_PRIORITY);
-        pending = new LinkedList<NotifySnapshot>();
     }
 
     static void initialize() {
@@ -128,10 +122,13 @@ implements Runnable {
 
     private void done() {
         TIMEOUT.cancel();
+        LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
+        long r = isWaitCursor ? REPORT * 10 : REPORT;
+        isWaitCursor = false;
         long time = System.currentTimeMillis() - start;
         if (time > QUANTUM) {
             LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
-            if (time > REPORT) {
+            if (time > r) {
                 LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
                 ActionListener ss = stoppable;
                 if (ss != null) {
@@ -140,10 +137,8 @@ implements Runnable {
                         DataOutputStream dos = new DataOutputStream(out);
                         ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
                         dos.close();
-                        pending.add(new NotifySnapshot(out.toByteArray(), time));
-                        if (pending.size() > 5) {
-                            pending.remove().clear();
-                        }
+                        Object[] params = new Object[]{out.toByteArray(), time};
+                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
                         stoppable = null;
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
@@ -180,6 +175,7 @@ implements Runnable {
             selfSampler.run();
             stoppable = (ActionListener)selfSampler;
         }
+        isWaitCursor |= isWaitCursor();
     }
 
     private static Object createSelfSampler() {
@@ -192,6 +188,29 @@ implements Runnable {
             return null;
         }
         return a.getValue("logger-awt"); // NOI18N
+    }
+
+    private static boolean isWaitCursor() {
+        Component focus = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focus != null) {
+            if (focus.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                LOG.finer("wait cursor on focus owner"); // NOI18N
+                return true;
+            }
+            Window w = SwingUtilities.windowForComponent(focus);
+            if (w != null && w.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                LOG.finer("wait cursor on window"); // NOI18N
+                return true;
+            }
+        }
+        for (Frame f : Frame.getFrames()) {
+            if (f.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                LOG.finer("wait cursor on frame"); // NOI18N
+                return true;
+            }
+        }
+        LOG.finest("no wait cursor"); // NOI18N
+        return false;
     }
 
         /*
@@ -274,40 +293,4 @@ implements Runnable {
         
     }
     */
-
-    private static final class NotifySnapshot implements ActionListener {
-        private final byte[] content;
-        private final Notification note;
-
-        NotifySnapshot(byte[] arr, long time) {
-            content = arr;
-            note = NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(NotifySnapshot.class, "TEQ_LowPerformance"),
-                ImageUtilities.loadImageIcon("org/netbeans/core/resources/vilik.png", true),
-                NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", time, time / 1000),
-                this, NotificationDisplayer.Priority.LOW
-            );
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            try {
-                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("slow.nps");
-                OutputStream os = fo.getOutputStream();
-                os.write(content);
-                os.close();
-                final Node obj = DataObject.find(fo).getNodeDelegate();
-                Action a = obj.getPreferredAction();
-                if (a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(obj));
-                }
-                a.actionPerformed(e);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        public void clear() {
-            note.clear();
-        }
-    }
 }

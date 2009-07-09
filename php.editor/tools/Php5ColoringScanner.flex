@@ -213,7 +213,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
 
      protected boolean isHeredocState(int state){
-    	    	return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC;
+    	    	return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC || state == ST_PHP_NOWDOC;
     }
     
     public int[] getParamenters(){
@@ -476,6 +476,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_ECHO;
 }
 
+<ST_PHP_IN_SCRIPTING>"goto" {
+ 	return PHPTokenId.PHP_GOTO;
+}
+
 <ST_PHP_IN_SCRIPTING>"print" {
     return PHPTokenId.PHP_PRINT;
 }
@@ -517,6 +521,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     }
 }
 
+<ST_PHP_IN_SCRIPTING,ST_PHP_LOOKING_FOR_PROPERTY>{WHITESPACE}+ {
+	return PHPTokenId.WHITESPACE;
+}
+
 <ST_PHP_LOOKING_FOR_PROPERTY>"->" {
 	return PHPTokenId.PHP_OBJECT_OPERATOR;
 }
@@ -535,6 +543,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM;
 }
 
+<ST_PHP_IN_SCRIPTING>"\\" {
+	return PHPTokenId.PHP_NS_SEPARATOR;
+}
 <ST_PHP_IN_SCRIPTING>"new" {
     return PHPTokenId.PHP_NEW;
 }
@@ -597,6 +608,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING>"require_once" {
     return PHPTokenId.PHP_REQUIRE_ONCE;
+}
+
+<ST_PHP_IN_SCRIPTING>"namespace" {
+    return PHPTokenId.PHP_NAMESPACE;
 }
 
 <ST_PHP_IN_SCRIPTING>"use" {
@@ -748,6 +763,14 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP__FILE__;
 }
 
+<ST_PHP_IN_SCRIPTING>"__DIR__" {
+ 	return PHPTokenId.PHP__DIR__;
+}
+
+<ST_PHP_IN_SCRIPTING>"__NAMESPACE__" {
+	return PHPTokenId.PHP__NAMESPACE__;
+}
+
 <ST_PHP_IN_SCRIPTING>"$"{LABEL} {
     return PHPTokenId.PHP_VARIABLE;
 }
@@ -785,10 +808,6 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_VAR_OFFSET>{LABEL} {
     return  PHPTokenId.PHP_STRING;
-}
-
-<ST_PHP_IN_SCRIPTING>{WHITESPACE} {
-    return  PHPTokenId.WHITESPACE;
 }
 
 <ST_PHP_IN_SCRIPTING>([#]|"//") {

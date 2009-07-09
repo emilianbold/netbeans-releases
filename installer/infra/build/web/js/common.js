@@ -135,6 +135,15 @@ function get_language_location() {
     }
 }
 
+function is_suitable_location(lang_id, location) {
+    for(var i = 0; i < LANGUAGES.length; i++) {
+       if(lang_id == LANGUAGES[i].id) {
+           return LANGUAGES[i].location == location;
+       }
+    }
+    return false;
+}
+
 function get_language(option) {
     var variants = LANGUAGES;
     var resultLanguage = "";
@@ -275,7 +284,7 @@ function get_file_list(dir,lang_id) {
 	lst = new Array();
 	if(FILES.length > 0) {
             for (var i = 0; i < FILES.length; i++) {		
-		if(FILES[i].name.indexOf(dir)==0 && languageCompatible(FILES[i].locales, lang_id)) {
+		if(FILES[i].name.indexOf(dir)==0 && languageCompatible(FILES[i].locales, lang_id) && is_suitable_location(lang_id, FILES[i].location)) {
 			var stripped = FILES[i].name.substring(dir.length, FILES[i].name.length);
 			if(stripped.indexOf('/')==-1) {
 			    lst[lst.length] = stripped;
@@ -388,7 +397,7 @@ function get_file_url(filename, lang_id) {
 
 
 function get_file_bouncer_url(platform, option, language) {
-    var url = BOUNCER_URL;
+    var url = get_build_info(isMainLanguage(language)).BOUNCER_URL;
     url += "?" + "product=" + get_build_info(isMainLanguage(language)).BOUNCER_PRODUCT_PREFIX;
     if(option != "all") {
         url += "-" + option;
@@ -424,12 +433,14 @@ function add_file(name, size, md5, locales) {
     FILES[index].size = size;
     FILES[index].md5  = md5;
     FILES[index].locales = locales.split(",");
+    FILES[index].location = currentLocation;
 }
 
-function load_files_information(name) {
-    load_page_js(name);
-    if(get_build_info(true).SHOW_ADDITIONAL_LANGUAGES == 1) {
-        load_page_js(name, "true");
+function load_files_information(additional) {
+    if(!additional) {
+        load_page_js("files.js", false);
+    } else if(get_build_info(true).SHOW_ADDITIONAL_LANGUAGES == 1) {
+        load_page_js("files.js", true);
     }
 }
 

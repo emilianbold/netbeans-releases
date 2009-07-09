@@ -395,8 +395,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge = new ContextKnowledge(
-                                index, root, method, astOffset, lexOffset, doc, RubyUtils.getFileObject(parserResult));
-                        RubyTypeInferencer inferencer = RubyTypeInferencer.normal(knowledge);
+                                index, root, method, astOffset, lexOffset, parserResult);
+                        RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
                         type = inferencer.inferType(lhs);
                     }
                 }
@@ -794,6 +794,9 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         String[] result = new String[2];
         
         Node root = AstUtilities.getRoot(info);
+        if (root == null) {
+            return result;
+        }
         AstPath path = new AstPath(root, astOffset);
         Iterator<Node> it = path.leafToRoot();
         Node prev = null;
@@ -1163,8 +1166,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
                     ContextKnowledge knowledge = new ContextKnowledge(
-                            index, root, method, astOffset, lexOffset, (BaseDocument) doc, RubyUtils.getFileObject(parserResult));
-                    RubyTypeInferencer inferencer = RubyTypeInferencer.normal(knowledge);
+                            index, root, method, astOffset, lexOffset, AstUtilities.getParseResult(parserResult));
+                    RubyTypeInferencer inferencer = RubyTypeInferencer.create(knowledge);
                     type = inferencer.inferType(lhs);
                 }
             }

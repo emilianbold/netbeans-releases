@@ -106,8 +106,15 @@ public class JDBCDriverDeployHelper {
             }
             if (!exists) {
                 for (DatabaseConnection databaseConnection : DatasourceHelper.findDatabaseConnections(datasource)) {
-                    String driverClass = databaseConnection.getDriverClass();
-                    JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
+                    JDBCDriver[] jdbcDrivers;
+                    JDBCDriver connDriver = databaseConnection.getJDBCDriver();
+                    if (connDriver != null) {
+                        jdbcDrivers = new JDBCDriver[] {connDriver};
+                    } else {
+                        // old fashioned way - fallback
+                        String driverClass = databaseConnection.getDriverClass();
+                        jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
+                    }
                     for (JDBCDriver jdbcDriver : jdbcDrivers) {
                         URL[] allUrls = jdbcDriver.getURLs();
                         for (int i = 0; i < allUrls.length; i++) {

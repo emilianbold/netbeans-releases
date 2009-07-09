@@ -130,7 +130,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         BaseDocument doc = getBaseDocument(testSourceFile);
 
         // TODO: find more elegant solution than setting buffer explicitely
-        FileBufferDoc buffer = new FileBufferDoc(testSourceFile, doc);
+        FileBufferDoc buffer = new FileBufferDoc(testSourceFile.getAbsolutePath(), doc);
         ((FileImpl) csmFile).setBuffer(buffer);
 
         Collection<CsmErrorInfo> errorInfos;

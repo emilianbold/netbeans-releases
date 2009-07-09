@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.io.Writer;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -88,8 +89,8 @@ public class MakeAction extends MakeBaseAction {
      *
      *  @param node A single MakefileDataNode(should have a {@link MakeExecSupport}
      */
-    public static void execute(Node node, String target, ExecutionListener listener, Writer outputListener, Project project) {
-        (SystemAction.get(MakeAction.class)).performAction(node, target, listener, outputListener, project);
+    public static void execute(Node node, String target, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
+        (SystemAction.get(MakeAction.class)).performAction(node, target, listener, outputListener, project, additionalEnvironment);
     }
 
     @Override

@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.ruby.platform.gems;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -72,6 +75,13 @@ public final class Gem implements Comparable<Gem> {
      */
     public String getInstalledVersionsAsString() {
         return installedVersions;
+    }
+
+    List<String> getInstalledVersions() {
+        if (installedVersions == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(installedVersions.trim().split(","));//NOI18N
     }
 
     String getLatestInstalled() {

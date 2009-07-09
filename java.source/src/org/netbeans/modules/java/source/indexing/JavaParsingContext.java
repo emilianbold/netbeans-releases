@@ -41,17 +41,20 @@ package org.netbeans.modules.java.source.indexing;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.parsing.spi.indexing.Context;
 
 class JavaParsingContext {
 
@@ -61,22 +64,33 @@ class JavaParsingContext {
     final Charset encoding;
     final ClassIndexImpl uq;
     final SourceAnalyser sa;
+    final CheckSums checkSums;
 
-    public JavaParsingContext(final FileObject root) throws IOException {
-        cpInfo = ClasspathInfo.create(root);
-        sourceLevel = SourceLevelQuery.getSourceLevel(root);
-        filter = JavaFileFilterQuery.getFilter(root);
-        encoding = FileEncodingQuery.getEncoding(root);
-        uq = ClassIndexManager.getDefault().createUsagesQuery(root.getURL(), true);
+    public JavaParsingContext(final Context context) throws IOException, NoSuchAlgorithmException {
+        cpInfo = ClasspathInfo.create(context.getRoot());
+        sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+        filter = JavaFileFilterQuery.getFilter(context.getRoot());
+        encoding = FileEncodingQuery.getEncoding(context.getRoot());
+        uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
+        checkSums = CheckSums.forContext(context);
     }
 
-    public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath, boolean checkForModifications) throws IOException {
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !checkForModifications, false, false);
-        sourceLevel = SourceLevelQuery.getSourceLevel(root);
-        filter = JavaFileFilterQuery.getFilter(root);
-        encoding = FileEncodingQuery.getEncoding(root);
-        uq = ClassIndexManager.getDefault().createUsagesQuery(root.getURL(), true);
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
+            final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !context.checkForEditorModifications(), context.isSourceForBinaryRootIndexing(), !virtualSources.isEmpty());
+        registerVirtualSources(cpInfo, virtualSources);
+        sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+        filter = JavaFileFilterQuery.getFilter(context.getRoot());
+        encoding = FileEncodingQuery.getEncoding(context.getRoot());
+        uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;
+        checkSums = CheckSums.forContext(context);
+    }
+
+    private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
+        for (CompileTuple compileTuple : virtualSources) {
+            ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, compileTuple.jfo);
+        }
     }
 }

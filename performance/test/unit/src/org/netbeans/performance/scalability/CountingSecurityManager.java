@@ -46,8 +46,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Permission;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
 import org.openide.util.Exceptions;
@@ -101,7 +103,7 @@ public final class CountingSecurityManager extends SecurityManager {
             throw new AssertionError("Too small expectations:\n" + msg + "\n" + msgs + " exp: " + expectedCnt + " was: " + cnt);
         }
         if (expectedCnt < cnt) {
-            throw new AssertionError(msg + "\n" + msgs + " exp: " + expectedCnt + " was: " + cnt);
+            throw new AssertionError(msg + " exp: " + expectedCnt + " was: " + cnt + "\n" + msgs);
         }
         cnt = 0;
         msgs = new StringWriter();
@@ -163,13 +165,13 @@ public final class CountingSecurityManager extends SecurityManager {
     private static void setAllowedReplace(boolean aAllowedReplace) {
         System.setProperty("CountingSecurityManager.allowReplace", String.valueOf(aAllowedReplace));
     }
-    
+
     /**
      * Collects data and print them when JVM shutting down.
      * 
      * @author Pavel Flaška
      */
-    private static class Statistics {
+    private static class Statistics implements Comparator<Map.Entry<String,Integer>> {
 
         private static final boolean streamLog = false;
         private static final boolean dirLog = true;
@@ -231,11 +233,27 @@ public final class CountingSecurityManager extends SecurityManager {
             Statistics.getDefault().stacks.put(s, i);
         }
 
+        public int compare(Map.Entry<String,Integer> one, Map.Entry<String,Integer> two) {
+            int r = one.getValue().compareTo(two.getValue());
+            if (r == 0) {
+                return one.getKey().compareTo(two.getKey());
+            } else {
+                return r;
+            }
+        }
+
         ////////////////////////////////////////////////////////////////////////////
         // private members
         void print(PrintWriter out) {
             synchronized (isDirInvoc) {
-                for (String s : isDirInvoc.keySet()) {
+                TreeSet<Map.Entry<String,Integer>> sort = new TreeSet<Map.Entry<String,Integer>>(Collections.reverseOrder(this));
+                sort.addAll(isDirInvoc.entrySet());
+                int cnt = 0;
+                for (Map.Entry<String, Integer> e : sort) {
+                    if (cnt++ > 100) {
+                        break;
+                    }
+                    String s = e.getKey();
                     out.printf("%4d", isDirInvoc.get(s));
                     out.println("; " + s);
                 }
@@ -251,7 +269,9 @@ public final class CountingSecurityManager extends SecurityManager {
                     int value = stacks.get(s);
                     if (value > min) {
                         out.printf("count %5d; Stack:\n", value);
-                        out.println(s);
+                        for (String line : s.split("\n")) {
+                            out.printf("    %s\n", line);
+                        }
                     }
                 }
             }

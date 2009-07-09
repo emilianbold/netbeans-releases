@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
+import java.util.List;
+
+import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
@@ -58,30 +61,28 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * elements are intended to allow component developers to
  * more completely describe their components to tools and users.
  * These elements have no required runtime semantics.
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
-public interface Converter  extends JSFConfigComponent, DescriptionGroup {
-    /**
-     *
-     */
-    public static final String CONVERTER_CLASS = JSFConfigQNames.CONVERTER_CLASS.getLocalName();
-    /**
-     *
-     */
-    public static final String CONVERTER_FOR_CLASS = JSFConfigQNames.CONVERTER_FOR_CLASS.getLocalName();
-    /**
-     *
-     */
-    public static final String CONVERTER_ID = JSFConfigQNames.CONVERTER_ID.getLocalName();
+public interface Converter  extends FacesConfigElement, DescriptionGroup, 
+    FacesConverter, IdentifiableElement , AttributeContainer, PropertyContainer
+{
+
+    String CONVERTER_CLASS = JSFConfigQNames.CONVERTER_CLASS.getLocalName();
     
+    String CONVERTER_FOR_CLASS = JSFConfigQNames.CONVERTER_FOR_CLASS.getLocalName();
     
-    String getConverterClass();
+    String CONVERTER_ID = JSFConfigQNames.CONVERTER_ID.getLocalName();
+    
+    String CONVERTER_EXTENSION = JSFConfigQNames.CONVERTER_EXTENSION.getLocalName();
+    
     void setConverterClass(String value);
     
-    String getConverterForClass();
     void setConverterForClass(String value);
     
-    String getConverterId();
     void setConverterId(String value);
     
+    List<ConverterExtension> getConverterExtensions();
+    void addConverterExtension( ConverterExtension extension );
+    void addConverterExtension( int index, ConverterExtension extension );
+    void removeConverterExtension( ConverterExtension extension );
 }

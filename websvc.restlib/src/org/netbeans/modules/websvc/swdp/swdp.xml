@@ -49,12 +49,16 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rest/jersey.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jackson-lgpl-0.9.4.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-client.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-core.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-json.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey-server.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/http.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jettison-1.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/asm-3.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/grizzly-servlet-webserver-1.7.3.2.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jersey-spring.jar!/</resource>

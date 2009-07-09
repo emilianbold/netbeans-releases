@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -72,7 +73,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class APTUtils {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N
-    
+
     static {
         // command line param has priority for logging
         String level = System.getProperty("org.netbeans.modules.cnd.apt.level"); // NOI18N
@@ -92,7 +93,7 @@ public class APTUtils {
             }
         }
     }
-    
+
     /** Creates a new instance of APTUtils */
     private APTUtils() {
     }
@@ -106,6 +107,19 @@ public class APTUtils {
         h ^= (h >>>  6);
         h += (h <<   2) + (h << 14);
         return h ^ (h >>> 16);
+    }
+
+    public static int hash(List<?> list) {
+        if (list == null) {
+            return 0;
+        }
+        int hashCode = 1;
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            Object obj = list.get(i);
+            hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
+        }
+        return hash(hashCode);
     }
 
     public static boolean equalArrayLists(List<?> l1, List<?> l2) {
@@ -253,11 +267,11 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static CharSequence includes2String(List<? extends CharSequence> includePaths) {
+    public static CharSequence includes2String(List<IncludeDirEntry> includePaths) {
         StringBuilder retValue = new StringBuilder();
-        for (Iterator<? extends CharSequence> it = includePaths.iterator(); it.hasNext();) {
-            CharSequence path = it.next();
-            retValue.append(path);
+        for (Iterator<IncludeDirEntry> it = includePaths.iterator(); it.hasNext();) {
+            IncludeDirEntry path = it.next();
+            retValue.append(path.getAsSharedCharSequence());
             if (it.hasNext()) {
                 retValue.append('\n'); // NOI18N
             }
@@ -321,21 +335,6 @@ public class APTUtils {
         return token != null && token.getTextID().equals(VA_ARGS_TOKEN.getTextID());
     }
     
-    public static boolean isStartCondition(Token token) {
-        return isStartCondition(token.getType());
-    }
-    
-    public static boolean isStartCondition(int/*APTTokenTypes*/ ttype) {
-        switch (ttype) {
-            case APTTokenTypes.IFDEF:
-            case APTTokenTypes.IFNDEF:
-            case APTTokenTypes.IF:
-                return true;
-            default:
-                return false;
-        }
-    }
-    
     public static boolean isStartConditionNode(int/*APT.Type*/ ntype) {
         switch (ntype) {
             case APT.Type.IFDEF:
@@ -374,20 +373,12 @@ public class APTUtils {
                 return false;
         }
     }
-    
-    public static boolean isConditionsBlockToken(Token token) {
-        assert (token != null);
-        return isConditionsBlockToken(token.getType());
-    }
-    
-    public static boolean isConditionsBlockToken(int/*APTTokenTypes*/ ttype) {
-        switch (ttype) {
-            case APTTokenTypes.IFDEF:
-            case APTTokenTypes.IFNDEF:
-            case APTTokenTypes.IF:
-            case APTTokenTypes.ELIF:
-            case APTTokenTypes.ELSE:
-            case APTTokenTypes.ENDIF:
+
+    public static boolean isEndConditionNode(int/*APT.Type*/ ntype) {
+        switch (ntype) {
+            case APT.Type.ELIF:
+            case APT.Type.ELSE:
+            case APT.Type.ENDIF:
                 return true;
             default:
                 return false;

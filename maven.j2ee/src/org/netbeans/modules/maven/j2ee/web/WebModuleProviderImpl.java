@@ -81,12 +81,14 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     private ModuleChangeReporter moduleChange;
     
     private String serverInstanceID;
+    private final CopyOnSave copyOnSave;
 
     
     public WebModuleProviderImpl(Project proj) {
         project = proj;
         implementation = new WebModuleImpl(project, this);
         moduleChange = new ModuleChangeReporterImpl();
+        copyOnSave = new CopyOnSave(proj, this);
     }
     
     public WebModule findWebModule(FileObject fileObject) {
@@ -133,8 +135,13 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
 
     @Override
     public DeployOnSaveSupport getDeployOnSaveSupport() {
-        return super.getDeployOnSaveSupport();
+        return copyOnSave;
     }
+    
+    public CopyOnSave getCopyOnSaveSupport() {
+        return copyOnSave;
+    }
+
 
     @Override
     public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
@@ -217,7 +224,7 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
         }
         return toRet.toArray(new org.openide.filesystems.FileObject[toRet.size()]);
     }
-    
+
 
     // TODO what is this actually good for?
     private class ModuleChangeReporterImpl implements ModuleChangeReporter, EjbChangeDescriptor {

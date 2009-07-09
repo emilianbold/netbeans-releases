@@ -39,12 +39,13 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.apache.tools.ant.module.run.StandardLogger;
 import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.Redirector;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -57,8 +58,10 @@ public class ForkedJavaOverride extends Java {
     private static final RequestProcessor PROCESSOR = new RequestProcessor(ForkedJavaOverride.class.getName(), Integer.MAX_VALUE);
 
     // should be consistent with java.project.JavaAntLogger.STACK_TRACE
+    private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
     private static final Pattern STACK_TRACE = Pattern.compile(
-    "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
+            "((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+            "[(](?:(" + JIDENT + "[.]java):([0-9]+)|Unknown Source)[)]"); // NOI18N
 
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);
@@ -67,17 +70,37 @@ public class ForkedJavaOverride extends Java {
 
     @Override
     public void setFork(boolean fork) {
-        // #47465: ignore! Does not work to be set to false.
+        // #47645: ignore! Does not work to be set to false.
     }
 
-    // #121512: NbRedirector does not work with custom input
+    private void useStandardRedirector() { // #121512, #168153
+        if (redirector instanceof NbRedirector) {
+            redirector = new Redirector(this);
+        }
+    }
     public @Override void setInput(File input) {
-        redirector = new Redirector(this);
+        useStandardRedirector();
         super.setInput(input);
     }
     public @Override void setInputString(String inputString) {
-        redirector = new Redirector(this);
+        useStandardRedirector();
         super.setInputString(inputString);
+    }
+    public @Override void setOutput(File out) {
+        useStandardRedirector();
+        super.setOutput(out);
+    }
+    public @Override void setOutputproperty(String outputProp) {
+        useStandardRedirector();
+        super.setOutputproperty(outputProp);
+    }
+    public @Override void setError(File error) {
+        useStandardRedirector();
+        super.setError(error);
+    }
+    public @Override void setErrorProperty(String errorProperty) {
+        useStandardRedirector();
+        super.setErrorProperty(errorProperty);
     }
 
     private class NbRedirector extends Redirector {
@@ -229,8 +252,13 @@ public class ForkedJavaOverride extends Java {
                                         str = str.substring(0, len - 1);
                                     }
                                     // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
-                                    if (!STACK_TRACE.matcher(str).matches() && !org.apache.tools.ant.module.run.StandardLogger.HYPERLINK.matcher(str).matches()) {
-                                        ow.println(str);
+                                    if (!STACK_TRACE.matcher(str).find()) {
+                                        OutputListener hyperlink = StandardLogger.findHyperlink(str, null, null);
+                                        if (hyperlink != null) {
+                                            ow.println(str, hyperlink);
+                                        } else {
+                                            ow.println(str);
+                                        }
                                     }
                                     log(str, logLevel);
                                     currentLine.reset();

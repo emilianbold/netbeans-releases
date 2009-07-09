@@ -50,10 +50,15 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -69,12 +74,19 @@ public class JSFUtils {
     // the names of bundled jsf libraries
     public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
     public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
+    public static String DEFAULT_JSF_2_0_NAME = "jsf20";    //NOI18N
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
     
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
+    public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.view.Location"; //NOI18N
     public static final String MYFACES_SPAECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
+
+    //constants for web.xml
+    protected static final String FACELETS_SKIPCOMMNETS = "facelets.SKIP_COMMENTS";
+    protected static final String FACELETS_DEVELOPMENT = "facelets.DEVELOPMENT";
+    protected static final String FACELETS_DEFAULT_SUFFIX = "javax.faces.DEFAULT_SUFFIX";
     
     /** This method finds out, whether the input file is a folder that contains
      * a jsf implementation, which < = max version. It looks for lib folder and in this lib looks 
@@ -159,6 +171,44 @@ public class JSFUtils {
         }
         
         return result;
+    }
+
+    /** Find the value of the facelets.DEVELOPMENT context parameter in the deployment descriptor.
+     */
+    public static boolean debugFacelets(FileObject dd) {
+        boolean value = false;  // the default value of the facelets.DEVELOPMENT
+        if (dd != null){
+            try{
+                WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
+                InitParam param = null;
+                if (webApp != null)
+                    param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "facelets.DEVELOPMENT"); //NOI18N
+                if (param != null)
+                    value =   "true".equals(param.getParamValue().trim()); //NOI18N
+            } catch (java.io.IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+        return value;
+    }
+
+    /** Find the value of the facelets.SKIP_COMMENTS context parameter in the deployment descriptor.
+     */
+    public static boolean skipCommnets(FileObject dd) {
+        boolean value = false;  // the default value of the facelets.SKIP_COMMENTS
+        if (dd != null){
+            try{
+                WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
+                InitParam param = null;
+                if (webApp != null)
+                    param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "facelets.SKIP_COMMENTS"); //NOI18N
+                if (param != null)
+                    value =   "true".equals(param.getParamValue().trim()); //NOI18N
+            } catch (java.io.IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+        return value;
     }
   
 }

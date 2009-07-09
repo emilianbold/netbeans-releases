@@ -66,11 +66,11 @@ class ToolbarConstraints {
 
     private boolean visible;
 
-    private final boolean dragable;
+    private final boolean draggable;
 
-    public ToolbarConstraints( String name, Align align, boolean visible, boolean dragable ) {
+    public ToolbarConstraints( String name, Align align, boolean visible, boolean draggable ) {
         this.name = name;
-        this.dragable = dragable;
+        this.draggable = draggable;
         this.align = align;
         this.visible = visible;
     }
@@ -83,8 +83,8 @@ class ToolbarConstraints {
         this.align = align;
     }
 
-    public boolean isDragable() {
-        return dragable;
+    public boolean isDraggable() {
+        return draggable;
     }
 
     public boolean isVisible() {

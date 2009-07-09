@@ -87,6 +87,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.earproject.EarProject;
@@ -304,8 +305,8 @@ public final class EarProjectProperties {
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
-                projectProperties.getProperty(J2EE_PLATFORM),
-                J2eeModule.EAR);
+                Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM)),
+                J2eeModule.Type.EAR);
         MAIN_CLASS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_MAIN_CLASS);
         ARUGMENTS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_ARGS);
         VM_OPTIONS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_JVM_OPTIONS);
@@ -622,9 +623,9 @@ public final class EarProjectProperties {
                     return null;
                 }
                 mod = (Module) dd.createBean(Application.MODULE);
-                if (jm.getModuleType() == J2eeModule.EJB) {
+                if (J2eeModule.Type.EJB.equals(jm.getType())) {
                     mod.setEjb(path); // NOI18N
-                } else if (jm.getModuleType() == J2eeModule.WAR) {
+                } else if (J2eeModule.Type.WAR.equals(jm.getType())) {
                     Web w = mod.newWeb(); // createBean("Web");
                     w.setWebUri(path);
                     FileObject tmp = aa.getScriptFile();
@@ -648,9 +649,9 @@ public final class EarProjectProperties {
                     }
                     w.setContextRoot(contextPath);
                     mod.setWeb(w);
-                } else if (jm.getModuleType() == J2eeModule.CONN) {
+                } else if (J2eeModule.Type.RAR.equals(jm.getType())) {
                     mod.setConnector(path);
-                } else if (jm.getModuleType() == J2eeModule.CLIENT) {
+                } else if (J2eeModule.Type.CAR.equals(jm.getType())) {
                     mod.setJava(path);
                 }
             }
@@ -842,11 +843,11 @@ public final class EarProjectProperties {
      * Acquires modules (in the form of projects) from "JAVA EE Modules" not from the deployment descriptor (application.xml).
      * <p>
      * The reason is that for JAVA EE 5 the deployment descriptor is not compulsory.
-     * @param moduleType the type of module, see {@link J2eeModule J2eeModule constants}. 
+     * @param moduleType the type of module, see {@link J2eeModule.Type J2eeModule constants}.
      *                   If it is <code>null</code> then all modules are returned.
      * @return list of EAR project subprojects.
      */
-    static List<Project> getApplicationSubprojects(List<ClassPathSupport.Item> items, Object moduleType) {
+    static List<Project> getApplicationSubprojects(List<ClassPathSupport.Item> items, J2eeModule.Type moduleType) {
         List<Project> projects = new ArrayList<Project>(items.size());
         for (ClassPathSupport.Item item : items) {
             if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT || item.getArtifact() == null) {
@@ -859,7 +860,7 @@ public final class EarProjectProperties {
             }
             if (moduleType == null) {
                 projects.add(vcpiProject);
-            } else if (moduleType.equals(jmp.getJ2eeModule().getModuleType())) {
+            } else if (moduleType.equals(jmp.getJ2eeModule().getType())) {
                 projects.add(vcpiProject);
             }
         }
@@ -954,7 +955,7 @@ public final class EarProjectProperties {
     private static void setAppClientPrivateProperties(final J2eePlatform j2eePlatform,
             final String serverInstanceID, final EditableProperties ep) {
         // XXX rather hotfix for #75518. Get rid of it with fixing or #75574
-        if (!j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.CLIENT)) {
+        if (!j2eePlatform.getSupportedTypes().contains(J2eeModule.Type.CAR)) {
             return;
         }
         String mainClass = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);
@@ -978,15 +979,28 @@ public final class EarProjectProperties {
         File asRoot = j2eePlatform.getPlatformRoots()[0];
         InstanceProperties ip = InstanceProperties.getInstanceProperties(serverInstanceID);
         //check if we have AS
-        if (ip != null && new File(asRoot, "lib/admin-cli.jar").exists()) { // NOI18N
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            if (exFile.exists()) {
-                ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-apps").getAbsolutePath()); // NOI18N
-            } else {
-                ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-apps").getAbsolutePath()); // NOI18N
-            }
+        if (ip != null) {
+            // Pre-v3
+            if (new File(asRoot, "lib/admin-cli.jar").exists()) {
+                File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
+                if (exFile.exists()) {
+                    // GF v1, v2
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
+                            new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-apps").getAbsolutePath()); // NOI18N
+                } else {
+                    // SJSAS 8.x
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM,
+                            new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-apps").getAbsolutePath()); // NOI18N
+                }
+             } else {
+                String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME,
+                        J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+                if (copyProperty != null) {
+                    ep.setProperty(APPCLIENT_WA_COPY_CLIENT_JAR_FROM, copyProperty);
+                } else {
+                    ep.remove(APPCLIENT_WA_COPY_CLIENT_JAR_FROM);
+                }
+             }
         } else {
             ep.remove(APPCLIENT_WA_COPY_CLIENT_JAR_FROM);
         }

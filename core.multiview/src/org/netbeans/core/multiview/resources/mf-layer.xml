@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
         <folder name="View">
             <file name="org-netbeans-core-multiview-EditorsAction.instance">
                 <attr name="position" intvalue="100"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
             </folder>
     </folder>

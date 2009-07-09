@@ -422,8 +422,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         ProjectBase base = (ProjectBase) project;
-        
-        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, false);
+
+        // create concurrent entry if absent
+        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
         StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler,cacheEntry);
         walker.visit();
         // we do not remember cache entry because it is stopped before end of file
@@ -843,11 +844,13 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         StringBuilder sb = new StringBuilder();
         TransformationTable tt = getMacroTable(doc);
         if(tt != null) {
-            sb.append("MacroTable: " + tt.toString()); // NOI18N
+            sb.append("MacroTable: "); // NOI18N
+            sb.append(tt.toString());
         }
         tt = getTransformationTable(doc);
         if(tt != null) {
-            sb.append("TransformationTable: " + tt.toString()); // NOI18N
+            sb.append("TransformationTable: "); // NOI18N
+            sb.append(tt.toString());
         }
         return sb.toString();
     }

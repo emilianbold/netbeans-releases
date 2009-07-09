@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,10 +49,13 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,13 +78,20 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project, boolean scheduleParsing) {
-        Set<CsmFile> topParents = project.getGraph().getTopParentFiles(fileImpl);
+        ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
+        Set<CsmFile> topParents = top.getCompilationUnits();
+        Set<CsmFile> parents = top.getParentFiles();
         if (topParents.size() > 0) {
             fileImpl.clearStateCache();
-            Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl);
-            for (CsmFile parent : coherence) {
-                if (!topParents.contains(parent)) {
-                    invalidateFileAndPreprocState(project, parent);
+            Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFiles();
+            for (CsmFile file : coherence) {
+                if (topParents.contains(file)) {
+                    ((FileImpl)file).clearStateCache();
+                } else if (parents.contains(file)) {
+                    ((FileImpl)file).clearStateCache();
+                    invalidateFileAndPreprocState(project, file);
+                } else {
+                    invalidateFileAndPreprocState(project, file);
                 }
             }
             if (scheduleParsing) {
@@ -94,14 +105,17 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnEdit(List<FileImpl> toReparse, ProjectBase project, boolean scheduleParsing) {
-        Set<CsmFile> topParents = new HashSet<CsmFile>();
-        Set<CsmFile> coherence = new HashSet<CsmFile>();
+    static void reparseOnEdit(Collection<FileImpl> toReparse, ProjectBase project, boolean scheduleParsing) {
+        Set<CsmUID<CsmFile>> topParents = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> parents = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> coherence = new HashSet<CsmUID<CsmFile>>();
         for(FileImpl fileImpl: toReparse){
-            Set<CsmFile> parents = project.getGraph().getTopParentFiles(fileImpl);
-            if (parents.size()>0) {
-                topParents.addAll(project.getGraph().getTopParentFiles(fileImpl));
-                coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl));
+            ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
+            Set<CsmUID<CsmFile>> units = top.getCompilationUnitsUids();
+            if (units.size() > 0) {
+                topParents.addAll(units);
+                parents.addAll(top.getParentFilesUids());
+                coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
                     ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getBuffer().getFile()).getState(), ParserQueue.Position.HEAD);
@@ -109,14 +123,24 @@ public final class DeepReparsingUtils {
             }
         }
         if (topParents.size() > 0) {
-            for (CsmFile parent : coherence) {
-                if (!topParents.contains(parent)) {
-                    invalidateFileAndPreprocState(project, parent);
+            Set<CsmFile> topParentsImpl = new HashSet<CsmFile>();
+            for (CsmUID<CsmFile> file : coherence) {
+                FileImpl fileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
+                if (fileImpl != null) {
+                    if (topParents.contains(file)) {
+                        topParentsImpl.add(fileImpl);
+                        fileImpl.clearStateCache();
+                    } else if (parents.contains(file)){
+                        fileImpl.clearStateCache();
+                        invalidateFileAndPreprocState(project, fileImpl);
+                    } else {
+                        invalidateFileAndPreprocState(project, fileImpl);
+                    }
                 }
             }
             if (scheduleParsing) {
                 // coherence already invalidated, pass empty set
-                addToReparse(project, topParents, new HashSet<CsmFile>(0), false);
+                addToReparse(project, topParentsImpl, new HashSet<CsmFile>(0), false);
             }
         }
     }
@@ -131,7 +155,7 @@ public final class DeepReparsingUtils {
             return;
         }
         file.clearStateCache();
-        Set<CsmFile> top = project.getGraph().getTopParentFiles(file);
+        Set<CsmFile> top = project.getGraph().getTopParentFiles(file).getCompilationUnits();
         Set<CsmFile> coherence = project.getGraph().getIncludedFiles(file);
         Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
         for (CsmFile parent : coherence) {
@@ -172,7 +196,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectBase project) {
+    public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase project) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(project);
             Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();
@@ -185,7 +209,7 @@ public final class DeepReparsingUtils {
                     if (file != null) {
                         file.clearStateCache();
                         pairs.put(file, item);
-                        top.addAll(project.getGraph().getTopParentFiles(file));
+                        top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
                         coherence.addAll(project.getGraph().getIncludedFiles(file));
                     }
                 }
@@ -250,7 +274,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> top = new HashSet<CsmFile>();
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for (CsmFile file : resolved) {
-                top.addAll(project.getGraph().getTopParentFiles(file));
+                top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
                 coherence.add(file);
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
@@ -274,7 +298,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> top = new HashSet<CsmFile>();
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for (CsmFile file : resolved) {
-                top.addAll(project.getGraph().getTopParentFiles(file));
+                top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
             addToReparse(project, top, coherence, true);
@@ -299,8 +323,8 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at file removed.
      */
     public static void reparseOnRemoved(FileImpl impl, ProjectBase project) {
-        Set<CsmFile> topParents = project.getGraph().getTopParentFiles(impl);
-        Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(impl);
+        Set<CsmFile> topParents = project.getGraph().getTopParentFiles(impl).getCompilationUnits();
+        Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(impl).getCoherenceFiles();
         project.getGraph().removeFile(impl);
         topParents.remove(impl);
         coherence.remove(impl);
@@ -311,8 +335,8 @@ public final class DeepReparsingUtils {
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
         for (FileImpl impl : toReparse) {
-            topParents.addAll(project.getGraph().getTopParentFiles(impl));
-            coherence.addAll(project.getGraph().getCoherenceFiles(impl));
+            topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
+            coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
             project.getGraph().removeFile(impl);
             topParents.remove(impl);
             coherence.remove(impl);

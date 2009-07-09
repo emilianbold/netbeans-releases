@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.editor.impl.actions;
 
-import javax.swing.JMenuItem;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.openide.util.NbBundle;
 
@@ -45,12 +44,8 @@ public class LineActionsMainMenu {
     
     
     public static final class MoveUp extends MainMenuAction {
-
-        private JMenuItem menuItem;
-
         public MoveUp() {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
 
@@ -58,22 +53,14 @@ public class LineActionsMainMenu {
             return NbBundle.getBundle(LineActionsMainMenu.class).getString(moveSelectionElseLineUpAction + "-main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter() {
-            return menuItem;
-        }
-
         protected String getActionName() {
             return moveSelectionElseLineUpAction;
         }
-    } 
+    } // End of MoveUp class
     
     public static final class MoveDown extends MainMenuAction {
-
-        private JMenuItem menuItem;
-
         public MoveDown() {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
 
@@ -81,22 +68,14 @@ public class LineActionsMainMenu {
             return NbBundle.getBundle(LineActionsMainMenu.class).getString(moveSelectionElseLineDownAction + "-main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter() {
-            return menuItem;
-        }
-
         protected String getActionName() {
             return moveSelectionElseLineDownAction;
         }
-    } // end of ShiftLineLeftAction
+    } // End of MoveDown class
     
     public static final class DuplicateUp extends MainMenuAction {
-
-        private JMenuItem menuItem;
-
         public DuplicateUp() {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
 
@@ -104,22 +83,14 @@ public class LineActionsMainMenu {
             return NbBundle.getBundle(LineActionsMainMenu.class).getString(copySelectionElseLineUpAction + "-main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter() {
-            return menuItem;
-        }
-
         protected String getActionName() {
             return copySelectionElseLineUpAction;
         }
-    } 
+    } // End of DuplicateUp class
     
     public static final class DuplicateDown extends MainMenuAction {
-
-        private JMenuItem menuItem;
-
         public DuplicateDown() {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
 
@@ -127,13 +98,9 @@ public class LineActionsMainMenu {
             return NbBundle.getBundle(LineActionsMainMenu.class).getString(copySelectionElseLineDownAction + "-main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter() {
-            return menuItem;
-        }
-
         protected String getActionName() {
             return copySelectionElseLineDownAction;
         }
-    } 
+    } // End of DuplicateDown class
     
 }

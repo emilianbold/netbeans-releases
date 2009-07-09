@@ -79,6 +79,7 @@ public class ModuleListTest extends SetupHid {
     private File ud;
     
     private static final String PREFIX = "wherever/";
+    private LocalFileSystem fs;
     
     private final class IFL extends InstalledFileLocator {
         public IFL() {}
@@ -113,10 +114,10 @@ public class ModuleListTest extends SetupHid {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
         mgr = new ModuleManager(installer, ev);
-        File dir = getWorkDir();
+        File dir = new File(ud, "config");
         File modulesdir = new File(dir, "Modules");
-        if (! modulesdir.mkdir()) throw new IOException("Making " + modulesdir);
-        LocalFileSystem fs = new LocalFileSystem();
+        if (! modulesdir.mkdirs()) throw new IOException("Making " + modulesdir);
+        fs = new LocalFileSystem();
         fs.setRootDirectory(dir);
         modulesfolder = fs.findResource("Modules");
         assertNotNull(modulesfolder);
@@ -203,12 +204,10 @@ public class ModuleListTest extends SetupHid {
         File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.dat");
         assertTrue("Cache exists", f.exists());
 
-        LocalFileSystem lfs = new LocalFileSystem();
-        lfs.setRootDirectory(getWorkDir());
-        FileObject mf = lfs.findResource(modulesfolder.getPath());
+        FileObject mf = fs.findResource(modulesfolder.getPath());
         assertNotNull("config folder exits", mf);
         
-        CountingSecurityManager.initialize(new File(lfs.getRootDirectory(), "Modules").getPath());
+        CountingSecurityManager.initialize(new File(fs.getRootDirectory(), "Modules").getPath());
         
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();

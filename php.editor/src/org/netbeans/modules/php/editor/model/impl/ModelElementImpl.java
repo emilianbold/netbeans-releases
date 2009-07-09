@@ -137,23 +137,6 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return getName().toLowerCase();
     }
 
-    public final String getCamelCaseName() {
-        return toCamelCase(getName());
-    }
-
-    static String toCamelCase(String plainName) {
-        char[] retval = new char[plainName.length()];
-        int retvalSize = 0;
-        for (int i = 0; i < retval.length; i++) {
-            char c = plainName.charAt(i);
-            if (Character.isUpperCase(c)) {
-                retval[retvalSize] = c;
-                retvalSize++;
-            }
-        }
-        return String.valueOf(String.valueOf(retval, 0, retvalSize));
-    }
-
     static boolean nameKindMatch(Pattern p, String text) {
         return p.matcher(text).matches();
     }
@@ -170,7 +153,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
-                    if (toCamelCase(text).startsWith(query)) {
+                    if (ModelUtils.toCamelCase(text).startsWith(query)) {
                         return true;
                     }
                     break;
@@ -344,5 +327,9 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
 
     public OffsetRange getOffsetRange(ParserResult result) {
         return getNameRange();
+    }
+
+    public String getIndexSignature() {
+        return null;
     }
 }

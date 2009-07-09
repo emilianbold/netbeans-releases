@@ -136,13 +136,14 @@ made subject to such option by the copyright holder.
                 </folder>                
                 
                 <folder name="Popup">
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectXMLAction.instance"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
                     <file name="org-netbeans-modules-xml-actions-XMLViewActions.instance">
                         <attr name="position" intvalue="1400"/>
                     </file>
                     <!-- implicit separator provided by above action group -->
-                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
-                        <attr name="position" intvalue="1600"/>
-                    </file>
                     
                     <file name="format">
                         <attr name="position" intvalue="1200"/>
@@ -156,7 +157,8 @@ made subject to such option by the copyright holder.
                     <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4100"/>
                     </file>
                     
-                    <file name="org-openide-actions-ToolsAction.instance">
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
@@ -231,13 +233,14 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="Popup">
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectXMLAction.instance"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
                     <file name="org-netbeans-modules-xml-actions-XMLViewActions.instance">
                         <attr name="position" intvalue="1400"/>
                     </file>
                     <!-- implicit separator provided by above action group -->
-                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
-                        <attr name="position" intvalue="1600"/>
-                    </file>
                     
                     <file name="format">
                         <attr name="position" intvalue="1200"/>
@@ -251,7 +254,8 @@ made subject to such option by the copyright holder.
                     <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4100"/>
                     </file>
                     
-                    <file name="org-openide-actions-ToolsAction.instance">
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
@@ -283,14 +287,17 @@ made subject to such option by the copyright holder.
                 
                 <folder name="Popup">                    
                     <!-- implicit separator provided by below action group -->    
-                    <file name="org-netbeans-modules-xml-actions-CollectDTDAction.instance">
-                        <attr name="position" intvalue="4100"/>
-                    </file>
+                    
                     
                     <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4200"/>
                     </file>
                     
-                    <file name="org-openide-actions-ToolsAction.instance">
+                    <file name="org-netbeans-modules-xml-actions-CollectDTDAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-actions-CollectDTDAction.instance"/>
+                        <attr name="position" intvalue="4100"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="4300"/>
                     </file>
                 </folder>

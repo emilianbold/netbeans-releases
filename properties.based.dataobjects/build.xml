@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="properties.based.dataobjects">
+    <description>Builds, tests, and runs the project org.netbeans.modules.properties.based.dataobjects</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

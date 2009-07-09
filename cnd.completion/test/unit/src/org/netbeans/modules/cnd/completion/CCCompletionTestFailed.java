@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.completion;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CCCompletionTestFailed extends BaseTestSuite {
+public class CCCompletionTestFailed extends CndBaseTestSuite {
     
     public CCCompletionTestFailed() {
         super("C/C++ Failed Completion");

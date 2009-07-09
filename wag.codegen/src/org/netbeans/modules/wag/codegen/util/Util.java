@@ -121,7 +121,7 @@ public class Util {
         if(doc == null)
             return false;
         Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        System.out.println("isJava() mimeType = " + mimeType);
+  
         if (mimeType != null && "text/x-java".equals(mimeType)) { //NOI18N
             return true;
         }

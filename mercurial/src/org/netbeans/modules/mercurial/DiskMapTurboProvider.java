@@ -59,13 +59,13 @@ class DiskMapTurboProvider implements TurboProvider {
 
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
     private static final String CACHE_DIRECTORY = "mercurialcache"; // NOI18N
-    
+
     private File cacheStore;
     private int                             storeSerial;
 
     private int                             cachedStoreSerial = -1;
     private Map<File, FileInformation> cachedValues;
-    
+
     DiskMapTurboProvider() {
         initCacheStore();
     }
@@ -78,11 +78,11 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
-        if (cachedStoreSerial != storeSerial || cachedValues == null) {
-            cachedValues = new HashMap<File, FileInformation>();
+        if (modifiedFilesChanged() || cachedValues == null) {
+            HashMap<File, FileInformation> modifiedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
             if(files == null) {
-                cachedValues = Collections.unmodifiableMap(cachedValues);
+                cachedValues = Collections.unmodifiableMap(modifiedValues);
                 return cachedValues;
             }
             for (int i = 0; i < files.length; i++) {
@@ -116,7 +116,7 @@ class DiskMapTurboProvider implements TurboProvider {
                             File f = (File) j.next();
                             FileInformation info = (FileInformation) value.get(f);
                             if ((info.getStatus() & DiskMapTurboProvider.STATUS_VALUABLE) != 0) {
-                                cachedValues.put(f, info);
+                                modifiedValues.put(f, info);
                             }
                         }
                     }
@@ -129,11 +129,11 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
             cachedStoreSerial = storeSerial;
-            cachedValues = Collections.unmodifiableMap(cachedValues);
+            cachedValues = Collections.unmodifiableMap(modifiedValues);
         }
         return cachedValues;
     }
-    
+
     public boolean recognizesAttribute(String name) {
         return DiskMapTurboProvider.ATTR_STATUS_MAP.equals(name);
     }
@@ -274,6 +274,10 @@ class DiskMapTurboProvider implements TurboProvider {
         store.delete();
         storeNew.renameTo(store);
         return true;
+    }
+
+    boolean modifiedFilesChanged() {
+        return cachedStoreSerial != storeSerial;
     }
 
     private void skip(InputStream is, long len) throws IOException {

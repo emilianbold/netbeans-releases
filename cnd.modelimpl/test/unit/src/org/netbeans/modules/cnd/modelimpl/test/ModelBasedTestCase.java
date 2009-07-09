@@ -41,15 +41,15 @@ package org.netbeans.modules.cnd.modelimpl.test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class ModelBasedTestCase extends BaseTestCase {
+public class ModelBasedTestCase extends CndBaseTestCase {
 
     private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
 
@@ -65,15 +65,7 @@ public class ModelBasedTestCase extends BaseTestCase {
             public void exception(Throwable thr) {
                 thr.printStackTrace();
                 exceptions.add(thr);
-                System.err.println("-----Start Thread Dump-----");
-                for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
-                    System.err.println(entry.getKey().getName());
-                    for (StackTraceElement element : entry.getValue()) {
-                        System.err.println("\tat " + element.toString());
-                    }
-                    System.err.println();
-                }
-                System.err.println("-----End Thread Dump-----");
+                CndUtils.threadsDump();
             }
         };
         DiagnosticExceptoins.setHook(hook);

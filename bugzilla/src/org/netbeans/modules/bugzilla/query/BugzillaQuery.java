@@ -55,6 +55,8 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -133,7 +135,6 @@ public class BugzillaQuery extends Query {
         return new QueryController(r, q, parameters, initialUrlDef);
     }
 
-    @Override
     public ColumnDescriptor[] getColumnDescriptors() {
         if(columnDescriptors == null) {
             columnDescriptors = BugzillaIssue.getColumnDescriptors(repository);
@@ -274,10 +275,8 @@ public class BugzillaQuery extends Query {
         super.setSaved(saved);
     }
 
-    @Override
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
-        super.setFilter(filter);
     }
 
     @Override

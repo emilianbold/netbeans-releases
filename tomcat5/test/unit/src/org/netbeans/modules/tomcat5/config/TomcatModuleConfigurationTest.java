@@ -45,8 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,7 +58,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.TomcatModuleConfiguration;
@@ -559,7 +557,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         return J2eeModuleFactory.createJ2eeModule(j2eeModuleImpl);
     }
     
-    private static class J2eeModuleImpl implements J2eeModuleImplementation {
+    private static class J2eeModuleImpl implements J2eeModuleImplementation2 {
     
         private final File contextXml;
         
@@ -571,8 +569,8 @@ public class TomcatModuleConfigurationTest extends TestBase {
             return J2eeModule.J2EE_14;
         }
     
-        public Object getModuleType() {
-            return J2eeModule.WAR;
+        public J2eeModule.Type getModuleType() {
+            return J2eeModule.Type.WAR;
         }
     
         public String getUrl() {

@@ -253,22 +253,6 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
     
     /**
-     * Moves the existing database connections from the DatabaseOption 
-     * used in 4.1 and previous to the SystemFileSystem.
-     */
-    public static void importOldConnections() {
-        Vector dbconns = RootNode.getOption().getConnections();
-        for (Iterator i = dbconns.iterator(); i.hasNext();) {
-            try {
-                create((DatabaseConnection) i.next());
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-            i.remove();
-        }
-    }
-    
-    /**
      * Removes the file describing the specified database connection.
      */
     public static void remove(DatabaseConnection dbconn) throws IOException {

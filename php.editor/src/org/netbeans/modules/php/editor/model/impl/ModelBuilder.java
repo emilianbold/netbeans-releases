@@ -46,17 +46,19 @@ import java.util.Stack;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
@@ -65,6 +67,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  */
 class ModelBuilder {
     private final FileScopeImpl fileScope;
+    private NamespaceScopeImpl namespaceScope;
+    private NamespaceScopeImpl defaultNamespaceScope;
     private Stack<ScopeImpl> currentScope;
     private Program program;
     private final Map<VariableContainerImpl, Map<String, VariableNameImpl>> vars;
@@ -74,6 +78,19 @@ class ModelBuilder {
         this.currentScope = new Stack<ScopeImpl>();
         this.vars = new HashMap<VariableContainerImpl, Map<String, VariableNameImpl>>();
         setCurrentScope(fileScope);
+        setCurrentScope(namespaceScope = defaultNamespaceScope = new NamespaceScopeImpl(fileScope));
+    }
+
+    NamespaceScope build(NamespaceDeclaration node, OccurenceBuilder occurencesBuilder) {
+        final NamespaceDeclarationInfo info = NamespaceDeclarationInfo.create(node);
+
+        NamespaceScopeImpl nScope = (info.isDefaultNamespace())? defaultNamespaceScope://NOI18N
+            ModelElementFactory.create( info, this);
+        if (!nScope.isDefaultNamespace()) {
+            setCurrentScope(nScope);
+        }
+        nScope.setBlockRange(node);
+        return nScope;
     }
 
     ClassScope build(ClassDeclaration node, OccurenceBuilder occurencesBuilder) {
@@ -114,7 +131,10 @@ class ModelBuilder {
 
     void reset() {
         if (!currentScope.empty()) {
-            currentScope.pop();
+            ScopeImpl createdScope = currentScope.pop();
+            if (createdScope instanceof NamespaceScopeImpl) {
+                namespaceScope = defaultNamespaceScope;
+            } 
         }
     }
 
@@ -123,6 +143,10 @@ class ModelBuilder {
      */
     FileScopeImpl getFileScope() {
         return fileScope;
+    }
+
+    NamespaceScopeImpl getCurrentNameSpace() {
+        return namespaceScope;
     }
 
     /**
@@ -136,6 +160,9 @@ class ModelBuilder {
      * @param currentScope the currentScope to set
      */
     void setCurrentScope(ScopeImpl scope) {
+        if (scope instanceof NamespaceScopeImpl) {
+            namespaceScope = (NamespaceScopeImpl) scope;
+        }
         this.currentScope.push(scope);
     }
 
@@ -149,6 +176,7 @@ class ModelBuilder {
 
     void setProgram(Program program) {
         this.program = program;
+        this.defaultNamespaceScope.setBlockRange(program);
     }
 
     /**

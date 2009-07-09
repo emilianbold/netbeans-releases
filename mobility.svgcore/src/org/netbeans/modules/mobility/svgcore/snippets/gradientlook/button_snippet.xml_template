@@ -1,11 +1,11 @@
    <g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" id="%%COMPONENT_ID%%">
-        <image id="_0" transform="matrix(78.79452,0.0,0.0,0.9702,0.75,5.25)"  width="1" height="25"
+        <image transform="matrix(78.79452,0.0,0.0,0.9702,0.75,5.25)"  width="1" height="25"
               xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAZCAIAAAB/8tMoAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
               jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAF9JREFU
               GFdFw80KRUAAgNHv/R/FmqWyUOSmRN2bJLEgkvw2Y4xJ2dxTB2MM/zdG6/d9KbQ6uU6JkgIpD4TY
               OPaZfR1Zpo5xqOnbgrb50pQJVR5RZD6/2CUNHT6eRRLYDwfARHOzUoReAAAAAElFTkSuQmCC">
               </image>
-        <rect transform=""  id="_102" x="0.0" y="0.0" rx="5" ry="5"  width="80" height="30" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">   
+        <rect transform="" x="0.0" y="0.0" rx="5" ry="5"  width="80" height="30" fill="none" stroke="rgb(73,46,55)" stroke-width="1.5">   
         </rect>
         <g>
             <text display="none">type=body</text>

@@ -44,7 +44,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import org.netbeans.jellytools.actions.CompileAction;
+import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -133,7 +133,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
         Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
         Node sample2 = new Node(new SourcePackagesNode("SampleProject"), "sample1.sample2");  // NOI18N
         Node sampleClass1 = new Node(sample1, "SampleClass1.java");  // NOI18N
-        CompileAction compileAction = new CompileAction();
+        CompileJavaAction compileAction = new CompileJavaAction();
         compileAction.perform(sampleClass1);
         new OutputWindowViewAction().performMenu();
         outputTabOperator = new OutputTabOperator(targetName);

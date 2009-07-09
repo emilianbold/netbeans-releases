@@ -58,7 +58,6 @@ import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -79,7 +78,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return retval;
     }
 
-    VariableNameImpl(Scope inScope, Program program, Variable variable, boolean globallyVisible) {
+    VariableNameImpl(Scope inScope, Variable variable, boolean globallyVisible) {
         this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
     VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
@@ -188,5 +187,20 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        final String varName = getName();
+        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+        if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+            sb.append(varName.toLowerCase()).append(";");//NOI18N
+            sb.append(varName).append(";");//NOI18N
+            sb.append(";");//NOI18N
+            sb.append(getOffset()).append(";");//NOI18N
+            return sb.toString();
+        }
+        return null;
     }
 }

@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
@@ -151,7 +151,7 @@ public final class ProjectImpl implements Project {
         }
         
         public J2eeModule getJ2eeModule() {
-            J2eeModuleImplementation j2eeModuleImpl = new J2eeModuleImpl(moduleVersion);
+            J2eeModuleImplementation2 j2eeModuleImpl = new J2eeModuleImpl(moduleVersion);
             return J2eeModuleFactory.createJ2eeModule(j2eeModuleImpl);
         }
         
@@ -180,7 +180,7 @@ public final class ProjectImpl implements Project {
         
     }
     
-    private static class J2eeModuleImpl implements J2eeModuleImplementation {
+    private static class J2eeModuleImpl implements J2eeModuleImplementation2 {
         
         private final String moduleVersion;
         
@@ -192,8 +192,8 @@ public final class ProjectImpl implements Project {
             return moduleVersion;
         }
         
-        public Object getModuleType() {
-            return J2eeModule.EJB;
+        public J2eeModule.Type getModuleType() {
+            return J2eeModule.Type.EJB;
         }
         
         public String getUrl() {

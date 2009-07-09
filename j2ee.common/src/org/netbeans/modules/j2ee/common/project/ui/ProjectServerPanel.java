@@ -65,7 +65,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -85,13 +85,21 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private boolean sharableProject;
 
     private List<Project> earProjects;
-    private Object j2eeModuleType;
+    private final J2eeModule.Type j2eeModuleType;
     private File projectLocation;
     
     private BigDecimal xmlVersion;
-    
-    /** Creates new form ProjectServerPanel */
+
+    @Deprecated
     public ProjectServerPanel(Object j2eeModuleType, String name, String title,
+            ProjectServerWizardPanel wizard, boolean showAddToEar,
+            boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
+
+        this(J2eeModule.Type.fromJsrType(j2eeModuleType), name, title, wizard, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+    }
+
+    /** Creates new form ProjectServerPanel */
+    public ProjectServerPanel(J2eeModule.Type j2eeModuleType, String name, String title,
             ProjectServerWizardPanel wizard, boolean showAddToEar, 
             boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
         initComponents();
@@ -260,24 +268,24 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(serverInstanceComboBox, 0, 324, Short.MAX_VALUE)
+                        .add(serverInstanceComboBox, 0, 350, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addServerButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
                         .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
             .add(layout.createSequentialGroup()
-                .add(mainClassLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(423, Short.MAX_VALUE))
+                .add(mainClassLabel)
+                .addContainerGap(463, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -292,11 +300,11 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .add(jTextFieldCarName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                     .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE))
                 .add(74, 74, 74))
-            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(jLabelEnterprise)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jComboBoxEnterprise, 0, 330, Short.MAX_VALUE))
+                .add(jComboBoxEnterprise, 0, 342, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -408,9 +416,14 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         j2eeSpecComboBox.removeAllItems();
         if (serverInstanceWrapper != null) {
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
-            Set<Profile> profiles = new TreeSet<Profile>(Profile.REVERSE_COMPARATOR);
+            Set<Profile> profiles = new TreeSet<Profile>(Profile.UI_COMPARATOR);
             profiles.addAll(j2eePlatform.getSupportedProfiles(j2eeModuleType));
             for (Profile profile : profiles) {
+                // j2ee 1.3 is not supported anymore
+                if (Profile.J2EE_13.equals(profile)) {
+                    continue;
+                }
+
                 j2eeSpecComboBox.addItem(new ProfileItem(profile));
             }
             if (prevSelectedItem != null) {
@@ -457,18 +470,18 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, ProjectLocationPanel.decorateMessage(
                     NbBundle.getMessage(ProjectServerPanel.class, "PanelSharability.licenseWarning.text")));
         }
-        if (j2eeModuleType == J2eeModule.EJB) {
+        if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             setJ2eeVersionWarning(wizardDescriptor);
         }
         
-        if (j2eeModuleType == J2eeModule.CLIENT) {
+        if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
             if (!isMainClassValid(mainClassTextField.getText())) {
                 setErrorMessage("ERROR_IllegalMainClassName", wizardDescriptor); // NOI18N
                 return false;
             }
         }
 
-        if (j2eeModuleType == J2eeModule.EAR) {
+        if (J2eeModule.Type.EAR.equals(j2eeModuleType)) {
             if (createWARCheckBox.isSelected()) {
                 String warName = jTextFieldWebAppName.getText();
                 if (warName.length() < 1) {
@@ -544,7 +557,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.WAR_NAME,  jTextFieldWebAppName.getText());
         d.putProperty(ProjectServerWizardPanel.JAR_NAME, jTextFieldEjbModuleName.getText());
         d.putProperty(ProjectServerWizardPanel.CAR_NAME, jTextFieldCarName.getText());
-        d.putProperty(ProjectServerWizardPanel.MAIN_CLASS, j2eeModuleType == J2eeModule.CLIENT ? mainClassTextField.getText().trim() : mainClassTextFieldWithinEar.getText().trim()); // NOI18N
+        d.putProperty(ProjectServerWizardPanel.MAIN_CLASS, J2eeModule.Type.CAR.equals(j2eeModuleType) ? mainClassTextField.getText().trim() : mainClassTextFieldWithinEar.getText().trim()); // NOI18N
         d.putProperty(ProjectServerWizardPanel.CREATE_WAR, Boolean.valueOf(createWARCheckBox.isVisible() ? createWARCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
@@ -589,14 +602,14 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             serverLibraryCheckbox.setSelected(false);
         }
         projectLocation = (File)d.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
-        if (j2eeModuleType == J2eeModule.EJB) {
+        if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             updateJ2EEVersion("ejb-jar.xml");
         }
-        if (j2eeModuleType == J2eeModule.CLIENT) {
+        if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
             initClientAppMainClass((String)d.getProperty(ProjectLocationWizardPanel.NAME));
             updateJ2EEVersion("application-client.xml");
         }
-        if (j2eeModuleType == J2eeModule.EAR) {
+        if (J2eeModule.Type.EAR.equals(j2eeModuleType)) {
             String newProjectName = (String)d.getProperty(ProjectLocationWizardPanel.NAME);
             initClientAppMainClass(newProjectName);
             this.jTextFieldEjbModuleName.setText(MessageFormat.format(
@@ -651,27 +664,32 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         ServerInstanceWrapper selectedItem = null;
         boolean sjasFound = false;
         boolean gfv3Found = false;
+        boolean gfv3ee6Found = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(j2eeModuleType)) {
+            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
-                if (selectedItem == null || !gfv3Found) {
+                if (selectedItem == null || !gfv3ee6Found) {
                     if (selectedServerInstanceID != null) {
                         if (selectedServerInstanceID.equals(serverInstanceID)) {
                             selectedItem = serverWrapper;
                         }
                     } else {
                         // preselect the best server ;)
+                        // FIXME replace with PriorityQueue mechanism
                         String shortName = Deployment.getDefault().getServerID(serverInstanceID);
-                        if ("gfv3".equals(shortName)) { // NOI18N
+                        if ("gfv3ee6".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                            gfv3ee6Found = true;
+                        } else if ("gfv3".equals(shortName) && !gfv3ee6Found) { // NOI18N
                             selectedItem = serverWrapper;
                             gfv3Found = true;
-                        } else if ("J2EE".equals(shortName)) { // NOI18N
+                        } else if ("J2EE".equals(shortName) && !(gfv3ee6Found || gfv3Found)) { // NOI18N
                             selectedItem = serverWrapper;
                             sjasFound = true;
-                        } else if ("JBoss4".equals(shortName) && !sjasFound) { // NOI18N
+                        } else if ("JBoss4".equals(shortName) && !(gfv3ee6Found || gfv3Found || sjasFound)) { // NOI18N
                             selectedItem = serverWrapper;
                         }
                     }
@@ -791,9 +809,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(fo, configFileName);
             if (configFilesPath != null) {
                 FileObject configFile = configFilesPath.getFileObject(configFileName); // NOI18N
-                if (j2eeModuleType == J2eeModule.EJB) {
+                if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
                     checkEjbJarXmlJ2eeVersion(configFile);
-                } else if (j2eeModuleType == J2eeModule.CLIENT) {
+                } else if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
                     checkACXmlJ2eeVersion(configFile);
                 }
             } else {
@@ -822,9 +840,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 return;
             }
             
-            if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_13));
-            } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).equals(version)) {
+            if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             }
         } catch (IOException e) {
@@ -849,9 +865,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 return;
             }
             
-            if (new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_3).equals(version)) {
-                j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_13));
-            } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_4).equals(version)) {
+            if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_1_4).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.J2EE_14));
             } else if(new BigDecimal(org.netbeans.modules.j2ee.dd.api.client.AppClient.VERSION_5_0).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(new ProfileItem(Profile.JAVA_EE_5));
@@ -863,17 +877,17 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     }
     
     private void setJ2eeVersionWarning(WizardDescriptor d) {
-        String errorMessage;
+        String errorMessage = null;
         ProfileItem selectedItem = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
         
-        if ((Profile.J2EE_14 == selectedItem.getProfile())
-                && new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0).equals(xmlVersion)) {
+        boolean oldXml = xmlVersion == null ? true :
+            new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).compareTo(xmlVersion) > 0;
+        if (Profile.J2EE_14 == selectedItem.getProfile() && oldXml) {
             errorMessage = NbBundle.getMessage(ProjectServerPanel.class, "MSG_EjbJarXMLNotSupported");
-        } else {
-            errorMessage = null;
         }
+
         if (d != null) {
-            d.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); //NOI18N
+            d.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
         }
         
         setJ2eeVersionWarningPanel();
@@ -884,7 +898,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         if (!Utilities.isJavaIdentifier(newProjectName)) {
             newProjectName = NbBundle.getMessage(ProjectServerPanel.class, "TXT_PackageNameSuffix", newProjectName);
         }
-        if (j2eeModuleType == J2eeModule.CLIENT) {
+        if (J2eeModule.Type.CAR.equals(j2eeModuleType)) {
             mainClassTextField.setText(MessageFormat.format(
                     NbBundle.getMessage(ProjectServerPanel.class,"TXT_ClassName"), new Object[] {newProjectName}
             ));

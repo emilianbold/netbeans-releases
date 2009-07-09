@@ -205,11 +205,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected synchronized RemoteClient getRemoteClient(PhpProject project) {
         if (remoteClient == null) {
-            remoteClient = new RemoteClient(getRemoteConfiguration(project), RemoteClient.AdvancedProperties.create(
-                    null,
-                    getRemoteDirectory(project),
-                    ProjectPropertiesSupport.areRemotePermissionsPreserved(project),
-                    ProjectPropertiesSupport.isRemoteUploadDirectly(project)));
+            remoteClient = new RemoteClient(getRemoteConfiguration(project), new RemoteClient.AdvancedProperties()
+                    .setAdditionalInitialSubdirectory(getRemoteDirectory(project))
+                    .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
+                    .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project)));
         }
         return remoteClient;
     }

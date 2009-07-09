@@ -42,6 +42,7 @@
 package org.netbeans.test.ide;
 
 import junit.framework.Test;
+import junit.framework.TestResult;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -51,18 +52,28 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
-public class MemoryValidationTest extends JellyTestCase {
+public class MemoryValidationTest extends IDEValidation {
     /** Need to be defined because of JUnit */
     public MemoryValidationTest(String name) {
         super(name);
     }
+
+    @Override
+    public void run(TestResult result) {
+        if (!getName().startsWith("testGC")) {
+            result = new TestResult();
+        }
+        super.run(result);
+    }
+
+
     
     public static Test suite() {
         // XXX: supresses warning about jpda debugger using parsing API from AWT thread
         System.setProperty("org.netbeans.modules.parsing.impl.TaskProcessor.level", "OFF");
 
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-            IDEValidation.class
+            MemoryValidationTest.class
         ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").
         honorAutoloadEager(true);
 

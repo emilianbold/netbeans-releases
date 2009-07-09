@@ -58,6 +58,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 /**
  * An API for project's classpaths modification.
@@ -135,6 +136,7 @@ public class ProjectClassPathModifier {
      */
     @SuppressWarnings("deprecation")        //NOI18N
     public static boolean addRoots (final URL[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        Parameters.notNull("classPathRoots", classPathRoots);
         final Extensible extensible = findExtensible(projectArtifact, classPathType);
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
@@ -143,6 +145,7 @@ public class ProjectClassPathModifier {
         } else {
             boolean result = false;
             for (URL urlToAdd : classPathRoots) {
+                Parameters.notNull("classPathRoots", urlToAdd);
                 if ("jar".equals(urlToAdd.getProtocol())) {
                     urlToAdd = FileUtil.getArchiveFile (urlToAdd);
                 }
@@ -344,9 +347,10 @@ public class ProjectClassPathModifier {
      * @param classPathType a classpath type, @see ClassPath
      * @return an Extensible. In case when the project supports the {@link ProjectClassPathModifierImplementation},
      * this interface is used to find an Extensible. If this interface is not provided, but project provides
-     * the deprecated {@link ProjectClassPathExtender} interface and classpath type is {@link ClassPath@COMPILE} the 
+     * the deprecated {@link org.netbeans.spi.java.project.classpath.ProjectClassPathExtender} interface and classpath type is {@link ClassPath@COMPILE} the
      * single Extensible, without assigned SourceGroup, is returned.
-     * @throws UnsupportedOperationException In case when neither {@link ProjectClassPathModifierImplementation} nor {@link ProjectClassPathExtender}
+     * @throws UnsupportedOperationException In case when neither {@link ProjectClassPathModifierImplementation} nor
+     *                                       {@link org.netbeans.spi.java.project.classpath.ProjectClassPathExtender}
      * is supported, or no project can be associated with the project artifact.
      */
     @SuppressWarnings("deprecation")        //NOI18N

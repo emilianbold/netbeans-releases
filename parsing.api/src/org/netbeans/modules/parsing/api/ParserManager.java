@@ -151,7 +151,7 @@ public final class ParserManager {
             LMListener lMListener = new LMListener ();
             Parser parser = null;
             final Collection<Snapshot> snapShots = new LazySnapshots(sources);
-            for (Source source : sources) {                
+            for (Source source : sources) {
                 if (parser == null) {
                     Lookup lookup = MimeLookup.getLookup (source.getMimeType ());
                     ParserFactory parserFactory = lookup.lookup (ParserFactory.class);

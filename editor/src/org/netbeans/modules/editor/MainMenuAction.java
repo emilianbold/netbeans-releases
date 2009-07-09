@@ -59,14 +59,12 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
-import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -95,6 +93,8 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
 
     private Lookup.Result<KeyBindingSettings> kbs = null;
     private Lookup.Result<ActionMap> globalActionMap = null;
+
+    private JMenuItem menuPresenter = null;
     
     /** Creates a new instance of ShowLineNumbersAction */
     public MainMenuAction() {
@@ -217,22 +217,14 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
         assert presenter != null : "Got null return from getMenuPresenter in " + this;
         Action presenterAction = presenter.getAction();
         if (presenterAction == null){
-            if (action != null){
-                if (!(action instanceof BaseAction)) {
-                    Actions.connect(presenter, action, false);
-                } else {
-                    presenter.setAction(action);
-                }
+            if (action != null) {
+                presenter.setAction(action);
                 presenter.setToolTipText(null); /* bugfix #62872 */ 
                 menuInitialized = false;
             }
         }else{
             if ((action!=null && !action.equals(presenterAction))){
-                if (!(action instanceof BaseAction)) {
-                    Actions.connect(presenter, action, false);
-                } else {
-                    presenter.setAction(action);
-                }
+                presenter.setAction(action);
                 presenter.setToolTipText(null); /* bugfix #62872 */
                 menuInitialized = false;
             }
@@ -261,7 +253,23 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     
     /** Get the action name */
     protected abstract String getActionName();
-    
+
+    public JMenuItem getMenuPresenter() {
+        if (menuPresenter == null) {
+            menuPresenter = new JMenuItem() {
+                public @Override void setText(String text) {
+                    // never change the text of this menu item to anything else
+                    // then getMenuItemText()
+                    if (getText() == null || getText().length() == 0) {
+                        super.setText(text);
+                    }
+                }
+            };
+            Mnemonics.setLocalizedText(menuPresenter, getMenuItemText());
+        }
+        return menuPresenter;
+    }
+
     /** Get default accelerator */
     protected KeyStroke getDefaultAccelerator(){
 //        Lookup ml = MimeLookup.getLookup(MimePath.get("text/x-java")); //NOI18N
@@ -301,9 +309,18 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
             SHOW_TOOLBAR_MENU.setState(visible);
         }
 
-        public JMenuItem getMenuPresenter() {
+        public @Override JMenuItem getMenuPresenter() {
             if (SHOW_TOOLBAR_MENU == null) {
-                SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
+                SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem() {
+                    public @Override void setText(String text) {
+                        // never change the text of this menu item to anything else
+                        // then getMenuItemText()
+                        if (getText() == null || getText().length() == 0) {
+                            super.setText(text);
+                        }
+                    }
+                };
+                Mnemonics.setLocalizedText(SHOW_TOOLBAR_MENU, getMenuItemText());
                 setMenu();
             }
             return SHOW_TOOLBAR_MENU;
@@ -354,9 +371,18 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
             return getMenuItemText();
         }   
         
-        public javax.swing.JMenuItem getMenuPresenter() {
+        public @Override JMenuItem getMenuPresenter() {
             if (SHOW_LINE_MENU == null) {
-                SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText());
+                SHOW_LINE_MENU  = new JCheckBoxMenuItem() {
+                    public @Override void setText(String text) {
+                        // never change the text of this menu item to anything else
+                        // then getMenuItemText()
+                        if (getText() == null || getText().length() == 0) {
+                            super.setText(text);
+                        }
+                    }
+                };
+                Mnemonics.setLocalizedText(SHOW_LINE_MENU, getMenuItemText());
                 setMenu();
             }
             return SHOW_LINE_MENU;
@@ -376,12 +402,8 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     
     
     public static class GoToSourceAction extends MainMenuAction{
-        
-        private JMenuItem GOTO_SOURCE_MENU;
-
         public GoToSourceAction(){
             super();
-            GOTO_SOURCE_MENU = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -390,25 +412,15 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "goto_source_main_menu_edit_item"); //NOI18N
         }
         
-        public JMenuItem getMenuPresenter() {
-            return GOTO_SOURCE_MENU;
-        }
-
         protected String getActionName() {
             return ExtKit.gotoSourceAction;
         }
-        
-
-    }
+    } // End of GoToSourceAction class
 
     
     public static class GoToSuperAction extends MainMenuAction{
-        
-        private  JMenuItem GOTO_SUPER_MENU;        
-
         public GoToSuperAction(){
             super();
-            GOTO_SUPER_MENU = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -417,24 +429,14 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "goto_super_implementation_main_menu_edit_item"); //NOI18N
         }
         
-        public JMenuItem getMenuPresenter() {
-            return GOTO_SUPER_MENU;
-        }
-
         protected String getActionName() {
             return ExtKit.gotoSuperImplementationAction;
         }
-        
-
-    }
+    } // End of GoToSuperAction class
 
     public static class GoToDeclarationAction extends MainMenuAction{
-        
-        private  JMenuItem GOTO_DECL_MENU;
-
         public GoToDeclarationAction(){
             super();
-            GOTO_DECL_MENU = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -443,25 +445,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "goto_declaration_main_menu_edit_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter() {
-            return GOTO_DECL_MENU;
-        }
-
         protected String getActionName() {
             return ExtKit.gotoDeclarationAction;
         }
-        
-    }
+    } // End of GoToDeclarationAction class
 
     /** Back action in Go To main menu, wrapper for BaseKit.jumpListPrevAction
      */ 
     public static final class JumpBackAction extends MainMenuAction {
-        
-        private JMenuItem jumpBackMenuItem;
-
         public JumpBackAction () {
             super();
-            jumpBackMenuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -470,27 +463,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "jump_back_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return jumpBackMenuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.jumpListPrevAction;
         }
-        
-
-        
-    } // end of JumpBackAction
+    } // End of JumpBackAction class
     
     /** Forward action in Go To main menu, wrapper for BaseKit.jumpListNextAction
      */ 
     public static final class JumpForwardAction extends MainMenuAction {
-        
-        private JMenuItem jumpForwardMenuItem;
-
         public JumpForwardAction () {
             super();
-            jumpForwardMenuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -499,27 +481,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "jump_forward_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return jumpForwardMenuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.jumpListNextAction;
         }
-        
-
-        
-    } // end of JumpForwardAction
+    } // End of JumpForwardAction class
 
     /** Reformat Code action in Source main menu, wrapper for BaseKit.formatAction
      */ 
     public static final class FormatAction extends MainMenuAction {
-        
-        private JMenuItem formatMenuItem;
-
         public FormatAction () {
             super();
-            formatMenuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -528,25 +499,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "format_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return formatMenuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.formatAction;
         }
-        
     } // end of FormatAction
     
     /** Shift Left action in Source main menu, wrapper for BaseKit.shiftLineLeftAction
      */ 
     public static final class ShiftLineLeftAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public ShiftLineLeftAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -555,25 +517,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "shift_line_left_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.shiftLineLeftAction;
         }
-        
-    } // end of ShiftLineLeftAction
+    } // End of ShiftLineLeftAction class
     
     /** Shift Right action in Source main menu, wrapper for BaseKit.shiftLineRightAction
      */ 
     public static final class ShiftLineRightAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public ShiftLineRightAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -582,25 +535,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "shift_line_right_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.shiftLineRightAction;
         }
-        
-    } // end of ShiftLineRightAction
+    } // End of ShiftLineRightAction class
     
     /** Comment action in Source main menu, wrapper for ExtKit.commentAction
      */ 
     public static final class CommentAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public CommentAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -609,25 +553,17 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "comment_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return ExtKit.commentAction;
         }
         
-    } // end of CommentAction
+    } // End of CommentAction class
     
     /** Uncomment action in Source main menu, wrapper for ExtKit.uncommentAction
      */ 
     public static final class UncommentAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public UncommentAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -636,25 +572,17 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "uncomment_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return ExtKit.uncommentAction;
         }
         
-    } // end of UncommentAction
+    } // End of UncommentAction class
     
     /** Uncomment action in Source main menu, wrapper for ExtKit.uncommentAction
      */ 
     public static final class ToggleCommentAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public ToggleCommentAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -663,25 +591,17 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "toggle_comment_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return ExtKit.toggleCommentAction;
         }
         
-    } // end of UncommentAction
+    } // End of UncommentAction class
     
     /** Insert Next Matching Word action in Source main menu, wrapper for BaseKit.wordMatchNextAction
      */ 
     public static final class WordMatchNextAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public WordMatchNextAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -690,25 +610,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "word_match_next_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.wordMatchNextAction;
         }
-        
-    } // end of WordMatchNextAction
+    } // End of WordMatchNextAction class
 
     /** Insert Previous Matching Word action in Source main menu, wrapper for BaseKit.wordMatchPrevAction
      */ 
     public static final class WordMatchPrevAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public WordMatchPrevAction () {
             super();
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -717,25 +628,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "word_match_previous_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.wordMatchPrevAction;
         }
-        
-    } // end of WordMatchPrevAction
+    } // End of WordMatchPrevAction class
 
     /** Find Next action in Edit main menu, wrapper for BaseKit.findNextAction
      */ 
     public static final class FindNextAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public FindNextAction () {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -744,26 +646,17 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "find_next_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.findNextAction;
         }
-        
-    } // end of FindNextAction
+    } // End of FindNextAction class
     
     
     /** Find Previous action in Edit main menu, wrapper for BaseKit.findPreviousAction
      */ 
     public static final class FindPreviousAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public FindPreviousAction () {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -772,35 +665,22 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "find_previous_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.findPreviousAction;
         }
-        
-    } // end of FindPreviousAction
+    } // End of FindPreviousAction class
 
     /** Find Selection action in Edit main menu, wrapper for BaseKit.findSelectionAction
      */ 
     public static final class FindSelectionAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public FindSelectionAction () {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
         protected String getMenuItemText () {
             return NbBundle.getBundle(FindNextAction.class).getString(
                 "find_selection_main_menu_item"); //NOI18N
-        }
-
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
         }
 
         protected String getActionName () {
@@ -812,20 +692,13 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
             JTextComponent focused = EditorRegistry.focusedComponent();
             return focused != null;
         }
-        
-        
-        
-    } // end of FindSelectionAction
+    } // End of FindSelectionAction class
 
     /** Start Macro Recording action in View main menu, wrapper for BaseKit.startMacroRecordingAction
      */ 
     public static final class StartMacroRecordingAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public StartMacroRecordingAction () {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -834,24 +707,15 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "start_macro_recording_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.startMacroRecordingAction;
         }
-        
-    } // end of StartMacroRecordingAction
+    } // End of StartMacroRecordingAction class
     
    
     public static final class SelectAllAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public SelectAllAction() {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -860,23 +724,14 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "select_all_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.selectAllAction;
         }
-        
-    } // end of SelectAll
+    } // End of SelectAll class
 
     public static final class SelectIdentifierAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public SelectIdentifierAction() {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -885,25 +740,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "select_identifier_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.selectIdentifierAction;
         }
-        
-    } // end of SelectIdentifierAction
+    } // End of SelectIdentifierAction class
 
     /** Stop Macro Recording action in View main menu, wrapper for BaseKit.stopMacroRecordingAction
      */ 
     public static final class StopMacroRecordingAction extends MainMenuAction {
-        
-        private JMenuItem menuItem;
-
         public StopMacroRecordingAction () {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -912,25 +758,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "stop_macro_recording_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.stopMacroRecordingAction;
         }
-        
-    } // end of StopMacroRecordingAction
+    } // End of StopMacroRecordingAction class
             
     /** Remove Trailing Spaces action in View main menu, wrapper for BaseKit.removeTrailingSpaces
      */ 
     public static final class RemoveTrailingSpacesAction extends MainMenuAction {
-
-        private JMenuItem menuItem;
-
         public RemoveTrailingSpacesAction() {
             super(true, null);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
 
@@ -939,25 +776,16 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "remove_trailing_spaces_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.removeTrailingSpacesAction;
         }
-
-    } // end of RemoveTrailingSpacesAction
+    } // End of RemoveTrailingSpacesAction class
 
     /** Paste Formatted action in Edit main menu, wrapper for BaseKit.pasteFormattedAction
      */ 
     public static final class PasteFormattedAction extends MainMenuAction {
-
-        private JMenuItem menuItem;
-
         public PasteFormattedAction() {
             super(true, BLANK_ICON);
-            menuItem = new JMenuItem(getMenuItemText());
             setMenu();
         }
 
@@ -966,15 +794,10 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
                 "paste_formatted_main_menu_item"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter () {
-            return menuItem;
-        }
-
         protected String getActionName () {
             return BaseKit.pasteFormatedAction;
         }
-
-    } // end of PasteFormattedAction
+    } // End of PasteFormattedAction class
     
 }
     

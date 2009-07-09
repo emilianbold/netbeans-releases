@@ -61,9 +61,6 @@ made subject to such option by the copyright holder.
     <filter pattern="http://mdr\.netbeans\.org/uml2mof.*" accept="true"/>
     <filter pattern="http://java\.netbeans\.org/models/java/java\.xml" accept="true"/>
     <filter pattern="http://autoupdate\.netbeans\.org/nbm/nbm_package\.html.*" accept="true"/>
-    <!-- allow SiteCatalyst analytics code -->
-    <filter pattern="http://www\.netbeans\.org/images/js/s_code_remote\.js" accept="true"/>
-    <filter pattern="http://www\.google-analytics\.com/urchin\.js" accept="true"/>
     <!-- Winsys important documents -->
     <filter pattern="http://core\.netbeans\.org/windowsystem/.*html.*" accept="true"/>
     <!-- UI specifications -->

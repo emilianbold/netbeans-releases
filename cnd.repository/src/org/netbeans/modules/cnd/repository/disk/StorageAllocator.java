@@ -62,8 +62,8 @@ public class StorageAllocator {
             long index = 0;
             diskRepositoryPath = System.getProperty("java.io.tmpdir");
             
-            diskRepositoryPath += File.separator +         //NOI18N
-                    System.getProperty("user.name") +  "-cnd67-caches-";  //NOI18N
+            diskRepositoryPath += File.separator +  
+                    System.getProperty("user.name") +  "-cnd68-caches-";  //NOI18N
             
             File diskRepositoryFile = new File(diskRepositoryPath + index);
             // find name for directory which is not occupied by file

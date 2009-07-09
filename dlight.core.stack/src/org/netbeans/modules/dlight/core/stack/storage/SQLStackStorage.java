@@ -78,7 +78,7 @@ import org.openide.util.Lookup;
 public final class SQLStackStorage {
 
     public static final List<FunctionMetric> METRICS = Arrays.<FunctionMetric>asList(
-            FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
+            FunctionMetric.CpuTimeExclusiveMetric, FunctionMetric.CpuTimeInclusiveMetric);
     protected final SQLDataStorage sqlStorage;
     private final Map<CharSequence, Integer> funcCache;
     private final Map<NodeCacheKey, Integer> nodeCache;

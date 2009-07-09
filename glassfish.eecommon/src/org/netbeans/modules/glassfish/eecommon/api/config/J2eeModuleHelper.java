@@ -63,10 +63,10 @@ public abstract class J2eeModuleHelper {
 
     static {
         Map<Object, J2eeModuleHelper> map = new HashMap<Object, J2eeModuleHelper>();
-        map.put(J2eeModule.WAR, new WebDDHelper());
-        map.put(J2eeModule.EJB, new EjbDDHelper());
-        map.put(J2eeModule.EAR, new EarDDHelper());
-        map.put(J2eeModule.CLIENT, new ClientDDHelper());
+        map.put(J2eeModule.Type.WAR, new WebDDHelper());
+        map.put(J2eeModule.Type.EJB, new EjbDDHelper());
+        map.put(J2eeModule.Type.EAR, new EarDDHelper());
+        map.put(J2eeModule.Type.CAR, new ClientDDHelper());
         helperMap = Collections.unmodifiableMap(map);
     }
 

@@ -271,7 +271,9 @@ public class WatchesModel implements TreeModel {
             this.w = w;
             this.debugger = debugger;
             parseExpression(w.getExpression());
-            debugger.varChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(this, debugger.varChangeSupport));
+            if (cloneNumber == 0) {
+                debugger.varChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(this, debugger.varChangeSupport));
+            }
         }
         
         private void parseExpression(String exprStr) {
@@ -489,7 +491,9 @@ public class WatchesModel implements TreeModel {
 
         @Override
         public JPDAWatchEvaluating clone() {
-            return new JPDAWatchEvaluating(model, w, debugger, cloneNumber++);
+            JPDAWatchEvaluating clon = new JPDAWatchEvaluating(model, w, debugger, cloneNumber++);
+            clon.setEvaluated(evaluatedWatch);
+            return clon;
         }
         
     }
@@ -548,16 +552,19 @@ public class WatchesModel implements TreeModel {
         public void propertyChange (PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
-            // We care only about the debugger state change and watch expression change here...
-            if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName))) return ;
+            // We care only about the current call stack frame change and watch expression change here...
+            if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName) ||
+                    JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) return;
             final WatchesModel m = getModel ();
             if (m == null) return;
-            if (m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-                destroy ();
+            if (JPDADebugger.PROP_STATE.equals(propName)) {
+                if (m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+                    destroy ();
+                }
                 return;
             }
-            if (m.debugger.getState () == JPDADebugger.STATE_RUNNING) {
-                return ;
+            if (m.debugger.getCurrentCallStackFrameOrNull() == null) {
+                return;
             }
             
             if (evt.getSource () instanceof Watch) {

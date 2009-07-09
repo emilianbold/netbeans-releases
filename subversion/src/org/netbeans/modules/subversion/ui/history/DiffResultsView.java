@@ -348,6 +348,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
         @Override
         protected void perform() {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); // NOI18N
             final Diff diff = Diff.getDefault();
             SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
@@ -365,11 +366,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
             if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
             s2.getMIMEType();  // triggers s2.init()
             if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
@@ -379,6 +382,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 public void run() {
                     try {
                         if (isCanceled()) {
+                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
                         final DiffController view = DiffController.create(s1, s2);

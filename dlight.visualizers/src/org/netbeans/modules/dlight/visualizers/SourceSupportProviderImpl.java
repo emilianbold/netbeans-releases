@@ -123,7 +123,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                         inputStream = uri.toURL().openStream();
                         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                         String line = null;
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         while ((line = in.readLine()) != null) {
                             buffer.append(line + "\n"); // NOI18N
 

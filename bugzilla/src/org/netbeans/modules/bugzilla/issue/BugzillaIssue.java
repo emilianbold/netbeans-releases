@@ -70,7 +70,7 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -78,7 +78,6 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -104,6 +103,7 @@ public class BugzillaIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "bugzilla.issue.assigned";    // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -196,18 +196,32 @@ public class BugzillaIssue extends Issue {
         this.repository = repo;
     }
 
+    @Override
+    public boolean isNew() {
+        return data == null || data.isNew();
+    }
+
     void opened() {
-        seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(!data.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
         repository.scheduleForRefresh(getID());
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
     void closed() {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
         repository.stopRefreshing(getID());
         seenAtributes = null;
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     @Override
@@ -251,38 +265,32 @@ public class BugzillaIssue extends Issue {
             new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),         // NOI18N
-                                              getLongestWordWidth(
+                                              BugtrackingUtil.getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Severity_Title"),      // NOI18N
                                                 bc.getSeverities(), t)),
             new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                               loc.getString("CTL_Issue_Priority_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Priority_Desc"),         // NOI18N
-                                              getLongestWordWidth(
-                                                loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
-                                                bc.getPriorities(), t)),
+                                              BugtrackingUtil.getLongestWordWidth(
+                                                loc.getString("CTL_Issue_Priority_Title"),
+                                                bc.getPriorities(), t, true)),
             new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                               loc.getString("CTL_Issue_Status_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Status_Desc"),           // NOI18N
-                                              getLongestWordWidth(
+                                              BugtrackingUtil.getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Status_Title"),        // NOI18N
                                                 bc.getStatusValues(), t)),
             new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                               loc.getString("CTL_Issue_Resolution_Title"),      // NOI18N
                                               loc.getString("CTL_Issue_Resolution_Desc"),       // NOI18N
-                                              getLongestWordWidth(
+                                              BugtrackingUtil.getLongestWordWidth(
                                                 loc.getString("CTL_Issue_Resolution_Title"),    // NOI18N
-                                                bc.getResolutions(), t))
+                                                bc.getResolutions(), t)),
+            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
         };
-    }
-
-    private static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
-        int size = header.length();
-        for (String s : values) {
-            if(size < s.length()) {
-                size = s.length();
-            }
-        }
-        return BugtrackingUtil.getColumnWidthInPixels(size, comp);
     }
 
     @Override
@@ -337,8 +345,8 @@ public class BugzillaIssue extends Issue {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
         } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
-            Map<String, String> seenAtributes = getSeenAttributes();
-            assert seenAtributes != null;
+            Map<String, String> attr = getSeenAttributes();
+            assert attr != null;
             for (IssueField f : IssueField.values()) {
                 switch(f) {
                     case MODIFICATION :
@@ -348,7 +356,7 @@ public class BugzillaIssue extends Issue {
                         continue;
                 }
                 String value = getFieldValue(f);
-                String seenValue = seenAtributes.get(f.key);
+                String seenValue = attr.get(f.key);
                 if(seenValue == null) {
                     seenValue = "";                                             // NOI18N
                 }
@@ -376,7 +384,7 @@ public class BugzillaIssue extends Issue {
                             break;
                         case COMMENT_COUNT :
                             String value = getFieldValue(changedField);
-                            String seenValue = seenAtributes.get(changedField.key);
+                            String seenValue = attr.get(changedField.key);
                             int count = 0;
                             try {
                                 count = Integer.parseInt(value) - Integer.parseInt(seenValue);
@@ -581,11 +589,8 @@ public class BugzillaIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-//        if(!wasSeen()) {
-//            return FIELD_STATUS_IRELEVANT;
-//        }
-        Map<String, String> a = getSeenAttributes();
-        String seenValue = a != null ? a.get(f.key) : null;
+        Map<String, String> attr = getSeenAttributes();
+        String seenValue = attr != null ? attr.get(f.key) : null;
         if(seenValue == null) {
             seenValue = "";                                                     // NOI18N
         }
@@ -835,7 +840,6 @@ public class BugzillaIssue extends Issue {
         }
         return true;
     }
-
 
     private Map<String, String> getSeenAttributes() {
         if(seenAtributes == null) {

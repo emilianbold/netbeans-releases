@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
@@ -58,7 +57,6 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.openide.filesystems.FileObject;
 
 /**
  *

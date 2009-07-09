@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.highlight;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
 import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
 import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesTest;
@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesTest;
  *
 * @author Sergey Grinev
  */
-public class HighlightingTests extends BaseTestSuite {
+public class HighlightingTests extends CndBaseTestSuite {
     
     public HighlightingTests() {
         super("Code Highlighting"); // NOI18N

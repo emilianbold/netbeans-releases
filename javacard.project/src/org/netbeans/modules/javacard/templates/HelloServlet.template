@@ -1,0 +1,35 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../../Templates/Licenses/license-${project.license}.txt">
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * @author ${user}
+ */
+public class ${name} extends HttpServlet {
+
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        try {
+            out.println("<html><head><title>${projectname}</title></head>");
+            out.println("<body><h1>${projectname}</h1>");
+            out.println("Hello from ${package}.${classname} to");
+            out.println(request.getParameter("name"));
+            out.println("</body></html>");
+        } finally {
+            out.close();
+        }
+    }
+}

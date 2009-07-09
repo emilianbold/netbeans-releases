@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.ddloaders.web;
 
 import java.io.IOException;
 
-import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
@@ -77,10 +76,12 @@ public class DDDataLoader extends UniFileLoader {
         }
     }
     
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (DDDataLoader.class, "LBL_loaderName");
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/x-dd/Actions/"; // NOI18N
     }

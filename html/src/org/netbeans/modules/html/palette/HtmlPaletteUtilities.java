@@ -48,17 +48,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
-import org.netbeans.editor.ext.html.HtmlTokenContext;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -70,31 +65,6 @@ import org.openide.util.Exceptions;
  */
 public final class HtmlPaletteUtilities {
     
-    public static int wrapTags(HtmlSyntaxSupport sup, int start, int end, BaseDocument doc) {
-        
-        try {
-            TokenItem token = sup.getTokenChain(start, start + 1);
-            
-            if (token == null)
-                return end;
-            
-            while (token.getOffset() < end) { // interested only in the tokens inside the body
-                token = token.getNext();
-                if (token.getTokenID() == HtmlTokenContext.TAG_OPEN_SYMBOL) { // it's '<' token
-                    int offset = token.getOffset();
-                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
-                    end++;  // remember new body end
-                    token = sup.getTokenChain(offset + 1, offset + 2); // create new token chain reflecting changed document
-                }
-            }
-            
-        } catch (IllegalStateException ise) {
-        } catch (BadLocationException ble) {
-        }
-        
-        return end;
-    }
-
     public static SourceGroup[] getSourceGroups(FileObject fObj) {
     
         Project proj = FileOwnerQuery.getOwner(fObj);
@@ -229,5 +199,6 @@ public final class HtmlPaletteUtilities {
         
         return start;
     }
+
     
 }

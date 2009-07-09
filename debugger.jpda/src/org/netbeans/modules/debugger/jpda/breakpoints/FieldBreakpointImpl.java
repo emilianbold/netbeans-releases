@@ -45,7 +45,6 @@ import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.WatchpointEvent;
@@ -56,6 +55,7 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 import com.sun.jdi.request.WatchpointRequest;
 
+import java.util.List;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -68,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
@@ -125,34 +126,51 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     @Override
-    protected void classLoaded (ReferenceType referenceType) {
-        try {
-            Field f = ReferenceTypeWrapper.fieldByName (referenceType, breakpoint.getFieldName ());
-            if (f == null) {
-                setValidity(VALIDITY.INVALID,
-                        NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoField", ReferenceTypeWrapper.name(referenceType), breakpoint.getFieldName ()));
+    protected void classLoaded (List<ReferenceType> referenceTypes) {
+        boolean submitted = false;
+        for (ReferenceType referenceType : referenceTypes) {
+            try {
+                Field f = ReferenceTypeWrapper.fieldByName (referenceType, breakpoint.getFieldName ());
+                if (f == null) {
+                    continue;
+                }
+                if ( (breakpoint.getBreakpointType () &
+                      FieldBreakpoint.TYPE_ACCESS) != 0
+                ) {
+                    AccessWatchpointRequest awr = EventRequestManagerWrapper.
+                        createAccessWatchpointRequest (getEventRequestManager (), f);
+                    setFilters(awr);
+                    addEventRequest (awr);
+                }
+                if ( (breakpoint.getBreakpointType () &
+                      FieldBreakpoint.TYPE_MODIFICATION) != 0
+                ) {
+                    ModificationWatchpointRequest mwr = EventRequestManagerWrapper.
+                        createModificationWatchpointRequest (getEventRequestManager (), f);
+                    setFilters(mwr);
+                    addEventRequest (mwr);
+                }
+                submitted = true;
+            } catch (InternalExceptionWrapper e) {
+            } catch (ClassNotPreparedExceptionWrapper e) {
+            } catch (ObjectCollectedExceptionWrapper e) {
+            } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
             }
-            if ( (breakpoint.getBreakpointType () & 
-                  FieldBreakpoint.TYPE_ACCESS) != 0
-            ) {
-                AccessWatchpointRequest awr = EventRequestManagerWrapper.
-                    createAccessWatchpointRequest (getEventRequestManager (), f);
-                setFilters(awr);
-                addEventRequest (awr);
-            }
-            if ( (breakpoint.getBreakpointType () & 
-                  FieldBreakpoint.TYPE_MODIFICATION) != 0
-            ) {
-                ModificationWatchpointRequest mwr = EventRequestManagerWrapper.
-                    createModificationWatchpointRequest (getEventRequestManager (), f);
-                setFilters(mwr);
-                addEventRequest (mwr);
-            }
+        }
+        if (submitted) {
             setValidity(VALIDITY.VALID, null);
-        } catch (InternalExceptionWrapper e) {
-        } catch (ClassNotPreparedExceptionWrapper e) {
-        } catch (VMDisconnectedExceptionWrapper e) {
+        } else {
+            String name;
+            try {
+                name = ReferenceTypeWrapper.name(referenceTypes.get(0));
+            } catch (InternalExceptionWrapper e) {
+                name = e.getLocalizedMessage();
+            } catch (VMDisconnectedExceptionWrapper e) {
+                return ;
+            }
+            setValidity(VALIDITY.INVALID,
+                    NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoField", name, breakpoint.getFieldName ()));
         }
     }
     
@@ -207,6 +225,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         return processCondition(event, breakpoint.getCondition (), thread, null);
     }
 
+    @Override
     public boolean exec (Event event) {
         try {
             if (event instanceof ModificationWatchpointEvent) {

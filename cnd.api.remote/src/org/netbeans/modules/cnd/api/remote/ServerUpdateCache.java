@@ -52,12 +52,12 @@ import java.util.logging.Logger;
 public final class ServerUpdateCache {
 
     private List<ServerRecord> hosts;
-    private int defaultIndex;
+    private ServerRecord defaultRecord;
     private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public ServerUpdateCache() {
         hosts = null;
-        defaultIndex = -1;
+        defaultRecord = null;
     }
     
     public List<ServerRecord> getHosts() {
@@ -68,19 +68,22 @@ public final class ServerUpdateCache {
         return new ArrayList<ServerRecord>(hosts);
     }
 
-    public void setHosts(List<ServerRecord> newHosts) {
+    public synchronized void setHosts(List<ServerRecord> newHosts) {
         hosts = new ArrayList<ServerRecord>(newHosts);
+        if (defaultRecord != null && !hosts.contains(defaultRecord)) {
+            defaultRecord = hosts.isEmpty() ? null : hosts.get(0);
+        }
     }
 
-    public int getDefaultIndex() {
-        if (defaultIndex < 0) {
-            log.warning("ServerUpdateCache.getDefaultInded: Forcing negative index to 0");
-            defaultIndex = 0;
+    public ServerRecord getDefaultRecord() {
+        if (defaultRecord == null) {
+            log.warning("ServerUpdateCache.getDefaultRecord: Forcing negative index to 0");
         }
-        return defaultIndex;
+        return defaultRecord;
     }
-    
-    public void setDefaultIndex(int defaultIndex) {
-        this.defaultIndex = defaultIndex;
+
+    public void setDefaultRecord(ServerRecord record) {
+        assert hosts.contains(record);
+        defaultRecord = record;
     }
 }

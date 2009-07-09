@@ -53,9 +53,9 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.UserInGroupFilter;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class UserSearch implements ItemListener {
+class UserSearch implements ItemListener {
     private String savedText;
     private final JTextField txt;
     private final JComboBox combo;
@@ -187,7 +187,7 @@ public class UserSearch implements ItemListener {
     }
     private class SpecificUserSearch extends UserSearchItem {
         public SpecificUserSearch() {
-            super("Specify User");
+            super("Specify User");                                              
         }
         @Override
         public UserFilter getFilter(UserSearch us) {
@@ -209,7 +209,7 @@ public class UserSearch implements ItemListener {
     }
     private class SpecificGroupSearch extends UserSearchItem {
         public SpecificGroupSearch() {
-            super("Specify Group");
+            super("Specify Group");                                             
         }
         @Override
         public UserFilter getFilter(UserSearch us) {

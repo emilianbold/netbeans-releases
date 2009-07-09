@@ -1236,7 +1236,9 @@ AtomicLockListener, FoldHierarchyListener {
                                         selectWordAction = ((BaseKit)ui.getEditorKit(
                                                                 c)).getActionByName(BaseKit.selectWordAction);
                                     }
-                                    selectWordAction.actionPerformed(null);
+                                    if (selectWordAction != null) {
+                                        selectWordAction.actionPerformed(null);
+                                    }
                                 }
                             } finally {
                                 hierarchy.unlock();
@@ -1251,7 +1253,9 @@ AtomicLockListener, FoldHierarchyListener {
                         selectLineAction = ((BaseKit)ui.getEditorKit(
                                                 c)).getActionByName(BaseKit.selectLineAction);
                     }
-                    selectLineAction.actionPerformed(null);
+                    if (selectLineAction != null) {
+                        selectLineAction.actionPerformed(null);
+                    }
                 }
             } else if (SwingUtilities.isMiddleMouseButton(evt)){
 		if (evt.getClickCount() == 1) {

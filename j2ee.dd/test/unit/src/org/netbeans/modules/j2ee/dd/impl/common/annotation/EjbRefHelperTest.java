@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.dd.impl.common.annotation;
 
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -49,7 +50,6 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
@@ -222,10 +222,8 @@ public class EjbRefHelperTest extends CommonTestCase {
         
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
-                WebApp webApp = metadata.getRoot();
-                
-                EjbLocalRef[] ejbLocalRefs = webApp.getEjbLocalRef();
-                EjbRef[] ejbRefs = webApp.getEjbRef();
+                List<EjbLocalRef> ejbLocalRefs = metadata.getEjbLocalRefs();
+                List<EjbRef> ejbRefs = metadata.getEjbRefs();
                 
                 // local refs
                 
@@ -263,8 +261,8 @@ public class EjbRefHelperTest extends CommonTestCase {
                 assertNotNull(ref6_2);
                 assertEquals("foo.FooRemote", ref6_2.getRemote());
                 
-                assertEquals(4, ejbLocalRefs.length);
-                assertEquals(4, ejbRefs.length);
+                assertEquals(4, ejbLocalRefs.size());
+                assertEquals(4, ejbRefs.size());
                 
                 return null;
             }
@@ -302,7 +300,7 @@ public class EjbRefHelperTest extends CommonTestCase {
 
     }
     
-    private static EjbLocalRef findEjbLocalRef(EjbLocalRef[] ejbLocalRefs, String ejbRefName) {
+    private static EjbLocalRef findEjbLocalRef(List<EjbLocalRef> ejbLocalRefs, String ejbRefName) {
         for (EjbLocalRef ejbLocalRef : ejbLocalRefs) {
             if (ejbRefName.equals(ejbLocalRef.getEjbRefName())) {
                 return ejbLocalRef;
@@ -311,6 +309,15 @@ public class EjbRefHelperTest extends CommonTestCase {
         return null;
     }
     
+    private static EjbRef findEjbRef(List<EjbRef> ejbRefs, String ejbRefName) {
+        for (EjbRef ejbRef : ejbRefs) {
+            if (ejbRefName.equals(ejbRef.getEjbRefName())) {
+                return ejbRef;
+            }
+        }
+        return null;
+    }
+
     private static EjbRef findEjbRef(EjbRef[] ejbRefs, String ejbRefName) {
         for (EjbRef ejbRef : ejbRefs) {
             if (ejbRefName.equals(ejbRef.getEjbRefName())) {

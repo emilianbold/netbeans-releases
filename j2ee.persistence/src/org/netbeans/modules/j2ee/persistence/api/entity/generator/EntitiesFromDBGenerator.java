@@ -58,7 +58,7 @@ import org.netbeans.modules.dbschema.DBIdentifier;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.JavaPersistenceGenerator;

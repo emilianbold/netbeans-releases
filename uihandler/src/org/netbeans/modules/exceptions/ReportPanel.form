@@ -42,10 +42,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPasswordField1" alignment="0" pref="307" max="32767" attributes="0"/>
-                          <Component id="loginField" alignment="0" pref="307" max="32767" attributes="0"/>
+                          <Component id="jPasswordField1" alignment="0" pref="308" max="32767" attributes="0"/>
+                          <Component id="loginField" alignment="0" pref="308" max="32767" attributes="0"/>
                           <Component id="rememberCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="asAGuestCheckBox" alignment="0" pref="307" max="32767" attributes="1"/>
+                          <Component id="asAGuestCheckBox" alignment="0" pref="308" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -59,14 +59,14 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="summaryField" pref="527" max="32767" attributes="0"/>
+                              <Component id="summaryField" pref="528" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel7" pref="297" max="32767" attributes="0"/>
+                              <Component id="jLabel7" pref="305" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jLabel4" alignment="0" pref="606" max="32767" attributes="1"/>
                       </Group>
@@ -81,7 +81,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="185" max="32767" attributes="0"/>
+                      <EmptySpace pref="211" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -106,7 +106,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="151" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="168" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -215,8 +215,10 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="DejaVu Serif" size="14" style="1"/>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+          <FontInfo relative="true">
+            <Font bold="true" component="jLabel4" property="font" relativeSize="true" size="0"/>
+          </FontInfo>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="6" green="71" red="a6" type="rgb"/>

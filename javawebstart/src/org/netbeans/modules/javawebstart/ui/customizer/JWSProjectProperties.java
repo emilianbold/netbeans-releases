@@ -307,14 +307,15 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                 return;
             }
         } else if (CB_TYPE_LOCAL.equals(selItem)) {
-            propName = JNLP_CBASE_URL;
-            propValue = getProjectDistDir();
+            // #161919: local codebase will be computed
+            //propName = JNLP_CBASE_URL;
+            //propValue = getProjectDistDir();
         } else if (CB_TYPE_WEB.equals(selItem))  {
             propName = JNLP_CBASE_URL;
             propValue = CB_URL_WEB_PROP_VALUE;
         }
+        editableProps.setProperty(JNLP_CBASE_TYPE, selItem);
         if (propName != null && propValue != null) {
-            editableProps.setProperty(JNLP_CBASE_TYPE, selItem);
             editableProps.setProperty(propName, propValue);
         }
         // store applet class name and default applet size
@@ -484,7 +485,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                 ClassPath bootCP = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
                 ClassPath executeCP = ClassPath.getClassPath(srcRoot, ClassPath.EXECUTE);
                 ClassPath sourceCP = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
-                List cpList = new ArrayList<ClassPath>();
+                List<ClassPath> cpList = new ArrayList<ClassPath>();
                 if (bootCP != null) {
                     cpList.add(bootCP);
                 }
@@ -513,9 +514,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                                 public void run(CompilationController controller) throws Exception {
                                     Elements elems = controller.getElements();
                                     TypeElement appletElement = elems.getTypeElement("java.applet.Applet");
-                                    ElementHandle appletHandle = ElementHandle.create(appletElement);
+                                    ElementHandle<TypeElement> appletHandle = ElementHandle.create(appletElement);
                                     TypeElement jappletElement = elems.getTypeElement("javax.swing.JApplet");
-                                    ElementHandle jappletHandle = ElementHandle.create(jappletElement);
+                                    ElementHandle<TypeElement> jappletHandle = ElementHandle.create(jappletElement);
                                     Set<ElementHandle<TypeElement>> appletHandles = classIndex.getElements(appletHandle, kinds, scopes);
                                     for (ElementHandle<TypeElement> elemHandle : appletHandles) {
                                         appletNames.add(elemHandle.getQualifiedName());

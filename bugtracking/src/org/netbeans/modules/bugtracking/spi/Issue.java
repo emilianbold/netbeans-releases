@@ -168,6 +168,12 @@ public abstract class Issue {
     public abstract String getTooltip();
 
     /**
+     * Returns true if the issue isn't stored in a arepository yet. Otherwise false.
+     * @return
+     */
+    public abstract boolean isNew();
+
+    /**
      * Refreshes this Issues data from its bugtracking repositry
      *
      * @return true if the issue was refreshed, otherwise false

@@ -53,6 +53,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.KenaiREST;
 import org.netbeans.modules.kenai.KenaiImpl;
@@ -85,7 +87,7 @@ public final class Kenai {
      * fired when user login failed
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
-    
+
     private static Kenai instance;
     private PasswordAuthentication auth = null;
     private static URL url;
@@ -112,10 +114,17 @@ public final class Kenai {
     }
 
     private final KenaiImpl     impl;
+    private XMPPConnection xmppConnection;
 
     Kenai(KenaiImpl impl) {
         this.impl = impl;
     }
+
+    public synchronized XMPPConnection getXMPPConnection() {
+        return xmppConnection;
+    }
+
+    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
 
     /**
      * Logs an existing user into Kenai. Login session persists until the login method
@@ -134,6 +143,13 @@ public final class Kenai {
                 String shortName = impl.verify(username, password);
                 auth = new PasswordAuthentication(shortName, password);
                 myProjects=null;
+                xmppConnection = new XMPPConnection(XMPP_SERVER);
+                try {
+                    xmppConnection.connect();
+                    xmppConnection.login(shortName, new String(password));
+                } catch (XMPPException xMPPException) {
+                    new KenaiException(xMPPException);
+                }
 //        Authenticator.setDefault(new Authenticator() {
 //            @Override
 //            protected PasswordAuthentication getPasswordAuthentication() {
@@ -158,6 +174,9 @@ public final class Kenai {
         auth = null;
         synchronized(this) {
             myProjects=null;
+            if (xmppConnection!=null)
+                xmppConnection.disconnect();
+            xmppConnection=null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
     }

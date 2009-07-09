@@ -43,9 +43,8 @@ package org.netbeans.editor.ext.html.dtd;
 import java.io.Reader;
 import java.io.PushbackReader;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
-
-import org.netbeans.editor.ext.html.WeakHashSet;
 
 /**
  * !!! Includes !!!! String->DTD.Element
@@ -1890,41 +1889,55 @@ class DTDParser extends Object {
                 }
                 
                 return null; // Doesn't match at all                
-            } else { // only '&' remains: if( type == '&' ) {
+            } else if(type == '&') {
                 for( int index = 0; index < content.length; index++ ) {
                     DTD.Content sub = content[index].reduce( elementName );
                     if( sub == EMPTY_CONTENT ) {
+                        //element reduced completely, return the unresolved part
                         int newLen = content.length - 1;
-                        if( newLen > 1 ) {
+                        if( newLen == 0 ) {
+                            //all contents reduced
+                            return EMPTY_CONTENT;
+                        } else {
+                            //something left
                             DTD.Content[] newSub = new DTD.Content[ newLen ];
+                            //copy all before the reduced element
                             System.arraycopy( content, 0, newSub, 0, index );
+                            //and all behind
                             if( index < newSub.length ) {
                                 System.arraycopy( content, index + 1, newSub, index, newLen - index );
                             }
                             return new MultiContentNodeImpl( '&', newSub );
-                        } else {
-                            return content[ 1 - index];
                         }
                     }
                     if( sub != null ) {
-                        DTD.Content right;
-                        if( content.length > 1 ) {
-                            int newLen = content.length - 1;
+                        //element resolved and modified
+                        int newLen = content.length - 1;
+                        if(newLen == 0) {
+                            //just the modified content left
+                            return sub;
+                        } else {
                             DTD.Content[] newSub = new DTD.Content[ newLen ];
+                            //copy all before the reduced element
                             System.arraycopy( content, 0, newSub, 0, index );
+                            //and all behind
                             if( index < newSub.length ) {
                                 System.arraycopy( content, index + 1, newSub, index, newLen - index );
                             }
-                            right = new MultiContentNodeImpl( '&', newSub );
-                        } else {
-                            right = content[ 1 - index ];
-                        }
-                        return new MultiContentNodeImpl( ',', new DTD.Content[] { sub, right } );
+                            DTD.Content right = new MultiContentNodeImpl( '&', newSub );
+                            return new MultiContentNodeImpl( '&', new DTD.Content[] { sub, right } );
+                        } 
                     }
                 }
                 return null;
                 
+            } else {
+                //unknown operator
+                assert false : "Unknown operator '" + type + "' found in the DTD file when trying to reduce " + elementName;
             }
+
+            return null;
+            
         }
 
         public Set getPossibleElements() {
@@ -1946,5 +1959,142 @@ class DTDParser extends Object {
         }
     }
 
+    /** This is a special set-like (not java.util.Set-like) class.
+     * It holds a set of objects referenced only weakly, and which
+     * can be get() by an equivalent object. It can be used e.g.
+     * as a lightweight (gc()-able) intern() for String or as a temporal storage
+     * for an algorithm creating a lot of long-lasting equals() immutables.
+     *
+     * @author  Petr Nejedly
+     * @version 1.0
+     */
+    public static class WeakHashSet {
+
+        Entry[] data;
+        // count of (possibly) active Entries
+        int count = 0;
+        // Number of Entries at which we rehash
+        int treshold;
+        float loadFactor;
+
+        /** Creates new WeakHashSet */
+        public WeakHashSet(int capacity, float loadFactor) {
+            this.loadFactor = loadFactor;
+            treshold = (int) (capacity * loadFactor);
+            data = new Entry[capacity];
+        }
+
+        /** Return the object equals to this object */
+        public Object get(Object obj) {
+            if (obj == null) {
+                return null;
+            }
+
+            Entry[] tab = data;
+            Entry prev = null;
+            int hash = obj.hashCode();
+            int index = (hash & 0x7FFFFFFF) % tab.length;
+
+            for (Entry e = tab[index]; e != null; prev = e, e = e.next) {
+                if (e.hash == hash) {
+                    Object value = e.value.get();
+                    if (value == null) {
+                        // remove this entry from chain
+                        count--;
+                        if (prev == null) {
+                            tab[index] = e.next;
+                        } else {
+                            prev.next = e.next;
+                        }
+                    } else {
+                        if (value.equals(obj)) {
+                            return value;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public Object put(Object obj) {
+            if (obj == null) {
+                return null;
+            }
+
+            Entry[] tab = data;
+            Entry prev = null;
+            int hash = obj.hashCode();
+            int index = (hash & 0x7FFFFFFF) % tab.length;
+
+            for (Entry e = tab[index]; e != null; prev = e, e = e.next) {
+                if (e.hash == hash) {
+                    Object value = e.value.get();
+                    if (value == null) {
+                        count--;
+                        if (prev == null) {
+                            tab[index] = e.next;
+                        } else {
+                            prev.next = e.next;
+                        }
+                    } else {
+                        if (value.equals(obj)) {
+                            return value;
+                        }
+                    }
+                }
+            }
+
+
+            if (count >= treshold) {
+                rehash();
+                tab = data;
+                index = (hash & 0x7FFFFFFF) % tab.length;
+            }
+
+            Entry e = new Entry(hash, obj, tab[index]);
+            tab[index] = e;
+            count++;
+
+            return obj;
+        }
+
+        private void rehash() {
+            int oldCapacity = data.length;
+            Entry oldMap[] = data;
+
+            int newCapacity = oldCapacity * 2 + 1;
+            Entry newMap[] = new Entry[newCapacity];
+
+            treshold = (int) (newCapacity * loadFactor);
+            data = newMap;
+
+            for (int i = oldCapacity; i-- > 0;) {
+                for (Entry old = oldMap[i]; old != null;) {
+                    Entry e = old;
+                    old = old.next;
+
+                    int index = (e.hash & 0x7FFFFFFF) % newCapacity;
+                    e.next = newMap[index];
+                    newMap[index] = e;
+                }
+            }
+        }
+
+        /**
+         * WeakHashSet collision list entry.
+         */
+        private static class Entry {
+
+            int hash;
+            WeakReference value;
+            Entry next;
+
+            Entry(int hash, Object value, Entry next) {
+                this.hash = hash;
+                this.value = new WeakReference(value);
+                this.next = next;
+            }
+        }
+    }
 
 }

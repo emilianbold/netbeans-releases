@@ -589,6 +589,7 @@ public class ProfilesModelHelper {
             } else if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {         // #5
                 WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.X509);
+                SecurityPolicyModelHelper.getInstance(configVersion).enableRequireIssuerSerialReference(tokenType, false);
                 stmh.setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
                 tokenType = stmh.setTokenType(bt, ComboConstants.RECIPIENT, ComboConstants.X509);
                 stmh.setTokenInclusionLevel(tokenType, ComboConstants.NEVER);

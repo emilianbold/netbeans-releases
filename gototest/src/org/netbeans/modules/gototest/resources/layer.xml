@@ -62,8 +62,8 @@ made subject to such option by the copyright holder.
     
     <!-- shortcuts -->
     <folder name="Shortcuts">
-        <file name="DS-T.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.gototest.GotoOppositeAction"/>
-	</file>
+        <file name="DS-T.shadow">
+            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
+        </file>
     </folder>
 </filesystem>

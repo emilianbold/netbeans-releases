@@ -41,8 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="Error_Handler_Client_Library" default="default" basedir=".">
-    <description>Builds, tests, and runs the project Error Handler Client Library.</description>
+<project name="visualweb.errorhandler.client/library" default="default" basedir=".">
     <import file="nbproject/build-impl.xml"/>
     <import file="../../nbbuild/templates/projectized.xml"/>
     <!--

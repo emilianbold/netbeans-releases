@@ -88,7 +88,6 @@ public final class RailsServerUiUtils {
         // no glassfish gem, add a placeholder
         RubyInstance fakeGfGem = new FakeGlassFishGem();
         model.addServer(fakeGfGem);
-        model.setSelectedItem(fakeGfGem);
     }
 
     public static boolean isValidServer(Object server) {
@@ -150,7 +149,22 @@ public final class RailsServerUiUtils {
         }
 
         void addServer(RubyInstance server) {
-            servers.add(0, server);
+            boolean preludeFound = false;
+            for (RubyInstance each : servers) {
+                // atm there's no api for doing this in a cleaner way,
+                // prelude is the only server that is not a RubyServer
+                if (!(each instanceof RubyServer)) {
+                    preludeFound = true;
+                    break;
+                }
+            }
+            // adds fake gf gem as the default
+            if (!preludeFound) {
+                servers.add(0, server);
+                setSelectedItem(server);
+            } else { // add as second and let prelude stay the default
+                servers.add(1, server);
+            }
             fireContentsChanged(this, -1, -1);
         }
     }

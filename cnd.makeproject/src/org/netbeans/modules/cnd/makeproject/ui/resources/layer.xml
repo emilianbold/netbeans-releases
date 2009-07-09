@@ -332,6 +332,7 @@ made subject to such option by the copyright holder.
                     <file name="RunDialogAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction"/>
                         <attr name="position" intvalue="100"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

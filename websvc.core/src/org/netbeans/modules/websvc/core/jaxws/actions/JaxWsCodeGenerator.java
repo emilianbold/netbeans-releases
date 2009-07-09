@@ -699,7 +699,7 @@ public class JaxWsCodeGenerator {
     private static String findWsdlLocation(Client client, FileObject targetFo) {
         Project targetProject = FileOwnerQuery.getOwner(targetFo);
         J2eeModuleProvider moduleProvider = targetProject.getLookup().lookup(J2eeModuleProvider.class);
-        if (moduleProvider != null && J2eeModule.WAR.equals(moduleProvider.getJ2eeModule().getModuleType())) {
+        if (moduleProvider != null && J2eeModule.Type.WAR.equals(moduleProvider.getJ2eeModule().getType())) {
             return "WEB-INF/wsdl/" + client.getLocalWsdlFile(); //NOI18N
         } else {
             return "META-INF/wsdl/" + client.getLocalWsdlFile(); //NOI18N

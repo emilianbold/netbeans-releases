@@ -40,6 +40,7 @@
  */
 package org.openide.cookies;
 
+import org.netbeans.api.actions.Viewable;
 import org.openide.nodes.Node;
 
 
@@ -47,11 +48,5 @@ import org.openide.nodes.Node;
 *
 * @author Jan Jancura
 */
-public interface ViewCookie extends Node.Cookie {
-    /** Instructs an viewer to be opened. The operation can
-    * return immediately and the viewer be opened later.
-    * There can be more than one viewer open, so one of them is
-    * arbitrarily chosen and opened.
-    */
-    public void view();
+public interface ViewCookie extends Viewable, Node.Cookie {
 }

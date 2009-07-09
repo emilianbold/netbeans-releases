@@ -42,7 +42,7 @@
 package org.netbeans.modules.web.project.api;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,6 +79,8 @@ public final class WebProjectCreateData {
     private boolean javaSourceBased = true;
     
     private String librariesDefinition;
+
+    private boolean webXmlRequired;
     
     /**
      * Creates a new instance of WebProjectCreateData
@@ -402,5 +404,13 @@ public final class WebProjectCreateData {
     public void setServerLibraryName(String serverLibraryName) {
         this.serverLibraryName = serverLibraryName;
     }
-    
+
+    public boolean isWebXmlRequired() {
+        return webXmlRequired;
+    }
+
+    public void setWebXmlRequired(boolean webXmlRequired) {
+        this.webXmlRequired = webXmlRequired;
+    }
+
 }

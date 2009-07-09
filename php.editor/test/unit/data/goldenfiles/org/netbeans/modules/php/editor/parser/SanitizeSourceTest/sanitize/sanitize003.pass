@@ -33,7 +33,9 @@
                 <Identifier start='62' end='68' name='classB'/>
             </ClassName>
             <SuperClassName>
-                <Identifier start='77' end='83' name='classA'/>
+                <NamespaceName start='77' end='83' isCurrent='false' isGlobal='false'>
+                    <Identifier start='77' end='83' name='classA'/>
+                </NamespaceName>
             </SuperClassName>
             <Interfaces>
             </Interfaces>

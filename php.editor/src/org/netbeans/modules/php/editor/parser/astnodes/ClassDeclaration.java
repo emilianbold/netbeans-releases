@@ -61,24 +61,24 @@ public class ClassDeclaration extends TypeDeclaration {
     }
     
     private ClassDeclaration.Modifier modifier;
-    private Identifier superClass;
+    private Expression superClass;
 
-    private ClassDeclaration(int start, int end, ClassDeclaration.Modifier modifier, Identifier className, Identifier superClass, Identifier[] interfaces, Block body) {
+    private ClassDeclaration(int start, int end, ClassDeclaration.Modifier modifier, Identifier className, Expression superClass, Expression[] interfaces, Block body) {
         super(start, end, className, interfaces, body);
 
         this.modifier = modifier;
         this.superClass = superClass;
     }
 
-    public ClassDeclaration(int start, int end, ClassDeclaration.Modifier modifier, Identifier className, Identifier superClass, List<Identifier> interfaces, Block body) {
-        this(start, end, modifier, className, superClass, interfaces == null ? null : (Identifier[]) interfaces.toArray(new Identifier[interfaces.size()]), body);
+    public ClassDeclaration(int start, int end, ClassDeclaration.Modifier modifier, Identifier className, Expression superClass, List<Expression> interfaces, Block body) {
+        this(start, end, modifier, className, superClass, interfaces == null ? null : interfaces.toArray(new Expression[interfaces.size()]), body);
     }
 
     public ClassDeclaration.Modifier getModifier() {
         return modifier;
     }
 
-    public Identifier getSuperClass() {
+    public Expression getSuperClass() {
         return superClass;
     }
     

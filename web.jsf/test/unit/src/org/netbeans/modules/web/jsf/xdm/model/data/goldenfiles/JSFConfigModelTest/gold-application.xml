@@ -33,7 +33,6 @@
         </resource-bundle>
     </application>
     <application>
-        <view-handler>a.b.c.Handler1</view-handler>
         <view-handler>a.b.c.Handler2</view-handler>
         <view-handler>a.b.c.Handler3</view-handler>
         <locale-config>
@@ -47,4 +46,5 @@
         </resource-bundle>
     </application>
 </faces-config>
+
 

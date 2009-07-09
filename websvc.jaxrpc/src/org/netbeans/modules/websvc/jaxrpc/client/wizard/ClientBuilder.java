@@ -396,7 +396,7 @@ public class ClientBuilder {
 
                 //get correct top folder where wsdl and mapping file are stored
                 // WEB-INF for webapp, META-INF otherwise (ejb, appclient, connector(?))
-                String prefix = J2eeModule.WAR.equals(j2eeMP.getJ2eeModule().getModuleType())
+                String prefix = J2eeModule.Type.WAR.equals(j2eeMP.getJ2eeModule().getType())
                         ? "WEB-INF/" //NOI18N
                         : "META-INF/";  //NOI18N
 

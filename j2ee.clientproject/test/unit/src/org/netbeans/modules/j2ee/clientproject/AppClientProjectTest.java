@@ -44,23 +44,18 @@ package org.netbeans.modules.j2ee.clientproject;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject.ProjectOpenedHookImpl;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
+import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
 
 /**
  * @author Martin Krauskopf
  */
 public class AppClientProjectTest extends NbTestCase {
-    
-    private String serverID;
     
     public AppClientProjectTest(String testName) {
         super(testName);
@@ -70,9 +65,10 @@ public class AppClientProjectTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
+
+        MockLookup.setLayersAndInstances(new TestPlatformProvider());
     }
-    
+
     public void testBrokenAppClientOpening_73710() throws Exception {
         doTestBrokenAppClientOpening_73710(generateApplicationClient(
                 "TestCreateACProject_14", J2eeModule.J2EE_14));
@@ -85,28 +81,17 @@ public class AppClientProjectTest extends NbTestCase {
         File ddF = new File(dirCopy, "src/conf/application-client.xml");
         assertTrue("has deployment descriptor", ddF.isFile());
         ddF.delete(); // one of #73710 scenario
-        FileObject fo = FileUtil.toFileObject(dirCopy);
-        Project project = ProjectManager.getDefault().findProject(fo);
+        Project project = (Project) ProjectSupport.openProject(dirCopy);
         assertNotNull("project is found", project);
         // tests #73710
-        AppClientProjectTest.openProject((AppClientProject) project);
+        // open hook called by ProjectSupport
     }
     
     private File generateApplicationClient(String prjDir, String version) throws IOException, SAXException {
         File prjDirF = new File(getWorkDir(), prjDir);
         AppClientProjectGenerator.createProject(prjDirF, "test-project",
-                "test.MyMain", version, serverID);
+                "test.MyMain", version, TestUtil.SERVER_URL);
         return prjDirF;
     }
-    
-    /**
-     * Accessor method for those who wish to simulate open of a project and in
-     * case of suite for example generate the build.xml.
-     */
-    public static void openProject(final Project p) {
-        ProjectOpenedHookImpl hook = (ProjectOpenedHookImpl) p.getLookup().lookup(ProjectOpenedHook.class);
-        assertNotNull("has an OpenedHook", hook);
-        hook.projectOpened(); // protected but can use package-private access
-    }
-    
+
 }

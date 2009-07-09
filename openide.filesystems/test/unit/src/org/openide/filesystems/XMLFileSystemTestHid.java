@@ -496,6 +496,44 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals("Right class", Count.class, instance.getClass());
     }
 
+    public void testMapsAreEqualWithoutCallsToAttributes() throws IOException {
+        File f = writeFile("layer.xml",
+            "<filesystem>\n" +
+              "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".counter'/>" +
+                "</file>\n" +
+              "</folder>\n" +
+            "</filesystem>\n"
+        );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        cnt = 0;
+
+        Map m1 = (Map)fo.getAttribute("map");
+        Map m2 = (Map)fo.getAttribute("map");
+
+        if (m1 == m2) {
+            fail("Surprise usually these two shall be different: " + m1);
+        }
+        assertTrue("But they have to be equal", m1.equals(m2));
+        assertEquals("No calls to other attributes of the map", 0, cnt);
+        assertEquals("Same hashcode", m1.hashCode(), m2.hashCode());
+        assertEquals("Still no calls to other attributes of the map", 0, cnt);
+    }
+
+    static Map map(Map m) {
+        return m;
+    }
+    static int cnt;
+    static int counter() {
+        return cnt++;
+    }
+
     public void testClassBoolean() throws Exception {
         doPrimitiveTypeTest("boolvalue='true'", Boolean.class);
     }
@@ -711,6 +749,84 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertNotNull("Image loaded", icon);
         assertEquals("Same image", icon, read);
     }
+    public void testLayersAttribute() throws Exception {
+        clearWorkDir();
+
+        File f1 = new File(getWorkDir(), "layer1.xml");
+        {
+            FileWriter w = new FileWriter(f1);
+            w.write(
+                "<filesystem>" +
+                "  <folder name='just1'>" +
+                "    <file name='empty.xml'/>" +
+                "  </folder>" +
+                "  <folder name='both'>" +
+                "    <file name='empty.xml'>" +
+                "      <attr name='a' stringvalue='a'/>" +
+                "    </file>" +
+                "  </folder>" +
+                "</filesystem>"
+            );
+            w.close();
+        }
+        File f2 = new File(getWorkDir(), "layer2.xml");
+        {
+            FileWriter w = new FileWriter(f2);
+            w.write(
+                "<filesystem>" +
+                "  <folder name='just2'>" +
+                "    <file name='empty.xml'/>" +
+                "  </folder>" +
+                "  <folder name='both'>" +
+                "    <file name='empty.xml'>" +
+                "      <attr name='b' stringvalue='b'/>" +
+                "    </file>" +
+                "  </folder>" +
+                "</filesystem>"
+            );
+            w.close();
+        }
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f1.toURL(), f2.toURL());
+
+
+        FileObject just1 = xfs.findResource("just1/empty.xml");
+        FileObject just2 = xfs.findResource("just2/empty.xml");
+        FileObject both = xfs.findResource("both/empty.xml");
+
+        String layersR = layers(xfs.getRoot());
+        String layers1 = layers(just1);
+        String layers2 = layers(just2);
+        String layersB = layers(both);
+
+        if (!layersR.contains(f1.toURI().toString())) {
+            fail("Missing " + f1 + "\ninside: " + layersR);
+        }
+        if (!layersR.contains(f2.toURI().toString())) {
+            fail("Missing " + f2 + "\ninside: " + layersR);
+        }
+
+        assertEquals(f1.toURL().toExternalForm(), layers1);
+        assertEquals(f2.toURL().toExternalForm(), layers2);
+        if (!layersB.contains(f1.toURI().toString())) {
+            fail("Missing " + f1 + "\ninside: " + layersB);
+        }
+        if (!layersB.contains(f2.toURI().toString())) {
+            fail("Missing " + f2 + "\ninside: " + layersB);
+        }
+    }
+
+    private static String layers(FileObject fo) {
+        Object obj = fo.getAttribute("layers");
+        assertNotNull("layers attr found for " + fo, obj);
+        assertTrue("attribute is URL[] for " + fo, obj instanceof URL[]);
+        StringBuilder sb = new StringBuilder();
+        for (URL u : ((URL[])obj)) {
+            sb.append(u.toExternalForm());
+        }
+        return sb.toString();
+    }
+
     private static Object attr(FileSystem f, String path, String a) throws IOException {
         FileObject fo = f.findResource(path);
         if (fo == null) return null;
@@ -722,9 +838,9 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals(msg + "[" + fo + "]", value, v);
     }
 
-    int cnt;
+    int cntl;
     private File changeOfAnAttributeInLayerIsFiredgenerateLayer(String folderName, String string) throws IOException {
-        File f = new File(getWorkDir(), "layer" + (cnt++) + ".xml");
+        File f = new File(getWorkDir(), "layer" + (cntl++) + ".xml");
         FileWriter w = new FileWriter(f);
         w.write(
             "<filesystem>" +

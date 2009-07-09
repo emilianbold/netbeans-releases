@@ -10,7 +10,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
 class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
-    ConstantElementImpl(FileScopeImpl inScope, ASTNodeInfo<Scalar> node) {
+    ConstantElementImpl(NamespaceScopeImpl inScope, ASTNodeInfo<Scalar> node) {
         this(inScope,node.getName(),inScope.getFile(),node.getRange());
     }
 
@@ -25,5 +25,12 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
         super(inScope, name, file, offsetRange, PhpKind.CONSTANT);
     }
 
-
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        return sb.toString();
+    }    
 }

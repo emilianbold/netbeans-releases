@@ -98,7 +98,7 @@ public class MetadataUnit {
     }
 
     public synchronized FileObject getDeploymentDescriptor() {
-        return deploymentDescriptor != null ? FileUtil.toFileObject(deploymentDescriptor) : null;
+        return deploymentDescriptor != null ? FileUtil.toFileObject(FileUtil.normalizeFile(deploymentDescriptor)) : null;
     }
 
     public void changeDeploymentDescriptor(File deploymentDescriptor) {

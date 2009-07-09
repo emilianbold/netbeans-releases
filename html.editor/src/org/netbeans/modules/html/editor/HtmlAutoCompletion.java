@@ -46,7 +46,6 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -85,7 +84,7 @@ public class HtmlAutoCompletion {
         //test whether the user typed an ending quotation in the attribute value
         doc.readLock();
         try {
-            TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(doc);
+            TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
             if (ts == null) {
                 return; //no html ts at the caret position
             }
@@ -119,7 +118,7 @@ public class HtmlAutoCompletion {
     private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         doc.readLock();
         try {
-            TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(doc);
+            TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
             if (ts == null) {
                 return; //no html ts at the caret position
             }

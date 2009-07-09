@@ -174,6 +174,12 @@ public class Generate {
         // UnsupportedOperationException can be thrown on J2ME:
         VirtualMachineExceptions.put("mirrorOf(java.lang.String)", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.VirtualMachine.class.getName(), VirtualMachineExceptions);
+
+        Map<String, Set<Class>> EventRequestExceptions = new LinkedHashMap<String, Set<Class>>();
+        // ObjectCollectedException can be thrown
+        EventRequestExceptions.put("enable", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EventRequestExceptions.put("setEnabled", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.request.EventRequest.class.getName(), EventRequestExceptions);
     }
 
 

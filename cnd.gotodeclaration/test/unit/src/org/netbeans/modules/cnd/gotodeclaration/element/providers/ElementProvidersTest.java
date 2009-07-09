@@ -40,13 +40,13 @@
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import junit.framework.Test;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Nick Krasilnikov
  */
-public class ElementProvidersTest  extends BaseTestSuite  {
+public class ElementProvidersTest  extends CndBaseTestSuite  {
 
     public ElementProvidersTest() {
         super("Model Services Impl");        

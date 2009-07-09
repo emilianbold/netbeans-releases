@@ -36,7 +36,9 @@
 
 package org.netbeans.installer.utils.helper.swing;
 
+import java.awt.event.MouseEvent;
 import javax.swing.JTextField;
+import org.netbeans.installer.utils.LogManager;
 
 /**
  *
@@ -46,4 +48,15 @@ public class NbiTextField extends JTextField {
     public NbiTextField() {
         super();
     }
+
+    @Override
+    protected void processMouseMotionEvent(MouseEvent e) {
+        try {
+            super.processMouseMotionEvent(e);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6828938
+            LogManager.log(ex);
+        }
+    }
+
 }

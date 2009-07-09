@@ -1,0 +1,14 @@
+<deploy>
+ <applet>
+   <applet-aid>>//aid/F880E6C8B8/7D</applet-aid>
+   <class-name-hint>com.foo.bar.MyApplet</class-name-hint>
+   <instance>
+       <instance-aid>//aid/F880E6C8B8/7E</instance-aid>
+       <deployment-params><![CDATA[ ... ]]></deployment-params>
+   </instance>
+   <instance>
+       <instance-aid>//aid/F880E6C8B8/7F</instance-aid>
+       <deployment-params><![CDATA[ ... ]]></deployment-params>
+   </instance>
+ </applet>
+</deploy>

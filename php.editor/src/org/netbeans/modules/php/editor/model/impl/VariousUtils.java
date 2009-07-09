@@ -53,10 +53,11 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -72,7 +73,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
@@ -175,12 +175,7 @@ public class VariousUtils {
         }
         if (expression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
-            Expression className = classInstanceCreation.getClassName().getName();
-
-            if (className instanceof Identifier) {
-                Identifier identifier = (Identifier) className;
-                return identifier.getName();
-            }
+            return CodeUtils.extractClassName(classInstanceCreation.getClassName());
         } else if (expression instanceof ArrayCreation) {
             return "array"; //NOI18N
         } else if (expression instanceof VariableBase) {
@@ -499,7 +494,7 @@ public class VariousUtils {
             return "@" + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
-            String className = staticMethodInvocation.getClassName().getName();
+            String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
@@ -573,7 +568,7 @@ public class VariousUtils {
         START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, REFERENCE, STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, CLASSNAME, STOP
     };
 
-    public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope, FileScope modelScope) throws IllegalStateException {
+    public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
         int anchor = -1;
         int leftBraces = 0;

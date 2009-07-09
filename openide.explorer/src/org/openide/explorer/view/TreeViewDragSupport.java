@@ -92,7 +92,7 @@ final class TreeViewDragSupport extends ExplorerDragSupport {
 
         // notify tree cell editor that DnD operationm is active
         if (exDnD.isDnDActive()) {
-            TreeCellEditor tce = ((JTree) tree).getCellEditor();
+            TreeCellEditor tce = tree.getCellEditor();
 
             if (tce instanceof TreeViewCellEditor) {
                 ((TreeViewCellEditor) tce).setDnDActive(true);

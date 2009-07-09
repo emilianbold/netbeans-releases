@@ -12,24 +12,34 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.Hashtable;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.*;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
+import org.netbeans.modules.web.jsf.api.facesmodel.Description;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
+import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -444,15 +454,19 @@ public class JSFConfigModelTest extends NbTestCase {
         Application newApplication = model.getFactory().createApplication();
         model.startTransaction();
         model.getRootComponent().addApplication(newApplication);
+        
         ViewHandler viewHandler = model.getFactory().createViewHandler();
         viewHandler.setFullyQualifiedClassType("a.b.c.Handler2");
         newApplication.addViewHandler(viewHandler);
         viewHandler = model.getFactory().createViewHandler();
         viewHandler.setFullyQualifiedClassType("a.b.c.Handler3");
         newApplication.addViewHandler(viewHandler);
-        viewHandler = model.getFactory().createViewHandler();
+        /*
+         * Application has its children without order ( it is not "sequence",
+         * it's "choice" ) so this method is no longer exist.
+         * viewHandler = model.getFactory().createViewHandler();
         viewHandler.setFullyQualifiedClassType("a.b.c.Handler1");
-        newApplication.addViewHandler(0, viewHandler);
+        newApplication.addViewHandler(0, viewHandler);*/
         
         LocaleConfig newLocale = model.getFactory().createLocaleConfig();
         newLocale.setDefaultLocale(model.getFactory().createDefatultLocale());
@@ -467,7 +481,7 @@ public class JSFConfigModelTest extends NbTestCase {
         newResourceBundle.setVar("czech");
         newResourceBundle.setBaseName("org.test.Messages");
         
-        newApplication.addResourceBundle(0, newResourceBundle);
+        newApplication.addResourceBundle( newResourceBundle);
         model.endTransaction();
         model.sync();
         

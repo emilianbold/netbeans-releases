@@ -36,49 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.support;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
  * @author ak119685
  */
-public class TerminalConfigurationProviderTest {
+public class TerminalConfigurationProviderTest extends NativeExecutionBaseTestCase {
 
-    public TerminalConfigurationProviderTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
+    public TerminalConfigurationProviderTest(String name) {
+        super(name);
     }
 
     @Test
-    public void testProvider() throws InterruptedException {
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "konsole"); // NOI18N
-
-        System.out.println(term.toString());
+    public void testProvider() throws Exception {
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
+        String terminal;
+        if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+            terminal = "cmd.exe";
+        } else {
+            terminal = "xterm";
+        }
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(execEnv, terminal);
+        assertNotNull(term);
     }
-
-
 }

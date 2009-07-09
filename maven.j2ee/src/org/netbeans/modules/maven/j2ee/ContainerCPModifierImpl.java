@@ -60,14 +60,13 @@ import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author mkleint
  */
 public class ContainerCPModifierImpl implements ContainerClassPathModifier {
-    private Project project;
+    private final Project project;
 
     public ContainerCPModifierImpl(Project prj) {
         project = prj;

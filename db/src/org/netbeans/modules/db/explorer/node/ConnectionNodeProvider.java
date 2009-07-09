@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
@@ -93,6 +94,7 @@ public class ConnectionNodeProvider extends NodeProvider {
 
     protected synchronized void initialize() {
         List<Node> newList = new ArrayList<Node>();
+        DatabaseConnection newConnection = null;
         DatabaseConnection[] connections = connectionList.getConnections();
         for (DatabaseConnection connection : connections) {
             Collection<Node> matches = getNodes(connection);
@@ -101,11 +103,26 @@ public class ConnectionNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
+                newConnection = connection;
                 newList.add(ConnectionNode.create(lookup, this));
             }
         }
 
         setNodes(newList);
+        // select added connection in explorer
+        final DatabaseConnection newConnectionFinal = newConnection;
+        if (newConnection != null) {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        newConnectionFinal.selectInExplorer();
+                    }
+                });
+            } else {
+                newConnectionFinal.selectInExplorer();
+            }
+        }
     }
 
     static class ConnectionComparator implements Comparator<Node> {

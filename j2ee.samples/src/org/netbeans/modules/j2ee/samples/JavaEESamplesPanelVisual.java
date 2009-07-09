@@ -49,8 +49,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -427,7 +427,7 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()){
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
             
-            if (j2eePlatform.getSupportedSpecVersions().contains(J2eeModule.JAVA_EE_5)){
+            if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_5)){
                 return true;
             }
         }

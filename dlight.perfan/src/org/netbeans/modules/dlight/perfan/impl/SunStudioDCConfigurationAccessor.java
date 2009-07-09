@@ -47,30 +47,36 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
  */
 public abstract class SunStudioDCConfigurationAccessor {
 
-  private static volatile SunStudioDCConfigurationAccessor DEFAULT;
+    private static volatile SunStudioDCConfigurationAccessor DEFAULT;
 
-  public static SunStudioDCConfigurationAccessor getDefault() {
-    SunStudioDCConfigurationAccessor a = DEFAULT;
-    if (a != null) {
-      return a;
+    public static SunStudioDCConfigurationAccessor getDefault() {
+        SunStudioDCConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(SunStudioDCConfiguration.class.getName(), true, SunStudioDCConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    try {
-      Class.forName(SunStudioDCConfiguration.class.getName(), true, SunStudioDCConfiguration.class.getClassLoader());//
-    } catch (Exception e) {
+    public static void setDefault(SunStudioDCConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
-    return DEFAULT;
-  }
 
-  public static void setDefault(SunStudioDCConfigurationAccessor accessor) {
-    if (DEFAULT != null) {
-      throw new IllegalStateException();
+    public SunStudioDCConfigurationAccessor() {
     }
-    DEFAULT = accessor;
-  }
 
-  public SunStudioDCConfigurationAccessor() {
-  }
+    public abstract List<SunStudioDCConfiguration.CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration);
 
-  public abstract List<SunStudioDCConfiguration.CollectedInfo> getCollectedInfo(SunStudioDCConfiguration configuration);
+    public abstract String getCPUTableName();
+
+    public abstract String getSyncTableName();
+
+    public abstract String getMemTableName();
 }

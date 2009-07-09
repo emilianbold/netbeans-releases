@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.ejbjarproject.test;
 
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -52,22 +51,15 @@ import org.openide.util.test.MockLookup;
  */
 public class TestBase extends NbTestCase {
 
-    private static final Repository REPOSITORY;
-
-    static {
-        MockLookup.init();
-        REPOSITORY = new RepositoryImpl();
-        setLookup(new Object[0]);
-    }
-
-    public static void setLookup(Object[] instances) {
-        Object[] newInstances = new Object[instances.length + 1];
-        System.arraycopy(instances, 0, newInstances, 0, instances.length);
-        newInstances[newInstances.length - 1] = REPOSITORY;
-        MockLookup.setLayersAndInstances(newInstances);
-    }
-
     public TestBase(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setLayersAndInstances();
+    }
+
+
 }

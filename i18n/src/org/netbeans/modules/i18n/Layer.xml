@@ -41,21 +41,20 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Shortcuts">
-        <file name="DS-J.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.i18n.InsertI18nStringAction"/>
-	</file>
+        <file name="DS-J.shadow">
+            <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
+        </file>
     </folder>
 
     <folder name="Actions">
         <folder name="Tools">
-            <file name="org-netbeans-modules-i18n-I18nAction.instance" />
-            <file name="org-netbeans-modules-i18n-wizard-I18nWizardAction.instance" />
-            <file name="org-netbeans-modules-i18n-wizard-I18nTestWizardAction.instance" />
-            <file name="org-netbeans-modules-i18n-InsertI18nStringAction.instance" />
+            <file name="org-netbeans-modules-i18n-I18nAction.instance"/>
+            <file name="org-netbeans-modules-i18n-wizard-I18nWizardAction.instance"/>
+            <file name="org-netbeans-modules-i18n-wizard-I18nTestWizardAction.instance"/>
+            <file name="org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
         </folder>
     </folder>
       

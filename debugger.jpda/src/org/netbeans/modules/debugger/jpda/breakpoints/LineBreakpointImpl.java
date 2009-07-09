@@ -84,6 +84,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
@@ -137,10 +138,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         lineNumber = line;
     }
 
+    @Override
     protected LineBreakpoint getBreakpoint() {
         return (LineBreakpoint) super.getBreakpoint();
     }
     
+    @Override
     void fixed () {
         logger.fine("LineBreakpoint fixed: "+this);
         updateLineNumber();
@@ -181,10 +184,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         boolean isInSources = false;
         {
             String srcRoot = getSourceRoot();
-            String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                if (srcRoot.equals(sourceRoots[i])) {
-                    isInSources = true;
+            if (srcRoot != null) {
+                String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
+                for (int i = 0; i < sourceRoots.length; i++) {
+                    if (srcRoot.equals(sourceRoots[i])) {
+                        isInSources = true;
+                    }
                 }
             }
         }
@@ -313,38 +318,52 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     @Override
-    protected void classLoaded (ReferenceType referenceType) {
+    protected void classLoaded (List<ReferenceType> referenceTypes) {
         LineBreakpoint breakpoint = getBreakpoint();
-        logger.fine("Class "+referenceType+" loaded for breakpoint "+breakpoint);
-        
-        String[] reason = new String[] { null };
-        List locations = getLocations (
-            referenceType,
-            breakpoint.getStratum (),
-            breakpoint.getSourceName (),
-            breakpoint.getSourcePath(),
-            lineNumber,
-            reason
-        );
-        if (locations.isEmpty()) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Unable to submit line breakpoint to "+referenceType.name()+
-                    " at line "+lineNumber+", reason: "+reason[0]);
-            setValidity(Breakpoint.VALIDITY.INVALID, reason[0]);
-            return;
-        } 
-        for (Iterator it = locations.iterator(); it.hasNext();) {
-            Location location = (Location)it.next();
-            try {           
-                BreakpointRequest br = EventRequestManagerWrapper.
-                    createBreakpointRequest (getEventRequestManager (), location);
-                setFilters(br);
-                addEventRequest (br);
-                setValidity(Breakpoint.VALIDITY.VALID, null);
-                //System.out.println("Breakpoint " + br + location + "created");
-            } catch (VMDisconnectedExceptionWrapper e) {
-            } catch (InternalExceptionWrapper e) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Classes "+referenceTypes+" loaded for breakpoint "+breakpoint);
+        }
+        boolean submitted = false;
+        String failReason = null;
+        for (ReferenceType referenceType : referenceTypes) {
+            String[] reason = new String[] { null };
+            List locations = getLocations (
+                referenceType,
+                breakpoint.getStratum (),
+                breakpoint.getSourceName (),
+                breakpoint.getSourcePath(),
+                lineNumber,
+                reason
+            );
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Locations in "+referenceType+" are: "+locations+", reason = '"+reason[0]);//+"', HAVE PARENT = "+haveParent);
             }
+            if (locations.isEmpty()) {
+                failReason = reason[0];
+                continue;
+            }
+            for (Iterator it = locations.iterator(); it.hasNext();) {
+                Location location = (Location)it.next();
+                try {
+                    BreakpointRequest br = EventRequestManagerWrapper.
+                        createBreakpointRequest (getEventRequestManager (), location);
+                    setFilters(br);
+                    addEventRequest (br);
+                    submitted = true;
+                    //System.out.println("Breakpoint " + br + location + "created");
+                } catch (VMDisconnectedExceptionWrapper e) {
+                } catch (InternalExceptionWrapper e) {
+                } catch (ObjectCollectedExceptionWrapper e) {
+                }
+            }
+        }
+        if (submitted) {
+            setValidity(Breakpoint.VALIDITY.VALID, failReason); // failReason is != null for partially submitted breakpoints (to some classes only)
+        } else {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to submit line breakpoint to "+referenceTypes.get(0).name()+
+                    " at line "+lineNumber+", reason: "+failReason);
+            setValidity(Breakpoint.VALIDITY.INVALID, failReason);
         }
     }
     
@@ -385,6 +404,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    @Override
     public boolean exec (Event event) {
         if (event instanceof BreakpointEvent) {
             try {

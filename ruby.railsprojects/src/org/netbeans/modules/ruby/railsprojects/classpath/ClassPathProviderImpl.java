@@ -62,10 +62,6 @@ import org.openide.util.WeakListeners;
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
 
-    private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    private static final String DIST_JAR = "dist.jar"; // NOI18N
-    private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-    
     private static final String JAVAC_CLASSPATH = "javac.classpath";    //NOI18N
     private static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";  //NOI18N
     private static final String RUN_CLASSPATH = "run.classpath";    //NOI18N
@@ -108,17 +104,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();
     }
-
-    private ClassPath getPublicWebClassPath() {
-        ClassPath cp = cache[8];
-        if (cp == null) {
-            cp = ClassPathFactory.createClassPath(new PublicClassPathImplementation(projectDirectory));
-            cache[8] = cp;
-            return cp;
-        } else {
-            return cp;
-        }
-    }
  
     private ClassPath getJavascriptsWebClassPath() {
         ClassPath cp = cache[8];
@@ -134,18 +119,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private FileObject[] getTestSrcDir() {
         return this.testSourceRoots.getRoots();
-    }
-    
-    private FileObject getBuildClassesDir() {
-        return getDir(BUILD_CLASSES_DIR);
-    }
-    
-    private FileObject getDistJar() {
-        return getDir(DIST_JAR);
-    }
-    
-    private FileObject getBuildTestClassesDir() {
-        return getDir(BUILD_TEST_CLASSES_DIR);
     }
     
     /**

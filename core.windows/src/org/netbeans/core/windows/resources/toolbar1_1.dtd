@@ -13,5 +13,5 @@
     name CDATA #REQUIRED
     visible (true | false) #IMPLIED
     align (left | right) #IMPLIED
-    dragable (true | false) #IMPLIED
+    draggable (true | false) #IMPLIED
   >

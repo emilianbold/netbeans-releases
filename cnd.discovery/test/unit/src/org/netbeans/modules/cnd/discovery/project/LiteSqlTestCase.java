@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import org.junit.Test;
 import org.openide.util.Utilities;
 
 
@@ -52,6 +53,7 @@ public class LiteSqlTestCase extends MakeProjectBase {
         super("LiteSql");
     }
 
+    @Test
     public void testLiteSql(){
         if (Utilities.isWindows()) {
             // make does not work on windows

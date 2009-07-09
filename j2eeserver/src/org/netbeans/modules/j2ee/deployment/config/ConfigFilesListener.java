@@ -69,7 +69,7 @@ public class ConfigFilesListener extends AbstractFilesListener {
         ArrayList result = new ArrayList();
         for (Iterator i=servers.iterator(); i.hasNext();) {
             Server s = (Server) i.next();
-            String[] paths = s.getDeploymentPlanFiles(provider.getJ2eeModule().getModuleType());
+            String[] paths = s.getDeploymentPlanFiles(provider.getJ2eeModule().getType());
             if (paths == null)
                 continue;
             
@@ -108,6 +108,6 @@ public class ConfigFilesListener extends AbstractFilesListener {
         return isTarget(fo.getNameExt());
     }
     protected boolean isTarget(String fileName) {
-        return ServerRegistry.getInstance().isConfigFileName(fileName, provider.getJ2eeModule().getModuleType());
+        return ServerRegistry.getInstance().isConfigFileName(fileName, provider.getJ2eeModule().getType());
     }
 }

@@ -41,11 +41,58 @@
 
 package org.netbeans.modules.j2ee.dd.api.web;
 
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+
 /**
- *
- * @author Andrei Badea
+ * Interface for access metadata for web application.
+ * @author Petr Slechta
  */
 public interface WebAppMetadata {
 
+    /**
+     * @return object model of main web.xml deployment descriptor. Returns null
+     * if web.xml is not present.
+     */
     WebApp getRoot();
+
+    /**
+     * @return list of object models for web-fragment.xml deployment descriptors.
+     * Never returns null.
+     */
+    List<WebFragment> getFragments();
+
+    /**
+     * @return list of objects that hold information about servlets (information
+     * aggregated from web.xml file, web-fragment.xml files, and annotations).
+     * Never returns null.
+     */
+    List<ServletInfo> getServlets();
+
+    /**
+     * @return list of all defined security roles
+     */
+    List<String> getSecurityRoles();
+
+    List<ResourceRef> getResourceRefs();
+
+    List<ResourceEnvRef> getResourceEnvRefs();
+
+    List<EnvEntry> getEnvEntries();
+
+    List<MessageDestinationRef> getMessageDestinationRefs();
+
+    List<ServiceRef> getServiceRefs();
+
+    List<EjbLocalRef> getEjbLocalRefs();
+
+    List<EjbRef> getEjbRefs();
+
 }

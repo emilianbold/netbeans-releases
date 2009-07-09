@@ -57,7 +57,6 @@ import org.netbeans.installer.wizard.components.panels.PreInstallSummaryPanel;
  * @author Dmitry Lipin
  */
 public class MainSequence extends WizardSequence {
-    private ComponentsSelectionPanel componentsSelectionPanel;
     private DownloadConfigurationLogicAction downloadConfigurationLogicAction;
     private LicensesPanel licensesPanel;
     private PreInstallSummaryPanel preInstallSummaryPanel;
@@ -68,7 +67,6 @@ public class MainSequence extends WizardSequence {
     private Map<Product, ProductWizardSequence> productSequences;
 
     public MainSequence() {
-        componentsSelectionPanel = new ComponentsSelectionPanel();
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
         licensesPanel = new LicensesPanel();
         preInstallSummaryPanel = new PreInstallSummaryPanel();
@@ -91,7 +89,6 @@ public class MainSequence extends WizardSequence {
 
         // if we're installing, we ask for input, run a wizard sequence for
         // each selected component and then download and install
-        addChild(componentsSelectionPanel);
         if (toInstall.size() > 0) {
             addChild(downloadConfigurationLogicAction);
             addChild(licensesPanel);

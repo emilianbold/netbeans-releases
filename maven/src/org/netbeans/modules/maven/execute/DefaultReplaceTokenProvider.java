@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,8 @@ import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -69,11 +72,13 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static final String ARTIFACTID = "artifactId";//NOI18N
     private static final String CLASSPATHSCOPE = "classPathScope";//NOI18N
     private static final String GROUPID = "groupId";//NOI18N
-    private Project project;
+    private final Project project;
     private static final String CLASSNAME = "className";//NOI18N
     private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
     private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
     public static final String METHOD_NAME = "nb.single.run.methodName"; //NOI18N
+    private static final String VARIABLE_PREFIX = "var."; //NOI18N
+    // as defined in org.netbeans.modules.project.ant.VariablesModel
 
     public DefaultReplaceTokenProvider(Project prj) {
         project = prj;
@@ -104,6 +109,10 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         SourceGroup group = null;
         FileObject fo = null;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
+        //read global variables defined in the IDE
+        Map<String, String> vars = readVariables();
+        replaceMap.putAll(vars);
+
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         replaceMap.put(GROUPID, prj.getMavenProject().getGroupId());
         replaceMap.put(ARTIFACTID, prj.getMavenProject().getArtifactId());
@@ -180,6 +189,18 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         }
         return replaceMap;
     }
+
+    public static Map<String, String> readVariables() {
+        Map<String, String> vs = new HashMap<String, String>();
+        EditableProperties ep = PropertyUtils.getGlobalProperties();
+        for (Map.Entry<String, String> entry : ep.entrySet()) {
+            if (entry.getKey().startsWith(VARIABLE_PREFIX)) {
+                vs.put(entry.getKey().substring(VARIABLE_PREFIX.length()), FileUtil.normalizeFile(new File(entry.getValue())).getAbsolutePath());
+            }
+        }
+        return vs;
+    }
+
 
 //    /*
 //     * copied from ActionUtils and reworked so that it checks for mimeType of files, and DOES NOT include files with suffix 'suffix'

@@ -60,18 +60,26 @@ public interface FilterMapping extends org.netbeans.modules.j2ee.dd.api.common.C
          * @param value property value
          */
 	public void setUrlPattern(java.lang.String value);
+	public void setUrlPatterns(java.lang.String[] values) throws VersionNotSupportedException;
+
         /** Getter for url-pattern property.
          * @return property value 
          */
 	public java.lang.String getUrlPattern();
+	public java.lang.String[] getUrlPatterns() throws VersionNotSupportedException;
+
         /** Setter for servlet-name property.
          * @param value property value
          */
 	public void setServletName(java.lang.String value);
+	public void setServletNames(java.lang.String[] value) throws VersionNotSupportedException;
+
         /** Getter for servlet-name property.
          * @return property value 
          */
 	public java.lang.String getServletName();
+	public java.lang.String[] getServletNames() throws VersionNotSupportedException;
+
         /** Setter for dispatcher property.
          * @param index position in the array of dispatchers
          * @param value property value 

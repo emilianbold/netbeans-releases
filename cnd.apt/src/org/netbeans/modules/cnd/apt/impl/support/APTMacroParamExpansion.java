@@ -155,5 +155,9 @@ public class APTMacroParamExpansion implements APTToken {
         original.setType(t);
     }
 
+    @Override
+    public String toString() {
+        return param+ "->" + original; //NOI18N
+    }
 
 }

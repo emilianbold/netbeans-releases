@@ -70,11 +70,26 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private String newLibraryName;
     private File installedFolder;
 
+    // facelets configuratin
+    private boolean enableFacelets;
+    private boolean debugFacelets;
+    private boolean skipComments;
+    private boolean createExamples;
+    //jsf configuration
+    private String facesSuffix;
+    private String facesMapping;
+
     /** Creates a new instance of JSFConfigurationPanel */
     public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
         this.customizer = customizer;
+
+        debugFacelets = false;
+        skipComments = true;
+        createExamples = true;
+        facesMapping = "*.jsf"; //NOI18N
+        facesSuffix = ".xhtml"; //NOI18N
         getComponent();
     }
     
@@ -89,6 +104,14 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
+    }
+
+    public String getFacesSuffix(){
+        return facesSuffix;
+    }
+
+    public String getFacesMapping(){
+        return facesMapping;
     }
     
     public void update() {
@@ -183,6 +206,38 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public void setInstallFolder(File folder){
         installedFolder = folder;
         fireChangeEvent();
+    }
+
+    public boolean isDebugFacelets(){
+        return debugFacelets;
+    }
+
+    public void setDebugFacelets(boolean value){
+        debugFacelets = value;
+    }
+
+    public boolean isSkipComments(){
+        return skipComments;
+    }
+
+    public void setSkipComments(boolean value){
+        skipComments = value;
+    }
+
+    public boolean isCreateExamples(){
+        return createExamples;
+    }
+
+    public void setCreateExamples(boolean value){
+        createExamples = value;
+    }
+
+    public boolean isEnableFacelets() {
+        return enableFacelets;
+    }
+
+    public void setEnableFacelets(boolean enableFacelets) {
+        this.enableFacelets = enableFacelets;
     }
 
     public LibraryType getLibraryType(){

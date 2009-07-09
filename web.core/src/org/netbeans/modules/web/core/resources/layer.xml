@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
   <folder name="WarmUp">
         <file name="org-netbeans-modules-web-core-JspEditorWarmUpTask.instance"/>
@@ -205,6 +205,26 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="750"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
             </file>
+
+      <file name="web.xml">
+        <attr name="template" boolvalue="true"/>
+        <attr name="position" intvalue="9797"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/webXml.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebXmlWizardIterator"/>
+        <attr name="templateCategory" stringvalue="web-types"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
+      </file>
+
+      <file name="web-fragment.xml">
+        <attr name="template" boolvalue="true"/>
+        <attr name="position" intvalue="9798"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/webFragmentXml.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.wizards.dd.Bundle"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.wizards.dd.WebFragmentXmlWizardIterator"/>
+        <attr name="templateCategory" stringvalue="web-types"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
+      </file>
     </folder>
 </folder>
 
@@ -219,7 +239,16 @@ made subject to such option by the copyright holder.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
       </file>
     </folder>-->
-  </folder>
+      <folder name="Tools">
+            <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.web.core.palette.JspPaletteCustomizerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.web.core.palette.Bundle#ACT_OpenJSPCustomizer"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
 
   <folder name="Services">
   <!--
@@ -269,23 +298,24 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/View Servlet.instance"/>
                     </file>-->
 
-                    <file name="org-netbeans-modules-project-ui-RunSingle.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
-                        <attr name="position" intvalue="1250"/>
-                    </file>
+                    
                     
                     <!--<attr name="Separator5.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
                     <attr name="org-netbeans-modules-project-ui-RunSingle.instance/org-netbeans-modules-web-core-jsploader-EditServletAction.shadow" boolvalue="true"/>
                     <attr name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow/SeparatorJSP.instance" boolvalue="true"/>-->
 
+                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="1250"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
   </folder>
     
   <folder name="Shortcuts">
-    <file name="C-Q.instance">
-      <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
+    <file name="C-Q.shadow">
+        <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
     </file>
   </folder>      
 
@@ -310,8 +340,9 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
-                <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance">
+                <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.shadow_hidden"/>
+                <file name="org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-web-core-palette-JspPaletteCustomizerAction.instance"/>
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>
@@ -419,71 +450,71 @@ made subject to such option by the copyright holder.
                  </folder>
                 
                 <folder name="Actions">
-                  <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
-                      <attr name="position" intvalue="100"/>
+                  <file name="CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                  <file name="jsp-project-separator-3.instance">
+                    <file name="CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="NewAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-NewAction.instance"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="PasteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="2300"/>
+                    </file>
+                    <file name="RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
+                        <attr name="position" intvalue="2200"/>
+                    </file>
+                    <file name="jsp-project-separator-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="900"/>
-                    </file>
-                  <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                      <attr name="position" intvalue="1000"/>
                     </file>
                   <file name="jsp-project-separator-4.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1100"/>
                     </file>
-                  <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
-                      <attr name="position" intvalue="1200"/>
-                    </file>
-                  <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-                      <attr name="position" intvalue="1300"/>
-                    </file>
-                  <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
-                      <attr name="position" intvalue="1400"/>
-                    </file>
                   <file name="jsp-project-separator-5.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1500"/>
-                    </file>
-                  <file name="NewAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
-                      <attr name="position" intvalue="1600"/>
-                    </file>
-                  <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-                      <attr name="position" intvalue="1700"/>
-                    </file>
-                  <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
-                      <attr name="position" intvalue="1800"/>
                     </file>
                   <file name="jsp-project-separator-6.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1900"/>
                     </file>
-                  <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
-                      <attr name="position" intvalue="2000"/>
-                    </file>
                   <file name="jsp-project-separator-7.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="2100"/>
                     </file>
-                  <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                      <attr name="position" intvalue="2200"/>
-                    </file>
-                  <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                      <attr name="position" intvalue="2300"/>
-                    </file>
-              </folder>
+                  </folder>
             </folder>
             <!-- x-tld action -->
              <folder name="x-tld">
@@ -493,132 +524,132 @@ made subject to such option by the copyright holder.
                     </file>
                  </folder>
                 <folder name="Actions">
-                  <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
-                      <attr name="position" intvalue="100"/>
+                  <file name="CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                  <file name="tld-separator-3.instance">
+                    <file name="CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="PasteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="tld-separator-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="200"/>
-                    </file>
-                  <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                      <attr name="position" intvalue="300"/>
                     </file>
                   <file name="tld-separator-4.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="400"/>
                     </file>
-                  <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
-                      <attr name="position" intvalue="500"/>
-                    </file>
-                  <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-                      <attr name="position" intvalue="600"/>
-                    </file>
-                  <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
-                      <attr name="position" intvalue="700"/>
-                    </file>
                   <file name="tld-separator-5.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="800"/>
-                    </file>
-                  <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-                      <attr name="position" intvalue="900"/>
-                    </file>
-                  <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
-                      <attr name="position" intvalue="1000"/>
                     </file>
                   <file name="tld-separator-6.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1100"/>
                     </file>
-                  <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
-                      <attr name="position" intvalue="1200"/>
-                    </file>
                   <file name="tld-separator-7.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1300"/>
                     </file>
-                  <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                      <attr name="position" intvalue="1400"/>
-                    </file>
-                  <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                      <attr name="position" intvalue="1500"/>
-                    </file>
-              </folder>
+                  </folder>
             </folder>
             <!-- x-jsp-servlet action -->
              <folder name="x-jsp-servlet">
                 <folder name="Actions">
-                  <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
-                      <attr name="position" intvalue="100"/>
+                  <file name="CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                  <file name="jspservlet-separator-3.instance">
+                    <file name="CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="PasteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="jspservlet-separator-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="200"/>
-                    </file>
-                  <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                      <attr name="position" intvalue="300"/>
                     </file>
                   <file name="jspservlet-separator-4.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="400"/>
                     </file>
-                  <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
-                      <attr name="position" intvalue="500"/>
-                    </file>
-                  <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-                      <attr name="position" intvalue="600"/>
-                    </file>
-                  <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
-                      <attr name="position" intvalue="700"/>
-                    </file>
                   <file name="jspservlet-separator-5.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="800"/>
-                    </file>
-                  <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-                      <attr name="position" intvalue="900"/>
-                    </file>
-                  <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
-                      <attr name="position" intvalue="1000"/>
                     </file>
                   <file name="jspservlet-separator-6.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1100"/>
                     </file>
-                  <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
-                      <attr name="position" intvalue="1200"/>
-                    </file>
                   <file name="jspservlet-separator-7.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                       <attr name="position" intvalue="1300"/>
                     </file>
-                  <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                      <attr name="position" intvalue="1400"/>
-                    </file>
-                  <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                      <attr name="position" intvalue="1500"/>
-                    </file>
-              </folder>
+                  </folder>
             </folder>
         </folder>
     </folder>

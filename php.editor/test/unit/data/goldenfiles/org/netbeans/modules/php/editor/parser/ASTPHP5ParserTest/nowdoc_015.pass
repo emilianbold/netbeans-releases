@@ -509,7 +509,9 @@
             <ExpressionStatement start='133' end='168'>
                 <FunctionInvocation start='133' end='167'>
                     <FucntionName start='133' end='150'>
-                        <Identifier start='133' end='150' name='set_error_handler'/>
+                        <NamespaceName start='133' end='150' isCurrent='false' isGlobal='false'>
+                            <Identifier start='133' end='150' name='set_error_handler'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='151' end='166' type='STRING' value='&apos;error_handler&apos;'/>
@@ -519,7 +521,9 @@
             <ExpressionStatement start='169' end='205'>
                 <FunctionInvocation start='169' end='204'>
                     <FucntionName start='169' end='182'>
-                        <Identifier start='169' end='182' name='trigger_error'/>
+                        <NamespaceName start='169' end='182' isCurrent='false' isGlobal='false'>
+                            <Identifier start='169' end='182' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='183' end='189' type='STRING' value='"line"'/>
@@ -541,7 +545,9 @@
             <ExpressionStatement start='223' end='236'>
                 <FunctionInvocation start='223' end='235'>
                     <FucntionName start='223' end='231'>
-                        <Identifier start='223' end='231' name='var_dump'/>
+                        <NamespaceName start='223' end='231' isCurrent='false' isGlobal='false'>
+                            <Identifier start='223' end='231' name='var_dump'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='232' end='234' isDollared='true'>
@@ -553,7 +559,9 @@
             <ExpressionStatement start='237' end='273'>
                 <FunctionInvocation start='237' end='272'>
                     <FucntionName start='237' end='250'>
-                        <Identifier start='237' end='250' name='trigger_error'/>
+                        <NamespaceName start='237' end='250' isCurrent='false' isGlobal='false'>
+                            <Identifier start='237' end='250' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='251' end='257' type='STRING' value='"line"'/>
@@ -565,7 +573,9 @@
             <ExpressionStatement start='293' end='306'>
                 <FunctionInvocation start='293' end='305'>
                     <FucntionName start='293' end='301'>
-                        <Identifier start='293' end='301' name='var_dump'/>
+                        <NamespaceName start='293' end='301' isCurrent='false' isGlobal='false'>
+                            <Identifier start='293' end='301' name='var_dump'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='302' end='304' isDollared='true'>
@@ -577,7 +587,9 @@
             <ExpressionStatement start='307' end='343'>
                 <FunctionInvocation start='307' end='342'>
                     <FucntionName start='307' end='320'>
-                        <Identifier start='307' end='320' name='trigger_error'/>
+                        <NamespaceName start='307' end='320' isCurrent='false' isGlobal='false'>
+                            <Identifier start='307' end='320' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='321' end='327' type='STRING' value='"line"'/>
@@ -600,7 +612,9 @@
             <ExpressionStatement start='366' end='379'>
                 <FunctionInvocation start='366' end='378'>
                     <FucntionName start='366' end='374'>
-                        <Identifier start='366' end='374' name='var_dump'/>
+                        <NamespaceName start='366' end='374' isCurrent='false' isGlobal='false'>
+                            <Identifier start='366' end='374' name='var_dump'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='375' end='377' isDollared='true'>
@@ -612,7 +626,9 @@
             <ExpressionStatement start='380' end='416'>
                 <FunctionInvocation start='380' end='415'>
                     <FucntionName start='380' end='393'>
-                        <Identifier start='380' end='393' name='trigger_error'/>
+                        <NamespaceName start='380' end='393' isCurrent='false' isGlobal='false'>
+                            <Identifier start='380' end='393' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='394' end='400' type='STRING' value='"line"'/>
@@ -631,7 +647,9 @@
             <ExpressionStatement start='441' end='454'>
                 <FunctionInvocation start='441' end='453'>
                     <FucntionName start='441' end='449'>
-                        <Identifier start='441' end='449' name='var_dump'/>
+                        <NamespaceName start='441' end='449' isCurrent='false' isGlobal='false'>
+                            <Identifier start='441' end='449' name='var_dump'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='450' end='452' isDollared='true'>
@@ -643,7 +661,9 @@
             <ExpressionStatement start='455' end='491'>
                 <FunctionInvocation start='455' end='490'>
                     <FucntionName start='455' end='468'>
-                        <Identifier start='455' end='468' name='trigger_error'/>
+                        <NamespaceName start='455' end='468' isCurrent='false' isGlobal='false'>
+                            <Identifier start='455' end='468' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='469' end='475' type='STRING' value='"line"'/>
@@ -666,7 +686,9 @@
             <ExpressionStatement start='530' end='543'>
                 <FunctionInvocation start='530' end='542'>
                     <FucntionName start='530' end='538'>
-                        <Identifier start='530' end='538' name='var_dump'/>
+                        <NamespaceName start='530' end='538' isCurrent='false' isGlobal='false'>
+                            <Identifier start='530' end='538' name='var_dump'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='539' end='541' isDollared='true'>
@@ -678,7 +700,9 @@
             <ExpressionStatement start='544' end='580'>
                 <FunctionInvocation start='544' end='579'>
                     <FucntionName start='544' end='557'>
-                        <Identifier start='544' end='557' name='trigger_error'/>
+                        <NamespaceName start='544' end='557' isCurrent='false' isGlobal='false'>
+                            <Identifier start='544' end='557' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='558' end='564' type='STRING' value='"line"'/>
@@ -697,7 +721,9 @@
             <ExpressionStatement start='621' end='634'>
                 <FunctionInvocation start='621' end='633'>
                     <FucntionName start='621' end='629'>
-                        <Identifier start='621' end='629' name='var_dump'/>
+                        <NamespaceName start='621' end='629' isCurrent='false' isGlobal='false'>
+                            <Identifier start='621' end='629' name='var_dump'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Variable start='630' end='632' isDollared='true'>
@@ -709,7 +735,9 @@
             <ExpressionStatement start='635' end='671'>
                 <FunctionInvocation start='635' end='670'>
                     <FucntionName start='635' end='648'>
-                        <Identifier start='635' end='648' name='trigger_error'/>
+                        <NamespaceName start='635' end='648' isCurrent='false' isGlobal='false'>
+                            <Identifier start='635' end='648' name='trigger_error'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='649' end='655' type='STRING' value='"line"'/>

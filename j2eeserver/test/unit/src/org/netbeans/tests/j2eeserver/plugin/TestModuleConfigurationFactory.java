@@ -64,6 +64,12 @@ public class TestModuleConfigurationFactory implements ModuleConfigurationFactor
     public ModuleConfiguration create(final J2eeModule j2eeModule) throws ConfigurationException {
         return new ModuleConfiguration() {
 
+            {
+                // EAR tests require this
+                j2eeModule.getModuleVersion();
+                j2eeModule.getType();
+            }
+
             public Lookup getLookup() {
                 return Lookup.EMPTY;
             }

@@ -41,15 +41,23 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.IdentifiableElement;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.Redirect;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, ads
  */
 public enum FacesAttributes implements Attribute{
-    ID("id"),
-    LANG("xml:lang");
+    ID(IdentifiableElement.ID , String.class),
+    VERSION( FacesConfig.VERSION , String.class),
+    METADATA_COMPLETE( FacesConfig.METADATA_COMPLETE, Boolean.class ),
+    EAGER( ManagedBean.EAGER , Boolean.class ),
+    INCLUDE_VIEW_PARAMS( Redirect.INCLUDE_VIEW_PARAMS, Boolean.class),
+    LANG("xml:lang", String.class);
     
     private String name;
     private Class type;

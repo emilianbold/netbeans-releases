@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import org.junit.Test;
+
 /**
  *
  * @author Alexander Simon
@@ -49,6 +51,7 @@ public class PkgConfigTestCase extends MakeProjectBase {
         super("PkgConfig");
     }
 
+    @Test
     public void testPkgConfig(){
         performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null);
     }

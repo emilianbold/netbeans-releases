@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.dd.api.web;
 
-import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
@@ -53,7 +52,7 @@ import java.util.*;
 
 
 public class DDApiTest extends NbTestCase {
-    private static final String VERSION="2.4";
+    private static final String VERSION="3.0";
     private static final int TIMEOUT=30;
     private static final int WF_NUMBER=3;
     private static final String SERVLET_NAME = "FordServlet";
@@ -82,12 +81,7 @@ public class DDApiTest extends NbTestCase {
     private static final String SMALL_ICON = "/img/icon16x16.gif";
     
     private WebApp webApp;
-    /*
-    static {
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        foOut = workDir.createData("web.xml");
-    }
-     */
+
     public DDApiTest(java.lang.String testName) {
         super(testName);
     }
@@ -181,27 +175,6 @@ public class DDApiTest extends NbTestCase {
         assertTrue("InitParam "+PARAM2+" not found", null != p);
         p = (InitParam)webApp.findBeanByName("InitParam","ParamName",PARAM1);
         assertTrue("Context Param "+PARAM1+" not found", null != p);
-    }
-    
-    public void test_VersionNotSupportedException() {
-        System.out.println("Testing VersionNotSupportedException for Taglibs in Servlet2.4");
-        try {
-            Taglib[] taglibs = webApp.getTaglib();
-            throw new AssertionFailedError("method getTaglib() shouldn't be supported in version:"+VERSION);
-        } catch (VersionNotSupportedException ex) {
-            System.out.println("Expected exception : "+ex);
-        }
-        try {
-            Taglib taglib = (Taglib) webApp.createBean("Taglib");
-            taglib.setTaglibLocation("xxx");
-            taglib.setTaglibUri("xxx");
-            webApp.addTaglib(taglib);
-            throw new AssertionFailedError("method setTaglib (int i, Taglib taglib) shouldn't be supported in version:"+VERSION);
-        } catch (ClassNotFoundException ex) {
-            throw new AssertionFailedErrorException("createBean() method failed",ex);
-        } catch (VersionNotSupportedException ex) {
-            System.out.println("Expected exception : "+ex);
-        }
     }
     
     public void test_Description() {
@@ -329,7 +302,8 @@ public class DDApiTest extends NbTestCase {
     private static FileObject fo;
     private static boolean initialized;
     
-    protected void setUp() throws Exception {
+    @Override
+        protected void setUp() throws Exception {
         super.setUp();
         System.out.println("setUp() .......................");
         

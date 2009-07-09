@@ -58,8 +58,7 @@ public class RubyIndexerTest extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RubyIndexer.preindexingTest = true;
-        RubyIndexer.skipTypeInferenceForTests = true;
+        RubyIndexer.userSourcesTest = true;
     }
 
 

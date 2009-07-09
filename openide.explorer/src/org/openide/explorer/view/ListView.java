@@ -1012,7 +1012,7 @@ public class ListView extends JScrollPane implements Externalizable {
 
         private void setupSearch() {
             // Remove the default key listeners
-            KeyListener[] keyListeners = (KeyListener[]) (getListeners(KeyListener.class));
+            KeyListener[] keyListeners = getListeners(KeyListener.class);
 
             for (int i = 0; i < keyListeners.length; i++) {
                 removeKeyListener(keyListeners[i]);

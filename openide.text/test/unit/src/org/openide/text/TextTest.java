@@ -46,17 +46,6 @@ import org.netbeans.junit.NbTestCase;
 /**
  * Regression tests.
  *
- * How to run from IDE:
- *   1. Mount jar: junit.jar
- *   2. Mount dir: openide/src
- *   3. Mount dir: openide/test/regr/src
- *   4. Run class TextTest from dir openide/test/regr/src in internal execution
- *   (inside IDE VM - set execution type in Properties window)
- *   It will open new window in Editor. When deadlock is there IDE hangs.
- * How to run from command line:
- *   In directory: <NetBeans>/openide/test/
- *   Command: ant -Dxtest.attributes=regr
- *
  * @author  Marek Slama, Yarda Tulach
  */
 public class TextTest extends NbTestCase {

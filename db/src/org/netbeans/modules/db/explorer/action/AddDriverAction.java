@@ -39,22 +39,8 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.URL;
-import java.util.List;
-import org.netbeans.api.db.explorer.DatabaseException;
-
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
-
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
-import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.openide.util.Exceptions;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -70,67 +56,9 @@ public class AddDriverAction extends BaseAction {
     
     @Override
     public void performAction(Node[] activatedNodes) {
-        new AddDriverDialogDisplayer().showDialog();
+        AddDriverDialog.showDialog();
     }
     
-    public static final class AddDriverDialogDisplayer {
-        
-        private Dialog dialog;
-        private JDBCDriver driver = null;
-        
-        public JDBCDriver showDialog() {
-            final AddDriverDialog dlgPanel = new AddDriverDialog();
-
-            ActionListener actionListener = new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                        String name = dlgPanel.getDisplayName();
-                        List<URL> drvLoc = dlgPanel.getDriverLocation();
-                        String drvClass = dlgPanel.getDriverClass();
-
-                        StringBuffer err = new StringBuffer();
-                        if (drvLoc.size() < 1)
-                            err.append(NbBundle.getMessage (AddDriverAction.class, "AddDriverDialog_MissingFile")); //NOI18N
-                        if (drvClass == null || drvClass.equals("")) {
-                            if (err.length() > 0)
-                                err.append(", "); //NOI18N
-                            
-                            err.append(NbBundle.getMessage (AddDriverAction.class, "AddDriverDialog_MissingClass")); //NOI18N
-                        }
-                        if (err.length() > 0) {
-                            String message = NbBundle.getMessage (AddDriverAction.class, "AddDriverDialog_ErrorMessage", // NOI18N
-                                    err.toString());
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
-
-                            return;
-                        }
-
-                        if (dialog != null)
-                            dialog.dispose();
-
-                        //create driver instance and save it in the XML format
-                        if (name == null || name.equals("")) // NOI18N
-                            name = drvClass;
-
-                        try {
-                            driver = JDBCDriver.create(name, name, drvClass, drvLoc.toArray(new URL[0]));
-                            JDBCDriverManager.getDefault().addDriver(driver);
-                        } catch (DatabaseException exc) {
-                            Exceptions.printStackTrace(exc);
-                        }                    
-                    }
-                }
-            };
-
-            DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage (AddDriverAction.class, "AddDriverDialogTitle"), true, actionListener); //NOI18N
-            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
-            descriptor.setClosingOptions(closingOptions);
-            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.setVisible(true);
-            return driver;
-        }
-    }
-
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(AddDriverAction.class);

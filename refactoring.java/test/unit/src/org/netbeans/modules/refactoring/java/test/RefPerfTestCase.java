@@ -47,8 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
@@ -67,10 +65,6 @@ import static org.netbeans.modules.refactoring.java.test.Utilities.*;
  */
 public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
 
-    ClassPath boot;
-    ClassPath source;
-    ClassPath compile;
-    
     FileObject projectDir;
 
     private MyHandler handler;
@@ -95,12 +89,6 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
         unzip(zipFile, work);
         projectDir = openProject("jEdit41", getWorkDir());
-        File projectSourceRoot = new File(getWorkDirPath(), "jEdit41.src".replace('.', File.separatorChar));
-        FileObject fo = FileUtil.toFileObject(projectSourceRoot);
-
-        boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-        source = createSourcePath(projectDir);
-        compile = createEmptyPath();
     }
 
     /**
@@ -112,18 +100,6 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
 
     public FileObject getProjectDir() {
         return projectDir;
-    }
-
-    public ClassPath getBoot() {
-        return boot;
-    }
-
-    public ClassPath getCompile() {
-        return compile;
-    }
-
-    public ClassPath getSource() {
-        return source;
     }
 
     public boolean perform(AbstractRefactoring absRefactoring, ParameterSetter parameterSetter) {

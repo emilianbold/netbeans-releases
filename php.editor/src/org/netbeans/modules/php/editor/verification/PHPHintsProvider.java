@@ -140,7 +140,7 @@ public class PHPHintsProvider implements HintsProvider {
 
         List<? extends Rule.AstRule> secondPass = allHints.get(SECOND_PASS_HINTS);
         
-        if (secondPass.size() > 0) {
+        if (secondPass != null && secondPass.size() > 0) {
             assert secondPass.size() == 1;
             UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
             

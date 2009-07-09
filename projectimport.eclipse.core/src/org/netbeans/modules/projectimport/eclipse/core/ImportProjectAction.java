@@ -56,23 +56,16 @@ import org.netbeans.modules.projectimport.eclipse.core.wizard.ProjectImporterWiz
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 /**
  * Runs EclipseProject Importer.
  *
  * @author mkrauskopf
  */
-public class ImportProjectAction extends CallableSystemAction {
+public class ImportProjectAction implements ActionListener {
     
-    /** Creates a new instance of ImportProjectAction */
-    public ImportProjectAction() {
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-    }
-    
-    public void performAction() {
+    public void actionPerformed(ActionEvent e) {
         ProjectImporterWizard wizard = new ProjectImporterWizard();
         wizard.start();
         List<EclipseProject> eclProjects = wizard.getProjects();
@@ -136,17 +129,5 @@ public class ImportProjectAction extends CallableSystemAction {
         progressTimer.start();
         progressDialog.setVisible(true);
     }
-    
-    public String getName() {
-        return NbBundle.getMessage(ImportProjectAction.class, "CTL_MenuItem"); // NOI18N
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
+
 }

@@ -41,9 +41,11 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
@@ -75,11 +77,14 @@ import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
@@ -197,16 +202,27 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         String className = debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
-        final List<ReferenceType> classes;
+        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
+        ThreadReference threadReference = ct.getThreadReference();
+        // Find the class where the thread is stopped at
+        ReferenceType clazz = null;
         try {
-            classes = VirtualMachineWrapper.classesByName(vm, className);
+            if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return ;
+            clazz = LocationWrapper.declaringType(
+                    StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)));
         } catch (InternalExceptionWrapper ex) {
+            return ;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+        } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thrown when thread has exited
             return ;
         } catch (VMDisconnectedExceptionWrapper ex) {
             return ;
         }
-        if (!classes.isEmpty()) {
-            doAction(url, classes.get(0), methodLine, methodOffset, method);
+        if (clazz != null) {
+            doAction(url, clazz, methodLine, methodOffset, method);
         } else {
             final ClassLoadUnloadBreakpoint cbrkp = ClassLoadUnloadBreakpoint.create(className, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
             cbrkp.setHidden(true);
@@ -350,7 +366,13 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 BreakpointRequestWrapper.addThreadFilter(brReq, t.getThreadReference());
                 EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
                 EventRequestWrapper.addCountFilter(brReq, 1);
-                EventRequestWrapper.enable(brReq);
+                try {
+                    EventRequestWrapper.enable(brReq);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    // Unlikely to be thrown.
+                    debugger.getOperator().unregister(brReq);
+                    return false;
+                }
                 if (setBoundaryStep) {
                     boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
                 }

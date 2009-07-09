@@ -352,13 +352,13 @@ public class J2eeProjectHelper {
     
     public ProjectType getProjectType() {
         if (projectType == null) {
-            Object moduleType = getProvider().getJ2eeModule().getModuleType();
+            Object moduleType = getProvider().getJ2eeModule().getType();
             
-            if(J2eeModule.WAR.equals(moduleType)) {
+            if(J2eeModule.Type.WAR.equals(moduleType)) {
                 projectType = ProjectType.WEB;
-            } else if (J2eeModule.EJB.equals(moduleType)) {
+            } else if (J2eeModule.Type.EJB.equals(moduleType)) {
                 projectType = ProjectType.EJB;
-            } else if (J2eeModule.CLIENT.equals(moduleType)) {
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
                 projectType = ProjectType.CLIENT;
             } else {
                 projectType = ProjectType.UNKNOWN;

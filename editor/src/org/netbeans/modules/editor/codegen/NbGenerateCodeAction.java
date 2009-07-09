@@ -52,7 +52,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -162,12 +161,8 @@ public class NbGenerateCodeAction extends BaseAction {
     }
     
     public static final class GlobalAction extends MainMenuAction {
-
-        private final JMenuItem menuPresenter;
-        
         public GlobalAction() {
             super();
-            this.menuPresenter = new JMenuItem(getMenuItemText());
             setMenu();
         }
         
@@ -178,10 +173,5 @@ public class NbGenerateCodeAction extends BaseAction {
         protected String getActionName() {
             return generateCode;
         }
-
-        public JMenuItem getMenuPresenter() {
-            return menuPresenter;
-        }
-        
     } // End of GlobalAction class
 }

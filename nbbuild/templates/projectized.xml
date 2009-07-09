@@ -54,6 +54,16 @@ made subject to such option by the copyright holder.
             <isset property="proxy.port"/>
         </and>
     </condition>
+
+    <property name="ant.file.1" location="${ant.file}"/>
+    <property name="ant.file.2" location="${nb_all}/${ant.project.name}/build.xml"/>
+    <fail message="Please keep the Ant project name the same as the project's directory name: ${ant.file.1} vs. ${ant.file.2}">
+        <condition>
+            <not>
+                <equals arg1="${ant.file.1}" arg2="${ant.file.2}"/>
+            </not>
+        </condition>
+    </fail>
     
     <target name="-init-proxy" if="proxy.host+port">
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
@@ -166,11 +176,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </path>
         <!-- Define bootcp for Mac, in order to compile retouche based tests in project which need modified javac -->
         <pathconvert property="retouche.javac">
-            <fileset dir="${nb_all}/libs.javacapi/external">
-                <include name="*javac*.jar"/>
-            </fileset>
-            <fileset dir="${nb_all}/libs.javacimpl/external">
-                <include name="*javac*.jar"/>
+            <fileset dir="${nb_all}">
+                <include name="libs.javacapi/external/*javac*.jar"/>
+                <include name="libs.javacimpl/external/*javac*.jar"/>
             </fileset>
             <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
                 <include name="*.jar"/>

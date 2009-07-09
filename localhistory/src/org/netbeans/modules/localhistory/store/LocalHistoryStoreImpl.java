@@ -695,7 +695,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(files != null) {
             for(File f : files) {      
                 // XXX check the timestamp when touched
-                long ts = Long.parseLong(f.getName());
+                long ts = 0;
+                try {
+                    ts = Long.parseLong(f.getName());
+                } catch (NumberFormatException ex) {
+                    // heh! what's this? ignore...
+                    continue;
+                }
                 if(ts < now - ttl) {
                     if(labels.size() > 0) {
                         labels.remove(ts);

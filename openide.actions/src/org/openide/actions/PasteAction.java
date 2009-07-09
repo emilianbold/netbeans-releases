@@ -436,14 +436,20 @@ public final class PasteAction extends CallbackSystemAction {
             }
         }
 
-        public boolean isEnabled() {
-            Object[] arr = getPasteTypesOrActions(null);
-
-            if ((arr.length == 1) && arr[0] instanceof Action) {
-                return ((Action) arr[0]).isEnabled();
-            } else {
-                return arr.length > 0;
+        private boolean isEnabledImpl(Object[] pasteTypesOrActions) {
+            if (pasteTypesOrActions == null) {
+                pasteTypesOrActions = getPasteTypesOrActions(null);
             }
+
+            if ((pasteTypesOrActions.length == 1) && pasteTypesOrActions[0] instanceof Action) {
+                return ((Action) pasteTypesOrActions[0]).isEnabled();
+            } else {
+                return pasteTypesOrActions.length > 0;
+            }
+        }
+
+        public boolean isEnabled() {
+            return isEnabledImpl(null);
         }
 
         public int getCount() {
@@ -557,7 +563,7 @@ public final class PasteAction extends CallbackSystemAction {
                 listen[0].addPropertyChangeListener(actionWeakL);
             }
 
-            boolean en = isEnabled();
+            boolean en = isEnabledImpl(arr);
 
             if (en == enabled) {
                 return;

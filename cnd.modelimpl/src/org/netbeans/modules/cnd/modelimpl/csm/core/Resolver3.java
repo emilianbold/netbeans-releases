@@ -65,18 +65,18 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 /**
  * @author Vladimir Kvasihn
  */
-public class Resolver3 implements Resolver {
+public final class Resolver3 implements Resolver {
     
-    private ProjectBase project;
-    private CsmFile file;
+    private final ProjectBase project;
+    private final CsmFile file;
     private final CsmFile startFile;
     private int offset;
     private final int origOffset;
     private Resolver parentResolver;
     
-    private List<CharSequence> usedNamespaces = new ArrayList<CharSequence>();
-    private Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
-    private Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
+    private final List<CharSequence> usedNamespaces = new ArrayList<CharSequence>();
+    private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
+    private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
     
     private CsmTypedef currTypedef;
     private CsmClassifier currLocalClassifier;
@@ -411,7 +411,7 @@ public class Resolver3 implements Resolver {
         return buf.toString();
     }
 
-    protected void gatherMaps(CsmFile file) {
+    private void gatherMaps(CsmFile file) {
         if( file == null || visitedFiles.contains(file) ) {
             return;
         }
@@ -432,11 +432,11 @@ public class Resolver3 implements Resolver {
         gatherMaps(CsmSelect.getDeclarations(file, filter));
     }
     
-    protected void gatherMaps(Iterable<? extends CsmObject> declarations) {
+    private void gatherMaps(Iterable<? extends CsmObject> declarations) {
         gatherMaps(declarations.iterator());
     }
     
-    protected void gatherMaps(Iterator<? extends CsmObject> it) {
+    private void gatherMaps(Iterator<? extends CsmObject> it) {
         while(it.hasNext()) {
             CsmObject o = it.next();
             assert o instanceof CsmOffsetable;
@@ -521,7 +521,7 @@ public class Resolver3 implements Resolver {
     /**
      * It is quaranteed that element.getStartOffset < this.offset
      */
-    protected void gatherMaps(CsmScopeElement element, int end) {
+    private void gatherMaps(CsmScopeElement element, int end) {
         
         CsmDeclaration.Kind kind = (element instanceof CsmDeclaration) ? ((CsmDeclaration) element).getKind() : null;
         if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {

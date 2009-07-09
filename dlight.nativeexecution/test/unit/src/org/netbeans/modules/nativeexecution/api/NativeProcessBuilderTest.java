@@ -50,13 +50,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
-public class NativeProcessBuilderTest extends NativeExecutionTest {
+public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
     public NativeProcessBuilderTest(String name) {
         super(name);
@@ -116,7 +117,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
         };
 
         for (String mspec : mspecs) {
-            ee = getTestExecutionEnvironment(mspec); // NOI18N
+            ee = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec); // NOI18N
             if (ee == null) {
                 System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
             } else {
@@ -306,7 +307,7 @@ public class NativeProcessBuilderTest extends NativeExecutionTest {
         };
 
         for (String mspec : mspecs) {
-            ee = getTestExecutionEnvironment(mspec); // NOI18N
+            ee = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec); // NOI18N
             if (ee == null) {
                 System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
             } else {

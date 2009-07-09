@@ -55,6 +55,7 @@ import javax.swing.text.StyledEditorKit;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
 import org.netbeans.modules.versioning.util.Utils;
@@ -90,7 +91,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
     }
 
     @Override
-    protected ShowDiffAbstractTask createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
         if (revision1 == null) {
             return new ShowDiffTask(header, revision2, showLastDifference);
         } else {
@@ -119,28 +120,30 @@ final class DiffResultsViewForLine extends DiffResultsView {
         parent.bPrev.setToolTipText(NbBundle.getMessage(DiffResultsViewForLine.class, "ACSD_PrevRevision")); // NOI18N
     }
 
-    private class ShowDiffTask extends ShowDiffAbstractTask {
+    private class ShowDiffTask extends HgProgressSupport {
         private final RepositoryRevision.Event header;
         private final String revision;
-        private volatile boolean cancelled;
 
         public ShowDiffTask(RepositoryRevision.Event header, String revision, boolean showLastDifference) {
             this.header = header;
             this.revision = revision;
         }
 
-        public void run() {
+        public void perform () {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision);
             final LocalFileDiffStreamSource rightSource = new LocalFileDiffStreamSource(header.getFile(), true);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             leftSource.getMIMEType();  // triggers s1.init()
-            if (cancelled) {
+            if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
             rightSource.getMIMEType();
-            if (cancelled) {
+            if (isCanceled()) {
+                showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 return;
             }
 
@@ -149,7 +152,8 @@ final class DiffResultsViewForLine extends DiffResultsView {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        if (cancelled) {
+                        if (isCanceled()) {
+                            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
                         final DiffController view = DiffController.create(leftSource, rightSource);
@@ -171,11 +175,6 @@ final class DiffResultsViewForLine extends DiffResultsView {
                     }
                 }
             });
-        }
-
-        public boolean cancel() {
-            cancelled = true;
-            return true;
         }
     }
 

@@ -58,7 +58,7 @@ public class AddTableColumnDDLTest extends DDLTestBase {
     
     private void addColumn(String tablename, String colname) throws Exception {
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                getSpecification(), getDriverSpecification(), getSchema(), fixIdentifier(tablename));
+                getSpecification(), getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, colname);
@@ -66,35 +66,6 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         col.setProperty(ColumnItem.TYPE, type);
         col.setProperty(ColumnItem.SIZE, "255");
         
-        ddl.execute(colname, col, null);
+        ddl.execute(colname, col);
     }
-
-    public void testAddColumnToIndex() throws Exception {
-        String tablename = "testAddColumn";
-        String firstColname = "firstColumn";
-        String secondColname = "secondColumn";
-        String pkeyName = "id";
-        String indexName = "idx";
-
-        createBasicTable(tablename, pkeyName);     
-        addColumn(tablename, firstColname);
-        createSimpleIndex(tablename, indexName, firstColname);
-
-        AddTableColumnDDL ddl = new AddTableColumnDDL(
-                getSpecification(), getDriverSpecification(), getSchema(), fixIdentifier(tablename));
-        
-        ColumnItem col = new ColumnItem();
-        col.setProperty(ColumnItem.NAME, secondColname);
-        TypeElement type = new TypeElement("java.sql.Types.VARCHAR", "VARCHAR");
-        col.setProperty(ColumnItem.TYPE, type);
-        col.setProperty(ColumnItem.SIZE, "20");
-        col.setProperty(ColumnItem.INDEX, new Boolean(true));
-        
-        ddl.execute(secondColname, col, fixIdentifier(indexName));
-        
-        // Now verify the column exists and is part of the index
-        assertTrue(columnInIndex(tablename, secondColname, 
-            indexName));        
-        
-    }    
 }

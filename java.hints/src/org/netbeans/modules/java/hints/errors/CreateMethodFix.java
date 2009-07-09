@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
@@ -189,9 +190,19 @@ public final class CreateMethodFix implements Fix {
                 
                 while (typeIt.hasNext() && nameIt.hasNext()) {
                     TypeMirrorHandle tmh = typeIt.next();
-                    String           argName = nameIt.next();
+                    TypeMirror tm = tmh.resolve(working);
+                    String argName;
+
+                    Element elem = working.getTypes().asElement(tm);
+                    if (elem != null && elem.getKind() == ElementKind.ENUM) {
+                        StringBuffer buf = new StringBuffer(elem.getSimpleName().toString());
+                        buf.setCharAt(0, Character.toLowerCase(buf.charAt(0)));
+                        argName = buf.toString();
+                    } else {
+                        argName = nameIt.next();
+                    }
                     
-                    argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tmh.resolve(working)), null));
+                    argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tm), null));
                 }
                 
                 BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, returnType) : null;

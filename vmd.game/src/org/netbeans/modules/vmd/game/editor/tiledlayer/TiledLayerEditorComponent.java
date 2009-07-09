@@ -493,6 +493,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     public void setEditMode(int editMode) {
         this.editMode = editMode;
         this.setCursor(editMode == EDIT_MODE_PAINT ? paintCursor : selectionCursor);
+        if (editMode == EDIT_MODE_PAINT){
+            this.clearSelection();
+            this.repaint();
+        }
     }
     private boolean isPaintMode() {
         return this.editMode == EDIT_MODE_PAINT;

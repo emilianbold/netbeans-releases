@@ -76,7 +76,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
@@ -821,7 +821,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         Set<String> classes = new HashSet<String>();
                         for (SyntaxElement s : elementsList) {
                             if (s.type() == SyntaxElement.TYPE_TAG) {
-                                String element = s.text();
+                                String element = s.text().toString();
                                 int classIdx = element.indexOf("class=\""); // NOI18N
                                 if (classIdx != -1) {
                                     int classIdxEnd = element.indexOf('"', classIdx+7);
@@ -859,7 +859,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         Set<String> tagNames = new HashSet<String>();
                         for (SyntaxElement s : elementsList) {
                             if (s.type() == SyntaxElement.TYPE_TAG) {
-                                String element = s.text();
+                                String element = s.text().toString();
                                 int start = 1;
                                 int end = element.indexOf(' ');
                                 if (end == -1) {

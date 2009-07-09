@@ -35,6 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -950,6 +952,29 @@ public class RubyUtils {
         // needed for the dev ide since the bundled jruby is under nbbuild (a free form project)
         RubyPlatformProvider platformProvider = owner.getLookup().lookup(RubyPlatformProvider.class);
         return platformProvider == null;
+    }
+
+    private static final Pattern RAILS_VERSION_PATTERN = Pattern.compile(".*/(action|active){1}.+-(\\d+\\.\\d+\\.?\\d*).+"); //NOI18N
+
+    /**
+     *@return true if the given path represents a file that is in a rails gem
+     * that is 2.3 or newer. Note that this does not work when rails is in
+     * the vendor directory as the gem paths there don't contain version
+     * numbers.
+     */
+    static boolean isRails23OrHigher(String path) {
+        Matcher m = RAILS_VERSION_PATTERN.matcher(path);
+        if (!m.matches()) {
+            return false;
+        }
+        String[] version = m.group(2).split("\\.");
+        if (Integer.parseInt(version[0]) < 2) {
+            return false;
+        }
+        if (Integer.parseInt(version[1]) < 3) {
+            return false;
+        }
+        return true;
     }
 
 }

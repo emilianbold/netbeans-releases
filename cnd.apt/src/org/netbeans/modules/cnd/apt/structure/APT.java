@@ -64,8 +64,7 @@ public interface APT {
         public static final int INCLUDE_NEXT        = INCLUDE + 1;
         public static final int DEFINE              = INCLUDE_NEXT + 1;
         public static final int UNDEF               = DEFINE + 1;
-        public static final int CONDITION_CONTAINER = UNDEF + 1;
-        public static final int IFDEF               = CONDITION_CONTAINER + 1;
+        public static final int IFDEF               = UNDEF + 1;
         public static final int IFNDEF              = IFDEF + 1;
         public static final int IF                  = IFNDEF + 1;
         public static final int ELIF                = IF + 1;
@@ -80,16 +79,10 @@ public interface APT {
     /** method called consequently token by token to let APT node to init itself 
      * when initializing is finished APT node returns false (not accepted token)
      */
-    public boolean accept(APTToken token);
+    public boolean accept(APTFile curFile, APTToken token);
     
     /** Get the associated token */
     public APTToken getToken();
-    
-    /** dispose **/
-    public void dispose();
-    
-//    /** Add a (rightmost) child to this node */
-//    public void addChild(APT child);
     
     /** Get the first child of this node; null if no children */
     public APT getFirstChild();

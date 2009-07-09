@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
@@ -53,9 +54,6 @@ public class PrintASTVisitor implements Visitor {
     private final static String NEW_LINE = "\n";
     private final static String TAB = "    ";
     private int indent;
-
-
-
 
     private class XMLPrintNode {
         
@@ -269,7 +267,7 @@ public class PrintASTVisitor implements Visitor {
         printNode.addChild(node.getBody());
     }
 
-    public void visit(ClassConstantDeclaration node) {
+    public void visit(ConstantDeclaration node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "ClassConstantDeclaration");
         printNode.addChildrenGroup("Names", node.getNames());
         printNode.addChildrenGroup("Initializers", node.getInitializers());
@@ -428,6 +426,59 @@ public class PrintASTVisitor implements Visitor {
     public void visit(Identifier identifier) {
         (new XMLPrintNode(identifier, "Identifier", new String[]{"name", identifier.getName()})).print(this);
     }
+
+    public void visit(NamespaceName namespaceName) {
+        XMLPrintNode printNode = new XMLPrintNode(namespaceName, "NamespaceName",
+                new String[] {"isCurrent", namespaceName.isCurrent() ? "true" : "false",
+        "isGlobal", namespaceName.isGlobal() ? "true" : "false"});
+        printNode.addChildren(namespaceName.getSegments());
+        printNode.print(this);
+    }
+
+    public void visit(NamespaceDeclaration declaration) {
+        XMLPrintNode printNode = new XMLPrintNode(declaration, "NamespaceDeclaration",
+                new String[] {"isBracketed", declaration.isBracketed() ? "true" : "false"});
+        printNode.addChild(declaration.getName());
+        printNode.addChild(declaration.getBody());
+        printNode.print(this);
+    }
+
+    public void visit(GotoLabel label) {
+        XMLPrintNode printNode = new XMLPrintNode(label, "GotoLabel");
+        printNode.addChild(label.getName());
+        printNode.print(this);
+
+    }
+
+    public void visit(GotoStatement statement) {
+        XMLPrintNode printNode = new XMLPrintNode(statement, "GotoStatement");
+        printNode.addChild(statement.getLabel());
+        printNode.print(this);
+
+    }
+
+    public void visit(LambdaFunctionDeclaration declaration) {
+        XMLPrintNode printNode = new XMLPrintNode(declaration, "LambdaFunctionDeclaration",
+                new String[] {"isReference", declaration.isReference() ? "true" : "false"});
+        printNode.addChildren(declaration.getFormalParameters());
+        printNode.addChildren(declaration.getLexicalVariables());
+        printNode.addChild(declaration.getBody());
+        printNode.print(this);
+    }
+
+    public void visit(UseStatement statement) {
+        XMLPrintNode printNode = new XMLPrintNode(statement, "UseStatement");
+        printNode.addChildren(statement.getParts());
+        printNode.print(this);
+    }
+
+    public void visit(UseStatementPart statementPart) {
+        XMLPrintNode printNode = new XMLPrintNode(statementPart, "UseStatementPart");
+        printNode.addChild("Name", statementPart.getName());
+        printNode.addChild("Alias", statementPart.getAlias());
+        printNode.print(this);
+    }
+
 
     public void visit(IfStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "IfStatement");

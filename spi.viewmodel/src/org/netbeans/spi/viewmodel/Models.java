@@ -582,7 +582,7 @@ public final class Models {
         }
 
         public void actionPerformed (ActionEvent e) {
-            System.err.println("Models.ActionSupport.actionPerformed("+e+")");
+            //System.err.println("Models.ActionSupport.actionPerformed("+e+")");
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
             int i, k = ns.length;
             IdentityHashMap<Action, ArrayList<Object>> h = new IdentityHashMap<Action, ArrayList<Object>>();
@@ -600,15 +600,15 @@ public final class Models {
                         l.add (node);
                     }
             }
-            System.err.println("  k = "+k);
+            //System.err.println("  k = "+k);
             if (k == 0) {
                 performer.perform(new Object[]{});
             } else {
-                System.err.println("  h = "+h);
+                //System.err.println("  h = "+h);
                 Iterator<Action> it = h.keySet ().iterator ();
                 while (it.hasNext ()) {
                     ActionSupport a = (ActionSupport) it.next ();
-                    System.err.println("  "+a.performer+".perform("+((ArrayList) h.get (a)));
+                    //System.err.println("  "+a.performer+".perform("+((ArrayList) h.get (a)));
                     a.performer.perform (
                         ((ArrayList) h.get (a)).toArray ()
                     );
@@ -3195,7 +3195,10 @@ public final class Models {
          */
         public Object[] getChildren (Object parent, int from, int to) 
         throws UnknownTypeException {
-            return treeModel.getChildren (parent, from, to);
+            Object[] ch = treeModel.getChildren (parent, from, to);
+            //System.err.println("Children for node '"+parent+"' are '"+java.util.Arrays.asList(ch)+"'");
+            //System.err.println("Model = "+this);
+            return ch;
         }
 
         /**
@@ -3247,7 +3250,10 @@ public final class Models {
                     return ""; // Nothing when there are no models
                 }
             }
-            return nodeModel.getDisplayName (node);
+            String dn = nodeModel.getDisplayName (node);
+            //System.err.println("DisplayName for node '"+node+"' is: '"+dn+"'");
+            //System.err.println("Model = "+this);
+            return dn;
         }
 
         /**
@@ -3290,7 +3296,10 @@ public final class Models {
                     return null; // Nothing when there are no models
                 }
             }
-            return nodeModel.getIconBase (node);
+            String ib = nodeModel.getIconBase (node);
+            //System.err.println("IconBase for node '"+node+"' is '"+ib+"'");
+            //System.err.println("Model = "+this);
+            return ib;
         }
 
 
@@ -3479,7 +3488,10 @@ public final class Models {
         }
 
         public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
-            return nodeModel.getIconBaseWithExtension(node);
+            String ib = nodeModel.getIconBaseWithExtension(node);
+            //System.err.println("IconBase for node '"+node+"' is '"+ib+"'");
+            //System.err.println("Model = "+this);
+            return ib;
         }
 
         public boolean isCheckable(Object node) throws UnknownTypeException {

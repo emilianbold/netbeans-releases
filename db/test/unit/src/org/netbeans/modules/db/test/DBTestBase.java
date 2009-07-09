@@ -52,6 +52,7 @@ import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.explorer.node.ViewListNode;
 import org.netbeans.modules.db.explorer.node.ViewNode;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 //import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 //import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
 //import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
@@ -349,7 +350,14 @@ public abstract class DBTestBase extends TestBase {
             // Next time we connect a new db will be automatically created
             shutdownDerby();
             if (! dblocation.equals(this.getWorkDirPath())) {
-                clearWorkDir();
+                try {
+                    clearWorkDir();
+                } catch (IOException e) {
+                    // ignore on Windows because some files might be locked
+                    if (!Utilities.isWindows()) {
+                        throw e;
+                    }
+                }
             } else {
                 deleteSubFiles(new File(dblocation));
             }

@@ -107,6 +107,36 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="adding-context-isSourceForBinaryRootIndexing">
+      <api name="ParsingAPI"/>
+      <summary>Adding Context.isSourceForBinaryRootIndexing()</summary>
+      <version major="1" minor="17"/>
+      <date day="23" month="6" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>Context.isSourceForBinaryRootIndexing()</code> in order to further
+              optimize java indexing.
+          </p>
+      </description>
+  </change>
+
+  <change id="adding-forceRefresh">
+      <api name="ParsingAPI"/>
+      <summary>Adding IndexingManager.refreshIndex methods with forceRefresh parameter</summary>
+      <version major="1" minor="16"/>
+      <date day="10" month="6" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>IndexingManager.refreshIndex(URL root, Collection&lt;? extends URL&gt; files, boolean forceRefresh)</code>
+              and <code>IndexingManager.refreshIndexAndWait(URL root, Collection&lt;? extends URL&gt; files, boolean forceRefresh)</code>.
+          </p>
+      </description>
+  </change>
+
   <change id="changes-Indexable-Context">
       <api name="ParsingAPI"/>
       <summary>Tweaking Indexable and Context</summary>

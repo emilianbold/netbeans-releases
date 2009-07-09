@@ -96,7 +96,7 @@ public class MobilityProjectWorkflow extends MemoryFootprintTestCase {
     }
     
     public ComponentOperator open(){
-        projectName = CommonUtilities.createproject("Java ME", "Mobile Application", true); //NOI18N
+//        projectName = CommonUtilities.createproject("Java ME", "Mobile Application", true); //NOI18N
         log("Created project name: "+projectName);
         // get opened editor
         Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();
@@ -116,7 +116,7 @@ public class MobilityProjectWorkflow extends MemoryFootprintTestCase {
         new JToggleButtonOperator(midletEditor, "Flow").pushNoBlock(); //NOI18N
         new EventTool().waitNoEvent(1500);
         
-        CommonUtilities.buildProject(projectName);
+//        CommonUtilities.buildProject(projectName);
         
         return null;
     }

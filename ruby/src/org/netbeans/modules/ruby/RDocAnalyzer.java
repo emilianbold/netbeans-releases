@@ -39,11 +39,14 @@
 package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.netbeans.modules.parsing.api.Source;
@@ -67,6 +70,7 @@ final class RDocAnalyzer {
 
     private static final List<TypeCommentAnalyzer> RAW_TYPE_COMMENT_ANALYZERS = initRawTypeCommentAnalyzers();
     private static final List<TypeCommentAnalyzer> TYPE_COMMENT_ANALYZERS = initTypeCommentAnalyzers();
+    private static final Pattern PARAM_HINT_ARG_PATTERN = Pattern.compile(PARAM_HINT_ARG + "\\s*(\\S+)\\s*=>\\s*(.+)\\s*");
 
     private final RubyType type;
 
@@ -95,7 +99,7 @@ final class RDocAnalyzer {
         RDocAnalyzer rda = new RDocAnalyzer();
         for (String line : comment) {
             line = line.trim();
-            if (!line.startsWith("#  ")) { // NOI18N
+            if (!inspect(line)) { // NOI18N
                 break; // ignore other then the header
             }
             rda.parseTypeFromLine(line);
@@ -103,7 +107,18 @@ final class RDocAnalyzer {
         return rda.type;
     }
 
+    private static boolean inspect(String line) {
+       // ignore other then the header and type assertions
+       return line.startsWith("#  ") //NOI18N
+               || line.startsWith(PARAM_HINT_ARG) 
+               || line.startsWith(PARAM_HINT_RETURN);
+    }
+
     private void parseTypeFromLine(String line) {
+        // type assertions first
+        if (addTypes(returnTypeFromTypeAssertion(line))) {
+            return;
+        }
         // try '#=>' first since e.g. rdocs for hash use that to
         // indicate return values
         int typeIndex = line.indexOf(" #=> "); // NOI18N
@@ -120,129 +135,98 @@ final class RDocAnalyzer {
         if (rawCommentTypes.length() == 0) {
             return;
         }
-        boolean success = false;
+        addTypes(analyzeRawCommentType(rawCommentTypes));
+        if (type.isKnown()) {
+            LOGGER.log(Level.FINE, "Could not resolve type for {0}", line);
+        }
+    }
+
+    private boolean addTypes(List<String> types) {
+        if (types.isEmpty()) {
+            return false;
+        }
+        for (String each : types) {
+            type.add(each);
+        }
+        return true;
+    }
+
+    private static List<String> analyzeRawCommentType(String rawCommentTypes) {
+        List<String> result = new ArrayList<String>();
         String[] rawCommentTypes2 = rawCommentTypes.split(" or "); // NOI18N
         for (String rawCommentType : rawCommentTypes2) {
             // first try whether we have an array or a hash
             for (TypeCommentAnalyzer analyzer : RAW_TYPE_COMMENT_ANALYZERS) {
                 String realType = analyzer.getType(rawCommentType);
                 if (realType != null) {
-                    type.add(realType);
-                    success = true;
                     // return, the type was already recognized as hash/array/etc (doesn't
                     // make sense to split these with ','
-                    return;
+                    result.add(realType);
+                    return result;
                 }
             }
             String[] commentTypes = rawCommentType.split(","); // NOI18N
             for (String commentType : commentTypes) {
                 commentType = commentType.trim();
                 if (commentType.length() > 0) {
-                    success = addRealTypeForCommentType(commentType);
+                    String type = addRealTypeForCommentType(commentType);
+                    if (type != null) {
+                        result.add(type);
+                    }
                 }
-            }
-            if (!success) {
-                LOGGER.log(Level.FINE, "Could not resolve type for {0}", line);
-            }
-        }
-    }
-
-    private boolean addRealTypeForCommentType(final String commentType) {
-        boolean result = false;
-        for (TypeCommentAnalyzer analyzer : TYPE_COMMENT_ANALYZERS) {
-            String realType = analyzer.getType(commentType);
-            if (realType != null) {
-                type.add(realType);
-                result = true;
-                break;
             }
         }
         return result;
+    }
 
-        /* TODO: uncomment else block and run the RDocAnalyzerTest, try to
-         handle the unknown types like literals:
-           * 1, -1, ...
-           * "str"
-           * [1, 2, 3]
-         as well */
-//         else {
-//            System.err.println("Unknown real Ruby type for comment type: " + commentType);
-//        }
+    private static String addRealTypeForCommentType(final String commentType) {
+        for (TypeCommentAnalyzer analyzer : TYPE_COMMENT_ANALYZERS) {
+            String realType = analyzer.getType(commentType);
+            if (realType != null) {
+                return realType;
+            }
+        }
+        return null;
+    }
+
+    static List<String> returnTypeFromTypeAssertion(String line) {
+        int start = line.indexOf(PARAM_HINT_RETURN);
+        if (start != -1) {
+            String rawCommentTypes = line.substring(start + PARAM_HINT_RETURN.length()).trim();
+            if (rawCommentTypes.length() == 0) {
+                return Collections.emptyList();
+            }
+            return analyzeRawCommentType(rawCommentTypes);
+        }
+        return Collections.emptyList();
+    }
+
+    static TypeForSymbol paramTypesFromTypeAssertion(String line) {
+        Matcher matcher = PARAM_HINT_ARG_PATTERN.matcher(line);
+        if (!matcher.matches()) {
+            return null;
+        }
+        return new TypeForSymbol(matcher.group(1), analyzeRawCommentType(matcher.group(2).trim()));
     }
 
     /** Look at type assertions in the document and initialize name context. */
     static void collectTypeAssertions(final ContextKnowledge knowledge) {
-        if (!knowledge.hasDocument()) {
-            return;
-        }
         Node root = knowledge.getRoot();
         if (root instanceof MethodDefNode) {
             // Look for parameter hints
-            Source source = Source.create(knowledge.getDocument());
-            List<String> rdoc = AstUtilities.gatherDocumentation(source.createSnapshot(), root);
+            List<String> rdoc = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), root);
 
             if ((rdoc != null) && (rdoc.size() > 0)) {
                 for (String line : rdoc) {
-                    if (line.startsWith(PARAM_HINT_ARG)) {
-                        StringBuilder sb = new StringBuilder();
-                        String name = null;
-                        int max = line.length();
-                        int i = PARAM_HINT_ARG.length();
-
-                        for (; i < max; i++) {
-                            char c = line.charAt(i);
-
-                            if (c == ' ') {
-                                continue;
-                            } else if (c == '=') {
-                                break;
-                            } else {
-                                sb.append(c);
-                            }
-                        }
-
-                        if ((i == max) || (line.charAt(i) != '=')) {
-                            continue;
-                        }
-
-                        i++;
-
-                        if (sb.length() > 0) {
-                            name = sb.toString();
-                            sb.setLength(0);
-                        } else {
-                            continue;
-                        }
-
-                        if ((i == max) || (line.charAt(i) != '>')) {
-                            continue;
-                        }
-
-                        i++;
-
-                        for (; i < max; i++) {
-                            char c = line.charAt(i);
-
-                            if (c == ' ') {
-                                continue;
-                            }
-
-                            if (!Character.isJavaIdentifierPart(c)) {
-                                break;
-                            } else {
-                                sb.append(c);
-                            }
-                        }
-
-                        if (sb.length() > 0) {
-                            String type = sb.toString();
-                            knowledge.maybePutTypeForSymbol(name, type, true);
+                    List<String> returnTypes = returnTypeFromTypeAssertion(line);
+                    if (!returnTypes.isEmpty()) {
+                        knowledge.setType(root, new RubyType(returnTypes));
+                    } else {
+                        TypeForSymbol tfs = paramTypesFromTypeAssertion(line);
+                        if (tfs != null) {
+                            knowledge.maybePutTypeForSymbol(tfs.getName(), new RubyType(tfs.getTypes()), true);
                         }
                     }
-
-                    //if (line.startsWith(":return:=>")) {
-                    //    // I don't really need the return type yet
-                    //}
                 }
             }
         }
@@ -520,6 +504,24 @@ final class RDocAnalyzer {
             }
             return null;
 
+        }
+    }
+
+    static class TypeForSymbol {
+        private final String name;
+        private final List<String> types;
+
+        public TypeForSymbol(String name, List<String> types) {
+            this.name = name;
+            this.types = types;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<String> getTypes() {
+            return types;
         }
     }
 

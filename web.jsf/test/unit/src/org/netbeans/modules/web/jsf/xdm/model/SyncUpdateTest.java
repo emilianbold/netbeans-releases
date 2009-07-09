@@ -5,16 +5,21 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
+
 import javax.swing.text.Document;
-import junit.framework.*;
+
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.util.Exceptions;
+import org.w3c.dom.NodeList;
 
 public class SyncUpdateTest extends NbTestCase {
     
@@ -106,6 +111,61 @@ public class SyncUpdateTest extends NbTestCase {
         }
         
         assertNotNull(events.get(FacesConfig.NAVIGATION_RULE));
+    }
+    
+    public void testSyncDefaultLocale() throws Exception {
+        
+        propertyChangeCalled = false;
+        
+        /* Load a file that has a simple locale*/
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale.xml");
+        
+         model.addPropertyChangeListener( new PropertyChangeListener(){
+
+            public void propertyChange( PropertyChangeEvent evt ) {
+                events.put(evt.getPropertyName(), evt);
+            }
+             
+         });
+         
+        try {
+            Util.setDocumentContentTo(model,"faces-config-default-locale.xml");
+        } catch (IOException ioe ){
+            ioe.printStackTrace();
+            assertTrue(false);
+        }
+        
+        assertNotNull( model.getRootComponent().
+                getApplications().get(0).getLocaleConfig().get(0).getDefaultLocale());
+        assertNotNull(events.get(LocaleConfig.DEFAULT_LOCALE));
+    }
+    
+    public void testSyncIf() throws Exception {
+        
+        propertyChangeCalled = false;
+        
+        /* Load a file that has a simple locale*/
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-navigation-case.xml");
+        
+         model.addPropertyChangeListener( new PropertyChangeListener(){
+
+            public void propertyChange( PropertyChangeEvent evt ) {
+                events.put(evt.getPropertyName(), evt);
+            }
+             
+         });
+         
+        try {
+            Util.setDocumentContentTo(model,"faces-config-navigation-case-if.xml");
+        } catch (IOException ioe ){
+            ioe.printStackTrace();
+            assertTrue(false);
+        }
+        
+        assertNotNull( model.getRootComponent().
+                getNavigationRules().get(0).getNavigationCases().get(0).getIf());
+        assertNotNull(events.get(NavigationCase.IF));
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
     }
     
     public void testSyncRemoveCase_99325() throws Exception {

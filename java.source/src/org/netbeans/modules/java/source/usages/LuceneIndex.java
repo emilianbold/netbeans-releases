@@ -714,8 +714,22 @@ class LuceneIndex extends Index {
             return false;
         }
     }
-    
+
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
+        try {
+            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                public Void run() throws IOException, InterruptedException {
+                    _store(refs, topLevels);
+                    return null;
+                }
+            });
+        } catch (InterruptedException ie) {
+            //Never happens, just declared. The _store never throws InterruptedException
+            Exceptions.printStackTrace(ie);
+        }
+    }
+    
+    private void _store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
@@ -739,7 +753,22 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }
 
+    //Todo: probably unsed, the java source should be refactored and cleaned up.
     public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
+        try {
+            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                public Void run() throws IOException, InterruptedException {
+                    _store(refs, toDelete);
+                    return null;
+                }
+            });
+        } catch (InterruptedException ie) {
+            //Never happens, just declared. The _store never throws InterruptedException
+            Exceptions.printStackTrace(ie);
+        }
+    }
+
+    private void _store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;

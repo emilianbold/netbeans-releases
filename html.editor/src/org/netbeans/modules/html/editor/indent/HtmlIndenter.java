@@ -46,12 +46,13 @@ import java.util.TreeSet;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.openide.util.Exceptions;
 
 public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
@@ -59,7 +60,11 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
-        dtd = HtmlSyntaxSupport.get(getDocument()).getDTD();
+        try {
+            dtd = SyntaxParser.parse(getDocument().getText(0, getDocument().getLength())).getDTD();
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         assert dtd != null : "cannot find any DTD - perhaps NbReaderProvider.setupReaders() was not called?";
     }
 

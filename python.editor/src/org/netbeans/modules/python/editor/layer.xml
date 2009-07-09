@@ -38,13 +38,13 @@
                     <file name="fix-imports">
                         <attr name="position" intvalue="1182"/>
                     </file>
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
                 </folder>
 
@@ -197,31 +197,48 @@
                 <attr name="iconBase" stringvalue="org/netbeans/modules/python/editor/resources/pyNode25.png"/>
                 <folder name="Actions">
                    
-                    <file name="org-openide-actions-CopyAction.instance">
+                    <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="RefactoringWhereUsed.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="500"/>
                     </file>
-                    <file name="org-openide-actions-CutAction.instance">
+                    <file name="org-openide-actions-CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
                         <attr name="position" intvalue="400"/>
                     </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
+                    <file name="org-openide-actions-DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="700"/>
                     </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
+                    <file name="org-openide-actions-FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
                         <attr name="position" intvalue="200"/>
                     </file>
-                    <file name="org-openide-actions-OpenAction.instance">
+                    <file name="org-openide-actions-OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
                         <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
+                    <file name="org-openide-actions-PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.instance">
+                    <file name="org-openide-actions-RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                         <attr name="position" intvalue="800"/>
                     </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="org-openide-actions-ToolsAction.instance">
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="sep-1.instance">
@@ -241,14 +258,6 @@
                         <attr name="position" intvalue="1100"/>
                     </file>
 
-                    <file name="RefactoringWhereUsed.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
-                    <file name="RefactoringAll.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                        <attr name="position" intvalue="1800"/>
-                    </file>
                     <file name="RefactoringSeparator-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1900"/>
@@ -259,31 +268,40 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/python/editor/resources/pyc_16.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/python/editor/resources/pyc_16.png"/>
                 <folder name="Actions">
-                    <file name="org-openide-actions-CopyAction.instance">
+                    <file name="org-openide-actions-CopyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="500"/>
                     </file>
-                    <file name="org-openide-actions-CutAction.instance">
+                    <file name="org-openide-actions-CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
                         <attr name="position" intvalue="400"/>
                     </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
+                    <file name="org-openide-actions-DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="700"/>
                     </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
+                    <file name="org-openide-actions-FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
                         <attr name="position" intvalue="200"/>
                     </file>
-                    <file name="org-openide-actions-OpenAction.instance">
+                    <file name="org-openide-actions-OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
                         <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
+                    <file name="org-openide-actions-PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.instance">
+                    <file name="org-openide-actions-RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                         <attr name="position" intvalue="800"/>
                     </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="org-openide-actions-ToolsAction.instance">
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="sep-1.instance">

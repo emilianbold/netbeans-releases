@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 
 import org.openide.filesystems.FileObject;
@@ -65,7 +65,7 @@ import org.xml.sax.SAXException;
  *  works only on top of ear's modules' artifacts.. will this work?
  * @author mkleint
  */
-public class NonProjectJ2eeModule implements J2eeModuleImplementation {
+public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
 
     private static final String WAR = "war"; //NOI18N
     private static final String EAR = "ear"; //NOI18N
@@ -90,20 +90,20 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation {
         return moduleVersion;
     }
     
-    public Object getModuleType() {
+    public J2eeModule.Type getModuleType() {
         String type = artifact.getType();
 //        System.out.println("NPJM: get type=" + type);
         if (WAR.equals(type)) {
-            return J2eeModule.WAR;
+            return J2eeModule.Type.WAR;
         }
         if (EJB.equals(type)) {
-            return J2eeModule.EJB;
+            return J2eeModule.Type.EJB;
         }
         if (EAR.equals(type)) {
-            return J2eeModule.EAR;
+            return J2eeModule.Type.EAR;
         }
         //TODO what to do here?
-        return J2eeModule.CLIENT;
+        return J2eeModule.Type.CAR;
     }
     
     public String getUrl() {

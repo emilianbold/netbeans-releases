@@ -188,7 +188,7 @@ public class FileStatusCache {
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
                 if (VersioningSupport.isFlat(root)) {
-                    if (file.equals(root) || file.getParentFile().equals(root)) {
+                    if (file.equals(root) || root.equals(file.getParentFile())) {
                         set.add(file);
                         break;
                     }
@@ -607,7 +607,7 @@ public class FileStatusCache {
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+            if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
             }
         }
@@ -802,13 +802,18 @@ public class FileStatusCache {
     private FileInformation createMissingEntryFileInformation(File file, ISVNStatus repositoryStatus) {
         
         // ignored status applies to whole subtrees
-        boolean isDirectory = file.isDirectory();
+        boolean exists = file.exists();
+        boolean isDirectory = exists && file.isDirectory();
         int parentStatus = getStatus(file.getParentFile()).getStatus();
         if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
             return isDirectory ? 
                 FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
         }
-        if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+        /**FILE_INFORMATION_NOTMANAGED should be set only for existing files
+         * Deleted files, which were originally ignored (i.e. build/classes), 
+         * used to acquire status F_I_NOTMANAGED, which was stuck to them indefinitely
+         */
+        if (exists && parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
             if (isDirectory) {
                 // Working directory roots (aka managed roots). We already know that isManaged(file) is true
                 return SvnUtils.isPartOfSubversionMetadata(file) ? 
@@ -843,7 +848,7 @@ public class FileStatusCache {
             }
         }
         
-        if (file.exists()) {
+        if (exists) {
             if (Subversion.getInstance().isIgnored(file)) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, file.isDirectory());
             } else {

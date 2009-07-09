@@ -203,12 +203,16 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             if (ic != null) {
                 Object o;
                 Logger fslogger = Logger.getLogger("org.openide.filesystems"); // NOI18N
-                Level oldLevel = fslogger.getLevel();
+                Logger cachelogger = Logger.getLogger("org.netbeans.core.startup.layers.BinaryFS"); // NOI18N
+                Level fsLevel = fslogger.getLevel();
+                Level cacheLevel = cachelogger.getLevel();
                 fslogger.setLevel(Level.OFF); // #99744
+                cachelogger.setLevel(Level.OFF); // #166199
                 try {
                     o = ic.instanceCreate();
                 } finally {
-                    fslogger.setLevel(oldLevel);
+                    fslogger.setLevel(fsLevel);
+                    cachelogger.setLevel(cacheLevel);
                 }
                 if (o instanceof Action) {
                     String name = (String) ((Action) o).getValue(Action.NAME);
@@ -227,6 +231,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         } catch (Exception e) {
             // ignore, OK
+            Logger.getLogger(BadgingSupport.class.getName()).log(Level.FINE, "Ignored exception: (" + e.getClass().getSimpleName() + ") " + e.getMessage());
         }
         // OK, probably a developed module, so take a guess.
         String clazz = (String) fo.getAttribute("instanceClass"); // NOI18N

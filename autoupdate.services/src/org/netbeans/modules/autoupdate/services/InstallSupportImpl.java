@@ -108,7 +108,7 @@ public class InstallSupportImpl {
     private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
     
     private Map<UpdateElementImpl, File> element2Clusters = null;
-    private Set<File> downloadedFiles = null;
+    private final Set<File> downloadedFiles = new HashSet<File> ();
     private boolean isGlobal;
     private int wasDownloaded = 0;
     
@@ -378,11 +378,15 @@ public class InstallSupportImpl {
 
                         if (progress != null) progress.switchToDeterminate (affectedModuleImpls.size ());
 
-                        if (! getDownloadedFiles ().isEmpty ()) {
+                        Set <File> files = null;
+                        synchronized(downloadedFiles) {
+                            files = new HashSet <File> (downloadedFiles);
+                        }
+                        if (! files.isEmpty ()) {
 
                             // XXX: should run in single Thread
                             Thread th = org.netbeans.updater.UpdaterFrame.runFromIDE(
-                                    getDownloadedFiles (),
+                                    files,
                                     new RefreshModulesListener (progress),
                                     NbBundle.getBranding(), false);
 
@@ -399,7 +403,9 @@ public class InstallSupportImpl {
                                         err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
                                         th.interrupt();
                                         afterInstall ();
-                                        downloadedFiles = null;
+                                        synchronized(downloadedFiles) {
+                                            downloadedFiles.clear();
+                                        }
                                         throw new OperationException (OperationException.ERROR_TYPE.INSTALL,
                                                 NbBundle.getMessage(InstallSupportImpl.class, "InstallSupportImpl_TurnOnTimeout", // NOI18N
                                                 impl.getUpdateElement ()));
@@ -411,7 +417,9 @@ public class InstallSupportImpl {
                             }
                         }
                         afterInstall ();
-                        downloadedFiles = null;
+                        synchronized(downloadedFiles) {
+                            downloadedFiles.clear();
+                        }
                     }
                 } finally {
                     // end progress
@@ -494,9 +502,10 @@ public class InstallSupportImpl {
 
         Utilities.writeInstallLater(new HashMap<UpdateElementImpl, File>(getElement2Clusters ()));
         getElement2Clusters ().clear ();
-        downloadedFiles = null;
+        synchronized (downloadedFiles) {
+            downloadedFiles.clear();
+        }
     }
-
     public String getCertificate(Installer validator, UpdateElement uElement) {
         Collection<Certificate> certificates = certs.get (uElement);
         if (certificates != null) {
@@ -596,12 +605,14 @@ public class InstallSupportImpl {
             boolean cancelled = runningTask.cancel (true);
             assert cancelled : runningTask + " was cancelled.";
         }
-        for (File f : getDownloadedFiles ()) {
-            if (f != null && f.exists ()) {
-                f.delete ();
+        synchronized(downloadedFiles) {
+            for (File f : downloadedFiles) {
+                if (f != null && f.exists ()) {
+                    f.delete ();
+                }
             }
+            downloadedFiles.clear ();
         }
-        getDownloadedFiles ().clear ();
         Utilities.cleanUpdateOfUpdaterJar ();
         if (affectedFeatureImpls != null) affectedFeatureImpls = null;
         if (affectedModuleImpls != null) affectedModuleImpls = null;
@@ -683,7 +694,10 @@ public class InstallSupportImpl {
         // download
         try {
             String label = toUpdateImpl.getDisplayName ();
-            getDownloadedFiles ().add (FileUtil.normalizeFile (dest));
+            File normalized = FileUtil.normalizeFile (dest);
+            synchronized(downloadedFiles) {
+                downloadedFiles.add(normalized);
+            }
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
         } catch (UnknownHostException x) {
             err.log (Level.INFO, x.getMessage (), x);
@@ -798,12 +812,12 @@ public class InstallSupportImpl {
         BufferedOutputStream bdest = null;
         
         err.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");
-        
+        boolean canceled = false;
         try {
             byte [] bytes = new byte [1024];
             int size;
             int c = 0;
-            while (!cancelled() && (size = bsrc.read (bytes)) != -1) {
+            while (!(canceled = cancelled()) && (size = bsrc.read (bytes)) != -1) {
                 if(bdest == null) {
                     bdest = new BufferedOutputStream (new FileOutputStream (dest));
                 }
@@ -841,13 +855,24 @@ public class InstallSupportImpl {
             }
         }
         if (contentLength != -1 && increment != contentLength) {
-            err.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
+            if(canceled) {
+                err.log(Level.FINE, "Download of " + source + " was cancelled");
+            } else {
+                err.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
+            }
             if(bdest!=null && dest.exists()) {
                 err.log(Level.INFO, "Deleting not fully downloaded file " + dest);
                 dest.delete();
-                getDownloadedFiles ().remove(FileUtil.normalizeFile (dest));
+                File normalized = FileUtil.normalizeFile (dest);
+                synchronized(downloadedFiles) {
+                    downloadedFiles.remove(normalized);
+                }
             }
-            throw new IOException("Server closed connection unexpectedly");
+            if(canceled) {
+                throw new IOException("Download of " + source + " was cancelled");
+            } else {
+                throw new IOException("Server closed connection unexpectedly");
+            }
         }
 
         err.log (Level.FINE, "Destination " + dest + " is successfully wrote. Size " + dest.length());
@@ -1013,12 +1038,5 @@ public class InstallSupportImpl {
             es = Executors.newSingleThreadExecutor ();
         }
         return es;
-    }
-    
-    private synchronized Set<File> getDownloadedFiles () {
-        if (downloadedFiles == null) {
-            downloadedFiles = new HashSet<File> ();
-        }
-        return downloadedFiles;
     }
 }

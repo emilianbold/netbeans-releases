@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.apt.debug;
 
+import org.netbeans.modules.cnd.debug.DebugUtils;
+
 /**
  * A common place for APT tracing flags that are used by several classes
  * @author Vladimir Voskresensky
@@ -50,7 +52,7 @@ public interface APTTraceFlags {
 
     public static final boolean APT_SHARE_TEXT = DebugUtils.getBoolean("apt.share.text", true); // NOI18N
     //public static final boolean APT_USE_STORAGE_SET = DebugUtils.getBoolean("apt.share.storage", true); // NOI18N
-    public static final boolean APT_NON_RECURSE_VISIT = DebugUtils.getBoolean("apt.nonrecurse.visit", false); // NOI18N
+    public static final boolean APT_NON_RECURSE_VISIT = DebugUtils.getBoolean("apt.nonrecurse.visit", true); // NOI18N
 
     public static final int     BUF_SIZE = 8192*Integer.getInteger("cnd.file.buffer", 1).intValue(); // NOI18N
     

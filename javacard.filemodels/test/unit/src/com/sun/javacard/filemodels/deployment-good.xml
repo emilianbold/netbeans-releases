@@ -1,0 +1,30 @@
+<deploy>
+ <applet>
+   <applet-AID>//aid/F880E6C8B8/7D</applet-AID>
+   <class-name-hint>com.foo.bar.MyApplet</class-name-hint>
+   <instance>
+       <instance-AID>//aid/F880E6C8B8/7E</instance-AID>
+       <deployment-params><![CDATA[-h hello]]></deployment-params>
+   </instance>
+   <instance>
+       <instance-AID>//aid/F880E6C8B8/7F</instance-AID>
+       <deployment-params><![CDATA[-f goodbye]]></deployment-params>
+   </instance>
+ </applet>
+ <applet>
+   <applet-AID>//aid/F880E6C8B8/FFF0</applet-AID>
+   <class-name-hint>com.foo.bar.MyOtherApplet</class-name-hint>
+   <instance>
+       <instance-AID>//aid/F880E6C8B8/FFF1</instance-AID>
+       <deployment-params><![CDATA[-q hello]]></deployment-params>
+   </instance>
+   <instance>
+       <instance-AID>//aid/F880E6C8B8/FFF2</instance-AID>
+       <deployment-params><![CDATA[-q goodbye]]></deployment-params>
+   </instance>
+   <instance>
+       <instance-AID>//aid/F880E6C8B8/FFF3</instance-AID>
+       <deployment-params><![CDATA[-q goodbye]]></deployment-params>
+   </instance>
+ </applet>
+</deploy>

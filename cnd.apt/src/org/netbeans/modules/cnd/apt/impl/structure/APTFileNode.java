@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
@@ -95,14 +94,6 @@ public final class APTFileNode extends APTContainerNode
         return path;
     }
 
-    @Override
-    public void dispose() {
-        if (isTokenized()) {
-            new CleanTokensWalker(this).visit();
-            tokenized = false;
-        }
-    }
-
     public boolean isTokenized() {
         return tokenized;
     }
@@ -135,79 +126,4 @@ public final class APTFileNode extends APTContainerNode
     public final void setNextSibling(APT next) {
         assert(false):"Illegal to add siblings to file node"; // NOI18N
     }
-    
-    private static class CleanTokensWalker extends APTWalker {
-
-        /** Creates a new instance of APTCleanTokensWalker */
-        public CleanTokensWalker(APTFileNode apt) {
-            super(apt, null);
-        }
-
-        protected void onInclude(APT apt) {
-            // do nothing
-        }
-
-        protected void onIncludeNext(APT apt) {
-            // do nothing
-        }
-
-        protected void onDefine(APT apt) {
-            // do nothing
-        }
-
-        protected void onUndef(APT apt) {
-            // do nothing
-        }
-
-        protected boolean onIf(APT apt) {
-            // always return true, because we want to visit all branches
-            return true;
-        }
-
-        protected boolean onIfdef(APT apt) {
-            // always return true, because we want to visit all branches
-            return true;
-        }
-
-        protected boolean onIfndef(APT apt) {
-            // always return true, because we want to visit all branches
-            return true;
-        }
-
-        protected boolean onElif(APT apt, boolean wasInPrevBranch) {
-            // always return true, because we want to visit all branches
-            return true;
-        }
-
-        protected boolean onElse(APT apt, boolean wasInPrevBranch) {
-            // always return true, because we want to visit all branches
-            return true;
-        }
-
-        protected void onEndif(APT apt, boolean wasInBranch) {
-            // do nothing
-        }
-
-//        protected APTToken onToken(APTToken token) {
-//            // do nothing
-//            return token;
-//        }    
-
-        @Override
-        protected void onStreamNode(APT apt) {
-            // clean node's stream
-            apt.dispose();
-        }
-        
-        @Override
-        protected void onOtherNode(APT apt) {
-            // clean tokens for 
-            //APT.Type.INVALID:
-            //APT.Type.ERROR:
-            //APT.Type.LINE:
-            //APT.Type.PRAGMA:
-            //APT.Type.PREPROC_UNKNOWN: 
-            apt.dispose();
-        }
-    }    
 }

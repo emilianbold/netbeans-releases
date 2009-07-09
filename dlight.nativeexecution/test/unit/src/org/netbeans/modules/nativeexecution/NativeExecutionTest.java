@@ -36,183 +36,22 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.concurrent.CancellationException;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
-public class NativeExecutionTest extends NbTestCase {
-    static {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
-        
-        while (true) {
-            String dirName = junitWorkdir.getName();
-            junitWorkdir = junitWorkdir.getParentFile();
-            if ("dlight.nativeexecution".equals(dirName) || "".equals(dirName)) { // NOI18N
-                break;
-            }
-        }
+/**
+ * @author Alexey Vladykin
+ */
+public class NativeExecutionTest extends NativeExecutionBaseTestSuite {
 
-        File dlightDir = new File(junitWorkdir, "nbbuild/netbeans/dlight1"); // NOI18N
-        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + ":" + dirs); // NOI18N
-
-        Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
-        log.setLevel(Level.ALL);
-
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-
-            }
-        });
+    public NativeExecutionTest() {
+        super("Native Execution");
+        addTest(HostInfoTestCase.class);
     }
 
-    public NativeExecutionTest(String name) {
-        super(name);
+    public static Test suite() {
+        return new NativeExecutionTest();
     }
-
-    private static ExecutionEnvironment testExecutionEnvironment;
-
-    protected static ExecutionEnvironment getTestExecutionEnvironment() throws IOException, CancellationException {
-        synchronized(NativeExecutionTest.class) {
-            if (testExecutionEnvironment == null) {
-                String ui = System.getProperty("cnd.remote.testuserinfo"); // NOI18N
-                char[] passwd = null;
-                if( ui == null ) {
-                    ui = System.getenv("CND_REMOTE_TESTUSERINFO"); // NOI18N
-                }
-                if (ui != null) {
-                    int m = ui.indexOf(':');
-                    if (m>-1) {
-                        int n = ui.indexOf('@');
-                        String strPwd = ui.substring(m+1, n);
-                        String remoteHKey = ui.substring(0,m) + ui.substring(n);
-                        testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                        passwd = strPwd.toCharArray();
-                    } else {
-                        String remoteHKey = ui;
-                        testExecutionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                    }
-                } else {
-                    testExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"); // NOI18N
-                }
-                if (testExecutionEnvironment != null) {
-                    ConnectionManager.getInstance().connectTo(testExecutionEnvironment, passwd, false);
-                }
-            }
-        }
-        return testExecutionEnvironment;
-    }
-
-    protected static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException, CancellationException {
-        ExecutionEnvironment result = null;
-
-        if (mspec == null) {
-            return result;
-        }
-
-        String rcFile = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
-        
-        if (rcFile == null) {
-            return result;
-        }
-
-        BufferedReader rcReader = new BufferedReader(new FileReader(rcFile));
-        String str;
-        Pattern infoPattern = Pattern.compile("^([^#].*)[ \t]+(.*)"); // NOI18N
-        Pattern pwdPattern = Pattern.compile("([^:]+):(.*)@(.*)"); // NOI18N
-        char[] passwd = null;
-
-        while ((str = rcReader.readLine()) != null) {
-            Matcher m = infoPattern.matcher(str);
-            String spec = null;
-            String loginInfo;
-
-            if (m.matches()) {
-                spec = m.group(1);
-                loginInfo = m.group(2);
-            } else {
-                continue;
-            }
-
-            if (mspec.equals(spec)) {
-                m = pwdPattern.matcher(loginInfo);
-                String remoteHKey = null;
-                
-                if (m.matches()) {
-                    passwd = m.group(2).toCharArray();
-                    remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N
-                } else {
-                    remoteHKey = loginInfo;
-                }
-
-                result = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
-                break;
-            }
-        }
-
-        if (result != null) {
-            ConnectionManager.getInstance().connectTo(result, passwd, false);
-        }
-
-        return result;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    protected void writeFile(File file, CharSequence content) throws IOException {
-        Writer writer = new FileWriter(file);
-        writer.write(content.toString());
-        writer.close();
-    }
-
-    protected File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
-        File tmpFile = File.createTempFile(prefix, suffix);
-        if (directory) {
-            if(!(tmpFile.delete())) {
-                throw new IOException("Could not delete temp file: " + tmpFile.getAbsolutePath()); // NOI18N
-            }
-            if (!(tmpFile.mkdir())) {
-                throw new IOException("Could not create temp directory: " + tmpFile.getAbsolutePath()); // NOI18N
-            }
-        }
-        tmpFile.deleteOnExit();
-        return tmpFile;
-    }
-
 }

@@ -44,7 +44,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,13 +51,9 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -66,19 +61,8 @@ import org.openide.filesystems.URLMapper;
  */
 abstract class CompileWorker {
 
-    abstract ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends Indexable> files);
-
-    CompileTuple createTuple(Context context, JavaParsingContext javaContext, Indexable indexable) {
-        File root = null;
-        if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
-            try {
-                File file = new File(indexable.getURL().toURI().getPath());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
-            } catch (Exception ex) {}
-        }
-        FileObject fo = URLMapper.findFileObject(indexable.getURL());
-        return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;
-    }
+    abstract ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files);
+    
 
     public void computeFQNs(final Map<URI, List<String>> file2FQNs, CompilationUnitTree cut, JavaFileObject file) {
         String pack;
@@ -109,25 +93,15 @@ abstract class CompileWorker {
         final Set<ElementHandle<TypeElement>> addedTypes;
         final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
-        final Map<URL, Set<URL>> root2Rebuild;
+        final Set<ElementHandle<TypeElement>> modifiedTypes;
 
-        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Map<URL, Set<URL>> root2Rebuild) {
+        public ParsingOutput(boolean success, Map<URI, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes) {
             this.success = success;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;
             this.createdFiles = createdFiles;
             this.finishedFiles = finishedFiles;
-            this.root2Rebuild = root2Rebuild;
+            this.modifiedTypes = modifiedTypes;
         }
-    }
-
-    static class CompileTuple {
-        public final JavaFileObject jfo;
-        public final Indexable indexable;
-
-        public CompileTuple (final JavaFileObject jfo, final Indexable indexable) {
-            this.jfo = jfo;
-            this.indexable = indexable;
-        }
-    }
+    }    
 }

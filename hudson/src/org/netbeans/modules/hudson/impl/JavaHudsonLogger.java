@@ -67,7 +67,8 @@ public class JavaHudsonLogger implements HudsonLogger {
         return new Session();
     }
 
-    // should be consistent with org.netbeans.modules.java.project.JavaAntLogger.STACK_TRACE
+    // derived from org.netbeans.modules.java.project.JavaAntLogger.STACK_TRACE
+    // (would be nicer to have a utility API to parse stack traces, but unclear where this would go)
     private static final Pattern STACK_TRACE = Pattern.compile(
     "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
 

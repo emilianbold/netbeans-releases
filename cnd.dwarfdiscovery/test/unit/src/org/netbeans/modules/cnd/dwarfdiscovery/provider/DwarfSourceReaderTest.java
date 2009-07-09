@@ -201,7 +201,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         printInclidePaths(source);
     }
 
-    public void testGento43(){
+    public void testGentoo43(){
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("COMMAND_LINE_MACROS_1", "1");
         golden.put("COMMAND_LINE_MACROS_2", "1");
@@ -343,7 +343,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("linux", "1");
         ignore.put("unix", "1");
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gento.4.3.o", ignore, grepBase);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o", ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));

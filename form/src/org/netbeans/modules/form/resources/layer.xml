@@ -101,6 +101,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-form-actions-ReloadAction.instance"/>
             <file name="org-netbeans-modules-form-actions-InPlaceEditAction.instance"/>
             <file name="org-netbeans-modules-form-actions-EditContainerAction.instance"/>
+            <file name="org-netbeans-modules-form-actions-DuplicateAction.instance"/>
             <!-- XXX no such file:
             <file name="org-netbeans-modules-form-actions-EditFormAction.instance"/>
             -->
@@ -121,7 +122,8 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance">
+                <file name="org-netbeans-modules-form-actions-InstallBeanAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-InstallBeanAction.instance"/>
                     <attr name="position" intvalue="100"/>
                 </file>
             </folder>
@@ -646,11 +648,11 @@ made subject to such option by the copyright holder.
     <folder name="Shortcuts">
         <!-- Bind explicitly to Ctrl-R, not D-R for Command on mac - Command-R
              is already bound to Replace -->
-        <file name="CS-R.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.ReloadAction"/>
+        <file name="C-D.shadow">
+            <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-DuplicateAction.instance"/>
         </file>
-        <file name="C-D.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.DuplicateAction"/>
+        <file name="CS-R.shadow">
+            <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
         </file>
     </folder>
 

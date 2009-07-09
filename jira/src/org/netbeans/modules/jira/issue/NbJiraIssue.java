@@ -57,12 +57,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
+import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -78,6 +80,7 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
@@ -85,7 +88,7 @@ import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -111,6 +114,7 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+    static final String LABEL_NAME_ASSIGNED_TO  = "jira.issue.assigned";    // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
@@ -136,6 +140,7 @@ public class NbJiraIssue extends Issue {
      * Field was changed since the issue was seen the last time
      */
     static final int FIELD_STATUS_MODIFIED = 4;
+    private Map<String, String> seenAtributes;
 
     enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
@@ -145,9 +150,9 @@ public class NbJiraIssue extends Issue {
         PRIORITY(JiraAttribute.PRIORITY.id(), "LBL_PRIORITY"),
         RESOLUTION(JiraAttribute.RESOLUTION.id(), "LBL_RESOLUTION"),
         PROJECT(JiraAttribute.PROJECT.id(), "LBL_PROJECT"),
-        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT"),
-        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS"),
-        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS"),
+        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT", false),
+        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS", false),
+        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS", false),
         ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
         REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
         ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNEE"),
@@ -158,6 +163,10 @@ public class NbJiraIssue extends Issue {
         ESTIMATE(JiraAttribute.ESTIMATE.id(), "LBL_ESTIMATE"),
         INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id(), "LBL_INITIAL_ESTIMATE"),
         ACTUAL(JiraAttribute.ACTUAL.id(), "LBL_ACTUALL"),
+        PARENT_ID(JiraAttribute.PARENT_ID.id(), null),
+        PARENT_KEY(JiraAttribute.PARENT_KEY.id(), null),
+        SUBTASK_IDS(JiraAttribute.SUBTASK_IDS.id(), null, false),
+        SUBTASK_KEYS(JiraAttribute.SUBTASK_KEYS.id(), null, false),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
         ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
@@ -206,6 +215,34 @@ public class NbJiraIssue extends Issue {
         this.repository = repo;
     }
 
+    void opened() {
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        if(!taskData.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
+        if(refresh != null && refresh.equals("true")) {                                      // NOI18N
+            return;
+        }
+        repository.scheduleForRefresh(getID());
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
+    }
+
+    void closed() {
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
+        repository.stopRefreshing(getID());
+        seenAtributes = null;
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
+    }
+
+    @Override
+    public boolean isNew() {
+        return taskData == null || taskData.isNew();
+    }
+
     public void setTaskData(TaskData taskData) {
         assert !taskData.isPartial();
         this.taskData = taskData;
@@ -219,7 +256,7 @@ public class NbJiraIssue extends Issue {
         });
     }
 
-    JiraRepository getRepository() {
+    public JiraRepository getRepository() {
         return repository;
     }
 
@@ -262,6 +299,32 @@ public class NbJiraIssue extends Issue {
 
     TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
+    }
+
+    public boolean isSubtask() {
+        String key = getParentKey();
+        return key != null && !key.trim().equals("");
+    }
+
+    public boolean hasSubtasks() {
+        List<String> keys = getSubtaskKeys();
+        return keys != null && keys.size() > 0;
+    }
+
+    public String getParentKey() {
+        return getFieldValue(IssueField.PARENT_KEY);
+    }
+
+    public List<String> getSubtaskKeys() {
+        return getFieldValues(IssueField.SUBTASK_KEYS);
+    }
+
+    public String getParentID() {
+        return getFieldValue(IssueField.PARENT_ID);
+    }
+
+    public List<String> getSubtaskID() {
+        return getFieldValues(IssueField.SUBTASK_IDS);
     }
 
     Comment[] getComments() {
@@ -314,6 +377,39 @@ public class NbJiraIssue extends Issue {
                     && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
                 attribute.setValues(customField.getValues());
             }
+        }
+    }
+
+    /**
+     * Returns an array of worklogs under the issue.
+     * @return
+     */
+    WorkLog[] getWorkLogs () {
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, WorkLogConverter.TYPE_WORKLOG);
+        if (attrs == null) {
+            return new WorkLog[0];
+        }
+        List<WorkLog> workLogs = new ArrayList<WorkLog>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            workLogs.add(new WorkLog(taskAttribute));
+        }
+        return workLogs.toArray(new WorkLog[workLogs.size()]);
+    }
+
+    /**
+     * Adds a new worklog. Just one worklog can be added before committing the issue.
+     * Don't forget to commit the issue.
+     * @param startDate
+     * @param spentTime in seconds
+     * @param comment
+     */
+    void addWorkLog (Date startDate, long spentTime, String comment) {
+        if(startDate != null) {
+            TaskAttribute attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            TaskAttributeMapper mapper = taskData.getAttributeMapper();
+            mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
+            mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
+            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
         }
     }
 
@@ -570,27 +666,6 @@ public class NbJiraIssue extends Issue {
         ta.setValue(operation.getOperationId());
     }
 
-    public void resolveFixed(String val) {
-//        try {
-//            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
-//            Resolution resolution = null;
-//            if(res != null) {
-//                for (Resolution r : res) {
-//                    // XXX HACK
-//                    if(r.getName().equals("Fixed")) {
-//                        resolution = r;
-//                    }
-//                }
-//            }
-//            if(resolution == null) {
-//                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
-//            }
-//            resolve(resolution, val);
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//        }
-    }
-
     @Override
     public String getDisplayName() {
         return taskData.isNew() ?
@@ -842,28 +917,47 @@ public class NbJiraIssue extends Issue {
         return attributes;
     }   
 
-    public static ColumnDescriptor[] getColumnDescriptors() {
+    public static ColumnDescriptor[] getColumnDescriptors(JiraRepository repository) {
         if(DESCRIPTORS == null) {
             ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
+            JiraConfiguration conf = repository.getConfiguration();
+            JTable t = new JTable();
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
-                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Type_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
-                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc"), // NOI18N
+                                                  BugtrackingUtil.getColumnWidthInPixels(20, t)),
                 new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
                                                   loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
+                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Type_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Type_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getIssueTypes()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Priority_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t, true)),
+                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getPriorities()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
+                                                  BugtrackingUtil.getLongestWordWidth(
+                                                    loc.getString("CTL_Issue_Status_Title"),      // NOI18N
+                                                    JiraUtils.toStrings(conf.getResolutions()), t)),
+                new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t))
             };
         }
         return DESCRIPTORS;
@@ -984,7 +1078,7 @@ public class NbJiraIssue extends Issue {
     }
 
     List<String> getFieldValues(IssueField f) {
-        if(f.isSingleAttribute()) {
+        if(!f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null) {
                 return a.getValues();
@@ -1066,6 +1160,14 @@ public class NbJiraIssue extends Issue {
             // a new issue was created -> refresh all queries
             repository.refreshAllQueries();
         }
+
+        try {
+            seenAtributes = null;
+            setSeen(true);
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
+
         return true;
     }
 
@@ -1081,9 +1183,6 @@ public class NbJiraIssue extends Issue {
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-        if(!wasSeen()) {
-            return FIELD_STATUS_IRELEVANT;
-        }
         Map<String, String> a = getSeenAttributes();
         String seenValue = a != null ? a.get(f.key) : null;
         if(seenValue == null) {
@@ -1098,9 +1197,11 @@ public class NbJiraIssue extends Issue {
     }
 
     private Map<String, String> getSeenAttributes() {
-        Map<String, String> seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
         if(seenAtributes == null) {
-            seenAtributes = new HashMap<String, String>();
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+            if(seenAtributes == null) {
+                seenAtributes = new HashMap<String, String>();
+            }
         }
         return seenAtributes;
     }
@@ -1284,6 +1385,11 @@ public class NbJiraIssue extends Issue {
         }
     }
 
+    @Override
+    public String toString() {
+        return "[" + getKey() + ", " + getSummary() + "]";
+    }
+
     private class IssueTask extends AbstractTask {
         private final String key;
 
@@ -1345,6 +1451,47 @@ public class NbJiraIssue extends Issue {
 
         public void setValues (List<String> values) {
             this.values = values;
+        }
+    }
+
+    public static final class WorkLog {
+        private final Date startDate;
+        private final String author;
+        private final long timeSpent;
+        private final String comment;
+
+        public WorkLog(TaskAttribute workLogTA) {
+            TaskAttributeMapper mapper = workLogTA.getTaskData().getAttributeMapper();
+            startDate = mapper.getDateValue(workLogTA.getMappedAttribute(WorkLogConverter.START_DATE.key()));
+            IRepositoryPerson person = mapper.getRepositoryPerson(workLogTA.getMappedAttribute(WorkLogConverter.AUTOR.key()));
+            author = person == null ? null : person.getPersonId();
+            comment = mapper.getValue(workLogTA.getMappedAttribute(WorkLogConverter.COMMENT.key()));
+            Long timeSpentValue = mapper.getLongValue(workLogTA.getMappedAttribute(WorkLogConverter.TIME_SPENT.key()));
+            this.timeSpent = timeSpentValue == null ? 0 : timeSpentValue.longValue();
+        }
+
+        public Date getStartDate () {
+            return startDate;
+        }
+
+        /**
+         *
+         * @return author's ID
+         */
+        public String getAuthor () {
+            return author;
+        }
+
+        /**
+         *
+         * @return spent time on the issue in seconds
+         */
+        public long getTimeSpent () {
+            return timeSpent;
+        }
+
+        public String getComment () {
+            return comment;
         }
     }
 }

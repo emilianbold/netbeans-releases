@@ -1,6 +1,7 @@
 package generated;
 
 import java.io.Serializable;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,13 +11,15 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "PRODUCT")
-@NamedQueries({@NamedQuery(name = "Product.findById", query = "SELECT p FROM Product p WHERE p.id = :id"), @NamedQuery(name = "Product.findByDescription", query = "SELECT p FROM Product p WHERE p.description = :description")})
+@NamedQueries({@NamedQuery(name = "Product.findAll", query = "SELECT p FROM Product p"), @NamedQuery(name = "Product.findById", query = "SELECT p FROM Product p WHERE p.id = :id"), @NamedQuery(name = "Product.findByDescription", query = "SELECT p FROM Product p WHERE p.description = :description")})
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "PRODUCT_ID", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "PRODUCT_ID")
     private Long id;
-    @Column(name = "DESCRIPTION", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "DESCRIPTION")
     private String description;
 
     public Product() {

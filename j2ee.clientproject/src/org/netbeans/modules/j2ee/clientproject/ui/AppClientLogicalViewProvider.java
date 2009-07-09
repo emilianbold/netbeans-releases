@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -483,7 +483,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
                             "default value will be used instead: "+j2eeProfile); // NOI18N
                     updateJ2EESpec(project, project.getAntProjectHelper(), j2eeProfile);
                 }
-                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.CLIENT);
+                String instance = BrokenServerSupport.selectServer(j2eeProfile, J2eeModule.Type.CAR);
                 if (instance != null) {
                     AppClientProjectProperties.setServerInstance(
                             project, helper.getAntProjectHelper(), instance);

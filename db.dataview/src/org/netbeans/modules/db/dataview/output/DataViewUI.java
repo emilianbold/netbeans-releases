@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of parent file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of parent file to be governed by only the CDDL
@@ -65,6 +65,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
@@ -104,6 +105,9 @@ class DataViewUI extends JXPanel {
     private JXButton cancel;
     private DataViewActionHandler actionHandler;
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/"; // NOI18N
+
+    private static final int MAX_TAB_LENGTH = 25;
+
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
      */
@@ -137,6 +141,8 @@ class DataViewUI extends JXPanel {
     };
 
     DataViewUI(DataView dataView, boolean nbOutputComponent) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         this.dataView = dataView;
 
         //do not show tab view if there is only one tab
@@ -147,7 +153,12 @@ class DataViewUI extends JXPanel {
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
         String sql = dataView.getSQLString();
-        this.setName(sql.substring(0, Math.min(sql.length(), 25)));
+        if (sql.length() > MAX_TAB_LENGTH) {
+            String trimmed = NbBundle.getMessage(DataViewUI.class, "DataViewUI_TrimmedTabName", sql.substring(0, Math.min(sql.length(), MAX_TAB_LENGTH)));
+            this.setName(trimmed);
+        } else {
+            this.setName(sql);
+        }
         this.setToolTipText(sql);
 
         // Main pannel with toolbars
@@ -176,6 +187,7 @@ class DataViewUI extends JXPanel {
     }
 
     void setTotalCount(int count) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         if (count < 0) {
             int pageSize = dataView.getDataViewPageContext().getPageSize();
             int totalRows = dataView.getDataViewPageContext().getCurrentRows().size();
@@ -226,6 +238,8 @@ class DataViewUI extends JXPanel {
     }
 
     void disableButtons() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         truncateButton.setEnabled(false);
         refreshButton.setEnabled(false);
         refreshField.setEnabled(false);
@@ -260,6 +274,8 @@ class DataViewUI extends JXPanel {
     }
 
     void resetToolbar(boolean wasError) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
         matchBoxField.setEditable(true);

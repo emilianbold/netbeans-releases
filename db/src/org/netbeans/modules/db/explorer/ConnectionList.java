@@ -76,8 +76,6 @@ public class ConnectionList {
 
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
-            DatabaseConnectionConvertor.importOldConnections();
-            RootNode.getOption().save();
             DEFAULT = new ConnectionList();
         }
         return DEFAULT;

@@ -45,17 +45,19 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 /**
  *
  * @author Andrei Badea
  */
-public class CompiledSourceForBinaryQueryTest extends TestBase {
+public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     
     private Project project;
     private AntProjectHelper helper;
@@ -66,6 +68,8 @@ public class CompiledSourceForBinaryQueryTest extends TestBase {
     
     @Override
     public void setUp() throws Exception {
+        MockLookup.setLayersAndInstances();
+
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         // XXX should not cast a Project

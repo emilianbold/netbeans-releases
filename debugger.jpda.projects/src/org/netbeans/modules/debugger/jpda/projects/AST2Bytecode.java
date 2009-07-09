@@ -121,8 +121,6 @@ class AST2Bytecode {
         } else {
             constantPool = null;
         }
-        byte[] bytecodes_copy = new byte[bytecodes.length];
-        System.arraycopy(bytecodes, 0, bytecodes_copy, 0, bytecodes.length);
         for (int treeIndex = 0; treeIndex < length; treeIndex++) {
             Tree node = treeNodes.get(treeIndex);
             Tree.Kind kind = node.getKind();
@@ -189,8 +187,11 @@ class AST2Bytecode {
                             identifier = ((NewClassTree) node).getIdentifier();
                             methodName = "<init>";
                             TreePath iPath = TreePath.getPath(cu, identifier);
+                            if (iPath == null) {
+                                return null; // No path to the identifier...
+                            }
                             TypeMirror type = trees.getTypeMirror(iPath);
-                            if (type.getKind() == TypeKind.ERROR) {
+                            if (type == null || type.getKind() == TypeKind.ERROR) {
                                 // There are errors, give it up.
                                 return null;
                             }
@@ -203,6 +204,9 @@ class AST2Bytecode {
                             if (identifier.getKind() == Tree.Kind.IDENTIFIER) {
                                 methodName = ((IdentifierTree) identifier).getName().toString();
                                 TreePath iPath = TreePath.getPath(cu, identifier);
+                                if (iPath == null) {
+                                    return null; // No path to the identifier...
+                                }
                                 TypeElement te = trees.getScope(iPath).getEnclosingClass();
                                 if (te == null) {
                                     // No enclosing class? Some error, give it up.
@@ -214,8 +218,11 @@ class AST2Bytecode {
                                 getStartPosFromMethodLength = true;
                                 ExpressionTree exp = ((MemberSelectTree) identifier).getExpression();
                                 TreePath expPath = TreePath.getPath(cu, exp);
+                                if (expPath == null) {
+                                    return null; // No path to the expression...
+                                }
                                 TypeMirror type = trees.getTypeMirror(expPath);
-                                if (type.getKind() == TypeKind.ERROR) {
+                                if (type == null || type.getKind() == TypeKind.ERROR) {
                                     // There are errors, give it up.
                                     return null;
                                 }
@@ -347,16 +354,6 @@ class AST2Bytecode {
                 }
             } while (true);
         }
-
-        // Check the modification of bytecodes:
-        for (int i = 0; i < bytecodes.length; i++) {
-            if (bytecodes[i] != bytecodes_copy[i]) {
-                System.err.println("\n\nBYTECODE MISMATCH!!!");
-                System.err.println("bytecodes["+i+"] = "+bytecodes[i]+", bytecodes_copy["+i+"] = "+bytecodes_copy[i]);
-                System.err.println("\n\n");
-            }
-        }
-
         /*
         // Assign next operations:
         for (int treeIndex = 0; treeIndex < length; treeIndex++) {

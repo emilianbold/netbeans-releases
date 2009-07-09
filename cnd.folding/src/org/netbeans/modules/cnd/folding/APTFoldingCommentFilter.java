@@ -111,14 +111,13 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     lastTokenLine = next.getEndLine();
                     createLineCommentsFoldIfNeeded();
             }    
-        };
+        }
         return next;
     }    
 
+    @Override
     public String toString() {
-        String retValue;
-        
-        retValue = orig.toString();
+        String retValue = orig.toString();
         return retValue;
     }   
 

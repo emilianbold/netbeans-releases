@@ -124,6 +124,12 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         if (nativeProject instanceof NativeProjectProvider) {
             ((NativeProjectProvider) nativeProject).fireProjectDeleted();
         }
+
+        // Notify configuration listeners (worka-round for http://www.netbeans.org/issues/show_bug.cgi?id=167259
+        MakeProjectConfigurationProvider makeProjectConfigurationProvider = project.getLookup().lookup(MakeProjectConfigurationProvider.class);
+        if (makeProjectConfigurationProvider != null) {
+            makeProjectConfigurationProvider.propertyChange(null);
+        }
     }
 
     public void notifyCopying() {

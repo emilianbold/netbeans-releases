@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,21 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
+
 /**
+ *
  * @author Radek Matous
  */
-public interface FileScope extends VariableScope {
-    Collection<? extends TypeScope> getDeclaredTypes();
-    Collection<? extends ClassScope> getDeclaredClasses();
-    Collection<? extends InterfaceScope> getDeclaredInterfaces();
-    Collection<? extends ConstantElement> getDeclaredConstants();
-    Collection<? extends FunctionScope> getDeclaredFunctions();
-    Collection<? extends VariableName> getDeclaredVariables();
+public interface  FileScope extends Scope  {
+    Collection<? extends NamespaceScope> getDeclaredNamespaces();
+    NamespaceScope getDefaultDeclaredNamespace();
     IndexScope getIndexScope();
 }

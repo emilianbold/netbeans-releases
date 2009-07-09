@@ -342,12 +342,38 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <code-name-base>org.netbeans.modules.java.editor</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
@@ -355,25 +381,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.editor</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.filesystems</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.core.startup</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.bootstrap</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.templates</code-name-base>
@@ -381,9 +392,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
+                        <code-name-base>org.openide.filesystems</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
                     </test-dependency>
                 </test-type>
                 <test-type>
@@ -402,8 +414,10 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <package>org.netbeans.modules.j2ee.persistence.action</package>
                 <package>org.netbeans.modules.j2ee.persistence.api.entity.generator</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>
+                <package>org.netbeans.modules.j2ee.persistence.dd.common</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.entitygenerator</package>
@@ -414,9 +428,11 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
+                <package>org.netbeans.modules.j2ee.persistence.util</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.fromdb</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.jpacontroller</package>
+                <package>org.netbeans.modules.j2ee.persistence.wizard.unit</package>
             </friend-packages>
         </data>
     </configuration>

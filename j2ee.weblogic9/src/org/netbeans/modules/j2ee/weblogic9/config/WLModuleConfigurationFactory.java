@@ -58,13 +58,14 @@ public class WLModuleConfigurationFactory implements ModuleConfigurationFactory 
     }
     
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
-        if (J2eeModule.WAR == j2eeModule.getModuleType()) {
+        if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
             return new WarDeploymentConfiguration(j2eeModule);
-        } else if (J2eeModule.EJB == j2eeModule.getModuleType()) {
+        } else if (J2eeModule.Type.EJB.equals(j2eeModule.getType())) {
             return new EjbDeploymentConfiguration(j2eeModule);
-        } else {
+        } else if (J2eeModule.Type.EAR.equals(j2eeModule.getType())) {
             return new EarDeploymentConfiguration(j2eeModule);
         }
+        throw new ConfigurationException("Not supported module: " + j2eeModule.getType());
     }
     
 }

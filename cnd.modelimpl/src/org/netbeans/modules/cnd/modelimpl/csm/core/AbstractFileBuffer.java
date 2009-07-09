@@ -52,7 +52,6 @@ import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -63,9 +62,10 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
+    private Charset encoding;
     
-    protected AbstractFileBuffer(File file) {
-        this.absPath = FilePathCache.getManager().getString(file.getAbsolutePath());
+    protected AbstractFileBuffer(CharSequence absPath) {
+        this.absPath = FilePathCache.getManager().getString(absPath);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -87,14 +87,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public abstract String getText() throws IOException;
     
     public final Reader getReader() throws IOException {
-        File file = getFile();
-        // file must be normalized
-        FileObject fo = FileUtil.toFileObject(file);
-        Charset encoding;
-        if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(fo);
-        } else {
-            encoding = FileEncodingQuery.getDefaultEncoding();
+        if (encoding == null) {
+            File file = getFile();
+            // file must be normalized
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                encoding = FileEncodingQuery.getEncoding(fo);
+            } else {
+                encoding = FileEncodingQuery.getDefaultEncoding();
+            }
         }
         InputStream is = getInputStream();
         Reader reader = new InputStreamReader(is, encoding);

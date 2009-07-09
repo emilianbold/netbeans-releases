@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import java.awt.event.InputEvent;
 import java.util.Collection;
-import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -54,8 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -65,8 +61,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.util.NbBundle;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -93,14 +87,21 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public static boolean isSupportedToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         if (token != null) {
             if (type == HyperlinkType.ALT_HYPERLINK) {
-                return !CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) &&
-                        !CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory());
+                if (CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) ||
+                        CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
+                    return false;
+                }
             }
             switch (token.id()) {
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
                 case OPERATOR:
                     return true;
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                case PREPROCESSOR_SYS_INCLUDE:
+                case PREPROCESSOR_USER_INCLUDE:
+                    return false;
             }
         }
         return false;
@@ -205,14 +206,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         if (msg != null && CsmKindUtilities.isMacro(item)) {
-            msg = getAlternativeHyperlinkTip(doc, msg);
+            msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
         }
         return msg == null ? null : msg.toString();
-    }
-
-    private CharSequence getAlternativeHyperlinkTip(Document doc, CharSequence tooltip) {
-        Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
-        int shortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
-        return NbBundle.getMessage(CsmHyperlinkProvider.class, "AltHyperlinkHint", tooltip, InputEvent.getModifiersExText(shortCut)); // NOI18N
     }
 }

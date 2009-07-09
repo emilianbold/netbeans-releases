@@ -49,8 +49,9 @@ public class WagService implements Comparable<WagService> {
 
     private String name;
     private String path;
-    private String uuid;
+    private String url;
     private String description;
+    private boolean prependWeb;
     private List<WagServiceParameter> parameters;
 
     public WagService() {
@@ -65,6 +66,10 @@ public class WagService implements Comparable<WagService> {
         return name;
     }
 
+    public String getCallableName() {
+        return prependWeb ? "web." + name : name;
+    }
+    
     public void setPath(String path) {
         this.path = path;
     }
@@ -73,12 +78,12 @@ public class WagService implements Comparable<WagService> {
         return path;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
-    public String getUuid() {
-        return uuid;
+    public String getUrl() {
+        return url;
     }
 
     public void setDescription(String desc) {
@@ -97,6 +102,10 @@ public class WagService implements Comparable<WagService> {
         return parameters;
     }
 
+    public void setPrependWeb(boolean flag) {
+        this.prependWeb = flag;
+    }
+    
     @Override
     public int hashCode() {
         return path.hashCode();

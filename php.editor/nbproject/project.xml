@@ -56,7 +56,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -83,6 +83,15 @@
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>1.42</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -155,15 +164,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.22</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.html.editor</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -337,6 +337,11 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -364,6 +369,7 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -386,7 +392,7 @@
                 <test-type>
                     <name>qa-functional</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

@@ -37,14 +37,21 @@ public class TokenBuffer {
     /** Record every single token pulled from the source so we can reproduce
      *  chunks of it later.
      */
-    private final List tokens = new ArrayList(INITIAL_BUFFER_SIZE);
+    private final List tokens;
 
     // type buffer data (created to improve performance of LA)
     private int size = 0;
-    private int[] data = new int[INITIAL_BUFFER_SIZE];
+    private int[] data;
 
     /** Create a token buffer */
     public TokenBuffer(TokenStream input) {
+        this(input, INITIAL_BUFFER_SIZE);
+    }
+
+    /** Create a token buffer */
+    public TokenBuffer(TokenStream input, int initialCapacity) {
+        tokens = new ArrayList(initialCapacity);
+        data = new int[initialCapacity];
         // fill buffer
         try {
             int pos = 0;

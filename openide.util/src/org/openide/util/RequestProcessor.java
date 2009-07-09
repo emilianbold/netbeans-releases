@@ -173,6 +173,8 @@ public final class RequestProcessor implements Executor{
     
     /** support for interrupts or not? */
     private boolean interruptThread;
+    /** fill stacktraces when task is posted? */
+    private boolean enableStackTraces;
 
     /** Creates new RequestProcessor with automatically assigned unique name. */
     public RequestProcessor() {
@@ -221,11 +223,34 @@ public final class RequestProcessor implements Executor{
      * @since 6.3
      */
     public RequestProcessor(String name, int throughput, boolean interruptThread) {
+        this(name, throughput, interruptThread, SLOW);
+    }
+
+    /** Creates a new named <code>RequestProcessor</code> that allows to disable stack trace filling.
+     * By default, when assertions are on, each task posted on <code>RequestProcessor</code> stores
+     * the stack trace at the time of posting. When an exception is later thrown from the task,
+     * it allows to print not only stack trace of the task but also stack trace of the code that posted it.
+     * However this may be a performance bottleneck in cases when hundreds of short task are scheduled.
+     * This constructor then allows to create <code>RequestProcessor</code> which never stores stack traces
+     * at the time of posting.
+     * <p>
+     * See constructor {@link #RequestProcessor(String, int, boolean)} for details of <code>interruptThread</code>
+     * parameter.
+     * </p>
+     * @param name the name to use for the request processor thread
+     * @param throughput the maximal count of requests allowed to run in parallel
+     * @param interruptThread true if {@link RequestProcessor.Task#cancel} shall interrupt the thread
+     * @param enableStackTraces <code>false</code> when request processor should not fill stack traces when task is posted.
+     *              Default is <code>true</code> when assertions are enabled, <code>false</code> otherwise.
+     * @since 7.24
+     */
+    public RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces) {
         this.throughput = throughput;
         this.name = (name != null) ? name : ("OpenIDE-request-processor-" + (counter++));
         this.interruptThread = interruptThread;
+        this.enableStackTraces = enableStackTraces;
     }
-    
+
     
     /** The getter for the shared instance of the <CODE>RequestProcessor</CODE>.
      * This instance is shared by anybody who
@@ -627,7 +652,9 @@ public final class RequestProcessor implements Executor{
                     item.clear(null);
                 }
 
-                item = new Item(this, RequestProcessor.this);
+                item = enableStackTraces ?
+                    new SlowItem(this, RequestProcessor.this) :
+                    new FastItem(this, RequestProcessor.this);
                 localItem = item;
             }
 
@@ -813,8 +840,8 @@ public final class RequestProcessor implements Executor{
     /* One item representing the task pending in the pending queue */
     private static class Item extends Exception {
         private final RequestProcessor owner;
-        private Object action;
-        private boolean enqueued;
+        Object action;
+        boolean enqueued;
         String message;
 
         Item(Task task, RequestProcessor rp) {
@@ -849,31 +876,44 @@ public final class RequestProcessor implements Executor{
             return getTask().getPriority();
         }
 
-        @Override
-        public Throwable fillInStackTrace() {
-            if (SLOW) {
-                Throwable ret = super.fillInStackTrace();
-                StackTraceElement[] arr = ret.getStackTrace();
-                for (int i = 1; i < arr.length; i++) {
-                    if (arr[i].getClassName().startsWith("java.lang")) {
-                        continue;
-                    }
-                    if (arr[i].getClassName().startsWith(RequestProcessor.class.getName())) {
-                        continue;
-                    }
-                    ret.setStackTrace(Arrays.asList(arr).subList(i - 1, arr.length).toArray(new StackTraceElement[0]));
-                    break;
-                }
-                return ret;
-            } else {
-                return this;
-            }
-        }
-
         public @Override String getMessage() {
             return message;
         }
 
+    }
+
+    private static class FastItem extends Item {
+        FastItem(Task task, RequestProcessor rp) {
+            super(task, rp);
+        }
+
+        @Override
+        public Throwable fillInStackTrace() {
+            return this;
+        }
+    }
+    private static class SlowItem extends Item {
+
+        SlowItem(Task task, RequestProcessor rp) {
+            super(task, rp);
+        }
+
+        @Override
+        public Throwable fillInStackTrace() {
+            Throwable ret = super.fillInStackTrace();
+            StackTraceElement[] arr = ret.getStackTrace();
+            for (int i = 1; i < arr.length; i++) {
+                if (arr[i].getClassName().startsWith("java.lang")) {
+                    continue;
+                }
+                if (arr[i].getClassName().startsWith(RequestProcessor.class.getName())) {
+                    continue;
+                }
+                ret.setStackTrace(Arrays.asList(arr).subList(i - 1, arr.length).toArray(new StackTraceElement[0]));
+                break;
+            }
+            return ret;
+        }
     }
 
     //------------------------------------------------------------------------------

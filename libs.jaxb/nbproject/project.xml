@@ -14,20 +14,16 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.aspect.editor</friend>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
-                <friend>org.netbeans.modules.jaxb.project</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.uml</friend>
                 <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.websvc.jaxws21</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
-                <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <friend>org.netbeans.modules.identity.profile.api</friend>
                 <friend>org.netbeans.modules.xml.jaxb</friend>
-                <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.saas.api</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
@@ -35,7 +31,6 @@
                 <friend>org.netbeans.modules.websvc.saas.codegen.php</friend>
                 <friend>org.netbeans.modules.websvc.saas.services.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
-                <friend>org.netbeans.modules.websvc.jaxws21api</friend>
                 <package>com.sun.tools.xjc</package>
                 <package>com.sun.tools.xjc.addon.at_generated</package>
                 <package>com.sun.tools.xjc.addon.code_injector</package>
@@ -102,6 +97,9 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/jaxb-impl.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxb/jaxb1-impl.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/jaxb-xjc.jar</runtime-relative-path>

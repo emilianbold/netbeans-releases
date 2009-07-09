@@ -58,6 +58,7 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the Rails project module.
@@ -244,5 +245,91 @@ public class RailsProjectUtil {
             url = new URL(url.toExternalForm() + offset); // NOI18N
         }
         return url;
+    }
+
+    /**
+     * Parses a <code>RailsVersion</code> from the given <code>version</code>. 
+     * The excepted format is <code>"X.Y.Z"</code>, all but the major version
+     * being optional. The returned <code>RailsVersion<code> will always have also
+     * the minor and revision version specified, both defaulting to <code>0</code>.
+     * <strong>Returns a version representing 0.0.0 if the
+     * version could not be parsed</strong>.
+     * @param version
+     * @return
+     */
+    public static RailsVersion versionFor(String version) {
+        try {
+            if (!version.contains(".")) { //NOI18N
+                return new RailsVersion(Integer.parseInt(version));
+            }
+            String[] splitted = version.split("\\."); //NOI18N
+            if (splitted.length == 2) {
+                return new RailsVersion(Integer.parseInt(splitted[0]),
+                        Integer.parseInt(splitted[1]));
+            } else if (splitted.length == 3) {
+                return new RailsVersion(Integer.parseInt(splitted[0]),
+                        Integer.parseInt(splitted[1]),
+                        Integer.parseInt(splitted[2]));
+            }
+        } catch (NumberFormatException ne) {
+            return new RailsVersion(0);
+        }
+        return new RailsVersion(0);
+
+    }
+
+    public static final class RailsVersion implements Comparable<RailsVersion> {
+        private final int major;
+        private final int minor;
+        private final int revision;
+
+        public RailsVersion(int major) {
+            this(major, 0);
+        }
+        public RailsVersion(int major, int minor) {
+            this(major, minor, 0);
+        }
+
+        public RailsVersion(int major, int minor, int revision) {
+            this.major = major;
+            this.minor = minor;
+            this.revision = revision;
+        }
+
+        public int getMajor() {
+            return major;
+        }
+
+        public int getMinor() {
+            return minor;
+        }
+
+        public int getRevision() {
+            return revision;
+        }
+
+        public String asString() {
+            return getMajor() + "." + getMinor() + "." + getRevision();
+        }
+
+        public int compareTo(RailsVersion o) {
+            if (major > o.major) {
+                return 1;
+            }
+            if (major == o.major) {
+                if (minor > o.minor) {
+                    return 1;
+                }
+                if (minor == o.minor) {
+                    if (revision > o.revision) {
+                        return 1;
+                    }
+                    return revision == o.revision ? 0 : -1;
+                }
+            }
+            return -1;
+        }
+
+
     }
 }

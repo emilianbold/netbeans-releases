@@ -542,24 +542,6 @@
                     return (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) _getRoot(); 
                 }
                 // not needed for with 2.1
-                public void setMessageDrivenDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDrivenDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_1);
-                }
-                public org.netbeans.modules.j2ee.dd.api.ejb.MessageDrivenDestination getMessageDrivenDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_1);
-                }
-                public void setAcknowledgeMode(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_1);
-                }
-                public String getAcknowledgeMode() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_1);
-                }
-                public void setMessageSelector(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_1);
-                }
-                public String getMessageSelector() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-                    throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_1);
-                }
                 public String getKeyProperty() { 
                     return "EjbName"; 
                 }

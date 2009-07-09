@@ -118,20 +118,25 @@ public class CslJar extends JarWithModuleAttributes {
     @Override
     protected void zipFile(File file, ZipOutputStream zOut, String vPath, int mode) throws IOException {
         if (vPath.equals(layer)) {
-            // Create a tempfile and trick it!
-            InputStream is = new FileInputStream(file);
-            String modifiedLayer = getModifiedLayer(is);
-            if (modifiedLayer != null) {
-                File tmpFile = File.createTempFile("csl", "tmp"); // NOI18N
-                BufferedWriter w = new BufferedWriter(new FileWriter(tmpFile));
-                w.write(modifiedLayer);
-                w.flush();
-                w.close();
-                // Note - we're passing the temp file instead of the "real" layer file
-                super.zipFile(tmpFile, zOut, vPath, mode);
-                // Remove the tmpfile
-                tmpFile.delete();
-                return;
+            System.setProperty("CslJar", Boolean.TRUE.toString());
+            try {
+                // Create a tempfile and trick it!
+                InputStream is = new FileInputStream(file);
+                String modifiedLayer = getModifiedLayer(is);
+                if (modifiedLayer != null) {
+                    File tmpFile = File.createTempFile("csl", "tmp"); // NOI18N
+                    BufferedWriter w = new BufferedWriter(new FileWriter(tmpFile));
+                    w.write(modifiedLayer);
+                    w.flush();
+                    w.close();
+                    // Note - we're passing the temp file instead of the "real" layer file
+                    super.zipFile(tmpFile, zOut, vPath, mode);
+                    // Remove the tmpfile
+                    tmpFile.delete();
+                    return;
+                }
+            } finally {
+                System.setProperty("CslJar", Boolean.FALSE.toString());
             }
         }
         super.zipFile(file, zOut, vPath, mode);
@@ -333,6 +338,11 @@ public class CslJar extends JarWithModuleAttributes {
                     registerPathRecognizer(doc, mimeType);
                     registerEditorServices(doc, mimeType, cslLanguageClass, linePrefix, displayName, hasStructureScanner, hasDeclarationFinder);
                 }
+
+                // TL Indexer factory
+                Element mimeFolder = mkdirs(doc, "Editors/" + mimeType); // NOI18N
+                Element item = createFile(doc, mimeFolder, "org-netbeans-modules-csl-core-TLIndexerFactory.instance"); // NOI18N
+                setFileAttribute(doc, item, "instanceOf", "stringvalue", "org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"); //NOI18N
             }
         }
     }

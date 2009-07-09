@@ -43,13 +43,13 @@ package org.netbeans.modules.cnd.folding;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class APTFoldingTest extends BaseTestSuite {
+public class APTFoldingTest extends CndBaseTestSuite {
     
     public APTFoldingTest() {
         super("C/C++ Folding Provider");

@@ -10,7 +10,7 @@
         </rect>
         <g>
 
-                        <image id="_0" transform="matrix(13.246598,0.0,0.0,0.46135393,4.3333282,7.4410095)"  width="1" height="25"
+                        <image transform="matrix(13.246598,0.0,0.0,0.46135393,4.3333282,7.4410095)"  width="1" height="25"
               xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAZCAIAAAB/8tMoAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
               jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAF9JREFU
               GFdFw80KRUAAgNHv/R/FmqWyUOSmRN2bJLEgkvw2Y4xJ2dxTB2MM/zdG6/d9KbQ6uU6JkgIpD4TY
@@ -28,7 +28,7 @@
         </g>
     </g>
     <g>
-        <image id="_1" transform="matrix(13.5539255,0.0,0.0,0.46135393,11.333328,40.44101)"  width="1" height="25"
+        <image transform="matrix(13.5539255,0.0,0.0,0.46135393,11.333328,40.44101)"  width="1" height="25"
               xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAZCAIAAAB/8tMoAAAAAXNSR0IArs4c6QAAAARnQU1BAACx
               jwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAF9JREFU
               GFdFw80KRUAAgNHv/R/FmqWyUOSmRN2bJLEgkvw2Y4xJ2dxTB2MM/zdG6/d9KbQ6uU6JkgIpD4TY

@@ -63,9 +63,7 @@ import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.embedder.MavenEmbedder;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Profile;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -73,6 +71,7 @@ import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import hidden.org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -111,6 +110,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -312,8 +312,9 @@ public class DependencyNode extends AbstractNode {
         }
         if (isTransitive()) {
             acts.add(new ExcludeTransitiveAction());
+            acts.add(SETINCURRENTINSTANCE);
         } else {
-            acts.add(new RemoveDependencyAction());
+            acts.add(REMOVEDEPINSTANCE);
         }
         acts.add(null);
         acts.add(CommonArtifactActions.createViewArtifactDetails(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
@@ -546,67 +547,77 @@ public class DependencyNode extends AbstractNode {
 //        }
 //    }
 
-    private class RemoveDependencyAction extends AbstractAction {
+    //why oh why do we have to suffer through this??
+    private static RemoveDependencyAction REMOVEDEPINSTANCE = new RemoveDependencyAction(Lookup.EMPTY);
 
-        public RemoveDependencyAction() {
+    private static class RemoveDependencyAction extends AbstractAction implements ContextAwareAction {
+
+        private Lookup lkp;
+
+        RemoveDependencyAction(Lookup look) {
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Remove_Dependency"));
+            lkp = look;
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
+            if (prjs.size() != 1) {
+                setEnabled(false);
+            }
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new RemoveDependencyAction(actionContext);
         }
 
         public void actionPerformed(ActionEvent event) {
+            final Collection<? extends Artifact> artifacts = lkp.lookupAll(Artifact.class);
+            if (artifacts.size() == 0) {
+                return;
+            }
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
+            if (prjs.size() != 1) {
+                return;
+            }
+            String msg;
+            if (artifacts.size() == 1) {
+                Artifact art = artifacts.iterator().next();
+                msg = NbBundle.getMessage(DependencyNode.class, "MSG_Remove_Dependency", art.getGroupId() + ":" + art.getArtifactId());
+            } else {
+                msg = NbBundle.getMessage(DependencyNode.class, "MSG_Remove_Dependencies", artifacts.size());
+            }
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(DependencyNode.class, "MSG_Remove_Dependency", art.getGroupId() + ":" + art.getArtifactId()), NbBundle.getMessage(DependencyNode.class, "TIT_Remove_Dependency")); //NOI18N
+                    msg, NbBundle.getMessage(DependencyNode.class, "TIT_Remove_Dependency")); //NOI18N
             nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret != NotifyDescriptor.YES_OPTION) {
                 return;
             }
 
-            MavenProject mproject = project.getOriginalMavenProject();
-            boolean found = false;
-            while (mproject != null) {
-                if (mproject.getDependencies() != null) {
-                    Iterator it = mproject.getDependencies().iterator();
-                    while (it.hasNext()) {
-                        Dependency dep = (Dependency) it.next();
-                        if (art.getArtifactId().equals(dep.getArtifactId())
-                                && art.getGroupId().equals(dep.getGroupId())) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (found) {
-                    break;
-                }
-                mproject = mproject.getParent();
-            }
-            if (mproject == null) {
-                //how come..
-                StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(DependencyNode.class, "ERR_Cannot_Locate_Dep"));
-                return;
-            }
-            if (mproject != project.getOriginalMavenProject()) {
-                //TODO warn that we are to modify the parent pom.
-                nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Located_In_Parent"), org.openide.util.NbBundle.getMessage(DependencyNode.class, "TIT_Located_In_Parent"));
-                nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-                ret = DialogDisplayer.getDefault().notify(nd);
-                if (ret != NotifyDescriptor.YES_OPTION) {
-                    return;
-                }
-            }
-                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-                    public void performOperation(POMModel model) {
+            final NbMavenProjectImpl project = prjs.iterator().next();
+            final List<Artifact> unremoved = new ArrayList<Artifact>();
+
+            final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    for (Artifact art : artifacts) {
                         org.netbeans.modules.maven.model.pom.Dependency dep =
                                 model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
                         if (dep != null) {
                             model.getProject().removeDependency(dep);
+                        } else {
+                            unremoved.add(art);
                         }
                     }
-                };
-                FileObject fo = FileUtil.toFileObject(project.getPOMFile());
-                Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
-//not necessary, will get reloaded by filechange event?
-//                NbMavenProject.fireMavenProjectReload(project);
+                }
+            };
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+                    Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+                    if (unremoved.size() > 0) {
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "MSG_Located_In_Parent", unremoved.size()), Integer.MAX_VALUE);
+                    }
+                }
+            });
         }
     }
 
@@ -688,6 +699,86 @@ public class DependencyNode extends AbstractNode {
             org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
         }
     }
+
+    //why oh why do we have to suffer through this??
+    private static SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
+
+    private static class SetInCurrentAction extends AbstractAction  implements ContextAwareAction {
+        private Lookup lkp;
+
+        SetInCurrentAction(Lookup lookup) {
+            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Set_Dependency"));
+            lkp = lookup;
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
+            if (prjs.size() != 1) {
+                setEnabled(false);
+            }
+        }
+        
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new SetInCurrentAction(actionContext);
+        }
+
+
+        public void actionPerformed(ActionEvent event) {
+            final Collection<? extends Artifact> artifacts = lkp.lookupAll(Artifact.class);
+            if (artifacts.size() == 0) {
+                return;
+            }
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
+            if (prjs.size() != 1) {
+                return;
+            }
+            final NbMavenProjectImpl project = prjs.iterator().next();
+
+            final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    for (Artifact art : artifacts) {
+                        org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                        if (dep == null) {
+                            // now check the active profiles for the dependency..
+                            List<String> profileNames = new ArrayList<String>();
+                            Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
+                            while (it.hasNext()) {
+                                Profile prof = (Profile) it.next();
+                                profileNames.add(prof.getId());
+                            }
+                            for (String profileId : profileNames) {
+                                org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
+                                if (modProf != null) {
+                                    dep = modProf.findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                                    if (dep != null) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (dep == null) {
+                            dep = model.getFactory().createDependency();
+                            dep.setArtifactId(art.getArtifactId());
+                            dep.setGroupId(art.getGroupId());
+                            dep.setType(art.getType());
+                            dep.setVersion(art.getVersion());
+                            if (art.getClassifier() != null) {
+                                dep.setClassifier(art.getClassifier());
+                            }
+                            model.getProject().addDependency(dep);
+                        }
+                    }
+                }
+            };
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+                    org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+                }
+            });
+        }
+
+    }
+
 
     private class InstallLocalArtifactAction extends AbstractAction {
 

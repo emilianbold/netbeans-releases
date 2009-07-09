@@ -78,6 +78,8 @@ made subject to such option by the copyright holder.
                 </nbjpdastart>
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
+                <!-- needed in order to display test names: -->
+                <property name="test.result.file" location="${java.io.tmpdir}/TEST-${classname}.xml"/>
                 <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}" jvm="${platform.java}">
                     <classpath>
                         <fileset dir="${ant.home}" includes="patches/*.jar"/>
@@ -91,13 +93,14 @@ made subject to such option by the copyright holder.
                     <arg value="${classname}"/>
                     <arg value="showoutput=true"/>
                     <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
-                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,TEST-${classname}.xml"/>
+                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.result.file}"/>
                     <extra-args/>
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
                         <mapper from="test-sys-prop.*" to="*" type="glob"/>
                     </syspropertyset>
                 </java>
+                <!-- cannot delete ${test.result.file} yet, will be parsed soon; XXX deleteOnExit? -->
             </sequential>
         </macrodef>
     </target>

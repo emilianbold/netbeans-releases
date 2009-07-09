@@ -88,13 +88,15 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/> 
                         <attr name="position" intvalue="1426"/>
                     </file> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="1568"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/> 
                         <attr name="position" intvalue="1710"/>
                     </file> 
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
-                        <attr name="position" intvalue="1568"/>
-                    </file> 
+                     
                 </folder>
             </folder>
             <folder name="x-c++">
@@ -117,12 +119,13 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1426"/>
                     </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="1568"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="1710"/>
-                    </file>
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
-                        <attr name="position" intvalue="1568"/>
                     </file>
 
 
@@ -150,13 +153,15 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/> 
                         <attr name="position" intvalue="1426"/>
                     </file> 
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="1568"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/> 
                         <attr name="position" intvalue="1710"/>
                     </file> 
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
-                        <attr name="position" intvalue="1568"/>
-                    </file> 
+                     
                      
                      
                 </folder>
@@ -182,13 +187,15 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/> 
                         <attr name="position" intvalue="1426"/>
                     </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="1568"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/> 
                         <attr name="position" intvalue="1710"/>
                     </file> 
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
-                        <attr name="position" intvalue="1568"/>
-                    </file> 
+                     
                 </folder>
             </folder>
 
@@ -207,12 +214,13 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1426"/>
                     </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="1568"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="1710"/>
-                    </file>
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
-                        <attr name="position" intvalue="1568"/>
                     </file>
 
 

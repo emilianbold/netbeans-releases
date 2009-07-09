@@ -50,12 +50,13 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.DialogDisplayer;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.j2ee.persistence.dd.common.JPAParseUtils;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
@@ -75,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 /**
  * Multiview data object for persistence.xml.
@@ -150,16 +152,34 @@ public class PUDataObject extends XmlMultiViewDataObject {
         } else {
             try{
                 java.io.InputStream is = getEditorSupport().getInputStream();
+                String version=Persistence.VERSION_1_0;
+                try {
+                    version=JPAParseUtils.getVersion(is);
+                } catch (SAXException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                finally
+                {
+                    is.close();
+                }
+                is = getEditorSupport().getInputStream();
                 Persistence newPersistence = null;
                 try {
-                    newPersistence = Persistence.createGraph(is);
+                    if(Persistence.VERSION_2_0.equals(version))
+                    {
+                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
+                    }
+                    else//1.0 - default
+                    {
+                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                    }
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
                     LOG.log(Level.INFO, null, ex);
                     return false;
                 }
                 if (newPersistence!=null) {
                     try{
-                        persistence.merge(newPersistence, BaseBean.MERGE_UPDATE);
+                        ((BaseBean)persistence).merge((BaseBean) newPersistence, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
                         // see #104180
                         LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NOI18N
@@ -399,7 +419,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
             }
             try {
                 Writer out = new StringWriter();
-                ((Persistence) model).write(out);
+                ((BaseBean) model).write(out);
                 out.close();
                 getDataCache().setData(lock, out.toString(), modify);
             } catch (IOException e) {

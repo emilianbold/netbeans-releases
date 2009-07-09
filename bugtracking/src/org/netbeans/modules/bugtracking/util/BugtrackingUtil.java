@@ -75,7 +75,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
@@ -102,8 +101,11 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
@@ -159,17 +161,34 @@ public class BugtrackingUtil {
         return DialogDisplayer.getDefault().notify(dd) == ok;
     }
 
+    /**
+     * Returns all curently openend issues which aren't new.
+     * 
+     * @return issues
+     */
     public static Issue[] getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
         List<Issue> issues = new ArrayList<Issue>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
-                issues.add(((IssueTopComponent)tc).getIssue());
+                Issue issue = ((IssueTopComponent)tc).getIssue();
+                if(!issue.isNew()) {
+                    issues.add(issue);
+                }
             }
         }
         return issues.toArray(new Issue[issues.size()]);
     }
 
+    /**
+     * Filters the given issue by the given criteria and returns
+     * those which either case unsensitively contain the criteria
+     * in their summary or those which id equals the criteria.
+     *
+     * @param issues
+     * @param criteria
+     * @return
+     */
     public static Issue[] getByIdOrSummary(Issue[] issues, String criteria) {
         if(criteria == null) {
             return issues;
@@ -178,10 +197,11 @@ public class BugtrackingUtil {
         if(criteria.equals("")) {                                               // NOI18N
             return issues;
         }
+        criteria = criteria.toLowerCase();
         List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {            
-            if(criteria.equals(issue.getID()) ||
-               issue.getSummary().indexOf(criteria) > -1)
+        for (Issue issue : issues) {  
+            if(criteria.equals(issue.getID().toLowerCase()) ||
+               issue.getSummary().toLowerCase().indexOf(criteria) > -1)
             {
                 ret.add(issue);
             }  
@@ -485,6 +505,29 @@ public class BugtrackingUtil {
         return fm.stringWidth(str);
     }
 
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        return getLongestWordWidth(header, values, comp, false);
+    }
+
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp, boolean regardIcon) {
+        String[] valuesArray = values.toArray(new String[values.size()]);
+        return getLongestWordWidth(header, valuesArray, comp, regardIcon);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
+        return getLongestWordWidth(header, values, comp, false);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp, boolean regardIcon) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
+        }
+        return getColumnWidthInPixels(size, comp) + (regardIcon ? 16 : 0);
+    }
+
     /**
      * Logs bugtracking events
      *
@@ -562,6 +605,18 @@ public class BugtrackingUtil {
             reader.close();
         }
         return isPatch;
+    }
+
+    public static void openPluginManager() {
+        try {
+            ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
+            Class<CallableSystemAction> clz = (Class<CallableSystemAction>) cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
+            CallableSystemAction a = CallableSystemAction.findObject(clz, true);
+            a.putValue("InitialTab", "available"); // NOI18N
+            a.performAction ();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
 }

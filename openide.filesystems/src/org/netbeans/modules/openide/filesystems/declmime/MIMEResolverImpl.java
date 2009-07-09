@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeAdapter;
@@ -309,14 +310,14 @@ public final class MIMEResolverImpl {
             FileElement[] smell2 = smell;  //#163378, #157838 - copy to prevent concurrent modification and not synchronize to prevent deadlock
             // smell is filled in reverse order
             for (int i = smell2.length - 1; i >= 0; i--) {
-                ERR.fine("findMIMEType - smell.resolve.");
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("findMIMEType - smell.resolve.");
                 String s = smell2[i].resolve(fo);
                 if (s != null) {
                     if (s.equals(FileElement.EXIT_MIME_TYPE)) {
                         // if file matches conditions and exit element is present, do not continue in loop and return null
                         return null;
                     }
-                    ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
                     return s;
                 }
             }
@@ -759,7 +760,6 @@ public final class MIMEResolverImpl {
             private final int range;
             private final boolean ignoreCase;
             private FilePattern inner;
-            private int pointer = 0;
             private final byte[] bytes;
             private final int valueLength;
 
@@ -779,35 +779,32 @@ public final class MIMEResolverImpl {
                 this.inner = inner;
             }
 
-            private boolean match(byte b) {
-                if (pointer < valueLength) {
-                    if (b == bytes[pointer]) {
-                        pointer++;
-                    } else {
-                        pointer = 0;
-                        return false;
-                    }
+            private boolean match(byte b, AtomicInteger pointer) {
+                if (b == bytes[pointer.get()]) {
+                    return pointer.incrementAndGet() >= valueLength;
+                } else {
+                    pointer.set(0);
+                    return false;
                 }
-                return pointer >= valueLength;
             }
 
             /** Read from given file and compare byte-by-byte if pattern
              * appers in given range.
              */
             public boolean match(FileObject fo) throws IOException {
-                pointer = 0;
                 InputStream is = null;
                 boolean matched = false;
                 try {
                     is = fo.getInputStream();  // it is CachedInputStream, so you can call getInputStream and read more times without performance penalty
                     byte[] byteRange = new byte[range];
                     int read = is.read(byteRange);
+                    AtomicInteger pointer = new AtomicInteger(0);
                     for (int i = 0; i < read; i++) {
                         byte b = byteRange[i];
                         if (ignoreCase) {
                             b = (byte) Character.toLowerCase(b);
                         }
-                        if (match(b)) {
+                        if (match(b, pointer)) {
                             matched = true;
                             break;
                         }

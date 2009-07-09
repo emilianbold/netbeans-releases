@@ -63,6 +63,7 @@ import java.util.List;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
@@ -198,6 +199,22 @@ public class CallStackFrameImpl implements CallStackFrame {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
+        }
+    }
+
+    public synchronized JPDAClassType getClassType() {
+        if (!valid && sfLocation == null) return null;
+        try {
+            if (sfLocation == null) sfLocation = StackFrameWrapper.location(getStackFrame());
+            return new JPDAClassTypeImpl(debugger, LocationWrapper.declaringType(sfLocation));
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            // this stack frame is not available or information in it is not available
+            valid = false;
+            return null;
         }
     }
 

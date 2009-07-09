@@ -89,7 +89,7 @@ public class JarFileSystem extends AbstractFileSystem {
     static final long serialVersionUID = -98124752801761145L;
 
     /** One request proccesor shared for all instances of JarFileSystem*/
-    private static RequestProcessor req = new RequestProcessor("JarFs - modification watcher"); // NOI18N
+    private static RequestProcessor req = new RequestProcessor("JarFs - modification watcher", 1, false, false); // NOI18N
 
     /** Controlls the LocalFileSystem's automatic refresh.
     * If the refresh time interval is set from the System.property, than this value is used.

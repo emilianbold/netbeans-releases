@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -106,6 +105,15 @@ public abstract class BasicCompilerConfiguration {
         additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
         tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
         commandLineConfiguration = new OptionsConfiguration();
+    }
+
+    public void fixupMasterLinks(BasicCompilerConfiguration compilerConfiguration) {
+        getDevelopmentMode().setMaster(compilerConfiguration.getDevelopmentMode());
+        getWarningLevel().setMaster(compilerConfiguration.getWarningLevel());
+        getSixtyfourBits().setMaster(compilerConfiguration.getSixtyfourBits());
+        getStrip().setMaster(compilerConfiguration.getStrip());
+        getAdditionalDependencies().setMaster(compilerConfiguration.getAdditionalDependencies());
+        getTool().setMaster(compilerConfiguration.getTool());
     }
 
     public boolean getModified() {

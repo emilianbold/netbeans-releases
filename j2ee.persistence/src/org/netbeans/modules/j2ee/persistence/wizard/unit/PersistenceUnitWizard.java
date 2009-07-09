@@ -51,7 +51,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -127,10 +129,29 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
     
     public Set instantiate() throws java.io.IOException {
         PersistenceUnit punit = null;
+        PUDataObject pud = null;
         LOG.fine("Instantiating...");
+        try{
+            LOG.fine("Retrieving PUDataObject");
+            pud = ProviderUtil.getPUDataObject(project);
+        } catch (InvalidPersistenceXmlException ipx){
+            // just log for debugging purposes, at this point the user has
+            // already been warned about an invalid persistence.xml
+            LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
+            return Collections.emptySet();
+       }
+        String version=pud.getPersistence().getVersion();
+        //
         if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
-            punit = new PersistenceUnit();
+            if(Persistence.VERSION_2_0.equals(version))
+            {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            }
+            else//currently default 1.0
+            {
+                punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
+            }
             if (descriptor.getDatasource() != null && !"".equals(descriptor.getDatasource())){
                 if (descriptor.isJTA()) {
                     punit.setJtaDataSource(descriptor.getDatasource());
@@ -155,7 +176,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         } else {
             LOG.fine("Creating an application managed PU");
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
-                    descriptor.getSelectedProvider(), descriptor.getPersistenceConnection());
+                    descriptor.getSelectedProvider(), descriptor.getPersistenceConnection(), version);
             punit.setTransactionType("RESOURCE_LOCAL");
             Library lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
             if (lib != null){
@@ -171,20 +192,11 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         
         punit.setName(descriptor.getPersistenceUnitName());
         ProviderUtil.setTableGeneration(punit, descriptor.getTableGeneration(), project);
-        try{
-            LOG.fine("Retrieving PUDataObject");
-            PUDataObject pud = ProviderUtil.getPUDataObject(project);
-            pud.addPersistenceUnit(punit);
-            LOG.fine("Saving PUDataObject");
-            pud.save();
-            LOG.fine("Saved");
-            return Collections.singleton(pud.getPrimaryFile());
-        } catch (InvalidPersistenceXmlException ipx){
-            // just log for debugging purposes, at this point the user has
-            // already been warned about an invalid persistence.xml
-            LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-            return Collections.emptySet();
-        }
+        pud.addPersistenceUnit(punit);
+        LOG.fine("Saving PUDataObject");
+        pud.save();
+        LOG.fine("Saved");
+        return Collections.singleton(pud.getPrimaryFile());
     }
     
 }

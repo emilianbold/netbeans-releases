@@ -69,7 +69,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_WEB = 5;
     private static final int TYPE_UNKNOWN = -1;
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private ClassPath[] cache = new ClassPath[8];
     
     public ClassPathProviderImpl(NbMavenProjectImpl proj) {
@@ -116,10 +116,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return getBootClassPath();
         }
         if (ClassPath.COMPILE.equals(type)) {
-            return getCompileTimeClasspath(0);
+            return getCompileTimeClasspath(TYPE_SRC);
         }
         if (ClassPath.SOURCE.equals(type)) {
-            return getSourcepath(0);
+            return getSourcepath(TYPE_SRC);
         }
         assert false;
         return null;

@@ -77,6 +77,7 @@ made subject to such option by the copyright holder.
     
     <target name="-run-xjc" depends="-init-user, -init-xjc">
         <xjc schema="${xsd.file}"
+            target="2.1"
             package="${packageName}"
             destdir="${jaxb.base}/src">
         </xjc>

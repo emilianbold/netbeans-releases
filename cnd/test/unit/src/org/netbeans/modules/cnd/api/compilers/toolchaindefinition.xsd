@@ -23,6 +23,8 @@
                 <xs:element ref="tns:linker" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:make" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:debugger" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:qmake" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:cmake" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -143,6 +145,16 @@
     <xs:element name="classic">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="cmake">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:tool" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:alternative_path" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:version" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 
@@ -519,6 +531,16 @@
             <xs:attribute name="append" type="xs:string" use="optional" />
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="suffix" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="qmake">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:tool" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:alternative_path" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:version" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 

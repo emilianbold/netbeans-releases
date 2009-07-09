@@ -1,0 +1,10 @@
+//Test script for Applet '${classname}'
+
+powerup;
+// Select ${classname} ${appletaid}
+0x00 0xA4 0x04 0x00 ${appletaidhexwithlength} 0x7F;
+
+//Send the APDU here
+//0x80 0xCA 0x00 0x00 <length> <data> 0x7F;
+
+powerdown;

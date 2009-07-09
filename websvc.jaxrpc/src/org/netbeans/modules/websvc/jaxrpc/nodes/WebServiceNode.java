@@ -363,9 +363,9 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
         }
         
         String contextRoot = "webservice";//NO18N
-        Object moduleType = provider.getJ2eeModule().getModuleType();
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         String wsURI = wsName;
-        if(J2eeModule.WAR.equals(moduleType)) {
+        if(J2eeModule.Type.WAR.equals(moduleType)) {
             J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
             WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
             FileObject ddFolder = wsSupport.getWsDDFolder();
@@ -386,7 +386,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
             if(contextRoot != null && contextRoot.startsWith("/")){
                 contextRoot = contextRoot.substring(1);
             }
-        } else if(J2eeModule.EJB.equals(moduleType)) {
+        } else if(J2eeModule.Type.EJB.equals(moduleType)) {
             contextRoot = "";//NO18N for now, we need to find the real value (see bug...57034 and 52265)
         }
         

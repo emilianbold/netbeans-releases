@@ -54,9 +54,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.common.Properties;
+import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -82,10 +83,16 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private PUDataObject dObj;
     private Project project;
     private boolean isContainerManaged;
+    private boolean jpa20=false;
+
+    //jpa2.0 specific
+    private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
+    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE"};//NOI18N
     
     public PersistenceUnitPanel(SectionView view, final PUDataObject dObj,  final PersistenceUnit persistenceUnit) {
         super(view);
         this.dObj=dObj;
+        this.jpa20=Persistence.VERSION_2_0.equals(dObj.getPersistence().getVersion());
         this.persistenceUnit=persistenceUnit;
         this.project = FileOwnerQuery.getOwner(this.dObj.getPrimaryFile());
         
@@ -116,6 +123,11 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         initEntityList();
         
         initDataSource();
+        if(jpa20)
+        {
+            initCache();
+            initValidation();
+        }
         
         nameTextField.setText(persistenceUnit.getName());
         setTableGeneration();
@@ -148,7 +160,17 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         addImmediateModifier(ddCreate);
         addImmediateModifier(ddUnknown);
         addImmediateModifier(includeAllEntities);
-        
+        if(jpa20)
+        {
+            addImmediateModifier(ddAll);
+            addImmediateModifier(ddNone);
+            addImmediateModifier(ddEnableSelective);
+            addImmediateModifier(ddDisableSelective);
+            addImmediateModifier(ddDefault);
+            addImmediateModifier(ddAuto);
+            addImmediateModifier(ddNoValidation);
+            addImmediateModifier(ddCallBack);
+        }
     }
     
     
@@ -158,6 +180,51 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private void setVisiblePanel(){
         String panelName = isContainerManaged ? "container" : "application";//NOI18N
         ((CardLayout)providerPanel.getLayout()).show(providerPanel, panelName);
+        //
+        validationStrategyPanel.setVisible(jpa20);
+        cachingStrategyPanel.setVisible(jpa20);
+    }
+    private void initCache(){
+        org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+        String caching=pu2.getCaching();
+        if(cachingTypes[0].equals(caching))
+        {
+            ddAll.setSelected(true);
+        }
+        else if(cachingTypes[1].equals(caching))
+        {
+            ddNone.setSelected(true);
+        }
+        else if(cachingTypes[2].equals(caching))
+        {
+            ddEnableSelective.setSelected(true);
+        }
+        else if(cachingTypes[3].equals(caching))
+        {
+            ddDisableSelective.setSelected(true);
+        }
+        else
+        {
+            ddDefault.setSelected(true);
+        }
+
+    }
+    
+    private void initValidation(){
+        org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+        String validation=pu2.getValidationMode();
+        if(validationModes[1].equals(validation))
+        {
+            ddCallBack.setSelected(true);
+        }
+        else if(validationModes[2].equals(validation))
+        {
+            ddNoValidation.setSelected(true);
+        }
+        else//according to specification auto is default
+        {
+            ddAuto.setSelected(true);
+        }
     }
     
     private void initDataSource(){
@@ -210,7 +277,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         includeAllEntities.setEnabled(!javaSE);
         includeAllEntities.setSelected(!javaSE && !persistenceUnit.isExcludeUnlistedClasses());
         includeAllEntities.setText(NbBundle.getMessage(PersistenceUnitPanel.class,
-                "LBL_IncludeAllEntities",
+                "LBL_IncludeAllEntities",//NOI18N
                 new Object[]{ProjectUtils.getInformation(project).getDisplayName()}));
     }
     
@@ -304,7 +371,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                     }
                 }
                 if (url == null) {
-                    url = NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_CustomConnection");
+                    url = NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_CustomConnection");//NOI18N
                 }
                 jdbcComboBox.addItem(url);
                 jdbcComboBox.setSelectedItem(url);
@@ -340,6 +407,49 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             persistenceUnit.setExcludeUnlistedClasses(!includeAllEntities.isSelected());
         } else if (source == jtaCheckBox){
             setDataSource();
+        }
+        else if(jpa20)
+        {
+            if(source==ddAll)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setCaching(cachingTypes[0]);
+            }
+            else if(source==ddNone)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setCaching(cachingTypes[1]);
+            }
+            else if(source==ddEnableSelective)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setCaching(cachingTypes[2]);
+            }
+            else if(source==ddDisableSelective)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setCaching(cachingTypes[3]);
+            }
+            else if(source==ddDefault)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setCaching(null);
+            }
+            else if(source==ddAuto)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setValidationMode(null);//can be either cleared or set to AUTO
+            }
+            else if(source==ddCallBack)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setValidationMode(validationModes[1]);
+            }
+            else if(source==ddNoValidation)
+            {
+                org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
+                pu2.setValidationMode(validationModes[2]);
+            }
         }
         performValidation();
     }
@@ -478,7 +588,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     
     public javax.swing.JComponent getErrorComponent(String errorId) {
-        if ("name".equals(errorId)) {
+        if ("name".equals(errorId)) {//NOI18N
             return nameTextField;
         }
         return null;
@@ -505,6 +615,8 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private void initComponents() {
 
         buttonGroup2 = new javax.swing.ButtonGroup();
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup3 = new javax.swing.ButtonGroup();
         namePanel = new javax.swing.JPanel();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
@@ -533,6 +645,18 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         addClassButton = new javax.swing.JButton();
         removeClassButton = new javax.swing.JButton();
         includeEntitiesLabel = new javax.swing.JLabel();
+        cachingStrategyPanel = new javax.swing.JPanel();
+        cachingStrategyLabel = new javax.swing.JLabel();
+        ddAll = new javax.swing.JRadioButton();
+        ddNone = new javax.swing.JRadioButton();
+        ddEnableSelective = new javax.swing.JRadioButton();
+        ddDisableSelective = new javax.swing.JRadioButton();
+        ddDefault = new javax.swing.JRadioButton();
+        validationStrategyPanel = new javax.swing.JPanel();
+        validationStrategyLabel = new javax.swing.JLabel();
+        ddAuto = new javax.swing.JRadioButton();
+        ddCallBack = new javax.swing.JRadioButton();
+        ddNoValidation = new javax.swing.JRadioButton();
 
         namePanel.setOpaque(false);
 
@@ -547,7 +671,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 .add(nameLabel)
                 .add(32, 32, 32)
                 .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 440, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(136, Short.MAX_VALUE))
+                .addContainerGap(203, Short.MAX_VALUE))
         );
         namePanelLayout.setVerticalGroup(
             namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -569,7 +693,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         jtaCheckBox.setSelected(true);
         jtaCheckBox.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_JTA")); // NOI18N
         jtaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jtaCheckBox.setOpaque(false);
 
         dsCombo.setEditable(true);
 
@@ -641,7 +764,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 .add(providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(jdbcComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(libraryComboBox, 0, 442, Short.MAX_VALUE))
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
         providerJdbcPanelLayout.setVerticalGroup(
             providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -654,7 +777,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 .add(providerJdbcPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jdbcLabel)
                     .add(jdbcComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         providerPanel.add(providerJdbcPanel, "application");
@@ -667,17 +790,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         buttonGroup2.add(ddCreate);
         ddCreate.setText(bundle1.getString("LBL_Create")); // NOI18N
         ddCreate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddCreate.setOpaque(false);
 
         buttonGroup2.add(ddDropCreate);
         ddDropCreate.setText(bundle1.getString("LBL_DropCreate")); // NOI18N
         ddDropCreate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddDropCreate.setOpaque(false);
 
         buttonGroup2.add(ddUnknown);
         ddUnknown.setText(bundle1.getString("LBL_None")); // NOI18N
         ddUnknown.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddUnknown.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout tableGenerationPanelLayout = new org.jdesktop.layout.GroupLayout(tableGenerationPanel);
         tableGenerationPanel.setLayout(tableGenerationPanelLayout);
@@ -709,7 +829,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
 
         includeAllEntities.setText(bundle1.getString("LBL_IncludeAllEntities")); // NOI18N
         includeAllEntities.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        includeAllEntities.setOpaque(false);
         includeAllEntities.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 includeAllEntitiesActionPerformed(evt);
@@ -723,7 +842,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             .add(includeAllPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(includeAllEntities)
-                .addContainerGap(504, Short.MAX_VALUE))
+                .addContainerGap(544, Short.MAX_VALUE))
         );
         includeAllPanelLayout.setVerticalGroup(
             includeAllPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -771,15 +890,112 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         entityClassesPanelLayout.setVerticalGroup(
             entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(entityClassesPanelLayout.createSequentialGroup()
-                .add(includeEntitiesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE)
+                .add(includeEntitiesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(entityClassesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(entityClassesPanelLayout.createSequentialGroup()
                         .add(addClassButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeClassButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(removeClassButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, Short.MAX_VALUE)
                         .add(44, 44, 44))
                     .add(entityScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        cachingStrategyPanel.setOpaque(false);
+
+        cachingStrategyLabel.setText(bundle1.getString("LBL_CachingStrategy")); // NOI18N
+
+        buttonGroup1.add(ddAll);
+        ddAll.setText(bundle1.getString("LBL_All")); // NOI18N
+        ddAll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        buttonGroup1.add(ddNone);
+        ddNone.setText(bundle1.getString("LBL_None")); // NOI18N
+        ddNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        buttonGroup1.add(ddEnableSelective);
+        ddEnableSelective.setText(bundle1.getString("LBL_EnableSelective")); // NOI18N
+        ddEnableSelective.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        buttonGroup1.add(ddDisableSelective);
+        ddDisableSelective.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_DisableSelective")); // NOI18N
+
+        buttonGroup1.add(ddDefault);
+        ddDefault.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_Default")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout cachingStrategyPanelLayout = new org.jdesktop.layout.GroupLayout(cachingStrategyPanel);
+        cachingStrategyPanel.setLayout(cachingStrategyPanelLayout);
+        cachingStrategyPanelLayout.setHorizontalGroup(
+            cachingStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(cachingStrategyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(cachingStrategyLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddAll)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddNone)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddEnableSelective)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddDisableSelective)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddDefault)
+                .addContainerGap(278, Short.MAX_VALUE))
+        );
+        cachingStrategyPanelLayout.setVerticalGroup(
+            cachingStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(cachingStrategyPanelLayout.createSequentialGroup()
+                .add(cachingStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(ddAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(ddNone)
+                    .add(ddEnableSelective)
+                    .add(cachingStrategyLabel)
+                    .add(ddDisableSelective)
+                    .add(ddDefault))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        validationStrategyPanel.setOpaque(false);
+
+        validationStrategyLabel.setText(bundle1.getString("LBL_ValidationStrategy")); // NOI18N
+
+        buttonGroup3.add(ddAuto);
+        ddAuto.setSelected(true);
+        ddAuto.setText(bundle1.getString("LBL_Auto")); // NOI18N
+        ddAuto.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        buttonGroup3.add(ddCallBack);
+        ddCallBack.setText(bundle1.getString("LBL_CallBack")); // NOI18N
+        ddCallBack.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        buttonGroup3.add(ddNoValidation);
+        ddNoValidation.setText(bundle1.getString("LBL_None")); // NOI18N
+        ddNoValidation.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        org.jdesktop.layout.GroupLayout validationStrategyPanelLayout = new org.jdesktop.layout.GroupLayout(validationStrategyPanel);
+        validationStrategyPanel.setLayout(validationStrategyPanelLayout);
+        validationStrategyPanelLayout.setHorizontalGroup(
+            validationStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(validationStrategyPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(validationStrategyLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddAuto)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddCallBack)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ddNoValidation)
+                .addContainerGap(493, Short.MAX_VALUE))
+        );
+        validationStrategyPanelLayout.setVerticalGroup(
+            validationStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(validationStrategyPanelLayout.createSequentialGroup()
+                .add(validationStrategyPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(ddAuto, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(ddCallBack)
+                    .add(ddNoValidation)
+                    .add(validationStrategyLabel))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -789,13 +1005,15 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, providerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, providerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, includeAllPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableGenerationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(entityClassesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(entityClassesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cachingStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, validationStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -808,12 +1026,17 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tableGenerationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(validationStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cachingStrategyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(includeAllPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(entityClassesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
     
     private void removeClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClassButtonActionPerformed
         Object[] values = entityList.getSelectedValues();
@@ -850,10 +1073,22 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addClassButton;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.ButtonGroup buttonGroup3;
+    private javax.swing.JLabel cachingStrategyLabel;
+    private javax.swing.JPanel cachingStrategyPanel;
     private javax.swing.JLabel datasourceLabel;
+    private javax.swing.JRadioButton ddAll;
+    private javax.swing.JRadioButton ddAuto;
+    private javax.swing.JRadioButton ddCallBack;
     private javax.swing.JRadioButton ddCreate;
+    private javax.swing.JRadioButton ddDefault;
+    private javax.swing.JRadioButton ddDisableSelective;
     private javax.swing.JRadioButton ddDropCreate;
+    private javax.swing.JRadioButton ddEnableSelective;
+    private javax.swing.JRadioButton ddNoValidation;
+    private javax.swing.JRadioButton ddNone;
     private javax.swing.JRadioButton ddUnknown;
     private javax.swing.JComboBox dsCombo;
     private javax.swing.JPanel entityClassesPanel;
@@ -878,6 +1113,8 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private javax.swing.JButton removeClassButton;
     private javax.swing.JLabel tableGenerationLabel;
     private javax.swing.JPanel tableGenerationPanel;
+    private javax.swing.JLabel validationStrategyLabel;
+    private javax.swing.JPanel validationStrategyPanel;
     // End of variables declaration//GEN-END:variables
     
 }

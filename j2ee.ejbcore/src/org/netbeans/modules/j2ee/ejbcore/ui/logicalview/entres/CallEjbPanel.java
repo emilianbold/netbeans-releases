@@ -65,6 +65,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -434,7 +435,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             });
             if (remote) {
                 boolean targetIsJavaSE = Utils.isTargetJavaSE(srcFile, className);
-                if (targetIsJavaSE && Utils.isJavaEE5orHigher(project)){
+                if (targetIsJavaSE && Util.isJavaEE5orHigher(project)){
                     name = elementHandle.getQualifiedName();
                 } else if (targetIsJavaSE){
                     name = names.get(EntityAndSession.HOME);
@@ -545,7 +546,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             
             // see #75876
-            if (!Utils.isJavaEE5orHigher(project) && Utils.isJavaEE5orHigher(nodeProject)){
+            if (!Util.isJavaEE5orHigher(project) && Util.isJavaEE5orHigher(nodeProject)){
                 statusLine.setWarningMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_JEESpecificationLevelsDiffer")); //NOI18N
             }
             

@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
  * @author sherold
  * 
  * @since 1.23
+ * @deprecated implement {@link J2eeApplicationImplementation2}
  */
 public interface J2eeApplicationImplementation extends J2eeModuleImplementation {
 

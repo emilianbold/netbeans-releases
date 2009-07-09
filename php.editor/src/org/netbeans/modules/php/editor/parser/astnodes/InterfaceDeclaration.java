@@ -52,12 +52,12 @@ import java.util.List;
  */
 public class InterfaceDeclaration extends TypeDeclaration {
 
-    private InterfaceDeclaration(int start, int end, Identifier interfaceName, Identifier[] interfaces, Block body) {
+    private InterfaceDeclaration(int start, int end, Identifier interfaceName, Expression[] interfaces, Block body) {
         super(start, end, interfaceName, interfaces, body);
     }
 
-    public InterfaceDeclaration(int start, int end, Identifier interfaceName, List<Identifier> interfaces, Block body) {
-        this(start, end, interfaceName, (Identifier[]) interfaces.toArray(new Identifier[interfaces.size()]), body);
+    public InterfaceDeclaration(int start, int end, Identifier interfaceName, List<Expression> interfaces, Block body) {
+        this(start, end, interfaceName, interfaces.toArray(new Expression[interfaces.size()]), body);
     }
     
     @Override

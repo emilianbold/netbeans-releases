@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator; 
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -225,7 +226,7 @@ public class J2eeProjectSupport {
                     if (params == null){
                         params = new String[] {DEFAULT_J2EE_LEVEL, DEFAULT_APPSRV_ID, null};
                     }
-                    EarProjectGenerator.createProject(projectDir, name, params[0], params[1], params[2], null, null);
+                    EarProjectGenerator.createProject(projectDir, name, Profile.J2EE_14, params[1], params[2], null, null);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid project type.");

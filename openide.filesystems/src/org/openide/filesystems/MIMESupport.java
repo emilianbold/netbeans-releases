@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.util.Lookup;
@@ -165,7 +166,7 @@ final class MIMESupport extends Object {
                     creators = resolvers.second();
                     if (creators.contains (Thread.currentThread())) {
                         // prevent stack overflow
-                        ERR.fine("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
+                        if (ERR.isLoggable(Level.FINE)) ERR.fine("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
                         MIMEResolver[] toRet = previousResolvers;
                         if (toRet == null) {
                             toRet = new MIMEResolver[0];
@@ -207,7 +208,7 @@ final class MIMESupport extends Object {
                     previousResolvers = null;
                     ERR.fine("Resolvers assigned"); // NOI18N
                 } else {
-                    ERR.fine("Somebody else computes resolvers: " + resolvers); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("Somebody else computes resolvers: " + resolvers); // NOI18N
                 }
 
 

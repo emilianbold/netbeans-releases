@@ -41,12 +41,16 @@ package org.netbeans.modules.bugzilla;
 
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
 /**
@@ -63,9 +67,11 @@ public class BugzillaConfig {
     private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
+    private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
+    private Map<String, Icon> priorityIcons;
 
     private BugzillaConfig() { }
 
@@ -92,6 +98,10 @@ public class BugzillaConfig {
         getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
     }
 
+    public void setCheckUpdates(boolean bl) {
+        getPreferences().putBoolean(CHECK_UPDATES, bl);
+    }
+
     public int getQueryRefreshInterval() {
         return getPreferences().getInt(QUERY_REFRESH_INT, DEFAULT_QUERY_REFRESH);
     }
@@ -102,6 +112,10 @@ public class BugzillaConfig {
 
     public boolean getQueryAutoRefresh(String queryName) {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
+    }
+
+    public boolean getCheckUpdates() {
+        return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
@@ -221,5 +235,17 @@ public class BugzillaConfig {
 
     public String getLastChangeFrom() {
         return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
+    }
+
+    public Icon getPriorityIcon(String priority) {
+        if(priorityIcons == null) {
+            priorityIcons = new HashMap<String, Icon>();
+            priorityIcons.put("P1", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p1.png", true)); // NOI18N
+            priorityIcons.put("P2", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p2.png", true)); // NOI18N
+            priorityIcons.put("P3", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p3.png", true)); // NOI18N
+            priorityIcons.put("P4", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p4.png", true)); // NOI18N
+            priorityIcons.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true)); // NOI18N
+        }
+        return priorityIcons.get(priority);
     }
 }

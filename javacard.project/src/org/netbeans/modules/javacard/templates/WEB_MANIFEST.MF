@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Application-Type: ${applettype}
+Web-Context-Path: ${webcontextpath}
+Runtime-Descriptor-Version: 3.0
+

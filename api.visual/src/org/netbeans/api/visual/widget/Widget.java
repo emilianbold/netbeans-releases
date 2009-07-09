@@ -543,7 +543,7 @@ public class Widget implements Accessible {
      * @return the background paint
      */
     public final Paint getBackground () {
-        return background != null ? background : parentWidget.getBackground ();
+        return background != null ? background : parentWidget != null ? parentWidget.getBackground () : null;
     }
 
     /**
@@ -615,7 +615,7 @@ public class Widget implements Accessible {
      * @return the foreground color
      */
     public final Color getForeground () {
-        return foreground != null ? foreground : parentWidget.getForeground ();
+        return foreground != null ? foreground : parentWidget != null ? parentWidget.getForeground () : null;
     }
 
     /**
@@ -1405,7 +1405,8 @@ public class Widget implements Accessible {
             gr.clip (bounds);
         }
 
-        if (! checkClipping  ||  bounds.intersects (gr.getClipBounds ())) {
+        Rectangle clipBounds;
+        if (! checkClipping  ||  (clipBounds = gr.getClipBounds ()) == null   ||  bounds.intersects (clipBounds)) {
             if (opaque)
                 paintBackground ();
 
@@ -1466,7 +1467,7 @@ public class Widget implements Accessible {
                 Point location = child.getLocation ();
                 Rectangle bounds = child.getBounds ();
                 bounds.translate (location.x, location.y);
-                if (bounds.intersects (clipBounds))
+                if (clipBounds == null  ||  bounds.intersects (clipBounds))
                     child.paint ();
             }
         } else

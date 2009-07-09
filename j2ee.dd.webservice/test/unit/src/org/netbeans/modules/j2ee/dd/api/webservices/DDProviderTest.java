@@ -133,6 +133,8 @@ public class DDProviderTest extends NbTestCase {
         assertEquals(Webservices.STATE_VALID, result.getStatus());
         File dest = new File(getWorkDir(), "webservices.xml");
         File diff = new File(getWorkDir(), "webservices.xml.diff");
+        if (dest.exists()) dest.delete();
+        if (diff.exists()) diff.delete();
         assertTrue(dest.createNewFile());
         assertTrue(diff.createNewFile());
         result.write(new BufferedOutputStream(new FileOutputStream(dest)));

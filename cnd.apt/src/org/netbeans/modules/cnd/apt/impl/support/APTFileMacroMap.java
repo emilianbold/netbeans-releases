@@ -44,16 +44,11 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -71,6 +66,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     private static final int INITIAL_CACHE_SIZE = 512;
     private APTMacroMap sysMacroMap;
     private Map<CharSequence,APTMacro> macroCache = NO_CACHE;
+    private int crc1 = 0;
+    private int crc2 = 0;
 
     public APTFileMacroMap() {
     }
@@ -118,27 +115,27 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     protected void putMacro(CharSequence name, APTMacro macro) {
         initCache();
         super.putMacro(name, macro);
-        macroCache.put(name, macro);
+        APTMacro old = macroCache.put(name, macro);
+        int i1 = name.hashCode();
+        int i2;
+        if (old != null) {
+            i2 = old.hashCode();
+            crc1 -= i1 + i2;
+            crc2 -= i1 ^ i2;
+        }
+        if (macro != APTMacroMapSnapshot.UNDEFINED_MACRO) {
+            i2 = macro.hashCode();
+            crc1 += i1 + i2;
+            crc2 += i1 ^ i2;
+        }
     }
 
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
         APTMacro macro = new APTMacroImpl(file, define, macroType);
-        APTMacro prev = null;
         if (APTTraceFlags.APT_SHARE_MACROS) {
-            ConcurrentMap<APTMacro, APTMacro> sharedMap = getSharedMap();
-            prev = sharedMap.get(macro);
-            if (prev == null) {
-                prev = sharedMap.putIfAbsent(macro, macro);
-                if (TRACE_HITS && prev != null) {
-                    cacheCollisionsHits++;
-                }
-            }
-            if (TRACE_HITS && prev != null) {
-                cacheHits++;
-                traceHits(sharedMap.size());
-            }
+            macro = cache.getMacro(macro);
         }
-        return prev != null ? prev : macro;
+        return macro;
     }
 
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
@@ -149,14 +146,19 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
-        return new FileStateImpl(active.parent, sysMacroMap);
+        return new FileStateImpl(active.parent, sysMacroMap, crc1, crc2);
     }
 
     @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);
+        crc1 = 0;
+        crc2 = 0;
         if (state instanceof FileStateImpl) {
-            sysMacroMap = ((FileStateImpl)state).sysMacroMap;
+            FileStateImpl fileState = (FileStateImpl) state;
+            sysMacroMap = fileState.sysMacroMap;
+            crc1 = fileState.crc1;
+            crc2 = fileState.crc2;
         }
         macroCache = NO_CACHE;
     }
@@ -166,20 +168,42 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             macroCache =  new HashMap<CharSequence,APTMacro>(INITIAL_CACHE_SIZE);
             // fill cache to speedup getMacro
             APTMacroMapSnapshot.addAllMacros(active, macroCache);
+            if (crc1 == 0 && crc2 == 0) {
+                for(Map.Entry<CharSequence, APTMacro> entry : macroCache.entrySet()){
+                    int i1 = entry.getKey().hashCode();
+                    int i2 = entry.getValue().hashCode();
+                    crc1 += i1 + i2;
+                    crc2 += i1 ^ i2;
+                }
+            }
         }
     }
 
-    public static class FileStateImpl extends StateImpl {
-        public final APTMacroMap sysMacroMap;
+    public StateKey getStateKey() {
+        return new StateKey(crc1, crc2);
+    }
 
-        public FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap) {
+    public static class FileStateImpl extends StateImpl {
+        private final APTMacroMap sysMacroMap;
+        private final int crc1;
+        private final int crc2;
+
+        private FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap, int crc1, int crc2) {
             super(snap);
             this.sysMacroMap = sysMacroMap;
+            this.crc1 = crc1;
+            this.crc2 = crc2;
         }
 
         private FileStateImpl(FileStateImpl state, boolean cleanedState) {
             super(state, cleanedState);
             this.sysMacroMap = state.sysMacroMap;
+            this.crc1 = state.crc1;
+            this.crc2 = state.crc2;
+        }
+
+        StateKey getStateKey() {
+            return new StateKey(crc1, crc2);
         }
 
         @Override
@@ -199,14 +223,16 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         @Override
         public void write(DataOutput output) throws IOException {
             super.write(output);
+            output.writeInt(crc1);
+            output.writeInt(crc2);
             APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
         }
 
         public FileStateImpl(final DataInput input) throws IOException {
             super(input);
-
+            this.crc1 = input.readInt();
+            this.crc2 = input.readInt();
             APTMacroMap systemMap = APTSerializeUtils.readSystemMacroMap(input);
-
             if (systemMap == null) {
                 this.sysMacroMap = APTBaseMacroMap.EMPTY;
             } else {
@@ -222,12 +248,12 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
 
-    private Stack<CharSequence> expandingMacros = new Stack<CharSequence>();
+    private LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
 
     public boolean pushExpanding(APTToken token) {
         assert (token != null);
         if (!isExpanding(token)) {
-            expandingMacros.push(token.getTextID());
+            expandingMacros.addLast(token.getTextID());
             return true;
         }
         return false;
@@ -235,7 +261,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     public void popExpanding() {
         try {
-            expandingMacros.pop();
+            expandingMacros.removeLast();
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why pop from empty stack?"; // NOI18N
         }
@@ -277,33 +303,5 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return retValue.toString();
     }
 
-    private static ConcurrentMap<APTMacro, APTMacro> getSharedMap() {
-        ConcurrentMap<APTMacro, APTMacro> map = mapRef.get();
-        if (map == null) {
-            try {
-                maRefLock.lock();
-                map = mapRef.get();
-                if (map == null) {
-                    cacheHits = 0;
-                    cacheCollisionsHits = 0;
-                    map = new ConcurrentHashMap<APTMacro, APTMacro>();
-                    mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(map);
-                }
-            } finally {
-                maRefLock.unlock();
-            }
-        }
-        return map;
-    }
-
-    private static void traceHits(int size) {
-        if (cacheHits % 5000 == 0) {
-            System.err.printf("%s hits with %s collisions, map size %s\n", cacheHits, cacheCollisionsHits, size);
-        }
-    }
-    private static final Lock maRefLock = new ReentrantLock();
-    private static Reference<ConcurrentMap<APTMacro, APTMacro>> mapRef = new SoftReference<ConcurrentMap<APTMacro, APTMacro>>(new ConcurrentHashMap<APTMacro, APTMacro>());
-    private static volatile long cacheHits = 0; // we can unsync a little, but it's fine
-    private static volatile long cacheCollisionsHits = 0; // we can unsync a little, but it's fine
-    private static final boolean TRACE_HITS = false;
+    private static final APTMacroCache cache = APTMacroCache.getManager();
 }

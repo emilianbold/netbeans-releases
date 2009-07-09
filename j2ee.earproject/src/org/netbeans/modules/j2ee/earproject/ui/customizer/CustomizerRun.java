@@ -59,7 +59,7 @@ import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -489,10 +489,10 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         
         private void initValues(List<ClassPathSupport.Item> list) {
             Set<ClientModuleItem> items = new TreeSet<ClientModuleItem>();
-            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.WAR)) {
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.Type.WAR)) {
                 items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), false));
             }
-            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.CLIENT)) {
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.Type.CAR)) {
                 items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), true));
             }
             values = new ArrayList<ClientModuleItem>(items);

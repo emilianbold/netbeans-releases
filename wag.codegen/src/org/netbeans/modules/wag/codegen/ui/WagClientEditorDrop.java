@@ -82,7 +82,6 @@ public class WagClientEditorDrop implements ActiveEditorDrop {
     }
     
     private boolean doHandleTransfer(final JTextComponent targetComponent) {
-        System.out.println("doHandleTransfer()");
         final Document targetDoc = targetComponent.getDocument();
         final FileObject targetSource = NbEditorUtilities.getFileObject(targetDoc);
         Project targetProject = FileOwnerQuery.getOwner(targetSource);

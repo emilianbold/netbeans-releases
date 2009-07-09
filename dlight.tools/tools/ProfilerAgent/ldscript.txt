@@ -1,0 +1,8 @@
+VERSION {
+    GLIBC_2.0 {
+    	local: pthread_cond_*_*;
+    };
+    GLIBC_2.2.5 {};
+    GLIBC_2.3.2 {};
+}
+

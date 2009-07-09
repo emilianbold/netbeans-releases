@@ -13504,7 +13504,9 @@
             <ExpressionStatement start='6' end='81'>
                 <FunctionInvocation start='6' end='80'>
                     <FucntionName start='6' end='12'>
-                        <Identifier start='6' end='12' name='rcs_id'/>
+                        <NamespaceName start='6' end='12' isCurrent='false' isGlobal='false'>
+                            <Identifier start='6' end='12' name='rcs_id'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='13' end='79' type='STRING' value='&apos;$Id: TextSearchQuery.php,v 1.28 2007/03/18 17:35:26 rurban Exp $&apos;'/>
@@ -13514,7 +13516,9 @@
             <ExpressionStatement start='2324' end='2353'>
                 <FunctionInvocation start='2324' end='2352'>
                     <FucntionName start='2324' end='2330'>
-                        <Identifier start='2324' end='2330' name='define'/>
+                        <NamespaceName start='2324' end='2330' isCurrent='false' isGlobal='false'>
+                            <Identifier start='2324' end='2330' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='2332' end='2348' type='STRING' value='&apos;TSQ_REGEX_NONE&apos;'/>
@@ -13525,7 +13529,9 @@
             <ExpressionStatement start='2354' end='2383'>
                 <FunctionInvocation start='2354' end='2382'>
                     <FucntionName start='2354' end='2360'>
-                        <Identifier start='2354' end='2360' name='define'/>
+                        <NamespaceName start='2354' end='2360' isCurrent='false' isGlobal='false'>
+                            <Identifier start='2354' end='2360' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='2362' end='2378' type='STRING' value='&apos;TSQ_REGEX_AUTO&apos;'/>
@@ -13536,7 +13542,9 @@
             <ExpressionStatement start='2384' end='2413'>
                 <FunctionInvocation start='2384' end='2412'>
                     <FucntionName start='2384' end='2390'>
-                        <Identifier start='2384' end='2390' name='define'/>
+                        <NamespaceName start='2384' end='2390' isCurrent='false' isGlobal='false'>
+                            <Identifier start='2384' end='2390' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='2392' end='2409' type='STRING' value='&apos;TSQ_REGEX_POSIX&apos;'/>
@@ -13547,7 +13555,9 @@
             <ExpressionStatement start='2414' end='2443'>
                 <FunctionInvocation start='2414' end='2442'>
                     <FucntionName start='2414' end='2420'>
-                        <Identifier start='2414' end='2420' name='define'/>
+                        <NamespaceName start='2414' end='2420' isCurrent='false' isGlobal='false'>
+                            <Identifier start='2414' end='2420' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='2422' end='2438' type='STRING' value='&apos;TSQ_REGEX_GLOB&apos;'/>
@@ -13558,7 +13568,9 @@
             <ExpressionStatement start='2444' end='2473'>
                 <FunctionInvocation start='2444' end='2472'>
                     <FucntionName start='2444' end='2450'>
-                        <Identifier start='2444' end='2450' name='define'/>
+                        <NamespaceName start='2444' end='2450' isCurrent='false' isGlobal='false'>
+                            <Identifier start='2444' end='2450' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='2452' end='2468' type='STRING' value='&apos;TSQ_REGEX_PCRE&apos;'/>
@@ -13569,7 +13581,9 @@
             <ExpressionStatement start='2474' end='2503'>
                 <FunctionInvocation start='2474' end='2502'>
                     <FucntionName start='2474' end='2480'>
-                        <Identifier start='2474' end='2480' name='define'/>
+                        <NamespaceName start='2474' end='2480' isCurrent='false' isGlobal='false'>
+                            <Identifier start='2474' end='2480' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='2482' end='2497' type='STRING' value='&apos;TSQ_REGEX_SQL&apos;'/>
@@ -13663,14 +13677,18 @@
                                             <Condition>
                                                 <FunctionInvocation start='3030' end='3070'>
                                                     <FucntionName start='3030' end='3037'>
-                                                        <Identifier start='3030' end='3037' name='defined'/>
+                                                        <NamespaceName start='3030' end='3037' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='3030' end='3037' name='defined'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <InfixExpression start='3038' end='3069' operator='CONCAT'>
                                                             <Scalar start='3038' end='3050' type='STRING' value='"TSQ_REGEX_"'/>
                                                             <FunctionInvocation start='3051' end='3069'>
                                                                 <FucntionName start='3051' end='3061'>
-                                                                    <Identifier start='3051' end='3061' name='strtoupper'/>
+                                                                    <NamespaceName start='3051' end='3061' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='3051' end='3061' name='strtoupper'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <Variable start='3062' end='3068' isDollared='true'>
@@ -13695,14 +13713,18 @@
                                                         </FieldAccess>
                                                         <FunctionInvocation start='3100' end='3141'>
                                                             <FucntionName start='3100' end='3108'>
-                                                                <Identifier start='3100' end='3108' name='constant'/>
+                                                                <NamespaceName start='3100' end='3108' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='3100' end='3108' name='constant'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <InfixExpression start='3109' end='3140' operator='CONCAT'>
                                                                     <Scalar start='3109' end='3121' type='STRING' value='"TSQ_REGEX_"'/>
                                                                     <FunctionInvocation start='3122' end='3140'>
                                                                         <FucntionName start='3122' end='3132'>
-                                                                            <Identifier start='3122' end='3132' name='strtoupper'/>
+                                                                            <NamespaceName start='3122' end='3132' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='3122' end='3132' name='strtoupper'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <Variable start='3133' end='3139' isDollared='true'>
@@ -13721,12 +13743,16 @@
                                                     <ExpressionStatement start='3170' end='3237'>
                                                         <FunctionInvocation start='3170' end='3236'>
                                                             <FucntionName start='3170' end='3183'>
-                                                                <Identifier start='3170' end='3183' name='trigger_error'/>
+                                                                <NamespaceName start='3170' end='3183' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='3170' end='3183' name='trigger_error'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <FunctionInvocation start='3184' end='3235'>
                                                                     <FucntionName start='3184' end='3187'>
-                                                                        <Identifier start='3184' end='3187' name='fmt'/>
+                                                                        <NamespaceName start='3184' end='3187' isCurrent='false' isGlobal='false'>
+                                                                            <Identifier start='3184' end='3187' name='fmt'/>
+                                                                        </NamespaceName>
                                                                     </FucntionName>
                                                                     <Parameters>
                                                                         <Scalar start='3188' end='3217' type='STRING' value='"Unsupported argument: %s=%s"'/>
@@ -13790,7 +13816,9 @@
                                                     </Variable>
                                                     <ClassInstanceCreation start='3368' end='3394'>
                                                         <ClassName start='3372' end='3394'>
-                                                            <Identifier start='3372' end='3394' name='TextSearchQuery_Parser'/>
+                                                            <NamespaceName start='3372' end='3394' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='3372' end='3394' name='TextSearchQuery_Parser'/>
+                                                            </NamespaceName>
                                                         </ClassName>
                                                         <Parameters>
                                                         </Parameters>
@@ -13883,7 +13911,9 @@
                                                 <Condition>
                                                     <FunctionInvocation start='3567' end='3601'>
                                                         <FucntionName start='3567' end='3574'>
-                                                            <Identifier start='3567' end='3574' name='defined'/>
+                                                            <NamespaceName start='3567' end='3574' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='3567' end='3574' name='defined'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <Scalar start='3575' end='3600' type='STRING' value='"FULLTEXTSEARCH_STOPLIST"'/>
@@ -13918,7 +13948,9 @@
                                                             </FieldAccess>
                                                             <FunctionInvocation start='3714' end='3775'>
                                                                 <FucntionName start='3714' end='3715'>
-                                                                    <Identifier start='3714' end='3715' name='_'/>
+                                                                    <NamespaceName start='3714' end='3715' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='3714' end='3715' name='_'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <Scalar start='3716' end='3774' type='STRING' value='"(A|An|And|But|By|For|From|In|Is|It|Of|On|Or|The|To|With)"'/>
@@ -13944,7 +13976,9 @@
                                                     </FieldAccess>
                                                     <ClassInstanceCreation start='3808' end='3858'>
                                                         <ClassName start='3812' end='3843'>
-                                                            <Identifier start='3812' end='3843' name='TextSearchQuery_node_regex_pcre'/>
+                                                            <NamespaceName start='3812' end='3843' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='3812' end='3843' name='TextSearchQuery_node_regex_pcre'/>
+                                                            </NamespaceName>
                                                         </ClassName>
                                                         <Parameters>
                                                             <Variable start='3844' end='3857' isDollared='true'>
@@ -13958,7 +13992,9 @@
                                                 <Condition>
                                                     <FunctionInvocation start='3869' end='3919'>
                                                         <FucntionName start='3869' end='3879'>
-                                                            <Identifier start='3869' end='3879' name='preg_match'/>
+                                                            <NamespaceName start='3869' end='3879' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='3869' end='3879' name='preg_match'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <Scalar start='3880' end='3899' type='STRING' value='"/^\/(.*)\/(\w*)$/"'/>
@@ -14346,7 +14382,9 @@
                                                     </Variable>
                                                     <FunctionInvocation start='5313' end='5358'>
                                                         <FucntionName start='5313' end='5325'>
-                                                            <Identifier start='5313' end='5325' name='array_unique'/>
+                                                            <NamespaceName start='5313' end='5325' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='5313' end='5325' name='array_unique'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <MethodInvocation start='5326' end='5357'>
@@ -14428,7 +14466,9 @@
                                                                         </ArrayAccess>
                                                                         <FunctionInvocation start='5541' end='5563'>
                                                                             <FucntionName start='5541' end='5551'>
-                                                                                <Identifier start='5541' end='5551' name='preg_quote'/>
+                                                                                <NamespaceName start='5541' end='5551' isCurrent='false' isGlobal='false'>
+                                                                                    <Identifier start='5541' end='5551' name='preg_quote'/>
+                                                                                </NamespaceName>
                                                                             </FucntionName>
                                                                             <Parameters>
                                                                                 <Variable start='5552' end='5557' isDollared='true'>
@@ -14461,7 +14501,9 @@
                                                                         <Scalar start='5606' end='5611' type='STRING' value='&apos;(?:&apos;'/>
                                                                         <FunctionInvocation start='5614' end='5631'>
                                                                             <FucntionName start='5614' end='5618'>
-                                                                                <Identifier start='5614' end='5618' name='join'/>
+                                                                                <NamespaceName start='5614' end='5618' isCurrent='false' isGlobal='false'>
+                                                                                    <Identifier start='5614' end='5618' name='join'/>
+                                                                                </NamespaceName>
                                                                             </FucntionName>
                                                                             <Parameters>
                                                                                 <Scalar start='5619' end='5622' type='STRING' value='&apos;|&apos;'/>
@@ -14639,7 +14681,9 @@
                                             <ExpressionStatement start='7618' end='7646'>
                                                 <FunctionInvocation start='7618' end='7645'>
                                                     <FucntionName start='7618' end='7624'>
-                                                        <Identifier start='7618' end='7624' name='assert'/>
+                                                        <NamespaceName start='7618' end='7624' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='7618' end='7624' name='assert'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <InfixExpression start='7625' end='7644' operator='IS_EQUAL'>
@@ -15232,7 +15276,9 @@
                     <Identifier start='10523' end='10542' name='NullTextSearchQuery'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='10551' end='10566' name='TextSearchQuery'/>
+                    <NamespaceName start='10551' end='10566' isCurrent='false' isGlobal='false'>
+                        <Identifier start='10551' end='10566' name='TextSearchQuery'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -15395,7 +15441,9 @@
                                         </FieldAccess>
                                         <FunctionInvocation start='12837' end='13158'>
                                             <FucntionName start='12837' end='12844'>
-                                                <Identifier start='12837' end='12844' name='explode'/>
+                                                <NamespaceName start='12837' end='12844' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='12837' end='12844' name='explode'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='12845' end='12848' type='STRING' value='&apos;:&apos;'/>
@@ -15416,7 +15464,9 @@
                                         </FieldAccess>
                                         <FunctionInvocation start='13189' end='13271'>
                                             <FucntionName start='13189' end='13196'>
-                                                <Identifier start='13189' end='13196' name='explode'/>
+                                                <NamespaceName start='13189' end='13196' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='13189' end='13196' name='explode'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='13197' end='13200' type='STRING' value='&apos;,&apos;'/>
@@ -15529,7 +15579,9 @@
                                     <Condition>
                                         <FunctionInvocation start='13508' end='13531'>
                                             <FucntionName start='13508' end='13516'>
-                                                <Identifier start='13508' end='13516' name='is_array'/>
+                                                <NamespaceName start='13508' end='13516' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='13508' end='13516' name='is_array'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Variable start='13517' end='13530' isDollared='true'>
@@ -15615,7 +15667,9 @@
                                         </FieldAccess>
                                         <FunctionInvocation start='13863' end='13904'>
                                             <FucntionName start='13863' end='13875'>
-                                                <Identifier start='13863' end='13875' name='preg_replace'/>
+                                                <NamespaceName start='13863' end='13875' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='13863' end='13875' name='preg_replace'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='13876' end='13882' type='STRING' value='"/:=/"'/>
@@ -15723,7 +15777,9 @@
                                     <Condition>
                                         <FunctionInvocation start='14471' end='14524'>
                                             <FucntionName start='14471' end='14481'>
-                                                <Identifier start='14471' end='14481' name='preg_match'/>
+                                                <NamespaceName start='14471' end='14481' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='14471' end='14481' name='preg_match'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='14482' end='14513' type='STRING' value='"/([a-z][a-z0-9]+)\s*\((.*)$/i"'/>
@@ -15743,7 +15799,9 @@
                                                     <UnaryOperation start='14537' end='14580' operator='NOT'>
                                                         <FunctionInvocation start='14538' end='14580'>
                                                             <FucntionName start='14538' end='14546'>
-                                                                <Identifier start='14538' end='14546' name='in_array'/>
+                                                                <NamespaceName start='14538' end='14546' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='14538' end='14546' name='in_array'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='14547' end='14552' type='VARIABLE_ARRAY' isDollared='false'>
@@ -15770,7 +15828,9 @@
                                                     <UnaryOperation start='14587' end='14630' operator='NOT'>
                                                         <FunctionInvocation start='14588' end='14630'>
                                                             <FucntionName start='14588' end='14596'>
-                                                                <Identifier start='14588' end='14596' name='in_array'/>
+                                                                <NamespaceName start='14588' end='14596' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='14588' end='14596' name='in_array'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='14597' end='14602' type='VARIABLE_ARRAY' isDollared='false'>
@@ -15801,7 +15861,9 @@
                                                     <ExpressionStatement start='14641' end='14708'>
                                                         <FunctionInvocation start='14641' end='14707'>
                                                             <FucntionName start='14641' end='14654'>
-                                                                <Identifier start='14641' end='14654' name='trigger_error'/>
+                                                                <NamespaceName start='14641' end='14654' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='14641' end='14654' name='trigger_error'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <InfixExpression start='14655' end='14690' operator='CONCAT'>
@@ -15849,7 +15911,9 @@
                                     <Condition>
                                         <FunctionInvocation start='14841' end='14873'>
                                             <FucntionName start='14841' end='14856'>
-                                                <Identifier start='14841' end='14856' name='function_exists'/>
+                                                <NamespaceName start='14841' end='14856' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='14841' end='14856' name='function_exists'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='14857' end='14872' type='STRING' value='&apos;token_get_all&apos;'/>
@@ -15865,7 +15929,9 @@
                                                     </Variable>
                                                     <FunctionInvocation start='14892' end='14919'>
                                                         <FucntionName start='14892' end='14905'>
-                                                            <Identifier start='14892' end='14905' name='token_get_all'/>
+                                                            <NamespaceName start='14892' end='14905' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='14892' end='14905' name='token_get_all'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <Quote start='14906' end='14918' type='QUOTE'>
@@ -15896,7 +15962,9 @@
                                                                 <InfixExpression start='14987' end='15037' operator='STRING_AND'>
                                                                     <FunctionInvocation start='14987' end='15000'>
                                                                         <FucntionName start='14987' end='14996'>
-                                                                            <Identifier start='14987' end='14996' name='is_string'/>
+                                                                            <NamespaceName start='14987' end='14996' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='14987' end='14996' name='is_string'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <Variable start='14997' end='14999' isDollared='true'>
@@ -15937,7 +16005,9 @@
                                                                     <ExpressionStatement start='15079' end='15156'>
                                                                         <FunctionInvocation start='15079' end='15155'>
                                                                             <FucntionName start='15079' end='15092'>
-                                                                                <Identifier start='15079' end='15092' name='trigger_error'/>
+                                                                                <NamespaceName start='15079' end='15092' isCurrent='false' isGlobal='false'>
+                                                                                    <Identifier start='15079' end='15092' name='trigger_error'/>
+                                                                                </NamespaceName>
                                                                             </FucntionName>
                                                                             <Parameters>
                                                                                 <Quote start='15093' end='15138' type='QUOTE'>
@@ -15968,7 +16038,9 @@
                                                                     <Condition>
                                                                         <FunctionInvocation start='15197' end='15209'>
                                                                             <FucntionName start='15197' end='15205'>
-                                                                                <Identifier start='15197' end='15205' name='is_array'/>
+                                                                                <NamespaceName start='15197' end='15205' isCurrent='false' isGlobal='false'>
+                                                                                    <Identifier start='15197' end='15205' name='is_array'/>
+                                                                                </NamespaceName>
                                                                             </FucntionName>
                                                                             <Parameters>
                                                                                 <Variable start='15206' end='15208' isDollared='true'>
@@ -15986,7 +16058,9 @@
                                                                                     </Variable>
                                                                                     <FunctionInvocation start='15224' end='15241'>
                                                                                         <FucntionName start='15224' end='15234'>
-                                                                                            <Identifier start='15224' end='15234' name='token_name'/>
+                                                                                            <NamespaceName start='15224' end='15234' isCurrent='false' isGlobal='false'>
+                                                                                                <Identifier start='15224' end='15234' name='token_name'/>
+                                                                                            </NamespaceName>
                                                                                         </FucntionName>
                                                                                         <Parameters>
                                                                                             <ArrayAccess start='15235' end='15240' type='VARIABLE_ARRAY' isDollared='false'>
@@ -16073,7 +16147,9 @@
                                                                                         <ExpressionStatement start='15474' end='15544'>
                                                                                             <FunctionInvocation start='15474' end='15543'>
                                                                                                 <FucntionName start='15474' end='15487'>
-                                                                                                    <Identifier start='15474' end='15487' name='trigger_error'/>
+                                                                                                    <NamespaceName start='15474' end='15487' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='15474' end='15487' name='trigger_error'/>
+                                                                                                    </NamespaceName>
                                                                                                 </FucntionName>
                                                                                                 <Parameters>
                                                                                                     <Quote start='15488' end='15526' type='QUOTE'>
@@ -16114,7 +16190,9 @@
                                                                                     <InfixExpression start='15583' end='15639' operator='STRING_AND'>
                                                                                         <FunctionInvocation start='15583' end='15599'>
                                                                                             <FucntionName start='15583' end='15592'>
-                                                                                                <Identifier start='15583' end='15592' name='is_string'/>
+                                                                                                <NamespaceName start='15583' end='15592' isCurrent='false' isGlobal='false'>
+                                                                                                    <Identifier start='15583' end='15592' name='is_string'/>
+                                                                                                </NamespaceName>
                                                                                             </FucntionName>
                                                                                             <Parameters>
                                                                                                 <ArrayAccess start='15593' end='15598' type='VARIABLE_ARRAY' isDollared='false'>
@@ -16169,7 +16247,9 @@
                                                                                         <ExpressionStatement start='15679' end='15743'>
                                                                                             <FunctionInvocation start='15679' end='15742'>
                                                                                                 <FucntionName start='15679' end='15692'>
-                                                                                                    <Identifier start='15679' end='15692' name='trigger_error'/>
+                                                                                                    <NamespaceName start='15679' end='15692' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='15679' end='15692' name='trigger_error'/>
+                                                                                                    </NamespaceName>
                                                                                                 </FucntionName>
                                                                                                 <Parameters>
                                                                                                     <Quote start='15693' end='15725' type='QUOTE'>
@@ -16238,12 +16318,16 @@
                                                             <Scalar start='16381' end='16395' type='STRING' value='"/([^\d\w.,\s"'/>
                                                             <FunctionInvocation start='16396' end='16446'>
                                                                 <FucntionName start='16396' end='16406'>
-                                                                    <Identifier start='16396' end='16406' name='preg_quote'/>
+                                                                    <NamespaceName start='16396' end='16406' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='16396' end='16406' name='preg_quote'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <FunctionInvocation start='16407' end='16441'>
                                                                         <FucntionName start='16407' end='16411'>
-                                                                            <Identifier start='16407' end='16411' name='join'/>
+                                                                            <NamespaceName start='16407' end='16411' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='16407' end='16411' name='join'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <Scalar start='16412' end='16414' type='STRING' value='""'/>
@@ -16269,7 +16353,9 @@
                                                 <Condition>
                                                     <FunctionInvocation start='16463' end='16489'>
                                                         <FucntionName start='16463' end='16473'>
-                                                            <Identifier start='16463' end='16473' name='preg_match'/>
+                                                            <NamespaceName start='16463' end='16473' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='16463' end='16473' name='preg_match'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <Variable start='16474' end='16476' isDollared='true'>
@@ -16289,7 +16375,9 @@
                                                         <ExpressionStatement start='16495' end='16563'>
                                                             <FunctionInvocation start='16495' end='16562'>
                                                                 <FucntionName start='16495' end='16508'>
-                                                                    <Identifier start='16495' end='16508' name='trigger_error'/>
+                                                                    <NamespaceName start='16495' end='16508' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='16495' end='16508' name='trigger_error'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <InfixExpression start='16509' end='16545' operator='CONCAT'>
@@ -16339,7 +16427,9 @@
                                     <Condition>
                                         <FunctionInvocation start='17094' end='17124'>
                                             <FucntionName start='17094' end='17102'>
-                                                <Identifier start='17094' end='17102' name='is_array'/>
+                                                <NamespaceName start='17094' end='17102' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='17094' end='17102' name='is_array'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <FieldAccess start='17103' end='17123'>
@@ -16436,7 +16526,9 @@
                                         </Variable>
                                         <FunctionInvocation start='17743' end='17790'>
                                             <FucntionName start='17743' end='17755'>
-                                                <Identifier start='17743' end='17755' name='preg_replace'/>
+                                                <NamespaceName start='17743' end='17755' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='17743' end='17755' name='preg_replace'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='17756' end='17777' type='STRING' value='"/[^-+0123456789.,]/"'/>
@@ -16460,7 +16552,9 @@
                                         </FieldAccess>
                                         <FunctionInvocation start='17853' end='17924'>
                                             <FucntionName start='17853' end='17865'>
-                                                <Identifier start='17853' end='17865' name='preg_replace'/>
+                                                <NamespaceName start='17853' end='17865' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='17853' end='17865' name='preg_replace'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <InfixExpression start='17866' end='17896' operator='CONCAT'>
@@ -16468,7 +16562,9 @@
                                                         <Scalar start='17866' end='17871' type='STRING' value='"/\b"'/>
                                                         <FunctionInvocation start='17872' end='17890'>
                                                             <FucntionName start='17872' end='17882'>
-                                                                <Identifier start='17872' end='17882' name='preg_quote'/>
+                                                                <NamespaceName start='17872' end='17882' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='17872' end='17882' name='preg_quote'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <Variable start='17883' end='17885' isDollared='true'>
@@ -16572,7 +16668,9 @@
                                             <UnaryOperation start='18789' end='18810' operator='NOT'>
                                                 <FunctionInvocation start='18790' end='18810'>
                                                     <FucntionName start='18790' end='18798'>
-                                                        <Identifier start='18790' end='18798' name='is_array'/>
+                                                        <NamespaceName start='18790' end='18798' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='18790' end='18798' name='is_array'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <Variable start='18799' end='18809' isDollared='true'>
@@ -16584,7 +16682,9 @@
                                             <UnaryOperation start='18815' end='18828' operator='NOT'>
                                                 <FunctionInvocation start='18816' end='18828'>
                                                     <FucntionName start='18816' end='18824'>
-                                                        <Identifier start='18816' end='18824' name='is_array'/>
+                                                        <NamespaceName start='18816' end='18824' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='18816' end='18824' name='is_array'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <Variable start='18825' end='18827' isDollared='true'>
@@ -16605,7 +16705,9 @@
                                         <UnaryOperation start='18972' end='18985' operator='NOT'>
                                             <FunctionInvocation start='18973' end='18985'>
                                                 <FucntionName start='18973' end='18981'>
-                                                    <Identifier start='18973' end='18981' name='is_array'/>
+                                                    <NamespaceName start='18973' end='18981' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='18973' end='18981' name='is_array'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <Variable start='18982' end='18984' isDollared='true'>
@@ -16764,7 +16866,9 @@
                                         <UnaryOperation start='19616' end='19629' operator='NOT'>
                                             <FunctionInvocation start='19617' end='19629'>
                                                 <FucntionName start='19617' end='19625'>
-                                                    <Identifier start='19617' end='19625' name='is_array'/>
+                                                    <NamespaceName start='19617' end='19625' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='19617' end='19625' name='is_array'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <Variable start='19626' end='19628' isDollared='true'>
@@ -16780,7 +16884,9 @@
                                                 <Condition>
                                                     <FunctionInvocation start='19642' end='19661'>
                                                         <FucntionName start='19642' end='19650'>
-                                                            <Identifier start='19642' end='19650' name='is_array'/>
+                                                            <NamespaceName start='19642' end='19650' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='19642' end='19650' name='is_array'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <Variable start='19651' end='19660' isDollared='true'>
@@ -16819,7 +16925,9 @@
                                                                 <ExpressionStatement start='19750' end='19841'>
                                                                     <FunctionInvocation start='19750' end='19840'>
                                                                         <FucntionName start='19750' end='19763'>
-                                                                            <Identifier start='19750' end='19763' name='trigger_error'/>
+                                                                            <NamespaceName start='19750' end='19763' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='19750' end='19763' name='trigger_error'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <Quote start='19764' end='19825' type='QUOTE'>
@@ -16974,7 +17082,9 @@
                                                                 <ExpressionStatement start='20000' end='20091'>
                                                                     <FunctionInvocation start='20000' end='20090'>
                                                                         <FucntionName start='20000' end='20013'>
-                                                                            <Identifier start='20000' end='20013' name='trigger_error'/>
+                                                                            <NamespaceName start='20000' end='20013' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='20000' end='20013' name='trigger_error'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <Quote start='20014' end='20075' type='QUOTE'>
@@ -17136,7 +17246,9 @@
                                             </Variable>
                                             <FunctionInvocation start='20569' end='20581'>
                                                 <FucntionName start='20569' end='20577'>
-                                                    <Identifier start='20569' end='20577' name='is_array'/>
+                                                    <NamespaceName start='20569' end='20577' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='20569' end='20577' name='is_array'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <Variable start='20578' end='20580' isDollared='true'>
@@ -17234,7 +17346,9 @@
                     <Identifier start='21569' end='21594' name='TextSearchQuery_node_word'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='21603' end='21623' name='TextSearchQuery_node'/>
+                    <NamespaceName start='21603' end='21623' isCurrent='false' isGlobal='false'>
+                        <Identifier start='21603' end='21623' name='TextSearchQuery_node'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17329,7 +17443,9 @@
                                         </Variable>
                                         <FunctionInvocation start='21983' end='22032'>
                                             <FucntionName start='21983' end='21995'>
-                                                <Identifier start='21983' end='21995' name='preg_replace'/>
+                                                <NamespaceName start='21983' end='21995' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='21983' end='21995' name='preg_replace'/>
+                                                </NamespaceName>
                                             </FucntionName>
                                             <Parameters>
                                                 <Scalar start='21996' end='22012' type='STRING' value='&apos;/(?=[%_\\\\])/&apos;'/>
@@ -17365,7 +17481,9 @@
                     <Identifier start='22187' end='22211' name='TextSearchQuery_node_all'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='22220' end='22240' name='TextSearchQuery_node'/>
+                    <NamespaceName start='22220' end='22240' isCurrent='false' isGlobal='false'>
+                        <Identifier start='22220' end='22240' name='TextSearchQuery_node'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17407,7 +17525,9 @@
                     <Identifier start='22353' end='22385' name='TextSearchQuery_node_starts_with'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='22394' end='22419' name='TextSearchQuery_node_word'/>
+                    <NamespaceName start='22394' end='22419' isCurrent='false' isGlobal='false'>
+                        <Identifier start='22394' end='22419' name='TextSearchQuery_node_word'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17449,7 +17569,9 @@
                     <Identifier start='22610' end='22640' name='TextSearchQuery_node_ends_with'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='22649' end='22674' name='TextSearchQuery_node_word'/>
+                    <NamespaceName start='22649' end='22674' isCurrent='false' isGlobal='false'>
+                        <Identifier start='22649' end='22674' name='TextSearchQuery_node_word'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17491,7 +17613,9 @@
                     <Identifier start='22863' end='22889' name='TextSearchQuery_node_exact'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='22898' end='22923' name='TextSearchQuery_node_word'/>
+                    <NamespaceName start='22898' end='22923' isCurrent='false' isGlobal='false'>
+                        <Identifier start='22898' end='22923' name='TextSearchQuery_node_word'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17533,7 +17657,9 @@
                     <Identifier start='23105' end='23131' name='TextSearchQuery_node_regex'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='23163' end='23188' name='TextSearchQuery_node_word'/>
+                    <NamespaceName start='23163' end='23188' isCurrent='false' isGlobal='false'>
+                        <Identifier start='23163' end='23188' name='TextSearchQuery_node_word'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17575,7 +17701,9 @@
                     <Identifier start='23385' end='23416' name='TextSearchQuery_node_regex_glob'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='23425' end='23451' name='TextSearchQuery_node_regex'/>
+                    <NamespaceName start='23425' end='23451' isCurrent='false' isGlobal='false'>
+                        <Identifier start='23425' end='23451' name='TextSearchQuery_node_regex'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17608,7 +17736,9 @@
                     <Identifier start='23571' end='23602' name='TextSearchQuery_node_regex_pcre'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='23647' end='23673' name='TextSearchQuery_node_regex'/>
+                    <NamespaceName start='23647' end='23673' isCurrent='false' isGlobal='false'>
+                        <Identifier start='23647' end='23673' name='TextSearchQuery_node_regex'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17641,7 +17771,9 @@
                     <Identifier start='23759' end='23789' name='TextSearchQuery_node_regex_sql'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='23798' end='23824' name='TextSearchQuery_node_regex'/>
+                    <NamespaceName start='23798' end='23824' isCurrent='false' isGlobal='false'>
+                        <Identifier start='23798' end='23824' name='TextSearchQuery_node_regex'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17683,7 +17815,9 @@
                     <Identifier start='24048' end='24072' name='TextSearchQuery_node_not'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='24081' end='24101' name='TextSearchQuery_node'/>
+                    <NamespaceName start='24081' end='24101' isCurrent='false' isGlobal='false'>
+                        <Identifier start='24081' end='24101' name='TextSearchQuery_node'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -17883,7 +18017,9 @@
                     <Identifier start='24742' end='24768' name='TextSearchQuery_node_binop'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='24777' end='24797' name='TextSearchQuery_node'/>
+                    <NamespaceName start='24777' end='24797' isCurrent='false' isGlobal='false'>
+                        <Identifier start='24777' end='24797' name='TextSearchQuery_node'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -18009,7 +18145,9 @@
                                                             </Variable>
                                                             <FunctionInvocation start='25187' end='25220'>
                                                                 <FucntionName start='25187' end='25198'>
-                                                                    <Identifier start='25187' end='25198' name='array_merge'/>
+                                                                    <NamespaceName start='25187' end='25198' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='25187' end='25198' name='array_merge'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <Variable start='25199' end='25204' isDollared='true'>
@@ -18104,7 +18242,9 @@
                                 <ExpressionStatement start='25381' end='25411'>
                                     <FunctionInvocation start='25381' end='25410'>
                                         <FucntionName start='25381' end='25387'>
-                                            <Identifier start='25381' end='25387' name='assert'/>
+                                            <NamespaceName start='25381' end='25387' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='25381' end='25387' name='assert'/>
+                                            </NamespaceName>
                                         </FucntionName>
                                         <Parameters>
                                             <UnaryOperation start='25388' end='25409' operator='NOT'>
@@ -18132,7 +18272,9 @@
                                         <InfixExpression start='25424' end='25449' operator='IS_EQUAL'>
                                             <FunctionInvocation start='25424' end='25444'>
                                                 <FucntionName start='25424' end='25429'>
-                                                    <Identifier start='25424' end='25429' name='count'/>
+                                                    <NamespaceName start='25424' end='25429' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='25424' end='25429' name='count'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <FieldAccess start='25430' end='25443'>
@@ -18200,7 +18342,9 @@
                                         <ExpressionStatement start='25661' end='25745'>
                                             <FunctionInvocation start='25661' end='25744'>
                                                 <FucntionName start='25661' end='25673'>
-                                                    <Identifier start='25661' end='25673' name='array_splice'/>
+                                                    <NamespaceName start='25661' end='25673' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='25661' end='25673' name='array_splice'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <Variable start='25674' end='25680' isDollared='true'>
@@ -18254,7 +18398,9 @@
                     <Identifier start='25838' end='25862' name='TextSearchQuery_node_and'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='25871' end='25897' name='TextSearchQuery_node_binop'/>
+                    <NamespaceName start='25871' end='25897' isCurrent='false' isGlobal='false'>
+                        <Identifier start='25871' end='25897' name='TextSearchQuery_node_binop'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -18425,12 +18571,16 @@
                                                     <ParenthesisExpression start='26539' end='26630'>
                                                         <ClassInstanceCreation start='26541' end='26628'>
                                                             <ClassName start='26545' end='26569'>
-                                                                <Identifier start='26545' end='26569' name='TextSearchQuery_node_not'/>
+                                                                <NamespaceName start='26545' end='26569' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='26545' end='26569' name='TextSearchQuery_node_not'/>
+                                                                </NamespaceName>
                                                             </ClassName>
                                                             <Parameters>
                                                                 <ClassInstanceCreation start='26593' end='26627'>
                                                                     <ClassName start='26597' end='26620'>
-                                                                        <Identifier start='26597' end='26620' name='TextSearchQuery_node_or'/>
+                                                                        <NamespaceName start='26597' end='26620' isCurrent='false' isGlobal='false'>
+                                                                            <Identifier start='26597' end='26620' name='TextSearchQuery_node_or'/>
+                                                                        </NamespaceName>
                                                                     </ClassName>
                                                                     <Parameters>
                                                                         <Variable start='26621' end='26626' isDollared='true'>
@@ -18446,7 +18596,9 @@
                                             <ExpressionStatement start='26644' end='26692'>
                                                 <FunctionInvocation start='26644' end='26691'>
                                                     <FucntionName start='26644' end='26657'>
-                                                        <Identifier start='26644' end='26657' name='array_unshift'/>
+                                                        <NamespaceName start='26644' end='26657' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='26644' end='26657' name='array_unshift'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <FieldAccess start='26658' end='26671'>
@@ -18488,7 +18640,9 @@
                                 <ExpressionStatement start='26720' end='26750'>
                                     <FunctionInvocation start='26720' end='26749'>
                                         <FucntionName start='26720' end='26726'>
-                                            <Identifier start='26720' end='26726' name='assert'/>
+                                            <NamespaceName start='26720' end='26726' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='26720' end='26726' name='assert'/>
+                                            </NamespaceName>
                                         </FucntionName>
                                         <Parameters>
                                             <UnaryOperation start='26727' end='26748' operator='NOT'>
@@ -18516,7 +18670,9 @@
                                         <InfixExpression start='26763' end='26788' operator='IS_EQUAL'>
                                             <FunctionInvocation start='26763' end='26783'>
                                                 <FucntionName start='26763' end='26768'>
-                                                    <Identifier start='26763' end='26768' name='count'/>
+                                                    <NamespaceName start='26763' end='26768' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='26763' end='26768' name='count'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <FieldAccess start='26769' end='26782'>
@@ -18612,7 +18768,9 @@
                     <Identifier start='27299' end='27322' name='TextSearchQuery_node_or'/>
                 </ClassName>
                 <SuperClassName>
-                    <Identifier start='27331' end='27357' name='TextSearchQuery_node_binop'/>
+                    <NamespaceName start='27331' end='27357' isCurrent='false' isGlobal='false'>
+                        <Identifier start='27331' end='27357' name='TextSearchQuery_node_binop'/>
+                    </NamespaceName>
                 </SuperClassName>
                 <Interfaces>
                 </Interfaces>
@@ -18696,7 +18854,9 @@
                                                             </ArrayAccess>
                                                             <FunctionInvocation start='27708' end='27736'>
                                                                 <FucntionName start='27708' end='27718'>
-                                                                    <Identifier start='27708' end='27718' name='preg_quote'/>
+                                                                    <NamespaceName start='27708' end='27718' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='27708' end='27718' name='preg_quote'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <FieldAccess start='27719' end='27730'>
@@ -18767,7 +18927,9 @@
                                         <ExpressionStatement start='27844' end='27932'>
                                             <FunctionInvocation start='27844' end='27931'>
                                                 <FucntionName start='27844' end='27857'>
-                                                    <Identifier start='27844' end='27857' name='array_unshift'/>
+                                                    <NamespaceName start='27844' end='27857' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='27844' end='27857' name='array_unshift'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <Variable start='27858' end='27866' isDollared='true'>
@@ -18835,13 +18997,17 @@
                                 <ExpressionStatement start='28019' end='28047'>
                                     <FunctionInvocation start='28019' end='28046'>
                                         <FucntionName start='28019' end='28025'>
-                                            <Identifier start='28019' end='28025' name='assert'/>
+                                            <NamespaceName start='28019' end='28025' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='28019' end='28025' name='assert'/>
+                                            </NamespaceName>
                                         </FucntionName>
                                         <Parameters>
                                             <InfixExpression start='28026' end='28045' operator='LGREATER'>
                                                 <FunctionInvocation start='28026' end='28041'>
                                                     <FucntionName start='28026' end='28031'>
-                                                        <Identifier start='28026' end='28031' name='count'/>
+                                                        <NamespaceName start='28026' end='28031' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='28026' end='28031' name='count'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <Variable start='28032' end='28040' isDollared='true'>
@@ -18859,7 +19025,9 @@
                                         <InfixExpression start='28061' end='28080' operator='LGREATER'>
                                             <FunctionInvocation start='28061' end='28076'>
                                                 <FucntionName start='28061' end='28066'>
-                                                    <Identifier start='28061' end='28066' name='count'/>
+                                                    <NamespaceName start='28061' end='28066' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='28061' end='28066' name='count'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <Variable start='28067' end='28075' isDollared='true'>
@@ -18883,7 +19051,9 @@
             <ExpressionStatement start='28405' end='28434'>
                 <FunctionInvocation start='28405' end='28433'>
                     <FucntionName start='28405' end='28411'>
-                        <Identifier start='28405' end='28411' name='define'/>
+                        <NamespaceName start='28405' end='28411' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28405' end='28411' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28413' end='28428' type='STRING' value='&apos;TSQ_TOK_BINOP&apos;'/>
@@ -18894,7 +19064,9 @@
             <ExpressionStatement start='28435' end='28464'>
                 <FunctionInvocation start='28435' end='28463'>
                     <FucntionName start='28435' end='28441'>
-                        <Identifier start='28435' end='28441' name='define'/>
+                        <NamespaceName start='28435' end='28441' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28435' end='28441' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28443' end='28456' type='STRING' value='&apos;TSQ_TOK_NOT&apos;'/>
@@ -18905,7 +19077,9 @@
             <ExpressionStatement start='28465' end='28494'>
                 <FunctionInvocation start='28465' end='28493'>
                     <FucntionName start='28465' end='28471'>
-                        <Identifier start='28465' end='28471' name='define'/>
+                        <NamespaceName start='28465' end='28471' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28465' end='28471' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28473' end='28489' type='STRING' value='&apos;TSQ_TOK_LPAREN&apos;'/>
@@ -18916,7 +19090,9 @@
             <ExpressionStatement start='28495' end='28524'>
                 <FunctionInvocation start='28495' end='28523'>
                     <FucntionName start='28495' end='28501'>
-                        <Identifier start='28495' end='28501' name='define'/>
+                        <NamespaceName start='28495' end='28501' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28495' end='28501' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28503' end='28519' type='STRING' value='&apos;TSQ_TOK_RPAREN&apos;'/>
@@ -18927,7 +19103,9 @@
             <ExpressionStatement start='28525' end='28555'>
                 <FunctionInvocation start='28525' end='28554'>
                     <FucntionName start='28525' end='28531'>
-                        <Identifier start='28525' end='28531' name='define'/>
+                        <NamespaceName start='28525' end='28531' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28525' end='28531' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28533' end='28547' type='STRING' value='&apos;TSQ_TOK_WORD&apos;'/>
@@ -18938,7 +19116,9 @@
             <ExpressionStatement start='28556' end='28591'>
                 <FunctionInvocation start='28556' end='28590'>
                     <FucntionName start='28556' end='28562'>
-                        <Identifier start='28556' end='28562' name='define'/>
+                        <NamespaceName start='28556' end='28562' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28556' end='28562' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28564' end='28585' type='STRING' value='&apos;TSQ_TOK_STARTS_WITH&apos;'/>
@@ -18949,7 +19129,9 @@
             <ExpressionStatement start='28592' end='28625'>
                 <FunctionInvocation start='28592' end='28624'>
                     <FucntionName start='28592' end='28598'>
-                        <Identifier start='28592' end='28598' name='define'/>
+                        <NamespaceName start='28592' end='28598' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28592' end='28598' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28600' end='28619' type='STRING' value='&apos;TSQ_TOK_ENDS_WITH&apos;'/>
@@ -18960,7 +19142,9 @@
             <ExpressionStatement start='28626' end='28656'>
                 <FunctionInvocation start='28626' end='28655'>
                     <FucntionName start='28626' end='28632'>
-                        <Identifier start='28626' end='28632' name='define'/>
+                        <NamespaceName start='28626' end='28632' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28626' end='28632' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28634' end='28649' type='STRING' value='&apos;TSQ_TOK_EXACT&apos;'/>
@@ -18971,7 +19155,9 @@
             <ExpressionStatement start='28657' end='28687'>
                 <FunctionInvocation start='28657' end='28686'>
                     <FucntionName start='28657' end='28663'>
-                        <Identifier start='28657' end='28663' name='define'/>
+                        <NamespaceName start='28657' end='28663' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28657' end='28663' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28665' end='28680' type='STRING' value='&apos;TSQ_TOK_REGEX&apos;'/>
@@ -18982,7 +19168,9 @@
             <ExpressionStatement start='28688' end='28723'>
                 <FunctionInvocation start='28688' end='28722'>
                     <FucntionName start='28688' end='28694'>
-                        <Identifier start='28688' end='28694' name='define'/>
+                        <NamespaceName start='28688' end='28694' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28688' end='28694' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28696' end='28716' type='STRING' value='&apos;TSQ_TOK_REGEX_GLOB&apos;'/>
@@ -18993,7 +19181,9 @@
             <ExpressionStatement start='28724' end='28760'>
                 <FunctionInvocation start='28724' end='28759'>
                     <FucntionName start='28724' end='28730'>
-                        <Identifier start='28724' end='28730' name='define'/>
+                        <NamespaceName start='28724' end='28730' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28724' end='28730' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28732' end='28752' type='STRING' value='&apos;TSQ_TOK_REGEX_PCRE&apos;'/>
@@ -19004,7 +19194,9 @@
             <ExpressionStatement start='28761' end='28796'>
                 <FunctionInvocation start='28761' end='28795'>
                     <FucntionName start='28761' end='28767'>
-                        <Identifier start='28761' end='28767' name='define'/>
+                        <NamespaceName start='28761' end='28767' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28761' end='28767' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28769' end='28788' type='STRING' value='&apos;TSQ_TOK_REGEX_SQL&apos;'/>
@@ -19015,7 +19207,9 @@
             <ExpressionStatement start='28797' end='28826'>
                 <FunctionInvocation start='28797' end='28825'>
                     <FucntionName start='28797' end='28803'>
-                        <Identifier start='28797' end='28803' name='define'/>
+                        <NamespaceName start='28797' end='28803' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28797' end='28803' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28805' end='28818' type='STRING' value='&apos;TSQ_TOK_ALL&apos;'/>
@@ -19026,7 +19220,9 @@
             <ExpressionStatement start='28862' end='28907'>
                 <FunctionInvocation start='28862' end='28906'>
                     <FucntionName start='28862' end='28868'>
-                        <Identifier start='28862' end='28868' name='define'/>
+                        <NamespaceName start='28862' end='28868' isCurrent='false' isGlobal='false'>
+                            <Identifier start='28862' end='28868' name='define'/>
+                        </NamespaceName>
                     </FucntionName>
                     <Parameters>
                         <Scalar start='28870' end='28884' type='STRING' value='&apos;TSQ_ALLWORDS&apos;'/>
@@ -19112,7 +19308,9 @@
                                         </FieldAccess>
                                         <ClassInstanceCreation start='29794' end='29854'>
                                             <ClassName start='29798' end='29819'>
-                                                <Identifier start='29798' end='29819' name='TextSearchQuery_Lexer'/>
+                                                <NamespaceName start='29798' end='29819' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='29798' end='29819' name='TextSearchQuery_Lexer'/>
+                                                </NamespaceName>
                                             </ClassName>
                                             <Parameters>
                                                 <Variable start='29820' end='29832' isDollared='true'>
@@ -19175,7 +19373,9 @@
                                 <ExpressionStatement start='29941' end='29969'>
                                     <FunctionInvocation start='29941' end='29968'>
                                         <FucntionName start='29941' end='29947'>
-                                            <Identifier start='29941' end='29947' name='assert'/>
+                                            <NamespaceName start='29941' end='29947' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='29941' end='29947' name='assert'/>
+                                            </NamespaceName>
                                         </FucntionName>
                                         <Parameters>
                                             <MethodInvocation start='29948' end='29967'>
@@ -19555,7 +19755,9 @@
                                                         </Variable>
                                                         <ClassInstanceCreation start='31103' end='31153'>
                                                             <ClassName start='31107' end='31131'>
-                                                                <Identifier start='31107' end='31131' name='TextSearchQuery_node_and'/>
+                                                                <NamespaceName start='31107' end='31131' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='31107' end='31131' name='TextSearchQuery_node_and'/>
+                                                                </NamespaceName>
                                                             </ClassName>
                                                             <Parameters>
                                                                 <ArrayCreation start='31132' end='31152'>
@@ -19588,7 +19790,9 @@
                                                     <ExpressionStatement start='31190' end='31210'>
                                                         <FunctionInvocation start='31190' end='31209'>
                                                             <FucntionName start='31190' end='31196'>
-                                                                <Identifier start='31190' end='31196' name='assert'/>
+                                                                <NamespaceName start='31190' end='31196' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='31190' end='31196' name='assert'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <InfixExpression start='31197' end='31208' operator='IS_EQUAL'>
@@ -19607,7 +19811,9 @@
                                                             </Variable>
                                                             <ClassInstanceCreation start='31235' end='31284'>
                                                                 <ClassName start='31239' end='31262'>
-                                                                    <Identifier start='31239' end='31262' name='TextSearchQuery_node_or'/>
+                                                                    <NamespaceName start='31239' end='31262' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='31239' end='31262' name='TextSearchQuery_node_or'/>
+                                                                    </NamespaceName>
                                                                 </ClassName>
                                                                 <Parameters>
                                                                     <ArrayCreation start='31263' end='31283'>
@@ -20044,7 +20250,9 @@
                                                     </Variable>
                                                     <FunctionInvocation start='32198' end='32223'>
                                                         <FucntionName start='32198' end='32206'>
-                                                            <Identifier start='32198' end='32206' name='constant'/>
+                                                            <NamespaceName start='32198' end='32206' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='32198' end='32206' name='constant'/>
+                                                            </NamespaceName>
                                                         </FucntionName>
                                                         <Parameters>
                                                             <InfixExpression start='32207' end='32222' operator='CONCAT'>
@@ -20114,7 +20322,9 @@
                                                                     <Scalar start='32332' end='32355' type='STRING' value='"TextSearchQuery_node_"'/>
                                                                     <FunctionInvocation start='32356' end='32372'>
                                                                         <FucntionName start='32356' end='32366'>
-                                                                            <Identifier start='32356' end='32366' name='strtolower'/>
+                                                                            <NamespaceName start='32356' end='32366' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='32356' end='32366' name='strtolower'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <Variable start='32367' end='32371' isDollared='true'>
@@ -20376,7 +20586,9 @@
                                             <Then>
                                                 <FunctionInvocation start='33150' end='33164'>
                                                     <FucntionName start='33150' end='33155'>
-                                                        <Identifier start='33150' end='33155' name='ltrim'/>
+                                                        <NamespaceName start='33150' end='33155' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='33150' end='33155' name='ltrim'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <Variable start='33156' end='33163' isDollared='true'>
@@ -20388,12 +20600,16 @@
                                             <Else>
                                                 <FunctionInvocation start='33167' end='33193'>
                                                     <FucntionName start='33167' end='33177'>
-                                                        <Identifier start='33167' end='33177' name='strtolower'/>
+                                                        <NamespaceName start='33167' end='33177' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='33167' end='33177' name='strtolower'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <FunctionInvocation start='33178' end='33192'>
                                                             <FucntionName start='33178' end='33183'>
-                                                                <Identifier start='33178' end='33183' name='ltrim'/>
+                                                                <NamespaceName start='33178' end='33183' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='33178' end='33183' name='ltrim'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <Variable start='33184' end='33191' isDollared='true'>
@@ -20427,7 +20643,9 @@
                                             <Condition>
                                                 <FunctionInvocation start='33242' end='33283'>
                                                     <FucntionName start='33242' end='33252'>
-                                                        <Identifier start='33242' end='33252' name='preg_match'/>
+                                                        <NamespaceName start='33242' end='33252' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='33242' end='33252' name='preg_match'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <Scalar start='33253' end='33272' type='STRING' value='&apos;/^(and|or)\b\s*/i&apos;'/>
@@ -20449,7 +20667,9 @@
                                                             </Variable>
                                                             <FunctionInvocation start='33310' end='33327'>
                                                                 <FucntionName start='33310' end='33320'>
-                                                                    <Identifier start='33310' end='33320' name='strtolower'/>
+                                                                    <NamespaceName start='33310' end='33320' isCurrent='false' isGlobal='false'>
+                                                                        <Identifier start='33310' end='33320' name='strtolower'/>
+                                                                    </NamespaceName>
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <ArrayAccess start='33321' end='33326' type='VARIABLE_ARRAY' isDollared='false'>
@@ -20481,7 +20701,9 @@
                                                     <Condition>
                                                         <FunctionInvocation start='33402' end='33442'>
                                                             <FucntionName start='33402' end='33412'>
-                                                                <Identifier start='33402' end='33412' name='preg_match'/>
+                                                                <NamespaceName start='33402' end='33412' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='33402' end='33412' name='preg_match'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <Scalar start='33413' end='33431' type='STRING' value='&apos;/^(-|not\b)\s*/i&apos;'/>
@@ -20503,7 +20725,9 @@
                                                                     </Variable>
                                                                     <FunctionInvocation start='33469' end='33486'>
                                                                         <FucntionName start='33469' end='33479'>
-                                                                            <Identifier start='33469' end='33479' name='strtolower'/>
+                                                                            <NamespaceName start='33469' end='33479' isCurrent='false' isGlobal='false'>
+                                                                                <Identifier start='33469' end='33479' name='strtolower'/>
+                                                                            </NamespaceName>
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <ArrayAccess start='33480' end='33485' type='VARIABLE_ARRAY' isDollared='false'>
@@ -20535,7 +20759,9 @@
                                                             <Condition>
                                                                 <FunctionInvocation start='33559' end='33595'>
                                                                     <FucntionName start='33559' end='33569'>
-                                                                        <Identifier start='33559' end='33569' name='preg_match'/>
+                                                                        <NamespaceName start='33559' end='33569' isCurrent='false' isGlobal='false'>
+                                                                            <Identifier start='33559' end='33569' name='preg_match'/>
+                                                                        </NamespaceName>
                                                                     </FucntionName>
                                                                     <Parameters>
                                                                         <Scalar start='33570' end='33584' type='STRING' value='&apos;/^([()])\s*/&apos;'/>
@@ -20619,7 +20845,9 @@
                                                                             </InfixExpression>
                                                                             <FunctionInvocation start='33853' end='33885'>
                                                                                 <FucntionName start='33853' end='33863'>
-                                                                                    <Identifier start='33853' end='33863' name='preg_match'/>
+                                                                                    <NamespaceName start='33853' end='33863' isCurrent='false' isGlobal='false'>
+                                                                                        <Identifier start='33853' end='33863' name='preg_match'/>
+                                                                                    </NamespaceName>
                                                                                 </FucntionName>
                                                                                 <Parameters>
                                                                                     <Scalar start='33864' end='33874' type='STRING' value='&apos;/^\*\s*/&apos;'/>
@@ -20667,7 +20895,9 @@
                                                                                     </InfixExpression>
                                                                                     <FunctionInvocation start='34063' end='34097'>
                                                                                         <FucntionName start='34063' end='34073'>
-                                                                                            <Identifier start='34063' end='34073' name='preg_match'/>
+                                                                                            <NamespaceName start='34063' end='34073' isCurrent='false' isGlobal='false'>
+                                                                                                <Identifier start='34063' end='34073' name='preg_match'/>
+                                                                                            </NamespaceName>
                                                                                         </FucntionName>
                                                                                         <Parameters>
                                                                                             <Scalar start='34074' end='34086' type='STRING' value='&apos;/^\.\*\s*/&apos;'/>
@@ -20715,7 +20945,9 @@
                                                                                             </InfixExpression>
                                                                                             <FunctionInvocation start='34274' end='34305'>
                                                                                                 <FucntionName start='34274' end='34284'>
-                                                                                                    <Identifier start='34274' end='34284' name='preg_match'/>
+                                                                                                    <NamespaceName start='34274' end='34284' isCurrent='false' isGlobal='false'>
+                                                                                                        <Identifier start='34274' end='34284' name='preg_match'/>
+                                                                                                    </NamespaceName>
                                                                                                 </FucntionName>
                                                                                                 <Parameters>
                                                                                                     <Scalar start='34285' end='34294' type='STRING' value='&apos;/^%\s*/&apos;'/>
@@ -20769,7 +21001,9 @@
                                                                                                     </InfixExpression>
                                                                                                     <FunctionInvocation start='34523' end='34571'>
                                                                                                         <FucntionName start='34523' end='34533'>
-                                                                                                            <Identifier start='34523' end='34533' name='preg_match'/>
+                                                                                                            <NamespaceName start='34523' end='34533' isCurrent='false' isGlobal='false'>
+                                                                                                                <Identifier start='34523' end='34533' name='preg_match'/>
+                                                                                                            </NamespaceName>
                                                                                                         </FucntionName>
                                                                                                         <Parameters>
                                                                                                             <Scalar start='34534' end='34560' type='STRING' value='&apos;/^\^([^-()][^()\s]*)\s*/&apos;'/>
@@ -20832,7 +21066,9 @@
                                                                                                             </InfixExpression>
                                                                                                             <FunctionInvocation start='34786' end='34834'>
                                                                                                                 <FucntionName start='34786' end='34796'>
-                                                                                                                    <Identifier start='34786' end='34796' name='preg_match'/>
+                                                                                                                    <NamespaceName start='34786' end='34796' isCurrent='false' isGlobal='false'>
+                                                                                                                        <Identifier start='34786' end='34796' name='preg_match'/>
+                                                                                                                    </NamespaceName>
                                                                                                                 </FucntionName>
                                                                                                                 <Parameters>
                                                                                                                     <Scalar start='34797' end='34823' type='STRING' value='&apos;/^([^-()][^()\s]*)\*\s*/&apos;'/>
@@ -20895,7 +21131,9 @@
                                                                                                                     </InfixExpression>
                                                                                                                     <FunctionInvocation start='35049' end='35097'>
                                                                                                                         <FucntionName start='35049' end='35059'>
-                                                                                                                            <Identifier start='35049' end='35059' name='preg_match'/>
+                                                                                                                            <NamespaceName start='35049' end='35059' isCurrent='false' isGlobal='false'>
+                                                                                                                                <Identifier start='35049' end='35059' name='preg_match'/>
+                                                                                                                            </NamespaceName>
                                                                                                                         </FucntionName>
                                                                                                                         <Parameters>
                                                                                                                             <Scalar start='35060' end='35086' type='STRING' value='&apos;/^\*([^-()][^()\s]*)\s*/&apos;'/>
@@ -20958,7 +21196,9 @@
                                                                                                                             </InfixExpression>
                                                                                                                             <FunctionInvocation start='35310' end='35358'>
                                                                                                                                 <FucntionName start='35310' end='35320'>
-                                                                                                                                    <Identifier start='35310' end='35320' name='preg_match'/>
+                                                                                                                                    <NamespaceName start='35310' end='35320' isCurrent='false' isGlobal='false'>
+                                                                                                                                        <Identifier start='35310' end='35320' name='preg_match'/>
+                                                                                                                                    </NamespaceName>
                                                                                                                                 </FucntionName>
                                                                                                                                 <Parameters>
                                                                                                                                     <Scalar start='35321' end='35347' type='STRING' value='&apos;/^([^-()][^()\s]*)\$\s*/&apos;'/>
@@ -21021,7 +21261,9 @@
                                                                                                                                     </InfixExpression>
                                                                                                                                     <FunctionInvocation start='35572' end='35622'>
                                                                                                                                         <FucntionName start='35572' end='35582'>
-                                                                                                                                            <Identifier start='35572' end='35582' name='preg_match'/>
+                                                                                                                                            <NamespaceName start='35572' end='35582' isCurrent='false' isGlobal='false'>
+                                                                                                                                                <Identifier start='35572' end='35582' name='preg_match'/>
+                                                                                                                                            </NamespaceName>
                                                                                                                                         </FucntionName>
                                                                                                                                         <Parameters>
                                                                                                                                             <Scalar start='35583' end='35611' type='STRING' value='&apos;/^\^([^-()][^()\s]*)\$\s*/&apos;'/>
@@ -21069,7 +21311,9 @@
                                                                                                                                     <Condition>
                                                                                                                                         <FunctionInvocation start='35766' end='35824'>
                                                                                                                                             <FucntionName start='35766' end='35776'>
-                                                                                                                                                <Identifier start='35766' end='35776' name='preg_match'/>
+                                                                                                                                                <NamespaceName start='35766' end='35776' isCurrent='false' isGlobal='false'>
+                                                                                                                                                    <Identifier start='35766' end='35776' name='preg_match'/>
+                                                                                                                                                </NamespaceName>
                                                                                                                                             </FucntionName>
                                                                                                                                             <Parameters>
                                                                                                                                                 <Scalar start='35777' end='35813' type='STRING' value='&apos;/^ " ( (?: [^"]+ | "" )* ) " \s*/x&apos;'/>
@@ -21091,7 +21335,9 @@
                                                                                                                                                     </Variable>
                                                                                                                                                     <FunctionInvocation start='35851' end='35880'>
                                                                                                                                                         <FucntionName start='35851' end='35862'>
-                                                                                                                                                            <Identifier start='35851' end='35862' name='str_replace'/>
+                                                                                                                                                            <NamespaceName start='35851' end='35862' isCurrent='false' isGlobal='false'>
+                                                                                                                                                                <Identifier start='35851' end='35862' name='str_replace'/>
+                                                                                                                                                            </NamespaceName>
                                                                                                                                                         </FucntionName>
                                                                                                                                                         <Parameters>
                                                                                                                                                             <Scalar start='35863' end='35867' type='STRING' value='&apos;""&apos;'/>
@@ -21125,7 +21371,9 @@
                                                                                                                                             <Condition>
                                                                                                                                                 <FunctionInvocation start='35978' end='36032'>
                                                                                                                                                     <FucntionName start='35978' end='35988'>
-                                                                                                                                                        <Identifier start='35978' end='35988' name='preg_match'/>
+                                                                                                                                                        <NamespaceName start='35978' end='35988' isCurrent='false' isGlobal='false'>
+                                                                                                                                                            <Identifier start='35978' end='35988' name='preg_match'/>
+                                                                                                                                                        </NamespaceName>
                                                                                                                                                     </FucntionName>
                                                                                                                                                     <Parameters>
                                                                                                                                                         <Scalar start='35989' end='36021' type='STRING' value='"/^ &apos; ( (?:[^&apos;]+|&apos;&apos;)* ) &apos; \s*/x"'/>
@@ -21147,7 +21395,9 @@
                                                                                                                                                             </Variable>
                                                                                                                                                             <FunctionInvocation start='36059' end='36088'>
                                                                                                                                                                 <FucntionName start='36059' end='36070'>
-                                                                                                                                                                    <Identifier start='36059' end='36070' name='str_replace'/>
+                                                                                                                                                                    <NamespaceName start='36059' end='36070' isCurrent='false' isGlobal='false'>
+                                                                                                                                                                        <Identifier start='36059' end='36070' name='str_replace'/>
+                                                                                                                                                                    </NamespaceName>
                                                                                                                                                                 </FucntionName>
                                                                                                                                                                 <Parameters>
                                                                                                                                                                     <Scalar start='36071' end='36075' type='STRING' value='"&apos;&apos;"'/>
@@ -21181,7 +21431,9 @@
                                                                                                                                                     <Condition>
                                                                                                                                                         <FunctionInvocation start='36182' end='36228'>
                                                                                                                                                             <FucntionName start='36182' end='36192'>
-                                                                                                                                                                <Identifier start='36182' end='36192' name='preg_match'/>
+                                                                                                                                                                <NamespaceName start='36182' end='36192' isCurrent='false' isGlobal='false'>
+                                                                                                                                                                    <Identifier start='36182' end='36192' name='preg_match'/>
+                                                                                                                                                                </NamespaceName>
                                                                                                                                                             </FucntionName>
                                                                                                                                                             <Parameters>
                                                                                                                                                                 <Scalar start='36193' end='36217' type='STRING' value='&apos;/^([^-()][^()\s]*)\s*/&apos;'/>
@@ -21228,7 +21480,9 @@
                                                                                                                                                             <ExpressionStatement start='36349' end='36369'>
                                                                                                                                                                 <FunctionInvocation start='36349' end='36368'>
                                                                                                                                                                     <FucntionName start='36349' end='36355'>
-                                                                                                                                                                        <Identifier start='36349' end='36355' name='assert'/>
+                                                                                                                                                                        <NamespaceName start='36349' end='36355' isCurrent='false' isGlobal='false'>
+                                                                                                                                                                            <Identifier start='36349' end='36355' name='assert'/>
+                                                                                                                                                                        </NamespaceName>
                                                                                                                                                                     </FucntionName>
                                                                                                                                                                     <Parameters>
                                                                                                                                                                         <FunctionInvocation start='36356' end='36367'>
@@ -21282,7 +21536,9 @@
                                                 </Variable>
                                                 <FunctionInvocation start='36426' end='36453'>
                                                     <FucntionName start='36426' end='36432'>
-                                                        <Identifier start='36426' end='36432' name='substr'/>
+                                                        <NamespaceName start='36426' end='36432' isCurrent='false' isGlobal='false'>
+                                                            <Identifier start='36426' end='36432' name='substr'/>
+                                                        </NamespaceName>
                                                     </FucntionName>
                                                     <Parameters>
                                                         <Variable start='36433' end='36437' isDollared='true'>
@@ -21290,7 +21546,9 @@
                                                         </Variable>
                                                         <FunctionInvocation start='36439' end='36452'>
                                                             <FucntionName start='36439' end='36445'>
-                                                                <Identifier start='36439' end='36445' name='strlen'/>
+                                                                <NamespaceName start='36439' end='36445' isCurrent='false' isGlobal='false'>
+                                                                    <Identifier start='36439' end='36445' name='strlen'/>
+                                                                </NamespaceName>
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='36446' end='36451' type='VARIABLE_ARRAY' isDollared='false'>
@@ -21377,7 +21635,9 @@
                                             </FieldAccess>
                                             <FunctionInvocation start='37026' end='37046'>
                                                 <FucntionName start='37026' end='37031'>
-                                                    <Identifier start='37026' end='37031' name='count'/>
+                                                    <NamespaceName start='37026' end='37031' isCurrent='false' isGlobal='false'>
+                                                        <Identifier start='37026' end='37031' name='count'/>
+                                                    </NamespaceName>
                                                 </FucntionName>
                                                 <Parameters>
                                                     <FieldAccess start='37032' end='37045'>

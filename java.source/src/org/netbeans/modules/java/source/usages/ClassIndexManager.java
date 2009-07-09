@@ -65,6 +65,7 @@ public final class ClassIndexManager {
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final ReentrantReadWriteLock lock;
+    private final InternalLock internalLock;
     private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
     private boolean invalid;
     private Set<URL> added;
@@ -75,6 +76,7 @@ public final class ClassIndexManager {
     
     private ClassIndexManager() {
         this.lock = new ReentrantReadWriteLock (false);
+        this.internalLock = new InternalLock();
     }
     
     public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
@@ -86,19 +88,31 @@ public final class ClassIndexManager {
         assert listener != null;
         this.listeners.remove(listener);
     }
-        
+
+    @Deprecated
     public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
-        this.lock.writeLock().lock();
-        try {            
+        //Ugly, in scala much more cleaner.
+        return prepareWriteLock(
+                new ExceptionAction<T>() {
+                    public T run() throws IOException, InterruptedException {
+                        return takeWriteLock(r);
+                    }
+                });
+    }
+
+    public <T> T prepareWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
+        synchronized (internalLock) {
             depth++;
+            if (depth == 1) {
+                this.added = new HashSet<URL>();
+                this.removed = new HashSet<URL>();
+            }
+        }
+        try {
             try {
-                if (depth == 1) {
-                    this.added = new HashSet<URL>();
-                    this.removed = new HashSet<URL>();
-                }
-                try {
-                    return r.run();
-                } finally {
+                return r.run();
+            } finally {
+                synchronized (internalLock) {
                     if (depth == 1) {
                         if (!removed.isEmpty()) {
                             fire (removed, OP_REMOVE);
@@ -107,12 +121,21 @@ public final class ClassIndexManager {
                         if (!added.isEmpty()) {
                             fire (added, OP_ADD);
                             added.clear();
-                        }                
+                        }
                     }
                 }
-            } finally {
+            }
+        } finally {
+            synchronized (internalLock) {
                 depth--;
-            }                        
+            }
+        }
+    }
+
+    public <T> T takeWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
+        this.lock.writeLock().lock();
+        try {
+            return r.run();
         } finally {
             this.lock.writeLock().unlock();
         }
@@ -131,56 +154,64 @@ public final class ClassIndexManager {
         return this.lock.isWriteLockedByCurrentThread();
     }
     
-    public synchronized ClassIndexImpl getUsagesQuery (final URL root) {
+    public ClassIndexImpl getUsagesQuery (final URL root) {
+        synchronized (internalLock) {
+            assert root != null;
+            if (invalid) {
+                return null;
+            }
+            return this.instances.get (root);
+        }
+    }
+    
+    public ClassIndexImpl createUsagesQuery (final URL root, final boolean source) throws IOException {
         assert root != null;
-        if (invalid) {
-            return null;
-        }        
-        return this.instances.get (root);
-    }
-    
-    public synchronized ClassIndexImpl createUsagesQuery (final URL root, final boolean source) throws IOException {
-        assert root != null;
-        if (invalid) {
-            return null;
-        }        
-        ClassIndexImpl qi = this.instances.get (root);
-        if (qi == null) {  
-            qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
-            this.instances.put(root,qi);
-            if (added != null) {
-                added.add (root);
+        synchronized (internalLock) {
+            if (invalid) {
+                return null;
             }
-        }
-        else if (source && !qi.isSource()){
-            //Wrongly set up freeform project, which is common for it, prefer source
-            qi.close ();
-            qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
-            this.instances.put(root,qi);
-            if (added != null) {
-                added.add (root);
+            ClassIndexImpl qi = this.instances.get (root);
+            if (qi == null) {
+                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
+                this.instances.put(root,qi);
+                if (added != null) {
+                    added.add (root);
+                }
             }
-        }
-        return qi;
-    }
-    
-    synchronized void removeRoot (final URL root) throws IOException {
-        ClassIndexImpl ci = this.instances.remove(root);                
-        if (ci != null) {                
-            ci.close();
-            if (removed != null) {
-                removed.add (root);
+            else if (source && !qi.isSource()){
+                //Wrongly set up freeform project, which is common for it, prefer source
+                qi.close ();
+                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);//XXX
+                this.instances.put(root,qi);
+                if (added != null) {
+                    added.add (root);
+                }
             }
+            return qi;
         }
     }
     
-    public synchronized  void close () {
-        invalid = true;
-        for (ClassIndexImpl ci : instances.values()) {
-            try {
+    void removeRoot (final URL root) throws IOException {
+        synchronized (internalLock) {
+            ClassIndexImpl ci = this.instances.remove(root);
+            if (ci != null) {
                 ci.close();
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                if (removed != null) {
+                    removed.add (root);
+                }
+            }
+        }
+    }
+    
+    public void close () {
+        synchronized (internalLock) {
+            invalid = true;
+            for (ClassIndexImpl ci : instances.values()) {
+                try {
+                    ci.close();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
             }
         }
     }
@@ -212,5 +243,10 @@ public final class ClassIndexManager {
             instance = new ClassIndexManager ();            
         }
         return instance;
-    }        
+    }
+
+    private static final class InternalLock {
+        
+        private InternalLock(){}
+    }
 }

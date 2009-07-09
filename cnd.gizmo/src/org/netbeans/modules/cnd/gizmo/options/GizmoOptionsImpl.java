@@ -233,6 +233,10 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return toolConfigurations.get(toolName);
     }
 
+    public boolean isConfigurationModified(String toolName){
+        return toolConfigurations.get(toolName) != null && !toolConfigurations.get(toolName).getValue();
+    }
+
     public String getDescriptionByName(String toolName) {
         return toolDescriptions.get(toolName);
     }
@@ -358,8 +362,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
     @Override
     public GizmoOptionsImpl clone(Configuration c) {
+        init(c);
         GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
-
+        clone.init(c);
         clone.setProfileOnRun(getProfileOnRun().clone());
         Set<String> keys = toolConfigurations.keySet();
         for (String key : keys) {

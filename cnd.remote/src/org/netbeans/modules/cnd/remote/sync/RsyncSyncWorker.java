@@ -40,7 +40,9 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -61,5 +63,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     @Override
     public boolean cancel() {
         return false;
+    }
+
+    @Override
+    protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -70,9 +70,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         DeclarationsContainer {
 
     private final CsmDeclaration.Kind kind;
-    private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
-    private final List<CsmUID<CsmFriend>> friends = new ArrayList<CsmUID<CsmFriend>>();
-    private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
+    private final List<CsmUID<CsmMember>> members;
+    private final List<CsmUID<CsmFriend>> friends;
+    private final ArrayList<CsmInheritance> inheritances = new ArrayList<CsmInheritance>(0);
     private TemplateDescriptor templateDescriptor = null;
     private /*final*/ int leftBracketPos;
 
@@ -667,6 +667,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     protected ClassImpl(String name, AST ast, CsmFile file) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
         super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
+        members = new ArrayList<CsmUID<CsmMember>>();
+        friends = new ArrayList<CsmUID<CsmFriend>>(0);
         kind = findKind(ast);
     }
 
@@ -894,13 +896,26 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.leftBracketPos = input.readInt();
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.readUIDCollection(this.members, input);
-        factory.readUIDCollection(this.friends, input);
+        int collSize = input.readInt();
+        if (collSize <= 0) {
+            members = new ArrayList<CsmUID<CsmMember>>(0);
+        } else {
+            members = new ArrayList<CsmUID<CsmMember>>(collSize);
+        }
+        factory.readUIDCollection(this.members, input, collSize);
+        collSize = input.readInt();
+        if (collSize <= 0) {
+            friends = new ArrayList<CsmUID<CsmFriend>>(0);
+        } else {
+            friends = new ArrayList<CsmUID<CsmFriend>>(collSize);
+        }
+        factory.readUIDCollection(this.friends, input, collSize);
         Collection<CsmInheritance> baseClasses = new ArrayList<CsmInheritance>();
         PersistentUtils.readInheritances(baseClasses, input);
         synchronized (this.inheritances) {
             this.inheritances.clear();
             this.inheritances.addAll(baseClasses);
+            inheritances.trimToSize();
         }
     }
     private static final int CLASS_KIND = 1;
