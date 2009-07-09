@@ -125,6 +125,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
