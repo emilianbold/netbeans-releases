@@ -39,6 +39,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
@@ -162,27 +163,27 @@ final class RubyMethodTypeInferencer {
         if (receiver == null) {
             return RubyType.createUnknown();
         }
-        RubyType receiverType = getReceiverType(receiver);
-        if (returnsReceiver(name)) {
-            return receiverType;
-        }
+            RubyType receiverType = getReceiverType(receiver);
+            if (returnsReceiver(name)) {
+                return receiverType;
+            }
 
-        if (FindersHelper.isFinderMethod(name)) {
-            // -Possibly- ActiveRecord finders, very important
-            if (receiverType.isSingleton() && getIndex() != null) {
-                IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
-                if (superClass != null && RubyIndex.ACTIVE_RECORD_BASE.equals(superClass.getFqn())) { // NOI18N
-                    // Looks like a find method on active record The big
-                    // question is whether this is going to return the type
-                    // itself (receivedName) or an array of it; that depends on
-                    // the args (for find(:all) it's asn array, find(:first)
-                    // it's an item, and for find(1,2,3) it's an array etc.
-                    // There are other find signatures which define other
-                    // semantics
-                    return FindersHelper.pickFinderType((CallNode) callNodeToInfer, name, receiverType);
+            if (FindersHelper.isFinderMethod(name)) {
+                // -Possibly- ActiveRecord finders, very important
+                if (receiverType.isSingleton() && getIndex() != null) {
+                    IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
+                    if (superClass != null && RubyIndex.ACTIVE_RECORD_BASE.equals(superClass.getFqn())) { // NOI18N
+                        // Looks like a find method on active record The big
+                        // question is whether this is going to return the type
+                        // itself (receivedName) or an array of it; that depends on
+                        // the args (for find(:all) it's asn array, find(:first)
+                        // it's an item, and for find(1,2,3) it's an array etc.
+                        // There are other find signatures which define other
+                        // semantics
+                        return FindersHelper.pickFinderType((CallNode) callNodeToInfer, name, receiverType);
+                    }
                 }
             }
-        }
 
         // this can be very time consuming, return if TI is not enabled
         if (!TypeInferenceSettings.getDefault().getMethodTypeInference()) {
