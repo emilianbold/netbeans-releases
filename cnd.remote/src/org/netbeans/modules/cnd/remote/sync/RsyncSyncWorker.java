@@ -67,6 +67,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

@@ -94,7 +94,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 throw new IOException("Can not create directory " + remoteDir); //NOI18N
             }
 
-            File zipFile = File.createTempFile(localDir.getName(), ".zip", getTemp());
+            File zipFile = File.createTempFile(localDir.getName(), ".zip", getTemp()); // NOI18N
             {
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("Zipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();
@@ -106,11 +106,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             String remoteFile = remoteDir + '/' + zipFile.getName(); //NOI18N
             {
                 long uploaStart = System.currentTimeMillis();
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: uploading %s to %s:%s ...\n", zipFile, executionEnvironment, remoteFile); }
+                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: uploading %s to %s:%s ...\n", zipFile, executionEnvironment, remoteFile); } // NOI18N
                 Future<Integer> upload = CommonTasksSupport.uploadFile(zipFile.getAbsolutePath(), executionEnvironment, remoteFile, 0777, err);
                 int rc = upload.get();
                 float uploadTime = ((float) (System.currentTimeMillis() - uploaStart))/1000f;
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: uploading %s to %s:%s finished in %f s with rc=%d\n", zipFile, executionEnvironment, remoteFile, uploadTime, rc); }
+                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: uploading %s to %s:%s finished in %f s with rc=%d\n", zipFile, executionEnvironment, remoteFile, uploadTime, rc); } // NOI18N
                 if (rc != 0) {
                     throw new IOException("uploading " + zipFile + " to " + executionEnvironment + ':' + remoteFile + // NOI18N
                             " finished with error code " + rc); // NOI18N
@@ -118,13 +118,13 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             }
 
             {
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: unzipping %s:%s ...\n", executionEnvironment, remoteFile); }
+                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: unzipping %s:%s ...\n", executionEnvironment, remoteFile); } // NOI18N
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
                 //pb.setCommandLine("unzip " + remoteFile + " > /dev/null");
-                pb.setExecutable("unzip");
-                pb.setArguments("-o", remoteFile);
+                pb.setExecutable("unzip"); // NOI18N
+                pb.setArguments("-o", remoteFile); // NOI18N
                 pb.setWorkingDirectory(remoteDir);
                 Process proc = pb.call();
 
@@ -145,7 +145,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 //RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, cmd);
                 //int rc = rcs.run();
                 float unzipTime = ((float) (System.currentTimeMillis() - unzipStart))/1000f;
-                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: unzipping %s:%s finished in %f s; rc=%d\n", executionEnvironment , remoteFile, unzipTime, rc); }
+                if (logger.isLoggable(Level.FINEST)) { System.out.printf("ZSCP: unzipping %s:%s finished in %f s; rc=%d\n", executionEnvironment , remoteFile, unzipTime, rc); } // NOI18N
                 if (rc != 0) {
                     throw new IOException("unzipping " + remoteFile + " at " + executionEnvironment + " finished with error code " + rc); // NOI18N
                 }
