@@ -81,7 +81,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         return file == null ? null : VersioningManager.getInstance().getOwner(file);
     }
     
-    public Image annotateIcon(Image icon, int iconType, Set files) {
+    public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
         long ft = System.currentTimeMillis();
         VersioningManager.LOG.log(Level.FINE, "annotateIcon");
         VCSAnnotator an = null;
@@ -109,7 +109,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
     }
 
-    public String annotateNameHtml(String name, Set files) {
+    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
         long ft = System.currentTimeMillis();
         VersioningManager.LOG.log(Level.FINE, "annotateNameHtml");
         VCSAnnotator an = null;
