@@ -199,21 +199,15 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public JPanel createComponent(SvnHookContext context) {
-        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        File referenceFile;
         if(context.getFiles().length == 0) {
+            referenceFile = null;
             LOG.warning("creating svn hook component for zero files");          // NOI18N
-            Repository repoToSelect
-                    = BugtrackingOwnerSupport.getInstance()
-                      .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
-            panel = new HookPanel(repos, repoToSelect);
         } else {
-            File file = context.getFiles()[0];
-            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
-            if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
-            }
-            panel = new HookPanel(repos, repoToSelect);
+            referenceFile = context.getFiles()[0];
         }
+        panel = new HookPanel();
+        RepositorySelector.setup(panel, referenceFile);
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {

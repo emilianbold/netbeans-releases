@@ -233,21 +233,15 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public JPanel createComponent(HgHookContext context) {
-        Repository[] repos = BugtrackingUtil.getKnownRepositories();
+        File referenceFile;
         if(context.getFiles().length == 0) {
+            referenceFile = null;
             LOG.warning("creating hg hook component for zero files");           // NOI18N
-            Repository repoToSelect
-                    = BugtrackingOwnerSupport.getInstance()
-                      .getRepository(BugtrackingOwnerSupport.ContextType.ALL_PROJECTS);
-            panel = new HookPanel(repos, repoToSelect);
         } else {
-            File file = context.getFiles()[0];
-            Repository repoToSelect = BugtrackingOwnerSupport.getInstance().getRepository(file, false);
-            if(repoToSelect == null) {
-                LOG.log(Level.FINE, " could not find issue tracker for " + file);  // NOI18N
-            }
-            panel = new HookPanel(repos, repoToSelect);
+            referenceFile = context.getFiles()[0];
         }
+        panel = new HookPanel();
+        RepositorySelector.setup(panel, referenceFile);
         panel.changeRevisionFormatButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onShowRevisionFormat();
