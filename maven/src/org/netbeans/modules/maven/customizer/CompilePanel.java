@@ -58,7 +58,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -170,8 +169,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     }
                 }
                 if (val == null) {
-                    MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                    val = props.get(Constants.HINT_COMPILE_ON_SAVE, true, false);
+                    handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
                 }
                 if (val != null) {
                     return valueToLabel(val);
@@ -197,8 +195,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     }
                 }
 
-                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                boolean hasConfig = props.get(Constants.HINT_COMPILE_ON_SAVE, true, false) != null;
+                boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true) != null;
 
                 org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 if (prof != null) {
@@ -207,7 +204,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                         profprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value);
                         if (hasConfig) {
                             // in this case clean up the auxiliary config
-                            props.put(Constants.HINT_COMPILE_ON_SAVE, null, true);
+                            handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, null, true);
                         }
                         handle.markAsModified(handle.getProfileModel());
                         return;
@@ -224,11 +221,11 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_COMPILE_ON_SAVE, null, true);
+                        handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, null, true);
                     }
                     return;
                 }
-                props.put(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value, true);
+                handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value, true);
             }
         };
         debugUpdater = new CheckBoxUpdater(cbDebug) {
@@ -303,8 +300,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     }
                 }
                 if (val == null) {
-                    MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                    val = props.get(Constants.HINT_JDK_PLATFORM, true, false);
+                    val = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true);
                 }
                 if (val != null) {
                     return BootClassPathImpl.getActivePlatform(val);
@@ -326,8 +322,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     platformId = null;
                 }
 
-                MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
-                boolean hasConfig = props.get(Constants.HINT_JDK_PLATFORM, true, false) != null;
+                boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
                 org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
@@ -337,7 +332,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                         profprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId);
                         if (hasConfig) {
                             // in this case clean up the auxiliary config
-                            props.put(Constants.HINT_JDK_PLATFORM, null, true);
+                            handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, null, true);
                         }
                         handle.markAsModified(handle.getProfileModel());
                         return;
@@ -354,11 +349,11 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_JDK_PLATFORM, null, true);
+                        handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, null, true);
                     }
                     return;
                 }
-                props.put(Constants.HINT_JDK_PLATFORM, platformId, true);
+                handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, platformId, true);
             }
         };
 
