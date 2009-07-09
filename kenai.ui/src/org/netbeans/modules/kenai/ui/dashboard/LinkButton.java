@@ -108,14 +108,16 @@ public class LinkButton extends JButton {
     public LinkButton( String text, Action a ) {
         super( text );
 
-        Icon icon = (Icon) a.getValue(Action.SMALL_ICON);
-        if( null != icon ) {
-            setIcon(icon);
-            setPressedIcon(icon);
+        if( null != a ) {
+            Icon icon = (Icon) a.getValue(Action.SMALL_ICON);
+            if( null != icon ) {
+                setIcon(icon);
+                setPressedIcon(icon);
+            }
+            Object tooltip = a.getValue(Action.SHORT_DESCRIPTION);
+            if( null != tooltip )
+                setToolTipText(tooltip.toString());
         }
-        Object tooltip = a.getValue(Action.SHORT_DESCRIPTION);
-        if( null != tooltip )
-            setToolTipText(tooltip.toString());
         init(a);
     }
 

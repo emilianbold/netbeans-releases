@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -682,7 +680,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         private Vector instances;
 
         /**
-         * The index of the selected instance
+         * The index of the selected instance, or -1 if there is no selection
          */
         private int selectedIndex = 0;
 
@@ -738,6 +736,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         public Object getSelectedItem() {
             // if there are no instances return null
             if (instances.size() == 0) {
+                return null;
+            }
+            // #168297
+            if (selectedIndex == -1) {
                 return null;
             }
 

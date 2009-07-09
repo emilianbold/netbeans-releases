@@ -42,7 +42,6 @@ package org.netbeans.modules.php.symfony.commands;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.symfony.SymfonyScript;
-import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 
 /**
  * @author Tomas Mysik
@@ -61,11 +60,7 @@ public class SymfonyCommand extends FrameworkCommand {
 
     @Override
     protected String getHelpInternal() {
-        try {
-            return SymfonyScript.getHelp(SymfonyScript.forPhpModule(phpModule, false), this);
-        } catch (InvalidSymfonyScriptException ex) {
-            return ex.getMessage();
-        }
+        return SymfonyScript.getHelp(phpModule, this);
     }
 
     @Override
