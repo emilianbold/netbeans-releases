@@ -342,7 +342,8 @@ public class CasualDiff {
                 moveFwdToToken(tokenSequence, localPointer, JavaTokenId.STATIC);
                 copyTo(localPointer, tokenSequence.offset());
             } else {
-                //TODO: adding "static"
+                copyTo(localPointer, qualBounds[0]);
+                printer.print("static ");
             }
         }
         localPointer = diffTree(oldT.getQualifiedIdentifier(), newT.getQualifiedIdentifier(), qualBounds);
@@ -2370,7 +2371,8 @@ public class CasualDiff {
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
-                                diffTree(oldT, item.element, poss);
+                                int end = diffTree(oldT, item.element, poss);
+                                copyTo(end, poss[1]);
                                 printer.print(this.printer.toString());
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
@@ -2386,6 +2388,7 @@ public class CasualDiff {
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
+                            //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
                             diffTree(lastdel, item.element, poss);
                             printer.print(this.printer.toString());
                             this.printer = oldPrinter;
