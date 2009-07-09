@@ -159,8 +159,7 @@ public class SymfonyScript extends PhpProgram {
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
-        runService(processBuilder, executionDescriptor, tabTitle, false);
+        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, projectName), false);
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
 
@@ -173,16 +172,7 @@ public class SymfonyScript extends PhpProgram {
         ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, cmdParams);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        StringBuilder tabTitle = new StringBuilder(200);
-        tabTitle.append(getProgram());
-        tabTitle.append(" "); // NOI18N
-        tabTitle.append(CMD_INIT_APP);
-        for (String param : cmdParams) {
-            tabTitle.append(" \""); // NOI18N
-            tabTitle.append(param);
-            tabTitle.append("\""); // NOI18N
-        }
-        runService(processBuilder, executionDescriptor, tabTitle.toString(), true);
+        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_APP, cmdParams), true);
     }
 
     public static String getHelp(PhpModule phpModule, FrameworkCommand command) {
