@@ -302,12 +302,41 @@ public class KenaiTest extends NbTestCase {
         KenaiProject prj = instance.getProject(name);
 
         boolean authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_READ);
-        System.out.println("Read? " + authorized);
+        System.out.println("Forum - Read? " + authorized);
         assertTrue(authorized);
 
         authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_ADMIN);
-        System.out.println("Admin? " + authorized);
+        System.out.println("Forum - Admin? " + authorized);
         assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.ISSUES_READ);
+        System.out.println("Issues - Read? " + authorized);
+        assertTrue(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.ISSUES_WRITE);
+        System.out.println("Issues - Write? " + authorized);
+        assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.WIKI_READ);
+        System.out.println("Wiki - Read? " + authorized);
+        assertTrue(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.WIKI_WRITE);
+        System.out.println("Wiki - Write? " + authorized);
+        assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_CREATE);
+        System.out.println("Project - Create? " + authorized);
+        assertTrue(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_DELETE);
+        System.out.println("Projects - Delete? " + authorized);
+        assertFalse(authorized);
+
+        authorized = instance.isAuthorized(prj, KenaiActivity.SOURCE_WRITE);
+        System.out.println("Source - Write? " + authorized);
+        assertFalse(authorized);
+
     }
 
 //    @Test
@@ -622,6 +651,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));
         _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }
     ;
