@@ -96,9 +96,16 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
-        return new PhpModuleProperties()
-                .setWebRoot(sourceDirectory.getFileObject("web")) // NOI18N
-                .setTests(sourceDirectory.getFileObject("test/unit")); // NOI18N
+        PhpModuleProperties properties = new PhpModuleProperties();
+        FileObject web = sourceDirectory.getFileObject("web"); // NOI18N
+        if (web != null) {
+            properties = properties.setWebRoot(web);
+        }
+        FileObject testUnit = sourceDirectory.getFileObject("test/unit"); // NOI18N
+        if (testUnit != null) {
+            properties = properties.setTests(testUnit);
+        }
+        return properties;
     }
 
     @Override

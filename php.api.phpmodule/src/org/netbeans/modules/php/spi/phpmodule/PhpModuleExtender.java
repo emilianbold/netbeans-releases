@@ -45,6 +45,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Parameters;
 
 /**
  * Provides support for extending a PHP module with a PHP framework, that is,
@@ -103,10 +104,50 @@ public abstract class PhpModuleExtender {
     /**
      * Called to extend the given PHP module with the PHP framework
      * corresponding to this extender. Can fail if {@link #isValid()} is <code>false</code>.
+     * <p>
+     * After extending, {@link PhpFrameworkProvider#isInPhpModule(PhpModule)} is expected to be <code>true</code>.
+     *
      *
      * @param  phpModule the PHP module to be extended; never <code>null</code>
      * @return the set of newly created files in the web module, can be empty but never <code>null</code>
+     * @throws ExtendingException if extending fails
      * @see #isValid()
      */
-    public abstract Set<FileObject> extend(PhpModule phpModule);
+    public abstract Set<FileObject> extend(PhpModule phpModule) throws ExtendingException;
+
+    /**
+     * Exception that is thrown if the {@link PhpModuleExtender#extend(PhpModule) extending operation} fails.
+     * @since 1.2
+     */
+    public static final class ExtendingException extends Exception {
+        private static final long serialVersionUID = 160207942147917846L;
+
+        /**
+         * Constructs a new exception with the specified detail failure message.
+         * @param failureMessage the detail failure message.
+         */
+        public ExtendingException(String failureMessage) {
+            this(failureMessage, null);
+        }
+
+        /**
+         * Constructs a new exception with the specified detail failure message and cause.
+         * @param failureMessage the detail failure message.
+         * @param cause the cause (which is saved for later retrieval by the
+         * {@link #getCause()} method).  (A <tt>null</tt> value is permitted,
+         * and indicates that the cause is nonexistent or unknown.)
+         */
+        public ExtendingException(String failureMessage, Throwable cause) {
+            super(failureMessage, cause);
+            Parameters.notEmpty("failureMessage", failureMessage);
+        }
+
+        /**
+         * Get the localized message why the {@link PhpModuleExtender#extend(PhpModule) extending operation} failed.
+         * @return the localized message why the {@link PhpModuleExtender#extend(PhpModule) extending operation} failed.
+         */
+        public String getFailureMessage() {
+            return getMessage();
+        }
+    }
 }
