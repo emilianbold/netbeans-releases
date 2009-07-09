@@ -6,6 +6,11 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
@@ -15,6 +20,8 @@ import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.model.pom.ReportPlugin;
 import org.netbeans.modules.maven.model.pom.Reporting;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 
 /**
 http://checkstyle.sourceforge.net/config_blocks.html#LeftCurly
@@ -107,6 +114,19 @@ public class CheckstylePanel extends javax.swing.JPanel {
                 handle.setRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, val, true);
             }
         };
+
+        btnLearnMore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnLearnMore.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://maven.apache.org/plugins/maven-checkstyle-plugin"));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+        });
+
     }
 
     @Override
@@ -132,6 +152,7 @@ public class CheckstylePanel extends javax.swing.JPanel {
         lblHint = new javax.swing.JLabel();
         lblMissing = new javax.swing.JLabel();
         btnMissing = new javax.swing.JButton();
+        btnLearnMore = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbEnable, org.openide.util.NbBundle.getMessage(CheckstylePanel.class, "CheckstylePanel.cbEnable.text")); // NOI18N
 
@@ -147,6 +168,11 @@ public class CheckstylePanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnLearnMore, org.openide.util.NbBundle.getMessage(CheckstylePanel.class, "CheckstylePanel.btnLearnMore.text")); // NOI18N
+        btnLearnMore.setBorderPainted(false);
+        btnLearnMore.setContentAreaFilled(false);
+        btnLearnMore.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -154,14 +180,16 @@ public class CheckstylePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE))
                     .add(cbEnable)
                     .add(layout.createSequentialGroup()
                         .add(lblMissing)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnMissing)))
+                        .add(btnMissing))
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(btnLearnMore)
+                            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -171,7 +199,9 @@ public class CheckstylePanel extends javax.swing.JPanel {
                 .add(cbEnable)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 162, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 62, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(btnLearnMore)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblMissing)
                     .add(btnMissing))
@@ -209,6 +239,7 @@ public class CheckstylePanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnLearnMore;
     private javax.swing.JButton btnMissing;
     private javax.swing.JCheckBox cbEnable;
     private javax.swing.JLabel lblHint;
