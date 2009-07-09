@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
@@ -81,8 +82,8 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
 
         // generate apps
-        for (String app : getPanel().getApps()) {
-            symfonyScript.initApp(phpModule, app);
+        for (Pair<String, String[]> app : getPanel().getApps()) {
+            symfonyScript.initApp(phpModule, app.first, app.second);
         }
 
         // prefetch commands
