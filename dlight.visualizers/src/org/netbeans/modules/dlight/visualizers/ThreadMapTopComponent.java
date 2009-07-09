@@ -63,16 +63,16 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
 
     private static ThreadMapTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/dlight/visualizers/resources/threadsWindow.png";
+    static final String ICON_PATH = "org/netbeans/modules/dlight/visualizers/resources/threadsWindow.png"; //NOI18N
 
-    private static final String PREFERRED_ID = "ThreadMapTopComponent";
+    private static final String PREFERRED_ID = "ThreadMapTopComponent"; //NOI18N
     private String currentToolName;
     private JComponent viewComponent;
 
     public ThreadMapTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(ThreadMapTopComponent.class, "CTL_ThreadMapTopComponent"));
-        setToolTipText(NbBundle.getMessage(ThreadMapTopComponent.class, "HINT_ThreadMapTopComponent"));
+        setName(NbBundle.getMessage(ThreadMapTopComponent.class, "CTL_ThreadMapTopComponent")); //NOI18N
+        setToolTipText(NbBundle.getMessage(ThreadMapTopComponent.class, "HINT_ThreadMapTopComponent")); //NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
     }
@@ -118,15 +118,15 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(ThreadMapTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
         if (win instanceof ThreadMapTopComponent) {
             return (ThreadMapTopComponent) win;
         }
         Logger.getLogger(ThreadMapTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); //NOI18N
         return getDefault();
     }
 
@@ -147,7 +147,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0"); //NOI18N
         // TODO store your settings
     }
 
@@ -158,7 +158,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
+        String version = p.getProperty("version"); //NOI18N
         // TODO read your settings according to their version
     }
 
@@ -225,7 +225,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
             return;
         }
         remove(view.getComponent());
-        setName(NbBundle.getMessage(ThreadMapTopComponent.class, "ThreadMapDetailes"));
+        setName(NbBundle.getMessage(ThreadMapTopComponent.class, "ThreadMapDetailes")); //NOI18N
         repaint();
     }
 }

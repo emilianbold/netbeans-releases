@@ -238,7 +238,7 @@ public class ThreadMapVisualizer extends JPanel implements
         isEmptyContent = true;
         removeAll();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel("Empty");
+        JLabel label = new JLabel("Empty"); //NOI18N
         label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         this.add(label);
         repaint();
