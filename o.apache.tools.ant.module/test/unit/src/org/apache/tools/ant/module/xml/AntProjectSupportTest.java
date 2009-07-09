@@ -42,6 +42,7 @@
 package org.apache.tools.ant.module.xml;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -50,8 +51,8 @@ import org.apache.tools.ant.module.loader.AntProjectDataLoader;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
@@ -82,26 +83,24 @@ public class AntProjectSupportTest extends NbTestCase {
     }
     
     public void testInitiallyInvalidScript() throws Exception {
-        FileObject fo = scratch.createData("build.xml");
+        final FileObject fo = scratch.createData("build.xml");
         assertEquals("it is an APDO", AntProjectDataObject.class, DataObject.find(fo).getClass());
         AntProjectCookie apc = new AntProjectSupport(fo);
         TestCL l = new TestCL();
         apc.addChangeListener(l);
         assertNull("invalid", apc.getDocument());
         assertNotNull("invalid", apc.getParseException());
-        FileLock lock = fo.lock();
-        try {
-            OutputStream os = fo.getOutputStream(lock);
-            try {
-                os.write("<project default='x'><target name='x'/></project>".getBytes("UTF-8"));
-            } finally {
-                os.close();
+        fo.getFileSystem().runAtomicAction(new AtomicAction() {
+            public void run() throws IOException {
+                OutputStream os = fo.getOutputStream();
+                try {
+                    os.write("<project default='x'><target name='x'/></project>".getBytes("UTF-8"));
+                } finally {
+                    os.close();
+                }
             }
-        } finally {
-            lock.releaseLock();
-        }
+        });
         assertTrue("got a change", l.expect(5000));
-        Thread.sleep(1000); // XXX why??
         assertEquals("now valid (no exc)", null, apc.getParseException());
         Document doc = apc.getDocument();
         assertNotNull("now valid (have doc)", doc);
