@@ -165,4 +165,13 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         QualifiedName qualifiedName = QualifiedName.create(this);
         return qualifiedName;
     }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        return sb.toString();
+    }
 }
