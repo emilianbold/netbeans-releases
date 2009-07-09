@@ -18,6 +18,9 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.openide.util.Exceptions;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -56,6 +59,13 @@ private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.t
     public Properties convert(File checkstyleFile) {
         Properties props = new Properties();
         SAXBuilder bldr = new SAXBuilder();
+        bldr.setValidation(false);
+        //don't resolve anything across networks.
+        bldr.setEntityResolver(new EntityResolver() {
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                return null;
+            }
+        });
         try {
             Document doc = bldr.build(checkstyleFile);
             Element root = doc.getRootElement();
