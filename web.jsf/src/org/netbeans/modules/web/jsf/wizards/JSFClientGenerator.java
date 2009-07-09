@@ -1398,9 +1398,12 @@ public class JSFClientGenerator {
                             (methodThrowsIllegalOrphanExceptionInEdit ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
-                            "} catch (NonexistentEntityException ne) {\n" +
-                            "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
-                            "return listSetup();\n" +
+                            (useSessionBean ? 
+                                ("") :
+                                ("} catch (NonexistentEntityException ne) {\n" +
+                                "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
+                                "return listSetup();\n")
+                            ) +
                             "} catch (Exception e) {\n" +
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
@@ -1414,14 +1417,17 @@ public class JSFClientGenerator {
                             (embeddable[0] ? simpleIdPropertyType + " id = converter.getId(idAsString);" : createIdFieldDeclaration(idPropertyType[0], "idAsString")) +
                             "\n";
                     bodyText += "try {\n" +
-                            "jpaController."+(useSessionBean ? "remove" : "destroy")+"(id);\n" +
+                            "jpaController."+(useSessionBean ? "remove(jpaController.find(id))" : "destroy(id)")+";\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
                             (methodThrowsIllegalOrphanExceptionInDestroy ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
-                            "} catch (NonexistentEntityException ne) {\n" +
-                            "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
-                            "return relatedOrListOutcome();\n" +
+                            (useSessionBean ?
+                                ("") :
+                                ("} catch (NonexistentEntityException ne) {\n" +
+                                "JsfUtil.addErrorMessage(ne.getLocalizedMessage());\n" +
+                                "return relatedOrListOutcome();\n")
+                            ) +
                             "} catch (Exception e) {\n" +
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
@@ -1442,7 +1448,7 @@ public class JSFClientGenerator {
                     
                     bodyText = "if (" + fieldName + "Items == null) {\n" +
                             "getPagingInfo();\n" +
-                            fieldName + "Items = jpaController.find" + simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem());\n" +
+                            fieldName + "Items = jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem())" )+";\n" +//TODO : add this method to session bean generation???
                             "}\n" +
                             "return " + fieldName + "Items;";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "Items", publicModifier, listOfEntityType, null, null, null, bodyText, null, null);
