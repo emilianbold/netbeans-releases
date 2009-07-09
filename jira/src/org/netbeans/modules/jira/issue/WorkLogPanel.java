@@ -47,11 +47,15 @@ import java.util.Date;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.Document;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDescriptor;
@@ -84,7 +88,13 @@ public class WorkLogPanel extends javax.swing.JPanel {
         leaveEstimateChoice.setText(leaveEstimateText);
 
         // Listeners
-        timeSpentField.getDocument().addDocumentListener(new WorkLogFormatListener());
+        WorkLogFormatListener workLogFormatListener = new WorkLogFormatListener();
+        timeSpentField.getDocument().addDocumentListener(workLogFormatListener);
+        reduceEstimatedTimeField.getDocument().addDocumentListener(workLogFormatListener);
+        setEstimatedTimeField.getDocument().addDocumentListener(workLogFormatListener);
+        EstimateAdjustmentTypeListener estimateAdjustmentTypeListener = new EstimateAdjustmentTypeListener();
+        reduceEstimatedTimeChoice.addChangeListener(estimateAdjustmentTypeListener);
+        setEstimatedTimeChoice.addChangeListener(estimateAdjustmentTypeListener);
 
         updateMessagePanel();
         initialized = true;
@@ -123,7 +133,11 @@ public class WorkLogPanel extends javax.swing.JPanel {
     }
 
     public int getTimeSpent() {
-        String timeSpentTxt = timeSpentField.getText();
+        return getWorkLog(timeSpentField);
+    }
+
+    int getWorkLog(JTextField field) {
+        String timeSpentTxt = field.getText();
         JiraConfiguration config = issue.getRepository().getConfiguration();
         int daysPerWeek = config.getWorkDaysPerWeek();
         int hoursPerDay = config.getWorkHoursPerDay();
@@ -153,8 +167,30 @@ public class WorkLogPanel extends javax.swing.JPanel {
         }
     }
 
+    void checkReduceEstimateTime() {
+        reduceEstimatedTimeChoice.setSelected(true);
+        int reduceAmount = getWorkLog(reduceEstimatedTimeField);
+        boolean invalid = (reduceAmount < 0) || (reduceEstimatedTimeField.getText().trim().length() == 0);
+        if (invalid != reduceEstimateFormat) {
+            reduceEstimateFormat = invalid;
+            updateMessagePanel();
+        }
+    }
+
+    void checkSetEstimateTime() {
+        setEstimatedTimeChoice.setSelected(true);
+        int newEstimate = getWorkLog(setEstimatedTimeField);
+        boolean invalid = (newEstimate < 0) || (setEstimatedTimeField.getText().trim().length() == 0);
+        if (invalid != setEstimateFormat) {
+            setEstimateFormat = invalid;
+            updateMessagePanel();
+        }
+    }
+
     private boolean timeSpentFormat;
     private boolean timeSpentZero = true;
+    private boolean reduceEstimateFormat;
+    private boolean setEstimateFormat;
 
     void updateMessagePanel() {
         messagePanel.removeAll();
@@ -168,7 +204,17 @@ public class WorkLogPanel extends javax.swing.JPanel {
             timeSpentZeroLbl.setText(NbBundle.getMessage(IssuePanel.class, "WorkLogPanel.timeSpentZero")); // NOI18N
             messagePanel.add(timeSpentZeroLbl);
         }
-        if (timeSpentFormat || timeSpentZero) {
+        if (reduceEstimateFormat) {
+            JLabel reduceEstimateFormatLbl = new JLabel();
+            reduceEstimateFormatLbl.setText(NbBundle.getMessage(IssuePanel.class, "WorkLogPanel.reduceEstimateFormat")); // NOI18N
+            messagePanel.add(reduceEstimateFormatLbl);
+        }
+        if (setEstimateFormat) {
+            JLabel setEstimateFormatLbl = new JLabel();
+            setEstimateFormatLbl.setText(NbBundle.getMessage(IssuePanel.class, "WorkLogPanel.setEstimateFormat")); // NOI18N
+            messagePanel.add(setEstimateFormatLbl);
+        }
+        if (timeSpentFormat || timeSpentZero || reduceEstimateFormat || setEstimateFormat) {
             String iconRes = initialized ? "org/netbeans/modules/jira/resources/error.gif" : "org/netbeans/modules/jira/resources/info.png"; // NOI18N
             Icon icon = new ImageIcon(ImageUtilities.loadImage(iconRes));
             for (Component comp : messagePanel.getComponents()) {
@@ -180,6 +226,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
             messagePanel.setVisible(true);
             submitButton.setEnabled(false);
             messagePanel.revalidate();
+            messagePanel.repaint();
         } else {
             messagePanel.setVisible(false);
             submitButton.setEnabled(true);
@@ -262,7 +309,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
         workDescriptionArea.setRows(5);
         workDescriptionScrollPane.setViewportView(workDescriptionArea);
 
-        messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.LINE_AXIS));
+        messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.PAGE_AXIS));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -385,13 +432,39 @@ public class WorkLogPanel extends javax.swing.JPanel {
         }
 
         public void changedUpdate(DocumentEvent e) {
-            int timeSpent = getTimeSpent();
-            if ((timeSpent < 0) != timeSpentFormat) {
-                timeSpentFormat = (timeSpent < 0);
+            Document document = e.getDocument();
+            if (document == timeSpentField.getDocument()) {
+                int timeSpent = getTimeSpent();
+                if ((timeSpent < 0) != timeSpentFormat) {
+                    timeSpentFormat = (timeSpent < 0);
+                    updateMessagePanel();
+                }
+                if ((timeSpent == 0) != timeSpentZero) {
+                    timeSpentZero = (timeSpent == 0);
+                    updateMessagePanel();
+                }
+            } else if (document == reduceEstimatedTimeField.getDocument()) {
+                checkReduceEstimateTime();
+            } else if (document == setEstimatedTimeField.getDocument()) {
+                checkSetEstimateTime();
+            }
+        }
+
+    }
+
+    class EstimateAdjustmentTypeListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            if (reduceEstimatedTimeChoice.isSelected()) {
+                checkReduceEstimateTime();
+            } else if (reduceEstimateFormat) {
+                reduceEstimateFormat = false;
                 updateMessagePanel();
             }
-            if ((timeSpent == 0) != timeSpentZero) {
-                timeSpentZero = (timeSpent == 0);
+            if (setEstimatedTimeChoice.isSelected()) {
+                checkSetEstimateTime();
+            } else if (setEstimateFormat) {
+                setEstimateFormat = false;
                 updateMessagePanel();
             }
         }
