@@ -41,42 +41,40 @@ package org.netbeans.modules.ruby;
 import java.util.HashMap;
 import java.util.Map;
 import org.jrubyparser.ast.Node;
-import org.netbeans.editor.BaseDocument;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.util.Parameters;
 
 public final class ContextKnowledge {
 
     /** Map from variable or field(etc) name to type. */
     private Map<String, RubyType> typesForSymbols;
+    private Map<Node, RubyType> typesForNodes;
     
-    final RubyIndex index;
-    final Node root;
-    final Node target;
-    final int astOffset;
-    final int lexOffset;
-    final BaseDocument doc;
-    final FileObject fileObject;
+    private final RubyIndex index;
+    private final Node root;
+    private final Node target;
+    private final int astOffset;
+    private final int lexOffset;
+    private final ParserResult parserResult;
 
     private boolean analyzed;
 
-    ContextKnowledge() {
-        this(null, null);
-    }
-
-    ContextKnowledge(RubyIndex index, Node root) {
-        this(index, root, null, -1, -1, null, null);
+    ContextKnowledge(RubyIndex index, Node root, ParserResult parserResult) {
+        this(index, root, null, -1, -1, parserResult);
     }
 
     public ContextKnowledge(RubyIndex index, Node root, Node target, int astOffset,
-            int lexOffset, BaseDocument doc, FileObject fileObject) {
+            int lexOffset, ParserResult parserResult) {
+        Parameters.notNull("root", root);
+        Parameters.notNull("parserResult", parserResult);
         this.index = index;
         this.root = root;
         this.target = target;
         this.astOffset = astOffset;
         this.lexOffset = lexOffset;
-        this.doc = doc;
-        this.fileObject = fileObject;
         this.typesForSymbols = new HashMap<String, RubyType>();
+        this.typesForNodes = new HashMap<Node, RubyType>();
+        this.parserResult = parserResult;
     }
 
     RubyType getType(final String symbol) {
@@ -85,12 +83,11 @@ public final class ContextKnowledge {
     }
 
     RubyType getType(final Node node) {
-        // TODO: implement with #setType below
-        return null;
+        return typesForNodes.get(node);
     }
 
     void setType(Node node, RubyType type) {
-        // TODO: store the type for node
+        typesForNodes.put(node, type);
     }
 
     void setAnalyzed(boolean analyzed) {
@@ -131,14 +128,6 @@ public final class ContextKnowledge {
         return astOffset;
     }
 
-    BaseDocument getDocument() {
-        return doc;
-    }
-
-    FileObject getFileObject() {
-        return fileObject;
-    }
-
     RubyIndex getIndex() {
         return index;
     }
@@ -151,20 +140,16 @@ public final class ContextKnowledge {
         return root;
     }
 
+    ParserResult getParserResult() {
+        return parserResult;
+    }
+
     /**
      * The target node to which we are performing analysis. Ignore everything in
      * the AST from this node further.
      */
     Node getTarget() {
         return target;
-    }
-
-    boolean hasDocument() {
-        return doc != null;
-    }
-
-    boolean hasFileObject() {
-        return fileObject != null;
     }
 
     @Override

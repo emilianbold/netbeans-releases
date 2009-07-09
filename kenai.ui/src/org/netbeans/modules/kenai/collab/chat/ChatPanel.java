@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.*;
@@ -254,6 +255,11 @@ public class ChatPanel extends javax.swing.JPanel {
     
     public ChatPanel(MultiUserChat chat) {
         this.muc=chat;
+        this.muc.addParticipantListener(new PacketListener() {
+            public void processPacket(Packet presence) {
+                insertPresence((Presence) presence);
+            }
+        });
         initComponents();
         setName(StringUtils.parseName(chat.getRoom()));
         editorKit= (HTMLEditorKit) inbox.getEditorKit();
@@ -476,7 +482,7 @@ public class ChatPanel extends javax.swing.JPanel {
         buffer.append("</body></html>"); // NOI18N
         online.setToolTipText(buffer.toString());
     //setEndSelection();
-    //insertPresence(presence);
+        //insertPresence(presence);
     }
 
     private class PresenceListener implements PropertyChangeListener {
@@ -516,7 +522,9 @@ public class ChatPanel extends javax.swing.JPanel {
                 super.scrollRectToVisible(aRect);
             }
         };
+        topPanel = new javax.swing.JPanel();
         online = new javax.swing.JLabel();
+        statusLine = new javax.swing.JLabel();
 
         splitter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
@@ -550,12 +558,18 @@ public class ChatPanel extends javax.swing.JPanel {
 
         inboxPanel.add(inboxScrollPane, java.awt.BorderLayout.CENTER);
 
+        topPanel.setBackground(java.awt.Color.white);
+        topPanel.setLayout(new java.awt.BorderLayout());
+
         online.setBackground(java.awt.Color.white);
         online.setForeground(java.awt.Color.blue);
         online.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         online.setText(org.openide.util.NbBundle.getMessage(ChatPanel.class, "ChatPanel.online.text", new Object[] {})); // NOI18N
         online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
-        inboxPanel.add(online, java.awt.BorderLayout.PAGE_START);
+        topPanel.add(online, java.awt.BorderLayout.EAST);
+        topPanel.add(statusLine, java.awt.BorderLayout.CENTER);
+
+        inboxPanel.add(topPanel, java.awt.BorderLayout.NORTH);
 
         splitter.setTopComponent(inboxPanel);
 
@@ -696,6 +710,8 @@ public class ChatPanel extends javax.swing.JPanel {
     private javax.swing.JTextPane outbox;
     private javax.swing.JScrollPane outboxScrollPane;
     private javax.swing.JSplitPane splitter;
+    private javax.swing.JLabel statusLine;
+    private javax.swing.JPanel topPanel;
     // End of variables declaration//GEN-END:variables
 
 
@@ -770,17 +786,47 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
 
-    protected void insertPresence(Presence presence) {
-        try {
-            HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
-            String text = "<i><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</i>"; // NOI18N
-            editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+    private class Fader {
+
+        private JComponent target;
+        private Timer timer = new Timer(50, new ActionListener() {
+
+            int c = 0;
+
+            public void actionPerformed(ActionEvent evt) {
+                c += 10;
+                if (c > 255) {
+                    c = 0;
+                    timer.stop();
+                    return;
+                }
+                Color newc = new Color(c, c, c);
+                target.setForeground(newc);
+            }
+        });
+
+        public Fader(JComponent target) {
+            this.target = target;
+            timer.setInitialDelay(2000);
+        }
+
+        public void start() {
+            timer.start();
         }
     }
+
+
+        protected void insertPresence(final Presence presence) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    statusLine.setForeground(Color.black);
+                    statusLine.setText("<html><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</html>");
+                    //fadein.start();
+                    new Fader(statusLine).start();
+                }
+            });
+        }
 
 
     // Needed for inserting icons in the right places

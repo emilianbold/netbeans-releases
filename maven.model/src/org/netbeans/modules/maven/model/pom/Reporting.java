@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Reporting extends POMComponent {
+public interface Reporting extends POMComponent, ReportPluginContainer {
 
 //  <!--xs:complexType name="Reporting">
 //    <xs:all>
@@ -55,13 +55,6 @@ public interface Reporting extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    public List<ReportPlugin> getReportPlugins();
-    public void addReportPlugin(ReportPlugin reportPlugin);
-    public void removeReportPlugin(ReportPlugin reportPlugin);
 
     /**
      * POM RELATED PROPERTY

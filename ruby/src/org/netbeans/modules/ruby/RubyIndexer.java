@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -261,7 +260,8 @@ public class RubyIndexer extends EmbeddingIndexer {
             return;
         }
 
-        TreeAnalyzer analyzer = new TreeAnalyzer(r, support, indexable);
+        TreeAnalyzer analyzer =
+                new TreeAnalyzer(r, support, indexable, new ContextKnowledge(null, root, r));
         analyzer.analyze();
 
         for (IndexDocument doc : analyzer.getDocuments()) {
@@ -348,14 +348,20 @@ public class RubyIndexer extends EmbeddingIndexer {
         private final List<IndexDocument> documents;
         private String url;
         private final boolean platform;
+        private final ContextKnowledge knowledge;
 
-        private TreeAnalyzer(RubyParseResult result, IndexingSupport support, Indexable indexable) {
+        private TreeAnalyzer(RubyParseResult result,
+                IndexingSupport support,
+                Indexable indexable,
+                ContextKnowledge knowledge) {
+
             this.result = result;
             this.file = RubyUtils.getFileObject(result);
             this.support = support;
             this.indexable = indexable;
             this.documents = new ArrayList<IndexDocument>();
             this.platform = RubyUtils.isPlatformFile(file);
+            this.knowledge = knowledge;
         }
 
         private String getRequireString(Set<String> requireSet) {
@@ -570,12 +576,8 @@ public class RubyIndexer extends EmbeddingIndexer {
          * in several other classes too - ActiveRecord etc.)
          */
         private void handleRailsClass(String classIn, String classFqn, String clz, String clzNoCase) {
-            Node root = AstUtilities.getRoot(result);
+            Node root = knowledge.getRoot();
 
-            if (root == null) {
-                return;
-            }
-            
             IndexDocument document = support.createDocument(indexable);
             documents.add(document);
 
@@ -638,11 +640,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         /** Handle a migration file */
         private void handleMigration() {
-            Node root = AstUtilities.getRoot(result);
-
-            if (root == null) {
-                return;
-            }
+            Node root = knowledge.getRoot();
 
             // Look for self.up methods and register all column deltas
             // create_table: create new table
@@ -1388,11 +1386,9 @@ public class RubyIndexer extends EmbeddingIndexer {
 
             //XXX: this will skip TI for tests as it did in GSF where
             // platform was always false.
-
-            Node root = AstUtilities.getRoot(result);
             if (platform && !userSourcesTest) {
                 signature = RubyIndexerHelper.getMethodSignature(
-                        child, root, flags, signature, file, result.getSnapshot());
+                        child, flags, signature, file, knowledge);
                 if (signature == null) {
                     return;
                 }
@@ -1400,7 +1396,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 if (!userSourcesTest) {
                     signature = RubyIndexerHelper.replaceAttributes(signature, flags);
                 }
-                signature = RubyIndexerHelper.getMethodSignatureForUserSources(root, child, signature, flags, result.getSnapshot());
+                signature = RubyIndexerHelper.getMethodSignatureForUserSources(child, signature, flags, knowledge);
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
 

@@ -76,6 +76,7 @@ public class AstNode {
     private Collection<Description> descriptions = null;
     private List<String> stack = null; //for debugging
     private AstNode matchingNode = null;
+    private boolean isEmpty = false;
 
     static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
@@ -83,20 +84,21 @@ public class AstNode {
 
     //TODO - replace the public constructors by factory methods
 
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, List<String> stack) {
-        this(name, nodeType, startOffset, endOffset);
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<String> stack) {
+        this(name, nodeType, startOffset, endOffset, isEmpty);
         this.dtdElement = dtdElement;
         this.contentModel = dtdElement != null ? dtdElement.getContentModel() : null;
         this.content = contentModel != null ? contentModel.getContent() : null;
         this.stack = stack;
     }
 
-    AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, boolean isEmpty) {
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.logicalEndOffset = endOffset;
+        this.isEmpty = isEmpty;
     }
 
     public AstNode getMatchingTag() {
@@ -287,6 +289,9 @@ public class AstNode {
         return children == null ? Collections.EMPTY_LIST : children;
     }
 
+    public boolean isEmpty() {
+        return isEmpty;
+    }
     void addChild(AstNode child) {
         if (children == null) {
             children = new LinkedList<AstNode>();
@@ -498,7 +503,7 @@ public class AstNode {
         private DTD dtd;
 
         RootAstNode(int startOffset, int endOffset, DTD dtd) {
-            super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset);
+            super(ROOT_NODE_NAME, NodeType.ROOT, startOffset, endOffset, false);
             this.dtd = dtd;
         }
 

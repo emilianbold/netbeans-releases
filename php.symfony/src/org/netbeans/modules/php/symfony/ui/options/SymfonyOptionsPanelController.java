@@ -67,8 +67,6 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public void applyChanges() {
-        SymfonyScript.resetDefault();
-
         getOptions().setSymfony(symfonyOptionsPanel.getSymfony());
 
         changed = false;

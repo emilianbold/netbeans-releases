@@ -255,11 +255,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
         requires = new HashSet<String>();
         methods = new ArrayList<AstMethodElement>();
         haveAccessModifiers = new HashSet<AstClassElement>();
-
         
         AstPath path = new AstPath();
         path.descend(root);
-        ContextKnowledge knowledge = new ContextKnowledge(index, root);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, result);
         this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);

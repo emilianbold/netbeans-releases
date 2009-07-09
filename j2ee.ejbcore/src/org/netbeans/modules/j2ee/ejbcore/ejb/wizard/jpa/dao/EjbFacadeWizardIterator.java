@@ -73,7 +73,9 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
@@ -507,5 +509,32 @@ import org.openide.util.NbBundle;
         steps = new String[stepsStartPos + thisSteps.length];
         System.arraycopy(beforeSteps, 0, steps, 0, stepsStartPos);
         System.arraycopy(thisSteps, 0, steps, stepsStartPos, thisSteps.length);
+    }
+    public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote) throws IOException {
+        int progressIndex = 0;
+        String progressMsg =  NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Pre"); //NOI18N;
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
+
+        int[] nameAttemptIndices = null;
+
+        EjbFacadeWizardIterator iterator=new EjbFacadeWizardIterator();
+
+        FileObject[] sbFileObjects = new FileObject[entities.size()];
+        for (int i = 0; i < entities.size(); i++) {
+            final String entitySimpleName = JavaIdentifiers.unqualify(entities.get(i));
+
+            progressMsg = NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Now_Generating", entitySimpleName + FACADE_SUFFIX + ".java");//NOI18N
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
+            sbFileObjects[i]=iterator.generate(jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote).iterator().next();
+        }
+
+        return sbFileObjects;
+    }
+
+    public static  int getProgressStepCount(int numEntites)
+    {
+        return numEntites;
     }
 }

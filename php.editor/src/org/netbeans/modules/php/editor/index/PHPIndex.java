@@ -268,6 +268,34 @@ public class PHPIndex {
                 vars.add(var);
             }
         }
+    }
+
+    protected void findNamespaces(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedNamespace> namespaces) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_NAMESPACE);
+            if (signatures == null) {
+                continue;
+            }
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String nsName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!nsName.startsWith(name)) {
+                        continue;
+                    }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!nsName.equals(name)) {
+                        continue;
+                    }
+                }
+                int offset = sig.integer(2);
+                IndexedNamespace ns = new IndexedNamespace(nsName, null, this,
+                        map.getUrl().toString(), offset, 0);
+                namespaces.add(ns);
+            }
+        }
 
     }
 

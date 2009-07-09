@@ -99,7 +99,7 @@ public class SyntaxTree {
 
                     //no DTD tag, just mark as unknown and add it as a child of current stack's top node
                     AstNode unknownTagNode = new AstNode(tagName, AstNode.NodeType.UNKNOWN_TAG,
-                            tagElement.offset(), tagElement.offset() + tagElement.length());
+                            tagElement.offset(), tagElement.offset() + tagElement.length(), tagElement.isEmpty());
 
                     //ignore namespaced tags, they won't be matched, but without errors
                     if (!isIgnoredTagName(tagName)) {
@@ -117,7 +117,7 @@ public class SyntaxTree {
                 //create an AST node for current element
                 AstNode openTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
                         tagElement.offset(), tagElement.offset() + tagElement.length(),
-                        currentNodeDtdElement, stack(stack));
+                        currentNodeDtdElement, tagElement.isEmpty(), stack(stack));
 
                 //check tag attributes
                 checkTagAttributes(openTagNode, (SyntaxElement.Tag) tagElement, currentNodeDtdElement);
@@ -251,7 +251,7 @@ public class SyntaxTree {
                 if (dtdElement == null) {
                     //no DTD tag, just mark as unknown and add it as a child of current stack's top node
                     AstNode unknownTagNode = new AstNode(tagName, AstNode.NodeType.UNKNOWN_TAG,
-                            element.offset(), element.offset() + element.length());
+                            element.offset(), element.offset() + element.length(), false);
 
                     //ignore namespaced tags, they won't be matched, but without errors
                     if (!isIgnoredTagName(tagName)) {
@@ -267,7 +267,7 @@ public class SyntaxTree {
                 }
 
                 AstNode closeTagNode = new AstNode(tagName, AstNode.NodeType.ENDTAG,
-                        element.offset(), element.offset() + element.length(), dtdElement, stack(stack));
+                        element.offset(), element.offset() + element.length(), dtdElement, false, stack(stack));
 
                 int matched_index = -1;
                 for (int i = stack.size() - 1; i >= 0; i--) {
@@ -365,7 +365,7 @@ public class SyntaxTree {
                 AstNode.NodeType nodeType = intToNodeType(element.type());
 
                 AstNode node = new AstNode(null, nodeType, element.offset(),
-                        element.offset() + element.length());
+                        element.offset() + element.length(), false);
 
                 stack.getLast().addChild(node);
             }
@@ -470,7 +470,7 @@ public class SyntaxTree {
     private static void setTagAttributes(AstNode node, SyntaxElement.Tag tag) {
         for(TagAttribute ta : tag.getAttributes()) {
             if(ta != null) {
-                node.setAttribute(ta.getName(), ta.getValue());
+                node.setAttribute(ta.getName(), dequote(ta.getValue()));
             }
         }
     }
@@ -512,4 +512,17 @@ public class SyntaxTree {
 
         return null;
     }
+
+    private static String dequote(String text) {
+        if(text.length() < 2) {
+            return text;
+        } else {
+            if((text.charAt(0) == '\'' || text.charAt(0) == '"') &&
+                (text.charAt(text.length() - 1) == '\'' || text.charAt(text.length() - 1) == '"')) {
+                return text.substring(1, text.length() - 1);
+            }
+        }
+        return text;
+    }
+
 }

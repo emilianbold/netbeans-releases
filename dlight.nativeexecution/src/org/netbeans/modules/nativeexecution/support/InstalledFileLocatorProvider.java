@@ -52,12 +52,17 @@ public final class InstalledFileLocatorProvider {
             while (true) {
                 String dirName = junitWorkdir.getName();
                 junitWorkdir = junitWorkdir.getParentFile();
-                if ("test".equals(dirName) || "".equals(dirName)) { // NOI18N
+                if ("unit".equals(dirName) || "".equals(dirName)) { // NOI18N
                     break;
                 }
             }
 
-            File dlightDir = new File(junitWorkdir, "../../nbbuild/netbeans/dlight1"); // NOI18N
+            File dlightDir = new File(junitWorkdir, "../../../nbbuild/netbeans/dlight1"); // NOI18N
+
+            if (!dlightDir.exists()) {
+                dlightDir = new File(junitWorkdir, "netbeans/dlight1"); // NOI18N
+            }
+            
             System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
         }
     }

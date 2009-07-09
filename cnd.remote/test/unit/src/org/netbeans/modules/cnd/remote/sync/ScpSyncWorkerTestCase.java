@@ -39,157 +39,25 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.openide.util.Lookup;
 
 /**
  * Test for ScpSyncWorker
  * @author Vladimir Kvashin
  */
-public class ScpSyncWorkerTestCase extends RemoteTestBase {
-
-//    public ScpSyncWorkerTestCase(String testName) {
-//        super(testName);
-//        Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
-//        Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
-//    }
+public class ScpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
     public ScpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
-        Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
-        Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
     }
 
-    @ForAllEnvironments
-    public void testSyncWorker_simple() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        assertNotNull(execEnv);
-        File src = createTestDir();
-        doTest(src, execEnv, getDestDir(execEnv));
-    }
-
-    @ForAllEnvironments
-    public void testSyncWorker_nb_platform_lib() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        assertNotNull(execEnv);
-        File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile();  // platform10/lib
-        doTest(netBeansDir, execEnv, getDestDir(execEnv));
-    }
-
-    @ForAllEnvironments
-    public void testSyncWorker_nb_platform() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        assertNotNull(execEnv);
-        File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile().  // platform10/lib
-                getParentFile();  // platform10
-        doTest(netBeansDir, execEnv, getDestDir(execEnv));
-    }
-
-//    public void testSyncWorker_nb_all() throws Exception {
-//        if (canTestRemote()) {
-//            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-//            assertNotNull(execEnv);
-//            File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-//                    getParentFile().  // lib
-//                    getParentFile().  // platform10
-//                    getParentFile();  // ${NBDIST}
-//            doTest(netBeansDir, execEnv, getDestDir(execEnv));
-//        }
-//    }
-
-    private File getIdeUtilJar() throws Exception {
-        return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-    }
-
-    private String getDestDir(ExecutionEnvironment execEnv) {
-        return  "/tmp/" + execEnv.getUser() + "/sync-worker-test/" + Math.random() + "/";
-    }
-
-//    public void testSyncWorker_2() throws Exception {
-//        if (!canTestRemote()) {
-//            return;
-//        }
-//        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("vk155633", "endif.russia");
-//        assertNotNull(execEnv);
-//
-//        ConnectionManager.getInstance().connectTo(execEnv);
-//
-//        File src = new File("/export/home/vk155633/NetBeansProjects/ScpTest");
-//        String dst = "/tmp/vk155633/test-sync-worker/ScpTest";
-//        doTest(src, execEnv, dst);
-//    }
-
-    private void doTest(File src, ExecutionEnvironment execEnv, String dst) throws Exception {
-        PrintWriter out = new PrintWriter(System.out);
-        PrintWriter err = new PrintWriter(System.err);
-        System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
-        ScpSyncWorker worker = new ScpSyncWorker(src, execEnv, out, err);
-        worker.synchronizeImpl(dst);
-        CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
-    }
-
-    private File createTestDir() throws IOException {
-        File src = createTempFile("test-sync-worker-dir", null, true);
-        File subdir1 = new File(src, "dir1");
-        subdir1.mkdirs();
-        subdir1.deleteOnExit();
-
-        File subdir2 = new File(src, "dir2");
-        subdir2.mkdirs();
-        subdir2.deleteOnExit();
-
-        File deeper = new File(subdir2, "deeper");
-        deeper.mkdirs();
-        deeper.deleteOnExit();
-
-        File file1 = new File(subdir1, "file1");
-        writeFile(file1, "this is file1\n");
-        file1.deleteOnExit();
-
-        File file2 = new File(subdir2, "file2");
-        writeFile(file2, "this is file2\n");
-        file2.deleteOnExit();
-
-        File file3 = new File(deeper, "file3");
-        writeFile(file3, "this is file3\n");
-        file3.deleteOnExit();
-        return src;
-    }
-
-    private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        pb.setExecutable(command);
-
-        if (args != null) {
-            pb.setArguments(args);
-        }
-
-        NativeProcess lsProcess = pb.call();
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
-        String line;
-        StringBuilder sb = new StringBuilder();
-        int count = 0;
-        while ((line = rdr.readLine()) != null) {
-            sb.append(line + '\n');
-            count++;
-        }
-        return sb;
+    @Override
+    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, PrintWriter out, PrintWriter err) {
+        return new ScpSyncWorker(src, execEnv, out, err);
     }
 
     public static Test suite() {

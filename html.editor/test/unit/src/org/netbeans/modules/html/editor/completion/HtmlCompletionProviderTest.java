@@ -74,6 +74,11 @@ public class HtmlCompletionProviderTest extends TestBase {
         doc.insertString(9, "div> &", null);
         assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 15, "div> &"));
 
+        //test end tag autocomplete
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "<div>", null);
+        assertTrue(HtmlCompletionProvider.checkOpenCompletion(doc, 5, ">"));
+
     }
 
 
