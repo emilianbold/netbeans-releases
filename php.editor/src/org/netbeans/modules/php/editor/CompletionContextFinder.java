@@ -81,7 +81,9 @@ class CompletionContextFinder {
     );
 
     private static final List<Object[]> NAMESPACE_ONLY_TOKENS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
     );
 
@@ -235,6 +237,8 @@ class CompletionContextFinder {
             return CompletionContext.NAMESPACE_CLASS_ELEMENT;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
+        } else if (acceptTokenChains(tokenSequence, NAMESPACE_ONLY_TOKENS)){
+            return CompletionContext.NAMESPACE_ONLY;
         } else if (tokenId == PHPTokenId.PHP_COMMENT) {
             return getCompletionContextInComment(tokenSequence, caretOffset, info);
         } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)){
