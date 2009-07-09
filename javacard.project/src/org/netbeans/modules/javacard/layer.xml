@@ -317,7 +317,7 @@ made subject to such option by the copyright holder.
             <file name="Servlet.java" url="templates/Servlet.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ServletDescription.html"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ServletWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -326,7 +326,7 @@ made subject to such option by the copyright holder.
             <file name="ExtendedApplet.java" url="templates/ExtendedApplet.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ExtendedAppletDescription.html"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ClassicAppletWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -335,7 +335,7 @@ made subject to such option by the copyright holder.
             <file name="ClassicApplet.java" url="templates/ClassicApplet.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.templates.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/templates/ClassicAppletDescription.html"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javacard.templates.ClassicAppletWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
