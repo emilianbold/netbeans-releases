@@ -216,7 +216,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
             descriptionLabel.setEnabled(item.isSelected());
 
             configPanel.removeAll();
-            actualExtender = item.getFramework().createPhpModuleExtender(null);
+            actualExtender = extenders.get(item.getFramework());
             actualExtender.addChangeListener(this);
             JComponent component = actualExtender.getComponent();
             if (component != null) {
@@ -392,7 +392,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
                     item.setSelected((Boolean) value);
                     break;
                 case 1:
-                    item.setFramework((PhpFrameworkProvider) value);
+                    // nothing needed
                     break;
                 default:
                     assert false : "Unknown column index: " + column;
@@ -411,21 +411,20 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
     }
 
     private static final class FrameworkModelItem {
-        private PhpFrameworkProvider framework;
+        private final PhpFrameworkProvider framework;
+
         private Boolean selected;
         private boolean valid = true;
 
         public FrameworkModelItem(PhpFrameworkProvider framework) {
-            setFramework(framework);
+            assert framework != null;
+
+            this.framework = framework;
             setSelected(Boolean.FALSE);
         }
 
         public PhpFrameworkProvider getFramework() {
             return framework;
-        }
-
-        public void setFramework(PhpFrameworkProvider framework) {
-            this.framework = framework;
         }
 
         public Boolean isSelected() {
