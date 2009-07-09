@@ -49,18 +49,19 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * Test for ScpSyncWorker
  * @author Vladimir Kvashin
  */
-public class ScpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
-    public ScpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
+    public ZipSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @Override
     BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(src, execEnv, out, err);
+        return new ZipSyncWorker(src, execEnv, out, err);
     }
 
+
     public static Test suite() {
-        return new RemoteDevelopmentTest(ScpSyncWorkerTestCase.class);
+        return new RemoteDevelopmentTest(ZipSyncWorkerTestCase.class);
     }
 }

@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
