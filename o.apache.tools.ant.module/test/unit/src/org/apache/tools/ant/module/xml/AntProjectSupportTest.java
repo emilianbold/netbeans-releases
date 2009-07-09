@@ -44,8 +44,8 @@ package org.apache.tools.ant.module.xml;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.util.logging.Level;
+import junit.framework.AssertionFailedError;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.loader.AntProjectDataLoader;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
@@ -55,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.test.MockChangeListener;
 import org.w3c.dom.Document;
 
 // XXX testBasicParsing
@@ -68,6 +69,11 @@ public class AntProjectSupportTest extends NbTestCase {
     
     public AntProjectSupportTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     private FileObject scratch;
@@ -86,10 +92,11 @@ public class AntProjectSupportTest extends NbTestCase {
         final FileObject fo = scratch.createData("build.xml");
         assertEquals("it is an APDO", AntProjectDataObject.class, DataObject.find(fo).getClass());
         AntProjectCookie apc = new AntProjectSupport(fo);
-        TestCL l = new TestCL();
-        apc.addChangeListener(l);
         assertNull("invalid", apc.getDocument());
         assertNotNull("invalid", apc.getParseException());
+        MockChangeListener l = new MockChangeListener();
+        apc.addChangeListener(l);
+        //l.expectNoEvents(5000);
         fo.getFileSystem().runAtomicAction(new AtomicAction() {
             public void run() throws IOException {
                 OutputStream os = fo.getOutputStream();
@@ -100,52 +107,14 @@ public class AntProjectSupportTest extends NbTestCase {
                 }
             }
         });
-        assertTrue("got a change", l.expect(5000));
-        assertEquals("now valid (no exc)", null, apc.getParseException());
+        l.expectEvent(5000);
+        Throwable x = apc.getParseException();
+        if (x != null) {
+            throw (AssertionFailedError) new AssertionFailedError("now valid (no exc)").initCause(x);
+        }
         Document doc = apc.getDocument();
         assertNotNull("now valid (have doc)", doc);
         assertEquals("one target", 1, doc.getElementsByTagName("target").getLength());
-    }
-
-    /**
-     * Change listener that can be polled.
-     * Handles asynchronous changes.
-     */
-    private static final class TestCL implements ChangeListener {
-        
-        private boolean fired;
-        
-        public TestCL() {}
-        
-        public synchronized void stateChanged(ChangeEvent e) {
-            fired = true;
-            notify();
-        }
-        
-        /**
-         * Check whether a change has occurred by now (do not block).
-         * Also resets the flag so the next call will expect a new change.
-         * @return true if a change has occurred
-         */
-        public synchronized boolean expect() {
-            boolean f = fired;
-            fired = false;
-            return f;
-        }
-        
-        /**
-         * Check whether a change has occurred by now or occurs within some time.
-         * Also resets the flag so the next call will expect a new change.
-         * @param timeout a maximum amount of time to wait, in milliseconds
-         * @return true if a change has occurred
-         */
-        public synchronized boolean expect(long timeout) throws InterruptedException {
-            if (!fired) {
-                wait(timeout);
-            }
-            return expect();
-        }
-        
     }
     
 }
