@@ -326,6 +326,11 @@ public class HtmlCompletionQueryTest extends TestBase {
         assertItems("<gggg hhh='|", arr(), Match.EMPTY);
     }
 
+    public void testEndTagAutocompletion() throws BadLocationException, ParseException {
+        assertItems("<div>|", arr("div"), Match.EXACT, 5);
+        //test end tag ac for unknown tags
+        assertItems("<div><bla>|", arr(), Match.EMPTY, 0);
+    }
 
 
     //helper methods ------------
