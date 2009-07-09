@@ -49,7 +49,6 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.model.Utilities;
