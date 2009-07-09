@@ -279,13 +279,13 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 116, GroupLayout.PREFERRED_SIZE)
+                .add(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(separator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(descriptionLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(configPanel, GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
+                .add(configPanel, GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
