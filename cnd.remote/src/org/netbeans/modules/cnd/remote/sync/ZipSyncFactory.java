@@ -41,26 +41,47 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
- * Test for ScpSyncWorker
+ *
  * @author Vladimir Kvashin
  */
-public class ScpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=5)
+class ZipSyncFactory extends RemoteSyncFactory {
 
-    public ScpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    @Override
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
     }
 
     @Override
-    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(src, execEnv, out, err);
+    public String getDisplayName() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        return NbBundle.getMessage(getClass(), "ZIP_Factory_Name");
     }
 
-    public static Test suite() {
-        return new RemoteDevelopmentTest(ScpSyncWorkerTestCase.class);
+    @Override
+    public String getDescription() {
+        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
+        return NbBundle.getMessage(getClass(), "ZIP_Factory_Description");
+    }
+
+    @Override
+    public String getID() {
+        return "zip"; //NOI18N
+    }
+
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        if (Boolean.getBoolean("cnd.remote.sync.zip")) {
+            return ! RemoteUtil.isForeign(execEnv);
+        } else {
+            return false;
+        }
     }
 }
