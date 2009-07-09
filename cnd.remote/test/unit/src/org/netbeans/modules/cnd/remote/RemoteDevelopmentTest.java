@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote;
 
+import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
@@ -49,6 +50,7 @@ import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.sync.ScpSyncWorkerTestCase;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
@@ -62,8 +64,28 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 //        System.setProperty("nativeexecution.support.logger.level", "0");
 //    }
 
+    public static final String PLATFORMS_SECTION = "remote.platforms";
+
     public RemoteDevelopmentTest(Class testClass) {
         this(testClass.getName(), testClass);
+    }
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RemoteDevelopmentTest(String name, Test... tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
+    }
+
+    // Why are tests just Test, not NativeExecutionBaseTestCase?
+    // to allow add warnings (TestSuite.warning() returns test stub with warning)
+    public RemoteDevelopmentTest(String name, Collection<Test> tests) {
+        setName(name);
+        for (Test test : tests) {
+            addTest(test);
+        }
     }
 
     public RemoteDevelopmentTest() {
@@ -79,7 +101,7 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
 
     private RemoteDevelopmentTest(String name, Class... testClasses) {
-        super(name, "remote.platforms", testClasses);
+        super(name, PLATFORMS_SECTION, testClasses);
     }
 
     public static Test suite() {
