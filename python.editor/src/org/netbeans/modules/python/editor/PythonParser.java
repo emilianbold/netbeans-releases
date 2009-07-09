@@ -27,8 +27,11 @@
  */
 package org.netbeans.modules.python.editor;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -36,6 +39,7 @@ import org.python.antlr.runtime.ANTLRStringStream;
 import org.python.antlr.runtime.BaseRecognizer;
 import org.python.antlr.runtime.BitSet;
 import org.python.antlr.runtime.CommonToken;
+import org.python.antlr.runtime.CommonTokenStream;
 import org.python.antlr.runtime.IntStream;
 import org.python.antlr.runtime.Lexer;
 import org.python.antlr.runtime.MismatchedTokenException;
@@ -55,14 +59,20 @@ import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.python.antlr.BaseParser;
+import org.python.antlr.GrammarActions;
 import org.python.antlr.ListErrorHandler;
-import org.python.antlr.ModuleParser;
 import org.python.antlr.ParseException;
+import org.python.antlr.PythonLexer;
+import org.python.antlr.PythonTokenSource;
 import org.python.antlr.PythonTree;
+import org.python.antlr.PythonTreeAdaptor;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.mod;
 import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
+import org.python.antlr.runtime.ANTLRReaderStream;
+import org.python.antlr.runtime.CharStream;
 
 /**
  * Parser for Python. Wraps Jython.
@@ -76,6 +86,28 @@ public class PythonParser implements Parser {
 
     static {
         org.python.core.PySystemState.initialize();
+    }
+
+    public mod file_input(CharStream charStream, String fileName) throws RecognitionException {
+        ListErrorHandler eh = new ListErrorHandler();
+        mod tree = null;
+        PythonLexer lexer = new BaseParser.PyLexer(charStream);
+        lexer.setErrorHandler(eh);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        tokens.discardOffChannelTokens(true);
+        PythonTokenSource indentedSource = new PythonTokenSource(tokens, fileName);
+        tokens = new CommonTokenStream(indentedSource);
+        org.python.antlr.PythonParser parser = new org.python.antlr.PythonParser(tokens);
+        parser.setTreeAdaptor(new PythonTreeAdaptor());
+        parser.setErrorHandler(eh);
+        org.python.antlr.PythonParser.file_input_return r = parser.file_input();
+        tree = (mod)r.getTree();
+        return tree;
+    }
+
+    public PythonTree parse(InputStream istream, String fileName) throws Exception {
+        InputStreamReader reader = new InputStreamReader(istream, "ISO-8859-1");
+        return file_input(new ANTLRReaderStream(reader), fileName);
     }
 
     public PythonParserResult parse(final Context context, Sanitize sanitizing) throws Exception {
@@ -113,7 +145,6 @@ public class PythonParser implements Parser {
             //String charset = "UTF-8"; // NOI18N
             //String charset = "iso8859_1"; // NOI18N
             String charset = null;
-            ModuleParser g = new ModuleParser(new ANTLRStringStream(sourceCode), fileName, charset);
             final boolean ignoreErrors = sanitizedSource;
             ListErrorHandler errorHandler = new ListErrorHandler() {
                 @Override
@@ -217,8 +248,18 @@ public class PythonParser implements Parser {
                     }
                 }
             };
-            g.setAntlrErrorHandler(errorHandler);
-            PythonTree t = g.file_input();
+
+            PythonLexer lexer = new BaseParser.PyLexer(new ANTLRStringStream(sourceCode));
+            lexer.setErrorHandler(errorHandler);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            tokens.discardOffChannelTokens(true);
+            PythonTokenSource indentedSource = new PythonTokenSource(tokens, fileName);
+            tokens = new CommonTokenStream(indentedSource);
+            org.python.antlr.PythonParser parser = new org.python.antlr.PythonParser(tokens);
+            parser.setTreeAdaptor(new PythonTreeAdaptor());
+            parser.setErrorHandler(errorHandler);
+            org.python.antlr.PythonParser.file_input_return r = parser.file_input();
+            PythonTree t = (PythonTree)r.getTree();
             PythonParserResult result = createParseResult(t, file, true);
             for (Error error : errors) {
                 result.addError(error);
