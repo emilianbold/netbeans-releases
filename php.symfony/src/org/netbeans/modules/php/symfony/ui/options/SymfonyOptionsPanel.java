@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.php.symfony.ui.options;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -87,6 +88,8 @@ public class SymfonyOptionsPanel extends JPanel {
     public SymfonyOptionsPanel() {
         initComponents();
 
+        // not set in Design because of windows (panel too wide then)
+        symfonyScriptUsageLabel.setText(NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyUsage"));
         errorLabel.setText(" "); // NOI18N
 
         symfonyTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -161,7 +164,7 @@ public class SymfonyOptionsPanel extends JPanel {
         symfonyLabel.setLabelFor(symfonyTextField);
 
 
-        Mnemonics.setLocalizedText(symfonyLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(symfonyLabel,NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.browseButton.text"));
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -174,7 +177,7 @@ public class SymfonyOptionsPanel extends JPanel {
                 searchButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(symfonyScriptUsageLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyScriptUsageLabel.text"));
+        Mnemonics.setLocalizedText(symfonyScriptUsageLabel, "HINT");
         symfonyScriptUsageLabel.setEnabled(false);
 
 
@@ -217,26 +220,29 @@ public class SymfonyOptionsPanel extends JPanel {
                                     .add(symfonyScriptUsageLabel)
                                     .addContainerGap())
                                 .add(layout.createSequentialGroup()
-                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
                                     .addPreferredGap(LayoutStyle.RELATED)
                                     .add(browseButton)
                                     .addPreferredGap(LayoutStyle.RELATED)
                                     .add(searchButton)
-                                    .add(12, 12, 12)))))
+                                    .add(0, 0, 0)))))
                     .add(noteLabel)))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(includePathInfoLabel)
-                .addContainerGap(309, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(installationInfoLabel)
-                .addContainerGap(377, Short.MAX_VALUE))
+                .addContainerGap(159, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(learnMoreLabel)
-                .addContainerGap(680, Short.MAX_VALUE))
+                .addContainerGap(462, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new Component[] {browseButton, searchButton}, GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
