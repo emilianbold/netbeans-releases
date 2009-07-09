@@ -94,6 +94,7 @@ public interface Constants {
     public static final String PLUGIN_EAR = "maven-ear-plugin";//NOI18N
     public static final String PLUGIN_JAR = "maven-jar-plugin";//NOI18N
     public static final String PLUGIN_SUREFIRE = "maven-surefire-plugin";//NOI18N
+    public static final String PLUGIN_CHECKSTYLE = "maven-checkstyle-plugin";//NOI18N
     
     public static final String ENCODING_PARAM = "encoding"; //NOI18N
     public static final String SOURCE_PARAM = "source";//NOI18N
@@ -152,8 +153,15 @@ public interface Constants {
      * <li>app  - only application is run by netbeans quick run infrastructure, not tests</li>
      * <li>none - no compile on save
      * </ul>
-     * @since NetBeans 7.0
+     * @since NetBeans 6.7
      */
     public static final String HINT_COMPILE_ON_SAVE = "netbeans.compile.on.save"; //NOI18N
+
+    /**
+     * Optional property, if defined the IDE will try to use the project's checkstyle configuration
+     * to transparently change the java files formatting (according to the setup rules)
+     * @since NetBeans 6.8
+     */
+    public static final String HINT_CHECKSTYLE_FORMATTING = "netbeans.checkstyle.format"; //NOI18N
     
 }

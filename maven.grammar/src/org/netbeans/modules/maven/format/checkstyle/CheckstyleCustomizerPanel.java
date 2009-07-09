@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom;
 
-import java.util.*;
+
+package org.netbeans.modules.maven.format.checkstyle;
+
+import javax.swing.JComponent;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mkleint
  */
-public interface Reporting extends POMComponent, ReportPluginContainer {
+public class CheckstyleCustomizerPanel implements ProjectCustomizer.CompositeCategoryProvider {
 
-//  <!--xs:complexType name="Reporting">
-//    <xs:all>
-//      <xs:element name="excludeDefaults" minOccurs="0" type="xs:boolean" default="false">
-//      <xs:element name="outputDirectory" minOccurs="0" type="xs:string">
-//      <xs:element name="plugins" minOccurs="0">
-//            <xs:element name="plugin" minOccurs="0" maxOccurs="unbounded" type="ReportPlugin"/>
-//    </xs:all>
-//  </xs:complexType-->
+    public ProjectCustomizer.Category createCategory(Lookup look) {
+        return ProjectCustomizer.Category.create(
+                "checkstyle",
+                NbBundle.getMessage(CheckstyleCustomizerPanel.class, "TIT_CheckStyle"),
+                null,
+                (ProjectCustomizer.Category[])null);
+    }
 
+    public JComponent createComponent(ProjectCustomizer.Category cat, Lookup look) {
+        ModelHandle handle = look.lookup(ModelHandle.class);
+        return new CheckstylePanel(handle, cat);
+    }
 
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    Boolean isExcludeDefaults();
-    void setExcludeDefaults(Boolean exclude);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    String getOutputDirectory();
-    void setOutputDirectory(String directory);
 
 }

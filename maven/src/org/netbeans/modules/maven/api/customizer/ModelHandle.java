@@ -45,12 +45,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.model.pom.Activation;
@@ -78,11 +78,12 @@ public final class ModelHandle {
     public static final String PROFILE_PRIVATE = "netbeans-private"; //NOI18N
     public static final String PROPERTY_PROFILE = "netbeans.execution"; //NOI18N
 
-    private POMModel model;
-    private MavenProject project;
-    private ProfilesModel profiles;
-    private Map<String, ActionToGoalMapping> mappings;
-    private Map<ActionToGoalMapping, Boolean> modMappings;
+    private final MavenProjectPropsImpl auxiliaryProps;
+    private final POMModel model;
+    private final MavenProject project;
+    private final ProfilesModel profiles;
+    private final Map<String, ActionToGoalMapping> mappings;
+    private final Map<ActionToGoalMapping, Boolean> modMappings;
     private Profile publicProfile;
     private org.netbeans.modules.maven.model.profile.Profile privateProfile;
     private List<Configuration> configurations;
@@ -104,8 +105,9 @@ public final class ModelHandle {
                                         MavenProject proj, 
                                         Map<String, ActionToGoalMapping> mapp, 
                                         List<ModelHandle.Configuration> configs,
-                                        ModelHandle.Configuration active) {
-            return new ModelHandle(model, prof, proj, mapp, configs, active);
+                                        ModelHandle.Configuration active,
+                                        MavenProjectPropsImpl auxProps) {
+            return new ModelHandle(model, prof, proj, mapp, configs, active, auxProps);
         }
         
          public void assign() {
@@ -119,7 +121,8 @@ public final class ModelHandle {
     /** Creates a new instance of ModelHandle */
     private ModelHandle(POMModel mdl, ProfilesModel profile, MavenProject proj,
                         Map<String, ActionToGoalMapping> mappings,
-                        List<Configuration> configs, Configuration active) {
+                        List<Configuration> configs, Configuration active,
+                        MavenProjectPropsImpl auxProps) {
         model = mdl;
         model.startTransaction();
         //TODO when and how to do transaction rollback?
@@ -134,6 +137,7 @@ public final class ModelHandle {
         }
         configurations = configs;
         this.active = active;
+        auxiliaryProps = auxProps;
     }
 
     /**
@@ -239,6 +243,30 @@ public final class ModelHandle {
     public MavenProject getProject() {
         return project;
     }
+
+
+    /**
+     * get the value of Auxiliary property defined in the project,
+     * however take only the content in nb-configurations.xml file into account, never
+     * consider values from pom.xml here.
+     * @param propertyName
+     * @param shared
+     * @return
+     */
+    public String getRawAuxiliaryProperty(String propertyName, boolean shared) {
+        return auxiliaryProps.get(propertyName, shared, false);
+    }
+
+    /**
+     * set the value of Auxiliary property, will be written to nb-configurations.xml file
+     * @param propertyName
+     * @param shared
+     * @param value
+     */
+    public void setRawAuxiliaryProperty(String propertyName, String value, boolean shared) {
+        auxiliaryProps.put(propertyName, value, shared);
+    }
+
     
     /**
      * action mapping model
