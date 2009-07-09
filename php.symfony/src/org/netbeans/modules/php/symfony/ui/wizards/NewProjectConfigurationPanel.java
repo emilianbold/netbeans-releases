@@ -41,8 +41,6 @@ package org.netbeans.modules.php.symfony.ui.wizards;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -85,19 +83,6 @@ public class NewProjectConfigurationPanel extends JPanel {
         initApp(frontendCheckBox, frontendParamsLabel, frontendParamsTextField, null);
         initApp(backendCheckBox, backendParamsLabel, backendParamsTextField, null);
         initApp(otherCheckBox, otherParamsLabel, otherParamsTextField, otherNameTextField);
-
-        otherCheckBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                enableOtherNameTextField();
-            }
-        });
-        otherNameTextField.addPropertyChangeListener("enabled", new PropertyChangeListener() { // NOI18N
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (otherCheckBox.isEnabled()) {
-                    enableOtherNameTextField();
-                }
-            }
-        });
 
         ItemListener defaultItemListener = new DefaultItemListener();
         frontendCheckBox.addItemListener(defaultItemListener);
@@ -163,10 +148,6 @@ public class NewProjectConfigurationPanel extends JPanel {
 
     void fireChange() {
         changeSupport.fireChange();
-    }
-
-    void enableOtherNameTextField() {
-        otherNameTextField.setEnabled(otherCheckBox.isSelected());
     }
 
     void visibleApp(boolean visible, JLabel paramsLabel, JTextField paramsTextField, JTextField nameTextField) {
