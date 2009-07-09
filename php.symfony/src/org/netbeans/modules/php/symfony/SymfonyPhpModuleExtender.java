@@ -41,14 +41,17 @@ package org.netbeans.modules.php.symfony;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.SymfonyScript.InvalidSymfonyScriptException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -56,7 +59,7 @@ import org.openide.util.HelpCtx;
 public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
-    public Set<FileObject> extend(PhpModule phpModule) {
+    public Set<FileObject> extend(PhpModule phpModule) throws ExtendingException {
         // init project
         SymfonyScript symfonyScript = null;
         try {
@@ -67,7 +70,14 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
         assert symfonyScript.isValid() : "Symfony script has to be valid!";
 
-        symfonyScript.initProject(phpModule);
+        if (!symfonyScript.initProject(phpModule)) {
+            // can happen if symfony script was not chosen
+            Logger.getLogger(SymfonyPhpModuleExtender.class.getName())
+                    .info("Framework Symfony not found in newly created project " + phpModule.getDisplayName());
+            throw new ExtendingException(NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_NotExtended"));
+        }
+        // prefetch commands
+        FrameworkCommandSupport.forPhpModule(phpModule).refreshFrameworkCommandsLater(null);
 
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
@@ -105,7 +115,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         try {
             SymfonyScript.getDefault();
         } catch (InvalidSymfonyScriptException ex) {
-            return ex.getMessage();
+            return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
         return null;
     }

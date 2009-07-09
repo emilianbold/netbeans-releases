@@ -241,7 +241,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             }
         }
 
-        handle = ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(), mapps, configs, active);
+        handle = ACCESSOR.createHandle(model, profilesModel, 
+                project.getOriginalMavenProject(), mapps, configs, active,
+                project.getAuxProps());
         handle.setConfigurationsEnabled(configEnabled);
     }
     
@@ -262,7 +264,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     public static abstract class ModelAccessor {
         
         public abstract ModelHandle createHandle(POMModel model, ProfilesModel prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
-                List<ModelHandle.Configuration> configs, ModelHandle.Configuration active);
+                List<ModelHandle.Configuration> configs, ModelHandle.Configuration active, MavenProjectPropsImpl auxProps);
         
     }
     /** Listens to the actions on the Customizer's option buttons */

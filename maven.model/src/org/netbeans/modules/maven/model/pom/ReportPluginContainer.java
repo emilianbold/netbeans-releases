@@ -36,51 +36,21 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.model.pom;
 
-package org.netbeans.modules.bugtracking.issuetable;
-
-import java.lang.reflect.Field;
-import java.util.logging.Level;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.QueryAccessor;
+import java.util.*;
 
 /**
  *
- * @author tomas
+ * @author mkleint
  */
-public class IssueTableTest extends NbTestCase {
-    public IssueTableTest(String arg0) {
-        super(arg0);
-    }
+public interface ReportPluginContainer extends POMComponent {
 
-    @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }   
     
-    @Override
-    protected void tearDown() throws Exception {        
-    }
+    List<ReportPlugin> getReportPlugins();
+    void addReportPlugin(ReportPlugin plugin);
+    void removeReportPlugin(ReportPlugin plugin);
 
-    public void testColumnsCount() throws Throwable {
-        IssuetableTestFactory factory = IssuetableTestFactory.getInstance(this);
-        Query q = factory.createQuery();
-        assertEquals(0,q.getIssues().length);
-
-        NodeTableModel model = getModel(q);       
-        assertEquals(factory.getColumnsCountBeforeSave(), model.getColumnCount());
-        new QueryAccessor(q).setSaved(true);
-        assertEquals(factory.getColumnsCountAfterSave(), model.getColumnCount());
-
-    }
-
-    private NodeTableModel getModel(Query q) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        IssueTable it = IssuetableTestFactory.getInstance(this).getTable(q);
-        Field f = it.getClass().getDeclaredField("tableModel");
-        f.setAccessible(true);
-        return (NodeTableModel) f.get(it);
-    }
+    ReportPlugin findReportPluginById(String groupId, String artifactId);
 
 }
