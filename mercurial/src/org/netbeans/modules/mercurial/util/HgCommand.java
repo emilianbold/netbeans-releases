@@ -2127,6 +2127,11 @@ public class HgCommand {
      */
     public static FileInformation getSingleStatus(File repository, String cwd, String filename)  throws HgException{
         FileInformation info = null;
+        long startTime = 0;
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("getSingleStatus: starting for " + filename); //NOI18N
+            startTime = System.currentTimeMillis();
+        }
         List<String> list = doSingleStatusCmd(repository, cwd, filename);
         if(list == null || list.isEmpty())
             return new FileInformation(FileInformation.STATUS_UNKNOWN,null, false);
@@ -2161,6 +2166,9 @@ public class HgCommand {
 
         Mercurial.LOG.log(Level.FINE, "getSingleStatus(): StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4}", // NOI18N
                 new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd} );
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("getSingleStatus for " + filename + " lasted " + (System.currentTimeMillis() - startTime));
+        }
         return info;
     }
 
@@ -2403,7 +2411,11 @@ public class HgCommand {
 
     private static Map<File, FileInformation> getDirStatusWithFlags(File repository, File dir, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
-
+        long startTime = 0;
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("getDirStatusWithFlags: starting for " + dir.getAbsolutePath()); //NOI18N
+            startTime = System.currentTimeMillis();
+        }
         List<FileStatus> statusList = new ArrayList<FileStatus>();
         FileInformation prev_info = null;
         List<String> list = doRepositoryDirStatusCmd(repository, dir, statusFlags);
@@ -2458,12 +2470,18 @@ public class HgCommand {
             repositoryFiles.put(file, prev_info);
         }
 
-        if (list.size() < 10) {
-            Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
+        if (Mercurial.LOG.isLoggable(Level.FINE)) {
+            if (list.size() < 10) {
+                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
                     new Object[] {repository.getAbsolutePath(), statusFlags, list} );
-        } else {
-            Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
+            } else {
+                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
                     new Object[] {repository.getAbsolutePath(), statusFlags, list.size()} );
+            }
+        }
+
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("getDirStatusWithFlags for " + dir.getAbsolutePath() + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
         }
         return repositoryFiles;
     }

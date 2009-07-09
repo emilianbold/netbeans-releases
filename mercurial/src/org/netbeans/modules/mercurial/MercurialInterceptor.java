@@ -330,6 +330,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
         if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
             // refresh all at once
+            Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
             filesToRefresh.add(fileToRefresh);
         } else {
             // refresh one by one
@@ -371,6 +372,11 @@ public class MercurialInterceptor extends VCSInterceptor {
      * @param files
      */
     private void refreshAll (final Set<File> files) {
+        long startTime = 0;
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            startTime = System.currentTimeMillis();
+            Mercurial.STATUS_LOG.fine("refreshAll: starting for " + files.size() + " files.");
+        }
         if (files.isEmpty()) {
             return;
         }
@@ -417,9 +423,15 @@ public class MercurialInterceptor extends VCSInterceptor {
                 rootFiles.put(repository, FileUtil.normalizeFile(file));
             }
         }
-
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime));
+            startTime = System.currentTimeMillis();
+        }
         if (!rootFiles.isEmpty()) {
             cache.refreshAllRoots(rootFiles);
+        }
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+            Mercurial.STATUS_LOG.fine("refreshAll: finishes status scan after " + (System.currentTimeMillis() - startTime));
         }
     }
 }

@@ -92,6 +92,7 @@ public class Mercurial {
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
+    public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.mercurial.status"); //NOI18N
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
 
     private static final int STATUS_DIFFABLE =
