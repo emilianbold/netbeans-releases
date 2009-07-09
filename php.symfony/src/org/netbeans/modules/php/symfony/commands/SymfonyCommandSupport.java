@@ -73,8 +73,12 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
     static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
 
-    public SymfonyCommandSupport(PhpModule phpModule) {
+    protected SymfonyCommandSupport(PhpModule phpModule) {
         super(phpModule);
+    }
+
+    public static SymfonyCommandSupport forCreatingProject(PhpModule phpModule) {
+        return new SymfonyCommandSupport(phpModule);
     }
 
     @Override
@@ -110,8 +114,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         assert symfonyScript.isValid();
 
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpInterpreter)
-                .addArgument(symfonyScript.getProgram())
-                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()));
+                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .addArgument(symfonyScript.getProgram());
         for (String param : symfonyScript.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);
         }
@@ -121,9 +125,6 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     protected List<FrameworkCommand> getFrameworkCommandsInternal() throws InterruptedException, ExecutionException {
         ExternalProcessBuilder processBuilder = createCommand("list"); // NOI18N
         if (processBuilder == null) {
-            UiUtils.invalidScriptProvided(
-                    SymfonyScript.validateDefault(),
-                    SymfonyScript.getOptionsSubPath());
             return null;
         }
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
