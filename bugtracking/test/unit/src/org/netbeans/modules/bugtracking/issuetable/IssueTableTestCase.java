@@ -41,7 +41,6 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.lang.reflect.Field;
 import java.util.logging.Level;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryAccessor;
@@ -50,8 +49,8 @@ import org.netbeans.modules.bugtracking.spi.QueryAccessor;
  *
  * @author tomas
  */
-public class IssueTableTest extends NbTestCase {
-    public IssueTableTest(String arg0) {
+public class IssueTableTestCase extends NbTestCase {
+    public IssueTableTestCase(String arg0) {
         super(arg0);
     }
 
