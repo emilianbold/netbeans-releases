@@ -56,9 +56,11 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -98,33 +100,37 @@ public class RemoveUnusedImportFix implements Fix  {
 
     public ChangeInfo implement() {
         JavaSource js = JavaSource.forFileObject(file);
-        
-        try {
-            js.runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws Exception {
-                    copy.toPhase(Phase.PARSED);
-                    
-                    CompilationUnitTree nueCUT = copy.getCompilationUnit();
-                    
-                    for (TreePathHandle handle : importsToRemove) {
-                        TreePath tp = handle.resolve(copy);
-                        
-                        if (tp == null) {
-                            //cannot resolve
-                            Logger.getLogger(RemoveUnusedImportFix.class.getName()).info("Cannot resolve import to remove."); //NOI18N
-                            return ;
+
+        if (js == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaFixAllImports.class, "MSG_CannotFixImports")); //NOI18N
+        } else {
+            try {
+                js.runModificationTask(new Task<WorkingCopy>() {
+
+                    public void run(WorkingCopy copy) throws Exception {
+                        copy.toPhase(Phase.PARSED);
+
+                        CompilationUnitTree nueCUT = copy.getCompilationUnit();
+
+                        for (TreePathHandle handle : importsToRemove) {
+                            TreePath tp = handle.resolve(copy);
+
+                            if (tp == null) {
+                                //cannot resolve
+                                Logger.getLogger(RemoveUnusedImportFix.class.getName()).info("Cannot resolve import to remove."); //NOI18N
+                                return ;
+                            }
+
+                            nueCUT = copy.getTreeMaker().removeCompUnitImport(nueCUT, (ImportTree) tp.getLeaf());
                         }
-                        
-                        nueCUT = copy.getTreeMaker().removeCompUnitImport(nueCUT, (ImportTree) tp.getLeaf());
+
+                        copy.rewrite(copy.getCompilationUnit(), nueCUT);
                     }
-                    
-                    copy.rewrite(copy.getCompilationUnit(), nueCUT);
-                }
-            }).commit();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+                }).commit();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
-        
         return null;
     }
 
