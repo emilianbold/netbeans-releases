@@ -55,6 +55,8 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.RelativeOrdering;
+import org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingItems;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
@@ -102,7 +104,8 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         for (FragmentRec fr : fragmentRecs) {
             res.add(fr.fragment);
         }
-        return res;
+        // TODO PetrS based on web.xml, the sorting may be absoluto also -- implement this too!!
+        return sortFragmentsRelatively(res);
     }
 
     public List<ServletInfo> getServlets() {
@@ -244,12 +247,161 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     }
 
     // -------------------------------------------------------------------------
+    static List<WebFragment> sortFragmentsRelatively(List<WebFragment> frags) {
+        List<Constraint> constraints = extractConstraints(frags);
+        List<Integer> others = extractOthers(frags, constraints);
+        List<Integer> sorted = sort(constraints);
+        List<WebFragment> res = new ArrayList<WebFragment>();
+        for (int f : sorted) {
+            if (f == OTHERS) {
+                for (int o : others) {
+                    res.add(frags.get(o));
+                }
+            }
+            else {
+                res.add(frags.get(f));
+            }
+        }
+        return res;
+    }
+
+    private static final int OTHERS = -1;
+    private static final int NOT_FOUND = -2;
+
+    private static List<Constraint> extractConstraints(List<WebFragment> list) {
+        List<Constraint> res = new ArrayList<Constraint>();
+        int no = -1;
+        for (WebFragment f : list) {
+            no++;
+            RelativeOrdering[] os = f.getOrdering();
+            if (os == null)
+                continue;
+            for (RelativeOrdering o : os) {
+                RelativeOrderingItems after = o.getAfter();
+                if (after != null) {
+                    for (int i=0,maxi=after.sizeName(); i<maxi; i++) {
+                        int fragNo = findFragment(list, after.getName(i));
+                        if (fragNo != NOT_FOUND)
+                            res.add(new Constraint(fragNo, no));
+                    }
+                    if (after.getOthers() != null)
+                        res.add(new Constraint(OTHERS, no));
+                }
+                RelativeOrderingItems before = o.getBefore();
+                if (before != null) {
+                    for (int i=0,maxi=before.sizeName(); i<maxi; i++) {
+                        int fragNo = findFragment(list, before.getName(i));
+                        if (fragNo != NOT_FOUND)
+                            res.add(new Constraint(no, fragNo));
+                    }
+                    if (before.getOthers() != null)
+                        res.add(new Constraint(no, OTHERS));
+                }
+            }
+        }
+        return res;
+    }
+
+    private static List<Integer> extractOthers(List<WebFragment> list, List<Constraint> constraints) {
+        List<Integer> res = new ArrayList<Integer>();
+        for (int i=0,maxi=list.size(); i<maxi; i++) {
+            boolean referenced = false;
+            for (Constraint c : constraints) {
+                if (c.references(i)) {
+                    referenced = true;
+                    break;
+                }
+            }
+            if (!referenced)
+                res.add(i);
+        }
+        return res;
+    }
+
+    private static List<Integer> sort(List<Constraint> constraints) {
+        List<Integer> res = new ArrayList<Integer>();
+        while (!constraints.isEmpty()) {
+            int item = -1;
+            Constraint c = null;
+            for (int i=0,maxi=constraints.size(); i<maxi; i++) {
+                c = constraints.get(i);
+                if (isReady(constraints, c.op1, i)) {
+                    item = i;
+                    break;
+                }
+            }
+            if (item < 0)
+                return null;  // Cannot sort (cycle?)
+
+            constraints.remove(item);
+            if (!res.contains(c.op1))
+                res.add(c.op1);
+            if (!isReferenced(constraints, c.op2))
+                res.add(c.op2);
+        }
+        return res;
+    }
+
+    private static boolean isReady(List<Constraint> constraints, int f, int except) {
+        for (int i=0,maxi=constraints.size(); i<maxi; i++) {
+            if (i == except)
+                continue;
+            Constraint c = constraints.get(i);
+            if (c.op2 == f)
+                return false;
+        }
+        return true;
+    }
+
+    private static boolean isReferenced(List<Constraint> constraints, int f) {
+        for (Constraint c : constraints) {
+            if (c.op1 == f || c.op2 == f)
+                return true;
+        }
+        return false;
+    }
+
+    private static int findFragment(List<WebFragment> list, String name) {
+        int res = -1;
+        for (WebFragment f : list) {
+            res++;
+            try {
+                String[] names = f.getName();
+                if (names != null) {
+                    for (String n : names) {
+                        if (n.equals(name))
+                            return res;
+                    }
+                }
+            }
+            catch (VersionNotSupportedException e) {
+                // ignore
+            }
+        }
+        return NOT_FOUND;
+    }
+
+    // -------------------------------------------------------------------------
     // INNER CLASSES
     // -------------------------------------------------------------------------
     private static class FragmentRec {
         WebFragment fragment;
         long lastModification;
         FileObject source;
+    }
+
+    private static class Constraint {
+        int op1;
+        int op2;
+
+        Constraint(int op1, int op2) {
+            this.op1 = op1;
+            this.op2 = op2;
+        }
+
+        boolean references(int no) {
+            return op1 == no || op2 == no;
+        }
     }
 
 }
