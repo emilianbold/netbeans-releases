@@ -186,5 +186,38 @@ public final class RDocAnalyzerTest extends RubyTestBase {
         assertNull(RDocAnalyzer.resolveType(type));
     }
 
+    public void testReturnTypeAssertions() {
+        assertTypes(new String[]{"Fixnum"}, "#:return:=> Fixnum");
+        assertTypes(new String[]{"Fixnum", "String"}, "#:return:=> Fixnum or String");
+        assertTypes(new String[]{"SomeClass", "Fixnum", "File"}, "#:return:=> SomeClass, -1 or File");
+    }
+
+    public void testParamTypeAssertions() {
+        RDocAnalyzer.TypeForSymbol tfs = RDocAnalyzer.paramTypesFromTypeAssertion("#:arg:param1 => String");
+        assertEquals(1, tfs.getTypes().size());
+        assertEquals("param1", tfs.getName());
+        assertEquals("String", tfs.getTypes().get(0));
+
+        tfs = RDocAnalyzer.paramTypesFromTypeAssertion("#:arg: param2=>Fixnum  ");
+        assertEquals(1, tfs.getTypes().size());
+        assertEquals("param2", tfs.getName());
+        assertEquals("Fixnum", tfs.getTypes().get(0));
+
+        tfs = RDocAnalyzer.paramTypesFromTypeAssertion("#:arg: param2=>Fixnum, SomeClass");
+        assertEquals(2, tfs.getTypes().size());
+        assertEquals("param2", tfs.getName());
+        assertEquals("Fixnum", tfs.getTypes().get(0));
+        assertEquals("SomeClass", tfs.getTypes().get(1));
+
+        tfs = RDocAnalyzer.paramTypesFromTypeAssertion("#:arg: param2 =>Hash or Foo");
+        assertEquals(2, tfs.getTypes().size());
+        assertEquals("param2", tfs.getName());
+        assertEquals("Hash", tfs.getTypes().get(0));
+        assertEquals("Foo", tfs.getTypes().get(1));
+
+        // assert invalid entries not recognized
+        tfs = RDocAnalyzer.paramTypesFromTypeAssertion("#arg param2 =>Hash or Foo");
+        assertNull(tfs);
+    }
 }
 

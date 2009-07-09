@@ -1392,7 +1392,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             Node root = AstUtilities.getRoot(result);
             if (platform && !userSourcesTest) {
                 signature = RubyIndexerHelper.getMethodSignature(
-                        child, root, flags, signature, file, result.getSnapshot());
+                        child, root, flags, signature, file, result);
                 if (signature == null) {
                     return;
                 }
@@ -1400,7 +1400,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 if (!userSourcesTest) {
                     signature = RubyIndexerHelper.replaceAttributes(signature, flags);
                 }
-                signature = RubyIndexerHelper.getMethodSignatureForUserSources(root, child, signature, flags, result.getSnapshot());
+                signature = RubyIndexerHelper.getMethodSignatureForUserSources(root, child, signature, flags, result);
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
 

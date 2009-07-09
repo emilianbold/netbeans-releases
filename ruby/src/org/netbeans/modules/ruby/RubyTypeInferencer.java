@@ -45,6 +45,7 @@ import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ReturnNode;
+import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 
 public final class RubyTypeInferencer {
 
@@ -166,6 +167,16 @@ public final class RubyTypeInferencer {
         if (fastType != null) {
             return fastType;
         }
+        if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
+            List<String> rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodDefNode);
+            if (rdocs != null) {
+                RubyType type = RDocAnalyzer.collectTypesFromComment(rdocs);
+                if (type != null && type.isKnown()) {
+                    return type;
+                }
+            }
+        }
+        // this can be very time consuming, return if TI is not enabled
         RubyType result = new RubyType();
         Set<Node> exits = new LinkedHashSet<Node>();
         AstUtilities.findExitPoints(methodDefNode, exits);
