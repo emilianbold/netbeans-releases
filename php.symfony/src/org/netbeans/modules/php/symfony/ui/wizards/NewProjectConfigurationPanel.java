@@ -54,6 +54,7 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -135,7 +136,9 @@ public class NewProjectConfigurationPanel extends JPanel {
         }
         if (otherCheckBox.isSelected()) {
             String otherAppName = getOtherAppName();
-            if (!APP_NAME_PATTERN.matcher(otherAppName).matches()) {
+            if (!StringUtils.hasText(otherAppName)) {
+                return NbBundle.getMessage(NewProjectConfigurationPanel.class, "MSG_NoAppName");
+            } else if (!APP_NAME_PATTERN.matcher(otherAppName).matches()) {
                 return NbBundle.getMessage(NewProjectConfigurationPanel.class, "MSG_InvalidAppName", otherAppName);
             }
             err = validateParams(otherAppName, otherParamsTextField);
