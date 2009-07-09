@@ -67,7 +67,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(org.netbeans.modules.bugtracking.issuetable.IssueTableTest.class);
+        suite.addTestSuite(org.netbeans.modules.bugtracking.issuetable.IssueTableTestCase.class);
         return new IssueTableTest(suite);
     }
     
