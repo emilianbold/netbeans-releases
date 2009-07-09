@@ -189,7 +189,7 @@ public class CheckstylePanel extends javax.swing.JPanel {
                         .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(btnLearnMore)
-                            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE))))
+                            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
