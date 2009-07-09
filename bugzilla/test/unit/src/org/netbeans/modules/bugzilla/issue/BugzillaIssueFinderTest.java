@@ -41,22 +41,34 @@ package org.netbeans.modules.bugzilla.issue;
 
 import org.junit.After;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
 /**
  *
  * @author  Marian Petras
  */
-public class BugzillaIssueFinderTest {
+public class BugzillaIssueFinderTest extends NbTestCase {
 
     private BugzillaIssueFinder issueFinder;
 
-    public BugzillaIssueFinderTest() { }
+    public BugzillaIssueFinderTest(String name) {
+        super(name);
+    }
 
     @After
+    @Override
     public void tearDown() {
         issueFinder = null;
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+    }
+
+
 
     @Test
     public void testGetIssueSpans() {

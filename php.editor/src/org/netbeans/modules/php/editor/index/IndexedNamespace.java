@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,34 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
+package org.netbeans.modules.php.editor.index;
 
-import java.io.File;
-import java.util.*;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.api.ElementKind;
 
 /**
- * Make it possible to hide contructors and factory methods in VCSContext.
- * 
- * @author Maros Sandor
+ *
+ * @author Tomasz.Slota@Sun.COM
  */
-public abstract class Accessor {
-    
-    public static Accessor VCSContextAccessor;
-    
-    static {
-        // invokes static initializer of VCSContext.class
-        // that will assign value to the DEFAULT field above
-        Class c = VCSContext.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
-        }
+public class IndexedNamespace extends IndexedElement {
+    protected IndexedNamespace(String name, String in, PHPIndex index, String fileUrl,
+            int offset, int flags){
+        super(name, in, index, fileUrl, offset, flags, ElementKind.PACKAGE);
+        
     }
-    
-    public abstract VCSContext createContextForFiles(Set<File> files, Set<? extends FileObject> originalFiles);
 }

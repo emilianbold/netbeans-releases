@@ -50,11 +50,11 @@ public final class ContextKnowledge {
     private Map<String, RubyType> typesForSymbols;
     private Map<Node, RubyType> typesForNodes;
     
-    final RubyIndex index;
-    final Node root;
-    final Node target;
-    final int astOffset;
-    final int lexOffset;
+    private final RubyIndex index;
+    private final Node root;
+    private final Node target;
+    private final int astOffset;
+    private final int lexOffset;
     private final ParserResult parserResult;
 
     private boolean analyzed;

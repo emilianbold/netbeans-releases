@@ -70,6 +70,7 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -134,6 +135,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     static final String FIELD_INCLUDE = "include"; //NOI18N
     static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
     static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+    static final String FIELD_NAMESPACE = "ns"; //NOI18N
 
     static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
@@ -154,6 +156,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         FIELD_IDENTIFIER_DECLARATION,
         FIELD_VAR,
         FIELD_TOP_LEVEL,
+        FIELD_NAMESPACE
     };
 
     public String getPersistentUrl(File file) {
@@ -247,6 +250,14 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
                 defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
             }
+            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
+                if (nsElement.getName().length() == 0){
+                    continue; // do not index default ns
+                }
+
+                defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
+                defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
+            }
             final IndexDocument identifierDocument = support.createDocument(indexable);
             documents.add(identifierDocument);
             Program program = r.getProgram();
@@ -289,7 +300,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 3;
+        public static final int VERSION = 4;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

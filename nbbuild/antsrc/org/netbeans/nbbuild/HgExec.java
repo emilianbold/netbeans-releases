@@ -48,8 +48,8 @@ import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.types.Commandline;
 
 /**
- * Just like &lt;exec> but fixes the executable as <code>hg</code> (Mercurial).
- * Advantage is that it also checks for variants like <code>hg.cmd</code> etc.
+ * Just like {@code <exec>} but fixes the executable as {@code hg} (Mercurial).
+ * The advantage is that it also checks for variants like {@code hg.cmd} etc.
  * See issue #134636.
  */
 public class HgExec extends ExecTask {
@@ -73,30 +73,17 @@ public class HgExec extends ExecTask {
     }
 
     /**
-     * Get a command to run Hg.
+     * Get a command to run Mercurial.
+     * For Windows users, {@link Runtime#exec} does not work directly on {@code *.bat} / {@code *.cmd} files.
+     * Find what the desired Hg executable form is in the path and call it appropriately.
      */
     public static List<String> hgExecutable() {
         String path = System.getenv("Path");
         if (path != null) {
             for (String component : path.split(File.pathSeparator)) {
-                File f = new File (component, "hg.bat");
-                //TDB: Check for .bat or .cmd first - if you are on windows
-                //and built mercurial from source, we want the .bat file,
-                //not the plain "hg" file or the build script will
-                //not actually be able to run cmd
-                if (f.isFile()) {
-                    return Arrays.asList ("cmd", "/c", "hg");
-                }
-                f = new File (component, "hg.bat");
-                if (f.isFile()) {
-                    return Arrays.asList ("cmd", "/c", "hg");
-                }
-                f = new File (component, "hg.cmd");
-                if (f.isFile()) {
-                    return Collections.singletonList("hg");
-                }
-                f = new File (component, "hg");
-                if (f.isFile()) {
+                if (new File(component, "hg.bat").isFile() || new File(component, "hg.cmd").isFile()) {
+                    return Arrays.asList("cmd", "/c", "hg");
+                } else if (new File(component, "hg.exe").isFile() || new File(component, "hg").isFile()) {
                     return Collections.singletonList("hg");
                 }
             }

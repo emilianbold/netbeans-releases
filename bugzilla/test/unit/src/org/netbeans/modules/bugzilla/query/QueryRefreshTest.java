@@ -69,7 +69,8 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
     }   
     
     @Override
-    protected void setUp() throws Exception {    
+    protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);

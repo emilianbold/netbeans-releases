@@ -95,7 +95,7 @@ public class Utils {
         return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
     }
         
-    public static VCSContext contextForFileObjects(Set<FileObject> files) {
+    public static VCSContext contextForFileObjects(Set<? extends FileObject> files) {
         Set<File> roots = new HashSet<File>(files.size());
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
@@ -105,7 +105,7 @@ public class Utils {
                 roots.add(FileUtil.toFile(fo));
             }
         }
-        return Accessor.VCSContextAccessor.createContextForFiles(roots);
+        return Accessor.VCSContextAccessor.createContextForFiles(roots, files);
     }
     
     /**
