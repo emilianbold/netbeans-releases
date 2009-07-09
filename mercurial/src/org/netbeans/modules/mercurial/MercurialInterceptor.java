@@ -119,23 +119,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
             return;
         }
-        Mercurial hg = Mercurial.getInstance();
-        final File root = hg.getRepositoryRoot(file);
-        rp.post(new Runnable() {
-            public void run() {
-                if (file.isDirectory()) {
-                    try {
-                        Map<File, FileInformation> interestingFiles = HgCommand.getInterestingStatus(root, file);
-                        FileInformation fi = interestingFiles.get(file);
-                        cache.refreshFileStatus(file, fi, interestingFiles);
-                    } catch (HgException ex) {
-                        Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
-                    }             
-                } else if (file.getParentFile() != null) {
-                    reScheduleRefresh(800, file);
-                }
-            }
-        });
+        reScheduleRefresh(800, file);
     }
 
     public boolean beforeMove(File from, File to) {
@@ -218,14 +202,6 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     public void afterMove(final File from, final File to) {
         Mercurial.LOG.fine("afterMove " + from + "->" + to);
-        Utils.post(new Runnable() {
-            public void run() {
-                fileMovedImpl(from, to);
-            }
-        });
-    }
-
-    private void fileMovedImpl(final File from, final File to) {
         if (from == null || to == null || !to.exists()) return;
         if (to.isDirectory()) return;
 
@@ -233,6 +209,12 @@ public class MercurialInterceptor extends VCSInterceptor {
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {
             reScheduleRefresh(800, from);
+        }
+        // target needs to refreshed, too
+        parent = to.getParentFile();
+        // There is no point in refreshing the cache for ignored files.
+        if (parent != null && !HgUtils.isIgnored(parent, false)) {
+            reScheduleRefresh(800, to);
         }
     }
     
@@ -279,17 +261,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     public void afterCreate(final File file) {
         Mercurial.LOG.fine("afterCreate " + file);
-        Utils.post(new Runnable() {
-            public void run() {
-                fileCreatedImpl(file);
-            }
-        });
-    }
-
-    private void fileCreatedImpl(final File file) {
         if (file.isDirectory()) return;
-        Mercurial.LOG.log(Level.FINE, "fileCreatedImpl {0}", file);
-
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
             reScheduleRefresh(800, file.getParentFile());
@@ -297,11 +269,12 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
     
     public void afterChange(final File file) {
-        Utils.post(new Runnable() {
-            public void run() {
-                fileChangedImpl(file);
-            }
-        });
+        if (file.isDirectory()) return;
+        Mercurial.LOG.log(Level.FINE, "afterChange(): {0}", file);      //NOI18N
+        // There is no point in refreshing the cache for ignored files.
+        if (!HgUtils.isIgnored(file, false)) {
+            reScheduleRefresh(800, file);
+        }
     }
 
     @Override
@@ -348,17 +321,6 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         }
         return remotePath;
-    }
-
-
-
-    private void fileChangedImpl(final File file) {
-        if (file.isDirectory()) return;
-        Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): File: {0}", file); // NOI18N
-        // There is no point in refreshing the cache for ignored files.
-        if (!HgUtils.isIgnored(file, false)) {
-            reScheduleRefresh(800, file);
-        }
     }
 
     public Boolean isRefreshScheduled(File file) {
