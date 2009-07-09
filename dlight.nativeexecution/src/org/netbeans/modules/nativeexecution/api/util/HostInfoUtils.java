@@ -215,9 +215,14 @@ public final class HostInfoUtils {
      * @param execEnv execution environment to get information about
      * @return information about the host represented by execEnv. <tt>null</tt>
      * if interrupted of connection initiation is cancelled by user.
+     * Also returns null if execEnv parameter is null.
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
+        if (execEnv == null) {
+            return null;
+        }
+
         try {
             return hostInfoCachedProcessor.compute(execEnv);
         } catch (InterruptedException ex) {
