@@ -634,23 +634,23 @@ public class KenaiTest extends NbTestCase {
 
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
-//        _suite.addTest(new KenaiTest("testSearchProjects"));
-//        _suite.addTest(new KenaiTest("testSearchProjectsLessSpecific"));
-//        _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
-//        _suite.addTest(new KenaiTest("testGetProject"));
-//        _suite.addTest(new KenaiTest("testGetDescription"));
-//        _suite.addTest(new KenaiTest("testGetDisplayName"));
-//        _suite.addTest(new KenaiTest("testGetWebLocation"));
-//        _suite.addTest(new KenaiTest("testGetTags"));
-//        _suite.addTest(new KenaiTest("testLogin"));
-//        _suite.addTest(new KenaiTest("testLogout"));
-//        _suite.addTest(new KenaiTest("testPasswordAuthentication"));
-//        _suite.addTest(new KenaiTest("testCreateProject"));
-//        _suite.addTest(new KenaiTest("testCreateFeature"));
-//        _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
-//        _suite.addTest(new KenaiTest("testGetLicenses"));
-//        _suite.addTest(new KenaiTest("testGetServices"));
-//        _suite.addTest(new KenaiTest("testGetMyProjects"));
+        _suite.addTest(new KenaiTest("testSearchProjects"));
+        _suite.addTest(new KenaiTest("testSearchProjectsLessSpecific"));
+        _suite.addTest(new KenaiTest("testSearchProjectsWithSpace"));
+        _suite.addTest(new KenaiTest("testGetProject"));
+        _suite.addTest(new KenaiTest("testGetDescription"));
+        _suite.addTest(new KenaiTest("testGetDisplayName"));
+        _suite.addTest(new KenaiTest("testGetWebLocation"));
+        _suite.addTest(new KenaiTest("testGetTags"));
+        _suite.addTest(new KenaiTest("testLogin"));
+        _suite.addTest(new KenaiTest("testLogout"));
+        _suite.addTest(new KenaiTest("testPasswordAuthentication"));
+        _suite.addTest(new KenaiTest("testCreateProject"));
+        _suite.addTest(new KenaiTest("testCreateFeature"));
+        _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
+        _suite.addTest(new KenaiTest("testGetLicenses"));
+        _suite.addTest(new KenaiTest("testGetServices"));
+        _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
         return _suite;
     }
