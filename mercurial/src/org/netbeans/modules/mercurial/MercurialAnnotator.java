@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial;
 
-import java.util.regex.Matcher;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
 import org.netbeans.modules.mercurial.ui.create.CreateAction;
@@ -246,7 +245,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
         
         if (mostImportantInfo == null) return null;
@@ -265,7 +264,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !Utils.shareCommonDataObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
         }
         
         if (folderAnnotation == false) {
