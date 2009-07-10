@@ -216,7 +216,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
             descriptionLabel.setEnabled(item.isSelected());
 
             configPanel.removeAll();
-            actualExtender = item.getFramework().createPhpModuleExtender(null);
+            actualExtender = extenders.get(item.getFramework());
             actualExtender.addChangeListener(this);
             JComponent component = actualExtender.getComponent();
             if (component != null) {
@@ -279,13 +279,13 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 116, GroupLayout.PREFERRED_SIZE)
+                .add(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(separator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(descriptionLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(configPanel, GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
+                .add(configPanel, GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -392,7 +392,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
                     item.setSelected((Boolean) value);
                     break;
                 case 1:
-                    item.setFramework((PhpFrameworkProvider) value);
+                    // nothing needed
                     break;
                 default:
                     assert false : "Unknown column index: " + column;
@@ -411,21 +411,20 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
     }
 
     private static final class FrameworkModelItem {
-        private PhpFrameworkProvider framework;
+        private final PhpFrameworkProvider framework;
+
         private Boolean selected;
         private boolean valid = true;
 
         public FrameworkModelItem(PhpFrameworkProvider framework) {
-            setFramework(framework);
+            assert framework != null;
+
+            this.framework = framework;
             setSelected(Boolean.FALSE);
         }
 
         public PhpFrameworkProvider getFramework() {
             return framework;
-        }
-
-        public void setFramework(PhpFrameworkProvider framework) {
-            this.framework = framework;
         }
 
         public Boolean isSelected() {
