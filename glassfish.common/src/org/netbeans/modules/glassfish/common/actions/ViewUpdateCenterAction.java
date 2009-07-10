@@ -236,7 +236,8 @@ public class ViewUpdateCenterAction extends NodeAction {
             GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
             if(commonSupport != null) {
                 String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.INSTALL_FOLDER_ATTR);
-                return installRoot != null;
+                return installRoot != null &&
+                    null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ;
             }
         }
         return false;

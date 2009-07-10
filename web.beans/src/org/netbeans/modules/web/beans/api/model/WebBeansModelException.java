@@ -38,30 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
-
-import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+package org.netbeans.modules.web.beans.api.model;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
+public class WebBeansModelException extends Exception {
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
-    
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
+    private static final long serialVersionUID = 8859984690145450257L;
+
 }

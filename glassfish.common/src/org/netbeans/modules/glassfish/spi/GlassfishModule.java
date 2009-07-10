@@ -323,5 +323,5 @@ public interface GlassfishModule {
      * @param listener listener to remove.
      */
     public void removeChangeListener(ChangeListener listener);
-
+    
 }

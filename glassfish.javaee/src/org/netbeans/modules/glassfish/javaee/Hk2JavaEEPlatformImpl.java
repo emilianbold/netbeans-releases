@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -52,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -245,6 +247,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
 
     @Override
     public Set<Type> getSupportedTypes() {
+        Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
+        // TODO -- remove once the deploy to remote stuff in in place
+        if (null == dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)) {
+            return Collections.EMPTY_SET;
+        }
         return pf.getSupportedTypes();
     }
 
