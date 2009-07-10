@@ -38,18 +38,18 @@
  */
 package org.netbeans.modules.nativeexecution.sps.impl;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
@@ -73,7 +73,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable(shell).setArguments("-c", command); // NOI18N
-            
+
             ppriv = npb.call();
             int result = ppriv.waitFor();
 
@@ -85,10 +85,9 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
             List<String> iprivs = new ArrayList<String>();
             List<String> lprivs = new ArrayList<String>();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(ppriv.getInputStream()));
-            String str = br.readLine();
+            List<String> out = ProcessUtils.readProcessOutput(ppriv);
 
-            while (str != null) {
+            for (String str : out) {
                 if (str.contains("I:")) { // NOI18N
                     String[] privs = str.substring(
                             str.indexOf(": ") + 2).split(","); // NOI18N
@@ -98,7 +97,6 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
                             str.indexOf(": ") + 2).split(","); // NOI18N
                     lprivs = Arrays.asList(privs);
                 }
-                str = br.readLine();
             }
 
             if (iprivs == null || lprivs == null) {
@@ -122,14 +120,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
         } catch (IOException ex) {
             log.fine(ex.getMessage());
             try {
-                if (ppriv != null) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(ppriv.getErrorStream()));
-                    String str = br.readLine();
-                    while (str != null) {
-                        log.finest(str);
-                        str = br.readLine();
-                    }
-                }
+                ProcessUtils.logError(Level.FINE, log, ppriv);
             } catch (IOException ioex) {
             }
         }

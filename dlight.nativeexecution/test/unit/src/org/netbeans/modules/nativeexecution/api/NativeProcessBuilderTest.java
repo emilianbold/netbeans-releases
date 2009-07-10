@@ -38,11 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
@@ -54,6 +52,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
@@ -191,13 +190,11 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         npb.setCommandLine("\"" + testDir + "/copied ls\" \"" + testDir + "\""); // NOI18N
 
         NativeProcess ls = npb.call();
+        List<String> out = ProcessUtils.readProcessOutput(ls);
 
-        InputStream out = ls.getInputStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(out));
-        String line = null;
         boolean found = false;
 
-        while ((line = br.readLine()) != null) {
+        for (String line : out) {
             if ("copied ls".equals(line)) { // NOI18N
                 found = true;
                 break;
@@ -271,13 +268,10 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         npb.setArguments(testDir);
 
         NativeProcess ls = npb.call();
-
-        InputStream out = ls.getInputStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(out));
-        String line = null;
+        List<String> out = ProcessUtils.readProcessOutput(ls);
         boolean found = false;
 
-        while ((line = br.readLine()) != null) {
+        for (String line : out) {
             if ("copied ls".equals(line)) { // NOI18N
                 found = true;
                 break;

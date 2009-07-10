@@ -46,7 +46,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -57,6 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -177,10 +177,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 String display = null;
 
                 if (status == 0) {
-                    BufferedReader br = new BufferedReader(
-                            new InputStreamReader(p1.getInputStream()));
-                    display = br.readLine();
-
+                    display = ProcessUtils.readProcessOutputLine(p1);
                 }
 
                 if (display == null || "".equals(display)) { // NOI18N
@@ -378,13 +375,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 if (result != 0) {
                     log.info(loc("TerminalLocalNativeProcess.terminalFailed.text")); // NOI18N
-                    BufferedReader br = new BufferedReader(new InputStreamReader(termProcess.getErrorStream()));
-                    String s = br.readLine();
-                    while (s != null) {
-                        log.info("- " + s); // NOI18N
-                        s = br.readLine();
-                    }
-
+                    ProcessUtils.logError(Level.INFO, log, termProcess);
                 }
 
                 // No exception - means process is finished..

@@ -61,6 +61,8 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
                 if (log.isLoggable(Level.FINE)) {
                     String msg = "Exception while recieving hostinfo for " + execEnv.toString(); // NOI18N
                     log.log(Level.FINE, msg, ex);
+                    System.err.println(msg);
+                    ex.printStackTrace();
                 }
             }
             if (result != null) {
