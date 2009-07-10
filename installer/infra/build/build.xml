@@ -359,7 +359,7 @@
         <condition property="do.build.javafx">
              <or>
 	         <equals arg1="${build.javafx}" arg2="1"/>
-	         <isset properry="do.build.netbeans"/>
+	         <isset property="do.build.netbeans"/>
              </or>
         </condition>
 
