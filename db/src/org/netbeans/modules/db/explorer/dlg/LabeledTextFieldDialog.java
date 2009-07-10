@@ -171,10 +171,12 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
         notesArea = new javax.swing.JTextArea();
         editButton = new javax.swing.JButton();
 
+        titleLabel.setLabelFor(textField);
         titleLabel.setText(org.openide.util.NbBundle.getMessage(LabeledTextFieldDialog.class, "LabeledTextFieldDialog.titleLabel.text")); // NOI18N
 
         textField.setText(org.openide.util.NbBundle.getMessage(LabeledTextFieldDialog.class, "LabeledTextFieldDialog.textField.text")); // NOI18N
 
+        descLabel.setLabelFor(notesArea);
         descLabel.setText(org.openide.util.NbBundle.getMessage(LabeledTextFieldDialog.class, "LabeledTextFieldDialog.descLabel.text")); // NOI18N
 
         notesArea.setColumns(20);
@@ -205,7 +207,7 @@ public class LabeledTextFieldDialog extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(titleLabel)
                         .add(18, 18, 18)
-                        .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE))
+                        .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, descLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, editButton))
                 .addContainerGap())
