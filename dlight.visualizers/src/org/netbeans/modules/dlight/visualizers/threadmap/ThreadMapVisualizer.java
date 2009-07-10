@@ -116,7 +116,7 @@ public class ThreadMapVisualizer extends JPanel implements
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
             public void showDetails(int[] indexes) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
             }
         });
         threadsTimelinePanelContainer = new JPanel() {
