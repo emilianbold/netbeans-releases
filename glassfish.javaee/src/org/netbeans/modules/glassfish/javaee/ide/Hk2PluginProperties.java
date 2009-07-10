@@ -102,7 +102,8 @@ public class Hk2PluginProperties {
     }
 
     public String getDomainDir() {
-        return ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+File.separator+
+        String path =  ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR);
+        return null == path ? path : path+File.separator+
                 ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
     }
 

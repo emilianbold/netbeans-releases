@@ -96,7 +96,6 @@ public class HttpMonitorHelper {
         // find the web.xml file
         File webXML = getDefaultWebXML(domainLoc, domainName);
         if (webXML == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(""));
             return false;
         }
         WebApp webApp = DDProvider.getDefault().getDDRoot(webXML);

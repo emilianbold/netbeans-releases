@@ -87,6 +87,7 @@ public class ResourcesHelper {
                         String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
                         String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
                         if (commonSupport.getServerState() != ServerState.RUNNING) {
+                            // TODO : need to account for remote domain here?
                             DomainEditor de = new DomainEditor(gfdir, domain, false);
                             de.createSampleDatasource();
                         } else {
