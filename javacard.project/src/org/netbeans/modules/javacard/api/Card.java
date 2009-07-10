@@ -103,7 +103,7 @@ public abstract class Card {
         Parameters.notNull ("properties", properties); //NOI18N
         String kind = platform.getPlatformKind();
         if (kind == null || "".equals(kind)) {
-            Logger.getLogger (Card.class.getName()).log(Level.WARNING, 
+            Logger.getLogger(Card.class.getName()).log(Level.FINE,
                     platform + " properties do not define '" + //NOI18N
                     JavacardPlatformKeyNames.PLATFORM_KIND + "': \n" + //NOI18N
                     properties);
