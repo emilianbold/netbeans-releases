@@ -36,39 +36,73 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.sync;
+package org.netbeans.modules.dlight.indicators;
 
-import java.util.Arrays;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-
+import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.support.IndicatorConfigurationIDs;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-public class SyncIndicatorConfiguration extends IndicatorConfiguration {
-    private final List<String> threadColumnNames;
-    static final String ID = "SyncIndicatorConfigurationID"; // NOI18N
-//  private final String colName;
+public final class PlotIndicatorConfiguration extends IndicatorConfiguration {
 
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-        this(metadata, Arrays.asList("threads"), position);//NOI18N
-    }
+    private final String title;
+    private final int scale;
+    private final List<GraphDescriptor> graphDescriptors;
+    private final DataRowToPlot dataRowHandler;
+    private List<DetailDescriptor> detailDescriptors;
+    private LabelRenderer renderer;
 
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata, List<String> threadsColumnNames, int position) {
+    public PlotIndicatorConfiguration(IndicatorMetadata metadata, int position, String title, int scale, List<GraphDescriptor> graphDescriptors, DataRowToPlot dataRowHandler) {
         super(metadata, position);
-        this.threadColumnNames = threadsColumnNames;
+        this.title = title;
+        this.scale = scale;
+        this.graphDescriptors = graphDescriptors;
+        this.dataRowHandler = dataRowHandler;
     }
-
-    List<String> getThreadColumnNames(){
-        return threadColumnNames;
-    }
-
 
     @Override
     public String getID() {
-        return ID;
+        return IndicatorConfigurationIDs.PLOT_ID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public int getGraphScale() {
+        return scale;
+    }
+
+    public List<GraphDescriptor> getGraphDescriptors() {
+        return Collections.unmodifiableList(graphDescriptors);
+    }
+
+    public void setLabelRenderer(LabelRenderer renderer) {
+        this.renderer = renderer;
+    }
+
+    public LabelRenderer getLabelRenderer() {
+        return renderer;
+    }
+
+    public List<DetailDescriptor> getDetailDescriptors() {
+        return detailDescriptors;
+    }
+
+    public void setDetailDescriptors(List<DetailDescriptor> detailDescriptors) {
+        this.detailDescriptors = detailDescriptors;
+    }
+
+    public DataRowToPlot getDataRowHandler() {
+        return dataRowHandler;
     }
 }
