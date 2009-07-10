@@ -59,15 +59,11 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
         if (phpProject == null) {
             return true;
         }
-        PhpModule phpModule = phpProject.getLookup().lookup(PhpModule.class);
-        assert phpModule != null : "php module must be found for " + phpProject.getProjectDirectory();
-        for (PhpFrameworkProvider framework : ProjectPropertiesSupport.getFrameworks(phpProject)) {
-            PhpModuleVisibilityExtender visibilityExtender = framework.createVisibilityExtender(phpModule);
-            if (visibilityExtender != null) {
-                if (!visibilityExtender.isVisible(file)) {
-                    return false;
-                }
-            }
+
+        if (isIgnoredByProject(phpProject, file)) {
+            return false;
+        } else if (isIgnoredByFramework(phpProject, file)) {
+            return false;
         }
         return true;
     }
@@ -78,5 +74,23 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
 
     public void removeChangeListener(ChangeListener l) {
         // not needed now
+    }
+
+    private boolean isIgnoredByProject(PhpProject project, FileObject file) {
+        return ProjectPropertiesSupport.getIgnoredFolders(project).contains(file);
+    }
+
+    private boolean isIgnoredByFramework(PhpProject project, FileObject file) {
+        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+        assert phpModule != null : "php module must be found for " + project.getProjectDirectory();
+        for (PhpFrameworkProvider framework : ProjectPropertiesSupport.getFrameworks(project)) {
+            PhpModuleVisibilityExtender visibilityExtender = framework.createVisibilityExtender(phpModule);
+            if (visibilityExtender != null) {
+                if (!visibilityExtender.isVisible(file)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

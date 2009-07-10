@@ -44,8 +44,11 @@ import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -55,6 +58,8 @@ import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
+import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -198,6 +203,32 @@ public final class ProjectPropertiesSupport {
 
     public static boolean areAspTagsEnabled(PhpProject project) {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
+    }
+
+    public static Set<FileObject> getIgnoredFolders(PhpProject project) {
+        // XXX improve performance
+        IgnorePathSupport ignorePathSupport = new IgnorePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getRefHelper(), project.getHelper());
+        Set<FileObject> ignored = new HashSet<FileObject>();
+        EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        Iterator<BasePathSupport.Item> itemsIterator = ignorePathSupport.itemsIterator(properties.getProperty(PhpProjectProperties.IGNORE_PATH));
+        while (itemsIterator.hasNext()) {
+            BasePathSupport.Item item = itemsIterator.next();
+            if (item.isBroken()) {
+                continue;
+            }
+            File file = new File(item.getFilePath());
+            if (!file.isAbsolute()) {
+                file = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), item.getFilePath());
+            }
+            if (file.exists()) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null && fo.isValid()) {
+                    ignored.add(fo);
+                }
+            }
+        }
+        return ignored;
     }
 
     /**
