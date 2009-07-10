@@ -62,10 +62,20 @@ public final class WebBeansModel {
 
     /**
      * Find injectable type that is used for given injection point.
+     * <code>null</code> is returned if there is no eligible element for injection
+     * ( no element which could be a pretender).
+     * Exception could be thrown if there are unsatisfied or ambiguous dependency.
+     * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
+     * resolution but something incorrect ( parameterized type is not valid , etc. ). 
+     * Ambiguous dependency : there are a number of appropriate elements.
+     * In this case various subclasses of WebBeansModelException will be thrown.   
      * @param element injection point
      * @return type that is used in injected point identified by <code>element</code>
+     * @throws exception if there are problems with injectable identifying  
      */
-    public Element getInjectable( VariableElement element ){
+    public Element getInjectable( VariableElement element ) 
+        throws WebBeansModelException 
+    {
         if ( getProvider() == null ){
             return null;
         }
