@@ -93,6 +93,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private final IndicatorMetadata metadata;
     private final int position;
     private String toolName;
+    private String actionDisplayName;
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
@@ -114,6 +115,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
         this.visualizerConfiguraitons = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
         this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
+        this.actionDisplayName = IndicatorConfigurationAccessor.getDefault().getActionDisplayName(configuration);
         tickerListener = new TickerListener() {
 
             public void tick() {
@@ -125,7 +127,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     //public abstract Action[]  getActions();
     public final Action getDefaultAction() {
-        AbstractAction action = new AbstractAction(toolName) {
+        AbstractAction action = new AbstractAction(actionDisplayName) {
 
             public void actionPerformed(ActionEvent e) {
                 notifyListeners();

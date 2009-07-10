@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.cpu.impl;
+package org.netbeans.modules.dlight.indicators.support;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
 
 /**
- *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-public final class CpuIndicatorConfiguration extends IndicatorConfiguration {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
+public final class PlotIndicatorFactory implements IndicatorFactory<PlotIndicatorConfiguration> {
 
-    /*package*/ static final String ID = "CpuIndicatorConfiguration_ID"; // NOI18N
-    private final Set<String> sysColumns;
-
-    public CpuIndicatorConfiguration(IndicatorMetadata metadata, Set<String> sysColumns, int position) {
-        super(metadata, position);
-        this.sysColumns = Collections.unmodifiableSet(new HashSet<String>(sysColumns));
+    public Indicator<PlotIndicatorConfiguration> create(PlotIndicatorConfiguration configuration) {
+        return new PlotIndicator(configuration);
     }
 
-    @Override
     public String getID() {
-        return ID;
-    }
-
-    private Set<String> getSysColumns() {
-        return sysColumns;
-    }
-
-    private static class CpuIndicatorConfigurationAccessorImpl extends CpuIndicatorConfigurationAccessor {
-        public Set<String> getSysColumns(CpuIndicatorConfiguration conf) {
-            return conf.getSysColumns();
-        }
-    }
-
-    static {
-        CpuIndicatorConfigurationAccessor.setDefault(new CpuIndicatorConfigurationAccessorImpl());
+        return IndicatorConfigurationIDs.PLOT_ID;
     }
 }
