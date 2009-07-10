@@ -723,7 +723,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    if (response != null) {
+                        infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    }
                     return infos;
                 }
             });
@@ -746,8 +748,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    infos.addAll(convertToNBVersionInfo(postProcessClasses(response.getResults(),
-                            clsname)));
+                    if (response != null) {
+                        infos.addAll(convertToNBVersionInfo(postProcessClasses(response.getResults(),
+                                clsname)));
+                    }
                     return infos;
                 }
             });
@@ -773,7 +777,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    if (response != null) {
+                        infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    }
                     return infos;
                 }
             });
@@ -801,7 +807,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    if (response != null) {
+                        infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    }
                     return infos;
                 }
             });
@@ -824,7 +832,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    if (response != null) {
+                        infos.addAll(convertToNBVersionInfo(response.getResults()));
+                    }
                     return infos;
                 }
             });
@@ -849,8 +859,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.artifactId);
+                    if (response != null) {
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.artifactId);
+                        }
                     }
                     return artifacts;
                 }
@@ -877,8 +889,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.groupId);
+                    if (response != null) {
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.groupId);
+                        }
                     }
                     return artifacts;
                 }
@@ -903,8 +917,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                     fsr.setAiCount(MAX_RESULT_COUNT);
                     FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(allrepos));
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.artifactId);
+                    if (response != null) {
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.artifactId);
+                        }
                     }
                     return artifacts;
                 }
