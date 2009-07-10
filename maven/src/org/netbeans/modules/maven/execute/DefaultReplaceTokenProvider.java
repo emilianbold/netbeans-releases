@@ -273,6 +273,11 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     // running groovy tests is another specialized usecase.
                     return action + ".main";
                 }
+                if ("text/x-scala".equals(fo.getMIMEType())) {
+                    //TODO this only applies to scala files with main() method.
+                    // we should have a way to execute any scala script? how?
+                    return action + ".main";
+                }
             }
         }
         return null;
