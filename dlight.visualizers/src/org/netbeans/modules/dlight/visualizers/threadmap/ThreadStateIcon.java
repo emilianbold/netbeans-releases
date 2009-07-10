@@ -37,75 +37,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.visualizers.threadmap;
+
+import java.awt.Color;
+import javax.swing.Icon;
 
 /**
- *
- * @author Alexander Simon
+ * @author Jiri Sedlacek
+ * @author Alexander Simon (adapted for CND)
  */
-public interface ThreadState {
+public class ThreadStateIcon implements Icon {
+    public static final int ICON_NONE = -100;
 
-    /**
-     * Aggregated thread states.
-     */
-    public static enum ShortThreadState {
-        NotExist,
-        Sleeping,
-        Waiting,
-        Blocked,
-        Running,
+    protected Color threadStateColor;
+    protected int height;
+    protected int width;
+
+    public ThreadStateIcon(int threadState, int width, int height) {
+        this.threadStateColor = getThreadStateColor(threadState);
+        this.width = width;
+        this.height = height;
     }
 
-    /**
-     * All possible thread states.
-     */
-    public static enum FullThreadState {
-        NotExist,
-        Stopped,
-        SleepingOther,
-        SleepingUserTextPageFault,
-        SleepingUserDataPageFault,
-        SleepingKernelPageFault,
-        SleepingSemafore,
-        SleepingConditionalVariable,
-        SleepingSystemSynchronization,
-        SleepingUserSynchronization,
-        WaitingCPU,
-        RunningOther,
-        RunningSystemCall,
-        RunningUser,
+    public int getIconHeight() {
+        return height;
     }
 
-    /**
-     * @return size of state
-     */
-    int size();
+    public int getIconWidth() {
+        return width;
+    }
 
-    /**
-     * returns string representation of enum value of ShortThreadState or FullThreadState.
-     *
-     * @param index of state.
-     * @return state ID by index.
-     */
-    String getStateName(int index);
+    public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        if (threadStateColor != null) {
+            if (!threadStateColor.equals(ThreadData.THREAD_STATUS_ZOMBIE_COLOR)) {
+                g.setColor(threadStateColor);
+                g.fillRect(x, y, width, height);
+            }
 
-    /**
-     * @param index of state.
-     * @return value of state by index. Unit of value is 0.1%. I.e. sum of all values is 1000.
-     */
-    int getState(int index);
+            g.setColor(Color.BLACK);
+            g.drawRect(x, y, width - 1, height - 1);
+        }
+    }
 
-    /**
-     * returns -1 if there are no stack avaliable.
-     *
-     * @param index interested state.
-     * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
-     */
-    long getTimeStamp(int index);
+    protected Color getThreadStateColor(int threadState) {
+        if (threadState == ICON_NONE) {
+            return null;
+        }
 
-    /**
-     *
-     * @return beginning time in natural unit of state.
-     */
-    long getTimeStamp();
+        return ThreadData.getThreadStateColor(threadState);
+    }
 }
