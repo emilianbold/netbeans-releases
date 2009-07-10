@@ -121,7 +121,8 @@ public class ViewServerLogAction extends NodeAction {
             GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
             if(commonSupport != null) {
                 String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
-                return uri != null && uri.length() > 0;
+                return uri != null && uri.length() > 0 &&
+                    null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ;
             }
         }
         return false;

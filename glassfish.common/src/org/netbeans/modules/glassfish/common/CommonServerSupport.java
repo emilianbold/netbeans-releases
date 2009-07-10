@@ -106,11 +106,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, "Bogus display name"); // NOI18N GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME);
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
-        updateString(ip, GlassfishModule.DOMAINS_FOLDER_ATTR, 
-                glassfishRoot + File.separator + GlassfishInstance.DEFAULT_DOMAINS_FOLDER);
-        updateString(ip,GlassfishModule.DOMAIN_NAME_ATTR, GlassfishInstance.DEFAULT_DOMAIN_NAME);
         updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true"); // NOI18N
-        updateString(ip,GlassfishModule.START_DERBY_FLAG,"true");  // NOI18N
+        updateString(ip,GlassfishModule.START_DERBY_FLAG,
+                ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null ? "false" : "true");  // NOI18N
         updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG,"true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
@@ -221,18 +219,18 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     public String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
-        if (null == retVal) {
-            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
-                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
-        }
+//        if (null == retVal) {
+//            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
+//                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
+//        }
         return retVal;
     }
     
     public String getDomainName() {
         String retVal = properties.get(DOMAIN_NAME_ATTR);
-        if (null == retVal) {
-            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
-        }
+//        if (null == retVal) {
+//            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
+//        }
         return retVal;
     }
     
