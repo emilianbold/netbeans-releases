@@ -42,15 +42,12 @@
 package org.netbeans.performance.languages.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -67,7 +64,6 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
 
     public String category, project, projectName, projectType,  editorName;
     private Node testNode;
-    private String title;
     private JButtonOperator okButton;
 
     public SavingPHPProjectPropertiesTest(String testName) {
@@ -91,29 +87,19 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
     @Override
     public void initialize(){
         closeAllModal();
-      //  createProject();
-        title = Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
+        createProject();
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode("PhpPerfTest");
     }
 
- /*   private void createProject() {
-        NewPHPProjectNameLocationStepOperator wizard_location;
+    private void createProject() {
+
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewPHPProjectNameLocationStepOperator();
-        projectName = projectType + "_" + System.currentTimeMillis();
-        wizard_location.typeProjectName(projectName);
-        String directory = CommonUtilities.getTempDir() + "createdProjects" 
-                + java.io.File.separator + projectName;
-        wizard_location.typeSourcesFolder(directory);
-        wizard.next();
-        wizard_location.finish();
-        wizard_location.waitClosed();
-        TopComponentOperator.findTopComponent(editorName, 0);
-    }*/
+        wizard.finish();
+    }
 
     @Override
     public void prepare(){
