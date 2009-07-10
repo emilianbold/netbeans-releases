@@ -202,6 +202,8 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                             return false;
                         } else {
                             wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
+                                AddServerLocationPanel.class, "MSG_NextForSpecial"));
                         }
                     }
                 }
