@@ -38,15 +38,14 @@
  */
 package org.netbeans.modules.nativeexecution.support.filesearch.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearcher;
@@ -101,10 +100,8 @@ public final class LocalFileSearcherImpl implements FileSearcher {
         try {
             ProcessBuilder pb = new ProcessBuilder("sh", "-c", "echo $PATH"); // NOI18N
             Process p = pb.start();
+            result.addAll(Arrays.asList(ProcessUtils.readProcessOutputLine(p).split(":"))); // NOI18N
             p.waitFor();
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String paths = br.readLine();
-            result.addAll(Arrays.asList(paths.split(":"))); // NOI18N
         } catch (InterruptedException ex) {
             log.log(Level.FINE, "Execption in LocalFileSearcherImpl.getPaths():", ex); // NOI18N
         } catch (IOException ex) {
