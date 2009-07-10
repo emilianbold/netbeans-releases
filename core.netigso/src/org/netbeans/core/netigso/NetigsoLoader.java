@@ -58,6 +58,24 @@ final class NetigsoLoader extends ProxyClassLoader {
     }
 
     @Override
+    protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        Class c = findLoadedClass(name);
+        if (c != null) {
+            return c;
+        }
+        try {
+            c = bundle.loadClass(name);
+            if (resolve) {
+                resolveClass(c);
+            }
+            return c;
+        } catch (ClassNotFoundException x) {
+        }
+        return super.loadClass(name, resolve);
+    }
+
+
+    @Override
     public String toString() {
         return "Netigso[" + bundle.getLocation() + "]";
     }
