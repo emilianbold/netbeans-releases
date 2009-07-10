@@ -61,6 +61,8 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smack.PacketListener;
@@ -99,8 +101,9 @@ import org.openide.util.NbBundle;
 public class ChatPanel extends javax.swing.JPanel {
 
     private MultiUserChat muc;
+    private Chat suc;
     private boolean disableAutoScroll = false;
-    private final HTMLEditorKit editorKit;
+    private HTMLEditorKit editorKit = null;
     private static final String[][] smileysMap = new String[][] {
         {"8)", "cool"}, // NOI18N
         {"8-)", "cool"}, // NOI18N
@@ -252,16 +255,29 @@ public class ChatPanel extends javax.swing.JPanel {
         return false;
     }
 
-    
-    public ChatPanel(MultiUserChat chat) {
-        this.muc=chat;
+    public ChatPanel(MultiUserChat muc) {
+        super();
+        this.muc=muc;
+        setName(StringUtils.parseName(muc.getRoom()));
+        init();
         this.muc.addParticipantListener(new PacketListener() {
             public void processPacket(Packet presence) {
                 insertPresence((Presence) presence);
             }
         });
+        KenaiConnection.getDefault().join(muc,new ChatListener());
+
+    }
+
+    public ChatPanel(String jid) {
+        super();
+        this.suc = Kenai.getDefault().getXMPPConnection().getChatManager().createChat(jid, new ChatListener());
+        setName("private."+StringUtils.parseName(jid));
+        init();
+    }
+    
+    private void init() {
         initComponents();
-        setName(StringUtils.parseName(chat.getRoom()));
         editorKit= (HTMLEditorKit) inbox.getEditorKit();
 
         Font font = UIManager.getFont("Label.font"); // NOI18N
@@ -280,9 +296,10 @@ public class ChatPanel extends javax.swing.JPanel {
 //        users.setModel(new BuddyListModel(chat));
 //        users.setModel(new BuddyListModel(ctrl.getRoster()));
 //        chat.addParticipantListener(getBuddyListModel());
-        MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(getName());
-        handle.addPropertyChangeListener(new PresenceListener());
-        KenaiConnection.getDefault().join(chat,new ChatListener());
+        if (!getName().startsWith("private.")) {
+            MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(getName());
+            handle.addPropertyChangeListener(new PresenceListener());
+        }
         //KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);
         inbox.addHyperlinkListener(new HyperlinkListener() {
@@ -344,8 +361,6 @@ public class ChatPanel extends javax.swing.JPanel {
                 disableAutoScroll = ((vbar.getValue() + vbar.getVisibleAmount()) != vbar.getMaximum());
             }
         });
-
-//        setUpPrivateMessages();
     }
 
     private class NotificationsEnabledAction extends MouseAdapter implements ActionListener {
@@ -406,59 +421,13 @@ public class ChatPanel extends javax.swing.JPanel {
         return body;
     }
 
-//    void setUpPrivateMessages() {
-//
-//        final JPopupMenu popupMenu = new JPopupMenu();
-//        popupMenu.add(new SendPrivateMessage());
-//
-//        users.addMouseListener(new MouseAdapter() {
-//
-//            @Override
-//            public void mousePressed(MouseEvent me) {
-//                processMouseEvent(me);
-//            }
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//                processMouseEvent(e);
-//            }
-//
-//            private void processMouseEvent(MouseEvent me) {
-//                if (me.isPopupTrigger()) {
-//                    users.setSelectedIndex(users.locationToIndex(me.getPoint()));
-//                    popupMenu.show(users, me.getX(), me.getY());
-//                }
-//            }
-//        });
-//    }
-//
-//    private class SendPrivateMessage extends AbstractAction {
-//
-//        public SendPrivateMessage() {
-//            super("Send Private Message");
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            Buddy b = (Buddy) users.getModel().getElementAt(users.getSelectedIndex());
-//            try {
-//                JEditorPane pane = new JEditorPane();
-//                JScrollPane scrollPane = new JScrollPane(pane);
-//                DialogDescriptor sendMessage = new DialogDescriptor(scrollPane, "Send private message to " + b.getLabel());
-//                DialogDisplayer.getDefault().createDialog(sendMessage).setVisible(true);
-//                if (sendMessage.getValue()==DialogDescriptor.OK_OPTION) {
-//                    muc.createPrivateChat(b.getJid(), null).sendMessage(pane.getText());
-//                }
-//            } catch (XMPPException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-//
-//    }
-
-    private class ChatListener implements PacketListener {
+    private class ChatListener implements PacketListener, MessageListener {
 
         public void processPacket(Packet packet) {
-            final Message message = (Message) packet;
+            processMessage(suc,  (Message) packet);
+        }
+
+        public void processMessage(Chat arg0, final Message message) {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     setEndSelection();
@@ -472,6 +441,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private void refreshOnlineStatus() throws MissingResourceException {
+        if (muc!=null) {
         online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));
         Iterator<String> string = muc.getOccupants();
         StringBuffer buffer = new StringBuffer();
@@ -481,8 +451,7 @@ public class ChatPanel extends javax.swing.JPanel {
         }
         buffer.append("</body></html>"); // NOI18N
         online.setToolTipText(buffer.toString());
-    //setEndSelection();
-        //insertPresence(presence);
+        }
     }
 
     private class PresenceListener implements PropertyChangeListener {
@@ -602,7 +571,7 @@ public class ChatPanel extends javax.swing.JPanel {
                 return;
             }
             try {
-                if (!KenaiConnection.getDefault().isConnected() || !muc.isJoined()) {
+                if (muc!=null&& (!KenaiConnection.getDefault().isConnected() || !muc.isJoined())) {
                     try {
                         KenaiConnection.getDefault().reconnect(muc);
                     } catch (XMPPException xMPPException) {
@@ -625,7 +594,14 @@ public class ChatPanel extends javax.swing.JPanel {
                             // harmless
                         }
                     }
-                    muc.sendMessage(outbox.getText().trim());
+                    if (muc!=null)
+                        muc.sendMessage(outbox.getText().trim());
+                    else {
+                        Message m = new Message(suc.getParticipant());
+                        m.setBody(outbox.getText().trim());
+                        suc.sendMessage(m);
+                        insertMessage(m);
+                    }
                 }
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);
@@ -724,7 +700,7 @@ public class ChatPanel extends javax.swing.JPanel {
         try {
             HTMLDocument doc = (HTMLDocument) inbox.getStyledDocument();
             final Date timestamp = getTimestamp(message);
-            String fromRes = StringUtils.parseResource(message.getFrom());
+            String fromRes = suc==null?StringUtils.parseResource(message.getFrom()):StringUtils.parseName(message.getFrom());
             history.addMessage(message.getBody()); //Store the message to the history
             Random random = new Random(fromRes.hashCode());
             float randNum = random.nextFloat();
