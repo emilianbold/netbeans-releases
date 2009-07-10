@@ -115,7 +115,10 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         // this code might actually be in production. log the bogus-ness and degrade gracefully
         FindJSPServlet retVal = null;
         try {
-            retVal = new FindJSPServletImpl((Hk2DeploymentManager) dm, this);
+            Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
+            if (hk2dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null) {
+                retVal = new FindJSPServletImpl((Hk2DeploymentManager) dm, this);
+            }
         } catch (ClassCastException cce) {
             Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
         }
@@ -279,6 +282,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                         File instDir = new File(installDirName);
                         File domainDir = new File(domainDirName);
                         // TODO -- more complete test here...
+                        // TODO -- need to account for remote domain here?
                         if (!instDir.exists() || !instDir.isDirectory() || 
                                 !domainDir.exists() || !domainDir.isDirectory() ||
                                 !domainDir.canWrite()) {

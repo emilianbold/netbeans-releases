@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-//</editor-fold>
 
 package org.netbeans.modules.glassfish.common.wizards;
 
+import java.util.MissingResourceException;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import java.awt.Component;
@@ -52,9 +51,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.util.NbBundle;
 
@@ -89,67 +86,11 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         if (isValidating.compareAndSet(false, true)) {
             try {
                 AddDomainLocationVisualPanel panel = (AddDomainLocationVisualPanel) getComponent();
-                String domainField = panel.getDomainField().trim();
-                File domainDirCandidate = new File(gfRoot,
-                        GlassfishInstance.DEFAULT_DOMAINS_FOLDER + File.separator + domainField); // NOI18N
-                if (domainField.length() < 1) {
-                    if (!domainDirCandidate.canWrite()) {
-                        // the user needs to enter the name of a directory for 
-                        // a personal domain
-                        wizard.putProperty(PROP_INFO_MESSAGE,
-                            NbBundle.getMessage(this.getClass(), "MSG_EnterDomainDirectory")); // NOI18N
-                    } else {
-                        // the user probably deleted a valid name from the field.
-                        wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "MSG_MustHaveName")); // NOI18N
-                    }
-                    return false;
+                if (panel.registerLocalDomain()) {
+                    return validateForLocalDomain(panel);
+                } else {
+                    return validateForRemoteDomain(panel);
                 }
-                int dex = domainField.indexOf(File.separator);
-                if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
-                    AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
-                    String uri = wizardIterator.formatUri(gfRoot,
-                            GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getHttpPort());
-                    if(wizardIterator.hasServer(uri)) {
-                        wizard.putProperty(PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(this.getClass(), "ERR_DomainAlreadyRegistered", domainField)); // NOI18N
-                        return false;
-                    }
-
-                    // the entry resolves to a domain name that we can register
-                    wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
-                    wizard.putProperty(PROP_INFO_MESSAGE,
-                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded", domainField)); // NOI18N
-                    return true;
-                }
-                File domainsDir = domainDirCandidate.getParentFile();
-                if (domainsDir.canWrite() && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
-                    wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
-                    wizard.putProperty(PROP_INFO_MESSAGE,
-                            NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField));  // NOI18N
-                    return true;
-                }
-                domainDirCandidate = new File(domainField);
-                String domainLoc = domainDirCandidate.getAbsolutePath();
-                if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
-                    // the entry resolves to a domain name that we can register
-                    //String domainLoc = domainDirCandidate.getAbsolutePath();
-                    wizardIterator.setDomainLocation(domainLoc);
-                    wizard.putProperty(PROP_INFO_MESSAGE,
-                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
-                    AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
-                    return true;
-                }
-                if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {
-                    wizardIterator.setDomainLocation(domainLoc);
-                    wizard.putProperty(PROP_INFO_MESSAGE,
-                            NbBundle.getMessage(this.getClass(), "MSG_CreateDomain", domainField)); // NOI18N
-                    return true;
-                }
-                wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain", domainField));  // NOI18N
-                return false;
-
             } finally {
                 isValidating.set(false);
             }
@@ -217,6 +158,79 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      * @param settings 
      */
     public void storeSettings(Object settings) {
+    }
+
+    private boolean validateForLocalDomain(AddDomainLocationVisualPanel panel) throws MissingResourceException {
+        String domainField = panel.getDomainField().trim();
+        File domainDirCandidate = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER + File.separator + domainField); // NOI18N
+        if (domainField.length() < 1) {
+            if (!domainDirCandidate.canWrite()) {
+                // the user needs to enter the name of a directory for
+                // a personal domain
+                wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_EnterDomainDirectory")); // NOI18N
+            } else {
+                // the user probably deleted a valid name from the field.
+                wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_MustHaveName")); // NOI18N
+            }
+            return false;
+        }
+        int dex = domainField.indexOf(File.separator);
+        if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
+            AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
+            String uri = wizardIterator.formatUri(gfRoot, GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getHttpPort());
+            if (wizardIterator.hasServer(uri)) {
+                wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_DomainAlreadyRegistered", domainField)); // NOI18N
+                return false;
+            }
+            // the entry resolves to a domain name that we can register
+            wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
+            wizardIterator.setHostName("localhost");
+            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded", domainField)); // NOI18N
+            return true;
+        }
+        File domainsDir = domainDirCandidate.getParentFile();
+        if (domainsDir.canWrite() && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
+            wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
+            wizardIterator.setHostName("localhost");
+            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N
+            return true;
+        }
+        domainDirCandidate = new File(domainField);
+        String domainLoc = domainDirCandidate.getAbsolutePath();
+        if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
+            // the entry resolves to a domain name that we can register
+            //String domainLoc = domainDirCandidate.getAbsolutePath();
+            wizardIterator.setDomainLocation(domainLoc);
+            wizardIterator.setHostName("localhost");
+            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
+            AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
+            return true;
+        }
+        if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {
+            wizardIterator.setDomainLocation(domainLoc);
+            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateDomain", domainField)); // NOI18N
+            wizardIterator.setHostName("localhost");
+            return true;
+        }
+        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain", domainField)); // NOI18N
+        return false;
+    }
+
+    private boolean validateForRemoteDomain(AddDomainLocationVisualPanel panel) {
+        String hn = panel.getHostName();
+        String port = panel.getPortValue();
+        try {
+            int portval = Integer.parseInt(port);
+            wizardIterator.setAdminPort(portval);
+            wizardIterator.setHostName(hn);
+            wizardIterator.setDomainLocation(null);
+            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterRemote", hn,port)); // NOI18N
+            return true;
+        } catch (NumberFormatException nfe) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_InvalidAdminPort", port)); // NOI18N
+            return false;
+        }
+
     }
     
 }
