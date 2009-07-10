@@ -150,6 +150,7 @@ public class WLStartServer extends StartServer {
      *
      * @return a progress object that describes the startup process
      */
+    @Override
     public ProgressObject startDebugging(Target target) {
         LOGGER.log(Level.FINER, "Starting server in debug mode"); // NOI18N
 
@@ -180,6 +181,7 @@ public class WLStartServer extends StartServer {
      *
      * @return whether the instance is started in debug mode
      */
+    @Override
     public boolean isDebuggable(Target target) {
         if (!existsDebugModeUri(dm.getURI())) {
             return false;
@@ -195,6 +197,7 @@ public class WLStartServer extends StartServer {
      *
      * @return true
      */
+    @Override
     public boolean isAlsoTargetServer(Target target) {
         return true;
     }
@@ -208,6 +211,7 @@ public class WLStartServer extends StartServer {
      *
      * @return the debug information
      */
+    @Override
     public ServerDebugInfo getDebugInfo(Target target) {
         return new ServerDebugInfo(dm.getHost(), new Integer(
                 dm.getInstanceProperties().getProperty(
@@ -228,6 +232,7 @@ public class WLStartServer extends StartServer {
      *
      * @return the progress object describing the shutdown process
      */
+    @Override
     public ProgressObject stopDeploymentManager() {
         LOGGER.log(Level.FINER, "Stopping server"); // NOI18N
 
@@ -253,6 +258,7 @@ public class WLStartServer extends StartServer {
      *
      * @return a progress object describing the server startup process
      */
+    @Override
     public ProgressObject startDeploymentManager() {
         LOGGER.log(Level.FINER, "Starting server"); // NOI18N
 
@@ -311,6 +317,7 @@ public class WLStartServer extends StartServer {
      *
      * @return true is the server is running, false otherwise
      */
+    @Override
     public boolean isRunning() {
         return isRunning(true);
     }
