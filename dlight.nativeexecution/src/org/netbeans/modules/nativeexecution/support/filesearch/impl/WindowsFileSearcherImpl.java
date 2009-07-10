@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support.filesearch.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
@@ -139,9 +138,7 @@ public class WindowsFileSearcherImpl implements FileSearcher {
             npb.setExecutable(shell).setArguments("-c", "echo $PATH"); // NOI18N
 
             Process p = npb.call();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line = br.readLine();
+            String line = ProcessUtils.readProcessOutputLine(p);
 
             p.waitFor();
 

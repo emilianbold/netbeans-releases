@@ -74,7 +74,7 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;

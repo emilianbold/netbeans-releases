@@ -46,12 +46,15 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.collab.chat.ChatPanel;
+import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -63,6 +66,7 @@ public class KenaiUser {
     public static final String PROP_PRESENCE = "Presence";
 
     private String user;
+    private String fullName;
 
     private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png"));
     private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.png"));
@@ -72,15 +76,16 @@ public class KenaiUser {
 
     public KenaiUser(String user) {
         this.user=user;
+        this.fullName = user+"@"+XMPP_SERVER;
     }
     
     public static KenaiUser forName(final String user) {
         XMPPConnection con = Kenai.getDefault().getXMPPConnection();
         final KenaiUser result = new KenaiUser(user);
         con.addPacketListener(new PacketListener() {
-            public void processPacket(Packet arg0) {
-                if (arg0.getFrom().equals(user+"@"+XMPP_SERVER)) {
-                    Presence presence = (Presence) arg0;
+            public void processPacket(Packet packet) {
+                if (packet.getFrom().equals(result.fullName)) {
+                    Presence presence = (Presence) packet;
                     result.firePropertyChange(PROP_PRESENCE, presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
                 }
             }
@@ -163,4 +168,18 @@ public class KenaiUser {
         return user;
     }
 
+    public void startChat() {
+        Runnable run = new Runnable() {
+            public void run() {
+                ChatTopComponent tc = ChatTopComponent.findInstance();
+                tc.open();
+                tc.addChat(new ChatPanel(fullName));
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
+    }
 }

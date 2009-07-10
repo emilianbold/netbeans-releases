@@ -332,17 +332,23 @@ public class ChatTopComponent extends TopComponent {
         int idx = chats.getTabCount();
         chats.add(chatPanel);
         try {
-            chats.setTitleAt(idx, Kenai.getDefault().getProject(chatPanel.getName()).getDisplayName());
+            if (!chatPanel.getName().startsWith("private."))
+                chats.setTitleAt(idx, Kenai.getDefault().getProject(chatPanel.getName()).getDisplayName());
+            else {
+                chats.setTitleAt(idx, chatPanel.getName().substring(chatPanel.getName().indexOf('.')+1));
+            }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
 
         addMoreChatsTab(idx+1);
 
-        open.add(chatPanel.getName());
+        if (!chatPanel.getName().startsWith("private.")) {
+            open.add(chatPanel.getName());
+            storeOpenChats();
+        }
         chats.setSelectedComponent(chatPanel);
         validate();
-        storeOpenChats();
     }
 
     void removeChat(Component chatPanel) {
@@ -400,6 +406,8 @@ public class ChatTopComponent extends TopComponent {
             jMenuItem.setEnabled(false);
             menu.add(jMenuItem);
         }
+
+        menu.add(new CreatePrivateChatAction());
         if (evt!=null) {
             menu.show((Component) evt.getSource(),evt.getX(), evt.getY());
         } else {

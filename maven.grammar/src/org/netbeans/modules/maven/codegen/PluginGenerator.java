@@ -61,7 +61,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

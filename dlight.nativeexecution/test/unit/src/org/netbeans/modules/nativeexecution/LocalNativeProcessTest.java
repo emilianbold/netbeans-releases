@@ -39,9 +39,7 @@
 package org.netbeans.modules.nativeexecution;
 
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -55,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -260,9 +259,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
                 counters.getCounter("Started").incrementAndGet(); // NOI18N
                 System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
                 counters.getCounter("Done").incrementAndGet(); // NOI18N
-                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                String output = br.readLine();
-                if ("/tmp".equals(output)) { // NOI18N
+                if ("/tmp".equals(ProcessUtils.readProcessOutputLine(p))) { // NOI18N
                     counters.getCounter("CorrectOutput").incrementAndGet(); // NOI18N
                 }
             } catch (InterruptedException ex) {

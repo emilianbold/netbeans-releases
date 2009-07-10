@@ -120,7 +120,7 @@ public class ChatNotifications {
     }
 
     void addPrivateMessage(Message msg) {
-        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+        //throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {

@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.support.filesearch.impl;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -49,6 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearcher;
@@ -103,10 +102,8 @@ public class RemoteFileSearcherImpl implements FileSearcher {
             npb.setExecutable(shell).setArguments("-c", cmd.toString()); // NOI18N
 
             Process p = npb.call();
+            String line = ProcessUtils.readProcessOutputLine(p);
             p.waitFor();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line = br.readLine();
 
             return (line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
         } catch (Throwable th) {
@@ -124,14 +121,8 @@ public class RemoteFileSearcherImpl implements FileSearcher {
             npb.setExecutable(shell).setArguments("-c", "echo $PATH"); // NOI18N
 
             Process p = npb.call();
+            result.addAll(Arrays.asList(ProcessUtils.readProcessOutputLine(p).split(":"))); // NOI18N
             p.waitFor();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line = br.readLine();
-
-            if (line != null) {
-                result.addAll(Arrays.asList(line.split(":"))); // NOI18N
-            }
         } catch (Throwable ex) {
             log.log(Level.FINE, "Execption in UnixFileSearcherImpl.getPaths():", ex); // NOI18N
         }

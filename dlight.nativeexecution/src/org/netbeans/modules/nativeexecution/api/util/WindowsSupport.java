@@ -189,19 +189,16 @@ public final class WindowsSupport {
                     "c:\\windows\\system32\\reg.exe", // NOI18N
                     "query", key, "/v", param); // NOI18N
             Process p = pb.start();
-            String s;
             Pattern pattern = Pattern.compile(regExpr);
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
             try {
                 p.waitFor();
             } catch (InterruptedException ex) {
             }
 
-            while (true) {
-                s = br.readLine();
-                if (s == null) {
-                    break;
-                }
+            List<String> out = ProcessUtils.readProcessOutput(p);
+
+            for (String s : out) {
                 Matcher m = pattern.matcher(s);
                 if (m.matches()) {
                     return m.group(1).trim();
@@ -380,10 +377,9 @@ public final class WindowsSupport {
             ProcessBuilder pb = new ProcessBuilder(cmd, "/c", "set"); // NOI18N
             Process p = pb.start();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            List<String> out = ProcessUtils.readProcessOutput(p);
 
-            String line;
-            while ((line = br.readLine()) != null) {
+            for (String line : out) {
                 int idx = line.indexOf('=');
                 String key = line.substring(0, idx).trim().toUpperCase();
                 String value = line.substring(idx + 1);
@@ -399,10 +395,7 @@ public final class WindowsSupport {
 
             if (exitStatus != 0) {
                 log.log(Level.FINE, "Unable to read environment"); // NOI18N
-                br = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-                while ((line = br.readLine()) != null) {
-                    log.log(Level.FINE, line); // NOI18N
-                }
+                ProcessUtils.logError(Level.FINE, log, p);
             }
         } catch (IOException ex) {
             log.log(Level.FINE, "Unable to read environment", ex); // NOI18N
