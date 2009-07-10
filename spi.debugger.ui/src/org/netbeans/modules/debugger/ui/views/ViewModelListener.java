@@ -822,9 +822,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         public void modelChanged(CompoundModel cm, ModelEvent event) {
             //System.err.println("UnionTreeModel.modelChanged("+event+") from "+event.getSource());
-            if (event == null || event instanceof ModelEvent.TreeChanged) {
-                Thread.dumpStack();
-            }
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {
                 listeners = new ArrayList<ModelListener>(modelListeners);
