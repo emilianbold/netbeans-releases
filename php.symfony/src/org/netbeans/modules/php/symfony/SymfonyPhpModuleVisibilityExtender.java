@@ -63,7 +63,7 @@ public class SymfonyPhpModuleVisibilityExtender extends PhpModuleVisibilityExten
             return true;
         }
         FileObject cache = phpModule.getSourceDirectory().getFileObject(CACHE);
-        assert cache != null && cache.isFolder() : "cache directory should exist for symfony project";
+        assert cache != null && cache.isFolder() : "cache directory should exist for symfony project " + phpModule.getSourceDirectory();
         return !cache.equals(fileObject);
     }
 }
