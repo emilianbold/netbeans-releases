@@ -40,15 +40,19 @@
 package org.netbeans.spi.extexecution.destroy;
 
 import java.util.Map;
-import org.netbeans.api.extexecution.ExternalProcessSupport;
 
 /**
  * A service capable of properly terminating external process along with any
  * child processes created during execution.
- *
+ * <p>
+ * Implementation of this interface should be published in default lookup
+ * in order to be used by
+ * {@link org.netbeans.api.extexecution.ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
+ * and {@link org.netbeans.api.extexecution.ExternalProcessBuilder}.
+ * <p>
  * Note: not to be implemented by modules, might not be present in all versions
  * of the application.
- * Please use {@link ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
+ * Please use {@link org.netbeans.api.extexecution.ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
  * for accessing the service.
  *
  * @author mkleint

@@ -101,6 +101,7 @@ is the proper place.
         <apidef name="extexecution_api">External Execution API</apidef>
         <apidef name="extexecution_api_input">External Execution Input API</apidef>
         <apidef name="extexecution_api_print">External Execution Input Printing API</apidef>
+        <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -109,10 +110,10 @@ is the proper place.
     <changes>
 
         <change>
-            <api name="extexecution_api"/>
+            <api name="extexecution_spi_destroy"/>
             <summary>New SPI for improved external process termination</summary>
             <version major="1" minor="16"/>
-            <date day="1" month="7" year="2008"/>
+            <date day="1" month="7" year="2009"/>
             <author login="mkleint"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible"/>
             <description>

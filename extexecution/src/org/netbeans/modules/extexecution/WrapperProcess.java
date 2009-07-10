@@ -50,7 +50,7 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
  */
 public class WrapperProcess extends Process {
 
-    public static final String KEY_UUID = "NB_EXEC_PROCESS_UUID"; //NOI18N
+    public static final String KEY_UUID = "NB_EXEC_EXTEXECUTION_PROCESS_UUID"; //NOI18N
     private final String uuid;
 
     private final Process del;
