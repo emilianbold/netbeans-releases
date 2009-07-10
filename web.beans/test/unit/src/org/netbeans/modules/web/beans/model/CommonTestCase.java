@@ -148,6 +148,16 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD }) "+          
                 "public @interface Produces  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/NonBinding.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD }) "+          
+                "public @interface NonBinding  {}");
     }
 
 }
