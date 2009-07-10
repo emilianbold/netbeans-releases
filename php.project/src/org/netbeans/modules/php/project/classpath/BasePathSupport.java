@@ -42,7 +42,7 @@ package org.netbeans.modules.php.project.classpath;
 /**
  * @author Tomas Mysik
  */
-public abstract class BaseIncludePathSupport {
+public abstract class BasePathSupport {
 
     public static final class Item {
         public static enum Type {

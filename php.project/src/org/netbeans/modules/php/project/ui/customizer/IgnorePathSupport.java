@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.classpath;
+package org.netbeans.modules.php.project.ui.customizer;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.classpath.BaseProjectPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
- * @author Petr Hrebejk, Tomas Mysik
+ * @author Tomas Mysik
  */
-public class IncludePathSupport extends BaseProjectPathSupport {
+public class IgnorePathSupport extends BaseProjectPathSupport {
 
-    private static final Set<String> WELL_KNOWN_PATHS = new HashSet<String>(Arrays.asList(
-            "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"));
-
-    public IncludePathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper, AntProjectHelper antProjectHelper) {
+    public IgnorePathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper, AntProjectHelper antProjectHelper) {
         super(evaluator, referenceHelper, antProjectHelper);
     }
 
     @Override
     protected boolean isWellKnownPath(String p) {
-        return WELL_KNOWN_PATHS.contains(p);
+        return false;
     }
 }

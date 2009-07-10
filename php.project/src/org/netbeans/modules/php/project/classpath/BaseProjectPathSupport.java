@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.project.classpath;
@@ -43,36 +43,57 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
- * @author Petr Hrebejk, Tomas Mysik
+ * @author Tomas Mysik
  */
-public class GlobalIncludePathSupport extends BasePathSupport {
-    private static final GlobalIncludePathSupport INSTANCE = new GlobalIncludePathSupport();
+public abstract class BaseProjectPathSupport extends BasePathSupport {
 
-    private GlobalIncludePathSupport() {
+    private final PropertyEvaluator evaluator;
+    private final ReferenceHelper referenceHelper;
+    private final AntProjectHelper antProjectHelper;
+
+    public BaseProjectPathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper,
+            AntProjectHelper antProjectHelper) {
+        assert evaluator != null;
+        assert referenceHelper != null;
+        assert antProjectHelper != null;
+
+        this.evaluator = evaluator;
+        this.referenceHelper = referenceHelper;
+        this.antProjectHelper = antProjectHelper;
     }
 
-    public static GlobalIncludePathSupport getInstance() {
-        return INSTANCE;
-    }
+    protected abstract boolean isWellKnownPath(String p);
 
-    public Iterator<Item> itemsIterator() {
+    public Iterator<Item> itemsIterator(String propertyValue) {
         // XXX more performance friendly impl. would return a lazzy iterator
-        return itemsList().iterator();
+        return itemsList(propertyValue).iterator();
     }
 
-    public List<Item> itemsList() {
-        String[] pe = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
+    public List<Item> itemsList(String propertyValue) {
+        String[] pe = PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue);
         List<Item> items = new ArrayList<Item>(pe.length);
         for (String p : pe) {
             Item item = null;
-            File f = new File(p);
-            if (!f.exists()) {
-                item = Item.createBroken(p, p);
+            if (isWellKnownPath(p)) {
+                // some well know classpath
+                item = Item.create(p);
             } else {
-                item = Item.create(p, p);
+                File f = null;
+                String eval = evaluator.evaluate(p);
+                if (eval != null) {
+                    f = antProjectHelper.resolveFile(eval);
+                }
+                if (f == null || !f.exists()) {
+                    item = Item.createBroken(eval, p);
+                } else {
+                    item = Item.create(eval, p);
+                }
             }
             items.add(item);
         }
@@ -86,7 +107,21 @@ public class GlobalIncludePathSupport extends BasePathSupport {
         List<String> result = new ArrayList<String>();
         while (classpath.hasNext()) {
             Item item = classpath.next();
-            result.add(item.getFilePath());
+            String reference = item.getReference();
+            switch (item.getType()) {
+                case FOLDER:
+                    if (reference == null) {
+                        // new file
+                        File file = new File(item.getFilePath());
+                        // pass null as expected artifact type to always get file reference
+                        reference = referenceHelper.createForeignFileReference(file, null);
+                        item.property = reference;
+                    }
+                    break;
+            }
+            if (reference != null) {
+                result.add(reference);
+            }
         }
 
         String[] items = new String[result.size()];
@@ -99,4 +134,5 @@ public class GlobalIncludePathSupport extends BasePathSupport {
         }
         return items;
     }
+
 }
