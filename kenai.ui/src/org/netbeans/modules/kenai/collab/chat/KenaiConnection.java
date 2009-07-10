@@ -202,13 +202,13 @@ public class KenaiConnection implements PropertyChangeListener {
     private class PacketL implements PacketListener {
         public void processPacket(Packet packet) {
             final Message msg = (Message) packet;
-            try {
-                connection.getChatManager().createChat(msg.getFrom(), null).sendMessage(org.openide.util.NbBundle.getMessage(KenaiConnection.class, "CTL_NoPrivateMessages"));
-                //chatNotifications.addPrivateMessage(msg);
-            } catch (XMPPException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            //chatNotifications.addPrivateMessage(msg);
+//            try {
+//                connection.getChatManager().createChat(msg.getFrom(), null).sendMessage(org.openide.util.NbBundle.getMessage(KenaiConnection.class, "CTL_NoPrivateMessages"));
+//                chatNotifications.addPrivateMessage(msg);
+//            } catch (XMPPException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+            chatNotifications.addPrivateMessage(msg);
         }
     }
 
