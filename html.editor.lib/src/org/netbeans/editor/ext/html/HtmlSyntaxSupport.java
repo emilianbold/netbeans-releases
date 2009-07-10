@@ -133,8 +133,8 @@ public class HtmlSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
     }
 
-    public static boolean checkOpenCompletion(Document document, int dotPos, String typedText) {
-        BaseDocument doc = (BaseDocument)document;
+    public static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
+        final BaseDocument doc = (BaseDocument)document;
         switch( typedText.charAt( typedText.length()-1 ) ) {
             case '/':
                 if (dotPos >= 2) { // last char before inserted slash
@@ -167,6 +167,28 @@ public class HtmlSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             case '<':
             case '&':
                 return true;
+                case '>':
+                //handle tag autocomplete
+                final boolean[] ret = new boolean[1];
+                doc.runAtomic(new Runnable() {
+                    public void run() {
+                        TokenSequence ts = getJoinedHtmlSequence(doc);
+                        if (ts == null) {
+                            //no suitable token sequence found
+                            ret[0] = false;
+                        } else {
+                            ts.move(dotPos - 1);
+                            if (ts.moveNext() || ts.movePrevious()) {
+                                if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL
+                                        && !("/>".equals(ts.token().text().toString()))) {
+                                    ret[0] = true;
+                                }
+                            }
+                        }
+                    }
+                });
+                return ret[0];
+
 //            case ';':
 //                return COMPLETION_HIDE;
 
@@ -573,7 +595,7 @@ public class HtmlSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
          if(path == null) {
              return null;
          }
-         
+
          return getJoinedHtmlSequence(doc, path);
     }
 

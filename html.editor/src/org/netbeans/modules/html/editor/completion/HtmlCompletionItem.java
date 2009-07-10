@@ -310,6 +310,14 @@ public class HtmlCompletionItem implements CompletionItem {
             super(text, substitutionOffset, helpId);
         }
 
+                //end tag autocomplete handling
+        @Override
+        public void defaultAction(JTextComponent component) {
+            //force the completion not to hide when the item text is completed
+            super.shift = true;
+            super.defaultAction(component);
+        }
+
         @Override
         protected String getSubstituteText() {
             return "<" + getItemText() + ">";
