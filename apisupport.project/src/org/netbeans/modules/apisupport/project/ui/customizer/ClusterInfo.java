@@ -161,22 +161,51 @@ public final class ClusterInfo {
         return ret;
     }
 
-    private static final String NO_NBORG_PROJECTS = "Only standalone module or suite projects allowed";
+    public enum QueryResult {
+        OK("OK"),    // NOI18N
+        NOT_A_NBM_PROJECT("Not a NetBeans Module project"),// NOI18N
+        NBORG_PROJECT_NOT_ALLOWED("NB.org projects are not allowed"),// NOI18N
+        SUITE_COMP_NOT_ALLOWED("Suite component projects are not allowed, call for suite project instead");// NOI18N
 
-    public static ClusterInfo create(Project project, boolean enabled) {
+        QueryResult(String exceptionMsg) {
+            msg = exceptionMsg;
+        }
+        private String msg;
+        public String getExceptionMessage() {
+            return msg;
+        }
+    }
+
+    public static QueryResult canCreate(Project project) {
         NbModuleProvider nbmp = project.getLookup().lookup(NbModuleProvider.class);
         SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
-        File clusterDir;
         if (sprv != null) {
-            clusterDir = sprv.getClusterDirectory();
+            if (nbmp == null) {
+                return QueryResult.OK;
+            } else {
+                assert nbmp.getModuleType() == NbModuleProvider.SUITE_COMPONENT;
+                return QueryResult.SUITE_COMP_NOT_ALLOWED;
+            }
         } else if (nbmp != null) {
             if (nbmp.getModuleType() == NbModuleProvider.STANDALONE)
-                clusterDir = ClusterUtils.getClusterDirectory(project);
+                return QueryResult.OK;
             else
-                throw new IllegalArgumentException(NO_NBORG_PROJECTS);
+                return QueryResult.NBORG_PROJECT_NOT_ALLOWED;
         } else {
-            throw new IllegalArgumentException(NO_NBORG_PROJECTS);
+            return QueryResult.NOT_A_NBM_PROJECT;
         }
+    }
+
+    public static ClusterInfo create(Project project, boolean enabled) {
+        QueryResult res = canCreate(project);
+        if (res != QueryResult.OK)
+            throw new IllegalArgumentException(res.getExceptionMessage());
+
+        NbModuleProvider nbmp = project.getLookup().lookup(NbModuleProvider.class);
+        SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
+        assert nbmp != null || sprv != null;
+        File clusterDir = (nbmp != null) ?
+            ClusterUtils.getClusterDirectory(project) : sprv.getClusterDirectory();
         ClusterInfo ret = new ClusterInfo(clusterDir);
         ret.project = project;
         ret.enabled = enabled;
