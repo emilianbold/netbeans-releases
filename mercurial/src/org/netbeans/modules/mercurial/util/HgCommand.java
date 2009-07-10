@@ -2128,8 +2128,8 @@ public class HgCommand {
     public static FileInformation getSingleStatus(File repository, String cwd, String filename)  throws HgException{
         FileInformation info = null;
         long startTime = 0;
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            Mercurial.STATUS_LOG.fine("getSingleStatus: starting for " + filename); //NOI18N
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
+            Mercurial.STATUS_LOG.finer("getSingleStatus: starting for " + filename); //NOI18N
             startTime = System.currentTimeMillis();
         }
         List<String> list = doSingleStatusCmd(repository, cwd, filename);
@@ -2166,8 +2166,8 @@ public class HgCommand {
 
         Mercurial.LOG.log(Level.FINE, "getSingleStatus(): StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4}", // NOI18N
                 new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd} );
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            Mercurial.STATUS_LOG.fine("getSingleStatus for " + filename + " lasted " + (System.currentTimeMillis() - startTime));
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
+            Mercurial.STATUS_LOG.finer("getSingleStatus for " + filename + " lasted " + (System.currentTimeMillis() - startTime));
         }
         return info;
     }
@@ -2412,8 +2412,8 @@ public class HgCommand {
     private static Map<File, FileInformation> getDirStatusWithFlags(File repository, File dir, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
         long startTime = 0;
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            Mercurial.STATUS_LOG.fine("getDirStatusWithFlags: starting for " + dir.getAbsolutePath()); //NOI18N
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
+            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags: starting for " + dir.getAbsolutePath()); //NOI18N
             startTime = System.currentTimeMillis();
         }
         List<FileStatus> statusList = new ArrayList<FileStatus>();
@@ -2480,8 +2480,8 @@ public class HgCommand {
             }
         }
 
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
-            Mercurial.STATUS_LOG.fine("getDirStatusWithFlags for " + dir.getAbsolutePath() + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
+        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
+            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags for " + dir.getAbsolutePath() + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
         }
         return repositoryFiles;
     }
