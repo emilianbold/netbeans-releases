@@ -39,13 +39,19 @@
 
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -53,6 +59,11 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = VisibilityQueryImplementation.class)
 public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
+
+    // @GuardedBy(this)
+    private final Set<PhpProject> watchedProjects = new WeakSet<PhpProject>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
 
     public boolean isVisible(FileObject file) {
         PhpProject phpProject = PhpProjectUtils.getPhpProject(file);
@@ -69,14 +80,19 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
     }
 
     public void addChangeListener(ChangeListener l) {
-        // not needed now
+        changeSupport.addChangeListener(l);
     }
 
     public void removeChangeListener(ChangeListener l) {
-        // not needed now
+        changeSupport.removeChangeListener(l);
+    }
+
+    void fireChange() {
+        changeSupport.fireChange();
     }
 
     private boolean isIgnoredByProject(PhpProject project, FileObject file) {
+        checkPropertyListener(project);
         return ProjectPropertiesSupport.getIgnoredFolders(project).contains(file);
     }
 
@@ -92,5 +108,21 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
             }
         }
         return false;
+    }
+
+    private synchronized void checkPropertyListener(PhpProject project) {
+        if (!watchedProjects.contains(project)) {
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, ignoredFoldersListener);
+            watchedProjects.add(project);
+        }
+    }
+
+    private final class IgnoredFoldersListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpProjectProperties.IGNORE_PATH.equals(evt.getPropertyName())) {
+                fireChange();
+            }
+        }
     }
 }
