@@ -36,76 +36,61 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 
 /**
+ * A table cell renderer that knows how to display thread names with their state icon
  *
- * @author Alexander Simon
+ * @author Jiri Sedlacek
+ * @author Ian Formanek
+ * @author Alexander Simon (adapted for CND)
  */
-public interface ThreadState {
+public class ThreadNameCellRenderer extends EnhancedTableCellRenderer {
+    private JLabel label;
+    private ThreadsPanel viewManager; // view manager for this cell
 
     /**
-     * Aggregated thread states.
+     * Creates a new instance of ThreadNameCellRenderer
      */
-    public static enum ShortThreadState {
-        NotExist,
-        Sleeping,
-        Waiting,
-        Blocked,
-        Running,
+    public ThreadNameCellRenderer(ThreadsPanel viewManager) {
+        setHorizontalAlignment(JLabel.LEADING);
+        label = new JLabel("", JLabel.LEADING); //NOI18N
+
+        setLayout(new BorderLayout());
+        add(label, BorderLayout.CENTER);
+        setBorder(BorderFactory.createEmptyBorder(1, 3, 1, 3));
+        this.viewManager = viewManager;
     }
 
-    /**
-     * All possible thread states.
-     */
-    public static enum FullThreadState {
-        NotExist,
-        Stopped,
-        SleepingOther,
-        SleepingUserTextPageFault,
-        SleepingUserDataPageFault,
-        SleepingKernelPageFault,
-        SleepingSemafore,
-        SleepingConditionalVariable,
-        SleepingSystemSynchronization,
-        SleepingUserSynchronization,
-        WaitingCPU,
-        RunningOther,
-        RunningSystemCall,
-        RunningUser,
+    @Override
+    protected void setRowForeground(Color c) {
+        super.setRowForeground(c);
+        label.setForeground(c);
     }
 
-    /**
-     * @return size of state
-     */
-    int size();
+    public Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+            int row, int column) {
+        return new ThreadNameCellRenderer(viewManager).getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                column);
+    }
 
-    /**
-     * returns string representation of enum value of ShortThreadState or FullThreadState.
-     *
-     * @param index of state.
-     * @return state ID by index.
-     */
-    String getStateName(int index);
+    protected void setValue(JTable table, Object value, int row, int column) {
+        if (table != null) {
+            setFont(table.getFont());
+        }
 
-    /**
-     * @param index of state.
-     * @return value of state by index. Unit of value is 0.1%. I.e. sum of all values is 1000.
-     */
-    int getState(int index);
-
-    /**
-     * returns -1 if there are no stack avaliable.
-     *
-     * @param index interested state.
-     * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
-     */
-    long getTimeStamp(int index);
-
-    /**
-     *
-     * @return beginning time in natural unit of state.
-     */
-    long getTimeStamp();
+        if (value == null) {
+            label.setText(""); // NOI18N
+        } else {
+            int index = ((Integer) value).intValue();
+            label.setText(viewManager.getThreadName(index));
+        }
+    }
 }

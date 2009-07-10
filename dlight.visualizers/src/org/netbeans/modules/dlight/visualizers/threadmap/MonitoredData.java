@@ -37,75 +37,60 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.visualizers.threadmap;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadInfo;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
 
 /**
  *
- * @author Alexander Simon
+ * @author Alexander Simon (adapted for CND)
  */
-public interface ThreadState {
-
-    /**
-     * Aggregated thread states.
-     */
-    public static enum ShortThreadState {
-        NotExist,
-        Sleeping,
-        Waiting,
-        Blocked,
-        Running,
+public class MonitoredData {
+    private List<ThreadMapData> data = new ArrayList<ThreadMapData>();
+    private MonitoredData(List<ThreadMapData> data) {
+        this.data = data;
     }
 
-    /**
-     * All possible thread states.
-     */
-    public static enum FullThreadState {
-        NotExist,
-        Stopped,
-        SleepingOther,
-        SleepingUserTextPageFault,
-        SleepingUserDataPageFault,
-        SleepingKernelPageFault,
-        SleepingSemafore,
-        SleepingConditionalVariable,
-        SleepingSystemSynchronization,
-        SleepingUserSynchronization,
-        WaitingCPU,
-        RunningOther,
-        RunningSystemCall,
-        RunningUser,
+    public static MonitoredData getMonitoredData(List<ThreadMapData> data) {
+        return new MonitoredData(data);
     }
 
-    /**
-     * @return size of state
-     */
-    int size();
+    public int getThreadsSize() {
+        return data.size();
+    }
 
-    /**
-     * returns string representation of enum value of ShortThreadState or FullThreadState.
-     *
-     * @param index of state.
-     * @return state ID by index.
-     */
-    String getStateName(int index);
+    public int getThreadStatesSize() {
+        return data.get(0).getThreadState().size();
+    }
 
-    /**
-     * @param index of state.
-     * @return value of state by index. Unit of value is 0.1%. I.e. sum of all values is 1000.
-     */
-    int getState(int index);
+    public ThreadInfo getThreadInfo(int index){
+        return data.get(index).getThreadInfo();
+    }
 
-    /**
-     * returns -1 if there are no stack avaliable.
-     *
-     * @param index interested state.
-     * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
-     */
-    long getTimeStamp(int index);
+    public int[] getThreadIds() {
+        int[] res = new int[data.size()];
+        for(int i = 0; i < data.size(); i++){
+            res[i] = data.get(i).getThreadInfo().getThreadId();
+        }
+        return res;
+    }
 
-    /**
-     *
-     * @return beginning time in natural unit of state.
-     */
-    long getTimeStamp();
+    public List<ThreadState> getThreadStates(int index) {
+        return data.get(index).getThreadState();
+    }
+
+    public long[] getStateTimestamps() {
+        List<ThreadState> states = data.get(0).getThreadState();
+        int size = states.size();
+        long[] res = new long[size];
+        for(int i = 0; i < size; i++) {
+            ThreadState state = states.get(i);
+            res[i] = state.getTimeStamp();
+        }
+        return res;
+    }
 }

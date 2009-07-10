@@ -61,7 +61,7 @@ public final class ThreadTableMetrics {
     }
 
     private static  Column create(String id, Class clazz) {
-        return new Column(id,clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
+        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
     }
 
     public static final List<Column> getThredMapColumn(){
