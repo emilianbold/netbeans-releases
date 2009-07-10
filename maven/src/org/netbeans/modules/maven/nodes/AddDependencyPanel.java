@@ -106,9 +106,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
     private MavenProject project;
 
-    private TextValueCompleter groupCompleter;
-    private TextValueCompleter artifactCompleter;
-    private TextValueCompleter versionCompleter;
+    private final TextValueCompleter groupCompleter;
+    private final TextValueCompleter artifactCompleter;
+    private final TextValueCompleter versionCompleter;
     private JButton okButton;
     private QueryPanel queryPanel;
 
