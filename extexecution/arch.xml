@@ -50,7 +50,8 @@ Microsystems, Inc. All Rights Reserved.
    The External Execution module provides the
    <api group="java" name="ExternalExecutionAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/package-summary.html"/>
    that contains support for execution of external processes in the IDE. It also
-   provide support class for the actual creation of the external process.
+   provide support class for the actual creation of the external process
+   and support for destroying the process tree.
   </p>
   <p>
    Another exported API
@@ -63,6 +64,10 @@ Microsystems, Inc. All Rights Reserved.
    <api group="java" name="ExternalExecutionInputPrintingAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/print/package-summary.html"/>
    that defines interfaces transforming lines to lines printed to
    <code>org.openide.windows.OutputWriter</code>. API provides common implementations too.
+  </p>
+  <p>
+   There is also SPI allowing to register support for destroying the process tree
+   <api group="java" name="ExternalExecutionDestroySPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/destroy/package-summary.html"/>.
   </p>
  </answer>
 
@@ -199,6 +204,17 @@ Microsystems, Inc. All Rights Reserved.
     Common convertors (file, http) are provided in factory class
     <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertors</a>.
    </p>
+  </usecase>
+  <usecase id="destroy-process" name="Destroying a process">
+    <p>
+      Client wants to destroy the process, trying to kill whole process tree.
+      Method
+      <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessSupport.html#destroy(java.lang.Process,%20java.util.Map)">
+       ExternalProcessSupport.destroy(java.lang.Process process, Map&lt;String,String&gt; env)</a>
+      is designed for that. It will use a
+      <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
+      registered in default lookup to do so.
+    </p>
   </usecase>
  </answer>
 
@@ -825,7 +841,12 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   No.
+   <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessSupport.html">ExternalProcessSupport</a>
+   and processes created by
+   <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
+   are trying to lookup
+   <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
+   as a tool for killing the whole process tree.
   </p>
  </answer>
 
@@ -914,14 +935,15 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   Any spwaned process needs 4 threads (the worst case). One as the process
+   Any spawned process needs 4 threads (the worst case). One as the process
    handler, one for the standard input, one for the standard output and one for
    the standard error output. The minimal number of threads to handle a process
    is 2 (process handler and standard output handler - standard error output
    is redirected to the output, no thread for the standard input).
   </p>
   <p>
-   Typically the IDE should not run more 10 external processes concurrently.
+   Typically the IDE should not run more than 10 external processes
+   concurrently.
   </p>
  </answer>
 
@@ -1020,7 +1042,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   No SPI way to plug in foreign code.
+   No enforcement. SPI code may be used to terminate whole process tree.
   </p>
  </answer>
 

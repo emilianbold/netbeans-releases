@@ -85,7 +85,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     static final String ENV_PREFIX = "Env."; //NOI18N
     static final String ENV_JAVAHOME = "Env.JAVA_HOME"; //NOI18N
 
-    private static final String KEY_UUID = "NB_EXEC_PROCESS_UUID"; //NOI18N
+    private static final String KEY_UUID = "NB_EXEC_MAVEN_PROCESS_UUID"; //NOI18N
 
     private ProgressHandle handle;
     private Process process;
