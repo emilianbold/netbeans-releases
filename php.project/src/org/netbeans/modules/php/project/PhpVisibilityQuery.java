@@ -37,29 +37,46 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.phpmodule;
+package org.netbeans.modules.php.project;
 
-import java.util.List;
-import javax.swing.Action;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
+import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Provides support for extending a PHP module with a PHP framework's actions, that is,
- * it allows to add actions to the PHP module.
- *
  * @author Tomas Mysik
  */
-public abstract class PhpModuleActionsExtender {
+@ServiceProvider(service = VisibilityQueryImplementation.class)
+public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
 
-    /**
-     * Get the name of the menu, typically the name of the framework.
-     * @return the name of the menu, typically the name of the framework.
-     */
-    public abstract String getMenuName();
+    public boolean isVisible(FileObject file) {
+        PhpProject phpProject = PhpProjectUtils.getPhpProject(file);
+        if (phpProject == null) {
+            return true;
+        }
+        PhpModule phpModule = phpProject.getLookup().lookup(PhpModule.class);
+        assert phpModule != null : "php module must be found for " + phpProject.getProjectDirectory();
+        for (PhpFrameworkProvider framework : ProjectPropertiesSupport.getFrameworks(phpProject)) {
+            PhpModuleVisibilityExtender visibilityExtender = framework.createVisibilityExtender(phpModule);
+            if (visibilityExtender != null) {
+                if (!visibilityExtender.isVisible(file)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
-    /**
-     * Get the list of actions for the given framework that will be displayed in the project's menu.
-     * All <code>null</code> values are replaced by a separator.
-     * @return list of actions, can be empty but never <code>null</code>.
-     */
-    public abstract List<? extends Action> getActions();
+    public void addChangeListener(ChangeListener l) {
+        // not needed now
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        // not needed now
+    }
 }
