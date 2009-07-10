@@ -357,7 +357,19 @@
         </condition>
 
         <condition property="do.build.javafx">
-	     <equals arg1="${build.javafx}" arg2="1"/>
+             <or>
+	         <equals arg1="${build.javafx}" arg2="1"/>
+	         <isset properry="do.build.netbeans"/>
+             </or>
+        </condition>
+
+        <condition property="do.build.javafx.all">
+              <and>
+	          <isset property="do.build.javafx"/>
+                  <not>
+                      <isset property="do.build.netbeans"/>
+                  </not>
+              </and> 
         </condition>
 
         <condition property="nb.locales.isset">
@@ -510,11 +522,11 @@
     	        </filterchain>
 	     </loadfile>
 	     <property name="javafx.full.version"
-		       value="1.0.0.0.${javafx.build.number}"/>
+		       value="1.2.0.0.${javafx.build.number}"/>
          </if>
 
         <!-- fake JavaFX version just to be shown on the d/l page -->
-        <property name="javafx.full.version" value="1.0.0.0.0"/>
+        <property name="javafx.full.version" value="1.2.0.0.0"/>
 
         <delete file="${temp.file}" failonerror="false"/>
     </target>
@@ -815,7 +827,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
-    <target name="build-javafx-components" if="do.build.javafx">
+    <target name="build-javafx-components" if="do.build.javafx.all">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
 	     <param name="build.list" value="nb-base nb-javase nb-javafx"/>
@@ -835,7 +847,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java ruby cpp php full" separator=" " property="bundle.type">
+        <for-each list="javase java ruby cpp php javafx full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -846,7 +858,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
         <antcall target="generate-javatoolsbundle-bundles"/>
-        <antcall target="generate-javafx-bundles"/>
+        <!--<antcall target="generate-netbeans-javafx-bundles"/>-->
     </target>
 
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,init-bundled-jvms" if="do.build.jdk">	
@@ -1399,6 +1411,13 @@ jarsigner.storepass=${jarsigner.storepass}
             <condition property="is.solaris.platform" value="true" else="false">
                 <contains string="${bundle.platform}" substring="solaris"/>
             </condition>
+            <condition property="is.solaris.x86.platform" value="true" else="false">
+                <equals arg1="${bundle.platform}" arg2="solaris-x86"/>
+            </condition>
+            <condition property="is.solaris.sparc.platform" value="true" else="false">
+                <equals arg1="${bundle.platform}" arg2="solaris-sparc"/>
+            </condition>
+
 	    <if property="is.solaris.platform" value="false">	    
                    <create-bundle root="${output.dir}/registry-temp" 
                                   platform="${bundle.platform}" 
@@ -1408,6 +1427,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-webcommon"   version="${nb.full.version}"/>
                        <component uid="nb-javaee"      version="${nb.full.version}"/>
                        <component uid="nb-javame"      version="${nb.full.version}"/>
+                       <component uid="nb-javafx"      version="${javafx.full.version}"/>
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                        <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
@@ -1422,7 +1442,33 @@ jarsigner.storepass=${jarsigner.storepass}
                        <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
             </if>
-            <if property="is.solaris.platform" value="true">	    
+
+            <if property="is.solaris.x86.platform" value="true">	    
+                   <create-bundle root="${output.dir}/registry-temp" 
+                                  platform="${bundle.platform}" 
+                                  target="${bundle.prefix}.${bundle.extension}">
+                       <component uid="nb-base"        version="${nb.full.version}"/>
+                       <component uid="nb-javase"      version="${nb.full.version}"/>
+                       <component uid="nb-webcommon"   version="${nb.full.version}"/>
+                       <component uid="nb-javaee"      version="${nb.full.version}"/>
+                       <component uid="nb-javafx"      version="${javafx.full.version}"/>
+                       <!--<component uid="nb-javame"      version="${nb.full.version}"/>-->
+                       <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
+                       <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                       <component uid="nb-ruby"        version="${nb.full.version}"/>
+		       <component uid="nb-groovy"     version="${nb.full.version}"/>
+                       <component uid="nb-cnd"         version="${nb.full.version}"/>
+                       <component uid="nb-php"         version="${nb.full.version}"/>
+                       <component uid="nb-ergonomics"  version="${nb.full.version}"/>
+                       <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+                       <component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>
+                       <component uid="glassfish-mod-sun"  version="3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}"/>
+                       <component uid="tomcat"         version="${tomcat.full.version}"/>
+                       <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
+                   </create-bundle>
+            </if>
+
+            <if property="is.solaris.sparc.platform" value="true">	    
                    <create-bundle root="${output.dir}/registry-temp" 
                                   platform="${bundle.platform}" 
                                   target="${bundle.prefix}.${bundle.extension}">
@@ -1455,6 +1501,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-javafx"      version="${javafx.full.version}"/>
             <!--<component uid="nb-javame"     version="${nb.full.version}"/>-->
             <!--<component uid="nb-soa"        version="${nb.full.version}"/>-->
             <!--<component uid="nb-uml"    version="${nb.full.version}"/>-->
@@ -1762,22 +1809,22 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
-    <target name="generate-javafx-bundles" if="do.build.javafx">
-	<antcall target="generate-javafx-bundle">
+    <target name="generate-netbeans-javafx-bundles" if="do.build.javafx">
+	<antcall target="generate-netbeans-javafx-bundle">
                <param name="bundle.platform"  value="windows"/>
                <param name="bundle.extension" value="exe"/>
         </antcall>
-	<antcall target="generate-javafx-bundle">
+	<antcall target="generate-netbeans-javafx-bundle">
                <param name="bundle.platform"  value="linux"/>
                <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-javafx-bundle">
+	<antcall target="generate-netbeans-javafx-bundle">
                <param name="bundle.platform"  value="solaris-x86"/>
                <param name="bundle.extension" value="sh"/>
         </antcall>
     </target>
 
-    <target name="generate-javafx-bundle">
+    <target name="generate-netbeans-javafx-bundle">
 	<!-- JavaFX bundles --> 	
         <mkdir dir="${nb.bundles.output.dir}"/>
 	<property name="bundle.prefix" 

@@ -1046,7 +1046,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             } else if(this.equals(MYSQL)) {
                 return "NBMYSQL";
             } else if(this.equals(JAVAFX)) {
-                return "NBFX";
+                return "NB";
             } else {
                 return "NB";
             }

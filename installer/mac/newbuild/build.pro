@@ -50,7 +50,7 @@
     <!-- Sun GlassFish V3 properties   -->
     <property name="glassfish.v3.sun.build.type"      value="prelude"/>
     <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
-    <property name="glassfish.v3.sun.build.number"    value="28e"/>
+    <property name="glassfish.v3.sun.build.number"    value="28f"/>
     <!--
     <loadresource property="glassfish.v3.sun.build.number">
           <url url="${glassfish.v3.sun.location.prefix}/prelude/latest/archive/bundles"/>
@@ -102,8 +102,8 @@
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
     <!-- JavaFX Properties -->
-    <property name="javafx_location"     value="${javafx_builds_host}/lastSuccessfulBuild/artifact/zips/javafx-cluster-mac.zip"/>
-    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/zips/javafx-sdk-mac.zip"/>
+    <property name="javafx_location"     value="${javafx_builds_host}/lastSuccessfulBuild/artifact/build/clusters/common.jar"/>
+    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/build/clusters/mac.jar"/>
 
 
     <property name="dmg.prefix.name" value="${prefix}"/>                         

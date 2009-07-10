@@ -71,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
         <!--<delete dir="${basedir}/netBeans/soa/build"/>-->
         <delete dir="${basedir}/netBeans/ruby/build"/>
         <delete dir="${basedir}/netBeans/cpp/build"/>
+        <delete dir="${basedir}/netBeans/javafx/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>     
         <delete dir="${basedir}/netBeans/groovy/build"/>
@@ -100,7 +101,33 @@ Microsystems, Inc. All Rights Reserved.
            value="${basedir}/tools/classes"/>
     </target>        
 
-    <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
+    <target name="prepare-javafx-cluster-zip">
+        <mkdir dir="build"/> 
+
+	<get src="${javafx_location}" dest="${common.name}-javafx.zip"/>
+	<get src="${javafx_sdk_location}" dest="${common.name}-javafx-sdk.zip"/>
+
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d ${basedir}/javafxtmpdir ${common.name}-javafx.zip"/>
+        </exec>      
+        <delete dir="${basedir}/javafxtmpdir/META-INF" includeemptydirs="true"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d `ls -d1 ${basedir}/javafxtmpdir` ${common.name}-javafx-sdk.zip"/>
+        </exec>      
+        <delete dir="${basedir}/javafxtmpdir/META-INF" includeemptydirs="true"/>
+        <delete file="${common.name}-javafx.zip"/>
+        <delete file="${common.name}-javafx-sdk.zip"/>
+
+        <exec executable="sh" failonerror="yes" dir="${basedir}/javafxtmpdir">
+            <arg value="-c"/>
+            <arg value="zip -r -9 ${common.name}${ml.suffix}-javafx.zip *"/>
+        </exec>      
+        <delete dir="${basedir}/javafxtmpdir"/>
+    </target>
+
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="prepare-javafx-cluster-zip">
         <property name="clusters" value="cnd(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          ruby(ruby),                                       
@@ -109,6 +136,7 @@ Microsystems, Inc. All Rights Reserved.
                                          enterprise(javaee), identity(javaee), groovy(javaee),
                                          webcommon(webcommon),
                                          ergonomics(ergonomics),
+                                         javafx(javafx),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
@@ -165,6 +193,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-modules">        
         <property name="modules" value="javase(${javase-title}),
                                         javaee(${javaee-title}),
+                                        javafx(${javafx-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
                                         groovy(${groovy-title}),
@@ -220,6 +249,7 @@ Microsystems, Inc. All Rights Reserved.
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
                                              -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/sjsas.pkg ./build/glassfish-v3-sun.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
+                                             -javafx(./build/baseide.pkg ./build/javase.pkg ./build/javafx.pkg),
                                              -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3-sun.pkg),
                                              -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
@@ -452,6 +482,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3.sun}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <!--<filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>-->
+                <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/>
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    
                 <filter token="SIZE_MYSQL" value="${sizeof.mysql}"/> 

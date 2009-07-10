@@ -489,7 +489,7 @@ function update() {
         }
 
         if(product_uids[i] == "nb-javafx") {
-             product_messages[i] = NOTE_JAVAFX.replace('{0}', "http://www.netbeans.org/downloads/6.5.1");
+             //product_messages[i] = NOTE_JAVAFX.replace('{0}', "http://www.netbeans.org/downloads/6.5.1");
         }
 		
         for(var k=0;k<BUNDLE_IDS.length;k++) {
@@ -651,7 +651,7 @@ function is_compatible(index, platform) {
 	      var uid = group_products[i][j];
               for(var k=0;k<product_uids.length;k++) { 
                  if (product_uids[k] == uid) {
-                    if((k==index) && (i == 0) ) {//runtimes are not available in zip
+                    if((k==index) && (i == 0) && uid != "nb-javafx") {//runtimes are not available in zip
                         return true;
                     } 
                  }
