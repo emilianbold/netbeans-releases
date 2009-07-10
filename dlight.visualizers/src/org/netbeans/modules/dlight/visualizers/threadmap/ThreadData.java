@@ -98,6 +98,23 @@ public class ThreadData {
         return THREAD_STATUS_UNKNOWN_COLOR;
     }
 
+    static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
+        String name = threadStateColor.getStateName(msa);
+        Color c;
+        if (name.equals(ThreadState.ShortThreadState.Running.name())) {
+            c = THREAD_STATUS_RUNNING_COLOR;
+        } else if(name.equals(ThreadState.ShortThreadState.Waiting.name())) {
+            c = THREAD_STATUS_WAIT_COLOR;
+        } else if(name.equals(ThreadState.ShortThreadState.Blocked.name())) {
+            c = THREAD_STATUS_MONITOR_COLOR;
+        } else if(name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
+            c = THREAD_STATUS_SLEEPING_COLOR;
+        } else {
+            c = THREAD_STATUS_UNKNOWN_COLOR;
+        }
+        return c;
+    }
+
     private final ThreadInfo info;
     private final List<ThreadState> list = new ArrayList<ThreadState>();
 
@@ -110,29 +127,20 @@ public class ThreadData {
     }
 
     long getTimeStampAt(int index) {
-        return list.get(index).getTimeStamp(index);
+        return list.get(index).getTimeStamp();
     }
 
     boolean isAlive(int index) {
         return !list.get(index).getStateName(0).equals(ThreadState.ShortThreadState.NotExist.name());
     }
     
-    Color getThreadStateColorAt(int index){
-        return getThreadStateColor(1);
-    }
-
     ThreadState getThreadStateAt(int index){
         return list.get(index);
-    }
-
-    ThreadState getLastState() {
-        return list.get(list.size()-1);
     }
 
     boolean isAlive() {
         return !list.get(list.size()-1).getStateName(0).equals(ThreadState.ShortThreadState.NotExist.name());
     }
-
 
     void add(ThreadState state) {
         list.add(state);
@@ -143,6 +151,6 @@ public class ThreadData {
     }
 
     void clearStates() {
-        
+        list.clear();
     }
 }

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
-///**
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -197,7 +196,7 @@ public class ThreadsDataManager {
                 ThreadData tData = threadData[i];
                 for (int j = 0; j < states.size(); j++) {
                     tData.add(states.get(j));
-                    endTime = states.get(j).getTimeStamp(i);
+                    endTime = states.get(j).getTimeStamp();
                 }
             }
             fireDataChanged(); // all listeners are notified about threadData change */

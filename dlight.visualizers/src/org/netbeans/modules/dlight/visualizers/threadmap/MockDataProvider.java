@@ -115,7 +115,7 @@ public class MockDataProvider implements ThreadMapDataProvider {
                 ThreadInfo info = data.getThreadInfo();
                 List<ThreadState> list = new ArrayList<ThreadState>();
                 for(ThreadState state : data.getThreadState()) {
-                    int start = (int) state.getTimeStamp(0);
+                    int start = (int) state.getTimeStamp();
                     if (start < metadata.getTimeFrom()*1000) {
                         continue;
                     } else if (start > metadata.getTimeTo()*1000) {
@@ -197,16 +197,16 @@ public class MockDataProvider implements ThreadMapDataProvider {
     }
 
     private static final class MockThreadState implements ThreadState {
-        private final int runningTime;
-        private final int waitingTime;
-        private final int blockingTime;
-        private final int sleepingTime;
-        private final int currentTime;
+        private final short runningTime;
+        private final short waitingTime;
+        private final short blockingTime;
+        private final short sleepingTime;
+        private final long currentTime;
         public MockThreadState(int currentTime, int runningTime, int waitingTime, int blockingTime, int sleepingTime) {
-            this.runningTime = runningTime;
-            this.waitingTime = waitingTime;
-            this.blockingTime = blockingTime;
-            this.sleepingTime = sleepingTime;
+            this.runningTime = (short) runningTime;
+            this.waitingTime = (short) waitingTime;
+            this.blockingTime = (short) blockingTime;
+            this.sleepingTime = (short) sleepingTime;
             this.currentTime = currentTime;
         }
         public int size() {
@@ -239,6 +239,9 @@ public class MockDataProvider implements ThreadMapDataProvider {
             throw new IllegalArgumentException();
         }
         public long getTimeStamp(int index) {
+            return currentTime;
+        }
+        public long getTimeStamp() {
             return currentTime;
         }
     }

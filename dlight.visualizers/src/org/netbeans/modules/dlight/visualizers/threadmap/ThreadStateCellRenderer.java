@@ -237,22 +237,6 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return -1;
     }
 
-    private void paintThreadState(Graphics g, int index, Color threadStateColor, float factor, int width) {
-        int x; // Begin of rectangle
-        int xx; // End of rectangle
-
-        x = Math.max((int) ((float) (threadData.getTimeStampAt(index) - viewStart) * factor), 0);
-
-        if (index < (threadData.size() - 1)) {
-            xx = Math.min((int) ((float) (threadData.getTimeStampAt(index + 1) - viewStart) * factor), width);
-        } else {
-            xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
-        }
-
-        g.setColor(threadStateColor);
-        g.fillRect(x, 6, xx - x, getHeight() - 12);
-    }
-
     private void paintThreadState(Graphics g, int index, ThreadState threadStateColor, float factor, int width) {
         int x; // Begin of rectangle
         int xx; // End of rectangle
@@ -274,19 +258,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
         for(int i = 0; i < size; i++) {
             int v = threadStateColor.getState(i);
-            String name = threadStateColor.getStateName(i);
-            Color c;
-            if (name.equals(ThreadState.ShortThreadState.Running.name())) {
-                c = ThreadData.THREAD_STATUS_RUNNING_COLOR;
-            } else if(name.equals(ThreadState.ShortThreadState.Waiting.name())) {
-                c = ThreadData.THREAD_STATUS_WAIT_COLOR;
-            } else if(name.equals(ThreadState.ShortThreadState.Blocked.name())) {
-                c = ThreadData.THREAD_STATUS_MONITOR_COLOR;
-            } else if(name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
-                c = ThreadData.THREAD_STATUS_SLEEPING_COLOR;
-            } else {
-                c = ThreadData.THREAD_STATUS_UNKNOWN_COLOR;
-            }
+            Color c = ThreadData.getThreadStateColor(threadStateColor, i);
             oldRest = rest;
             rest = (v*delta+rest)%1000;
             int d = (v*delta+oldRest)/1000;

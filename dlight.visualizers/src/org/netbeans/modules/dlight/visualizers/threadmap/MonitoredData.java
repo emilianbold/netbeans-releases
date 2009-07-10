@@ -89,7 +89,7 @@ public class MonitoredData {
         long[] res = new long[size];
         for(int i = 0; i < size; i++) {
             ThreadState state = states.get(i);
-            res[i] = state.getTimeStamp(0);
+            res[i] = state.getTimeStamp();
         }
         return res;
     }

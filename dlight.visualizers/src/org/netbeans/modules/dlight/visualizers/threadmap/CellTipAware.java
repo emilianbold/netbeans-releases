@@ -43,7 +43,6 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import javax.swing.JToolTip;
 
-
 /**
  * @author Jiri Sedlacek
  * @author Alexander Simon (adapted for CND)

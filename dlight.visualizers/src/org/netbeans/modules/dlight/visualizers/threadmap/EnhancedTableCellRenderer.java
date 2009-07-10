@@ -49,7 +49,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-
 /**
  * An abstract superclass for table cell renderers to be used throughout the profiler.
  * It implements alrenating background colors for odd and even rows, and simplifies the writing of
