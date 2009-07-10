@@ -258,6 +258,10 @@ public class Subversion {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
         for (File root : roots) {
+            // XXX #168094 logging
+            if (!SvnUtils.isManaged(root)) {
+                Subversion.LOG.warning("getClient: unmanaged file in context: " + root.getAbsoluteFile()); //NOI18N
+            }
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
             if (repositoryUrl != null) {
                 break;
@@ -267,7 +271,15 @@ public class Subversion {
         }
 
         assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!"; // NOI18N
-
+        if (repositoryUrl == null) {
+            // XXX #168094 logging
+            // preventing NPE in getClient(repositoryUrl, support)
+            StringBuilder sb = new StringBuilder("Cannot determine repositoryRootUrl for selected context:"); //NOI18N
+            for (File root : roots) {
+                sb.append("\n").append(root.getAbsolutePath());         //NOI18N
+            }
+            throw new SVNClientException(sb.toString());
+        }
         return getClient(repositoryUrl, support);
     }
 
