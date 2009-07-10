@@ -1119,6 +1119,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-javafx">	
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javafx"/>
+	    <param name="use.custom.package.data.mapping" value="1"/>
         </antcall>
     </target>
 
@@ -1837,7 +1838,6 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javafx" version="${javafx.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javafx"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.javafx.resource}"/>
         </create-bundle>
 
 	<antcall target="convert-netbeans-bundle"/>
