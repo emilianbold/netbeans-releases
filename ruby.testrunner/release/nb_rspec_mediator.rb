@@ -201,7 +201,12 @@ class Reporter < Spec::Runner::Reporter
 
 end
 
-class NbSpecParser < Spec::Runner::SpecParser
+# Spec::Runner::LineNumberQuery replaced Spec::Runner::SpecParser in 1.2.7 and newer
+class NbSpecParser < if (defined? Spec::Runner::SpecParser)
+    Spec::Runner::SpecParser
+  else
+    Spec::Runner::LineNumberQuery
+  end
 
   attr_reader :example_group_description, :example_description
 

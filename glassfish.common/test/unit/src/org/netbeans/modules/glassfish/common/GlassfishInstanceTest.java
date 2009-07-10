@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.model.spi;
 
-import java.util.List;
+package org.netbeans.modules.glassfish.common;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
-
+import org.junit.Test;
 
 /**
- * @author ads
  *
+ * @author vkraemer
  */
-public interface WebBeansModelProvider {
+public class GlassfishInstanceTest {
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
-    
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
+    public GlassfishInstanceTest() {
+    }
+
+    /**
+     * Test of create method, of class GlassfishInstance.
+     */
+    @Test
+    public void testCreate_10args() {
+        System.out.println("create");
+        String displayName = "";
+        String installRoot = "";
+        String glassfishRoot = "";
+        String domainsDir = "";
+        String domainName = "";
+        int httpPort = 0;
+        int adminPort = 0;
+        String url = "";
+        String uriFragment = "";
+        GlassfishInstanceProvider gip = null;
+        GlassfishInstance expResult = null;
+        GlassfishInstance result = GlassfishInstance.create(displayName, installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort, "foo:localhost:port", uriFragment, GlassfishInstanceProvider.getEe6());
+        assert result != null : "got a null";
+        GlassfishInstance result2 = GlassfishInstance.create(displayName, installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,  "foo:localhost:port", uriFragment, GlassfishInstanceProvider.getEe6());
+        assert result.equals(result2);
+        result2 = GlassfishInstance.create(displayName, installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,  "foo:127.0.0.1:port", uriFragment, GlassfishInstanceProvider.getEe6());
+        assert result.equals(result2);
+    }
+
 }
