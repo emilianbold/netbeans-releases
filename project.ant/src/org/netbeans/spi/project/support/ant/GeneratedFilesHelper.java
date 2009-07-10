@@ -504,12 +504,10 @@ public final class GeneratedFilesHelper {
             return out.toByteArray();
         }
         catch (IOException ex) {
-            ex.printStackTrace();
             Exceptions.printStackTrace(ex);
             return resultData;
         }
         catch (SAXException ex) {
-            ex.printStackTrace();
             Exceptions.printStackTrace(ex);
             return resultData;
         }
