@@ -79,7 +79,7 @@ public class ZipUtils {
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
             for (File child : children) {
-                String newBase = (base == null) ? file.getName() : (base + "/" + file.getName());
+                String newBase = (base == null) ? file.getName() : (base + "/" + file.getName()); // NOI18N
                 zipImpl(child, out, readBuf, newBase, filter);
             }
             return;
