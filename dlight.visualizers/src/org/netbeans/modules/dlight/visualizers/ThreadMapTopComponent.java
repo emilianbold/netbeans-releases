@@ -51,6 +51,8 @@ import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizers.api.impl.ThreadMapVisualizerConfigurationAccessor;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadMapVisualizer;
 
 /**
  * Top component which displays something.
@@ -137,6 +139,8 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
 
     @Override
     public void componentOpened() {
+        // temporary for testing
+        instance.addVisualizer("Thread Map", new ThreadMapVisualizer(null, null)); //NOI18N
     }
 
     @Override

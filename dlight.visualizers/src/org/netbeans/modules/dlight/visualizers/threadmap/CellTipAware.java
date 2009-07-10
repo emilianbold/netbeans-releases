@@ -37,28 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.memory;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-
-
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import javax.swing.JToolTip;
 
 /**
- *
- * @author mt154047
+ * @author Jiri Sedlacek
+ * @author Alexander Simon (adapted for CND)
  */
-public class MemoryIndicatorConfiguration extends IndicatorConfiguration{
-  static final String ID = "MemoryIndicatorConfigurationID"; // NOI18N
+public interface CellTipAware {
 
-  public MemoryIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-    super(metadata, position);
-  }
+    public JToolTip getCellTip();
 
+    public Point getCellTipLocation();
 
-  @Override
-  public String getID() {
-    return ID;
-  }
-
+    public void processMouseEvent(MouseEvent e);
 }

@@ -37,52 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.sync;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
-import org.netbeans.modules.dlight.util.DLightLogger;
+import java.awt.Component;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 
 /**
- * A trivial implementation of the CLIOParser
- * that supposes that each output line contains a single figure
- * @author Vladimir Kvashin
+ *
+ * @author Jiri Sedlacek
+ * @author Alexander Simon (adapted for CND)
  */
-public class OneColumnClioParser implements CLIOParser {
-
-        private List<String> colNames;
-
-        public OneColumnClioParser(Column totalColumn) {
-            colNames = Arrays.asList(totalColumn.getColumnName());
-        }
-
-        public DataRow process(String line) {
-            if (DLightLogger.instance.isLoggable(Level.FINE)) {
-                DLightLogger.instance.fine(getClass().getSimpleName() + ": " + line); //NOI18N
-            }
-            if (line == null) {
-                return null;
-            }
-            line = line.trim();
-            if (!Character.isDigit(line.charAt(0))) {
-                return null;
-            }
-            try {
-                Long value = Long.parseLong(line);
-                return new DataRow(colNames, Arrays.asList((Object) value));
-            } catch (NumberFormatException e) {
-                DLightLogger.instance.log(Level.WARNING, e.getMessage(), e);
-            }
-            return null;
-        }
-
-        int parseInt(String s) throws NumberFormatException {
-            DLightLogger.assertTrue(s != null);
-            return Integer.parseInt(s);
-        }
-
+public interface TableCellRendererPersistent extends TableCellRenderer {
+    Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row,
+                                                      int column);
 }

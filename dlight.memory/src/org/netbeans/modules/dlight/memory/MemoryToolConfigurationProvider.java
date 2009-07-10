@@ -38,13 +38,18 @@
  */
 package org.netbeans.modules.dlight.memory;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
@@ -52,6 +57,12 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.graph.Graph.LabelRenderer;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -73,6 +84,16 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static final String TOOL_NAME_DETAILED = loc("MemoryTool.ToolName.Detailed"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
+    private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
+    private static final int BINARY_ORDER = 1024;
+    private static final int DECIMAL_ORDER = 1000;
+    private static final String[] SIFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
+
+    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
+    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
+    static {
+        FRAC_FORMAT.setMaximumFractionDigits(1);
+    }
 //    /** this is for the case of using DTrace for indicator only  */
 
 
@@ -174,8 +195,20 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorColumns.addAll(Arrays.asList(totalColumn));
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
-        MemoryIndicatorConfiguration indicatorConfiguration =
-                new MemoryIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION); // NOI18N
+        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION,
+                loc("indicator.title"), 1024, // NOI18N
+                Arrays.asList(
+                    new GraphDescriptor(GraphConfig.COLOR_2, loc("graph.description"), GraphDescriptor.Kind.LINE)), // NOI18N
+                new DataRowToMemoryPlot(indicatorColumns));
+        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
+                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0)))); // NOI18N
+        indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
+        indicatorConfiguration.setLabelRenderer(new LabelRenderer() {
+            public String render(int value) {
+                return formatValue(value);
+            }
+        });
 
         DataTableMetadata detailedViewTableMetadata =
                 SunStudioDCConfiguration.getMemTableMetadata(
@@ -233,5 +266,66 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
                 MemoryToolConfigurationProvider.class, key, params);
+    }
+
+    private static final class DataRowToMemoryPlot implements DataRowToPlot {
+
+        private final List<Column> columns;
+        private int mem;
+        private int max;
+
+        public DataRowToMemoryPlot(List<Column> columns) {
+            this.columns = new ArrayList<Column>(columns);
+        }
+
+        public void addDataRow(DataRow row) {
+            for (String columnName : row.getColumnNames()) {
+                for (Column column : columns) {
+                    if (column.getColumnName().equals(columnName)) {
+                        mem = toInt(row.getData(columnName));
+                        if (max < mem) {
+                            max = mem;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void tick() {
+        }
+
+        public int[] getGraphData() {
+            return new int[]{mem};
+        }
+
+        public Map<String, String> getDetails() {
+            return Collections.singletonMap(MAX_HEAP_DETAIL_ID, formatValue(max));
+        }
+    }
+
+    private static String formatValue(long value) {
+        double dbl = value;
+        int i = 0;
+        while (BINARY_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+            dbl /= BINARY_ORDER;
+            ++i;
+        }
+        if (DECIMAL_ORDER <= dbl && i + 1 < SIFFIXES.length) {
+            dbl /= BINARY_ORDER;
+            ++i;
+        }
+        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
+        return nf.format(dbl) + SIFFIXES[i];
+    }
+
+    private static int toInt(Object obj) {
+        if (obj instanceof Number) {
+            return ((Number)obj).intValue();
+        } else if (obj instanceof String) {
+            try {
+                return Integer.parseInt((String)obj);
+            } catch (NumberFormatException ex) {}
+        }
+        return 0;
     }
 }

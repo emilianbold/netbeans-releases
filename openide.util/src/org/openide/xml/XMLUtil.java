@@ -816,8 +816,14 @@ public final class XMLUtil extends Object {
             doc = builder.newDocument();
         }
         for (int i = 0; i < nl.getLength(); i++) {
-            if (!(nl.item(i) instanceof DocumentType)) {
-                doc.appendChild(doc.importNode(nl.item(i), true));
+            Node node = nl.item(i);
+            if (!(node instanceof DocumentType)) {
+                try {
+                    doc.appendChild(doc.importNode(node, true));
+                } catch (DOMException x) {
+                    // Thrown in NB-Core-Build #2896 & 2898 inside GeneratedFilesHelper.applyBuildExtensions
+                    throw (IOException) new IOException("Could not import or append " + node + " of " + node.getClass()).initCause(x);
+                }
             }
         }
         doc.normalize();

@@ -36,37 +36,24 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.cpu.impl;
 
-import java.util.Set;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
 /**
+ * A listener for data managers, that allows to be notified about data changes.
  *
- * @author Alexey Vladykin
+ * @author Jiri Sedlacek
+ * @author Ian Formanek
+ * @author Alexander Simon (adapted for CND)
  */
-/*package*/ abstract class CpuIndicatorConfigurationAccessor {
+public interface DataManagerListener {
+    /**
+     * Called when the data managed by the manager change
+     */
+    void dataChanged();
 
-    private static volatile CpuIndicatorConfigurationAccessor DEFAULT;
-
-    public static CpuIndicatorConfigurationAccessor getDefault() {
-        CpuIndicatorConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-        try {
-            Class.forName(CpuIndicatorConfiguration.class.getName(), true,
-                    CpuIndicatorConfiguration.class.getClassLoader());
-        } catch (Exception e) {
-        }
-        return DEFAULT;
-    }
-
-    public static void setDefault(CpuIndicatorConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public abstract Set<String> getSysColumns(CpuIndicatorConfiguration conf);
+    /**
+     * Called when the data managed by the manager reset (e.g. when a new session is started)
+     */
+    void dataReset();
 }

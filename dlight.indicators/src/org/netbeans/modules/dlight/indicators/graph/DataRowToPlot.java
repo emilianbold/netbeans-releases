@@ -36,27 +36,21 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.indicators.graph;
 
-package org.netbeans.modules.dlight.sync;
-
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
- *
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public class SyncIndicatorFactory implements IndicatorFactory<SyncIndicatorConfiguration> {
+public interface DataRowToPlot {
 
-  @Override
-  public Indicator<SyncIndicatorConfiguration> create(SyncIndicatorConfiguration configuration) {
-    return new SyncIndicator(configuration);
-  }
+    public void addDataRow(DataRow row);
 
-  @Override
-  public String getID() {
-    return SyncIndicatorConfiguration.ID;
-  }
+    public void tick();
 
+    public int[] getGraphData();
+
+    public Map<String, String> getDetails();
 }

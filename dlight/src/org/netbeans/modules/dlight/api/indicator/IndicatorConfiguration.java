@@ -51,10 +51,10 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  */
 public abstract class IndicatorConfiguration {
 
-    private IndicatorMetadata metadata;
+    private final IndicatorMetadata metadata;
     private final int position;
     private final List<VisualizerConfiguration> visualizerConfigurations;
-
+    private String actionDisplayName;
 
     static {
         IndicatorConfigurationAccessor.setDefault(new IndicatorConfigurationAccessorImpl());
@@ -98,6 +98,10 @@ public abstract class IndicatorConfiguration {
         }
     }
 
+    public final void setActionDisplayName(String actionDisplayName) {
+        this.actionDisplayName = actionDisplayName;
+    }
+
     /**
      * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
      * @return indicator metadata
@@ -124,6 +128,10 @@ public abstract class IndicatorConfiguration {
         return visualizerConfigurations;
     }
 
+    public final String getActionDisplayName() {
+        return actionDisplayName;
+    }
+
     private static final class IndicatorConfigurationAccessorImpl extends IndicatorConfigurationAccessor {
 
         @Override
@@ -139,6 +147,11 @@ public abstract class IndicatorConfiguration {
         @Override
         public List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration) {
             return configuration.getVisualizerConfigurations();
+        }
+
+        @Override
+        public String getActionDisplayName(IndicatorConfiguration configuration) {
+            return configuration.getActionDisplayName();
         }
     }
 

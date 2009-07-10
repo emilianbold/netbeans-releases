@@ -36,25 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.cpu.impl;
-
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+package org.netbeans.modules.dlight.indicators.graph;
 
 /**
- *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public final class CpuIndicatorFactory implements IndicatorFactory<CpuIndicatorConfiguration> {
+public final class DetailDescriptor {
 
-    @Override
-    public Indicator<CpuIndicatorConfiguration> create(CpuIndicatorConfiguration configuration) {
-        return new CpuIndicator(configuration, CpuIndicatorConfigurationAccessor.getDefault().getSysColumns(configuration));
+    private final String name;
+    private final String displayName;
+    private final String defaultValue;
+
+    public DetailDescriptor(String name, String displayName, String defaultValue) {
+        this.name = name;
+        this.displayName = displayName;
+        this.defaultValue = defaultValue;
     }
 
-    @Override
-    public String getID() {
-        return CpuIndicatorConfiguration.ID;
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getName() {
+        return name;
     }
 }

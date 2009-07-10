@@ -63,12 +63,12 @@ import org.openide.LifecycleManager;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.subversion.ui.update.UpdateAction;
@@ -357,7 +357,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         LifecycleManager.getDefault().saveAll();
         if(context == null || context.getRootFiles().length < 1) {
             return;
-        }        
+        }
+        // XXX #168094 logging
+        if (!SvnUtils.isManaged(context.getRootFiles()[0])) {
+            Subversion.LOG.warning("VersioningPanel.onRefreshAction: context contains unmanaged file " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
+        }
         refreshStatuses();
     }
 
@@ -382,10 +386,25 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);     
             return; 
-        }                 
+        }
+        // XXX #168094 logging
+        if (repository == null) {
+            Subversion.LOG.info("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
+            boolean allUnmanaged = true;
+            for (File root : context.getRootFiles()) {
+                if (SvnUtils.isManaged(root)) {
+                    allUnmanaged = false;
+                    break;
+                }
+            }
+            if (allUnmanaged) {
+                Exception e = new Exception("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
+                Subversion.LOG.log(Level.INFO, null, e);
+            }
+        }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         svnProgressSupport = new SvnProgressSupport() {
-            public void perform() {                
+            public void perform() {
                 StatusAction.executeStatus(context, this);
                 setupModels();
             }            

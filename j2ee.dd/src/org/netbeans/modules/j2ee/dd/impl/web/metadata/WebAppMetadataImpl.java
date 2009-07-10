@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.RelativeOrdering;
 import org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingItems;
@@ -104,8 +105,7 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         for (FragmentRec fr : fragmentRecs) {
             res.add(fr.fragment);
         }
-        // TODO PetrS based on web.xml, the sorting may be absoluto also -- implement this too!!
-        return sortFragmentsRelatively(res);
+        return sortFragments(webXml, res);
     }
 
     public List<ServletInfo> getServlets() {
@@ -247,7 +247,22 @@ public class WebAppMetadataImpl implements WebAppMetadata {
     }
 
     // -------------------------------------------------------------------------
-    static List<WebFragment> sortFragmentsRelatively(List<WebFragment> frags) {
+    static List<WebFragment> sortFragments(WebApp webXml, List<WebFragment> list) {
+        assert list != null;
+
+        AbsoluteOrdering[] absOrder = null;
+        try {
+            if (webXml != null)
+                absOrder = webXml.getAbsoluteOrdering();
+        }
+        catch (VersionNotSupportedException e) {
+            // ignore (if not supported then web.xml does not contain absolute ordering)
+        }
+        return  (absOrder == null) ? sortFragmentsRelatively(list) : sortFragmentsAbsolutely(webXml, list);
+    }
+
+    // -------------------------------------------------------------------------
+    private static List<WebFragment> sortFragmentsRelatively(List<WebFragment> frags) {
         List<Constraint> constraints = extractConstraints(frags);
         List<Integer> others = extractOthers(frags, constraints);
         List<Integer> sorted = sort(constraints);
@@ -375,10 +390,76 @@ public class WebAppMetadataImpl implements WebAppMetadata {
                 }
             }
             catch (VersionNotSupportedException e) {
-                // ignore
+                // ignore (if not supported then web fragment does not have a name)
             }
         }
         return NOT_FOUND;
+    }
+
+    // -------------------------------------------------------------------------
+    private static List<WebFragment> sortFragmentsAbsolutely(WebApp webXml, List<WebFragment> list) {
+        assert webXml != null;
+
+        AbsoluteOrdering[] order = null;
+        try {
+            order = webXml.getAbsoluteOrdering();
+        }
+        catch (VersionNotSupportedException e) {
+            // this should never happen!
+            LOG.log(Level.SEVERE, "sortFragmentsAbsolutely failed", e);
+            return null;
+        }
+        assert order != null;
+
+        List<Integer> res = new ArrayList<Integer>();
+
+        // TODO <others/> tag not supported right now due to problem with schema2beans
+        // Hack is used <name>OTHERS</name> which is temporary and should be fixed!!
+        // FIXME implement web fragment model to support properly <others/> tag!!
+        for (AbsoluteOrdering o : order) {
+            addFragmentsIntoResult(res, list, o.getName());
+        }
+        res = insertOthers(res, list);
+
+        List<WebFragment> finalResult = new ArrayList<WebFragment>();
+        for (int i : res) {
+            finalResult.add(list.get(i));
+        }
+        return finalResult;
+    }
+
+    private static void addFragmentsIntoResult(List<Integer> res, List<WebFragment> list, String[] names) {
+        if (names != null) {
+            for (String name : names) {
+                // FIXME: hack -- should be fixed when support for <others/> is implemented
+                if (name.equals("OTHERS")) {
+                    res.add(OTHERS);
+                }
+                else {
+                    int x = findFragment(list, name);
+                    if (x != NOT_FOUND)
+                        res.add(x);
+                }
+            }
+        }
+    }
+
+    private static List<Integer> insertOthers(List<Integer> res, List<WebFragment> list) {
+        List<Integer> others = new ArrayList<Integer>();
+        for (int i=0,maxi=list.size(); i<maxi; i++) {
+            if (!res.contains(i))
+                others.add(i);
+        }
+        List<Integer> finalResult = new ArrayList<Integer>();
+        for (int i : res) {
+            if (i == OTHERS) {
+                finalResult.addAll(others);
+            }
+            else {
+                finalResult.add(i);
+            }
+        }
+        return finalResult;
     }
 
     // -------------------------------------------------------------------------

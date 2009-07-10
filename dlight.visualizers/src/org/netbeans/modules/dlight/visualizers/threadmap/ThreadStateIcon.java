@@ -37,27 +37,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.memory;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
-
+import java.awt.Color;
+import javax.swing.Icon;
 
 /**
- *
- * @author mt154047
+ * @author Jiri Sedlacek
+ * @author Alexander Simon (adapted for CND)
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public class MemoryIndicatorFactory implements IndicatorFactory<MemoryIndicatorConfiguration>{
+public class ThreadStateIcon implements Icon {
+    public static final int ICON_NONE = -100;
 
-  @Override
-  public Indicator<MemoryIndicatorConfiguration> create(MemoryIndicatorConfiguration configuration) {
-    return new MemoryIndicator(configuration);
-  }
+    protected Color threadStateColor;
+    protected int height;
+    protected int width;
 
-  @Override
-  public String getID() {
-    return MemoryIndicatorConfiguration.ID;
-  }
+    public ThreadStateIcon(int threadState, int width, int height) {
+        this.threadStateColor = getThreadStateColor(threadState);
+        this.width = width;
+        this.height = height;
+    }
 
+    public int getIconHeight() {
+        return height;
+    }
+
+    public int getIconWidth() {
+        return width;
+    }
+
+    public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        if (threadStateColor != null) {
+            if (!threadStateColor.equals(ThreadData.THREAD_STATUS_ZOMBIE_COLOR)) {
+                g.setColor(threadStateColor);
+                g.fillRect(x, y, width, height);
+            }
+
+            g.setColor(Color.BLACK);
+            g.drawRect(x, y, width - 1, height - 1);
+        }
+    }
+
+    protected Color getThreadStateColor(int threadState) {
+        if (threadState == ICON_NONE) {
+            return null;
+        }
+
+        return ThreadData.getThreadStateColor(threadState);
+    }
 }

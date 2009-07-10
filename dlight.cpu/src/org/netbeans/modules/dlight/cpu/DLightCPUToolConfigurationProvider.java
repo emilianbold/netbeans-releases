@@ -40,10 +40,12 @@ package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
@@ -52,10 +54,14 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
@@ -76,6 +82,8 @@ public final class DLightCPUToolConfigurationProvider
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
+    private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
+    private static final int SECONDS_PER_MINUTE = 60;
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
@@ -155,12 +163,20 @@ public final class DLightCPUToolConfigurationProvider
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
-        IndicatorMetadata indicatorMetadata =
-                new IndicatorMetadata(resultColumns);
-        CpuIndicatorConfiguration indicatorConfiguration = new CpuIndicatorConfiguration(
-                indicatorMetadata,
-                new HashSet<String>(Arrays.asList(ProcDataProviderConfiguration.SYS_TIME.getColumnName())),
-                INDICATOR_POSITION);
+        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
+        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION,
+                loc("indicator.title"), 100, // NOI18N
+                Arrays.<GraphDescriptor>asList(
+                    new GraphDescriptor(GraphConfig.COLOR_3, loc("graph.description.system"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.user"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                new DataRowToCpuPlot(
+                    Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
+                    Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
+        indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
+        indicatorConfiguration.setDetailDescriptors(Arrays.asList(
+                new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0)))); // NOI18N
+
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
@@ -249,4 +265,61 @@ public final class DLightCPUToolConfigurationProvider
         return NbBundle.getMessage(
                 DLightCPUToolConfigurationProvider.class, key, params);
     }
+
+    private static class DataRowToCpuPlot implements DataRowToPlot {
+
+        private final List<Column> usrColumns;
+        private final List<Column> sysColumns;
+        private int seconds;
+        private int usr;
+        private int sys;
+
+        public DataRowToCpuPlot(List<Column> usrColumns, List<Column> sysColumns) {
+            this.usrColumns = new ArrayList<Column>(usrColumns);
+            this.sysColumns = new ArrayList<Column>(sysColumns);
+        }
+
+        public void addDataRow(DataRow row) {
+            for (String columnName : row.getColumnNames()) {
+                for (Column usrColumn : usrColumns) {
+                    if (usrColumn.getColumnName().equals(columnName)) {
+                        usr = toInt(row.getData(columnName));
+                    }
+                }
+                for (Column sysColumn : sysColumns) {
+                    if (sysColumn.getColumnName().equals(columnName)) {
+                        sys = toInt(row.getData(columnName));
+                    }
+                }
+            }
+        }
+
+        public void tick() {
+            ++seconds;
+        }
+
+        public int[] getGraphData() {
+            return new int[]{sys, usr};
+        }
+
+        public Map<String, String> getDetails() {
+            return Collections.singletonMap(TIME_DETAIL_ID, formatTime(seconds));
+        }
+    }
+
+    private static int toInt(Object obj) {
+        if (obj instanceof Number) {
+            return ((Number)obj).intValue();
+        } else if (obj instanceof String) {
+            try {
+                return Integer.parseInt((String)obj);
+            } catch (NumberFormatException ex) {}
+        }
+        return 0;
+    }
+
+    private static String formatTime(int seconds) {
+        return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
+    }
+
 }
