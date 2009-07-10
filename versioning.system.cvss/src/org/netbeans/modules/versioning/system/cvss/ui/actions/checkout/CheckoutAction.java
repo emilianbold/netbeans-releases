@@ -150,7 +150,7 @@ public final class CheckoutAction extends SystemAction {
             execute = true;
             group = new ExecutorGroup(NbBundle.getMessage(CheckoutAction.class, "BK1013"));
         }
-        CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
+        CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx, workingFolder);
         group.addExecutor(executor);
         if (CvsModuleConfig.getDefault().getPreferences().getBoolean(SHOW_CHECKOUT_COMPLETED, true) && scanProject) {
             group.addBarrier(new CheckoutCompletedController(executor, workingFolder));
