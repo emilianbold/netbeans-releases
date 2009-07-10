@@ -47,9 +47,7 @@ import java.io.FileReader;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -57,6 +55,7 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
@@ -118,20 +117,8 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             // So this case sould be handled.
 
             // We safely can do this in the same thread (in this exact case)
-            List<String> errorLines = new ArrayList<String>();
-            InputStream err = hostinfoProcess.getErrorStream();
 
-            if (err != null) {
-                BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
-                while (true) {
-                    String line = errReader.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    errorLines.add(line);
-                }
-            }
-
+            List<String> errorLines = ProcessUtils.readProcessError(hostinfoProcess);
             int result = hostinfoProcess.waitFor();
 
             if (result != 0) {

@@ -92,6 +92,10 @@ public class VmCustomizer extends javax.swing.JPanel  {
             useSocketRB.setSelected(true);
         }
         useIDEProxyInfo.setSelected("true".equals(gm.getInstanceProperties().get(GlassfishModule.USE_IDE_PROXY_FLAG)));
+        boolean isLocalDomain = gm.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
+        this.javaExecutableField.setEnabled(isLocalDomain);
+        this.useIDEProxyInfo.setEnabled(isLocalDomain);
+        this.useSharedMemRB.setEnabled(isLocalDomain);
     }
 
     private void persistFields() {

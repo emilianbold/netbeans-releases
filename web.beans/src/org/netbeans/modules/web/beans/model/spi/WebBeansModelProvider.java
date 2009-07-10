@@ -48,6 +48,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 
 
 /**
@@ -57,7 +58,7 @@ import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 public interface WebBeansModelProvider {
 
     Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl );
+            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
     
     List<Element> getInjectables( VariableElement element , 
             AbstractModelImplementation modelImpl  );

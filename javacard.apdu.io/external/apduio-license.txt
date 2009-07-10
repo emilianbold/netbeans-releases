@@ -3,7 +3,6 @@ Version: 1.0
 License: Sun Technology Evaluation License
 OSR: 11316
 Origin: http://java.sun.com/javacard/
-Files: apduio.jar
 Source: http://java.sun.com/javacard/downloads/index.jsp#devkit
 Comment:  JAR from the Java Card Reference Implementation that implements the binary APDU protocol for communicating with Java Card(tm) devices
 
@@ -85,7 +84,7 @@ Sun is under no obligation to support the Technology or to provide Licensee with
 9.4 Liability for damages will be limited and excluded as set forth above even if any exclusive remedy provided in this  Agreement fails of its essential purpose.  Some states do not allow the exclusion of incidental or consequential damages, so some of the terms above may not be applicable to you.
 
 10 U.S. GOVERNMENT RIGHTS. 
-The Technology is a "commercial item," as that term is defined in 48 C.F.R. 2.101 (Oct. 1995), and may consist of "commercial computer software" (as that term is defined at 48 C.F.R. § 252.227-7014(a)(1)) and "commercial computer software documentation" as such terms are used in 48 C.F.R. 12.212 (Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48 C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all U.S. Government End Users acquire Technology with only those rights set forth herein. This U.S. Government Rights clause is in lieu of, and supersedes, any other FAR, DFAR, or other clause or provision that addresses Government rights in computer software under this Agreement.
+The Technology is a "commercial item," as that term is defined in 48 C.F.R. 2.101 (Oct. 1995), and may consist of "commercial computer software" (as that term is defined at 48 C.F.R. ï¿½ 252.227-7014(a)(1)) and "commercial computer software documentation" as such terms are used in 48 C.F.R. 12.212 (Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48 C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all U.S. Government End Users acquire Technology with only those rights set forth herein. This U.S. Government Rights clause is in lieu of, and supersedes, any other FAR, DFAR, or other clause or provision that addresses Government rights in computer software under this Agreement.
 
 11 GENERAL.
 11.1 All disputes will be governed by California law and controlling U.S. federal law.  The venue for litigation will be the appropriate courts located in Santa Clara County, California. The parties agree that the Federal District Court for the Northern District of California shall have exclusive jurisdiction over any dispute involving exclusively federal causes of action.  That court and the California state courts in Santa Clara County, California shall have exclusive jurisdiction over all other disputes. The parties hereby submit to the personal jurisdiction of those courts. Choice of law rules of any jurisdiction and the United Nations Convention on Contracts for the International Sale of Goods will not apply to the Agreement or any dispute arising out of or related to this Agreement.

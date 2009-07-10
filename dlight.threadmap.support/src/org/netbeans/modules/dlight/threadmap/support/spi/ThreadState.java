@@ -102,4 +102,10 @@ public interface ThreadState {
      * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
      */
     long getTimeStamp(int index);
+
+    /**
+     *
+     * @return beginning time in natural unit of state.
+     */
+    long getTimeStamp();
 }

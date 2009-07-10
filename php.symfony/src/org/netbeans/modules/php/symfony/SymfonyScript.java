@@ -40,6 +40,10 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -74,6 +78,7 @@ public class SymfonyScript extends PhpProgram {
 
     public static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
+    public static final String CMD_INIT_APP = "generate:app"; // NOI18N
 
     public SymfonyScript(String command) {
         super(command);
@@ -154,9 +159,20 @@ public class SymfonyScript extends PhpProgram {
         ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, projectName);
         assert processBuilder != null;
         ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        String tabTitle = String.format("%s %s \"%s\"", getProgram(), CMD_INIT_PROJECT, projectName); // NOI18N
-        runService(processBuilder, executionDescriptor, tabTitle, false);
+        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, projectName), false);
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
+    }
+
+    public void initApp(PhpModule phpModule, String app, String[] params) {
+        assert StringUtils.hasText(app);
+        assert params != null;
+
+        String[] cmdParams = mergeArrays(params, new String[]{app});
+        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
+        ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, cmdParams);
+        assert processBuilder != null;
+        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
+        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_APP, cmdParams), true);
     }
 
     public static String getHelp(PhpModule phpModule, FrameworkCommand command) {
@@ -177,6 +193,16 @@ public class SymfonyScript extends PhpProgram {
         }));
         runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview(), true); // NOI18N
         return lineProcessor.getHelp();
+    }
+
+    private static <T> T[] mergeArrays(T[]... arrays) {
+        List<T> list = new LinkedList<T>();
+        for (T[] array : arrays) {
+            list.addAll(Arrays.asList(array));
+        }
+        @SuppressWarnings("unchecked")
+        T[] merged = (T[]) Array.newInstance(arrays[0][0].getClass(), list.size());
+        return list.toArray(merged);
     }
 
     private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {

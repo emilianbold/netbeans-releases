@@ -1,0 +1,96 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.dlight.visualizers.threadmap;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadInfo;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+
+/**
+ *
+ * @author Alexander Simon (adapted for CND)
+ */
+public class MonitoredData {
+    private List<ThreadMapData> data = new ArrayList<ThreadMapData>();
+    private MonitoredData(List<ThreadMapData> data) {
+        this.data = data;
+    }
+
+    public static MonitoredData getMonitoredData(List<ThreadMapData> data) {
+        return new MonitoredData(data);
+    }
+
+    public int getThreadsSize() {
+        return data.size();
+    }
+
+    public int getThreadStatesSize() {
+        return data.get(0).getThreadState().size();
+    }
+
+    public ThreadInfo getThreadInfo(int index){
+        return data.get(index).getThreadInfo();
+    }
+
+    public int[] getThreadIds() {
+        int[] res = new int[data.size()];
+        for(int i = 0; i < data.size(); i++){
+            res[i] = data.get(i).getThreadInfo().getThreadId();
+        }
+        return res;
+    }
+
+    public List<ThreadState> getThreadStates(int index) {
+        return data.get(index).getThreadState();
+    }
+
+    public long[] getStateTimestamps() {
+        List<ThreadState> states = data.get(0).getThreadState();
+        int size = states.size();
+        long[] res = new long[size];
+        for(int i = 0; i < size; i++) {
+            ThreadState state = states.get(i);
+            res[i] = state.getTimeStamp();
+        }
+        return res;
+    }
+}

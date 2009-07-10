@@ -62,11 +62,15 @@ public final class ExternalProcessSupport {
     /**
      * Destroys the process passed as parameter and attempts to terminate all child
      * processes created during the process' execution.
+     * <p>
+     * Any process running in environment containing the same variables
+     * with the same values as those passed in <code>env</code> (all of them)
+     * is supposed to be part of the process tree and may be terminated.
      *
      * @param process process to kill
-     * @param env Map containing environment variable names and values.
-     *             Any process running with such envvar's value will be
-     *             terminated. Improves localization of child processes.
+     * @param env map containing the variables and their values which the
+     *             process must have to be considered being part of
+     *             the tree to kill
      */
     public static void destroy(@NonNull Process process, @NonNull Map<String, String> env) {
         Parameters.notNull("process", process);

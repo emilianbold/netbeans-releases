@@ -53,7 +53,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Level;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.modules.ruby.NewRubyProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewRubyProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;

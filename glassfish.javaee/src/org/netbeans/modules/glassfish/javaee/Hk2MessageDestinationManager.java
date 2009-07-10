@@ -91,6 +91,8 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         // XXX Fix to work with current server domain, not just default domain.
         File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
+
+        // TODO : need to account for a remote domain here?
         return readMessageDestinations(domainXml, "/domain/", null);
     }
 

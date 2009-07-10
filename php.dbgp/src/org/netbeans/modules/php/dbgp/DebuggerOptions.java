@@ -39,7 +39,7 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.util.List;
-import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.api.PhpOptions;
 
 /**

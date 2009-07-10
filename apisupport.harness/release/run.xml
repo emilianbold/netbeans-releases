@@ -96,7 +96,20 @@ made subject to such option by the copyright holder.
         <property name="run.exe" location="${run.exe.candidate}"/>
         <property name="run.sh" location="${run.sh.candidate}"/>
         <mkdir dir="${test.user.dir}/etc"/>
-        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${cluster}"</echo>
+        <pathconvert property="run.extra.clusters">
+            <path>
+                <pathelement location="${cluster}"/>
+                <path refid="cluster.path.id"/>
+            </path>
+            <!-- Exclude all clusters located in NB install dir;
+                 not exactly what netbeans.clusters specify, but good enough -->
+            <filtermapper>
+                <linecontains negate="true">
+                    <contains value="${install}"/>
+                </linecontains>
+            </filtermapper>
+        </pathconvert>
+        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters="${run.extra.clusters}"</echo>
         <property name="run.args.prepared" value=''/>
     </target>
 
