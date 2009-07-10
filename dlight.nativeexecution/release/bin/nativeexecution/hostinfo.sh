@@ -53,6 +53,10 @@ if [ "${OSFAMILY}" = "LINUX" ]; then
 elif [ "${OSFAMILY}" = "WINDOWS" ]; then
    CPUNUM=$NUMBER_OF_PROCESSORS
    OSNAME=`uname`
+elif [ "${OSFAMILY}" = "MACOSX" ]; then
+   CPUNUM=`hostinfo | awk '/processor.*logical/{print $1}'`
+   OSNAME="MacOSX"
+   OSBUILD=`hostinfo | sed -n '/kernel version/{n;p;}' | sed 's/[	 ]*\([^:]*\).*/\1/'`
 fi
 
 USER=${USER:-`logname 2>/dev/null`}
