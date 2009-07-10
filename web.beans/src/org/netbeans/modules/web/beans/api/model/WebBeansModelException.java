@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +37,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.beans.api.model;
 
-package org.netbeans.spi.extexecution.destroy;
-
-import java.util.Map;
 
 /**
- * A service capable of properly terminating external process along with any
- * child processes created during execution.
- * <p>
- * Implementation of this interface should be published in default lookup
- * in order to be used by
- * {@link org.netbeans.api.extexecution.ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
- * and {@link org.netbeans.api.extexecution.ExternalProcessBuilder}.
- * <p>
- * Note: not to be implemented by modules, might not be present in all versions
- * of the application.
- * Please use {@link org.netbeans.api.extexecution.ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
- * for accessing the service.
+ * @author ads
  *
- * @author mkleint
- * @since 1.16
  */
-public interface ProcessDestroyPerformer {
+public class WebBeansModelException extends Exception {
 
-    /**
-     * Destroys the process passed as parameter and attempts to terminate all child
-     * processes created during the process' execution.
-     *
-     * @param process process to kill
-     * @param env Map containing environment variable names and values.
-     *             Any process running with such envvar's value will be
-     *             terminated. Improves localization of child processes.
-     */
-    void destroy(Process process, Map<String, String> env);
+    private static final long serialVersionUID = 8859984690145450257L;
+
 }
