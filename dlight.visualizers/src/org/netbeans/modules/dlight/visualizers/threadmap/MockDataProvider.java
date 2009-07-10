@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.impl;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import com.sun.jmx.mbeanserver.MetaData;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,6 +80,7 @@ public class MockDataProvider implements ThreadMapDataProvider {
         private final List<MockThreadMapData> storage = new ArrayList<MockThreadMapData>();
         private Timer timer = new Timer();
         private int currentTime = 0;
+        private ThreadMapMetadata metadata;
         private ThreadMapStorage(){
             timer.schedule(new TimerTask(){
                 @Override
@@ -89,25 +91,34 @@ public class MockDataProvider implements ThreadMapDataProvider {
                     if (currentTime == 20) {
                         storage.add(new MockThreadMapData("Worker", 2, 980, 0, 20)); //NOI18N
                     }
+                    if (currentTime == 30) {
+                        storage.add(new MockThreadMapData("Bad Dispather", 3, 800, 200, 0)); //NOI18N
+                    }
+                    if (currentTime == 50) {
+                        storage.add(new MockThreadMapData("Bad Worker", 4, 800, 0, 200)); //NOI18N
+                    }
                     for(MockThreadMapData data : storage){
                         data.advance(currentTime);
                     }
                     currentTime++;
                 }
-            }, 1000);
+            },0, 1000);
         }
+
         public List<ThreadMapData> getThreadMap(ThreadMapMetadata metadata) {
             List<ThreadMapData> result = new ArrayList<ThreadMapData>();
             assert metadata.getTimeUnit() == TimeUnit.SECONDS;
             assert metadata.getStep() == 1;
+            assert !metadata.isFullState();
+            this.metadata = metadata;
             for(MockThreadMapData data : storage) {
                 ThreadInfo info = data.getThreadInfo();
                 List<ThreadState> list = new ArrayList<ThreadState>();
                 for(ThreadState state : data.getThreadState()) {
                     int start = (int) state.getTimeStamp(0);
-                    if (start < metadata.getTimeFrom()) {
+                    if (start < metadata.getTimeFrom()*1000) {
                         continue;
-                    } else if (start > metadata.getTimeTo()) {
+                    } else if (start > metadata.getTimeTo()*1000) {
                         break;
                     }
                     list.add(state);
@@ -180,7 +191,7 @@ public class MockDataProvider implements ThreadMapDataProvider {
             rest = (1000 * blockingTime + rest)%s;
             blockingTime = (1000 * blockingTime + oldRest)/s;
             sleepingTime = 1000 - runningTime - waitingTime - blockingTime;
-            MockThreadState state = new MockThreadState(currentTime, runningTime, waitingTime, blockingTime, sleepingTime);
+            MockThreadState state = new MockThreadState(currentTime*1000, runningTime, waitingTime, blockingTime, sleepingTime);
             threadLine.add(state);
         }
     }

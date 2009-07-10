@@ -37,34 +37,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.openide.util.NbBundle;
+import java.awt.Color;
+import javax.swing.Icon;
 
 /**
- *
- * @author Alexander Simon
+ * @author Jiri Sedlacek
+ * @author Alexander Simon (adapted for CND)
  */
-public final class ThreadTableMetrics {
-    private static final List<Column> columns;
-    static {
-        columns = new ArrayList<Column>(3);
-        columns.add(create("threadName", String.class)); // NOI18N
-        columns.add(create("state", StateLine.class)); // NOI18N
-        columns.add(create("summary", StateSummary.class)); // NOI18N
+public class ThreadStateIcon implements Icon {
+    public static final int ICON_NONE = -100;
+
+    protected Color threadStateColor;
+    protected int height;
+    protected int width;
+
+    public ThreadStateIcon(int threadState, int width, int height) {
+        this.threadStateColor = getThreadStateColor(threadState);
+        this.width = width;
+        this.height = height;
     }
 
-    private ThreadTableMetrics() {
+    public int getIconHeight() {
+        return height;
     }
 
-    private static  Column create(String id, Class clazz) {
-        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
+    public int getIconWidth() {
+        return width;
     }
 
-    public static final List<Column> getThredMapColumn(){
-        return columns;
+    public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        if (threadStateColor != null) {
+            if (!threadStateColor.equals(ThreadData.THREAD_STATUS_ZOMBIE_COLOR)) {
+                g.setColor(threadStateColor);
+                g.fillRect(x, y, width, height);
+            }
+
+            g.setColor(Color.BLACK);
+            g.drawRect(x, y, width - 1, height - 1);
+        }
+    }
+
+    protected Color getThreadStateColor(int threadState) {
+        if (threadState == ICON_NONE) {
+            return null;
+        }
+
+        return ThreadData.getThreadStateColor(threadState);
     }
 }
