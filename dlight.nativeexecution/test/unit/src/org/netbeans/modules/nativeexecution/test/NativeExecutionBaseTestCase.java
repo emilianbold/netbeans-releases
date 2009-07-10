@@ -39,12 +39,12 @@
 package org.netbeans.modules.nativeexecution.test;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -52,25 +52,32 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class NativeExecutionBaseTestCase extends NbTestCase {
 
     static {
-        Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+
         log.setLevel(Level.ALL);
-//
-//        log.addHandler(new Handler() {
-//
-//            @Override
-//            public void publish(LogRecord record) {
-//                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
-//            }
-//
-//            @Override
-//            public void flush() {
-//            }
-//
-//            @Override
-//            public void close() throws SecurityException {
-//
-//            }
-//        });
+
+        log.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                // Log if parent cannot log the message ONLY.
+                if (!log.getParent().isLoggable(record.getLevel())) {
+                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
+                    if (record.getThrown() != null) {
+                        record.getThrown().printStackTrace(System.err);
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+
     }
     private final ExecutionEnvironment testExecutionEnvironment;
 

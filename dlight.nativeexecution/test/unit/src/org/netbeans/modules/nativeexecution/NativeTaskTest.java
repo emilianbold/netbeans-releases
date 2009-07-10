@@ -38,11 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.BufferedReader;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.concurrent.CountDownLatch;
 import junit.framework.Test;
@@ -54,6 +52,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 
@@ -180,15 +179,9 @@ public class NativeTaskTest extends NativeExecutionBaseTestCase {
                 npb.setExecutable(cmd).setArguments(expectedResult);
                 Process process = npb.call();
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                String line;
+                String out = ProcessUtils.readProcessOutputLine(process);
 
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                if (expectedResult.equals(sb.toString())) {
+                if (expectedResult.equals(out)) {
                     counters.getCounter(CNT_OUT_MATCH).incrementAndGet();
                 }
 
