@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.html.editor.gsf.api;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.parser.AstNode;
@@ -106,6 +108,10 @@ public class HtmlParserResult extends ParserResult {
             }
         }
         return ids;
+    }
+    
+    public Map<String, URI> getGlobalNamespaces() {
+        return result.getGlobalNamespaces();
     }
 
     @Override

@@ -38,8 +38,13 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
+import org.openide.util.Exceptions;
 
 /**
  * Html parser result.
@@ -89,6 +94,29 @@ public class SyntaxParserResult {
             }
         }
         return this.publicID;
+    }
+
+    public Map<String, URI> getGlobalNamespaces() {
+        Map<String, URI> namespaces = new HashMap<String, URI>();
+        AstNode root = getASTRoot();
+        //scan all root children (real document root) for namespaces
+        for(AstNode n : root.children()) {
+            if(n.type() == AstNode.NodeType.OPEN_TAG) {
+                for(String attrName : n.getAttributeKeys()) {
+                    if(attrName.startsWith("xmlns")) {
+                        int colonIndex = attrName.indexOf(':');
+                        String nsPrefix = colonIndex == -1 ? "" : attrName.substring(colonIndex + 1);
+                        String value = n.getAttribute(attrName).toString();
+                        try {
+                            namespaces.put(nsPrefix, new URI(value));
+                        } catch (URISyntaxException ex) {
+                            //TODO - report error in the editor
+                        }
+                    }
+                }
+            }
+        }
+        return namespaces;
     }
 
     public DTD getDTD() {

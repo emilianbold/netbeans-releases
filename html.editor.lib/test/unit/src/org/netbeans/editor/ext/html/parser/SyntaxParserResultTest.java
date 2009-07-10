@@ -39,6 +39,8 @@
 
 package org.netbeans.editor.ext.html.parser;
 
+import java.net.URI;
+import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.modules.html.editor.NbReaderProvider;
@@ -89,6 +91,24 @@ public class SyntaxParserResultTest extends TestBase {
 
         assertNotNull(result.getASTRoot());
 
+    }
+
+    public void testGetGlobalNamespaces() {
+        String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:jsp=\"http://java.sun.com/JSP/Page\"></html>";
+        SyntaxParserResult result = SyntaxParser.parse(code);
+
+        assertNotNull(result);
+
+        Map<String, URI> nsmap = result.getGlobalNamespaces();
+
+        assertNotNull(nsmap);
+        assertEquals(2, nsmap.keySet().size());
+
+        assertTrue(nsmap.containsKey(""));
+        assertTrue(nsmap.containsKey("jsp"));
+
+        assertEquals("http://www.w3.org/1999/xhtml", nsmap.get("").toString());
+        assertEquals("http://java.sun.com/JSP/Page", nsmap.get("jsp").toString());
     }
     
 }
