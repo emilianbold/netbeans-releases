@@ -115,9 +115,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
             BasePathSupport.Item item = (BasePathSupport.Item) ignorePathList.getModel().getElementAt(i);
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(item.getFilePath())));
             if (fo != null) {
-                if (!CommandUtils.isUnderSources(project, fo)
-                        && !CommandUtils.isUnderSelenium(project, fo, false)
-                        && !CommandUtils.isUnderTests(project, fo, false)) {
+                if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
                     category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotSourceGroupSubdirectory", fo.getNameExt()));
                     category.setValid(false);
                     return;
