@@ -28,21 +28,21 @@
                     <code-name-base>org.netbeans.modules.defaults</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.3</specification-version>
+                        <specification-version>1.6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.bookmarks</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -125,7 +125,7 @@
                     <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>1.28.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
