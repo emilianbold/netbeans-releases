@@ -36,39 +36,59 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.sync;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+package org.netbeans.modules.groovy.grails;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author mkleint
  */
-public class SyncIndicatorConfiguration extends IndicatorConfiguration {
-    private final List<String> threadColumnNames;
-    static final String ID = "SyncIndicatorConfigurationID"; // NOI18N
-//  private final String colName;
+public class WrapperProcess extends Process {
 
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-        this(metadata, Arrays.asList("threads"), position);//NOI18N
+    public static final String KEY_UUID = "NB_EXEC_GRAILS_PROCESS_UUID"; //NOI18N
+
+    private final String uuid;
+
+    private final Process del;
+
+    public WrapperProcess(Process delegate, String uuid) {
+        this.del = delegate;
+        this.uuid = uuid;
     }
-
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata, List<String> threadsColumnNames, int position) {
-        super(metadata, position);
-        this.threadColumnNames = threadsColumnNames;
-    }
-
-    List<String> getThreadColumnNames(){
-        return threadColumnNames;
-    }
-
 
     @Override
-    public String getID() {
-        return ID;
+    public OutputStream getOutputStream() {
+        return del.getOutputStream();
     }
+
+    @Override
+    public InputStream getInputStream() {
+        return del.getInputStream();
+    }
+
+    @Override
+    public InputStream getErrorStream() {
+        return del.getErrorStream();
+    }
+
+    @Override
+    public int waitFor() throws InterruptedException {
+        return del.waitFor();
+    }
+
+    @Override
+    public int exitValue() {
+        return del.exitValue();
+    }
+
+    @Override
+    public void destroy() {
+        ExternalProcessSupport.destroy(del, Collections.singletonMap(KEY_UUID, uuid));
+    }
+
 }

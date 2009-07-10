@@ -282,7 +282,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         private static final String VALIDATEXML_PARAM_NAME = "com.sun.faces.validateXml";     //NOI18N  
         private static final String VERIFYOBJECTS_PARAM_NAME = "com.sun.faces.verifyObjects"; //NOI18N
 
-        private static final String FACELETS_SERVLET_MAPPING="*.jsf"; //NOI18N
+//        private static final String FACELETS_SERVLET_MAPPING="*.jsf"; //NOI18N
         WebModule webModule;
         boolean isMyFaces;
         
@@ -322,7 +322,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     
                     if (!servletDefined) {
                         servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
-                        String servletName = panel == null ? FACES_SERVLET_NAME : panel.getServletName();
+                        String servletName = (panel == null) ? FACES_SERVLET_NAME : panel.getServletName();
                         servlet.setServletName(servletName); 
                         servlet.setServletClass(FACES_SERVLET_CLASS); 
                         servlet.setLoadOnStartup(new BigInteger("1"));//NOI18N
@@ -330,12 +330,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         
                         ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
                         mapping.setServletName(servletName);//NOI18N
-                        if (panel.isEnableFacelets()) {
-                            mapping.setUrlPattern(FACELETS_SERVLET_MAPPING);//NOI18N
-                        } else {
-                            mapping.setUrlPattern(panel == null ? "/faces/*" : panel.getURLPattern());//NOI18N
-                        }
-
+                        mapping.setUrlPattern(panel == null? "/faces/*" : panel.getFacesMapping()); //NOI18N
                         ddRoot.addServletMapping(mapping);
                     }
                     

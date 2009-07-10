@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.List;
 import javax.swing.JComponent;
 
 /**
@@ -59,7 +59,7 @@ public class Graph extends JComponent {
     private Axis hAxis;
     private Axis vAxis;
 
-    public Graph(int scale, LabelRenderer renderer, GraphDescriptor ... descriptors) {
+    public Graph(int scale, LabelRenderer renderer, List<GraphDescriptor> descriptors) {
         upperLimit = scale;
         graph = new GraphPainter(renderer, descriptors);
         setOpaque(true);

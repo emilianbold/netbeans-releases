@@ -36,29 +36,29 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.ThreadMapMetadata;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -69,62 +69,87 @@ import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
-import org.openide.nodes.PropertySupport;
 
 /**
  *
  * @author Alexander Simon
  */
 public class ThreadMapVisualizer extends JPanel implements
-    Visualizer<ThreadMapVisualizerConfiguration>, ComponentListener, ExplorerManager.Provider {
+        Visualizer<ThreadMapVisualizerConfiguration>, ComponentListener, ActionListener {
 
-    private final ExplorerManager explorerManager = new ExplorerManager();
     private boolean isShown = true;
     private boolean isEmptyContent;
     private Future task;
-    private static final class QueryLock{}
+
+    private static final class QueryLock {
+    }
     private final Object queryLock = new QueryLock();
     private final ThreadMapDataProvider provider;
     private final ThreadMapVisualizerConfiguration configuration;
-    private static final class UiLock{}
+
+    private static final class UiLock {
+    }
     private final Object uiLock = new UiLock();
-    private final ListView table = new ListView();
-    private final List<String> columnNames = new ArrayList<String>();
-    private final List<Class> columnClasses = new ArrayList<Class>();
+    //private final List<String> columnNames = new ArrayList<String>();
+    //private final List<Class> columnClasses = new ArrayList<Class>();
     private final List<ThreadMapData> data = new ArrayList<ThreadMapData>();
+    private final JPanel threadsTimelinePanelContainer;
+    private final ThreadsPanel threadsPanel;
+    private final ThreadsDataManager dataManager;
+    private final Timer timer = new Timer();
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
+        if (provider == null){
+            provider = new MockDataProvider();
+        }
+        if (configuration == null) {
+            configuration = new ThreadMapVisualizerConfiguration(new ThreadMapMetadata(TimeUnit.SECONDS, 0, 30, 1, false));
+        }
         this.provider = provider;
         this.configuration = configuration;
-        initComponent();
-        for (Column col :configuration.getMetadata().getColumns()){
-            columnNames.add(col.getColumnUName());
-            columnClasses.add(col.getColumnClass());
-        }
-        //table.getTable().setDefaultRenderer(State.class, new StateTableCellRenderer());
-        //table.getTable().setDefaultRenderer(Summary.class, new SummaryTableCellRenderer());
-        explorerManager.setRootContext(new AbstractNode(new DataChildren(data)));
-    }
 
-    private void initComponent(){
+        //for (Column col : configuration.getMetadata().getColumns()) {
+        //    columnNames.add(col.getColumnUName());
+        //    columnClasses.add(col.getColumnClass());
+        //}
+        dataManager = new ThreadsDataManager();
+        threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
+
+            public void showDetails(int[] indexes) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+        });
+        threadsTimelinePanelContainer = new JPanel() {
+
+            @Override
+            public void requestFocus() {
+                threadsPanel.requestFocus();
+            }
+        };
+        threadsTimelinePanelContainer.setLayout(new BorderLayout());
+        threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
+        threadsPanel.addThreadsMonitoringActionListener(this);
+
         setLayout(new BorderLayout());
-        //table.setRootVisible(false);
-        add(table, BorderLayout.CENTER);
+        add(threadsTimelinePanelContainer, BorderLayout.CENTER);
         JPanel callStack = new JPanel();
         add(callStack, BorderLayout.SOUTH);
         // for testing only
         callStack.add(new JLabel("Call stack area")); // NOI18N
+        timer.schedule(new TimerTask(){
+                @Override
+                public void run() {
+                    refresh();
+                }
+            },0, 1000);
+
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        refresh();
     }
 
     //implements Visualizer
-
     public ThreadMapVisualizerConfiguration getVisualizerConfiguration() {
         return configuration;
     }
@@ -142,14 +167,13 @@ public class ThreadMapVisualizer extends JPanel implements
             if (task != null) {
                 task.cancel(true);
             }
-            if (true){
-                return;
-            }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
+
                 public Boolean call() {
                     Future<List<ThreadMapData>> queryDataTask = DLightExecutorService.submit(new Callable<List<ThreadMapData>>() {
+
                         public List<ThreadMapData> call() throws Exception {
-                            ThreadMapMetadata metadata = new ThreadMapMetadata(TimeUnit.SECONDS, 0, 30, 1, false);
+                            ThreadMapMetadata metadata = new ThreadMapMetadata(TimeUnit.SECONDS, 0, 3000, 1, false);
                             return provider.queryData(metadata);
                         }
                     }, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
@@ -157,6 +181,7 @@ public class ThreadMapVisualizer extends JPanel implements
                         final List<ThreadMapData> list = queryDataTask.get();
                         final boolean isEmptyConent = list == null || list.isEmpty();
                         UIThread.invoke(new Runnable() {
+
                             public void run() {
                                 setContent(isEmptyConent);
                                 if (isEmptyConent) {
@@ -178,7 +203,6 @@ public class ThreadMapVisualizer extends JPanel implements
     }
 
     //implements OnTimerTask
-
 //    public int onTimer() {
 //        if (!isShown || !isShowing()) {
 //            return 0;
@@ -190,9 +214,7 @@ public class ThreadMapVisualizer extends JPanel implements
 //    public void timerStopped() {
 //        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
 //    }
-
     //implements ComponentListener
-
     public void componentResized(ComponentEvent e) {
     }
 
@@ -213,12 +235,6 @@ public class ThreadMapVisualizer extends JPanel implements
     public void componentHidden(ComponentEvent e) {
         isShown = false;
     }
-    
-    //implements ExplorerManager.Provider
-
-    public ExplorerManager getExplorerManager() {
-        return explorerManager;
-    }
 
     private void setContent(boolean isEmpty) {
         if (isEmptyContent && isEmpty) {
@@ -236,92 +252,30 @@ public class ThreadMapVisualizer extends JPanel implements
 
     private void setEmptyContent() {
         isEmptyContent = true;
-        removeAll();
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel("Empty"); //NOI18N
-        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-        this.add(label);
-        repaint();
-        revalidate();
+        //removeAll();
+        //setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        //JLabel label = new JLabel("Empty"); //NOI18N
+        //label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        //this.add(label);
+        //repaint();
+        //revalidate();
     }
 
     private void setNonEmptyContent() {
         isEmptyContent = false;
-        this.removeAll();
-        this.setLayout(new BorderLayout());
-        refresh();
-        repaint();
-        validate();
+        //this.removeAll();
+        //this.setLayout(new BorderLayout());
+        //refresh();
+        //repaint();
+        //validate();
 
     }
 
     protected void updateList(List<ThreadMapData> list) {
         synchronized (uiLock) {
+            threadsPanel.threadsMonitoringEnabled();
+            dataManager.processData(MonitoredData.getMonitoredData(list));
             setNonEmptyContent();
-            explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
-        }
-    }
-
-    public class DataChildren extends Children.Keys<ThreadMapData> {
-        private final List<ThreadMapData> list;
-
-        public DataChildren(List<ThreadMapData> list) {
-            this.list = list;
-        }
-
-        @Override
-        protected Node[] createNodes(ThreadMapData key) {
-            return new Node[]{new DataRowNode(key)};
-        }
-
-        @Override
-        protected void addNotify() {
-            setKeys(list);
-        }
-    }
-
-    private class DataRowNode extends AbstractNode {
-
-        private final ThreadMapData dataRow;
-        private PropertySet propertySet;
-
-        DataRowNode(ThreadMapData row) {
-            super(Children.LEAF);
-            dataRow = row;
-            propertySet = new PropertySet() {
-                @Override
-                @SuppressWarnings("unchecked")
-                public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList<Property>();
-                    for (int i = 0; i < columnNames.size(); i++) {
-                        final String name = columnNames.get(i);
-                        result.add(new PropertySupport(name, columnClasses.get(i), name, name, true, false) {
-                             @Override
-                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                                 return dataRow.getThreadInfo().getThreadName();
-                             }
-                             @Override
-                             public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                             }
-                        });
-                    }
-                    return result.toArray(new Property[result.size()]);
-                }
-            };
-        }
-
-        public ThreadMapData getDataRow() {
-            return dataRow;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return dataRow.getThreadInfo().getThreadName();
-        }
-
-        @Override
-        public PropertySet[] getPropertySets() {
-            return new PropertySet[]{propertySet};
         }
     }
 
@@ -329,10 +283,11 @@ public class ThreadMapVisualizer extends JPanel implements
     }
 
     private static final class StateTableCellRenderer extends DefaultTableCellRenderer {
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JPanel component = new JPanel();
-            component.setPreferredSize(new Dimension(300,10));
+            component.setPreferredSize(new Dimension(300, 10));
             return component;
         }
     }
@@ -341,10 +296,11 @@ public class ThreadMapVisualizer extends JPanel implements
     }
 
     private static final class SummaryTableCellRenderer extends DefaultTableCellRenderer {
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JPanel component = new JPanel();
-            component.setPreferredSize(new Dimension(60,10));
+            component.setPreferredSize(new Dimension(60, 10));
             return component;
         }
     }

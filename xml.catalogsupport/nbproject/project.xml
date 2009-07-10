@@ -156,6 +156,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.soa.ui</friend>
                 <friend>org.netbeans.modules.soa.ui01</friend>
+                <friend>org.netbeans.modules.soa.util</friend>
                 <friend>org.netbeans.modules.wlm.editor</friend>
                 <friend>org.netbeans.modules.compapp.projects.base</friend>
                 <friend>org.netbeans.modules.compapp.xmlproject</friend>

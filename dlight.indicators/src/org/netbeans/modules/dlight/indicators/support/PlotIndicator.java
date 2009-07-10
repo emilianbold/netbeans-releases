@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,71 +34,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.memory;
+package org.netbeans.modules.dlight.indicators.support;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.Graph;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
+import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
-import org.openide.util.NbBundle;
 
 /**
- * Memory usage indicator
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
+public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
 
-    private  MemoryIndicatorPanel panel;
-    private final Set<String> acceptedColumnNames;
-    private long lastValue;
+    private final DataRowToPlot dataRowHandler;
+    private final GraphPanel<Graph, Legend> panel;
+    private final Graph graph;
+    private final Legend legend;
+    private final JButton button;
 
-    public MemoryIndicator(MemoryIndicatorConfiguration configuration) {
+    public PlotIndicator(PlotIndicatorConfiguration configuration) {
         super(configuration);
-        this.panel = new MemoryIndicatorPanel(getDefaultAction());
-        this.acceptedColumnNames = new HashSet<String>();
-        for (Column column : getMetadataColumns()) {
-            acceptedColumnNames.add(column.getColumnName());
-        }
+        this.dataRowHandler = configuration.getDataRowHandler();
+        this.graph = createGraph(configuration);
+        this.legend = new Legend(configuration.getGraphDescriptors(), configuration.getDetailDescriptors());
+        this.button = new JButton(getDefaultAction());
+        button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
+        this.panel = new GraphPanel<Graph, Legend>(configuration.getTitle(), graph, legend, null, graph.getVerticalAxis(), button);
     }
 
-    @Override
-    public JComponent getComponent() {
-        return panel.getPanel();
-    }
-
-    public void reset() {
-    }
-
-    public void updated(List<DataRow> rows) {
-        for (DataRow row : rows) {
-            for (String column : row.getColumnNames()) {
-                if (acceptedColumnNames.contains(column)) {
-                    String value = row.getStringValue(column); //TODO: change to Long
-                    lastValue = Long.parseLong(value);
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void tick() {
-        panel.addData(lastValue);
+    private static Graph createGraph(PlotIndicatorConfiguration configuration) {
+        Graph graph = new Graph(configuration.getGraphScale(), configuration.getLabelRenderer(), configuration.getGraphDescriptors());
+        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
+        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setMinimumSize(graphSize);
+        graph.setPreferredSize(graphSize);
+        Dimension axisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.VERTICAL_AXIS_HEIGHT);
+        graph.getVerticalAxis().setMinimumSize(axisSize);
+        graph.getVerticalAxis().setPreferredSize(axisSize);
+        return graph;
     }
 
     @Override
@@ -109,40 +103,71 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
+
                         public Boolean call() throws Exception {
                             UIThread.invoke(new Runnable() {
+
                                 public void run() {
                                     repairPanel.setEnabled(false);
                                 }
                             });
                             Boolean retValue = repairResult.get();
                             UIThread.invoke(new Runnable() {
+
                                 public void run() {
                                     repairPanel.setEnabled(true);
                                 }
                             });
                             return retValue;
                         }
-                    }, "Click On Repair in Memory Indicator task");//NOI18N
+                    }, "Click On Indicator task"); //NOI18N
                 }
             });
             UIThread.invoke(new Runnable() {
                 public void run() {
-//                    panel.getPanel().setEnabled(false);
-                    panel.getPanel().setOverlay(repairPanel);
+                    panel.setOverlay(repairPanel);
                 }
             });
         } else {
-            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), true, GraphConfig.TEXT_COLOR);
+            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
-                    panel.getPanel().setOverlay(label);
+                    panel.setOverlay(label);
                 }
             });
         }
     }
 
-    private static String getMessage(String name) {
-        return NbBundle.getMessage(MemoryIndicator.class, name);
+    @Override
+    protected void tick() {
+        dataRowHandler.tick();
+        int[] plotData = dataRowHandler.getGraphData();
+        if (plotData != null) {
+            int limit = graph.getUpperLimit();
+            while (limit < plotData[0]) {
+                limit *= 2;
+            }
+            graph.setUpperLimit(limit);
+            graph.addData(plotData);
+        }
+        for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
+            legend.updateDetail(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Override
+    public void updated(List<DataRow> data) {
+        for (DataRow row : data) {
+            dataRowHandler.addDataRow(row);
+        }
+    }
+
+    @Override
+    public void reset() {
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return panel;
     }
 }

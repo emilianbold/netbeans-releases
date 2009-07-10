@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.graph;
+package org.netbeans.modules.dlight.visualizers.threadmap;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadInfo;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapData;
+import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
 
 /**
- * Displays a percentage graph
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon (adapted for CND)
  */
-public class PercentageGraph extends Graph {
-
-    public PercentageGraph(GraphDescriptor... descriptors) {
-        super(100, null, descriptors);
+public class MonitoredData {
+    private List<ThreadMapData> data = new ArrayList<ThreadMapData>();
+    private MonitoredData(List<ThreadMapData> data) {
+        this.data = data;
     }
 
-    @Override
-    protected String formatValue(int value) {
-        return String.format("%3d%%", value); // NOI18N
+    public static MonitoredData getMonitoredData(List<ThreadMapData> data) {
+        return new MonitoredData(data);
+    }
+
+    public int getThreadsSize() {
+        return data.size();
+    }
+
+    public int getThreadStatesSize() {
+        return data.get(0).getThreadState().size();
+    }
+
+    public ThreadInfo getThreadInfo(int index){
+        return data.get(index).getThreadInfo();
+    }
+
+    public int[] getThreadIds() {
+        int[] res = new int[data.size()];
+        for(int i = 0; i < data.size(); i++){
+            res[i] = data.get(i).getThreadInfo().getThreadId();
+        }
+        return res;
+    }
+
+    public List<ThreadState> getThreadStates(int index) {
+        return data.get(index).getThreadState();
+    }
+
+    public long[] getStateTimestamps() {
+        List<ThreadState> states = data.get(0).getThreadState();
+        int size = states.size();
+        long[] res = new long[size];
+        for(int i = 0; i < size; i++) {
+            ThreadState state = states.get(i);
+            res[i] = state.getTimeStamp();
+        }
+        return res;
     }
 }

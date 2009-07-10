@@ -584,6 +584,14 @@ public class SvnUtils {
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
         } else if(!fileIsManaged) {
             Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] {file});
+            // XXX #168094 logging
+            Level oldLevel = Subversion.LOG.getLevel();
+            Subversion.LOG.setLevel(Level.FINE);
+            Subversion.LOG.log(Level.INFO, "getRepositoryRootUrl: file {0} {1}", new Object[] {file, VersioningSupport.getOwner(file)});
+            Subversion.LOG.setLevel(oldLevel);
+            if (!file.exists()) {
+                Subversion.LOG.log(Level.INFO, "getRepositoryRootUrl: file {0} does not exist", new Object[] {file});
+            }
         }
         return repositoryURL;
     }
