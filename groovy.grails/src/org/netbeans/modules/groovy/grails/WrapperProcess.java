@@ -37,37 +37,58 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.extexecution.destroy;
+package org.netbeans.modules.groovy.grails;
 
-import java.util.Map;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 
 /**
- * A service capable of properly terminating external process along with any
- * child processes created during execution.
- * <p>
- * Implementation of this interface should be published in default lookup
- * in order to be used by
- * {@link org.netbeans.api.extexecution.ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
- * and {@link org.netbeans.api.extexecution.ExternalProcessBuilder}.
- * <p>
- * Note: not to be implemented by modules, might not be present in all versions
- * of the application.
- * Please use {@link org.netbeans.api.extexecution.ExternalProcessSupport#destroy(java.lang.Process, java.util.Map)}
- * for accessing the service.
  *
  * @author mkleint
- * @since 1.16
  */
-public interface ProcessDestroyPerformer {
+public class WrapperProcess extends Process {
 
-    /**
-     * Destroys the process passed as parameter and attempts to terminate all child
-     * processes created during the process' execution.
-     *
-     * @param process process to kill
-     * @param env Map containing environment variable names and values.
-     *             Any process running with such envvar's value will be
-     *             terminated. Improves localization of child processes.
-     */
-    void destroy(Process process, Map<String, String> env);
+    public static final String KEY_UUID = "NB_EXEC_GRAILS_PROCESS_UUID"; //NOI18N
+
+    private final String uuid;
+
+    private final Process del;
+
+    public WrapperProcess(Process delegate, String uuid) {
+        this.del = delegate;
+        this.uuid = uuid;
+    }
+
+    @Override
+    public OutputStream getOutputStream() {
+        return del.getOutputStream();
+    }
+
+    @Override
+    public InputStream getInputStream() {
+        return del.getInputStream();
+    }
+
+    @Override
+    public InputStream getErrorStream() {
+        return del.getErrorStream();
+    }
+
+    @Override
+    public int waitFor() throws InterruptedException {
+        return del.waitFor();
+    }
+
+    @Override
+    public int exitValue() {
+        return del.exitValue();
+    }
+
+    @Override
+    public void destroy() {
+        ExternalProcessSupport.destroy(del, Collections.singletonMap(KEY_UUID, uuid));
+    }
+
 }
