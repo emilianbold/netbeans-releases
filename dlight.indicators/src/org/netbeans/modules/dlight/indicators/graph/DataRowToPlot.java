@@ -36,28 +36,21 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.indicators.graph;
 
-package org.netbeans.modules.dlight.memory;
-
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
-
+import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
- *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public class MemoryIndicatorFactory implements IndicatorFactory<MemoryIndicatorConfiguration>{
+public interface DataRowToPlot {
 
-  @Override
-  public Indicator<MemoryIndicatorConfiguration> create(MemoryIndicatorConfiguration configuration) {
-    return new MemoryIndicator(configuration);
-  }
+    public void addDataRow(DataRow row);
 
-  @Override
-  public String getID() {
-    return MemoryIndicatorConfiguration.ID;
-  }
+    public void tick();
 
+    public int[] getGraphData();
+
+    public Map<String, String> getDetails();
 }
