@@ -36,35 +36,61 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.openide.util.NbBundle;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 
 /**
+ * A table cell renderer that knows how to display thread names with their state icon
  *
- * @author Alexander Simon
+ * @author Jiri Sedlacek
+ * @author Ian Formanek
+ * @author Alexander Simon (adapted for CND)
  */
-public final class ThreadTableMetrics {
-    private static final List<Column> columns;
-    static {
-        columns = new ArrayList<Column>(3);
-        columns.add(create("threadName", String.class)); // NOI18N
-        columns.add(create("state", StateLine.class)); // NOI18N
-        columns.add(create("summary", StateSummary.class)); // NOI18N
+public class ThreadNameCellRenderer extends EnhancedTableCellRenderer {
+    private JLabel label;
+    private ThreadsPanel viewManager; // view manager for this cell
+
+    /**
+     * Creates a new instance of ThreadNameCellRenderer
+     */
+    public ThreadNameCellRenderer(ThreadsPanel viewManager) {
+        setHorizontalAlignment(JLabel.LEADING);
+        label = new JLabel("", JLabel.LEADING); //NOI18N
+
+        setLayout(new BorderLayout());
+        add(label, BorderLayout.CENTER);
+        setBorder(BorderFactory.createEmptyBorder(1, 3, 1, 3));
+        this.viewManager = viewManager;
     }
 
-    private ThreadTableMetrics() {
+    @Override
+    protected void setRowForeground(Color c) {
+        super.setRowForeground(c);
+        label.setForeground(c);
     }
 
-    private static  Column create(String id, Class clazz) {
-        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
+    public Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+            int row, int column) {
+        return new ThreadNameCellRenderer(viewManager).getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                column);
     }
 
-    public static final List<Column> getThredMapColumn(){
-        return columns;
+    protected void setValue(JTable table, Object value, int row, int column) {
+        if (table != null) {
+            setFont(table.getFont());
+        }
+
+        if (value == null) {
+            label.setText(""); // NOI18N
+        } else {
+            int index = ((Integer) value).intValue();
+            label.setText(viewManager.getThreadName(index));
+        }
     }
 }

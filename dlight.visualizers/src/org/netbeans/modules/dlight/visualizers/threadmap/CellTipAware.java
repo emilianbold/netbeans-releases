@@ -37,34 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.openide.util.NbBundle;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import javax.swing.JToolTip;
+
 
 /**
- *
- * @author Alexander Simon
+ * @author Jiri Sedlacek
+ * @author Alexander Simon (adapted for CND)
  */
-public final class ThreadTableMetrics {
-    private static final List<Column> columns;
-    static {
-        columns = new ArrayList<Column>(3);
-        columns.add(create("threadName", String.class)); // NOI18N
-        columns.add(create("state", StateLine.class)); // NOI18N
-        columns.add(create("summary", StateSummary.class)); // NOI18N
-    }
+public interface CellTipAware {
 
-    private ThreadTableMetrics() {
-    }
+    public JToolTip getCellTip();
 
-    private static  Column create(String id, Class clazz) {
-        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
-    }
+    public Point getCellTipLocation();
 
-    public static final List<Column> getThredMapColumn(){
-        return columns;
-    }
+    public void processMouseEvent(MouseEvent e);
 }
