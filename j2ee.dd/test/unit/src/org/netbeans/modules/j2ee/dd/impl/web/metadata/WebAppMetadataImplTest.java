@@ -117,6 +117,50 @@ public class WebAppMetadataImplTest extends NbTestCase {
         testOrder(sorted, new String[] {"C","B","D","A"});
     }
 
+    /**
+     * Fragments: A B C D E F
+     * Constraints: (relative ordering) O<A A<C B<O O<D E<O  (O=others)
+     * Expected sort result: B E F A C D
+     */
+    @Test
+    public void testSortFragments2a() {
+        System.out.println("testSortFragments2a() .........");
+        List<WebFragment> list = getFragments(2, new String[] {"A","B","C","D","E","F"});
+        testOrder(list, new String[] {"A","B","C","D","E","F"});
+        List<WebFragment> sorted = WebAppMetadataImpl.sortFragments(null, list);
+        testOrder(sorted, new String[] {"B","E","F","A","C","D"});
+    }
+
+    /**
+     * Fragments: web.xml A B C D E F
+     * Constraints: (absolute ordering) F D C B
+     * Expected sort result: F D C B
+     */
+    @Test
+    public void testSortFragments2b() {
+        System.out.println("testSortFragments2b() .........");
+        List<WebFragment> list = getFragments(2, new String[] {"A","B","C","D","E","F"});
+        testOrder(list, new String[] {"A","B","C","D","E","F"});
+        WebApp webXml = getWebXml(2, "A");
+        List<WebFragment> sorted = WebAppMetadataImpl.sortFragments(webXml, list);
+        testOrder(sorted, new String[] {"F","D","C","B"});
+    }
+
+    /**
+     * Fragments: web.xml A B C D E F
+     * Constraints: (absolute ordering) F D others C B
+     * Expected sort result: F D A E C B
+     */
+    @Test
+    public void testSortFragments2c() {
+        System.out.println("testSortFragments2c() .........");
+        List<WebFragment> list = getFragments(1, new String[] {"A","B","C","D","E","F"});
+        testOrder(list, new String[] {"A","B","C","D","E","F"});
+        WebApp webXml = getWebXml(2, "B");
+        List<WebFragment> sorted = WebAppMetadataImpl.sortFragments(webXml, list);
+        testOrder(sorted, new String[] {"F","D","A","E","C","B"});
+    }
+
     // -------------------------------------------------------------------------
     // HELPERS
     // -------------------------------------------------------------------------
