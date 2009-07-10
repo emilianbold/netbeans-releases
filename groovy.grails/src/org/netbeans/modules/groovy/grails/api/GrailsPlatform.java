@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -65,8 +66,8 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.KillableProcess;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
+import org.netbeans.modules.groovy.grails.WrapperProcess;
 import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -702,13 +703,7 @@ public final class GrailsPlatform {
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
 
-            // FIXME fix this hack - needed for proper process tree kill
-            // see KillableProcess
-            String mark = "";
-            if (Utilities.isWindows() && GUARDED_COMMANDS.contains(descriptor.getName())) {
-                mark = UNIQUE_MARK.getAndIncrement() + descriptor.getDirectory().getAbsolutePath();
-                command.append(" ").append("REM NB:" + mark); // NOI18N
-            }
+            String preProcessUUID = UUID.randomUUID().toString();
 
             LOGGER.log(Level.FINEST, "Command is: {0}", command.toString());
 
@@ -742,9 +737,9 @@ public final class GrailsPlatform {
             // no executable check before java6
             Process process = null;
             try {
-                process = new KillableProcess(
+                process = new WrapperProcess(
                         grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
-                        descriptor.getName(), mark);
+                        preProcessUUID);
             } catch (IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
                         NbBundle.getMessage(GrailsPlatform.class, "MSG_StartFailedIOE",

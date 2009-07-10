@@ -211,7 +211,7 @@ Microsystems, Inc. All Rights Reserved.
       Method
       <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessSupport.html#destroy(java.lang.Process,%20java.util.Map)">
        ExternalProcessSupport.destroy(java.lang.Process process, Map&lt;String,String&gt; env)</a>
-      is designed for that. It will uses a
+      is designed for that. It will use a
       <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
       registered in default lookup to do so.
     </p>
