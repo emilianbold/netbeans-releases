@@ -71,7 +71,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.util.WLOutputManager;
 import org.openide.util.NbBundle;
@@ -103,7 +103,7 @@ public class WLStartServer extends StartServer {
     /**
      * The server's deployment manager, to be exact the plugin's wrapper for it
      */
-    private final WLDeploymentManager dm;
+    private final WLBaseDeploymentManager dm;
 
     /**
      * WL server process instance
@@ -137,7 +137,7 @@ public class WLStartServer extends StartServer {
      */
     public WLStartServer(DeploymentManager dm) {
         // cast the deployment manager to the plugin's wrapper class and save
-        this.dm = (WLDeploymentManager) dm;
+        this.dm = (WLBaseDeploymentManager) dm;
     }
 
     /**
@@ -404,35 +404,8 @@ public class WLStartServer extends StartServer {
         }
     }
 
-    /**
-     * An utility method that transforms a Properties object to an array of
-     * Strings each containing a property in the form of
-     * <i>'&lt;name&gt;=&lt;value&gt;'</i>
-     *
-     * @param properties properties to be converted
-     *
-     * @return an array of strings with the converted properties
-     */
-    private static String[] properties2StringArray(Properties properties) {
-        // initiate the list that will be converted to array for returning
-        List list = new ArrayList();
 
-        // get the properties keys
-        Enumeration keys = properties.keys();
-
-        // iterate over the enumeration
-        while (keys.hasMoreElements()) {
-            // get the property key
-            String key = (String) keys.nextElement();
-
-            // get the value associated with this key and store them in the list
-            list.add(key + "=" + properties.getProperty(key));
-        }
-
-        // convert the list into an array and return
-        return (String[]) list.toArray(new String[list.size()]);
-    }
-
+    @Override
     public boolean supportsStartDebugging(Target target) {
         //if we can start it we can debug it
         return supportsStartDeploymentManager();
