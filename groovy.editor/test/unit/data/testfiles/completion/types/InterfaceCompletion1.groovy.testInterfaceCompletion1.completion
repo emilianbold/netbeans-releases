@@ -47,6 +47,7 @@ CLASS      ListIterator                               null
 CLASS      Map                                        null
 CLASS      MetaClass                                  null
 CLASS      MetaClassRegistry                          null
+CLASS      MetaClassRegistryChangeEventLi             null
 CLASS      MetaObjectProtocol                         null
 CLASS      MutableMetaClass                           null
 CLASS      ObjectInput                                null
