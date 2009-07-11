@@ -26,7 +26,7 @@ METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           List
+METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -40,6 +40,7 @@ METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
 METHOD     grep(Object)                               Collection
+METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
@@ -54,6 +55,7 @@ METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
 METHOD     leftShift(Number)                          Number
 METHOD     longValue()                     [PUBLIC]   long
+METHOD     metaClass(Closure)                         MetaClass
 METHOD     minus(Character)                           Number
 METHOD     minus(Number)                              Number
 METHOD     mod(Number)                                Number
@@ -79,11 +81,15 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
+METHOD     respondsTo(String)                         List
+METHOD     respondsTo(String, Object)                 List
 METHOD     rightShift(Number)                         Number
 METHOD     rightShiftUnsigned(Number)                 Number
+METHOD     setMetaClass(MetaClass)                    void
 METHOD     shortValue()                    [PUBLIC]   short
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
+METHOD     split(Closure)                             Collection
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     step(Number, Number, Closure)              void

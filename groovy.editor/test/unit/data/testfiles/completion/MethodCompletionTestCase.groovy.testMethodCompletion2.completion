@@ -3,7 +3,15 @@ new String().find|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           List
+METHOD     find(Pattern)                              String
+METHOD     find(Pattern, Closure)                     String
+METHOD     find(String)                               String
+METHOD     find(String, Closure)                      String
+METHOD     findAll(Closure)                           Collection
+METHOD     findAll(Pattern)                           List
+METHOD     findAll(Pattern, Closure)                  List
+METHOD     findAll(String)                            List
+METHOD     findAll(String, Closure)                   List
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
