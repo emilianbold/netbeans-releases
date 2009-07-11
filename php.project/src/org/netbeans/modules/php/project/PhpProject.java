@@ -352,13 +352,14 @@ public class PhpProject implements Project {
         }
         assert ignoredFolders != null : "Ignored folders cannot be null";
         Set<FileObject> ignored = new HashSet<FileObject>();
+        File projectDir = FileUtil.toFile(getProjectDirectory());
         for (BasePathSupport.Item item : ignoredFolders) {
             if (item.isBroken()) {
                 continue;
             }
             File file = new File(item.getFilePath());
             if (!file.isAbsolute()) {
-                file = PropertyUtils.resolveFile(FileUtil.toFile(getProjectDirectory()), item.getFilePath());
+                file = PropertyUtils.resolveFile(projectDir, item.getFilePath());
             }
             if (file.exists()) {
                 FileObject fo = FileUtil.toFileObject(file);
