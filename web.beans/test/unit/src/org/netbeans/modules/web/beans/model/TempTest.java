@@ -96,6 +96,8 @@ public class TempTest extends CommonTestCase {
                 " String myText[];"+
                 " int myIndex; "+
                 " Class<String> myClass; "+
+                "@foo.CustomBinding(value=\"b\", comment=\"comment\")" +
+                " foo.Generic<? extends foo.MyThread> myThread; "+
                 " void method( Object param ){}"+
                 "}");
         
@@ -112,6 +114,20 @@ public class TempTest extends CommonTestCase {
                 "package foo; " +
                 "@foo.CustomBinding() " +
                 "public class Three  {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
+                "package foo; " +
+                "@foo.CustomBinding(\"b\")"+
+                "public class Generic<T extends Thread>  {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/MyThread.java",
+                "package foo; " +
+                "@foo.CustomBinding() " +
+                "public class MyThread extends Thread  {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/MyClass.java",
+                "package foo; " +
+                "public class MyClass extends Class<String>  {}" );
         
         createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
