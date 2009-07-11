@@ -41,11 +41,17 @@
 
 package org.openide.awt;
 
+import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /** Test of behaviour of manager listening for ActionMap in a lookup.
  *
@@ -95,5 +101,43 @@ public class GlobalManagerTest extends NbTestCase {
         
         assertGC("Lookup can also disappear", lookupRef);
     }
-    
+
+    public void testActionsCanHoldOnLookup() {
+        class TopComponent extends JPanel implements Lookup.Provider {
+            Lookup l;
+
+            void associateLookup(Lookup f) {
+                l = f;
+            }
+
+            public Lookup getLookup() {
+                return l;
+            }
+        }
+        TopComponent tc = new TopComponent();
+        class CAA extends AbstractAction implements
+                ContextAwareAction {
+            public void actionPerformed(ActionEvent arg0) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public Action createContextAwareInstance(Lookup actionContext) {
+                return this;
+            }
+
+        }
+        tc.associateLookup(Lookups.fixed(tc.getActionMap(), tc));
+        ContextAwareAction del = new CAA();
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, null, "DisplayName", null, true);
+        Action a = context.createContextAwareInstance(tc.getLookup());
+        tc.getActionMap().put("key", a);
+
+        WeakReference<Object> ref = new WeakReference<Object>(tc);
+        tc = null;
+        a = null;
+        del = null;
+        context = null;
+        assertGC("Can the component GC?", ref);
+
+    }
 }
