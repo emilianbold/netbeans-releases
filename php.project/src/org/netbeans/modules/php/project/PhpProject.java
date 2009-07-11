@@ -166,7 +166,7 @@ public class PhpProject implements Project {
     }
 
     void addWeakIgnoredFoldersListener(ChangeListener listener) {
-        ignoredFoldersChangeSupport.addChangeListener(WeakListeners.change(listener, ignoredFoldersLock));
+        ignoredFoldersChangeSupport.addChangeListener(WeakListeners.change(listener, ignoredFoldersChangeSupport));
     }
 
     private PropertyEvaluator createEvaluator() {
