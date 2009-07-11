@@ -67,6 +67,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -94,6 +95,32 @@ public class TopComponentTest extends NbTestCase {
             }
 
         }
+        ContextAwareAction del = new CAA();
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, null, "DisplayName", null, true);
+        Action a = context.createContextAwareInstance(tc.getLookup());
+        tc.getActionMap().put("key", a);
+
+        WeakReference<Object> ref = new WeakReference<Object>(tc);
+        tc = null;
+        a = null;
+        del = null;
+        context = null;
+        assertGC("Can the component GC?", ref);
+    }
+    public void testCanTCGarbageCollectWhenActionInMapAndAssignLookup() {
+        TopComponent tc = new TopComponent();
+        class CAA extends AbstractAction implements
+                ContextAwareAction {
+            public void actionPerformed(ActionEvent arg0) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public Action createContextAwareInstance(Lookup actionContext) {
+                return this;
+            }
+
+        }
+        tc.associateLookup(Lookups.fixed(tc.getActionMap(), tc));
         ContextAwareAction del = new CAA();
         ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, null, "DisplayName", null, true);
         Action a = context.createContextAwareInstance(tc.getLookup());
