@@ -49,13 +49,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import org.openide.awt.ContextManager.LookupRef;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -68,8 +68,8 @@ import org.openide.util.WeakSet;
 class GlobalManager extends Object implements LookupListener {
     private static Logger LOG = GeneralAction.LOG;
     
-    private static final Map<Lookup, Reference<GlobalManager>> CACHE = new IdentityHashMap<Lookup, Reference<GlobalManager>>();
-    private static final Map<Lookup, Reference<GlobalManager>> SURVIVE = new IdentityHashMap<Lookup, Reference<GlobalManager>>();
+    private static final Map<LookupRef, Reference<GlobalManager>> CACHE = new HashMap<LookupRef, Reference<GlobalManager>>();
+    private static final Map<LookupRef, Reference<GlobalManager>> SURVIVE = new HashMap<LookupRef, Reference<GlobalManager>>();
     
     private Lookup.Result<ActionMap> result;
     private Reference<ActionMap> actionMap = new WeakReference<ActionMap>(null);
@@ -85,23 +85,24 @@ class GlobalManager extends Object implements LookupListener {
     
     public static GlobalManager findManager(Lookup context, boolean survive) {
         synchronized (CACHE) {
-            Map<Lookup, Reference<GlobalManager>> map = survive ? SURVIVE : CACHE;
-            Reference<GlobalManager> ref = map.get(context);
+            Map<LookupRef, Reference<GlobalManager>> map = survive ? SURVIVE : CACHE;
+            LookupRef lr = new LookupRef(context);
+            Reference<GlobalManager> ref = map.get(lr);
             GlobalManager g = ref == null ? null : ref.get();
             if (g == null) {
                 g = survive ? new SurviveManager(context) : new GlobalManager(context);
-                ref = new GMReference(g, context, survive);
-                map.put(context, ref);
+                ref = new GMReference(g, lr, survive);
+                map.put(lr, ref);
             }
             return g;
         }
     }
     
-    static void clearCache(Lookup context, GMReference ref, boolean survive) {
+    static void clearCache(LookupRef lr, GMReference ref, boolean survive) {
         synchronized (CACHE) {
-            Map<Lookup, Reference<GlobalManager>> map = survive ? SURVIVE : CACHE;
-            if (map.get(context) == ref) {
-                map.remove(context);
+            Map<LookupRef, Reference<GlobalManager>> map = survive ? SURVIVE : CACHE;
+            if (map.get(lr) == ref) {
+                map.remove(lr);
             }
         }
     }
@@ -214,10 +215,10 @@ class GlobalManager extends Object implements LookupListener {
 
     private static final class GMReference extends WeakReference<GlobalManager> 
     implements Runnable {
-        private Lookup context;
+        private LookupRef context;
         private boolean survive;
         
-        public GMReference(GlobalManager m, Lookup context, boolean survive) {
+        public GMReference(GlobalManager m, LookupRef context, boolean survive) {
             super(m, Utilities.activeReferenceQueue());
             this.context = context;
             this.survive = survive;
