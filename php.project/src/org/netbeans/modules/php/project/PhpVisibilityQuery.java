@@ -90,7 +90,7 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
     }
 
     private boolean isIgnoredByProject(PhpProject project, FileObject file) {
-        checkPropertyListener(project);
+        checkIgnoredFoldersListener(project);
         return ProjectPropertiesSupport.getIgnoredFolders(project).contains(file);
     }
 
@@ -108,7 +108,7 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
         return false;
     }
 
-    private synchronized void checkPropertyListener(PhpProject project) {
+    private synchronized void checkIgnoredFoldersListener(PhpProject project) {
         if (!watchedProjects.contains(project)) {
             ProjectPropertiesSupport.addWeakIgnoredFoldersListener(project, ignoredFoldersListener);
             watchedProjects.add(project);
