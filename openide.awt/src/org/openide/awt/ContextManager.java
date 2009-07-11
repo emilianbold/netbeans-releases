@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,8 +68,8 @@ import org.openide.util.lookup.ProxyLookup;
 class ContextManager extends Object {
     private static Logger LOG = GeneralAction.LOG;
     
-    private static final Map<Lookup, Reference<ContextManager>> CACHE = new IdentityHashMap<Lookup, Reference<ContextManager>>();
-    private static final Map<Lookup, Reference<ContextManager>> SURVIVE = new IdentityHashMap<Lookup, Reference<ContextManager>>();
+    private static final Map<LookupRef, Reference<ContextManager>> CACHE = new HashMap<LookupRef, Reference<ContextManager>>();
+    private static final Map<LookupRef, Reference<ContextManager>> SURVIVE = new HashMap<LookupRef, Reference<ContextManager>>();
 
     private Map<Class,LSet> listeners;
     private PropertyChangeListener changeL;
@@ -84,23 +83,24 @@ class ContextManager extends Object {
     
     public static ContextManager findManager(Lookup context, boolean survive) {
         synchronized (CACHE) {
-            Map<Lookup, Reference<ContextManager>> map = survive ? SURVIVE : CACHE;
-            Reference<ContextManager> ref = map.get(context);
+            Map<LookupRef, Reference<ContextManager>> map = survive ? SURVIVE : CACHE;
+            LookupRef lr = new LookupRef(context);
+            Reference<ContextManager> ref = map.get(lr);
             ContextManager g = ref == null ? null : ref.get();
             if (g == null) {
                 g = survive ? new SurviveManager(context) : new ContextManager(context);
-                ref = new GMReference(g, context, survive);
-                map.put(context, ref);
+                ref = new GMReference(g, lr, survive);
+                map.put(lr, ref);
             }
             return g;
         }
     }
     
-    static void clearCache(Lookup context, GMReference ref, boolean survive) {
+    static void clearCache(LookupRef lr, GMReference ref, boolean survive) {
         synchronized (CACHE) {
-            Map<Lookup, Reference<ContextManager>> map = survive ? SURVIVE : CACHE;
-            if (map.get(context) == ref) {
-                map.remove(context);
+            Map<LookupRef, Reference<ContextManager>> map = survive ? SURVIVE : CACHE;
+            if (map.get(lr) == ref) {
+                map.remove(lr);
             }
         }
     }
@@ -256,10 +256,10 @@ class ContextManager extends Object {
 
     private static final class GMReference extends WeakReference<ContextManager> 
     implements Runnable {
-        private Lookup context;
+        private LookupRef context;
         private boolean survive;
         
-        public GMReference(ContextManager m, Lookup context, boolean survive) {
+        public GMReference(ContextManager m, LookupRef context, boolean survive) {
             super(m, Utilities.activeReferenceQueue());
             this.context = context;
             this.survive = survive;
@@ -306,6 +306,30 @@ class ContextManager extends Object {
                 a.updateState();
             }
         }
+    }
+
+    static class LookupRef extends WeakReference<Lookup> {
+        private final int hashCode;
+
+        public LookupRef(Lookup referent) {
+            super(referent);
+            hashCode = System.identityHashCode(referent);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof LookupRef) {
+                LookupRef lr = (LookupRef)obj;
+                return get() == lr.get();
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
     }
 }
 
