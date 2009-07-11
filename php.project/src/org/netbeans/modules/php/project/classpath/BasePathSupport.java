@@ -162,7 +162,7 @@ public abstract class BasePathSupport {
     }
 
     /**
-     * Converts the ant reference to the name of the referenced property
+     * Converts the ant reference to the name of the referenced property.
      * @param ant reference
      * @param the name of the referenced property
      */
