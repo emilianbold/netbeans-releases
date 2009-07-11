@@ -39,12 +39,10 @@
 
 package org.netbeans.modules.php.project;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
@@ -63,7 +61,7 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
     // @GuardedBy(this)
     private final Set<PhpProject> watchedProjects = new WeakSet<PhpProject>();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
+    private final ChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
 
     public boolean isVisible(FileObject file) {
         PhpProject phpProject = PhpProjectUtils.getPhpProject(file);
@@ -112,17 +110,14 @@ public final class PhpVisibilityQuery implements VisibilityQueryImplementation {
 
     private synchronized void checkPropertyListener(PhpProject project) {
         if (!watchedProjects.contains(project)) {
-            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, ignoredFoldersListener);
+            ProjectPropertiesSupport.addWeakIgnoredFoldersListener(project, ignoredFoldersListener);
             watchedProjects.add(project);
         }
     }
 
-    private final class IgnoredFoldersListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProjectProperties.IGNORE_PATH.equals(evt.getPropertyName())) {
-                fireChange();
-            }
+    private final class IgnoredFoldersListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            fireChange();
         }
     }
 }
