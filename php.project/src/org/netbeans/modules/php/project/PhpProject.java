@@ -427,6 +427,18 @@ public class PhpProject implements Project {
         });
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder(200);
+        buffer.append(getClass().getName());
+        buffer.append(" [ project directory: ");
+        buffer.append(getProjectDirectory());
+        buffer.append(", source directory: ");
+        buffer.append(sourcesDirectory);
+        buffer.append(" ]");
+        return buffer.toString();
+    }
+
     public AntProjectHelper getHelper() {
         return helper;
     }
