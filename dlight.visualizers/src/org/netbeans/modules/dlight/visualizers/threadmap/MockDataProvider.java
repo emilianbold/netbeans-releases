@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import com.sun.jmx.mbeanserver.MetaData;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
