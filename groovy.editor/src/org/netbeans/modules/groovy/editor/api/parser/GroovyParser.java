@@ -825,21 +825,21 @@ public class GroovyParser extends Parser {
             this.path = path;
         }
 
-        @Override
-        public Class loadClass(String name, boolean lookupScriptFiles,
-                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
-
-            boolean assertsEnabled = false;
-            assert assertsEnabled = true;
-            if (assertsEnabled) {
-                Class clazz = super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
-                assert false : "Class " + clazz + " loaded by GroovyClassLoader";
-            }
-
-            // if it is a class (java or compiled groovy) it is resolved via java infr.
-            // if it is groovy it is resolved with resource loader with compile unit
-            throw new ClassNotFoundException();
-        }
+//        @Override
+//        public Class loadClass(String name, boolean lookupScriptFiles,
+//                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
+//
+//            boolean assertsEnabled = false;
+//            assert assertsEnabled = true;
+//            if (assertsEnabled) {
+//                Class clazz = super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
+//                assert false : "Class " + clazz + " loaded by GroovyClassLoader";
+//            }
+//
+//            // if it is a class (java or compiled groovy) it is resolved via java infr.
+//            // if it is groovy it is resolved with resource loader with compile unit
+//            throw new ClassNotFoundException();
+//        }
 
         @Override
         public GroovyResourceLoader getResourceLoader() {
