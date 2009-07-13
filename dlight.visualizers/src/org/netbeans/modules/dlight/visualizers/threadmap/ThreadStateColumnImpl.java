@@ -43,15 +43,16 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadInfo;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon (adapted for CND)
  */
-public class ThreadData {
+public class ThreadStateColumnImpl implements ThreadStateColumn {
 
     public static final byte THREAD_STATUS_UNKNOWN = -1; // Thread status is unknown.
     public static final byte THREAD_STATUS_ZOMBIE = 0; // Thread is waiting to die. Also used for "doesn't exist yet" and "dead"
@@ -62,23 +63,23 @@ public class ThreadData {
     public static final byte THREAD_STATUS_WAIT = 4; // Thread is waiting - Thread.wait() or JVM_MonitorWait() was called
 
     /** Thread status is unknown. */
-    public static final java.awt.Color THREAD_STATUS_UNKNOWN_COLOR = java.awt.Color.LIGHT_GRAY;
+    public static final Color THREAD_STATUS_UNKNOWN_COLOR = Color.LIGHT_GRAY;
     /** Thread is waiting to die. Also used for "doesn't exist yet" and "dead" */
     public static final Color THREAD_STATUS_ZOMBIE_COLOR = Color.BLACK;
     /** Thread is runnable. Note that we unfortunately don't know whether it's actually running or
      * pre-empted by another thread...*/
-    public static final java.awt.Color THREAD_STATUS_RUNNING_COLOR = new java.awt.Color(58, 228, 103);
+    public static final Color THREAD_STATUS_RUNNING_COLOR = new Color(58, 228, 103);
     /** Thread is sleeping - Thread.sleep() or JVM_Sleep() was called */
-    public static final java.awt.Color THREAD_STATUS_SLEEPING_COLOR = new java.awt.Color(155, 134, 221);
+    public static final Color THREAD_STATUS_SLEEPING_COLOR = new Color(155, 134, 221);
     /** Thread is waiting on a java monitor */
-    public static final java.awt.Color THREAD_STATUS_MONITOR_COLOR = new java.awt.Color(255, 114, 102);
+    public static final Color THREAD_STATUS_MONITOR_COLOR = new Color(255, 114, 102);
     /** Thread is waiting - Thread.wait() or JVM_MonitorWait() was called */
-    public static final java.awt.Color THREAD_STATUS_WAIT_COLOR = new java.awt.Color(255, 228, 90);
+    public static final Color THREAD_STATUS_WAIT_COLOR = new Color(255, 228, 90);
 
     static final byte NO_STATE = 127;
 
     // I18N String constants
-    static final ResourceBundle messages = NbBundle.getBundle(ThreadData.class);
+    static final ResourceBundle messages = NbBundle.getBundle(ThreadStateColumnImpl.class);
     public static final String THREAD_STATUS_UNKNOWN_STRING = messages.getString("CommonConstants_ThreadStatusUnknownString"); // NOI18N 
     public static final String THREAD_STATUS_ZOMBIE_STRING = messages.getString("CommonConstants_ThreadStatusZombieString"); // NOI18N
     public static final String THREAD_STATUS_RUNNING_STRING = messages.getString("CommonConstants_ThreadStatusRunningString"); // NOI18N
@@ -99,15 +100,18 @@ public class ThreadData {
     }
 
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
-        String name = threadStateColor.getStateName(msa);
+        return getThreadStateColor(threadStateColor.getStateName(msa));
+    }
+
+    static Color getThreadStateColor(String name) {
         Color c;
         if (name.equals(ThreadState.ShortThreadState.Running.name())) {
             c = THREAD_STATUS_RUNNING_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Waiting.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Waiting.name())) {
             c = THREAD_STATUS_WAIT_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Blocked.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Blocked.name())) {
             c = THREAD_STATUS_MONITOR_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
             c = THREAD_STATUS_SLEEPING_COLOR;
         } else {
             c = THREAD_STATUS_UNKNOWN_COLOR;
@@ -118,36 +122,32 @@ public class ThreadData {
     private final ThreadInfo info;
     private final List<ThreadState> list = new ArrayList<ThreadState>();
 
-    ThreadData(ThreadInfo info) {
+    ThreadStateColumnImpl(ThreadInfo info) {
         this.info = info;
     }
 
-    int size() {
+    public String getName(){
+        return info.getThreadName();
+    }
+
+    public int size() {
         return list.size();
     }
 
-    long getTimeStampAt(int index) {
-        return list.get(index).getTimeStamp();
-    }
-
-    boolean isAlive(int index) {
+    public boolean isAlive(int index) {
         return !list.get(index).getStateName(0).equals(ThreadState.ShortThreadState.NotExist.name());
     }
     
-    ThreadState getThreadStateAt(int index){
+    public ThreadState getThreadStateAt(int index){
         return list.get(index);
     }
 
-    boolean isAlive() {
+    public boolean isAlive() {
         return !list.get(list.size()-1).getStateName(0).equals(ThreadState.ShortThreadState.NotExist.name());
     }
 
     void add(ThreadState state) {
         list.add(state);
-    }
-
-    String getName(){
-        return info.getThreadName();
     }
 
     void clearStates() {

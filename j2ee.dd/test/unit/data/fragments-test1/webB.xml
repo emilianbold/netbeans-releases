@@ -8,7 +8,7 @@
     </session-config>
     <absolute-ordering>
         <name>C</name>
-        <name>OTHERS</name>
+        <name>&lt;others&gt;</name>
         <name>A</name>
     </absolute-ordering>
 </web-app>

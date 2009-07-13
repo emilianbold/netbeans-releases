@@ -40,14 +40,25 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.lang.annotation.Inherited;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ClassIndex.SearchKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
@@ -55,10 +66,26 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectPro
 
 
 /**
+ * This object provider cares about types that directly have annotations,
+ * types that inherit annotations ( they extends class or interface that
+ * directly have annotation and either 
+ * - annotations is @Inherited
+ * - type specializes type with annotation ( each hierarchy step has @Specializes
+ * annotations ).
+ * 
+ * So result object ( type ) could not have directly annotation under subject and also 
+ * there could be objects ( types ) which don't have even inherited annotation.
+ * ( but hey have parents with this annotation and they specializes this parent ). 
  * @author ads
  *
  */
 class AnnotationObjectProvider implements ObjectProvider<Binding> {
+    
+    private static final String SPECILIZES_ANNOTATION = 
+        "javax.enterprise.inject.deployment.Specializes";       // NOI18N
+    
+    static final Logger LOGGER = Logger.getLogger(
+            AnnotationObjectProvider.class.getName());
 
     AnnotationObjectProvider( AnnotationModelHelper helper , String annotation) {
         myHelper = helper;
@@ -70,24 +97,34 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
      */
     public List<Binding> createInitialObjects() throws InterruptedException {
         final List<Binding> result = new LinkedList<Binding>();
+        final Set<TypeElement> set = new HashSet<TypeElement>(); 
         getHelper().getAnnotationScanner().findAnnotations(getAnnotationName(), 
                 AnnotationScanner.TYPE_KINDS, 
                 new AnnotationHandler() {
                     public void handleAnnotation(TypeElement type, 
                             Element element, AnnotationMirror annotation) 
                     {
-                        /* TODO : inherited annotations currently are discovered 
-                         * correctly. One needs also check presence @Specialize
-                         * annotation at derived class. So 
-                         * below addition should not happen if annotation
-                         * is not @Inherited and child doesn't specialize 
-                         * parent.  
-                         */
                         result.add( new Binding( getHelper(), type , 
                                 getAnnotationName()));
+                        set.add( type );
+                        if ( !getHelper().hasAnnotation( annotation.
+                                getAnnotationType().asElement().
+                                getAnnotationMirrors(), 
+                                Inherited.class.getCanonicalName()))
+                        {
+                            /*
+                             *  if annotation is inherited then method 
+                             *  findAnnotations()
+                             *  method will return types with this annotation.
+                             *  Otherwise there could be implementors which 
+                             *  specialize this type.
+                             */
+                            collectSpecializedImplementors( type , set, result );
+                        }
                     }
+
         }, true );
-        return result;
+        return new ArrayList<Binding>( result );
     }
 
     /* (non-Javadoc)
@@ -95,14 +132,22 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
      */
     public List<Binding> createObjects( TypeElement type ) {
         final List<Binding> result = new ArrayList<Binding>();
-        /* TODO :  check presence @Specialize annotation. In this case
-         * one need to investigate parents of Type for annotation presence.  
-         */
-        if (getHelper().hasAnnotation(getHelper().getCompilationController().
-                getElements().getAllAnnotationMirrors( type ), 
-                getAnnotationName())) 
-        {
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+            getHelper().getAnnotationsByType(getHelper().getCompilationController().
+                getElements().getAllAnnotationMirrors( type ));
+        AnnotationMirror annotationMirror = annotationsByType.get( 
+                getAnnotationName());
+        if (annotationMirror != null ) {
             result.add( new Binding(getHelper(), type, getAnnotationName()));
+        }
+        if ( !getHelper().hasAnnotation( annotationMirror.
+                getAnnotationType().asElement().
+                getAnnotationMirrors(), 
+                Inherited.class.getCanonicalName()))
+        {
+            if ( checkSuper( type , getAnnotationName() , getHelper())!= null ){
+                result.add( new Binding( getHelper(), type, getAnnotationName()) );
+            }
         }
         return result;
     }
@@ -126,6 +171,52 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         return false;
     }
     
+    static TypeElement checkSuper( TypeElement type , String annotationName, 
+            AnnotationModelHelper helper ) 
+    {
+        if ( !hasSpecializes( type, helper )){
+            return null;
+        }
+        
+        TypeElement superClass = helper.getSuperclass(type);
+        if ( hasAnnotation( superClass , annotationName, helper)){
+            return superClass;
+        }
+        TypeElement foundSuper = checkSuper( superClass, annotationName , helper );
+        if ( foundSuper!= null ){
+            return foundSuper;
+        }
+        
+        /* interfaces could not be injectables , but let's inspect them as possible 
+         * injectables for notifying user about error if any.
+         */   
+        
+        List<? extends TypeMirror> interfaces = type.getInterfaces();
+        for (TypeMirror typeMirror : interfaces) {
+            Element el = helper.getCompilationController().getTypes().
+                asElement(typeMirror);
+            if ( el instanceof TypeElement ){
+                TypeElement interfaceElement = (TypeElement) el;
+                if ( hasAnnotation( interfaceElement  , annotationName, helper)){
+                    return interfaceElement;
+                }
+                foundSuper = checkSuper( interfaceElement , annotationName , helper);
+                if ( foundSuper != null ){
+                    return foundSuper;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    static boolean hasSpecializes( TypeElement element , 
+            AnnotationModelHelper helper )
+    {
+        return hasAnnotation(element , SPECILIZES_ANNOTATION , helper );
+    }
+    
     private String getAnnotationName(){
         return myAnnotationName;
     }
@@ -133,6 +224,125 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
     private AnnotationModelHelper getHelper(){
         return myHelper;
     }
+    
+    private void collectSpecializedImplementors( TypeElement type, Set<TypeElement> set, 
+            List<Binding> bindings ) 
+    {
+        ElementHandle<TypeElement> handle = ElementHandle.create(type);
+        final Set<ElementHandle<TypeElement>> handles = getHelper()
+                .getClasspathInfo().getClassIndex().getElements(
+                        handle,
+                        EnumSet.of(SearchKind.IMPLEMENTORS),
+                        EnumSet
+                                .of(SearchScope.SOURCE,
+                                        SearchScope.DEPENDENCIES));
+        if (handles == null) {
+            LOGGER.log(Level.WARNING,
+                    "ClassIndex.getElements() was interrupted"); // NOI18N
+            return ;
+        }
+        for (ElementHandle<TypeElement> elementHandle : handles) {
+            LOGGER.log(Level.FINE, "found derived element {0}", elementHandle
+                    .getQualifiedName()); // NOI18N
+            TypeElement derivedElement = elementHandle.resolve(getHelper().
+                    getCompilationController());
+            if (derivedElement == null) {
+                continue;
+            }
+            
+            if ( !hasSpecializes(derivedElement,  getHelper())){
+                continue;
+            }
+            handleSuper(type, derivedElement, bindings, set);
+        }
+        
+    }
+    
+    private boolean  handleInterface( TypeElement element, TypeElement child,
+            Set<TypeElement> collectedElements )
+    {
+        /* interfaces could not be injectables , but let's inspect them as possible 
+         * injectables for notifying user about error if any.
+         */ 
+        List<? extends TypeMirror> interfaces = child.getInterfaces();
+        for (TypeMirror typeMirror : interfaces) {
+            if ( getHelper().getCompilationController().getTypes().isSameType(
+                    element.asType(), typeMirror) )
+            {
+                return true;
+            }
+            if ( getHelper().getCompilationController().getTypes().
+                    isAssignable( typeMirror, element.asType()))
+            {
+                Element el = getHelper().getCompilationController().
+                    getTypes().asElement( typeMirror );
+                if ( !( el instanceof TypeElement )){
+                    return false;
+                }
+                TypeElement interfaceElement = (TypeElement)el;
+                collectedElements.add( interfaceElement);
+                if ( !hasSpecializes( interfaceElement , getHelper() ) ){
+                    return false;
+                }
+                else {
+                    return handleInterface(element, interfaceElement, 
+                            collectedElements);
+                }
+            }
+        }  
+        
+        return false;
+    }
+
+    private void handleSuper(TypeElement type ,TypeElement child, 
+            List<Binding> bindings, Set<TypeElement> set) 
+    {
+        List<? extends TypeElement> superclasses = getHelper().getSuperclasses(
+                child);
+        Set<TypeElement> collectedSuper = new HashSet<TypeElement>();
+        collectedSuper.add( child );
+        boolean specializes = true;
+        TypeElement previous = child;
+        for (TypeElement superElement : superclasses) {
+            if (superElement.equals(type)) {
+                break;
+            }
+            if ( getHelper().getCompilationController().getTypes().
+                    isAssignable( superElement.asType(), type.asType()))
+            {
+                previous = superElement;
+            }
+            else {
+                if ( !hasSpecializes(superElement, getHelper())) {
+                    specializes = false;
+                    break;
+                }
+                collectedSuper.add(superElement);
+                specializes = handleInterface(type, previous, collectedSuper);
+                break;
+            }
+        }
+        if (specializes) {
+            for (TypeElement superElement : collectedSuper) {
+                if (!set.contains(superElement)) {
+                    set.add(superElement);
+                    bindings.add(new Binding(getHelper(), superElement,
+                            getAnnotationName()));
+                }
+            }
+        }
+    }
+    
+    private static boolean hasAnnotation( TypeElement element, String annotation, 
+            AnnotationModelHelper helper )
+    {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            helper.getCompilationController().getElements().
+            getAllAnnotationMirrors(element);
+        return helper.hasAnnotation(allAnnotationMirrors, 
+                annotation );
+    }
+
     
     private AnnotationModelHelper myHelper;
     private String myAnnotationName;

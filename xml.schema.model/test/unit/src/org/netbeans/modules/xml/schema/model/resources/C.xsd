@@ -4,6 +4,7 @@
             targetNamespace="http://xml.netbeans.org/schema/B"
             xmlns:tns="http://xml.netbeans.org/schema/B"
             elementFormDefault="qualified">
+    <xsd:include schemaLocation="E.xsd"/>
     <xsd:complexType name="C1">
         <xsd:sequence>
             <xsd:element name="C11"/>

@@ -243,18 +243,14 @@ public class AbsoluteOrderingPanel extends SectionInnerPanel implements java.awt
     }//GEN-LAST:event_bDownActionPerformed
 
     private String getNameFromUser(String value) {
-        NamePanel p = new NamePanel(value);
+        OrderingItemPanel p = new OrderingItemPanel(value);
         DialogDescriptor dd = new DialogDescriptor(p,
-                NbBundle.getMessage(AbsoluteOrderingPanel.class, "TTL_Ordering"));
+                NbBundle.getMessage(RelativeOrderingPanel.class, "TTL_Ordering"));
+        dd.createNotificationLineSupport();
+        p.setDlgSupport(dd);
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
-            String res = p.getResult();
-            if (res != null) {
-                res = res.trim();
-                if (res.length() < 1)
-                    res = null;
-            }
-            return res;
+            return p.getResult();
         }
         return null;
     }

@@ -123,6 +123,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String NO_PROFILING_MSG = messages.getString("ThreadsPanel_NoProfilingMsg"); // NOI18N
     private static final String THREADS_COLUMN_NAME = messages.getString("ThreadsPanel_ThreadsColumnName"); // NOI18N
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
+    private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
     private static final String THREAD_DETAILS_ITEM = messages.getString("ThreadsPanel_ThreadDetailsItem"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
@@ -134,10 +135,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     // -----
     private static final int NAME_COLUMN_INDEX = 0;
     private static final int DISPLAY_COLUMN_INDEX = 1;
+    private static final int SUMMARY_COLUMN_INDEX = 2;
     private static final int RIGHT_DISPLAY_MARGIN = 20; // extra space [pixels] on the right end of the threads display
     private static final int LEFT_DISPLAY_MARGIN = 20;
     private static final int NAME_COLUMN_WIDTH = 190;
     private static final int MIN_NAME_COLUMN_WIDTH = 55;
+    static final int MIN_SUMMARY_COLUMN_WIDTH = 50;
 
     private ArrayList<Integer> filteredDataToDataIndex = new ArrayList<Integer>();
     private CustomTimeLineViewport viewPort;
@@ -291,7 +294,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         table.getTableHeader().setReorderingAllowed(false);
 
         // fix the first column's width, and make the display column resize
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setMinWidth(MIN_NAME_COLUMN_WIDTH);
         table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setMaxWidth(1000); // this is for some reason needed for the width to actually work
         table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setPreferredWidth(NAME_COLUMN_WIDTH);
@@ -300,11 +303,16 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         headerRenderer.setBackground(Color.WHITE);
         table.getColumnModel().getColumn(DISPLAY_COLUMN_INDEX).setHeaderRenderer(headerRenderer);
 
+        table.getColumnModel().getColumn(SUMMARY_COLUMN_INDEX).setMinWidth(MIN_SUMMARY_COLUMN_WIDTH);
+        table.getColumnModel().getColumn(SUMMARY_COLUMN_INDEX).setMaxWidth(MIN_SUMMARY_COLUMN_WIDTH);
+        table.getColumnModel().getColumn(SUMMARY_COLUMN_INDEX).setPreferredWidth(MIN_SUMMARY_COLUMN_WIDTH);
+
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.setColumnSelectionAllowed(false);
         columnModel.setColumnMargin(0);
         table.setDefaultRenderer(ThreadNameCellRenderer.class, new ThreadNameCellRenderer(this));
         table.setDefaultRenderer(ThreadStateCellRenderer.class, new ThreadStateCellRenderer(this));
+        table.setDefaultRenderer(ThreadSummaryCellRenderer.class, new ThreadSummaryCellRenderer(this));
         buttonsToolBar.setFloatable(false);
         buttonsToolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
 
@@ -319,21 +327,30 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         buttonsToolBar.addSeparator();
         buttonsToolBar.add(showLabel);
         buttonsToolBar.add(threadsSelectionCombo);
-        scrollPanel.add(scrollBar, BorderLayout.EAST);
+        scrollPanel.add(scrollBar, BorderLayout.CENTER);
+        JPanel filler = new JPanel();
+        filler.setBackground(Color.WHITE);
+        filler.setPreferredSize(new Dimension(MIN_SUMMARY_COLUMN_WIDTH, 0));
+        scrollPanel.add(filler, BorderLayout.EAST);
+        JPanel rest = new JPanel();
+        rest.setLayout(new BorderLayout());
+        rest.setBackground(Color.WHITE);
+        scrollPanel.add(rest, BorderLayout.CENTER);
+        rest.add(scrollBar, BorderLayout.EAST);
 
         //
-        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_RUNNING, 18, 9);
-        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_SLEEPING, 18, 9);
-        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_MONITOR, 18, 9);
-        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_WAIT, 18, 9);
+        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 18, 9);
+        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 18, 9);
+        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 18, 9);
+        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 18, 9);
 
-        runningLegend = new JLabel(ThreadData.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
+        runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
         runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        sleepingLegend = new JLabel(ThreadData.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
+        sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
         sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        waitLegend = new JLabel(ThreadData.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
+        waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
         waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        monitorLegend = new JLabel(ThreadData.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
+        monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
         monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         JPanel legendPanel = new JPanel();
@@ -526,7 +543,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return table.getTableHeader().getHeaderRect(DISPLAY_COLUMN_INDEX).width;
     }
 
-    public ThreadData getThreadData(int index) {
+    public int getDisplayColumnRest() {
+        return table.getTableHeader().getHeaderRect(SUMMARY_COLUMN_INDEX).width;
+    }
+
+    public ThreadStateColumnImpl getThreadData(int index) {
         return manager.getThreadData(index);
     }
 
@@ -924,7 +945,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
             // view live threads
             if (threadsSelectionCombo.getSelectedItem().equals(VIEW_THREADS_LIVE)) {
-                ThreadData threadData = manager.getThreadData(i);
+                ThreadStateColumnImpl threadData = manager.getThreadData(i);
 
                 if (threadData.size() > 0) {
                     if (threadData.isAlive()) {
@@ -937,7 +958,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
             // view finished threads
             if (threadsSelectionCombo.getSelectedItem().equals(VIEW_THREADS_FINISHED)) {
-                ThreadData threadData = manager.getThreadData(i);
+                ThreadStateColumnImpl threadData = manager.getThreadData(i);
 
                 if (threadData.size() > 0) {
                     if (!threadData.isAlive()) {
@@ -1057,13 +1078,15 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     return ThreadNameCellRenderer.class;
                 case DISPLAY_COLUMN_INDEX:
                     return ThreadStateCellRenderer.class;
+                case SUMMARY_COLUMN_INDEX:
+                    return ThreadSummaryCellRenderer.class;
                 default:
                     return String.class;
             }
         }
 
         public int getColumnCount() {
-            return 2;
+            return 3;
         }
 
         /**
@@ -1081,6 +1104,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     return THREADS_COLUMN_NAME;
                 case DISPLAY_COLUMN_INDEX:
                     return TIMELINE_COLUMN_NAME;
+                case SUMMARY_COLUMN_INDEX:
+                    return SUMMARY_COLUMN_NAME;
                 default:
                     return null;
             }
@@ -1096,6 +1121,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 case NAME_COLUMN_INDEX:
                     return filteredDataToDataIndex.get(rowIndex);
                 case DISPLAY_COLUMN_INDEX:
+                    return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
+                case SUMMARY_COLUMN_INDEX:
                     return getThreadData( filteredDataToDataIndex.get(rowIndex).intValue() );
                 default:
                     return null;

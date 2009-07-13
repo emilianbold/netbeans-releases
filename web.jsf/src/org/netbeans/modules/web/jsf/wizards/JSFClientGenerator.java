@@ -1218,7 +1218,7 @@ public class JSFClientGenerator {
                    
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, fieldName + "Items", new TypeInfo("java.util.List", new String[]{entityClass}), privateModifier, null, null);
                     
-                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "jpaController", jpaControllerClass, privateModifier, null, null);
+                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "jpaController", jpaControllerClass, privateModifier, null, useSessionBean ? new JpaControllerUtil.AnnotationInfo[]{new JpaControllerUtil.AnnotationInfo("javax.ejb.EJB")} : null);
                     
                     String converterClass = ((controllerPackage == null || controllerPackage.length() == 0) ? "" : controllerPackage + ".") + simpleConverterName;
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "converter", converterClass, privateModifier, null, null);
@@ -1229,8 +1229,8 @@ public class JSFClientGenerator {
                     MethodInfo methodInfo;
                     
                     String managedBeanName = getManagedBeanName(simpleEntityName);
-                    bodyText = "FacesContext facesContext = FacesContext.getCurrentInstance();\n" +
-                            "jpaController = (" + simpleEntityName + (useSessionBean ? FACADE_SUFFIX : "JpaController") + ") facesContext.getApplication().getELResolver().getValue(facesContext.getELContext(), null, \"" + managedBeanName + "Jpa\");\n" +
+                    bodyText = (useSessionBean ? ("") : ("FacesContext facesContext = FacesContext.getCurrentInstance();\n" +
+                            "jpaController = (" + simpleEntityName + "JpaController" + ") facesContext.getApplication().getELResolver().getValue(facesContext.getELContext(), null, \"" + managedBeanName + "Jpa\");\n")) +
                             "pagingInfo = new PagingInfo();\n" +
                             "converter = new " + simpleConverterName + "();";
                     methodInfo = new MethodInfo("<init>", publicModifier, "void", null, null, null, bodyText, null, null);
@@ -1282,6 +1282,7 @@ public class JSFClientGenerator {
                                     "java.lang.reflect.InvocationTargetException",
                                     "java.lang.reflect.Method",
                                     "javax.faces.FacesException",
+                                    "javax.ejb.EJB",
                                     utilPackage + ".JsfUtil"
                         };
 

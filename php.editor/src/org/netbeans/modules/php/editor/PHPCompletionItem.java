@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.QualifiedName;
@@ -302,6 +303,34 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return keywordIcon;
+        }
+    }
+
+    static class NamespaceItem extends PHPCompletionItem {
+
+        NamespaceItem(IndexedNamespace namespace, CompletionRequest request) {
+            super(namespace, request);
+        }
+
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
+            IndexedNamespace namespace = ((IndexedNamespace)getElement());
+            formatter.name(getKind(), true);
+
+            if (namespace.isResolved()){
+                formatter.emphasis(true);
+                formatter.appendText(getName());
+                formatter.emphasis(false);
+            } else {
+                formatter.appendText(getName());
+            }
+
+            formatter.name(getKind(), false);
+
+            return formatter.getText();
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.PACKAGE;
         }
     }
 

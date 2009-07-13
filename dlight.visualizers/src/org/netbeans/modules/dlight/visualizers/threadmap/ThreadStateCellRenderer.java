@@ -46,7 +46,7 @@ import java.io.Serializable;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
  * @author Jiri Sedlacek
@@ -55,7 +55,7 @@ import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
 public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer, Serializable {
     private Color unselectedBackground;
     private Color unselectedForeground;
-    private ThreadData threadData;
+    private ThreadStateColumnImpl threadData;
     private ThreadsPanel viewManager; // view manager for this cell
     private long dataEnd;
     private long dataStart;
@@ -108,7 +108,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return !colorMatch && super.isOpaque();
     }
 
-    public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
             int row, int column) {
         if (isSelected) {
             super.setForeground(table.isFocusOwner() ? table.getSelectionForeground() : UIUtils.getUnfocusedSelectionForeground());
@@ -123,8 +123,8 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
         }
 
-        if (value instanceof ThreadData) {
-            threadData = (ThreadData) value;
+        if (value instanceof ThreadStateColumnImpl) {
+            threadData = (ThreadStateColumnImpl) value;
         }
 
         viewStart = viewManager.getViewStart();
@@ -156,7 +156,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 if ((viewEnd - viewStart) > 0) {
                     float factor = (float) width / (float) (viewEnd - viewStart);
 
-                    while ((index < threadData.size()) && (threadData.getTimeStampAt(index) <= viewEnd)) {
+                    while ((index < threadData.size()) && (threadData.getThreadStateAt(index).getTimeStamp() <= viewEnd)) {
                         // Thread alive
                         if (threadData.isAlive(index)) {
                             paintThreadState(g, index, threadData.getThreadStateAt(index), factor, width);
@@ -217,14 +217,14 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
     private int getFirstVisibleDataUnit() {
         for (int i = 0; i < threadData.size(); i++) {
-            long timestamp = threadData.getTimeStampAt(i);
+            long timestamp = threadData.getThreadStateAt(i).getTimeStamp();
 
             if ((timestamp <= viewEnd) && (i == (threadData.size() - 1))) {
                 return i; // last data unit before viewEnd
             }
 
             if (timestamp <= viewStart) {
-                if (threadData.getTimeStampAt(i + 1) > viewStart) {
+                if (threadData.getThreadStateAt(i+1).getTimeStamp() > viewStart) {
                     return i; // data unit ends between viewStart and viewEnd
                 }
             } else {
@@ -241,10 +241,10 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         int x; // Begin of rectangle
         int xx; // End of rectangle
 
-        x = Math.max((int) ((float) (threadData.getTimeStampAt(index) - viewStart) * factor), 0);
+        x = Math.max((int) ((float) (threadData.getThreadStateAt(index).getTimeStamp() - viewStart) * factor), 0);
 
         if (index < (threadData.size() - 1)) {
-            xx = Math.min((int) ((float) (threadData.getTimeStampAt(index + 1) - viewStart) * factor), width);
+            xx = Math.min((int) ((float) (threadData.getThreadStateAt(index + 1).getTimeStamp() - viewStart) * factor), width);
         } else {
             xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
         }
@@ -258,9 +258,9 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
         for(int i = 0; i < size; i++) {
             int v = threadStateColor.getState(i);
-            Color c = ThreadData.getThreadStateColor(threadStateColor, i);
+            Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor, i);
             oldRest = rest;
-            rest = (v*delta+rest)%1000;
+            rest = (v*delta+oldRest)%1000;
             int d = (v*delta+oldRest)/1000;
             y += d;
             if (d > 0) {
