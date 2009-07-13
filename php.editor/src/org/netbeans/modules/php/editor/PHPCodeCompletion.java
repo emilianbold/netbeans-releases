@@ -78,6 +78,7 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -318,6 +319,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
                     break;
+                case NAMESPACE_ONLY:
+                    autoCompleteNamespaces(proposals, request);
+                    break;
+                case NAMESPACE_ELEMENT:
+                    autoCompleteNamespaces(proposals, request);
+                    //TODO: add ns-specific items (class names, functions, constants)
+                    break;
+                case NAMESPACE_CLASS_ELEMENT:
+                    autoCompleteNamespaces(proposals, request);
+                    //TODO: add ns-specific class names
+                    break;
                 case SERVER_ENTRY_CONSTANTS:
                     //TODO: probably better PHPCompletionItem instance should be used
                     //autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
@@ -396,6 +408,23 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         for (String keyword : keywordList) {
             if (keyword.startsWith(request.prefix)) {
                 proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
+            }
+        }
+
+    }
+
+
+    private void autoCompleteNamespaces(List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request) {
+
+        PHPIndex index = request.index;
+
+        Collection<IndexedNamespace> namespaces = index.getNamespaces(request.result,
+                request.prefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+
+        for (IndexedNamespace namespace : namespaces) {
+            if (namespace.getName().startsWith(request.prefix)) {
+                proposals.add(new PHPCompletionItem.NamespaceItem(namespace, request));
             }
         }
 
@@ -719,6 +748,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             else if (element instanceof IndexedConstant) {
                 proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant) element, request));
+            } else if (element instanceof IndexedNamespace){
+                proposals.add(new PHPCompletionItem.NamespaceItem((IndexedNamespace) element, request));
             }
         }
 

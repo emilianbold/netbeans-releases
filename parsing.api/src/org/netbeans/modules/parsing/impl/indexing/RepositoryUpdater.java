@@ -2055,7 +2055,7 @@ out:            for (String mimeType : order) {
                                             deps.add(binaryRoot);
                                         }
                                     } else {
-                                        LOGGER.log(Level.INFO, "The root {0} is registsred for both {1} and {2}", new Object[] { //NOI18N
+                                        LOGGER.log(Level.INFO, "The root {0} is registered for both {1} and {2}", new Object[] { //NOI18N
                                             binaryRoot, id, sourceIds
                                         });
                                     }

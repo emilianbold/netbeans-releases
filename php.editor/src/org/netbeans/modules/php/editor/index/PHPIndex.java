@@ -93,7 +93,7 @@ public class PHPIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
     private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
-        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR};
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
 
     private final QuerySupport index;
 
@@ -125,6 +125,7 @@ public class PHPIndex {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
+        Collection<IndexedNamespace> namespaces = new ArrayList<IndexedNamespace>();
 
         // search through the top leve elements
         final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, 
@@ -133,11 +134,13 @@ public class PHPIndex {
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
         findClasses(result, nameKind, prefix, classes);
+        findNamespaces(result, nameKind, prefix, namespaces);
         findTopVariables(result, nameKind, prefix, vars);
         elements.addAll(functions);
         elements.addAll(constants);
         elements.addAll(classes);
         elements.addAll(vars);
+        elements.addAll(namespaces);
         return elements;
     }
 
@@ -796,6 +799,39 @@ public class PHPIndex {
         Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CONST, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_CONST);
         findConstants(result, kind, name, constants);
         return constants;
+    }
+
+    public Collection<IndexedNamespace> getNamespaces(PHPParseResult context, String name, QuerySupport.Kind kind) {
+        Collection<IndexedNamespace> namespaces = new ArrayList<IndexedNamespace>();
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_NAMESPACE, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_NAMESPACE);
+
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_NAMESPACE);
+            if (signatures == null) {
+                continue;
+            }
+
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String nsName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!nsName.startsWith(name)) {
+                        continue;
+                    }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!nsName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
+                }
+                int offset = sig.integer(2);
+                IndexedNamespace namespace = new IndexedNamespace(nsName, null, this, map.getUrl().toString(), offset, 0);
+                //constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                namespaces.add(namespace);
+            }
+        }
+        return namespaces;
     }
 
     public Set<FileObject> filesWithIdentifiers(String identifierName) {
