@@ -365,14 +365,13 @@ public final class CreateTestsAction extends NodeAction {
         assert testFile.isFile() : "Test file must exist: " + testFile;
 
         // reformat the file
-// XXX DISABLED DUE TO HTML INDENTER ASSERTION ERROR
-//        try {
-//            reformat(testFile);
-//        } catch (IOException ex) {
-//            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-//        } catch (BadLocationException ex) {
-//            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-//        }
+        // XXX see AssertionError at HtmlIndenter.java:68
+        // NbReaderProvider.setupReaders(); cannot be called because of deps
+        try {
+            reformat(testFile);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        }
 
         return testFile;
     }
@@ -434,7 +433,7 @@ public final class CreateTestsAction extends NodeAction {
         return testFile;
     }
 
-    private void reformat(final File testFile) throws IOException, BadLocationException {
+    private void reformat(final File testFile) throws IOException {
         FileObject testFileObject = FileUtil.toFileObject(testFile);
         assert testFileObject != null : "No fileobject for " + testFile;
 
@@ -449,17 +448,16 @@ public final class CreateTestsAction extends NodeAction {
         final BaseDocument baseDoc = (BaseDocument) doc;
         final Reformat reformat = Reformat.get(baseDoc);
         reformat.lock();
-        // XXX using deprecated api because we need to save document AFTER it is formatted (needs to be synchronous)
-        try {
-            baseDoc.atomicLock();
-            try {
-                reformat.reformat(0, baseDoc.getLength());
-            } finally {
-                baseDoc.atomicUnlock();
+        // seems to be synchronous but no info in javadoc
+        baseDoc.runAtomic(new Runnable() {
+            public void run() {
+                try {
+                    reformat.reformat(0, baseDoc.getLength());
+                } catch (BadLocationException ex) {
+                    LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+                }
             }
-        } finally {
-            reformat.unlock();
-        }
+        });
 
         // save
         SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
