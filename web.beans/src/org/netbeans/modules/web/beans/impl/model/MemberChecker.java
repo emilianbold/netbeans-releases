@@ -48,6 +48,7 @@ import java.util.Map.Entry;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
@@ -92,24 +93,49 @@ class MemberCheckerFilter extends TypeFilter {
     private void checkMember( ExecutableElement exec, AnnotationValue value,
                 Set<TypeElement> typesWithBindings )
     {
-     // annotation member should be checked for presence at Binding type
+        Element annotationElement = exec.getEnclosingElement();
+        if ( !(  annotationElement instanceof TypeElement ) ){
+            return;
+        }
+        String annotationName = ((TypeElement)annotationElement).
+                                                getQualifiedName().toString();
+        // annotation member should be checked for presence at Binding type
         for (Iterator<TypeElement> iterator = typesWithBindings.iterator(); 
             iterator.hasNext(); ) 
         {
-            // TODO : care about specialize
             TypeElement element = iterator.next();
-            List<? extends AnnotationMirror> allAnnotationMirrors = getImplementation()
-                    .getHelper().getCompilationController().getElements()
-                    .getAllAnnotationMirrors(element);
-            for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> 
-                    elementValues = annotationMirror.getElementValues();
-                AnnotationValue valueForType = elementValues.get( exec );
-                if ( !equals( value, valueForType)){
-                    iterator.remove( );
+            if ( !checkMember(exec, value, element, iterator , annotationName)){
+                // check specializes....
+                TypeElement specializedSuper = AnnotationObjectProvider.
+                    checkSuper( element, ((TypeElement)element).
+                            getQualifiedName().toString(),  
+                            getImplementation().getHelper());
+                if ( specializedSuper != null ){
+                    checkMember(exec, value, specializedSuper, iterator, 
+                            annotationName);
                 }
+                
             }
         }
+    }
+    
+    private boolean checkMember( ExecutableElement exec, AnnotationValue value,
+            TypeElement typeWithBinding, Iterator<TypeElement> iterator,
+            String annotationName )
+    {
+        List<? extends AnnotationMirror> allAnnotationMirrors = getImplementation()
+                .getHelper().getCompilationController().getElements()
+                .getAllAnnotationMirrors(typeWithBinding);
+        AnnotationMirror annotationMirror = getImplementation().getHelper()
+                .getAnnotationsByType(allAnnotationMirrors).get(annotationName);
+        Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                elementValues = annotationMirror.getElementValues();
+        AnnotationValue valueForType = elementValues.get(exec);
+        if (!equals(value, valueForType)) {
+            iterator.remove();
+            return true;
+        }
+        return false;
     }
     
     private boolean equals( AnnotationValue value1 , AnnotationValue value2 ){
