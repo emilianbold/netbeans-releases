@@ -37,20 +37,75 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ThreadInfo {
-    /**
-     * @return ststem thread ID.
-     */
-    int getThreadId();
+public interface ThreadState {
 
     /**
-     * @return Thread name. It is a function full name that was called.
+     * Aggregated thread states.
      */
-    String getThreadName();
+    public static enum ShortThreadState {
+        NotExist,
+        Sleeping,
+        Waiting,
+        Blocked,
+        Running,
+    }
+
+    /**
+     * All possible thread states.
+     */
+    public static enum FullThreadState {
+        NotExist,
+        Stopped,
+        SleepingOther,
+        SleepingUserTextPageFault,
+        SleepingUserDataPageFault,
+        SleepingKernelPageFault,
+        SleepingSemafore,
+        SleepingConditionalVariable,
+        SleepingSystemSynchronization,
+        SleepingUserSynchronization,
+        WaitingCPU,
+        RunningOther,
+        RunningSystemCall,
+        RunningUser,
+    }
+
+    /**
+     * @return size of state
+     */
+    int size();
+
+    /**
+     * returns string representation of enum value of ShortThreadState or FullThreadState.
+     *
+     * @param index of state.
+     * @return state ID by index.
+     */
+    String getStateName(int index);
+
+    /**
+     * @param index of state.
+     * @return value of state by index. Unit of value is 0.1%. I.e. sum of all values is 1000.
+     */
+    int getState(int index);
+
+    /**
+     * returns -1 if there are no stack avaliable.
+     *
+     * @param index interested state.
+     * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
+     */
+    long getTimeStamp(int index);
+
+    /**
+     *
+     * @return beginning time in natural unit of state.
+     */
+    long getTimeStamp();
 }

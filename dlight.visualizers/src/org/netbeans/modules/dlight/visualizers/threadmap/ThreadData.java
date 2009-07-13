@@ -43,8 +43,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadInfo;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.openide.util.NbBundle;
 
 /**

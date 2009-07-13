@@ -37,13 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.threadmap.indicator;
 
-/**
- * Represents thread state summary column
- *
- * @author Alexander Simon
- */
-public interface StateSummary {
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
+
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
+public class ThreadMapIndicatorFactory implements IndicatorFactory<ThreadMapIndicatorConfiguration> {
+
+    public Indicator<ThreadMapIndicatorConfiguration> create(ThreadMapIndicatorConfiguration configuration) {
+        return new ThreadMapIndicator(configuration);
+    }
+
+    public String getID() {
+        return ThreadMapIndicatorConfiguration.ID;
+    }
 
 }

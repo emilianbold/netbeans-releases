@@ -37,12 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.api.storage.threadmap;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.openide.util.NbBundle;
 
 /**
- * Represents thread state line column
  *
  * @author Alexander Simon
  */
-public interface StateLine {
+public final class ThreadTableMetrics {
+    private static final List<Column> columns;
+    static {
+        columns = new ArrayList<Column>(3);
+        columns.add(create("threadName", String.class)); // NOI18N
+        columns.add(create("state", StateLine.class)); // NOI18N
+        columns.add(create("summary", StateSummary.class)); // NOI18N
+    }
+
+    private ThreadTableMetrics() {
+    }
+
+    private static  Column create(String id, Class clazz) {
+        return new Column(id, clazz, NbBundle.getMessage(ThreadTableMetrics.class, id), null);
+    }
+
+    public static final List<Column> getThredMapColumn(){
+        return columns;
+    }
 }

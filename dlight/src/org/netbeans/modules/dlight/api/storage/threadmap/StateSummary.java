@@ -37,44 +37,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.api.impl;
-
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
-import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
+ * Represents thread state summary column
  *
  * @author Alexander Simon
  */
-public abstract class ThreadMapVisualizerConfigurationAccessor {
-    private static volatile ThreadMapVisualizerConfigurationAccessor DEFAULT;
+public interface StateSummary {
 
-    public static ThreadMapVisualizerConfigurationAccessor getDefault() {
-        ThreadMapVisualizerConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-        try {
-            Class.forName(ThreadMapVisualizerConfigurationAccessor.class.getName(), true,
-                ThreadMapVisualizerConfigurationAccessor.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
-    }
-
-    public static void setDefault(ThreadMapVisualizerConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public ThreadMapVisualizerConfigurationAccessor() {
-    }
-
-    public abstract List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration);
-
-    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
 }

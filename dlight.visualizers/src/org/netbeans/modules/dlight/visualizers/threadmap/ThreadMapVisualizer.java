@@ -59,13 +59,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.dlight.api.storage.ThreadMapMetadata;
+import org.netbeans.modules.dlight.api.storage.threadmap.StateLine;
+import org.netbeans.modules.dlight.api.storage.threadmap.StateSummary;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.threadmap.support.spi.StateLine;
-import org.netbeans.modules.dlight.threadmap.support.spi.StateSummary;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
@@ -99,11 +100,11 @@ public class ThreadMapVisualizer extends JPanel implements
     private final Timer timer = new Timer();
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
-        if (provider == null){
-            provider = new MockDataProvider();
+        if (provider == null) {
+            provider = new MockThreadMapDataProviderImpl();
         }
         if (configuration == null) {
-            configuration = new ThreadMapVisualizerConfiguration(new ThreadMapMetadata(TimeUnit.SECONDS, 0, 30, 1, false));
+            configuration = new ThreadMapVisualizerConfiguration(new ThreadMapMetadata(null));
         }
         this.provider = provider;
         this.configuration = configuration;
@@ -136,12 +137,13 @@ public class ThreadMapVisualizer extends JPanel implements
         add(callStack, BorderLayout.SOUTH);
         // for testing only
         callStack.add(new JLabel("Call stack area")); // NOI18N
-        timer.schedule(new TimerTask(){
-                @Override
-                public void run() {
-                    refresh();
-                }
-            },0, 1000);
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                refresh();
+            }
+        }, 0, 1000);
 
     }
 
@@ -173,8 +175,7 @@ public class ThreadMapVisualizer extends JPanel implements
                     Future<List<ThreadMapData>> queryDataTask = DLightExecutorService.submit(new Callable<List<ThreadMapData>>() {
 
                         public List<ThreadMapData> call() throws Exception {
-                            ThreadMapMetadata metadata = new ThreadMapMetadata(TimeUnit.SECONDS, 0, 3000, 1, false);
-                            return provider.queryData(metadata);
+                            return provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, 0, 3000, 1, false));
                         }
                     }, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
                     try {
@@ -252,22 +253,22 @@ public class ThreadMapVisualizer extends JPanel implements
 
     private void setEmptyContent() {
         isEmptyContent = true;
-        //removeAll();
-        //setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        //JLabel label = new JLabel("Empty"); //NOI18N
-        //label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-        //this.add(label);
-        //repaint();
-        //revalidate();
+    //removeAll();
+    //setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    //JLabel label = new JLabel("Empty"); //NOI18N
+    //label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+    //this.add(label);
+    //repaint();
+    //revalidate();
     }
 
     private void setNonEmptyContent() {
         isEmptyContent = false;
-        //this.removeAll();
-        //this.setLayout(new BorderLayout());
-        //refresh();
-        //repaint();
-        //validate();
+    //this.removeAll();
+    //this.setLayout(new BorderLayout());
+    //refresh();
+    //repaint();
+    //validate();
 
     }
 

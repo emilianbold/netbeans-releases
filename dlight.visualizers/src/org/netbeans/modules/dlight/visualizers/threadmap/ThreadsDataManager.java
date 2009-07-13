@@ -42,7 +42,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
  * A class that holds data about threads history (state changes) during a

@@ -36,21 +36,44 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.threadmap.indicator;
 
+import java.awt.BorderLayout;
 import java.util.List;
-import org.netbeans.modules.dlight.api.storage.ThreadMapMetadata;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadMapDataProvider extends DataProvider {
+/*package*/ class ThreadMapIndicator extends Indicator<ThreadMapIndicatorConfiguration> {
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    public List<ThreadMapData> queryData(ThreadMapMetadata metadata);
+    private final JPanel theButton;
+
+    public ThreadMapIndicator(ThreadMapIndicatorConfiguration configuration) {
+        super(configuration);
+        theButton = new JPanel(new BorderLayout());
+        theButton.add(new JLabel("Show ThreadMap!"), BorderLayout.CENTER); // NOI18N
+    }
+
+    @Override
+    protected void repairNeeded(boolean needed) {
+    }
+
+    @Override
+    protected void tick() {
+    }
+
+    @Override
+    public void updated(List<DataRow> data) {
+    }
+
+    @Override
+    public void reset() {
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return theButton;
+    }
 }

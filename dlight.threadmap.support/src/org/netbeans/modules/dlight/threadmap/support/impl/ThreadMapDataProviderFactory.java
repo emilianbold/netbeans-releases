@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.threadmap.support.impl;
 
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.storage.ThreadMapMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
@@ -53,20 +51,25 @@ import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
+import org.netbeans.modules.dlight.threadmap.dataprovider.ThreadMapDataProviderImpl;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Alexander Simon
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
+@ServiceProviders({@ServiceProvider(service = DataProviderFactory.class), @ServiceProvider(service = VisualizerDataProviderFactory.class)})
 public class ThreadMapDataProviderFactory implements DataProviderFactory {
+
     private final List<DataStorageType> supportedStorageTypes;
     private final List<DataModelScheme> providedSchemas;
 
-    public ThreadMapDataProviderFactory(){
+    public ThreadMapDataProviderFactory() {
         supportedStorageTypes = new ArrayList<DataStorageType>(1);
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType("threadmap")); //NOI18N
         providedSchemas = new ArrayList<DataModelScheme>(1);
@@ -75,17 +78,7 @@ public class ThreadMapDataProviderFactory implements DataProviderFactory {
 
     public DataProvider create() {
         // TODO: replace empty data provider.
-        return new ThreadMapDataProvider(){
-            public List<ThreadMapData> queryData(ThreadMapMetadata metadata) {
-                return Collections.<ThreadMapData>emptyList();
-            }
-            public void attachTo(DataStorage storage) {
-            }
-            public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
-            }
-            public void dataFiltersChanged(List<DataFilter> newSet) {
-            }
-        };
+        return new ThreadMapDataProviderImpl();
     }
 
     public Collection<DataModelScheme> getProvidedDataModelScheme() {
