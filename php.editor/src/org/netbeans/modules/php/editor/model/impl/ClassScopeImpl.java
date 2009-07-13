@@ -188,7 +188,11 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
                 allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
             }
             interfaces.addAll(clz.getSuperInterfaces());
-            clz = ModelUtils.getFirst(clz.getSuperClasses());
+            ClassScope clzz = ModelUtils.getFirst(clz.getSuperClasses());
+            if (clzz != null && clzz.getName().equals(clz.getName())) {
+                break;
+            }
+            clz = clzz;
         }
 
         for (InterfaceScope ifaceScope : interfaces) {
