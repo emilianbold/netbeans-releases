@@ -121,7 +121,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 String displayName = library.getDisplayName();
                 items.add(displayName);
                 //TODO XX Add correct version
-                jsfLibraries.add(new LibraryItem(library, JSFVersion.FACELETS_1_1_14));
+                jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
             }
 
             content = library.getContent("classpath"); //NOI18N
