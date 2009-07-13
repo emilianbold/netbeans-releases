@@ -150,6 +150,10 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         if (className == null) {
             Parameters.notNull("toRun", toRun);
             ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
+            if (source == null) {
+                throw new IllegalArgumentException("The source classpath for specified toRun parameter has is null. " +
+                        "Report against caller module. [toRun = " + toRun + "]");
+            }
             className = source.getResourceName(toRun, '.', false);
         }
         if (exec == null) {
