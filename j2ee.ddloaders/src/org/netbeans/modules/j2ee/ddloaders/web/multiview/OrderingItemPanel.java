@@ -52,12 +52,12 @@ import org.openide.util.Utilities;
 /**
  * @author Petr Slechta
  */
-class RelativeOrderItemPanel extends JPanel {
+class OrderingItemPanel extends JPanel {
 
     public static final String OTHERS = "<others>"; // NOI18N
     private DialogDescriptor desc;
 
-    public RelativeOrderItemPanel(String item) {
+    public OrderingItemPanel(String item) {
         initComponents();
         if (item != null && !item.equals(OTHERS)) {
             tfNameRef.setText(item);
@@ -92,12 +92,12 @@ class RelativeOrderItemPanel extends JPanel {
         if (rbName.isSelected()) {
             String s = tfNameRef.getText();
             if (s == null || s.length() < 1) {
-                supp.setInformationMessage(NbBundle.getMessage(RelativeOrderItemPanel.class, "ERR_NO_NAME"));
+                supp.setInformationMessage(NbBundle.getMessage(OrderingItemPanel.class, "ERR_NO_NAME"));
                 desc.setValid(false);
                 return;
             }
             if (!Utilities.isJavaIdentifier(s)) {
-                supp.setErrorMessage(NbBundle.getMessage(RelativeOrderItemPanel.class, "ERR_WRONG_NAME"));
+                supp.setErrorMessage(NbBundle.getMessage(OrderingItemPanel.class, "ERR_WRONG_NAME"));
                 desc.setValid(false);
                 return;
             }
@@ -122,7 +122,7 @@ class RelativeOrderItemPanel extends JPanel {
         tfNameRef.setColumns(20);
 
         buttonGroup1.add(rbName);
-        org.openide.awt.Mnemonics.setLocalizedText(rbName, org.openide.util.NbBundle.getMessage(RelativeOrderItemPanel.class, "RB_Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbName, org.openide.util.NbBundle.getMessage(OrderingItemPanel.class, "RB_Name")); // NOI18N
         rbName.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 rbNameStateChanged(evt);
@@ -130,7 +130,7 @@ class RelativeOrderItemPanel extends JPanel {
         });
 
         buttonGroup1.add(rbOthers);
-        org.openide.awt.Mnemonics.setLocalizedText(rbOthers, org.openide.util.NbBundle.getMessage(RelativeOrderItemPanel.class, "RB_Others")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbOthers, org.openide.util.NbBundle.getMessage(OrderingItemPanel.class, "RB_Others")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -165,7 +165,12 @@ class RelativeOrderItemPanel extends JPanel {
     }//GEN-LAST:event_rbNameStateChanged
 
     public String getResult() {
-        return rbName.isSelected() ? tfNameRef.getText() : OTHERS;
+        if (rbName.isSelected()) {
+            String res = tfNameRef.getText().trim();
+            return res.length() < 1 ? null : res;
+        }
+        else
+            return OTHERS;
     }
 
     
