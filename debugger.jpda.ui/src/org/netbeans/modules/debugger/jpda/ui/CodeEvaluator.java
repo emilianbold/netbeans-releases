@@ -301,18 +301,26 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return defaultInstance != null ? defaultInstance.getExpression() : ""; // NOI18N
     }
 
-    public static void addResultListener(PropertyChangeListener listener) {
-        CodeEvaluator defaultInstance = getDefaultInstance();
-        synchronized(defaultInstance.pcs) {
-            defaultInstance.pcs.addPropertyChangeListener(listener);
-        }
+    public static void addResultListener(final PropertyChangeListener listener) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                CodeEvaluator defaultInstance = getDefaultInstance();
+                synchronized(defaultInstance.pcs) {
+                    defaultInstance.pcs.addPropertyChangeListener(listener);
+                }
+            }
+        });
     }
 
-    public static void removeResultListener(PropertyChangeListener listener) {
-        CodeEvaluator defaultInstance = getDefaultInstance();
-        synchronized(defaultInstance.pcs) {
-            defaultInstance.pcs.removePropertyChangeListener(listener);
-        }
+    public static void removeResultListener(final PropertyChangeListener listener) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                CodeEvaluator defaultInstance = getDefaultInstance();
+                synchronized(defaultInstance.pcs) {
+                    defaultInstance.pcs.removePropertyChangeListener(listener);
+                }
+            }
+        });
     }
 
     private static void fireResultChange() {
