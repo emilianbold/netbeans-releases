@@ -49,7 +49,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -151,16 +150,11 @@ public class ProjectGenerator {
                             FileUtil.createData(f);
                         }
                     }
-                    FileLock lock = projectXml.lock();
+                    OutputStream os = projectXml.getOutputStream();
                     try {
-                        OutputStream os = projectXml.getOutputStream(lock);
-                        try {
-                            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                        } finally {
-                            os.close();
-                        }
+                        XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                     } finally {
-                        lock.releaseLock();
+                        os.close();
                     }
                     // OK, disk file project.xml has been created.
                     // Load the project into memory and mark it as modified.
