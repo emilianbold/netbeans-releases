@@ -40,16 +40,19 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.TreeSet;
@@ -68,6 +71,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
@@ -86,6 +90,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -110,6 +116,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -264,7 +271,8 @@ public final class MakeProject implements Project, AntProjectListener {
                     new MakeProjectType(),
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
-                    new ToolchainProjectImpl()
+                    new ToolchainProjectImpl(),
+                    new CPPImpl(sources)
                 });
     }
 
@@ -1018,7 +1026,7 @@ public final class MakeProject implements Project, AntProjectListener {
             SourceGroup [] groups = sources.getSourceGroups("generic"); // NOI18N
             for(SourceGroup g : groups) {
                 try {
-                    list.add(ClassPathSupport.createResource(g.getRootFolder().getURL()));
+                    list.add(new PathResourceImpl(ClassPathSupport.createResource(g.getRootFolder().getURL())));
                 } catch (FileStateInvalidException ex) {
                     Logger.getLogger(MakeProject.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -1057,4 +1065,63 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     } // End of ClassPathImplementation class
 
+    private static final class PathResourceImpl implements FilteringPathResourceImplementation, PropertyChangeListener {
+        private final PathResourceImplementation delegate;
+
+        public PathResourceImpl(PathResourceImplementation delegate) {
+            this.delegate = delegate;
+            this.delegate.addPropertyChangeListener(this);
+        }
+
+        public boolean includes(URL root, String resource) {
+            return !CndFileVisibilityQuery.getDefault().isIgnored(resource);
+        }
+
+        public URL[] getRoots() {
+            return delegate.getRoots();
+        }
+
+        public ClassPathImplementation getContent() {
+            return delegate.getContent();
+        }
+
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            pcs.firePropertyChange(new PropertyChangeEvent(this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue()));
+        }
+    }
+
+    private static final class CPPImpl implements ClassPathProvider {
+        private final MakeSources sources;
+
+        public CPPImpl(MakeSources sources) {
+            this.sources = sources;
+        }
+
+        public ClassPath findClassPath(FileObject file, String type) {
+            if (MakeProjectPaths.SOURCES.equals(type)) {
+                for (SourceGroup sg : sources.getSourceGroups("generic")) { // NOI18N
+                    if (sg.getRootFolder().equals(file)) {
+                        try {
+                            return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.getURL()))));
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+    }
 }
