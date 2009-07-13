@@ -36,45 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.threadmap.indicator;
 
-package org.netbeans.modules.dlight.visualizers.api.impl;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
-import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+public class ThreadMapIndicatorConfiguration extends IndicatorConfiguration {
+    /*package*/ static final String ID = "TreeMapIndicatorConfiguration_ID"; // NOI18N
 
-/**
- *
- * @author Alexander Simon
- */
-public abstract class ThreadMapVisualizerConfigurationAccessor {
-    private static volatile ThreadMapVisualizerConfigurationAccessor DEFAULT;
-
-    public static ThreadMapVisualizerConfigurationAccessor getDefault() {
-        ThreadMapVisualizerConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-        try {
-            Class.forName(ThreadMapVisualizerConfigurationAccessor.class.getName(), true,
-                ThreadMapVisualizerConfigurationAccessor.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    public ThreadMapIndicatorConfiguration(IndicatorMetadata metadata) {
+        super(metadata, 0);
     }
 
-    public static void setDefault(ThreadMapVisualizerConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
+    @Override
+    public String getID() {
+        return ID;
     }
-
-    public ThreadMapVisualizerConfigurationAccessor() {
-    }
-
-    public abstract List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration);
-
-    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
 }

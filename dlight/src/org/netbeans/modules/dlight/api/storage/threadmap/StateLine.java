@@ -37,69 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.storage;
-
-import java.util.concurrent.TimeUnit;
+package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
+ * Represents thread state line column
  *
  * @author Alexander Simon
  */
-public final class ThreadMapMetadata {
-    private final TimeUnit timeUnit;
-    private final long timeFrom;
-    private final long timeTo;
-    private final long step;
-    private final boolean fullState;
-
-    /**
-     * @param timeUnit time unit.
-     * @param timeFrom start time in time units.
-     * @param timeTo end time in time units.
-     * @param step aggregation time in time units.
-     * @param fullState state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    public ThreadMapMetadata(TimeUnit timeUnit, long timeFrom, long timeTo, long step, boolean fullState){
-        this.timeUnit = timeUnit;
-        this.timeFrom = timeFrom;
-        this.timeTo = timeTo;
-        this.step = step;
-        this.fullState = fullState;
-    }
-
-    /**
-     * @return time unit.
-     */
-    public TimeUnit getTimeUnit() {
-        return timeUnit;
-    }
-
-    /**
-     * @return start time in time units.
-     */
-    public long getTimeFrom() {
-        return timeFrom;
-    }
-
-    /**
-     * @return end time in time units.
-     */
-    public long getTimeTo() {
-        return timeTo;
-    }
-
-    /**
-     * @return aggregation time in time units.
-     */
-    public long getStep() {
-        return step;
-    }
-
-    /**
-     * @return state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
-     */
-    public boolean isFullState() {
-        return fullState;
-    }
+public interface StateLine {
 }

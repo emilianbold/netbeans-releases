@@ -46,7 +46,7 @@ import java.io.Serializable;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
  * @author Jiri Sedlacek
