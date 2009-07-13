@@ -37,7 +37,7 @@
                     <code-name-base>org.netbeans.modules.javascript.kit</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.103</specification-version>
+                        <specification-version>0.105.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
