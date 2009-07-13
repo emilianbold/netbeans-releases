@@ -100,15 +100,18 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
-        String name = threadStateColor.getStateName(msa);
+        return getThreadStateColor(threadStateColor.getStateName(msa));
+    }
+
+    static Color getThreadStateColor(String name) {
         Color c;
         if (name.equals(ThreadState.ShortThreadState.Running.name())) {
             c = THREAD_STATUS_RUNNING_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Waiting.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Waiting.name())) {
             c = THREAD_STATUS_WAIT_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Blocked.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Blocked.name())) {
             c = THREAD_STATUS_MONITOR_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
             c = THREAD_STATUS_SLEEPING_COLOR;
         } else {
             c = THREAD_STATUS_UNKNOWN_COLOR;
