@@ -226,6 +226,7 @@ public final class PhpUnit extends PhpProgram {
                     DataObject bootstrap = dataTemplate.createFromTemplate(dataFolder, PhpUnit.BOOTSTRAP_FILE + "~"); // NOI18N
                     assert bootstrap != null;
                     moveAndAdjustBootstrap(project, FileUtil.toFile(bootstrap.getPrimaryFile()), bootstrapFile);
+                    assert bootstrapFile.isFile();
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Cannot create PHPUnit bootstrap file", ex);
                 }
@@ -248,7 +249,7 @@ public final class PhpUnit extends PhpProgram {
                                     finalBootstrap,
                                     line,
                                     ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH),
-                                    ProjectPropertiesSupport.getSourcesDirectory(project));
+                                    FileUtil.toFile(project.getProjectDirectory()));
                         }
                         out.write(line);
                         out.newLine();
@@ -272,15 +273,14 @@ public final class PhpUnit extends PhpProgram {
         FileUtil.refreshFor(finalBootstrap.getParentFile());
     }
 
-    static String processIncludePath(File bootstrap, String line, String includePath, FileObject sourceDirectory) {
+    static String processIncludePath(File bootstrap, String line, String includePath, File projectDir) {
         if (StringUtils.hasText(includePath)) {
             if (includePath.startsWith(":")) { // NOI18N
                 includePath = includePath.substring(1);
             }
-            File sources = FileUtil.toFile(sourceDirectory);
             StringBuilder buffer = new StringBuilder(200);
             for (String path : PropertyUtils.tokenizePath(includePath)) {
-                File reference = PropertyUtils.resolveFile(sources, path);
+                File reference = PropertyUtils.resolveFile(projectDir, path);
                 buffer.append(".PATH_SEPARATOR"); // NOI18N
                 buffer.append(getDirnameFile(bootstrap, reference));
             }
