@@ -1478,6 +1478,17 @@ public class DeclarationFinderImplTest extends TestBase {
         performTestSimpleFindDeclaration(-1, animal2Test, animalTest);
     }*/
 
+    public void testFirstStaticMethodInvocation() throws Exception {
+        String animalTest = prepareTestFile(
+                "testfiles/animalTest.php",
+                "public static $count = 0, $animal;",
+                "public static $^count = 0, $animal;",
+                "echo Mammal::$count;",
+                "echo Mammal::$co|unt;"
+                );
+        performTestSimpleFindDeclaration(-1, animalTest);
+    }
+
 
     public void testStaticMethodInvocation() throws Exception {
         String animalTest = prepareTestFile(

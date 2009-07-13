@@ -669,7 +669,10 @@ public class VariousUtils {
                         break;
                 }
             } else {
-                if (state.equals(State.METHOD)) {
+                if (state.equals(State.CLASSNAME)) {
+                    state = State.STOP;
+                    break;
+                } else if (state.equals(State.METHOD)) {
                     state = State.STOP;
                     PHPTokenId id = token.id();
                     if (id != null && PHPTokenId.PHP_NEW.equals(id)) {
