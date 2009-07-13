@@ -297,13 +297,16 @@ public class SemiAttribute extends DefaultVisitor {
         }
         Identifier parameterType = (node.getParameterType() != null) ? 
             CodeUtils.extractUnqualifiedIdentifier(node.getParameterType()) : null;
-        String name = parameterType.getName();
-        if (name != null) {
-            Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
-            if (!namedGlobalElements.isEmpty()) {
-                node2Element.put(parameterType, lookup(name, Kind.CLASS));
-            } else {
-                node2Element.put(parameterType, lookup(name, Kind.IFACE));
+
+        if (parameterType != null){
+            String name = parameterType.getName();
+            if (name != null) {
+                Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
+                if (!namedGlobalElements.isEmpty()) {
+                    node2Element.put(parameterType, lookup(name, Kind.CLASS));
+                } else {
+                    node2Element.put(parameterType, lookup(name, Kind.IFACE));
+                }
             }
         }
         

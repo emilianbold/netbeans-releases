@@ -37,12 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.support.spi;
+package org.netbeans.modules.dlight.api.storage.threadmap;
+
+import java.util.List;
 
 /**
- * Represents thread state line column
  *
  * @author Alexander Simon
  */
-public interface StateLine {
+public interface ThreadMapData {
+    /**
+     * @return thread information.
+     */
+    ThreadInfo getThreadInfo();
+
+    /**
+     * @return list of thread states.
+     */
+    List<ThreadState> getThreadState();
 }

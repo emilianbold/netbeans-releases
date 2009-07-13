@@ -71,10 +71,10 @@ import org.openide.util.Exceptions;
 final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
 
     public CompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
-            CodeSource security, GroovyClassLoader loader, JavaSource javaSource, boolean waitScanFinished) {
+            CodeSource security, GroovyClassLoader loader, JavaSource javaSource) {
 
         super(configuration, security, loader);
-        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, javaSource, waitScanFinished);
+        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, javaSource);
     }
 
     private static class CompileUnit extends org.codehaus.groovy.ast.CompileUnit {
@@ -83,16 +83,13 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
 
         private final JavaSource javaSource;
 
-        private final boolean waitScanFinished;
-
         private final Map<String, ClassNode> cache = new HashMap<String, ClassNode>();
 
         public CompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
-                CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource, boolean waitScanFinished) {
+                CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource) {
             super(classLoader, codeSource, config);
             this.parser = parser;
             this.javaSource = javaSource;
-            this.waitScanFinished = waitScanFinished;
         }
 
 

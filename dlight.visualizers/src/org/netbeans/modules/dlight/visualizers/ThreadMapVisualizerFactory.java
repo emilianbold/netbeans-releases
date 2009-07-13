@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.dlight.visualizers;
 
+import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadMapVisualizer;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 import org.openide.util.lookup.ServiceProvider;

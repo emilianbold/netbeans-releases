@@ -42,7 +42,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -57,7 +57,7 @@ import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadsDataManager {
-    private ThreadData[] threadData; // Per-thread array of points at which thread's state changes
+    private ThreadStateColumnImpl[] threadData; // Per-thread array of points at which thread's state changes
     private boolean threadsMonitoringEnabled = true;
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
@@ -137,7 +137,7 @@ public class ThreadsDataManager {
         return startTime;
     }
 
-    public synchronized ThreadData getThreadData(int index) {
+    public synchronized ThreadStateColumnImpl getThreadData(int index) {
         return threadData[index];
     }
 
@@ -180,9 +180,9 @@ public class ThreadsDataManager {
         if (threadSize == 0) {
             return;
         }
-        threadData = new ThreadData[threadSize];
+        threadData = new ThreadStateColumnImpl[threadSize];
         for(int i = 0; i < threadSize; i++){
-            threadData[i] = new ThreadData(monitoredData.getThreadInfo(i));
+            threadData[i] = new ThreadStateColumnImpl(monitoredData.getThreadInfo(i));
         }
         startTime = monitoredData.getStateTimestamps()[0];
 
@@ -193,7 +193,7 @@ public class ThreadsDataManager {
             }
             for(int i = 0; i < threadSize; i++){
                 List<ThreadState> states = monitoredData.getThreadStates(i);
-                ThreadData tData = threadData[i];
+                ThreadStateColumnImpl tData = threadData[i];
                 for (int j = 0; j < states.size(); j++) {
                     tData.add(states.get(j));
                     endTime = states.get(j).getTimeStamp();
@@ -209,7 +209,7 @@ public class ThreadsDataManager {
     public synchronized void reset() {
         startTime = 0;
         endTime = 0;
-        threadData = new ThreadData[0];
+        threadData = new ThreadStateColumnImpl[0];
         fireDataReset(); // all listeners are notified about threadData change
     }
 }

@@ -9,7 +9,7 @@
     <absolute-ordering>
         <name>F</name>
         <name>D</name>
-        <name>OTHERS</name>
+        <name>&lt;others&gt;</name>
         <name>C</name>
         <name>B</name>
     </absolute-ordering>
