@@ -99,8 +99,12 @@ public final class NewKenaiProjectAction implements ActionListener {
             URLDisplayer.getDefault().showURL(projectUrl);
         } else if (options[1].equals(option)) { // create NB project
             Action newProjectAction = CommonProjectActions.newProjectAction();
-            if (newProjectAction != null) {
-                ProjectChooser.setProjectsFolder(new File(localPath));
+            File projPath = null;
+            if (localPath != null) {
+                projPath = new File(localPath);
+            }
+            if (newProjectAction != null && projPath != null && projPath.exists()) {
+                ProjectChooser.setProjectsFolder(projPath);
                 newProjectAction.actionPerformed(new ActionEvent(NewKenaiProjectAction.class,
                         ActionEvent.ACTION_PERFORMED, "command")); // NOI18N
             }
