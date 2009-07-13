@@ -40,10 +40,18 @@
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
- * Represents thread state summary column
+ * Represents thread state line column
  *
  * @author Alexander Simon
  */
-public interface StateSummary {
+public interface ThreadStateColumn {
+    String getName();
 
+    int size();
+
+    boolean isAlive(int index);
+
+    ThreadState getThreadStateAt(int index);
+
+    boolean isAlive();
 }
