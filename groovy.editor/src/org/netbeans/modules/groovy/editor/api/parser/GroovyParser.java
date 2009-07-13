@@ -77,7 +77,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
@@ -109,8 +108,6 @@ public class GroovyParser extends Parser {
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
 
     private static long maximumParsingTime;
-
-    private boolean waitJavaScanFinished = true;
 
     private GroovyParserResult lastResult;
 
@@ -164,10 +161,6 @@ public class GroovyParser extends Parser {
             // FIXME just temporary
             lastResult = createParseResult(snapshot, null, null);
         }
-    }
-
-    void setWaitJavaScanFinished(boolean shouldWait) {
-        waitJavaScanFinished = shouldWait;
     }
 
     protected GroovyParserResult createParseResult(Snapshot snapshot, ModuleNode rootNode, ErrorCollector errorCollector) {
@@ -463,7 +456,7 @@ public class GroovyParser extends Parser {
         JavaSource javaSource = JavaSource.create(cpInfo);
 
         CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
-                null, classLoader, javaSource, waitJavaScanFinished);
+                null, classLoader, javaSource);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
