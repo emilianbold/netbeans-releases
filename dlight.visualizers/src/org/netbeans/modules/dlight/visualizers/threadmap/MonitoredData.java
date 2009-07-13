@@ -41,9 +41,9 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadInfo;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadMapData;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
  *

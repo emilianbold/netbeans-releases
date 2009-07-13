@@ -432,7 +432,7 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         if (names != null) {
             for (String name : names) {
                 // FIXME: hack -- should be fixed when support for <others/> is implemented
-                if (name.equals("OTHERS")) {
+                if (name.equals("<others>")) {
                     res.add(OTHERS);
                 }
                 else {

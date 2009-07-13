@@ -94,7 +94,7 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
             for (String name : items.getName())
                 model.addElement(name);
             if (items.getOthers() != null)
-                model.addElement(RelativeOrderItemPanel.OTHERS);
+                model.addElement(OrderingItemPanel.OTHERS);
         }
     }
 
@@ -422,7 +422,7 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
 }//GEN-LAST:event_bDownBeforeActionPerformed
 
     private String getOrderItemFromUser(String value) {
-        RelativeOrderItemPanel p = new RelativeOrderItemPanel(value);
+        OrderingItemPanel p = new OrderingItemPanel(value);
         DialogDescriptor dd = new DialogDescriptor(p,
                 NbBundle.getMessage(RelativeOrderingPanel.class, "TTL_Ordering"));
         dd.createNotificationLineSupport();
@@ -454,7 +454,7 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
         ordering.setAfter(after);
         for (int i=0,maxi=listModelAfter.size(); i<maxi; i++) {
             String item = (String)listModelAfter.get(i);
-            if (item.equals(RelativeOrderItemPanel.OTHERS))
+            if (item.equals(OrderingItemPanel.OTHERS))
                 after.setOthers(after.newRelativeOrderingOthersItem());
             else
                 after.addName(item);
@@ -464,7 +464,7 @@ public class RelativeOrderingPanel extends SectionInnerPanel implements java.awt
         ordering.setBefore(before);
         for (int i=0,maxi=listModelBefore.size(); i<maxi; i++) {
             String item = (String)listModelBefore.get(i);
-            if (item.equals(RelativeOrderItemPanel.OTHERS))
+            if (item.equals(OrderingItemPanel.OTHERS))
                 before.setOthers(before.newRelativeOrderingOthersItem());
             else
                 before.addName(item);

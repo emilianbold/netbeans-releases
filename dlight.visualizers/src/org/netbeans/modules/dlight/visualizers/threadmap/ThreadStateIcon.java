@@ -69,7 +69,7 @@ public class ThreadStateIcon implements Icon {
 
     public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
         if (threadStateColor != null) {
-            if (!threadStateColor.equals(ThreadData.THREAD_STATUS_ZOMBIE_COLOR)) {
+            if (!threadStateColor.equals(ThreadStateColumnImpl.THREAD_STATUS_ZOMBIE_COLOR)) {
                 g.setColor(threadStateColor);
                 g.fillRect(x, y, width, height);
             }
@@ -84,6 +84,6 @@ public class ThreadStateIcon implements Icon {
             return null;
         }
 
-        return ThreadData.getThreadStateColor(threadState);
+        return ThreadStateColumnImpl.getThreadStateColor(threadState);
     }
 }
