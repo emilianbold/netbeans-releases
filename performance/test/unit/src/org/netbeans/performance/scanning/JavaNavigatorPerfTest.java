@@ -144,7 +144,7 @@ public class JavaNavigatorPerfTest extends NbTestCase {
 
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-            addTest(JavaNavigatorPerfTest.class).gui(true));
+            addTest(JavaNavigatorPerfTest.class).gui(false));
     }
 
     public PerformanceData[] getPerformanceData() {
