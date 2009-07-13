@@ -131,7 +131,7 @@ import org.openide.util.NbPreferences;
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null");
+                pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null"); // NOI18N
                 //pb.setExecutable("unzip");
                 //pb.setArguments("-o", remoteFile);
                 pb.setWorkingDirectory(remoteDir);
