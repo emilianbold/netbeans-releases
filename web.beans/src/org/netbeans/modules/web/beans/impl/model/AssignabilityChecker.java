@@ -75,7 +75,8 @@ class AssignabilityChecker  implements Checker {
      * @see org.netbeans.modules.web.beans.impl.model.Checker#check()
      */
     public boolean check(){
-        return checkAssignability( getElement(), getType());
+        boolean check = checkAssignability( getElement(), getType());
+        return check;
     }
     
     public boolean checkAssignability( Element element , TypeElement type) {
@@ -186,46 +187,9 @@ class AssignabilityChecker  implements Checker {
     private boolean checkParameter( TypeMirror argType,
             TypeParameterElement typeParam)
     {
-        boolean result = true;
-        /*
-         * Implementation of spec item :
-         * the required type parameter is an actual type, 
-         * the bean type parameter is a type variable and the actual type is assignable
-         * to the upper bound, if any, of the type variable
-         */
-        for (TypeMirror mirror : typeParam.getBounds()) {
-            if (!getImplementation().getHelper().getCompilationController().getTypes()
-                    .isAssignable(argType, mirror))
-            {
-                result = false;
-            }
-             //probably need recursively call checkcheckAssignability...
-        }
-        if ( result ){
-            return true;
-        }
+        Types types = getImplementation().getHelper().getCompilationController().
+            getTypes();
         
-        /*
-         * Implementation of spec item :
-         * the required type parameter and the bean type parameter are 
-         * both type variables and the upper bound of the required
-         * type parameter is assignable to the upper bound, if any, 
-         * of the bean type parameter
-         */
-        if ( argType instanceof TypeVariable && 
-                typeParam.asType() instanceof TypeVariable )
-        {
-            TypeMirror upperBoundArg = ((TypeVariable)argType).getUpperBound();
-            TypeMirror upperBoundParam = ((TypeVariable)typeParam.asType()).
-                getUpperBound();
-            
-            if (  getImplementation().getHelper().getCompilationController().
-                    getTypes().isAssignable(upperBoundArg, upperBoundParam) )
-            {
-                return true;
-            }
-            // probably need recursively call checkcheckAssignability...
-        }
         /*
          * Implementation of spec item :
          * the required type parameter and the bean type parameter are actual 
@@ -233,9 +197,9 @@ class AssignabilityChecker  implements Checker {
          * parameterized, the bean type parameter is assignable to the required 
          * type parameter according to these rules
          */
-        Types types = getImplementation().getHelper().getCompilationController().
-            getTypes();
-        if ( types.isSameType( types.erasure(argType), typeParam.asType())){
+        if ( types.isSameType( types.erasure(argType), 
+                types.erasure(typeParam.asType())))
+        {
             Element elementArg = types.asElement(argType);
             TypeMirror paramType = typeParam.asType();
             if ( types.isAssignable(paramType, argType)){
@@ -289,6 +253,50 @@ class AssignabilityChecker  implements Checker {
                 }
              // probably need recursively call checkcheckAssignability...
             }
+            
+            return false;
+        }
+        
+        /*
+         * Implementation of spec item :
+         * the required type parameter and the bean type parameter are 
+         * both type variables and the upper bound of the required
+         * type parameter is assignable to the upper bound, if any, 
+         * of the bean type parameter
+         */
+        if ( argType instanceof TypeVariable && 
+                typeParam.asType() instanceof TypeVariable )
+        {
+            TypeMirror upperBoundArg = ((TypeVariable)argType).getUpperBound();
+            TypeMirror upperBoundParam = ((TypeVariable)typeParam.asType()).
+                getUpperBound();
+            
+            if (  getImplementation().getHelper().getCompilationController().
+                    getTypes().isAssignable(upperBoundArg, upperBoundParam) )
+            {
+                return true;
+            }
+            // probably need recursively call checkcheckAssignability...
+        }
+        
+        boolean result = true;
+        /*
+         * Implementation of spec item :
+         * the required type parameter is an actual type, 
+         * the bean type parameter is a type variable and the actual type is assignable
+         * to the upper bound, if any, of the type variable
+         */
+        for (TypeMirror mirror : typeParam.getBounds()) {
+            if (!getImplementation().getHelper().getCompilationController().getTypes()
+                    .isAssignable(argType, mirror))
+                    //.isSubtype( argType, mirror))
+            {
+                result = false;
+            }
+             //probably need recursively call checkcheckAssignability...
+        }
+        if ( result ){
+            return true;
         }
         
         return false;

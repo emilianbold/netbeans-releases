@@ -97,7 +97,9 @@ public class TempTest extends CommonTestCase {
                 " int myIndex; "+
                 " Class<String> myClass; "+
                 "@foo.CustomBinding(value=\"b\", comment=\"comment\")" +
-                " foo.Generic<? extends foo.MyThread> myThread; "+
+                " foo.Generic<? extends Thread> myThread; "+
+                "@foo.CustomBinding(value=\"c\", comment=\"comment\")" +
+                " foo.Generic<MyThread> myGen; "+
                 " void method( Object param ){}"+
                 "}");
         
@@ -117,8 +119,8 @@ public class TempTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
                 "package foo; " +
-                "@foo.CustomBinding(\"b\")"+
-                "public class Generic<T extends Thread>  {}" );
+                "@foo.CustomBinding(\"c\") "+
+                "public class Generic<T extends foo.MyThread>  {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyThread.java",
                 "package foo; " +
