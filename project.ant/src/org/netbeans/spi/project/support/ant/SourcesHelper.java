@@ -434,7 +434,7 @@ public final class SourcesHelper {
          * Configures optional exclude list.
          * See {@link #includes(java.lang.String)} for details.
          * @param value Ant-style excludes; may contain Ant property substitutions;
-         *                 if not null, files and folders
+         *                 files and folders
          *                 matching the pattern (or patterns) will not be {@link SourceGroup#contains included},
          *                 even if specified in the includes list.
          *                 Must not be <code>null</code>.
