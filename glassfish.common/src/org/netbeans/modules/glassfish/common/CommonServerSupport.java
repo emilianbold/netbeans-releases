@@ -116,7 +116,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             ip.put(URL_ATTR, deployerUrl);
         }
 
-        ip.put(JVM_MODE, NORMAL_MODE);
+        ip.put(JVM_MODE, ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null ? DEBUG_MODE : NORMAL_MODE);
         properties.putAll(ip);
         
         // XXX username/password handling at some point.
@@ -448,7 +448,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         try {
             InetSocketAddress isa = new InetSocketAddress(host, port);
             Socket socket = new Socket();
-            socket.connect(isa, 1);
+            socket.connect(isa, 100);
             socket.close();
             return true;
         } catch(IOException ex) {
@@ -475,12 +475,15 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                     Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " responded in " + (end - start)/1000000 + "ms");  // NOI18N
                     String domainRoot = getDomainsRoot() + File.separator + getDomainName();
                     String targetDomainRoot = command.getDomainRoot();
-                    if(domainRoot != null && targetDomainRoot != null) {
+                    if(getDomainsRoot() != null && targetDomainRoot != null) {
                         File installDir = FileUtil.normalizeFile(new File(domainRoot));
                         File targetInstallDir = FileUtil.normalizeFile(new File(targetDomainRoot));
                         isReady = installDir.equals(targetInstallDir);
                     } else {
-                        isReady = false;
+                        // if we got a response from the server... we are going 
+                        // to trust that it is the 'right one'
+                        // TODO -- better edge case detection/protection
+                        isReady = null != targetDomainRoot;
                     }
                     break;
                 } else if(!command.retry()) {

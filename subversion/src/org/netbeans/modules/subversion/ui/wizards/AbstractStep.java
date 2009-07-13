@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,9 +60,6 @@ import org.netbeans.modules.subversion.Subversion;
  * Abstract wizard panel with <codE>valid</code>
  * and <codE>errorMessage</code> bound properties.
  *
- * <p>Components use 3:2 (60x25 chars) size mode
- * to avoid wizard resizing after [next>].
- *
  * @author Petr Kuzel
  */
 public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
@@ -72,15 +69,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
     private JComponent panel;
     private volatile boolean underConstruction;
     private WizardMessage errorMessage;
-    private boolean applyStandaloneLayout;
     private boolean isInfo;
-
-    /**
-     * If called before getComponent it disables 3:2 size mode.
-     */
-    public void applyStandaloneLayout() {
-        applyStandaloneLayout = true;
-    }
 
     /**
      * Calls to createComponent. Noramalizes size nad assigns
@@ -92,12 +81,6 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
                 underConstruction = true;
                 panel = createComponent();
                 HelpCtx.setHelpIDString(panel, getClass().getName());
-                if (applyStandaloneLayout == false) {
-                    JTextArea template = new JTextArea();
-                    template.setColumns(60);
-                    template.setRows(25);
-                    panel.setPreferredSize(template.getPreferredSize());
-                }
             } catch (RuntimeException ex) {
                 Subversion.LOG.log(Level.SEVERE, null, ex);
             } finally {

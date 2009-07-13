@@ -20,7 +20,7 @@ METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     find(Closure)                              Object
-METHOD     findAll(Closure)                           List
+METHOD     findAll(Closure)                           Collection
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -47,6 +47,7 @@ METHOD     getText()                                  String
 METHOD     getText(String)                            String
 METHOD     getUserInfo()                   [PUBLIC]   String
 METHOD     grep(Object)                               Collection
+METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
@@ -55,6 +56,7 @@ METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
+METHOD     metaClass(Closure)                         MetaClass
 METHOD     newInputStream()                           BufferedInputStream
 METHOD     newReader()                                BufferedReader
 METHOD     newReader(String)                          BufferedReader
@@ -71,10 +73,14 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
+METHOD     respondsTo(String)                         List
+METHOD     respondsTo(String, Object)                 List
 METHOD     sameFile(URL)                   [PUBLIC]   boolean
+METHOD     setMetaClass(MetaClass)                    void
 METHOD     setURLStreamHandlerFactory(URL  [STATIC,   void
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
+METHOD     split(Closure)                             Collection
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     toExternalForm()                [PUBLIC]   String
@@ -90,6 +96,7 @@ METHOD     with(Closure)                              Object
 METHOD     withInputStream(Closure)                   Object
 METHOD     withReader(Closure)                        Object
 METHOD     withReader(String, Closure)                Object
+FIELD      URLStreamHandlerFactory                    URLStreamHandlerFactory
 FIELD      authority                                  String
 FIELD      class                                      Class
 FIELD      content                                    Object
@@ -101,5 +108,4 @@ FIELD      port                                       int
 FIELD      protocol                                   String
 FIELD      query                                      String
 FIELD      ref                                        String
-FIELD      uRLStreamHandlerFactory                    URLStreamHandlerFactory
 FIELD      userInfo                                   String

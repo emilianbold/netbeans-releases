@@ -49,10 +49,15 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -90,7 +95,18 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
         }
         
         public Node node(SourceGroup group) {
-            return PackageView.createPackageView(group);
+            Node pack = PackageView.createPackageView(group);
+            if (MavenSourcesImpl.NAME_SCALASOURCE.equals(group.getName()) ||
+                MavenSourcesImpl.NAME_SCALATESTSOURCE.equals(group.getName())) {
+                Lookup lkp = new ProxyLookup(Lookups.singleton(new ScalaPrivs()), pack.getLookup());
+                pack = new FilterNode(pack, new FilterNode.Children(pack), lkp);
+            }
+            if (MavenSourcesImpl.NAME_GROOVYSOURCE.equals(group.getName()) ||
+                MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(group.getName())) {
+                Lookup lkp = new ProxyLookup(Lookups.singleton(new GroovyPrivs()), pack.getLookup());
+                pack = new FilterNode(pack, new FilterNode.Children(pack), lkp);
+            }
+            return pack;
         }
         
         @Override
@@ -112,6 +128,29 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
                     fireChange();
                 }
             });
+        }
+    }
+
+    private static class ScalaPrivs implements PrivilegedTemplates {
+
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/Scala/Class.scala", //NOI18N
+                "Templates/Scala/Object.scala", //NOI18N
+                "Templates/Scala/Trait.scala", //NOI18N
+                "Templates/Other/Folder" //NOI18N
+            };
+        }
+    }
+
+    private static class GroovyPrivs implements PrivilegedTemplates {
+
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/Groovy/GroovyClass.groovy", //NOI18N
+                "Templates/Groovy/GroovyScript.groovy", //NOI18N
+                "Templates/Other/Folder" //NOI18N
+            };
         }
     }
 }

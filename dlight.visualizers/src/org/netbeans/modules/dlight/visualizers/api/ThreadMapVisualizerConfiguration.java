@@ -43,10 +43,9 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.ThreadMapMetadata;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import org.netbeans.modules.dlight.threadmap.support.spi.ThreadTableMetrics;
 import org.netbeans.modules.dlight.visualizers.api.impl.ThreadMapVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationIDsProvider;
 
@@ -56,7 +55,6 @@ import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationI
  */
 public class ThreadMapVisualizerConfiguration  implements VisualizerConfiguration {
     private ThreadMapMetadata threadMapMetadata;
-    private DataTableMetadata threadTable;
 
     static{
         ThreadMapVisualizerConfigurationAccessor.setDefault(new ThreadMapVisualizerConfigurationAccessorImpl());
@@ -64,8 +62,8 @@ public class ThreadMapVisualizerConfiguration  implements VisualizerConfiguratio
 
     public ThreadMapVisualizerConfiguration(ThreadMapMetadata threadMapMetadata){
         this.threadMapMetadata = threadMapMetadata;
-        List<Column> list = ThreadTableMetrics.getThredMapColumn();
-        threadTable = new DataTableMetadata("threadmap", list, null); //NOI18N
+//        List<Column> list = ThreadTableMetrics.getThredMapColumn();
+//        threadTable = new DataTableMetadata("threadmap", list, null); //NOI18N
     }
 
     public DataModelScheme getSupportedDataScheme() {
@@ -73,7 +71,7 @@ public class ThreadMapVisualizerConfiguration  implements VisualizerConfiguratio
     }
 
     public DataTableMetadata getMetadata() {
-        return threadTable;
+        return threadMapMetadata.getDataTableMetadata();
     }
 
     public String getID() {
