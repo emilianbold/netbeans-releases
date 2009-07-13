@@ -41,26 +41,15 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.dlight.api.storage.threadmap.StateLine;
-import org.netbeans.modules.dlight.api.storage.threadmap.StateSummary;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
@@ -80,7 +69,6 @@ public class ThreadMapVisualizer extends JPanel implements
 
     private boolean isShown = true;
     private boolean isEmptyContent;
-    private Future task;
 
     private static final class QueryLock {
     }
@@ -97,7 +85,6 @@ public class ThreadMapVisualizer extends JPanel implements
     private final JPanel threadsTimelinePanelContainer;
     private final ThreadsPanel threadsPanel;
     private final ThreadsDataManager dataManager;
-    private final Timer timer = new Timer();
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
         if (provider == null) {
@@ -136,15 +123,25 @@ public class ThreadMapVisualizer extends JPanel implements
         JPanel callStack = new JPanel();
         add(callStack, BorderLayout.SOUTH);
         // for testing only
-        callStack.add(new JLabel("Call stack area")); // NOI18N
-        timer.schedule(new TimerTask() {
-
-            @Override
+        DLightExecutorService.scheduleAtFixedRate(new Runnable(){
             public void run() {
-                refresh();
+                try {
+                    final List<ThreadMapData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, 0, 3000, 1, false));
+                    final boolean isEmptyConent = list == null || list.isEmpty();
+                    UIThread.invoke(new Runnable() {
+                        public void run() {
+                            setContent(isEmptyConent);
+                            if (isEmptyConent) {
+                                return;
+                            }
+                            updateList(list);
+                        }
+                    });
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
-        }, 0, 1000);
-
+        }, 1, TimeUnit.SECONDS, "ThreadMapVisualizer Async data from provider load for " + configuration.getID());
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -166,40 +163,40 @@ public class ThreadMapVisualizer extends JPanel implements
 
     public void refresh() {
         synchronized (queryLock) {
-            if (task != null) {
-                task.cancel(true);
-            }
-            task = DLightExecutorService.submit(new Callable<Boolean>() {
-
-                public Boolean call() {
-                    Future<List<ThreadMapData>> queryDataTask = DLightExecutorService.submit(new Callable<List<ThreadMapData>>() {
-
-                        public List<ThreadMapData> call() throws Exception {
-                            return provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, 0, 3000, 1, false));
-                        }
-                    }, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
-                    try {
-                        final List<ThreadMapData> list = queryDataTask.get();
-                        final boolean isEmptyConent = list == null || list.isEmpty();
-                        UIThread.invoke(new Runnable() {
-
-                            public void run() {
-                                setContent(isEmptyConent);
-                                if (isEmptyConent) {
-                                    return;
-                                }
-                                updateList(list);
-                            }
-                        });
-                        return Boolean.valueOf(true);
-                    } catch (ExecutionException ex) {
-                        Thread.currentThread().interrupt();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    return Boolean.valueOf(false);
-                }
-            }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
+//            if (task != null) {
+//                task.cancel(true);
+//            }
+//            task = DLightExecutorService.submit(new Callable<Boolean>() {
+//
+//                public Boolean call() {
+//                    Future<List<ThreadMapData>> queryDataTask = DLightExecutorService.submit(new Callable<List<ThreadMapData>>() {
+//
+//                        public List<ThreadMapData> call() throws Exception {
+//                            return provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, 0, 3000, 1, false));
+//                        }
+//                    }, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
+//                    try {
+//                        final List<ThreadMapData> list = queryDataTask.get();
+//                        final boolean isEmptyConent = list == null || list.isEmpty();
+//                        UIThread.invoke(new Runnable() {
+//
+//                            public void run() {
+//                                setContent(isEmptyConent);
+//                                if (isEmptyConent) {
+//                                    return;
+//                                }
+//                                updateList(list);
+//                            }
+//                        });
+//                        return Boolean.valueOf(true);
+//                    } catch (ExecutionException ex) {
+//                        Thread.currentThread().interrupt();
+//                    } catch (InterruptedException e) {
+//                        Thread.currentThread().interrupt();
+//                    }
+//                    return Boolean.valueOf(false);
+//                }
+//            }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
         }
     }
 
@@ -280,29 +277,4 @@ public class ThreadMapVisualizer extends JPanel implements
         }
     }
 
-    private static final class StateImpl implements StateLine {
-    }
-
-    private static final class StateTableCellRenderer extends DefaultTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JPanel component = new JPanel();
-            component.setPreferredSize(new Dimension(300, 10));
-            return component;
-        }
-    }
-
-    private static final class SummaryImpl implements StateSummary {
-    }
-
-    private static final class SummaryTableCellRenderer extends DefaultTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JPanel component = new JPanel();
-            component.setPreferredSize(new Dimension(60, 10));
-            return component;
-        }
-    }
 }

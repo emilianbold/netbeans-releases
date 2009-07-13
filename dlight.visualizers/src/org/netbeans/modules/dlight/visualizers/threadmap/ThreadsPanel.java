@@ -134,6 +134,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     // -----
     private static final int NAME_COLUMN_INDEX = 0;
     private static final int DISPLAY_COLUMN_INDEX = 1;
+    private static final int SUMMARY_COLUMN_INDEX = 2;
     private static final int RIGHT_DISPLAY_MARGIN = 20; // extra space [pixels] on the right end of the threads display
     private static final int LEFT_DISPLAY_MARGIN = 20;
     private static final int NAME_COLUMN_WIDTH = 190;
@@ -322,18 +323,18 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         scrollPanel.add(scrollBar, BorderLayout.EAST);
 
         //
-        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_RUNNING, 18, 9);
-        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_SLEEPING, 18, 9);
-        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_MONITOR, 18, 9);
-        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadData.THREAD_STATUS_WAIT, 18, 9);
+        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 18, 9);
+        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 18, 9);
+        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 18, 9);
+        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 18, 9);
 
-        runningLegend = new JLabel(ThreadData.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
+        runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
         runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        sleepingLegend = new JLabel(ThreadData.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
+        sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
         sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        waitLegend = new JLabel(ThreadData.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
+        waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
         waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        monitorLegend = new JLabel(ThreadData.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
+        monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
         monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         JPanel legendPanel = new JPanel();
@@ -526,7 +527,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return table.getTableHeader().getHeaderRect(DISPLAY_COLUMN_INDEX).width;
     }
 
-    public ThreadData getThreadData(int index) {
+    public ThreadStateColumnImpl getThreadData(int index) {
         return manager.getThreadData(index);
     }
 
@@ -924,7 +925,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
             // view live threads
             if (threadsSelectionCombo.getSelectedItem().equals(VIEW_THREADS_LIVE)) {
-                ThreadData threadData = manager.getThreadData(i);
+                ThreadStateColumnImpl threadData = manager.getThreadData(i);
 
                 if (threadData.size() > 0) {
                     if (threadData.isAlive()) {
@@ -937,7 +938,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
             // view finished threads
             if (threadsSelectionCombo.getSelectedItem().equals(VIEW_THREADS_FINISHED)) {
-                ThreadData threadData = manager.getThreadData(i);
+                ThreadStateColumnImpl threadData = manager.getThreadData(i);
 
                 if (threadData.size() > 0) {
                     if (!threadData.isAlive()) {

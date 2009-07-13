@@ -40,9 +40,10 @@
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
- * Represents thread state line column
+ * Represents thread state summary column
  *
  * @author Alexander Simon
  */
-public interface StateLine {
+public interface ThreadSummaryColumn {
+
 }
