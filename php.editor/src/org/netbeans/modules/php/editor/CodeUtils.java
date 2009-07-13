@@ -100,6 +100,7 @@ public class CodeUtils {
     }
 
     //TODO: extracting name needs to be take into account namespaces
+    @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
         Parameters.notNull("typeName", typeName);
         if (typeName instanceof Identifier) {

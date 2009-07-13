@@ -305,6 +305,11 @@ public class ASTNodeInfo<T extends ASTNode> {
             return new OffsetRange(constant.getStartOffset(), constant.getEndOffset());
         } else if (node instanceof ClassName) {
             Identifier id = CodeUtils.extractUnqualifiedIdentifier(((ClassName) node).getName());
+
+            if (id == null){ // #168459
+                return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            }
+
             return new OffsetRange(id.getStartOffset(), id.getEndOffset());
         } else if (node instanceof Identifier) {
             Identifier cname = (Identifier) node;
