@@ -369,7 +369,7 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         else {
             Set<TypeElement> list = new HashSet<TypeElement>( result.size());
             for (Binding binding : result) {
-                list.add( binding.getType() );
+                list.add( binding.getTypeElement() );
             }
             return list;
         }
