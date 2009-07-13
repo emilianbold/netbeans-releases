@@ -66,13 +66,14 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
         if (projectCap.isEjb31LiteSupported()){
-            singletonButton.setVisible(false);
-            singletonButton.setEnabled(false);
             localCheckBox.setSelected(true);
             if (!projectCap.isEjb31Supported()){
                 remoteCheckBox.setVisible(false); // EJB 3.1 Lite supports only local and no interface views
                 remoteCheckBox.setEnabled(false);
             }
+        } else {
+            singletonButton.setVisible(false);
+            singletonButton.setEnabled(false);
         }
 
         localCheckBox.addActionListener(new ActionListener() {
