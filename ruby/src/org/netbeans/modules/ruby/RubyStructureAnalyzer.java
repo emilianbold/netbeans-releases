@@ -886,7 +886,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             path.ascend();
         }
     }
-    
+
     /** Analyze the given method and see if it looks like the following
      * common pattern (at least in Rails) :
      * <pre>
