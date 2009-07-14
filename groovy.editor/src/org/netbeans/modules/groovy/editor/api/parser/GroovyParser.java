@@ -448,10 +448,6 @@ public class GroovyParser extends Parser {
                 // but for now it is faster to use javac only for sources
 
                 // null happens in GSP
-                // FIXME real classpath is passed in NbCompilationUnit all classes
-                // are found by Java and field completion does not work
-                // this has to evaluated and fixed - due to need of super
-                // ClassNode for exceptions
                 bootPath == null ? EMPTY_CLASSPATH : bootPath,
                 compilePath == null ? EMPTY_CLASSPATH : compilePath,
                 sourcePath);
@@ -801,11 +797,8 @@ public class GroovyParser extends Parser {
 
         public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
             super(parent, config);
-            for (FileObject obj : cp.getRoots()) {
-                URL url = URLMapper.findURL(obj, URLMapper.EXTERNAL);
-                if (url != null) {
-                    this.addURL(url);
-                }
+            for (ClassPath.Entry entry : cp.entries()) {
+                this.addURL(entry.getURL());
             }
         }
 
