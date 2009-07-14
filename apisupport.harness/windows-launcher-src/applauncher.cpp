@@ -142,3 +142,7 @@ const char * AppLauncher::getExtraClustersOptName() {
 const char * AppLauncher::getJdkHomeOptName() {
     return OPT_JDK_HOME;
 }
+
+const char * AppLauncher::getCurrentDir() {
+    return baseDir.c_str();
+}
