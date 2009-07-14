@@ -423,31 +423,37 @@
     </copy>
   </target>
 
-  <target name="install-gems">
-    <property name="jruby.home" value="${basedir}"/>
-    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true">
-      <classpath refid="build.classpath"/>
-      <classpath path="${jruby.classes.dir}"/>
-      <sysproperty key="jruby.home" value="${jruby.home}"/>
-      <arg value="--command"/>
-      <arg value="maybe_install_gems"/>
-      <arg value="rspec"/>
-      <arg value="rake"/>
-      <!-- Modified for NetBeans builds: activerecord-jdbc-adapter, Rails, no ri or rdoc indices -->
-      <arg value="rails"/>
-      <arg value="activerecord-jdbc"/>
-      <arg value="activerecord-jdbcmysql-adapter"/>
-      <arg value="rcov"/>
-      <!-- Ruby Debugger -->
-      <arg value="ruby-debug-base"/>
-      <arg value="ruby-debug-ide"/>
-      <!-- other params -->
-      <arg value="--env-shebang"/>
-      <arg value="--no-rdoc"/>
-      <arg value="--no-ri"/>
-      <arg value="--local"/>
-    </java>
-  </target>
+    <target name="install-gems">
+        <property name="jruby.home" value="${basedir}"/>
+        <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true">
+            <classpath refid="build.classpath"/>
+            <classpath path="${jruby.classes.dir}"/>
+            <sysproperty key="jruby.home" value="${jruby.home}"/>
+            <arg value="--command"/>
+            <arg value="maybe_install_gems"/>
+            <arg value="rspec"/>
+            <arg value="rake"/>
+              <!-- Modified for NetBeans builds: activerecord-jdbc-adapter, Rails, no ri or rdoc indices -->
+            <arg value="activesupport-2.3.2"/>
+            <arg value="actionpack-2.3.2"/>
+            <arg value="activerecord-2.3.2"/>
+            <arg value="actionmailer-2.3.2"/>
+            <arg value="activeresource-2.3.2"/>
+            <arg value="activerecord-jdbc-adapter-0.9.1"/>
+            <arg value="jdbc-mysql-5.0.4"/>
+            <arg value="jdbc-postgres-8.2"/>
+            <arg value="rails"/>
+            <arg value="rcov"/>
+              <!-- Ruby Debugger -->
+            <arg value="ruby-debug-base"/>
+            <arg value="ruby-debug-ide"/>
+              <!-- other params -->
+            <arg value="--env-shebang"/>
+            <arg value="--no-rdoc"/>
+            <arg value="--no-ri"/>
+            <arg value="--local"/>
+        </java>
+    </target>
 
   <target name="install-build-gems" depends="install-gems">
     <property name="jruby.home" value="${basedir}"/>
