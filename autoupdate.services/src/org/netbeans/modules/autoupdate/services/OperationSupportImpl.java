@@ -612,7 +612,7 @@ public abstract class OperationSupportImpl {
         }
 
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            LifecycleManager.getDefault().markForRestart();
+            markForRestart();
             LifecycleManager.getDefault ().exit ();
             // if exit&restart fails => use restart later as fallback
             doRestartLater (restarter);
@@ -620,7 +620,7 @@ public abstract class OperationSupportImpl {
 
         public void doRestartLater (Restarter restarter) {
             // shedule module for restart
-            LifecycleManager.getDefault().markForRestart();
+            markForRestart();
             if(affectedModules!=null) {
             for (UpdateElement el : affectedModules) {
                 UpdateUnitFactory.getDefault().scheduleForRestart (el);
@@ -680,7 +680,7 @@ public abstract class OperationSupportImpl {
         }
 
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            LifecycleManager.getDefault().markForRestart();
+            markForRestart();
             LifecycleManager.getDefault ().exit ();
             // if exit&restart fails => use restart later as fallback
             doRestartLater (restarter);
@@ -688,7 +688,7 @@ public abstract class OperationSupportImpl {
 
         public void doRestartLater (Restarter restarter) {
             // shedule module for restart
-            LifecycleManager.getDefault().markForRestart();
+            markForRestart();
             if(affectedModules!=null) {
             for (UpdateElement el : affectedModules) {
                 UpdateUnitFactory.getDefault().scheduleForRestart (el);
@@ -696,4 +696,13 @@ public abstract class OperationSupportImpl {
             }
         }
     }
+
+    private static void markForRestart() {
+        try {
+            LifecycleManager.getDefault().markForRestart();
+        } catch (UnsupportedOperationException x) {
+            LOGGER.log(Level.INFO, null, x);
+        }
+    }
+
 }
