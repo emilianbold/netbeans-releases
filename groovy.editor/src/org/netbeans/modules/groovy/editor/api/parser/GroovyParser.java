@@ -50,6 +50,7 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.Phases;
@@ -440,6 +442,8 @@ public class GroovyParser extends Parser {
 
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
+        GroovyClassLoader transformationLoader = new TransformationClassLoader(CompilationUnit.class.getClassLoader(),
+                cp, configuration);
 
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
@@ -456,7 +460,7 @@ public class GroovyParser extends Parser {
         JavaSource javaSource = JavaSource.create(cpInfo);
 
         CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
-                null, classLoader, javaSource);
+                null, classLoader, transformationLoader, javaSource);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
@@ -792,6 +796,20 @@ public class GroovyParser extends Parser {
     private static interface ParseErrorHandler {
 
         void error(Error error);
+
+    }
+
+    private static class TransformationClassLoader extends GroovyClassLoader {
+
+        public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
+            super(parent, config);
+            for (FileObject obj : cp.getRoots()) {
+                URL url = URLMapper.findURL(obj, URLMapper.EXTERNAL);
+                if (url != null) {
+                    this.addURL(url);
+                }
+            }
+        }
 
     }
 
