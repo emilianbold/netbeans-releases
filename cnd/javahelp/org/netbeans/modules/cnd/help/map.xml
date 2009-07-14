@@ -267,4 +267,32 @@
 	<mapID target="ProfilingCorC++Projects" url="WorkingWithCandC++Projects/ProfilingCorC++Projects.html"/>
 	<mapID target="ProjectPropsProfile" url="WorkingWithCandC++Projects/ProjectPropsProfile.html"/>
 	<mapID target="PackagingFiles" url="CandC++ProjectBasics/PackagingFiles.html"/>
+	<mapID target="credits" url="credits.html"/>
+	<mapID target="appclient" url="images/appclient.gif"/>
+	<mapID target="application_assembler_16" url="images/application_assembler_16.gif"/>
+	<mapID target="CurrentThread" url="images/CurrentThread.gif"/>
+	<mapID target="deconstructors" url="images/deconstructors.png"/>
+	<mapID target="direct_only" url="images/direct_only.png"/>
+	<mapID target="EjbModuleNodeIcon" url="images/EjbModuleNodeIcon.gif"/>
+	<mapID target="extern_variable_16" url="images/extern_variable_16.png"/>
+	<mapID target="junit_filter" url="images/junit_filter.gif"/>
+	<mapID target="makeProject" url="images/makeProject.gif"/>
+	<mapID target="module" url="images/module.gif"/>
+	<mapID target="refresh" url="images/refresh.png"/>
+	<mapID target="RunningThread" url="images/RunningThread.gif"/>
+	<mapID target="runtime-window-databases" url="images/runtime-window-databases.png"/>
+	<mapID target="runtime-window-httpserver" url="images/runtime-window-httpserver.png"/>
+	<mapID target="runtime-window-processes" url="images/runtime-window-processes.png"/>
+	<mapID target="runtime-window-servers" url="images/runtime-window-servers.png"/>
+	<mapID target="runtime-window-vcscommands" url="images/runtime-window-vcscommands.png"/>
+	<mapID target="runtime-window-webservices" url="images/runtime-window-webservices.png"/>
+	<mapID target="runtime-window-xmlentitycatalogs" url="images/runtime-window-xmlentitycatalogs.png"/>
+	<mapID target="subtypehierarchy" url="images/subtypehierarchy.gif"/>
+	<mapID target="supertypehierarchy" url="images/supertypehierarchy.gif"/>
+	<mapID target="SuspendedThread" url="images/SuspendedThread.gif"/>
+	<mapID target="tree" url="images/tree.png"/>
+	<mapID target="who_includes" url="images/who_includes.png"/>
+	<mapID target="who_is_included" url="images/who_is_included.png"/>
+	<mapID target="Configuring1" url="WorkingWithCandC++Projects/Configuring.html"/>
+	<mapID target="RunningCorC++Project1" url="WorkingWithCandC++Projects/RunningCorC++Project.html"/>
 </map>
