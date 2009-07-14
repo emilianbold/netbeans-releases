@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.util.Utilities;
 
 /**
@@ -62,15 +63,15 @@ public class CreateTestsActionTest extends NbTestCase {
         crates.add(new Crate(
                 "/project1/src/MyClass.php",
                 "/project1/test/MyClassTest.php",
-                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
         crates.add(new Crate(
                 "/project1/src/a/MyClass.php",
                 "/project1/test/a/MyClassTest.php",
-                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../../src/a/MyClass.php"));
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../../src/a/MyClass.php"));
         crates.add(new Crate(
                 "/project1/src/a/b/c/MyClass.php",
                 "/project1/test/a/b/c/MyClassTest.php",
-                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../../../../src/a/b/c/MyClass.php"));
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../../../../src/a/b/c/MyClass.php"));
 
         verifyCrates(crates);
     }
@@ -83,7 +84,7 @@ public class CreateTestsActionTest extends NbTestCase {
         crates.add(new Crate(
                 "C:\\project1\\src\\MyClass.php",
                 "C:\\project1\\test\\MyClassTest.php",
-                CreateTestsAction.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
         crates.add(new Crate(
                 "C:\\project1\\src\\MyClass.php",
                 "D:\\project1\\test\\MyClassTest.php",
@@ -94,7 +95,7 @@ public class CreateTestsActionTest extends NbTestCase {
 
     private void verifyCrates(List<Crate> creates) {
         for (Crate crate : creates) {
-            String requireOnce = CreateTestsAction.getRequireOnce(crate.testFile, crate.sourceFile);
+            String requireOnce = PhpUnit.getRequireOnce(crate.testFile, crate.sourceFile);
             assertNotNull(requireOnce);
             assertEquals(crate.requireOnce, requireOnce);
         }

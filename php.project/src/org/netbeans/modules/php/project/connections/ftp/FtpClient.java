@@ -178,7 +178,7 @@ public class FtpClient implements RemoteClient {
         if (password != null) {
             return password;
         }
-        PasswordPanel passwordPanel = new PasswordPanel(configuration.getDisplayName(), configuration.getUserName());
+        PasswordPanel passwordPanel = PasswordPanel.forUser(configuration.getDisplayName(), configuration.getUserName());
         if (passwordPanel.open()) {
             password = passwordPanel.getPassword();
             PASSWORDS.put(configuration.hashCode(), password);

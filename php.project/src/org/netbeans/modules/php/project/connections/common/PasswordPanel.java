@@ -54,18 +54,40 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous, Tomas Mysik
  */
-public class PasswordPanel extends JPanel {
+public final class PasswordPanel extends JPanel {
     private static final long serialVersionUID = -12116662158021638L;
+    private static enum Type { USER, CERTIFICATE };
 
     private final String configurationName;
 
-    public PasswordPanel(String configurationName, String userName) {
+    private PasswordPanel(String configurationName, Type type, String userName) {
         assert configurationName != null;
-        assert userName != null;
+        assert type != null;
 
         this.configurationName = configurationName;
+
         initComponents();
-        usernameField.setText(userName);
+        switch (type) {
+            case USER:
+                certificateLabel.setVisible(false);
+                usernameField.setText(userName);
+                break;
+            case CERTIFICATE:
+                usernameLabel.setVisible(false);
+                usernameField.setVisible(false);
+                break;
+            default:
+                throw new IllegalStateException("Unknown type: " + type);
+        }
+    }
+
+    public static PasswordPanel forUser(String configurationName, String userName) {
+        assert userName != null;
+        return new PasswordPanel(configurationName, Type.USER, userName);
+    }
+
+    public static PasswordPanel forCertificate(String configurationName) {
+        return new PasswordPanel(configurationName, Type.CERTIFICATE, null);
     }
 
     public boolean open() {
@@ -100,6 +122,7 @@ public class PasswordPanel extends JPanel {
 
         usernameLabel = new JLabel();
         usernameField = new JTextField();
+        certificateLabel = new JLabel();
         passwordLabel = new JLabel();
         passwordField = new JPasswordField();
 
@@ -110,6 +133,9 @@ public class PasswordPanel extends JPanel {
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.text")); // NOI18N
         usernameField.setEditable(false);
 
+        certificateLabel.setLabelFor(passwordField);
+
+        certificateLabel.setText(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.certificateLabel.text")); // NOI18N
         passwordLabel.setLabelFor(passwordField);
 
         Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordLabel.text"));
@@ -120,27 +146,31 @@ public class PasswordPanel extends JPanel {
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(usernameLabel)
-                    .add(passwordLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(passwordField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
-                    .add(usernameField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                            .add(usernameLabel)
+                            .add(passwordLabel))
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(passwordField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                            .add(usernameField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)))
+                    .add(certificateLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(usernameLabel)
                     .add(usernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
+                .add(certificateLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(passwordLabel)
-                    .add(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
 
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -156,6 +186,7 @@ public class PasswordPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel certificateLabel;
     private JPasswordField passwordField;
     private JLabel passwordLabel;
     private JTextField usernameField;

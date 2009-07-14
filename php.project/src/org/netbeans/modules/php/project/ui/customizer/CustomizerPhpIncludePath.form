@@ -33,9 +33,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="includePathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="includePathScrollPane" pref="371" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="moveDownButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           <Component id="moveUpButton" linkSize="1" min="-2" max="-2" attributes="0"/>
@@ -52,7 +52,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="includePathLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="addFolderButton" min="-2" max="-2" attributes="0"/>
@@ -63,9 +63,9 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="moveDownButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="includePathScrollPane" pref="153" max="32767" attributes="0"/>
+                  <Component id="includePathScrollPane" pref="165" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

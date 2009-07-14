@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -92,6 +94,10 @@ public final class ProjectPropertiesSupport {
 
     public static void addWeakPropertyEvaluatorListener(PhpProject project, PropertyChangeListener listener) {
         project.addWeakPropertyEvaluatorListener(listener);
+    }
+
+    public static void addWeakIgnoredFoldersListener(PhpProject project, ChangeListener listener) {
+        project.addWeakIgnoredFoldersListener(listener);
     }
 
     public static FileObject getProjectDirectory(PhpProject project) {
@@ -198,6 +204,10 @@ public final class ProjectPropertiesSupport {
 
     public static boolean areAspTagsEnabled(PhpProject project) {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
+    }
+
+    public static Set<FileObject> getIgnoredFolders(PhpProject project) {
+        return project.getIgnoredFolders();
     }
 
     /**
