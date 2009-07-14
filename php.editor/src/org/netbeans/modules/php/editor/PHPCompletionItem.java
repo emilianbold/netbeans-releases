@@ -332,6 +332,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public ElementKind getKind() {
             return ElementKind.PACKAGE;
         }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+
     }
 
     static class ConstantItem extends PHPCompletionItem {
