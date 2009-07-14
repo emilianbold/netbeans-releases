@@ -2,16 +2,17 @@
 
 #pragma D option quiet
 
-profile-100hz /pid == $1 && !self->vprev/
+profile-100hz, sched:::on-cpu
+/pid == $1 && !self->vprev/
 {
     self->vprev = vtimestamp;
 }
 
-profile-100hz /pid == $1 && self->vprev/
+profile-100hz, sched:::sleep, sched:::off-cpu
+/pid == $1 && self->vprev/
 {
     this->vtime = vtimestamp;
-    printf("%d\n", this->vtime - self->vprev);
-    printf("%d %d %d", cpu, tid, timestamp);
+    printf("%d %d %d %d %d", timestamp, cpu, tid, curthread->t_mstate, this->vtime - self->vprev);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
     self->vprev = this->vtime;
