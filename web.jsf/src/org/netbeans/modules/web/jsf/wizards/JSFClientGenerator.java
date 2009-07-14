@@ -144,7 +144,6 @@ public class JSFClientGenerator {
     public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, final boolean genSessionBean, int progressIndex) throws IOException {
         final boolean isInjection = Util.isContainerManaged(project); //Util.isSupportedJavaEEVersion(project);
         
-//        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
         String simpleControllerName = controllerFileObject.getName();
         
         String progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Controller_Pre", simpleControllerName + ".java");//NOI18N
@@ -154,12 +153,9 @@ public class JSFClientGenerator {
         final String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         String jsfFolder = jsfFolderBase.length() > 0 ? jsfFolderBase + "/" + jsfFolderName : jsfFolderName;
         
-//        String simpleConverterName = converterFileObject.getName();
         String simpleConverterName = simpleEntityName + "Converter";
         
-//        String jpaControllerSuffix = "JpaController"; //NOI18N
         String jpaControllerClass = ((jpaControllerPackage == null || jpaControllerPackage.length() == 0) ? "" : jpaControllerPackage + ".") + jpaControllerFileObject.getName();
-//        String simpleJpaControllerName = simpleEntityName + jpaControllerSuffix;
         
         String utilPackage = ((controllerPackage == null || controllerPackage.length() == 0) ? "" : controllerPackage + ".") + PersistenceClientIterator.UTIL_FOLDER_NAME;
         
@@ -187,14 +183,6 @@ public class JSFClientGenerator {
         }
         final FileObject jsfRoot = FileUtil.createFolder(pagesRootFolder, jsfFolder);
         
-//        int lastIndexOfController = controllerClass.lastIndexOf("Controller");
-//        String controllerSuffix = controllerClass.substring(lastIndexOfController);
-//        String converterSuffix = controllerSuffix.replace("Controller", "Converter");
-//        String simpleConverterName = simpleEntityName + converterSuffix; //NOI18N
-//        int converterNameAttemptIndex = 1;
-//        while (pkg.getFileObject(simpleConverterName, "java") != null && converterNameAttemptIndex < 1000) {
-//            simpleConverterName += "_" + converterNameAttemptIndex++;
-//        }
         String converterName = ((pkgName == null || pkgName.length() == 0) ? "" : pkgName + ".") + simpleConverterName;
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
 
@@ -243,11 +231,6 @@ public class JSFClientGenerator {
             }
             throw new IOException(msg);
         }
-        
-        //now done in JpaControllerGenerator
-//        if (arrEntityClassFO[0] != null) {
-//            addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
-//        }
             
         final BaseDocument doc = new BaseDocument(false, "text/x-jsp");
         WebModule wm = WebModule.getWebModule(jsfRoot);
@@ -282,22 +265,18 @@ public class JSFClientGenerator {
         String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, controllerFileObject);
         
         if (wm.getDocumentBase().getFileObject(WELCOME_JSF_PAGE) == null) {
-//            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
-//            Charset encoding = FileEncodingQuery.getDefaultEncoding();
             content = content.replaceAll("__ENCODING__", projectEncoding);
             FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_PAGE);//NOI18N
             JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
         
-        //FileObject jsfFolderBaseFileObject = jsfFolderBase.length() > 0 ? pagesRootFolder.getFileObject(jsfFolderBase) : pagesRootFolder;
         if (pagesRootFolder.getFileObject(JSFCRUD_STYLESHEET) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);//NOI18N
             JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
         
-        //final String styleHrefPrefix = wm.getContextPath() + "/faces/" + (jsfFolderBase.length() > 0 ? jsfFolderBase + "/" : "");
         final String rootRelativePathToWebFolder = wm.getContextPath() + "/faces/";
         
         if (pagesRootFolder.getFileObject(JSFCRUD_JAVASCRIPT) == null) {
@@ -404,7 +383,6 @@ public class JSFClientGenerator {
     private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, String projectEncoding) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
-        //String indexjspString = "faces/" + WELCOME_JSF_PAGE;
         
         if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), projectEncoding); //NO18N
@@ -1212,7 +1190,6 @@ public class JSFClientGenerator {
                     
                     int privateModifier = java.lang.reflect.Modifier.PRIVATE;
                     int publicModifier = java.lang.reflect.Modifier.PUBLIC;
-//                    int publicStaticModifier = publicModifier + java.lang.reflect.Modifier.STATIC;
                     
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, fieldName, entityClass, privateModifier, null, null);
                    
@@ -1311,9 +1288,7 @@ public class JSFClientGenerator {
                     bodyText = "return JsfUtil.getSelectItems(jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities()")+", true);";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "ItemsAvailableSelectOne", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
-                    
-//                    String getFromReqParamMethod = "get" + simpleEntityName + "FromRequest";
-                    
+                                        
                     bodyText = "if (" + fieldName + " == null) {\n" +
                             fieldName + " = (" + simpleEntityName + ")JsfUtil.getObjectFromRequestParameter(\"jsfcrud.current" + simpleEntityName + "\", converter, null);\n" +
                             "}\n" + 
@@ -1465,10 +1440,10 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     TypeInfo listOfEntityType = new TypeInfo("java.util.List", new String[]{entityClass});
-                    
+
                     bodyText = "if (" + fieldName + "Items == null) {\n" +
                             "getPagingInfo();\n" +
-                            fieldName + "Items = jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem())" )+";\n" +//TODO : add this method to session bean generation???
+                            fieldName + "Items = jpaController.find" + (useSessionBean ? "Range(new int[]{pagingInfo.getFirstItem(), pagingInfo.getFirstItem() + pagingInfo.getBatchSize()})" : simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem())" )+";\n" +//TODO : add this method to session bean generation???
                             "}\n" +
                             "return " + fieldName + "Items;";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "Items", publicModifier, listOfEntityType, null, null, null, bodyText, null, null);
@@ -1531,7 +1506,6 @@ public class JSFClientGenerator {
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
                             "createSetup();\n" +
-                            //"throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
                             "}\n";
                     methodInfo = new MethodInfo("validateCreate", publicModifier, "void", null, new String[]{"javax.faces.context.FacesContext", "javax.faces.component.UIComponent", "java.lang.Object"}, new String[]{"facesContext", "component", "value"}, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
