@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.core.browser.linux/1
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/core/browser/linux/Bundle.properties
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Requires: org.openide.modules.os.Linux
