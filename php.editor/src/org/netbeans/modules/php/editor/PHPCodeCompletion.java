@@ -1289,6 +1289,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
                     || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
+                    || t.id() == PHPTokenId.PHP_NS_SEPARATOR
                     || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                 return QueryType.ALL_COMPLETION;
             }
