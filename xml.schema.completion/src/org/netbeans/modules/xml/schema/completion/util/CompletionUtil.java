@@ -468,11 +468,14 @@ public class CompletionUtil {
         List<CompletionResultItem> items = new ArrayList<CompletionResultItem>();
         String anyNamespace = any.getTargetNamespace();
         String tns = any.getModel().getRoot().getTargetNamespace();        
-        for(CompletionModel cm : context.getCompletionModels()) {            
+        for (CompletionModel cm : context.getCompletionModels()) {
+            if (cm == null) continue;
+
             //##other => items from other namespaces
-            if(anyNamespace.equals("##other")) { //NOI18N
-               if(tns != null && !tns.equals(cm.getTargetNamespace()))
-                populateItemsForAny(cm,any,context,items);
+            if (anyNamespace.equals("##other")) { //NOI18N
+                if ((tns != null) && (! tns.equals(cm.getTargetNamespace()))) {
+                    populateItemsForAny(cm, any, context, items);
+                }
             }
 
             //##targetNamespace => items from target namespace
