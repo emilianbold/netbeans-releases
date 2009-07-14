@@ -2,17 +2,16 @@
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"            
             elementFormDefault="qualified">
-    <xsd:include schemaLocation="F.xsd"/>
-    <xsd:complexType name="D1">
+    <xsd:complexType name="F1">
         <xsd:sequence>
-            <xsd:element name="D11"/>
-            <xsd:element name="D12"/>
+            <xsd:element name="F11"/>
+            <xsd:element name="F12"/>
         </xsd:sequence>
     </xsd:complexType>
-    <xsd:complexType name="D2">
+    <xsd:complexType name="F2">
         <xsd:sequence>
-            <xsd:element name="D21"/>
-            <xsd:element name="D22"/>
+            <xsd:element name="F21"/>
+            <xsd:element name="F22"/>
         </xsd:sequence>
     </xsd:complexType>
 </xsd:schema>

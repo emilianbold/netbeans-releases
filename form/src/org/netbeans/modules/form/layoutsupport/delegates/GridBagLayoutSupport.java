@@ -48,12 +48,18 @@ import java.util.List;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 
+import org.netbeans.modules.form.FormAwareEditor;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormModel;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.FormPropertyContext;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Support class for GridBagLayout. This is an example of support for layout
@@ -875,6 +881,31 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         // ---------
 
+        static class GridBagPropertyContext implements FormPropertyContext {
+            private FormPropertyContext delegate;
+
+            GridBagPropertyContext(FormPropertyContext delegate) {
+                this.delegate = delegate;
+            }
+
+            public boolean useMultipleEditors() {
+                return false; // Issue 20940
+            }
+
+            public void initPropertyEditor(PropertyEditor prEd, FormProperty property) {
+                delegate.initPropertyEditor(prEd, property);
+            }
+
+            public FormModel getFormModel() {
+                return delegate.getFormModel();
+            }
+
+            public Object getOwner() {
+                return delegate.getOwner();
+            }
+
+        }
+
         /** Property implementation for GridBagLayoutConstraints. Each property
          * is tied to one field of GridBagConstraints. After a change in
          * property, updateCodeExpression is called to reflect the change in
@@ -975,11 +1006,14 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
             @Override
             public void setPropertyContext(
-                org.netbeans.modules.form.FormPropertyContext ctx)
-            { // disabling this method due to limited persistence
-            } // capabilities (compatibility with previous versions)
+                org.netbeans.modules.form.FormPropertyContext ctx) {
+                // Fix of issue 20940 disabled property context for these properties;
+                // I am allowing it again as a part of fix of issue 168201, but
+                // keeping support for multiple editors disabled.
+                super.setPropertyContext(new GridBagPropertyContext(ctx));
+            }
+            }
         }
-    }
 
     // ------------
     // property editors for properties of GridBagLayoutConstraints
@@ -1093,66 +1127,115 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    static final class AnchorEditor extends GridBagConstrEditor {
-        public AnchorEditor() {
-            tags = new String[] {
-                getBundle().getString("VALUE_anchor_center"), // NOI18N
-                getBundle().getString("VALUE_anchor_north"), // NOI18N
-                getBundle().getString("VALUE_anchor_northeast"), // NOI18N
-                getBundle().getString("VALUE_anchor_east"), // NOI18N
-                getBundle().getString("VALUE_anchor_southeast"), // NOI18N
-                getBundle().getString("VALUE_anchor_south"), // NOI18N
-                getBundle().getString("VALUE_anchor_southwest"), // NOI18N
-                getBundle().getString("VALUE_anchor_west"), // NOI18N
-                getBundle().getString("VALUE_anchor_northwest"), // NOI18N
-                getBundle().getString("VALUE_anchor_pagestart"), // NOI18N
-                getBundle().getString("VALUE_anchor_pageend"), // NOI18N
-                getBundle().getString("VALUE_anchor_linestart"), // NOI18N
-                getBundle().getString("VALUE_anchor_lineend"), // NOI18N
-                getBundle().getString("VALUE_anchor_firstlinestart"), // NOI18N
-                getBundle().getString("VALUE_anchor_firstlineend"), // NOI18N
-                getBundle().getString("VALUE_anchor_lastlinestart"), // NOI18N
-                getBundle().getString("VALUE_anchor_lastlineend") // NOI18N
-            };
-            values = new Integer[] {
-                new Integer(GridBagConstraints.CENTER),
-                new Integer(GridBagConstraints.NORTH),
-                new Integer(GridBagConstraints.NORTHEAST),
-                new Integer(GridBagConstraints.EAST),
-                new Integer(GridBagConstraints.SOUTHEAST),
-                new Integer(GridBagConstraints.SOUTH),
-                new Integer(GridBagConstraints.SOUTHWEST),
-                new Integer(GridBagConstraints.WEST),
-                new Integer(GridBagConstraints.NORTHWEST),
-                new Integer(GridBagConstraints.PAGE_START),
-                new Integer(GridBagConstraints.PAGE_END),
-                new Integer(GridBagConstraints.LINE_START),
-                new Integer(GridBagConstraints.LINE_END),
-                new Integer(GridBagConstraints.FIRST_LINE_START),
-                new Integer(GridBagConstraints.FIRST_LINE_END),
-                new Integer(GridBagConstraints.LAST_LINE_START),
-                new Integer(GridBagConstraints.LAST_LINE_END)
-            };
-            javaInitStrings = new String[] {
-                "java.awt.GridBagConstraints.CENTER", // NOI18N
-                "java.awt.GridBagConstraints.NORTH", // NOI18N
-                "java.awt.GridBagConstraints.NORTHEAST", // NOI18N
-                "java.awt.GridBagConstraints.EAST", // NOI18N
-                "java.awt.GridBagConstraints.SOUTHEAST", // NOI18N
-                "java.awt.GridBagConstraints.SOUTH", // NOI18N
-                "java.awt.GridBagConstraints.SOUTHWEST", // NOI18N
-                "java.awt.GridBagConstraints.WEST", // NOI18N
-                "java.awt.GridBagConstraints.NORTHWEST", // NOI18N
-                "java.awt.GridBagConstraints.PAGE_START", // NOI18N
-                "java.awt.GridBagConstraints.PAGE_END", // NOI18N
-                "java.awt.GridBagConstraints.LINE_START", // NOI18N
-                "java.awt.GridBagConstraints.LINE_END", // NOI18N
-                "java.awt.GridBagConstraints.FIRST_LINE_START", // NOI18N
-                "java.awt.GridBagConstraints.FIRST_LINE_END", // NOI18N
-                "java.awt.GridBagConstraints.LAST_LINE_START", // NOI18N
-                "java.awt.GridBagConstraints.LAST_LINE_END" // NOI18N
-            };
+    static final class AnchorEditor extends GridBagConstrEditor implements FormAwareEditor {
+
+        public void setContext(FormModel formModel, FormProperty property) {
+            FileObject formFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
+            boolean isJDK6Compatible = ClassPathUtils.isJava6ProjectPlatform(formFile);
+
+            // Tags
+            List<String> tagList = new LinkedList<String>();
+            ResourceBundle bundle = getBundle();
+            tagList.add(bundle.getString("VALUE_anchor_center")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_north")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_northeast")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_east")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_southeast")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_south")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_southwest")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_west")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_northwest")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_pagestart")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_pageend")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_linestart")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_lineend")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_firstlinestart")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_firstlineend")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_lastlinestart")); // NOI18N
+            tagList.add(bundle.getString("VALUE_anchor_lastlineend")); // NOI18N
+            if (isJDK6Compatible) {
+                tagList.add(bundle.getString("VALUE_anchor_above_baseline")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_above_baseline_leading")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_above_baseline_trailing")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_baseline")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_baseline_leading")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_baseline_trailing")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_below_baseline")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_below_baseline_leading")); // NOI18N
+                tagList.add(bundle.getString("VALUE_anchor_below_baseline_trailing")); // NOI18N
+            }
+            tags = tagList.toArray(new String[tagList.size()]);
+
+            // Values
+            List<Integer> valueList = new LinkedList<Integer>();
+            valueList.add(GridBagConstraints.CENTER);
+            valueList.add(GridBagConstraints.NORTH);
+            valueList.add(GridBagConstraints.NORTHEAST);
+            valueList.add(GridBagConstraints.EAST);
+            valueList.add(GridBagConstraints.SOUTHEAST);
+            valueList.add(GridBagConstraints.SOUTH);
+            valueList.add(GridBagConstraints.SOUTHWEST);
+            valueList.add(GridBagConstraints.WEST);
+            valueList.add(GridBagConstraints.NORTHWEST);
+            valueList.add(GridBagConstraints.PAGE_START);
+            valueList.add(GridBagConstraints.PAGE_END);
+            valueList.add(GridBagConstraints.LINE_START);
+            valueList.add(GridBagConstraints.LINE_END);
+            valueList.add(GridBagConstraints.FIRST_LINE_START);
+            valueList.add(GridBagConstraints.FIRST_LINE_END);
+            valueList.add(GridBagConstraints.LAST_LINE_START);
+            valueList.add(GridBagConstraints.LAST_LINE_END);
+            if (isJDK6Compatible) {
+                // Using hardcoded values to be able to compile on JDK 5
+                valueList.add(1024); // GridBagConstraints.ABOVE_BASELINE
+                valueList.add(1280); // GridBagConstraints.ABOVE_BASELINE_LEADING
+                valueList.add(1536); // GridBagConstraints.ABOVE_BASELINE_TRAILING
+                valueList.add(256); // GridBagConstraints.BASELINE
+                valueList.add(512); // GridBagConstraints.BASELINE_LEADING
+                valueList.add(768); // GridBagConstraints.BASELINE_TRAILING
+                valueList.add(1792); // GridBagConstraints.BELOW_BASELINE
+                valueList.add(2048); // GridBagConstraints.BELOW_BASELINE_LEADING
+                valueList.add(2304); // GridBagConstraints.BELOW_BASELINE_TRAILING
+            }
+            values = valueList.toArray(new Integer[valueList.size()]);
+
+            // Java initialization strings
+            List<String> initStringList = new LinkedList<String>();
+            initStringList.add("java.awt.GridBagConstraints.CENTER"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.NORTH"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.NORTHEAST"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.EAST"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.SOUTHEAST"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.SOUTH"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.SOUTHWEST"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.WEST"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.NORTHWEST"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.PAGE_START"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.PAGE_END"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.LINE_START"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.LINE_END"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.FIRST_LINE_START"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.FIRST_LINE_END"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.LAST_LINE_START"); // NOI18N
+            initStringList.add("java.awt.GridBagConstraints.LAST_LINE_END"); // NOI18N
+            if (isJDK6Compatible) {
+                initStringList.add("java.awt.GridBagConstraints.ABOVE_BASELINE"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.ABOVE_BASELINE_TRAILING"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.BASELINE"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.BASELINE_LEADING"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.BASELINE_TRAILING"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.BELOW_BASELINE"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.BELOW_BASELINE_LEADING"); // NOI18N
+                initStringList.add("java.awt.GridBagConstraints.BELOW_BASELINE_TRAILING"); // NOI18N
+            }
+            javaInitStrings = initStringList.toArray(new String[initStringList.size()]);
+
             otherValuesAllowed = false;
+            property.setCurrentEditor(this);
+        }
+
+        public void updateFormVersionLevel() {
         }
     }
 

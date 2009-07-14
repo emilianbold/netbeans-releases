@@ -141,7 +141,7 @@ public class ThreadMapVisualizer extends JPanel implements
                     t.printStackTrace();
                 }
             }
-        }, 1, TimeUnit.SECONDS, "ThreadMapVisualizer Async data from provider load for " + configuration.getID());
+        }, 1, TimeUnit.SECONDS, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {

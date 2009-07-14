@@ -117,6 +117,7 @@ public class CustomTimeLineViewport extends JViewport {
         viewEnd = viewManager.getViewEnd();
         dataStart = viewManager.getDataStart();
         paintWidth = viewManager.getDisplayColumnWidth();
-        paintX = getWidth() - paintWidth;
+        int rest = viewManager.getDisplayColumnRest();
+        paintX = getWidth() - paintWidth - rest;
     }
 }
