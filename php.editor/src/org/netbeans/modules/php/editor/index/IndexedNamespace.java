@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 /**
  *
@@ -50,5 +51,10 @@ public class IndexedNamespace extends IndexedElement {
             int offset, int flags){
         super(name, in, index, fileUrl, offset, flags, ElementKind.PACKAGE);
         
+    }
+
+    public QualifiedName getQualifiedName()
+    {
+        return QualifiedName.create(getName());
     }
 }

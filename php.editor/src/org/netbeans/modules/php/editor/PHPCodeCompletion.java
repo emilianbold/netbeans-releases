@@ -88,6 +88,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -419,15 +420,29 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         PHPIndex index = request.index;
 
+        int completedSegmentIdx = QualifiedName.createUnqualifiedName(request.prefix).getSegments().size() - 1;
+
         Collection<IndexedNamespace> namespaces = index.getNamespaces(request.result,
                 request.prefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
 
+        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
+
         for (IndexedNamespace namespace : namespaces) {
             if (namespace.getName().startsWith(request.prefix)) {
-                proposals.add(new PHPCompletionItem.NamespaceItem(namespace, request));
+                String completedSegment = namespace.getQualifiedName().getSegments().get(completedSegmentIdx);
+
+                IndexedNamespace existingNs = namespacesMap.get(completedSegment);
+
+                if (existingNs == null || !existingNs.isResolved()){
+                    namespacesMap.put(completedSegment, namespace);
+                }
             }
         }
 
+        for (IndexedNamespace namespace : namespacesMap.values()){
+            String itm = namespace.getQualifiedName().toString(completedSegmentIdx);
+            proposals.add(new PHPCompletionItem.NamespaceItem(itm, namespace.isResolved(), request));
+        }
     }
 
     private void autoCompleteMethodName(ParserResult info, int caretOffset, List<CompletionProposal> proposals,
@@ -718,6 +733,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // all toplevel variables, wchich are defined in more files
         Map<String, IndexedConstant> allUnUniqueVars = new LinkedHashMap<String, IndexedConstant>();
 
+        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
         //Obtain all top level statment from index
         for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
             if (element instanceof IndexedFunction) {
@@ -749,8 +765,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             else if (element instanceof IndexedConstant) {
                 proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant) element, request));
             } else if (element instanceof IndexedNamespace){
-                proposals.add(new PHPCompletionItem.NamespaceItem((IndexedNamespace) element, request));
+                IndexedNamespace namespace = (IndexedNamespace) element;
+                String prefix = namespace.getQualifiedName().getSegments().getFirst();
+
+                IndexedNamespace existingNs = namespacesMap.get(prefix);
+
+                if (existingNs == null || !existingNs.isResolved()){
+                    namespacesMap.put(prefix, (IndexedNamespace) element);
+                }        
             }
+        }
+
+        for (IndexedNamespace namespace : namespacesMap.values()){
+            String prefix = namespace.getQualifiedName().getSegments().getFirst();
+            
+            proposals.add(new PHPCompletionItem.NamespaceItem('\\' + prefix + '\\',
+                    namespace.isResolved(), request));
         }
 
         // add local variables
