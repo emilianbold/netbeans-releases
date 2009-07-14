@@ -180,8 +180,8 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             }
             rest = 0;
             oldRest = 0;
-            int y = 0;
-            int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH;
+            int y = 6;
+            int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
             for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
                 AtomicInteger value = entry.getValue();
                 oldRest = rest;
