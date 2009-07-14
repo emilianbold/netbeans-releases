@@ -95,7 +95,7 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public final class ModuleActions implements ActionProvider {
-    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.extra";    // NOI18N
+    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.ide";    // NOI18N
     static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
 
     static final Set<String> bkgActions = new HashSet<String>(Arrays.asList(

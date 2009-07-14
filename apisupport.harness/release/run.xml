@@ -146,6 +146,7 @@ made subject to such option by the copyright holder.
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">
         <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
+        <property name="run.args.ide" value=""/>
         <property name="run.args.extra" value=""/>
         <exec osfamily="windows" executable="${run.exe}" failonerror="no" resultproperty="result.prop">
             <arg value="--jdkhome"/>
@@ -153,6 +154,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>
+            <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
         </exec>
         <exec osfamily="unix" dir="." executable="sh"
@@ -163,6 +165,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>
+            <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
         </exec>
         <fail>
