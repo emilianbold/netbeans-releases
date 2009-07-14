@@ -524,6 +524,8 @@ public class PhpProject implements Project {
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
+            // do it in a background thread
+            getIgnoredFolders();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
