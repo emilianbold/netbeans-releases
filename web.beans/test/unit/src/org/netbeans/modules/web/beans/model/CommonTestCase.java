@@ -86,15 +86,12 @@ public class CommonTestCase extends JavaSourceTestCase {
     private void initAnnotations() throws IOException{
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/BindingType.java",
                 "package javax.enterprise.inject; " +
-                "import static java.lang.annotation.ElementType.METHOD; "+
-                "import static java.lang.annotation.ElementType.FIELD; "+
-                "import static java.lang.annotation.ElementType.PARAMETER; "+
-                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import java.lang.annotation.*; "+
                 "import java.lang.annotation.RetentionPolicy; "+
                 "@Retention(RUNTIME) "+
-                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "@Target({ElementType.ANNOTATION_TYPE}) "+          
                 "public @interface BindingType  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Any.java",
@@ -113,16 +110,14 @@ public class CommonTestCase extends JavaSourceTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/New.java",
                 "package javax.enterprise.inject; " +
-                "import static java.lang.annotation.ElementType.METHOD; "+
                 "import static java.lang.annotation.ElementType.FIELD; "+
                 "import static java.lang.annotation.ElementType.PARAMETER; "+
-                "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import java.lang.annotation.*; "+
                 "import java.lang.annotation.RetentionPolicy; "+
                 "@BindingType " +
                 "@Retention(RUNTIME) "+
-                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "@Target({FIELD, PARAMETER}) "+          
                 "public @interface New  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Current.java",
@@ -158,6 +153,28 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD }) "+          
                 "public @interface NonBinding  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Initializer.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.CONSTRUCTOR; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD,CONSTRUCTOR }) "+          
+                "public @interface Initializer  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/deployment/Specializes.java",
+                "package javax.enterprise.inject.deployment; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE,METHOD }) "+          
+                "public @interface Specializes  {}");
     }
 
 }

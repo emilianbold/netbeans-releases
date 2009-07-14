@@ -98,8 +98,6 @@ public final class GrailsPlatform {
 
     private static final Logger LOGGER = Logger.getLogger(GrailsPlatform.class.getName());
 
-    private static final AtomicLong UNIQUE_MARK = new AtomicLong();
-
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
 
     private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();

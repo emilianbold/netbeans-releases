@@ -86,7 +86,7 @@ public interface UpdateImplementation {
      */
     EditableProperties getUpdatedProjectProperties();
 
-    static final UpdateImplementation NULL = new UpdateImplementation() {
+    UpdateImplementation NULL = new UpdateImplementation() {
 
         public boolean isCurrent() {
             return true;

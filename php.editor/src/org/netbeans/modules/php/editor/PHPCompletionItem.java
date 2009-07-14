@@ -307,16 +307,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class NamespaceItem extends PHPCompletionItem {
+        private String name;
+        private boolean resolved;
 
-        NamespaceItem(IndexedNamespace namespace, CompletionRequest request) {
-            super(namespace, request);
+        NamespaceItem(String name, boolean resolved, CompletionRequest request) {
+            super(null, request);
+            this.name = name;
+            this.resolved = resolved;
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
-            IndexedNamespace namespace = ((IndexedNamespace)getElement());
             formatter.name(getKind(), true);
 
-            if (namespace.isResolved()){
+            if (resolved){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
                 formatter.emphasis(false);
@@ -329,8 +332,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
+        @Override
+        public String getName() {
+            return name;
+        }
+
         public ElementKind getKind() {
             return ElementKind.PACKAGE;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        @Override
+        public boolean isSmart() {
+            return resolved;
         }
     }
 

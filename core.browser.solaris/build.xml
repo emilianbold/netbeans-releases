@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="core.browser.solaris">
+    <description>Builds, tests, and runs the project org.netbeans.core.browser.solaris</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="-release.dir">
+        <property name="release.dir" location="release"/>
+        <mkdir dir="release/modules/lib"/>
+        <unzip dest="release/modules/lib">
+            <fileset dir="external">
+                <include name="xulrunner*.zip"/>
+            </fileset>
+        </unzip>
+        <condition property="has.release.dir">
+            <available file="${release.dir}"/>
+        </condition>
+    </target>
+
+    <target name="netbeans-extra" depends="compile">
+        <mkdir dir="${cluster}/modules/lib"/>
+        <unzip dest="${cluster}/modules/lib">
+            <fileset dir="external">
+                <include name="xulrunner*.zip"/>
+            </fileset>
+        </unzip>
+    </target>
+    
+</project>
