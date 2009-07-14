@@ -30,7 +30,6 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -126,7 +125,7 @@ public class CommentCollectorTest extends NbTestCase {
                     @Override
                     public Void visitLiteral(LiteralTree node, Void aVoid) {
                         if (node.toString().contains("string")) {
-                            verify(node, CommentSet.RelativePosition.TRAILING, service, "//(COMM7) NOI18N");
+                            verify(node, CommentSet.RelativePosition.INLINE, service, "//(COMM7) NOI18N");
                         }
                         return super.visitLiteral(node, aVoid);
                     }
@@ -198,6 +197,66 @@ public class CommentCollectorTest extends NbTestCase {
                 if (!processed[0]) {
                     fail("Tree has not been processed!");
                 }
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void testMethod2() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        String origin =
+                "public class Origin {\n" +
+                        "    /** * comment * @return 1 */\n" +
+                        "    int method() {\n" +
+                        "        // TODO: Process the button click action. Return value is a navigation\n" +
+                        "        // case name where null will return to the same page.\n" +
+                        "        return 1;\n" +
+                        "    }\n" +
+                        "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            protected CommentHandlerService service;
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                CommentCollector cc = CommentCollector.getInstance();
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                cc.collect(workingCopy);
+
+                service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+                CommentPrinter printer = new CommentPrinter(service);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                cu.accept(printer, null);
+
+                JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
+                TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
+
+                    @Override
+                    public Void visitReturn(ReturnTree node, Void aVoid) {
+                        verify(node, CommentSet.RelativePosition.PRECEDING, service,
+                                "// TODO: Process the button click action. Return value is a navigation",
+                                "// case name where null will return to the same page."
+                        );
+                        return super.visitReturn(node, aVoid);
+                    }
+
+                    @Override
+                    public Void visitMethod(MethodTree node, Void aVoid) {
+                        if (node.getName().contentEquals("method")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service,
+                                    "/** * comment * @return 1 */"
+                            );
+                        }
+                        return super.visitMethod(node, aVoid);
+                    }
+
+
+                };
+                clazz.accept(w, null);
             }
 
 

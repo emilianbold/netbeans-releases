@@ -504,15 +504,13 @@ public final class GeneratorUtilities {
             TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
             return (T) translator.translate(original);
             
-            /*
-            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
+            /*JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
             CommentCollector instance = CommentCollector.getInstance();
             instance.collect(seq, copy);
 
-            return original;
-             */                                         
+            return original;*/
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
