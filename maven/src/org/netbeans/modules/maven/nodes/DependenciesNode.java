@@ -97,6 +97,7 @@ public class DependenciesNode extends AbstractNode {
     static final int TYPE_TEST = 1;
     static final int TYPE_RUNTIME = 2;
     private static final String SHOW_NONCLASSPATH_DEPENDENCIES = "show.nonclasspath.dependencies"; //NOI18N
+    private static final String SHOW_MANAGED_DEPENDENCIES = "show.managed.dependencies"; //NOI18N
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
     private NbMavenProjectImpl project;
@@ -143,6 +144,7 @@ public class DependenciesNode extends AbstractNode {
         toRet.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
         toRet.add(null);
         toRet.add(new ShowClasspathDepsAction());
+        toRet.add(new ShowManagedStateAction());
         return toRet.toArray(new Action[toRet.size()]);
     }
     
@@ -436,6 +438,12 @@ public class DependenciesNode extends AbstractNode {
         boolean b = prefs.getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false); //NOI18N
         return b;
     }
+
+    static boolean showManagedState() {
+        Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+        boolean b = prefs.getBoolean(SHOW_MANAGED_DEPENDENCIES, false); //NOI18N
+        return b;
+    }
     
     private static class ShowClasspathDepsAction extends AbstractAction implements Presenter.Popup {
 
@@ -464,6 +472,38 @@ public class DependenciesNode extends AbstractNode {
         }
         
     }
+
+    private class ShowManagedStateAction extends AbstractAction implements Presenter.Popup {
+
+        public ShowManagedStateAction() {
+            String s = NbBundle.getMessage(DependenciesNode.class, "LBL_ShowManagedState");
+            putValue(Action.NAME, s);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            boolean b = showManagedState();
+            Preferences prefs = NbPreferences.root().node(PREF_DEPENDENCIES_UI); //NOI18N
+            prefs.putBoolean(SHOW_MANAGED_DEPENDENCIES, !b); //NOI18N
+            try {
+                prefs.flush();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            for (Node nd : getChildren().getNodes(true)) {
+                if (nd instanceof DependencyNode) {
+                    ((DependencyNode)nd).refreshNode();
+                }
+            }
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
+            mi.setSelected(showManagedState());
+            return mi;
+        }
+
+    }
+
     
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
