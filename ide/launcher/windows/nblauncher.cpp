@@ -144,6 +144,12 @@ int NbLauncher::start(int argc, char *argv[]) {
     }
     nbexecPath += NBEXEC_FILE_PATH;
 
+    const char *curDir = getCurrentDir();
+    if (curDir) {
+        logMsg("Changing current directory to: \"%s\"", curDir);
+        SetCurrentDirectory(curDir);
+    }
+
     NBExecLoader loader;
     return loader.start(nbexecPath.c_str(), newArgs.getCount(), newArgs.getArgs());
 }
@@ -434,4 +440,8 @@ const char * NbLauncher::getExtraClustersOptName() {
 
 const char * NbLauncher::getJdkHomeOptName() {
     return OPT_NB_JDK_HOME;
+}
+
+const char * NbLauncher::getCurrentDir() {
+    return 0;
 }
