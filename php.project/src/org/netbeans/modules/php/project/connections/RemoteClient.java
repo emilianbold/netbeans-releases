@@ -1134,7 +1134,7 @@ public final class RemoteClient implements Cancellable {
             io = builder.io;
             additionalInitialSubdirectory = builder.additionalInitialSubdirectory;
             preservePermissions = builder.preservePermissions;
-            uploadDirectly = builder.preservePermissions;
+            uploadDirectly = builder.uploadDirectly;
             operationMonitor = builder.operationMonitor;
         }
 

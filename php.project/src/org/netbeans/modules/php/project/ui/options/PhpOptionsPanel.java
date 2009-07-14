@@ -40,10 +40,9 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -63,7 +62,8 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
-import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
+import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
@@ -92,15 +92,25 @@ public class PhpOptionsPanel extends JPanel {
     }
 
     private void initPhpGlobalIncludePath() {
-        DefaultListModel listModel = IncludePathUiSupport.createListModel(
+        DefaultListModel listModel = PathUiSupport.createListModel(
                 GlobalIncludePathSupport.getInstance().itemsIterator());
+        PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            public File getCurrentDirectory() {
+                return LastUsedFolders.getIncludePath();
+            }
+            public void setCurrentDirectory(File currentDirectory) {
+                LastUsedFolders.setIncludePath(currentDirectory);
+            }
+        };
+
         includePathList.setModel(listModel);
-        includePathList.setCellRenderer(new IncludePathUiSupport.ClassPathListCellRenderer());
-        IncludePathUiSupport.EditMediator.register(includePathList,
+        includePathList.setCellRenderer(new PathUiSupport.ClassPathListCellRenderer());
+        PathUiSupport.EditMediator.register(includePathList,
                                                addFolderButton.getModel(),
                                                removeButton.getModel(),
                                                moveUpButton.getModel(),
-                                               moveDownButton.getModel());
+                                               moveDownButton.getModel(),
+                                               directoryHandler);
     }
 
     public String getPhpInterpreter() {
@@ -175,7 +185,7 @@ public class PhpOptionsPanel extends JPanel {
 
     public String getPhpGlobalIncludePath() {
         String[] paths = GlobalIncludePathSupport.getInstance().encodeToStrings(
-                IncludePathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
+                PathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
         StringBuilder path = new StringBuilder();
         for (String s : paths) {
             path.append(s);

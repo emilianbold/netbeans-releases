@@ -37,29 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.phpmodule;
+package org.netbeans.modules.php.symfony;
 
-import java.util.List;
-import javax.swing.Action;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleVisibilityExtender;
+import org.openide.filesystems.FileObject;
 
 /**
- * Provides support for extending a PHP module with a PHP framework's actions, that is,
- * it allows to add actions to the PHP module.
- *
  * @author Tomas Mysik
  */
-public abstract class PhpModuleActionsExtender {
+public class SymfonyPhpModuleVisibilityExtender extends PhpModuleVisibilityExtender {
+    // currently, only "cache" directory directly underneath source directory
+    private static final String CACHE = "cache"; // NOI18N
 
-    /**
-     * Get the name of the menu, typically the name of the framework.
-     * @return the name of the menu, typically the name of the framework.
-     */
-    public abstract String getMenuName();
+    private final PhpModule phpModule;
 
-    /**
-     * Get the list of actions for the given framework that will be displayed in the project's menu.
-     * All <code>null</code> values are replaced by a separator.
-     * @return list of actions, can be empty but never <code>null</code>.
-     */
-    public abstract List<? extends Action> getActions();
+    public SymfonyPhpModuleVisibilityExtender(PhpModule phpModule) {
+        assert phpModule != null;
+        this.phpModule = phpModule;
+    }
+
+    @Override
+    public boolean isVisible(FileObject fileObject) {
+        if (!fileObject.getNameExt().equals(CACHE)) {
+            return true;
+        }
+        FileObject cache = phpModule.getSourceDirectory().getFileObject(CACHE);
+        assert cache != null && cache.isFolder() : "cache directory should exist for symfony project " + phpModule.getSourceDirectory();
+        return !cache.equals(fileObject);
+    }
 }

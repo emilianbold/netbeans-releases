@@ -56,7 +56,7 @@ public final class LastUsedFolders {
     private static final String OPTIONS_PHP_INTERPRETER = "optionsInterpreter"; // NOI18N
     private static final String OPTIONS_PHP_UNIT = "optionsPhpUnit"; // NOI18N
     private static final String COPY_FILES = "copyFiles"; // NOI18N
-    private static final String INCLUDE_PAH = "includePath"; // NOI18N
+    private static final String INCLUDE_PATH = "includePath"; // NOI18N
     private static final String SOURCES = "sources"; // NOI18N
     private static final String PROJECT = "project"; // NOI18N
     private static final String PRIVATE_KEY = "privateKey"; // NOI18N
@@ -117,11 +117,11 @@ public final class LastUsedFolders {
     }
 
     public static File getIncludePath() {
-        return getFile(INCLUDE_PAH);
+        return getFile(INCLUDE_PATH);
     }
 
     public static void setIncludePath(File includePath) {
-        setFile(INCLUDE_PAH, includePath);
+        setFile(INCLUDE_PATH, includePath);
     }
 
     public static File getSources() {
