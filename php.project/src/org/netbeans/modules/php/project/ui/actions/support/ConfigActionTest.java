@@ -56,6 +56,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
@@ -371,7 +372,11 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public void rerun() {
-            run(info);
+            PhpActionProvider.submitTask(new Runnable() {
+                public void run() {
+                    ConfigActionTest.this.run(info);
+                }
+            });
         }
 
         public boolean enabled() {
@@ -408,7 +413,11 @@ class ConfigActionTest extends ConfigAction {
 
         @Override
         public void rerun() {
-            debug(info);
+            PhpActionProvider.submitTask(new Runnable() {
+                public void run() {
+                    ConfigActionTest.this.debug(info);
+                }
+            });
         }
     }
 
