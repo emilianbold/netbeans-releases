@@ -45,8 +45,11 @@ import groovy.lang.GroovyClassLoader;
 import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.CancellationException;
 import javax.lang.model.element.Element;
@@ -57,6 +60,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MixinNode;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -71,9 +75,10 @@ import org.openide.util.Exceptions;
 final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
 
     public CompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
-            CodeSource security, GroovyClassLoader loader, JavaSource javaSource) {
+            CodeSource security, GroovyClassLoader loader, GroovyClassLoader transformationLoader,
+            JavaSource javaSource) {
 
-        super(configuration, security, loader);
+        super(configuration, security, loader, transformationLoader);
         this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, javaSource);
     }
 
@@ -155,9 +160,21 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
         private ClassNode createClassNode(String name, TypeElement typeElement) {
             int modifiers = 0;
             ClassNode superClass = null;
+            Set<ClassNode> interfaces = new HashSet<ClassNode>();
 
             if (typeElement.getKind().isInterface()) {
-                modifiers = Opcodes.ACC_INTERFACE;
+                if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
+// FIXME give it up and use classloader - annotations created in sources won't work
+                    return null;
+//                    modifiers |= Opcodes.ACC_ANNOTATION;
+//                    interfaces.add(ClassHelper.Annotation_TYPE);
+                }
+                modifiers |= Opcodes.ACC_INTERFACE;
+
+                for (TypeMirror interf : typeElement.getInterfaces()) {
+                    interfaces.add(new ClassNode(Utilities.getClassName(interf).toString(),
+                            Opcodes.ACC_INTERFACE, null));
+                }
             } else {
                 // initialize supertypes
                 // super class is required for try {} catch block exception type
@@ -184,17 +201,18 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
 
                 while (!supers.empty()) {
                     superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(),
-                            0, superClass);
+                            0, superClass, Collections.<ClassNode>emptySet());
                 }
             }
-            return createClassNode(name, modifiers, superClass);
+            return createClassNode(name, modifiers, superClass, interfaces);
         }
 
-        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass) {
+        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass, Set<ClassNode> interfaces) {
             if ("java.lang.Object".equals(name) && superClass == null) { // NOI18N
                 return ClassHelper.OBJECT_TYPE;
             }
-            return new ClassNode(name, modifiers, superClass);
+            return new ClassNode(name, modifiers, superClass,
+                    (ClassNode[]) interfaces.toArray(new ClassNode[interfaces.size()]), MixinNode.EMPTY_ARRAY);
         }
 
     }

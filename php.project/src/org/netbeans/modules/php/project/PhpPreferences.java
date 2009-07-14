@@ -48,7 +48,7 @@ import org.openide.util.NbPreferences;
 public final class PhpPreferences {
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing private preferences which are not imported
-    private static final String PRIVATE_PREFERENCES_PATH = "private";//NOI18N
+    private static final String PRIVATE_PREFERENCES_PATH = "private"; // NOI18N
 
     private PhpPreferences() {
     }
@@ -59,7 +59,7 @@ public final class PhpPreferences {
      * by upgrader when first started new NB version
      * @return instance of Preferences node
      */
-    public static final Preferences getPreferences(boolean importEnabled) {
+    public static Preferences getPreferences(boolean importEnabled) {
         Preferences forModule = NbPreferences.forModule(PhpPreferences.class);
         return (importEnabled) ? forModule : forModule.node(PRIVATE_PREFERENCES_PATH);
     }

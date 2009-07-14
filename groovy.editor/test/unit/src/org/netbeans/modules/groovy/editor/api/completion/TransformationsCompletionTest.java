@@ -37,66 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.classpath;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
+package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
- * @author Petr Hrebejk, Tomas Mysik
+ *
+ * @author Petr Hejl
  */
-public final class GlobalIncludePathSupport extends BasePathSupport {
-    private static final GlobalIncludePathSupport INSTANCE = new GlobalIncludePathSupport();
+import java.util.Map;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-    private GlobalIncludePathSupport() {
+/**
+ *
+ * @author Petr Hejl
+ */
+public class TransformationsCompletionTest extends GroovyTestBase {
+
+    String TEST_BASE = "testfiles/completion/transformations/";
+
+    public TransformationsCompletionTest(String testName) {
+        super(testName);
+        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    public static GlobalIncludePathSupport getInstance() {
-        return INSTANCE;
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
     }
 
-    public Iterator<Item> itemsIterator() {
-        // XXX more performance friendly impl. would return a lazzy iterator
-        return itemsList().iterator();
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/transformations")) }));
+        return map;
     }
 
-    public List<Item> itemsList() {
-        String[] pe = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
-        List<Item> items = new ArrayList<Item>(pe.length);
-        for (String p : pe) {
-            Item item = null;
-            File f = new File(p);
-            if (!f.exists()) {
-                item = Item.createBroken(p, p);
-            } else {
-                item = Item.create(p, p);
-            }
-            items.add(item);
-        }
-        return items;
+    public void testTransformations1() throws Exception {
+        checkCompletion(TEST_BASE + "Transformations1.groovy", "        Transformations1.in^", true);
     }
 
-    /** Converts list of classpath items into array of Strings.
-     * !! This method creates references in the project !!
-     */
-    public String[] encodeToStrings(Iterator<Item> classpath) {
-        List<String> result = new ArrayList<String>();
-        while (classpath.hasNext()) {
-            Item item = classpath.next();
-            result.add(item.getFilePath());
-        }
-
-        String[] items = new String[result.size()];
-        for (int i = 0; i < result.size(); i++) {
-            if (i < result.size() - 1) {
-                items[i] = result.get(i) + ":"; // NOI18N
-            } else  {
-                items[i] = result.get(i);
-            }
-        }
-        return items;
-    }
 }

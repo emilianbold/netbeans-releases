@@ -37,29 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.phpmodule;
+package org.netbeans.modules.php.project.ui.customizer;
 
-import java.util.List;
-import javax.swing.Action;
+import org.netbeans.modules.php.project.classpath.BaseProjectPathSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
- * Provides support for extending a PHP module with a PHP framework's actions, that is,
- * it allows to add actions to the PHP module.
- *
  * @author Tomas Mysik
  */
-public abstract class PhpModuleActionsExtender {
+public class IgnorePathSupport extends BaseProjectPathSupport {
 
-    /**
-     * Get the name of the menu, typically the name of the framework.
-     * @return the name of the menu, typically the name of the framework.
-     */
-    public abstract String getMenuName();
+    public IgnorePathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper, AntProjectHelper antProjectHelper) {
+        super(evaluator, referenceHelper, antProjectHelper);
+    }
 
-    /**
-     * Get the list of actions for the given framework that will be displayed in the project's menu.
-     * All <code>null</code> values are replaced by a separator.
-     * @return list of actions, can be empty but never <code>null</code>.
-     */
-    public abstract List<? extends Action> getActions();
+    @Override
+    protected boolean isWellKnownPath(String p) {
+        return false;
+    }
 }

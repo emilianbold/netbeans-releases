@@ -88,7 +88,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 }
                 IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
                         project.getRefHelper(), project.getHelper());
-                PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport);
+                IgnorePathSupport ignorePathSupport = new IgnorePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                        project.getRefHelper(), project.getHelper());
+                PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport, ignorePathSupport);
                 Lookup context = Lookups.fixed(project, uiProperties);
 
                 OptionListener optionListener = new OptionListener(project);

@@ -53,7 +53,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.WeakListeners;
 
 /**
- * Source class path implementation
+ * Source class path implementation.
  * @author Tor Norbye
  * @author Tomas Zezula
  */
@@ -85,7 +85,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             }
             return resources;
         }
-        
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -47,13 +47,13 @@ import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
  * Helper class to get miscellaneous properties related to single PHP project
- * (like timestamp when a project has been uploaded last time etc.)
+ * (like timestamp when a project has been uploaded last time etc.).
  * @author Tomas Mysik
  */
 public final class ProjectSettings {
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
-    private static final String PROJECT_PREFERENCES_PATH = "projects";//NOI18N
+    private static final String PROJECT_PREFERENCES_PATH = "projects"; // NOI18N
 
     private static final String LAST_UPLOAD = "lastUpload"; // NOI18N
     private static final String DEBUG_URLS = "debugUrls"; // NOI18N
