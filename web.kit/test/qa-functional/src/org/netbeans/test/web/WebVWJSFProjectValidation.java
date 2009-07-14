@@ -45,7 +45,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
-import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -58,13 +57,6 @@ import org.openide.util.Exceptions;
  * @author dkolar
  */
 public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
-        protected static ProjectHelper phelper = new ProjectHelper() {
-
-        public Node getSourceNode() {
-            return new SourcePackagesNode(PROJECT_NAME);
-        }
-    };
-    
 
     static {
         PROJECT_NAME = "WebVWJSFProject";
@@ -142,7 +134,7 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer(getServerNode(Server.ANY).getText());
-        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
+        serverStep.selectJavaEEVersion(JAVA_EE_5);
         serverStep.next();
 
         NewWebProjectVWJSFFrameworkStepOperator frameworkStep = new NewWebProjectVWJSFFrameworkStepOperator();
