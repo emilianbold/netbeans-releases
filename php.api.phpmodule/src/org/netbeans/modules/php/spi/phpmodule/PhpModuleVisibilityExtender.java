@@ -39,27 +39,27 @@
 
 package org.netbeans.modules.php.spi.phpmodule;
 
-import java.util.List;
-import javax.swing.Action;
+import org.openide.filesystems.FileObject;
 
 /**
- * Provides support for extending a PHP module with a PHP framework's actions, that is,
- * it allows to add actions to the PHP module.
+ * Provides support for extending a PHP module's visibility, that is,
+ * it allows to recommend to hide any file or folder (suitable mainly
+ * for any kind of caches, private config files etc.).
+ * <p>
+ * Please note that such files/folders are not only recommended to be invisible
+ * in different user views but are likely not e.g. scanned and indexed too.
  *
  * @author Tomas Mysik
+ * @since 1.4
+ * @see org.netbeans.api.queries.VisibilityQuery
+ * @see org.netbeans.spi.queries.VisibilityQueryImplementation
  */
-public abstract class PhpModuleActionsExtender {
+public abstract class PhpModuleVisibilityExtender {
 
     /**
-     * Get the name of the menu, typically the name of the framework.
-     * @return the name of the menu, typically the name of the framework.
+     * Check whether a file is recommended to be visible.
+     * @param fileObject a file which should be checked
+     * @return <code>true</code> if it is recommended to show this file
      */
-    public abstract String getMenuName();
-
-    /**
-     * Get the list of actions for the given framework that will be displayed in the project's menu.
-     * All <code>null</code> values are replaced by a separator.
-     * @return list of actions, can be empty but never <code>null</code>.
-     */
-    public abstract List<? extends Action> getActions();
+    public abstract boolean isVisible(FileObject fileObject);
 }

@@ -65,7 +65,8 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public PhpSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, final SourceRoots sourceRoots, final SourceRoots testRoots, final SourceRoots seleniumRoots) {
+    public PhpSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
+            final SourceRoots sourceRoots, final SourceRoots testRoots, final SourceRoots seleniumRoots) {
         assert project != null;
         assert helper != null;
         assert evaluator != null;
@@ -90,7 +91,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     public SourceGroup[] getSourceGroups(final String type) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
             public SourceGroup[] run() {
-                Sources _delegate;
+                Sources delegateCopy;
                 synchronized (PhpSources.this) {
                     if (dirty) {
                         delegate.removeChangeListener(PhpSources.this);
@@ -98,9 +99,9 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                         delegate.addChangeListener(PhpSources.this);
                         dirty = false;
                     }
-                    _delegate = delegate;
+                    delegateCopy = delegate;
                 }
-                return _delegate.getSourceGroups(type);
+                return delegateCopy.getSourceGroups(type);
             }
         });
     }
@@ -129,8 +130,9 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
             String prop = propNames[i];
             String displayName = roots.getRootDisplayName(rootNames[i], prop);
             String loc = "${" + prop + "}"; // NOI18N
-            sourcesHelper.addPrincipalSourceRoot(loc, displayName, null, null); // NOI18N
-            sourcesHelper.addTypedSourceRoot(loc, SOURCES_TYPE_PHP, displayName, null, null);
+            sourcesHelper.sourceRoot(loc).displayName(displayName)
+                    .add() // adding as principal root, continuing configuration
+                    .type(SOURCES_TYPE_PHP).add(); // adding as typed root
          }
      }
 

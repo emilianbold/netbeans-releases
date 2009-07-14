@@ -50,7 +50,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -234,10 +233,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
             assert phpModule != null;
             for (PhpFrameworkProvider frameworkProvider : ProjectPropertiesSupport.getFrameworks(project)) {
-                PhpModuleActionsExtender actionsProvider = frameworkProvider.createActionsProvider(phpModule);
-                List<? extends Action> frameworkActions = actionsProvider.getActions();
-                if (!frameworkActions.isEmpty()) {
-                    actions.add(new FrameworkMenu(actionsProvider.getMenuName(), frameworkActions));
+                PhpModuleActionsExtender actionsExtender = frameworkProvider.createActionsExtender(phpModule);
+                if (actionsExtender != null) {
+                    List<? extends Action> frameworkActions = actionsExtender.getActions();
+                    if (!frameworkActions.isEmpty()) {
+                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), frameworkActions));
+                    }
                 }
             }
 

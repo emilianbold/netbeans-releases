@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -488,7 +489,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 // it's better the framework don't replace user's original one if exist.
                 String facesConfigTemplate = "faces-config.xml"; //NOI18N
                 if (ddRoot != null) {
-                    if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
+                    Profile profile = webModule.getJ2eeProfile();
+                    if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
                         if (isJSF20)
                             facesConfigTemplate = "faces-config_2_0.xml"; //NOI18N
                         else
