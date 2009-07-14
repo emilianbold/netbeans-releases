@@ -182,7 +182,7 @@ public class JSFClientGenerator {
             jsfFolder += "_" + jsfFolderNameAttemptIndex++;
         }
         final FileObject jsfRoot = FileUtil.createFolder(pagesRootFolder, jsfFolder);
-
+        
         String converterName = ((pkgName == null || pkgName.length() == 0) ? "" : pkgName + ".") + simpleConverterName;
         final String fieldName = JpaControllerUtil.fieldFromClassName(simpleEntityName);
 
@@ -266,12 +266,11 @@ public class JSFClientGenerator {
         
         if (wm.getDocumentBase().getFileObject(WELCOME_JSF_PAGE) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
-            content = content.replaceAll("__ENCODING__", projectEncoding);//NOI18N
+            content = content.replaceAll("__ENCODING__", projectEncoding);
             FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_PAGE);//NOI18N
             JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
         
-        //FileObject jsfFolderBaseFileObject = jsfFolderBase.length() > 0 ? pagesRootFolder.getFileObject(jsfFolderBase) : pagesRootFolder;
         if (pagesRootFolder.getFileObject(JSFCRUD_STYLESHEET) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);//NOI18N
@@ -384,7 +383,6 @@ public class JSFClientGenerator {
     private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, String projectEncoding) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
-        //String indexjspString = "faces/" + WELCOME_JSF_PAGE;
         
         if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), projectEncoding); //NO18N
@@ -934,44 +932,20 @@ public class JSFClientGenerator {
         }, true);
         
         String controllerReferenceName = controllerClass;
-
-        MethodModel setControllerTmp = null;
-        if(useSessionBean)
-        {
-            setControllerTmp = MethodModel.create(
-                "setController",
-                "void",
-                "jpaController = controller;",
-                Arrays.asList(
-                    MethodModel.Variable.create(jpaControllerClass, "controller")
-                ),
-                Collections.<String>emptyList(),
-                Collections.singleton(Modifier.PUBLIC)
-                );
-       }
-        final MethodModel setController = setControllerTmp;
-
         StringBuffer getAsObjectBody = new StringBuffer();
         getAsObjectBody.append("if (string == null || string.length() == 0) {\n return null;\n }\n");
 
         String controllerVariable;
-        if(useSessionBean)
-        {
-            controllerVariable = jpaControllerClass + " controller = jpaController;";// we should pass session bean to converter before
-        }
-        else
-        {
-            if (isInjection) {
-                controllerVariable = jpaControllerClass + " controller = ("
-                        + jpaControllerClass
-                        + ") facesContext.getApplication().getELResolver().getValue(\nfacesContext.getELContext(), null, \""
-                        + managedBeanName + "Jpa\");\n";
-            } else {
-                controllerVariable = jpaControllerClass + " controller = ("
-                        + jpaControllerClass
-                        + ") facesContext.getApplication().getVariableResolver().resolveVariable(\nfacesContext, \""
-                        + managedBeanName + "Jpa\");\n";
-            }
+        if (isInjection) {
+            controllerVariable = jpaControllerClass + " controller = (" 
+                    + jpaControllerClass 
+                    + ") facesContext.getApplication().getELResolver().getValue(\nfacesContext.getELContext(), null, \"" 
+                    + managedBeanName + "Jpa\");\n";
+        } else {
+            controllerVariable = jpaControllerClass + " controller = ("
+                    + jpaControllerClass 
+                    + ") facesContext.getApplication().getVariableResolver().resolveVariable(\nfacesContext, \"" 
+                    + managedBeanName + "Jpa\");\n";
         }
         if (embeddable[0]) {
             getAsObjectBody.append(idPropertyType[0] + " id = getId(string);\n");
@@ -1117,6 +1091,7 @@ public class JSFClientGenerator {
                 Collections.singleton(Modifier.PUBLIC)
                 );
 
+//        FileObject converterFileObject = GenerationUtils.createClass(pkg, simpleConverterName, null);
         JavaSource converterJavaSource = JavaSource.forFileObject(converterFileObject);
         converterJavaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -1128,7 +1103,6 @@ public class JSFClientGenerator {
                 MethodTree getAsObjectTree = MethodModelSupport.createMethodTree(workingCopy, getAsObject);
                 MethodTree getIdTree = embeddable[0] ? MethodModelSupport.createMethodTree(workingCopy, getId) : null;
                 MethodTree getAsStringTree = MethodModelSupport.createMethodTree(workingCopy, getAsString);
-                MethodTree setControllerTree = setController == null ? null : MethodModelSupport.createMethodTree(workingCopy, setController);
                 modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getAsObjectTree);
                 if (embeddable[0]) {
                     modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, getIdTree);
@@ -1143,11 +1117,6 @@ public class JSFClientGenerator {
                     for (String importFq : importFqs) {
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
                     }
-                }
-                if(setControllerTree!=null)
-                {
-                    modifiedClassTree = workingCopy.getTreeMaker().addClassMember(modifiedClassTree, setControllerTree);
-                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "jpaController", jpaControllerClass, java.lang.reflect.Modifier.PRIVATE, null, null);
                 }
                 workingCopy.rewrite(classTree, modifiedClassTree);
             }
@@ -1226,20 +1195,27 @@ public class JSFClientGenerator {
                    
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, fieldName + "Items", new TypeInfo("java.util.List", new String[]{entityClass}), privateModifier, null, null);
                     
-                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "jpaController", jpaControllerClass, privateModifier, null, useSessionBean ? new JpaControllerUtil.AnnotationInfo[]{new JpaControllerUtil.AnnotationInfo("javax.ejb.EJB")} : null);
+                    modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "jpaController", jpaControllerClass, privateModifier, null, null);
                     
                     String converterClass = ((controllerPackage == null || controllerPackage.length() == 0) ? "" : controllerPackage + ".") + simpleConverterName;
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "converter", converterClass, privateModifier, null, null);
                     
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "pagingInfo", utilPackage + ".PagingInfo", privateModifier, null, null);
-                    
+
+                    if(useSessionBean)
+                    {
+                        //need to use transaction api
+                        modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, new JpaControllerUtil.AnnotationInfo[]{new JpaControllerUtil.AnnotationInfo("javax.annotation.Resource")});
+                    }
+
                     String bodyText;
                     MethodInfo methodInfo;
                     
                     String managedBeanName = getManagedBeanName(simpleEntityName);
-                    bodyText = (useSessionBean ? ("") : ("FacesContext facesContext = FacesContext.getCurrentInstance();\n" +
-                            "jpaController = (" + simpleEntityName + "JpaController" + ") facesContext.getApplication().getELResolver().getValue(facesContext.getELContext(), null, \"" + managedBeanName + "Jpa\");\n")) +
-                            "pagingInfo = new PagingInfo();\n";
+                    bodyText = "FacesContext facesContext = FacesContext.getCurrentInstance();\n" +
+                            "jpaController = (" + simpleEntityName + (useSessionBean ? FACADE_SUFFIX : "JpaController") + ") facesContext.getApplication().getELResolver().getValue(facesContext.getELContext(), null, \"" + managedBeanName + "Jpa\");\n" +
+                            "pagingInfo = new PagingInfo();\n" +
+                            "converter = new " + simpleConverterName + "();";
                     methodInfo = new MethodInfo("<init>", publicModifier, "void", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.modifyDefaultConstructor(classTree, modifiedClassTree, workingCopy, methodInfo);
                     
@@ -1289,7 +1265,8 @@ public class JSFClientGenerator {
                                     "java.lang.reflect.InvocationTargetException",
                                     "java.lang.reflect.Method",
                                     "javax.faces.FacesException",
-                                    "javax.ejb.EJB",
+                                    "javax.annotation.Resource",
+                                    "javax.transaction.UserTransaction",
                                     utilPackage + ".JsfUtil"
                         };
 
@@ -1311,9 +1288,9 @@ public class JSFClientGenerator {
                     bodyText = "return JsfUtil.getSelectItems(jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities()")+", true);";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "ItemsAvailableSelectOne", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
-                    
+                                        
                     bodyText = "if (" + fieldName + " == null) {\n" +
-                            fieldName + " = (" + simpleEntityName + ")JsfUtil.getObjectFromRequestParameter(\"jsfcrud.current" + simpleEntityName + "\", getConverter(), null);\n" +
+                            fieldName + " = (" + simpleEntityName + ")JsfUtil.getObjectFromRequestParameter(\"jsfcrud.current" + simpleEntityName + "\", converter, null);\n" +
                             "}\n" + 
                             "if (" + fieldName + " == null) {\n" +
                             fieldName + " = new " + simpleEntityName + "();\n" +
@@ -1349,13 +1326,17 @@ public class JSFClientGenerator {
                         }
                     }
 
-                    bodyText = "try {\n" +
+                    bodyText =
+                            (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
+                            "try {\n" +
                             "jpaController.create(" + fieldName + ");\n" +
+                            (useSessionBean ? "try{utx.commit();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
                             (methodThrowsIllegalOrphanExceptionInCreate ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (Exception e) {\n" +
+                            (useSessionBean ? "try{utx.rollback();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
                             "}\n" +
@@ -1373,7 +1354,7 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
                     
                     bodyText = "reset(false);\n" + 
-                            fieldName + " = (" + simpleEntityName + ")JsfUtil.getObjectFromRequestParameter(\"jsfcrud.current" + simpleEntityName + "\", getConverter(), null);\n" +
+                            fieldName + " = (" + simpleEntityName + ")JsfUtil.getObjectFromRequestParameter(\"jsfcrud.current" + simpleEntityName + "\", converter, null);\n" +
                             "if (" + fieldName + " == null) {\n" +
                             "String request" + simpleEntityName + "String = JsfUtil.getRequestParameter(\"jsfcrud.current" +  simpleEntityName + "\");\n" +
                             "JsfUtil.addErrorMessage(\"The " + fieldName + " with id \" + request" + simpleEntityName + "String + \" no longer exists.\");\n" +
@@ -1388,7 +1369,7 @@ public class JSFClientGenerator {
                 
                     
                     bodyText = codeToPopulatePkFields.toString() + 
-                            "String " + entityStringVar + " = getConverter().getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
+                            "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "String " + currentEntityStringVar + " = JsfUtil.getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
                             "if " + entityStringVar + " == null || " + entityStringVar + ".length() == 0 || !" + entityStringVar + ".equals(" + currentEntityStringVar + ")) {\n" +
                             "String outcome = editSetup();\n" +
@@ -1398,8 +1379,11 @@ public class JSFClientGenerator {
                             "return outcome;\n" +
                             "}\n";
 
-                    bodyText += "try {\n" +
+                    bodyText +=
+                            (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
+                            "try {\n" +
                             "jpaController.edit(" + fieldName + ");\n" +
+                            (useSessionBean ? "try{utx.commit();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
                             (methodThrowsIllegalOrphanExceptionInEdit ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
@@ -1411,6 +1395,7 @@ public class JSFClientGenerator {
                                 "return listSetup();\n")
                             ) +
                             "} catch (Exception e) {\n" +
+                            (useSessionBean ? "try{utx.rollback();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
                             "}\n" +
@@ -1420,10 +1405,13 @@ public class JSFClientGenerator {
                     
 
                     bodyText = "String idAsString = JsfUtil.getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
-                            (embeddable[0] ? simpleIdPropertyType + " id = getConverter().getId(idAsString);" : createIdFieldDeclaration(idPropertyType[0], "idAsString")) +
+                            (embeddable[0] ? simpleIdPropertyType + " id = converter.getId(idAsString);" : createIdFieldDeclaration(idPropertyType[0], "idAsString")) +
                             "\n";
-                    bodyText += "try {\n" +
+                    bodyText += 
+                            (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
+                            "try {\n" +
                             "jpaController."+(useSessionBean ? "remove(jpaController.find(id))" : "destroy(id)")+";\n" +
+                            (useSessionBean ? "try{utx.commit();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
                             (methodThrowsIllegalOrphanExceptionInDestroy ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
@@ -1435,6 +1423,7 @@ public class JSFClientGenerator {
                                 "return relatedOrListOutcome();\n")
                             ) +
                             "} catch (Exception e) {\n" +
+                            (useSessionBean ? "try{utx.rollback();} catch( Exception ex ){}\n" : "")+
                             "JsfUtil.ensureAddErrorMessage(e, \"A persistence error occurred.\");\n" +
                             "return null;\n" +
                             "}\n" +
@@ -1451,10 +1440,10 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     TypeInfo listOfEntityType = new TypeInfo("java.util.List", new String[]{entityClass});
-                    
+
                     bodyText = "if (" + fieldName + "Items == null) {\n" +
                             "getPagingInfo();\n" +
-                            fieldName + "Items = jpaController.find" + (useSessionBean ? "All()" : simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem())" )+";\n" +//TODO : add this method to session bean generation???
+                            fieldName + "Items = jpaController.find" + (useSessionBean ? "Range(new int[]{pagingInfo.getFirstItem(), pagingInfo.getFirstItem() + pagingInfo.getBatchSize()})" : simpleEntityName + "Entities(pagingInfo.getBatchSize(), pagingInfo.getFirstItem())" )+";\n" +//TODO : add this method to session bean generation???
                             "}\n" +
                             "return " + fieldName + "Items;";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "Items", publicModifier, listOfEntityType, null, null, null, bodyText, null, null);
@@ -1507,27 +1496,21 @@ public class JSFClientGenerator {
                     String newEntityStringInit;
                     if (embeddable[0]) {
                         newEntityStringInit = "new" + simpleEntityName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" + 
-                                "String " + newEntityStringVar + " = getConverter().getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";
+                                "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";
                     }
                     else {
-                        newEntityStringInit = "String " + newEntityStringVar + " = getConverter().getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";
+                        newEntityStringInit = "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";
                     }
                     bodyText = simpleEntityName + " new" + simpleEntityName + " = new " + simpleEntityName + "();\n" +
                             newEntityStringInit +
-                            "String " + entityStringVar + " = getConverter().getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
+                            "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
                             "createSetup();\n" +
-                            //"throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
                             "}\n";
                     methodInfo = new MethodInfo("validateCreate", publicModifier, "void", null, new String[]{"javax.faces.context.FacesContext", "javax.faces.component.UIComponent", "java.lang.Object"}, new String[]{"facesContext", "component", "value"}, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
-
-                    bodyText = "if(converter==null){\n"+
-                            "converter = new " + simpleConverterName + "();\n"
-                            + (useSessionBean ? "converter.setController( jpaController )" : "")
-                            +"};\n"
-                            +"return converter;";
-                    methodInfo = new MethodInfo("getConverter", publicModifier, "javax.faces.convert.Converter", null, null, null, bodyText, null, null);
+                    
+                    methodInfo = new MethodInfo("getConverter", publicModifier, "javax.faces.convert.Converter", null, null, null, "return converter;", null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
 
                     workingCopy.rewrite(classTree, modifiedClassTree);
