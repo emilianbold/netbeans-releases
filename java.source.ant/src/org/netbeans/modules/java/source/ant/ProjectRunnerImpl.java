@@ -129,6 +129,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         FileObject toRun = getValue(properties, PROP_EXECUTE_FILE, FileObject.class);
         String workDir = getValue(properties, PROP_WORK_DIR, String.class);
         String className = getValue(properties, PROP_CLASSNAME, String.class);
+        ClassPath boot = getValue(properties, "boot.classpath", ClassPath.class);
         ClassPath exec = getValue(properties, PROP_EXECUTE_CLASSPATH, ClassPath.class);
         String javaTool = getValue(properties, PROP_PLATFORM_JAVA, String.class);
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
@@ -160,12 +161,12 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             Parameters.notNull("toRun", toRun);
             exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
         }
-        if (javaTool == null) {
-            JavaPlatform p = getValue(properties, PROP_PLATFORM, JavaPlatform.class);
+        JavaPlatform p = getValue(properties, PROP_PLATFORM, JavaPlatform.class);
 
-            if (p == null) {
-                p = JavaPlatform.getDefault();
-            }
+        if (p == null) {
+            p = JavaPlatform.getDefault();
+        }
+        if (javaTool == null) {
             
             FileObject javaToolFO = p.findTool("java");
 
@@ -177,6 +178,9 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             }
             
             javaTool = FileUtil.toFile(javaToolFO).getAbsolutePath();
+        }
+        if (boot == null) {
+            boot = p.getBootstrapLibraries();
         }
         if (projectName == null) {
             Project project = getValue(properties, "project", Project.class);
@@ -198,6 +202,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
         Properties antProps = new Properties();
+        setProperty(antProps, "platform.bootcp", boot.toString(ClassPath.PathConversionMode.FAIL));
         setProperty(antProps, "classpath", cp);
         setProperty(antProps, "classname", className);
         setProperty(antProps, "platform.java", javaTool);
