@@ -538,9 +538,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     /**
-     * !PW XXX Is there a more efficient way to implement a failed future object? 
+     * !PW XXX Is there a more efficient way to implement a successful future object?
      * 
-     * @return Future object that represents an immediate failed operation
+     * @return Future object that represents an immediate successful operation
      */
     private static Future<OperationState> successfulOperation() {
         return new Future<OperationState>() {
