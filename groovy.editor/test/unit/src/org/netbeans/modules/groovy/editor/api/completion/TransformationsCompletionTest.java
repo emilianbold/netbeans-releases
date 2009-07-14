@@ -37,24 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.index;
-
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Petr Hejl
  */
-public class IndexedNamespace extends IndexedElement {
-    protected IndexedNamespace(String name, String in, PHPIndex index, String fileUrl,
-            int offset, int flags){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.PACKAGE);
-        
+import java.util.Map;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+/**
+ *
+ * @author Petr Hejl
+ */
+public class TransformationsCompletionTest extends GroovyTestBase {
+
+    String TEST_BASE = "testfiles/completion/transformations/";
+
+    public TransformationsCompletionTest(String testName) {
+        super(testName);
+        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    public QualifiedName getQualifiedName()
-    {
-        return QualifiedName.create(getName());
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
     }
+
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/transformations")) }));
+        return map;
+    }
+
+    public void testTransformations1() throws Exception {
+        checkCompletion(TEST_BASE + "Transformations1.groovy", "        Transformations1.in^", true);
+    }
+
 }

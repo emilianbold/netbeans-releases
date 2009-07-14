@@ -440,23 +440,21 @@ public class GroovyParser extends Parser {
 
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
+        GroovyClassLoader transformationLoader = new TransformationClassLoader(CompilationUnit.class.getClassLoader(),
+                cp, configuration);
 
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
                 // but for now it is faster to use javac only for sources
 
                 // null happens in GSP
-                // FIXME real classpath is passed in NbCompilationUnit all classes
-                // are found by Java and field completion does not work
-                // this has to evaluated and fixed - due to need of super
-                // ClassNode for exceptions
                 bootPath == null ? EMPTY_CLASSPATH : bootPath,
                 compilePath == null ? EMPTY_CLASSPATH : compilePath,
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
         CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
-                null, classLoader, javaSource);
+                null, classLoader, transformationLoader, javaSource);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
@@ -792,6 +790,17 @@ public class GroovyParser extends Parser {
     private static interface ParseErrorHandler {
 
         void error(Error error);
+
+    }
+
+    private static class TransformationClassLoader extends GroovyClassLoader {
+
+        public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
+            super(parent, config);
+            for (ClassPath.Entry entry : cp.entries()) {
+                this.addURL(entry.getURL());
+            }
+        }
 
     }
 

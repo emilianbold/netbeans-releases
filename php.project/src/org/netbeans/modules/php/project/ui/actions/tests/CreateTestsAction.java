@@ -311,9 +311,7 @@ public final class CreateTestsAction extends NodeAction {
     private Future<Integer> generateSkeleton(PhpProject project, PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
         // test does not exist yet
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(parent)
-                .addArgument(paramSkeleton)
-                .addArgument(className);
+                .workingDirectory(parent);
         List<String> generatedFiles = new ArrayList<String>(2);
         File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
         if (bootstrap != null) {
@@ -330,6 +328,8 @@ public final class CreateTestsAction extends NodeAction {
         PhpUnit.informAboutGeneratedFiles(generatedFiles);
 
         externalProcessBuilder = externalProcessBuilder
+                .addArgument(paramSkeleton)
+                .addArgument(className)
                 .addArgument(sourceFo.getNameExt());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR,
                 String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, className, sourceFo.getNameExt())); // NOI18N
