@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -60,14 +62,18 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+
+import com.sun.source.tree.Tree;
 
 
 /**
@@ -112,10 +118,16 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         
         if ( parent instanceof TypeElement){
             /*if ( element.getSimpleName().contentEquals("myClass")){
-                boolean isAss = modelImpl.getHelper().getCompilationController().getTypes().
-                    isAssignable( resolveType("foo.MyClass", modelImpl.getHelper()), 
-                            element.asType());
-                System.out.println("%% "+isAss);
+               try {
+                modelImpl.getHelper().getCompilationController().toPhase( Phase.RESOLVED);
+            }
+            catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+               Tree tree = modelImpl.getHelper().getCompilationController().
+                    getTrees().getTree( element );
+                System.out.println("%% "+tree);
             }*/
             return findFieldInjectable(element, modelImpl);
         }
@@ -288,37 +300,73 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         if (!(typeElement instanceof TypeElement)) {
             return Collections.emptySet();
         }
-        Set<TypeElement> result = new HashSet<TypeElement>();
         if (((TypeElement) typeElement).getTypeParameters().size() != 0) {
-            // TODO : care about assignability of raw and parameterized types.
-            // one needs inspect all references (recursively) to variable element type 
-            // and choose appropriate parameterized types . 
+            return getAssignables( modelImpl, (TypeElement)typeElement, element );
         }
         else {
-            ElementHandle<TypeElement> handle = ElementHandle
-                    .create((TypeElement) typeElement);
-            final Set<ElementHandle<TypeElement>> handles = modelImpl
-                    .getHelper().getClasspathInfo().getClassIndex()
-                    .getElements(
-                            handle,
-                            EnumSet.of(SearchKind.IMPLEMENTORS),
-                            EnumSet.of(SearchScope.SOURCE,
-                                    SearchScope.DEPENDENCIES));
-            if (handles == null) {
-                LOGGER.log(Level.WARNING,
-                        "ClassIndex.getElements() was interrupted"); // NOI18N
-                return Collections.emptySet();
+            return getImplementors(modelImpl, typeElement);
+        }
+    }
+
+    private Set<TypeElement> getAssignables( WebBeansModelImplementation model , 
+            TypeElement typeElement  , VariableElement element) 
+    {
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        
+        CompilationController controller = model.getHelper().getCompilationController();
+        ElementHandle<TypeElement> searchedTypeHandle = ElementHandle.create(typeElement);
+        final Set<ElementHandle<TypeElement>> elementHandles = model.getHelper().
+            getClasspathInfo().getClassIndex().getElements(
+                searchedTypeHandle,
+                EnumSet.of(SearchKind.TYPE_REFERENCES),
+                EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
+        if (elementHandles == null) {
+            LOGGER.warning("ClassIndex.getElements() was interrupted"); // NOI18N
+            return result;
+        }
+        for (ElementHandle<TypeElement> elementHandle : elementHandles) {
+            LOGGER.log(Level.FINE, "found element {0}", 
+                    elementHandle.getQualifiedName()); // NOI18N
+            TypeElement found = elementHandle.resolve(controller);
+            if (typeElement == null) {
+                continue;
             }
-            for (ElementHandle<TypeElement> elementHandle : handles) {
-                LOGGER.log(Level.FINE, "found derived element {0}",
-                        elementHandle.getQualifiedName()); // NOI18N
-                TypeElement derivedElement = elementHandle.resolve(modelImpl
-                        .getHelper().getCompilationController());
-                if (derivedElement == null) {
-                    continue;
-                }
-                result.add(derivedElement);
+            // collect all references , further there will be assignability filtering 
+            result.add( found );
+        }
+        TypeBindingFilter filter = TypeBindingFilter.get();
+        filter.init( element , model );
+        filter.filter( result );
+        return result;
+    }
+
+    private Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
+            Element typeElement )
+    {
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        ElementHandle<TypeElement> handle = ElementHandle
+                .create((TypeElement) typeElement);
+        final Set<ElementHandle<TypeElement>> handles = modelImpl
+                .getHelper().getClasspathInfo().getClassIndex()
+                .getElements(
+                        handle,
+                        EnumSet.of(SearchKind.IMPLEMENTORS),
+                        EnumSet.of(SearchScope.SOURCE,
+                                SearchScope.DEPENDENCIES));
+        if (handles == null) {
+            LOGGER.log(Level.WARNING,
+                    "ClassIndex.getElements() was interrupted"); // NOI18N
+            return Collections.emptySet();
+        }
+        for (ElementHandle<TypeElement> elementHandle : handles) {
+            LOGGER.log(Level.FINE, "found derived element {0}",
+                    elementHandle.getQualifiedName()); // NOI18N
+            TypeElement derivedElement = elementHandle.resolve(modelImpl
+                    .getHelper().getCompilationController());
+            if (derivedElement == null) {
+                continue;
             }
+            result.add(derivedElement);
         }
         return result;
     }

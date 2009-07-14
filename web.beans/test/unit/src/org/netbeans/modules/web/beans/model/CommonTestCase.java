@@ -113,16 +113,14 @@ public class CommonTestCase extends JavaSourceTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/New.java",
                 "package javax.enterprise.inject; " +
-                "import static java.lang.annotation.ElementType.METHOD; "+
                 "import static java.lang.annotation.ElementType.FIELD; "+
                 "import static java.lang.annotation.ElementType.PARAMETER; "+
-                "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import java.lang.annotation.*; "+
                 "import java.lang.annotation.RetentionPolicy; "+
                 "@BindingType " +
                 "@Retention(RUNTIME) "+
-                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
+                "@Target({FIELD, PARAMETER}) "+          
                 "public @interface New  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Current.java",
