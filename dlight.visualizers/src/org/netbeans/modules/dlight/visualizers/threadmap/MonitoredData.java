@@ -71,26 +71,12 @@ public class MonitoredData {
         return data.get(index).getThreadInfo();
     }
 
-    public int[] getThreadIds() {
-        int[] res = new int[data.size()];
-        for(int i = 0; i < data.size(); i++){
-            res[i] = data.get(i).getThreadInfo().getThreadId();
-        }
-        return res;
-    }
-
     public List<ThreadState> getThreadStates(int index) {
         return data.get(index).getThreadState();
     }
 
-    public long[] getStateTimestamps() {
-        List<ThreadState> states = data.get(0).getThreadState();
-        int size = states.size();
-        long[] res = new long[size];
-        for(int i = 0; i < size; i++) {
-            ThreadState state = states.get(i);
-            res[i] = state.getTimeStamp();
-        }
-        return res;
+    public long getStartTimestamp(int index) {
+        List<ThreadState> states = data.get(index).getThreadState();
+        return states.get(0).getTimeStamp();
     }
 }
