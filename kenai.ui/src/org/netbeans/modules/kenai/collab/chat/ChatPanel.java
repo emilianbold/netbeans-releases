@@ -403,10 +403,10 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String replaceLinks(String body) {
         // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
-        String result = body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>");
+        String result = body.replaceAll("  ", " &nbsp;").replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>");
 
         result = RESOURCES.matcher(result).replaceAll("<a href=\"$0\">$0</a>");
-        return result.replaceAll(" ", "&nbsp;"); //NOI18N
+        return result; //NOI18N
     }
 
     private String replaceSmileys(String body) {
