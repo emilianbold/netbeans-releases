@@ -138,9 +138,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final int SUMMARY_COLUMN_INDEX = 2;
     private static final int RIGHT_DISPLAY_MARGIN = 20; // extra space [pixels] on the right end of the threads display
     private static final int LEFT_DISPLAY_MARGIN = 20;
-    private static final int NAME_COLUMN_WIDTH = 190;
+    private static final int NAME_COLUMN_WIDTH = 100;
     private static final int MIN_NAME_COLUMN_WIDTH = 55;
-    static final int MIN_SUMMARY_COLUMN_WIDTH = 50;
+    static final int MIN_SUMMARY_COLUMN_WIDTH = 62;
 
     private ArrayList<Integer> filteredDataToDataIndex = new ArrayList<Integer>();
     private CustomTimeLineViewport viewPort;

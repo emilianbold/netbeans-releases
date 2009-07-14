@@ -126,7 +126,7 @@ public class ThreadMapVisualizer extends JPanel implements
         DLightExecutorService.scheduleAtFixedRate(new Runnable(){
             public void run() {
                 try {
-                    final List<ThreadMapData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, 0, 3000, 1, false));
+                    final List<ThreadMapData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, dataManager.getEndTime()/1000, 3000, 1, false));
                     final boolean isEmptyConent = list == null || list.isEmpty();
                     UIThread.invoke(new Runnable() {
                         public void run() {

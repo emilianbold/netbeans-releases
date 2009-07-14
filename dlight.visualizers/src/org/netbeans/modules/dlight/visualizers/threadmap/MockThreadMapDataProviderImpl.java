@@ -60,6 +60,8 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
  */
 public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
+    private static final int Interval = 1000; // frequency in ms of generating mock data
+
     private final ThreadMapStorage dataBase = new ThreadMapStorage();
 
     public List<ThreadMapData> queryData(ThreadMapDataQuery query) {
@@ -75,7 +77,7 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
     public void dataFiltersChanged(List<DataFilter> newSet) {
     }
 
-    private static final class ThreadMapStorage {
+    private static final class ThreadMapStorage implements Runnable {
 
         private final List<MockThreadMapData> storage = new ArrayList<MockThreadMapData>();
         private Timer timer = new Timer();
@@ -87,27 +89,31 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
                 @Override
                 public void run() {
-                    if (currentTime == 0) {
-                        storage.add(new MockThreadMapData("Dispather", 1, 97, 900, 3)); //NOI18N
-                    }
-                    if (currentTime == 20) {
-                        storage.add(new MockThreadMapData("Worker", 2, 980, 0, 20)); //NOI18N
-                    }
-                    if (currentTime == 30) {
-                        storage.add(new MockThreadMapData("Bad Dispather", 3, 800, 200, 0)); //NOI18N
-                    }
-                    if (currentTime == 50) {
-                        storage.add(new MockThreadMapData("Bad Worker", 4, 800, 0, 200)); //NOI18N
-                    }
-                    for (MockThreadMapData data : storage) {
-                        data.advance(currentTime);
-                    }
-                    currentTime++;
+                    ThreadMapStorage.this.run();
                 }
-            }, 0, 1000);
+            }, 0, Interval);
         }
 
-        public List<ThreadMapData> getThreadMap(ThreadMapDataQuery query) {
+        public synchronized void run() {
+            if (currentTime == 0) {
+                storage.add(new MockThreadMapData("Dispather", 1, 97, 900, 3)); //NOI18N
+            }
+            if (currentTime == 20) {
+                storage.add(new MockThreadMapData("Worker", 2, 980, 0, 20)); //NOI18N
+            }
+            if (currentTime == 30) {
+                storage.add(new MockThreadMapData("Bad Dispather", 3, 800, 200, 0)); //NOI18N
+            }
+            if (currentTime == 50) {
+                storage.add(new MockThreadMapData("Bad Worker", 4, 800, 0, 200)); //NOI18N
+            }
+            for (MockThreadMapData data : storage) {
+                data.advance(currentTime);
+            }
+            currentTime++;
+        }
+
+        public synchronized List<ThreadMapData> getThreadMap(ThreadMapDataQuery query) {
             List<ThreadMapData> result = new ArrayList<ThreadMapData>();
             assert query.getTimeUnit() == TimeUnit.SECONDS;
             assert query.getStep() == 1;
@@ -118,9 +124,9 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 List<ThreadState> list = new ArrayList<ThreadState>();
                 for (ThreadState state : data.getThreadState()) {
                     int start = (int) state.getTimeStamp();
-                    if (start < query.getTimeFrom() * 1000) {
+                    if (start < query.getTimeFrom() * Interval) {
                         continue;
-                    } else if (start > query.getTimeTo() * 1000) {
+                    } else if (start > query.getTimeTo() * Interval) {
                         break;
                     }
                     list.add(state);
@@ -203,7 +209,7 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
             rest = (1000 * blockingTime + rest) % s;
             blockingTime = (1000 * blockingTime + oldRest) / s;
             sleepingTime = 1000 - runningTime - waitingTime - blockingTime;
-            MockThreadState state = new MockThreadState(currentTime * 1000, runningTime, waitingTime, blockingTime, sleepingTime);
+            MockThreadState state = new MockThreadState(currentTime * Interval, runningTime, waitingTime, blockingTime, sleepingTime);
             threadLine.add(state);
         }
     }
