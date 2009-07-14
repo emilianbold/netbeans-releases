@@ -4,9 +4,13 @@
             targetNamespace="http://xml.netbeans.org/schema/B"
             xmlns:tns="http://xml.netbeans.org/schema/B"
             elementFormDefault="qualified">
+
+    <xsd:import schemaLocation="G.xsd" namespace="http://xml.netbeans.org/schema/G"/>
+    
     <xsd:include schemaLocation="C.xsd"/>
     <xsd:include schemaLocation="D.xsd"/>
     
     <xsd:element name="B2" type="tns:C2"/>
+    <xsd:element name="B3" type="tns:E2"/>
     
 </xsd:schema>
