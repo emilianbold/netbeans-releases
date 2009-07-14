@@ -41,17 +41,21 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -59,7 +63,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
  */
 /*package-local*/ class ZipSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
-    private FileFilter sharabilityFilter;
+    private SmartFilter filter;
 
     private int plainFilesCount;
     private int dirCount;
@@ -67,7 +71,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
     public ZipSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         super(localDir, executionEnvironment, out, err);
-        sharabilityFilter = new SharabilityFilter();
+        filter = new SmartFilter();
     }
 
     private static File getTemp() {
@@ -89,7 +93,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         }
 
         boolean success = false;
-        try {
+        upload: // the label allows us exiting this block on condition
+        try  {
             if (CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err).get() != 0) {
                 throw new IOException("Can not create directory " + remoteDir); //NOI18N
             }
@@ -98,9 +103,13 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             {
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("Zipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();
-                ZipUtils.zip(zipFile, localDir, sharabilityFilter);
+                ZipUtils.zip(zipFile, localDir, filter);
                 float zipTime = ((float) (System.currentTimeMillis() - zipStart))/1000f;
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("Zipping %s to %s took %f s\n", localDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
+            }
+
+            if (zipFile.length() == 0) {
+                break upload;
             }
             
             String remoteFile = remoteDir + '/' + zipFile.getName(); //NOI18N
@@ -122,9 +131,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                //pb.setCommandLine("unzip " + remoteFile + " > /dev/null");
-                pb.setExecutable("unzip"); // NOI18N
-                pb.setArguments("-o", remoteFile); // NOI18N
+                pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null"); // NOI18N
+                //pb.setExecutable("unzip");
+                //pb.setArguments("-o", remoteFile);
                 pb.setWorkingDirectory(remoteDir);
                 Process proc = pb.call();
 
@@ -151,7 +160,12 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 }
             }
             success = true;
-        } finally {            
+        } finally {
+            try {
+                filter.flush();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         if (logger.isLoggable(Level.FINE)) {
@@ -168,4 +182,68 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     public boolean cancel() {
         return false;
     }
+
+    private class SmartFilter extends SharabilityFilter {
+
+        final FileTimeStamps timeStamps;
+
+        public SmartFilter() {
+            timeStamps = new FileTimeStamps(executionEnvironment);
+        }
+
+        @Override
+        public boolean accept(File file) {
+            boolean accept = super.accept(file);
+            if (accept && ! file.isDirectory()) {
+                if (timeStamps.isChanged(file)) {
+                    //System.out.printf("FILE %s CHANGED\n", file.getAbsolutePath());
+                    timeStamps.rememberTimeStamp(file);
+                } else {
+                    //System.out.printf("FILE %s UNCHANGED\n", file.getAbsolutePath());
+                    accept = false;
+                }
+            }
+            return accept;
+        }
+
+        public void flush() throws BackingStoreException {
+            timeStamps.flush();
+        }
+    }
+
+    private static class FileTimeStamps {
+
+        //private final Properties data;
+        //private final File storageFile;
+        Preferences prefs;
+
+        public FileTimeStamps(ExecutionEnvironment executionEnvironment) {
+            //data = new Properties();
+            //storageFile = new File();
+            prefs = NbPreferences.forModule(getClass());
+            Preferences node = prefs.node(ExecutionEnvironmentFactory.toUniqueID(executionEnvironment));
+            if (node != null) {
+                prefs = node;
+            }
+        }
+
+        public boolean isChanged(File file) {
+            long lastTimeStamp = prefs.getLong(getFileKey(file), -1);
+            long currTimeStamp = file.lastModified();
+            return currTimeStamp != lastTimeStamp;
+        }
+
+        public void rememberTimeStamp(File file) {
+            prefs.putLong(getFileKey(file), file.lastModified());
+        }
+
+        private String getFileKey(File file) {
+            return file.getAbsolutePath();
+        }
+
+        public void flush() throws BackingStoreException {
+            prefs.flush();
+        }
+    }
+
 }

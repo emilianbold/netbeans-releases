@@ -56,7 +56,7 @@ class ZipSyncFactory extends RemoteSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
+        return new ZipSyncWorker(localDir, executionEnvironment, out, err);
     }
 
     @Override
