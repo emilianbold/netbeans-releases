@@ -96,16 +96,24 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         public synchronized void run() {
             if (currentTime == 0) {
-                storage.add(new MockThreadMapData("Dispather", 1, 97, 900, 3)); //NOI18N
+                ThreadModel model = new ThreadModel(97, 900, 3, 0);
+                storage.add(new MockThreadMapData("Dispather", 1, model, 1000)); //NOI18N
             }
             if (currentTime == 20) {
-                storage.add(new MockThreadMapData("Worker", 2, 980, 0, 20)); //NOI18N
+                ThreadModel model = new ThreadModel(980, 0, 20, 0);
+                storage.add(new MockThreadMapData("Worker", 2, model, 60)); //NOI18N
             }
             if (currentTime == 30) {
-                storage.add(new MockThreadMapData("Bad Dispather", 3, 800, 200, 0)); //NOI18N
+                ThreadModel model = new ThreadModel(800, 200, 0, 0);
+                storage.add(new MockThreadMapData("Bad Dispather", 3, model, 40)); //NOI18N
             }
             if (currentTime == 50) {
-                storage.add(new MockThreadMapData("Bad Worker", 4, 800, 0, 200)); //NOI18N
+                ThreadModel model = new ThreadModel(800, 0, 200, 0);
+                storage.add(new MockThreadMapData("Bad Worker", 4, model, 1000)); //NOI18N
+            }
+            if (currentTime == 70) {
+                ThreadModel model = new ThreadModel(300, 400, 200, 100);
+                storage.add(new MockThreadMapData("Unknown", 5, model, 1000)); //NOI18N
             }
             for (MockThreadMapData data : storage) {
                 data.advance(currentTime);
@@ -131,7 +139,9 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
                     }
                     list.add(state);
                 }
-                result.add(new ThreadMapDataImpl(info, list));
+                if (list.size() > 0) {
+                    result.add(new ThreadMapDataImpl(info, list));
+                }
             }
             return result;
         }
@@ -165,8 +175,9 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
         private final int blocking;
         private final int sleeping;
         private final Random rand = new Random();
+        private final int endTimeLine;
 
-        public MockThreadMapData(final String name, final int id, int running, int waiting, int blocking) {
+        public MockThreadMapData(final String name, final int id, ThreadModel model, int endTimeLine) {
             info = new ThreadInfo() {
 
                 public int getThreadId() {
@@ -177,10 +188,12 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
                     return name;
                 }
             };
-            this.running = running;
-            this.waiting = waiting;
-            this.blocking = blocking;
-            sleeping = 1000 - running - waiting - blocking;
+            this.running = model.running;
+            this.waiting = model.waiting;
+            this.blocking = model.blocking;
+            this.sleeping = model.sleeping;
+            assert  1000 - running - waiting - blocking - sleeping == 0;
+            this.endTimeLine = endTimeLine;
         }
 
         public ThreadInfo getThreadInfo() {
@@ -192,25 +205,27 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
         }
 
         public void advance(int currentTime) {
-            int runningTime = running > 0 ? rand.nextInt(running) : 0;
-            int waitingTime = waiting > 0 ? rand.nextInt(waiting) : 0;
-            int blockingTime = blocking > 0 ? rand.nextInt(blocking) : 0;
-            int sleepingTime = sleeping > 0 ? rand.nextInt(sleeping) : 0;
-            int s = runningTime + waitingTime + blockingTime + sleepingTime;
-            int rest = 0;
-            int oldRest = 0;
-            oldRest = rest;
-            rest = (1000 * runningTime + rest) % s;
-            runningTime = (1000 * runningTime + oldRest) / s;
-            oldRest = rest;
-            rest = (1000 * waitingTime + rest) % s;
-            waitingTime = (1000 * waitingTime + oldRest) / s;
-            oldRest = rest;
-            rest = (1000 * blockingTime + rest) % s;
-            blockingTime = (1000 * blockingTime + oldRest) / s;
-            sleepingTime = 1000 - runningTime - waitingTime - blockingTime;
-            MockThreadState state = new MockThreadState(currentTime * Interval, runningTime, waitingTime, blockingTime, sleepingTime);
-            threadLine.add(state);
+            if (currentTime <= endTimeLine) {
+                int runningTime = running > 0 ? rand.nextInt(running) : 0;
+                int waitingTime = waiting > 0 ? rand.nextInt(waiting) : 0;
+                int blockingTime = blocking > 0 ? rand.nextInt(blocking) : 0;
+                int sleepingTime = sleeping > 0 ? rand.nextInt(sleeping) : 0;
+                int s = runningTime + waitingTime + blockingTime + sleepingTime;
+                int rest = 0;
+                int oldRest = 0;
+                oldRest = rest;
+                rest = (1000 * runningTime + rest) % s;
+                runningTime = (1000 * runningTime + oldRest) / s;
+                oldRest = rest;
+                rest = (1000 * waitingTime + rest) % s;
+                waitingTime = (1000 * waitingTime + oldRest) / s;
+                oldRest = rest;
+                rest = (1000 * blockingTime + rest) % s;
+                blockingTime = (1000 * blockingTime + oldRest) / s;
+                sleepingTime = 1000 - runningTime - waitingTime - blockingTime;
+                MockThreadState state = new MockThreadState(currentTime * Interval, runningTime, waitingTime, blockingTime, sleepingTime);
+                threadLine.add(state);
+            }
         }
     }
 
@@ -268,6 +283,20 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         public long getTimeStamp() {
             return currentTime;
+        }
+    }
+
+    private static final class ThreadModel {
+        private final int running;
+        private final int waiting;
+        private final int blocking;
+        private final int sleeping;
+
+        public ThreadModel(int running, int waiting, int blocking, int sleeping) {
+            this.running = running;
+            this.waiting = waiting;
+            this.blocking = blocking;
+            this.sleeping = sleeping;
         }
     }
 }

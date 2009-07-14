@@ -63,7 +63,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.classpath.BaseIncludePathSupport;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -78,12 +78,12 @@ import org.openide.util.NbCollections;
 /**
  * @author Petr Hrebejk, Tomas Mysik
  */
-public final class IncludePathUiSupport {
+public final class PathUiSupport {
 
-    private IncludePathUiSupport() {
+    private PathUiSupport() {
     }
 
-    public static DefaultListModel createListModel(Iterator<BaseIncludePathSupport.Item> it) {
+    public static DefaultListModel createListModel(Iterator<BasePathSupport.Item> it) {
         DefaultListModel model = new DefaultListModel();
         while (it.hasNext()) {
             model.addElement(it.next());
@@ -91,14 +91,14 @@ public final class IncludePathUiSupport {
         return model;
     }
 
-    public static Iterator<BaseIncludePathSupport.Item> getIterator(DefaultListModel model) {
+    public static Iterator<BasePathSupport.Item> getIterator(DefaultListModel model) {
         // XXX Better performing impl. would be nice
         return getList(model).iterator();
     }
 
-    public static List<BaseIncludePathSupport.Item> getList(DefaultListModel model) {
+    public static List<BasePathSupport.Item> getList(DefaultListModel model) {
         return Collections.list(NbCollections.checkedEnumerationByFilter(model.elements(),
-                BaseIncludePathSupport.Item.class, true));
+                BasePathSupport.Item.class, true));
     }
 
     /** Moves items up in the list. The indices array will contain
@@ -188,7 +188,7 @@ public final class IncludePathUiSupport {
         int[] indexes = new int[files.length];
         for (int i = 0, delta = 0; i + delta < files.length;) {
             int current = lastIndex + 1 + i;
-            BaseIncludePathSupport.Item item = BaseIncludePathSupport.Item.create(files[i + delta], null);
+            BasePathSupport.Item item = BasePathSupport.Item.create(files[i + delta], null);
             if (!listModel.contains(item)) {
                 listModel.add(current, item);
                 indexes[delta + i] = current;
@@ -220,7 +220,7 @@ public final class IncludePathUiSupport {
         private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
         static {
             WELL_KNOWN_PATHS_NAMES.put(PhpProjectProperties.GLOBAL_INCLUDE_PATH,
-                    NbBundle.getMessage(IncludePathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));
+                    NbBundle.getMessage(PathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));
         };
 
         // used for global include path (no evaluator, no project folder)
@@ -238,7 +238,7 @@ public final class IncludePathUiSupport {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
-            BaseIncludePathSupport.Item item = (BaseIncludePathSupport.Item) value;
+            BasePathSupport.Item item = (BasePathSupport.Item) value;
 
             super.getListCellRendererComponent(list, getDisplayName(item), index, isSelected, cellHasFocus);
             setIcon(getIcon(item));
@@ -246,15 +246,15 @@ public final class IncludePathUiSupport {
             return this;
         }
 
-        private String getDisplayName(BaseIncludePathSupport.Item item) {
+        private String getDisplayName(BasePathSupport.Item item) {
             switch (item.getType()) {
                 case CLASSPATH:
-                    String name = WELL_KNOWN_PATHS_NAMES.get(BaseIncludePathSupport.getAntPropertyName(item.getReference()));
+                    String name = WELL_KNOWN_PATHS_NAMES.get(BasePathSupport.getAntPropertyName(item.getReference()));
                     return name == null ? item.getReference() : name;
                     //break;
                 default:
                     if (item.isBroken()) {
-                        return NbBundle.getMessage(IncludePathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
+                        return NbBundle.getMessage(PathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
                     }
                     File f = new File(item.getFilePath());
                     if (f.isAbsolute()) {
@@ -265,7 +265,7 @@ public final class IncludePathUiSupport {
             }
         }
 
-        private static Icon getIcon(BaseIncludePathSupport.Item item) {
+        private static Icon getIcon(BasePathSupport.Item item) {
             switch (item.getType()) {
                 case CLASSPATH:
                     return ICON_CLASSPATH;
@@ -283,7 +283,7 @@ public final class IncludePathUiSupport {
             }
         }
 
-        private String getToolTipText(BaseIncludePathSupport.Item item) {
+        private String getToolTipText(BasePathSupport.Item item) {
             switch (item.getType()) {
                 case FOLDER:
                     if (item.isBroken()) {
@@ -312,7 +312,7 @@ public final class IncludePathUiSupport {
             return ICON_FOLDER;
         }
 
-        private String getFileRefName(BaseIncludePathSupport.Item item) {
+        private String getFileRefName(BasePathSupport.Item item) {
             switch (item.getType()) {
                 case FOLDER:
                     return item.getFilePath();
@@ -334,14 +334,22 @@ public final class IncludePathUiSupport {
         private final ButtonModel remove;
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
+        private final FileChooserDirectoryHandler directoryHandler;
 
         private EditMediator(JList list, ButtonModel addFolder,
-                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
-            this(null, list, addFolder, remove, moveUp, moveDown);
+                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
+                FileChooserDirectoryHandler directoryHandler) {
+            this(null, list, addFolder, remove, moveUp, moveDown, directoryHandler);
+        }
+
+        private EditMediator(PhpProject project, JList list, ButtonModel addFolder, ButtonModel remove, FileChooserDirectoryHandler directoryHandler) {
+            this(project, list, addFolder, remove, null, null, directoryHandler);
         }
 
         private EditMediator(PhpProject project, JList list, ButtonModel addFolder,
-                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
+                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
+                FileChooserDirectoryHandler directoryHandler) {
+            assert directoryHandler != null;
 
             this.list = list;
             if (!(list.getModel() instanceof DefaultListModel)) {
@@ -357,12 +365,14 @@ public final class IncludePathUiSupport {
             this.moveDown = moveDown;
 
             this.project = project;
+            this.directoryHandler = directoryHandler;
         }
 
         public static void register(PhpProject project, JList list, ButtonModel addFolder,
-                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
+                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
+                FileChooserDirectoryHandler directoryHandler) {
 
-            EditMediator em = new EditMediator(project, list, addFolder, remove, moveUp, moveDown);
+            EditMediator em = new EditMediator(project, list, addFolder, remove, moveUp, moveDown, directoryHandler);
 
             // Register the listener on all buttons
             addFolder.addActionListener(em);
@@ -375,11 +385,26 @@ public final class IncludePathUiSupport {
             em.valueChanged(null);
         }
 
+        public static void register(PhpProject project, JList list, ButtonModel addFolder,
+                ButtonModel remove, FileChooserDirectoryHandler directoryHandler) {
+
+            EditMediator em = new EditMediator(project, list, addFolder, remove, directoryHandler);
+
+            // Register the listener on all buttons
+            addFolder.addActionListener(em);
+            remove.addActionListener(em);
+            // On list selection
+            em.selectionModel.addListSelectionListener(em);
+            // Set the initial state of the buttons
+            em.valueChanged(null);
+        }
+
         // for global include path (no project available)
         public static void register(JList list, ButtonModel addFolder,
-                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown) {
+                ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
+                FileChooserDirectoryHandler directoryHandler) {
 
-            EditMediator em = new EditMediator(list, addFolder, remove, moveUp, moveDown);
+            EditMediator em = new EditMediator(list, addFolder, remove, moveUp, moveDown, directoryHandler);
 
             // Register the listener on all buttons
             addFolder.addActionListener(em);
@@ -400,13 +425,13 @@ public final class IncludePathUiSupport {
             if (source == addFolder) {
                 addFolders();
             } else if (source == remove) {
-                int[] newSelection = IncludePathUiSupport.remove(listModel, list.getSelectedIndices());
+                int[] newSelection = PathUiSupport.remove(listModel, list.getSelectedIndices());
                 list.setSelectedIndices(newSelection);
-            } else if (source == moveUp) {
-                int[] newSelection = IncludePathUiSupport.moveUp(listModel, list.getSelectedIndices());
+            } else if (moveUp != null && source == moveUp) {
+                int[] newSelection = PathUiSupport.moveUp(listModel, list.getSelectedIndices());
                 list.setSelectedIndices(newSelection);
-            } else if (source == moveDown) {
-                int[] newSelection = IncludePathUiSupport.moveDown(listModel, list.getSelectedIndices());
+            } else if (moveDown != null && source == moveDown) {
+                int[] newSelection = PathUiSupport.moveDown(listModel, list.getSelectedIndices());
                 list.setSelectedIndices(newSelection);
             }
         }
@@ -416,14 +441,18 @@ public final class IncludePathUiSupport {
         public void valueChanged(ListSelectionEvent e) {
             // addFolder allways enabled
             remove.setEnabled(selectionModel.getMinSelectionIndex() != -1);
-            moveUp.setEnabled(IncludePathUiSupport.canMoveUp(selectionModel));
-            moveDown.setEnabled(IncludePathUiSupport.canMoveDown(selectionModel, listModel.getSize()));
+            if (moveUp != null) {
+                moveUp.setEnabled(PathUiSupport.canMoveUp(selectionModel));
+            }
+            if (moveDown != null) {
+                moveDown.setEnabled(PathUiSupport.canMoveDown(selectionModel, listModel.getSize()));
+            }
         }
 
         private void addFolders() {
             JFileChooser chooser = null;
             if (project != null) {
-                chooser = new FileChooser(project.getHelper(), true);
+                chooser = new FileChooser(project.getHelper(), false);
             } else {
                 // XXX maybe select fs root
                 chooser = new JFileChooser();
@@ -431,8 +460,8 @@ public final class IncludePathUiSupport {
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(true);
-            chooser.setDialogTitle(NbBundle.getMessage(IncludePathUiSupport.class, "LBL_AddFolders_DialogTitle"));
-            chooser.setCurrentDirectory(LastUsedFolders.getIncludePath());
+            chooser.setDialogTitle(NbBundle.getMessage(PathUiSupport.class, "LBL_AddFolders_DialogTitle"));
+            chooser.setCurrentDirectory(directoryHandler.getCurrentDirectory());
             int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(list));
             if (option == JFileChooser.APPROVE_OPTION) {
                 String[] files;
@@ -453,11 +482,16 @@ public final class IncludePathUiSupport {
                     return;
                 }
 
-                int[] newSelection = IncludePathUiSupport.addFolders(listModel, list.getSelectedIndices(), files);
+                int[] newSelection = PathUiSupport.addFolders(listModel, list.getSelectedIndices(), files);
                 list.setSelectedIndices(newSelection);
                 // remember last folder
-                LastUsedFolders.setIncludePath(chooser.getCurrentDirectory());
+                directoryHandler.setCurrentDirectory(chooser.getCurrentDirectory());
             }
+        }
+
+        public interface FileChooserDirectoryHandler {
+            File getCurrentDirectory();
+            void setCurrentDirectory(File currentDirectory);
         }
     }
 }

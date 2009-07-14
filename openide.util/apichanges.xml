@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="LifecycleManager.markForRestart">
+        <api name="util"/>
+        <summary>Added way to request that the platform restart.</summary>
+        <version major="7" minor="25"/>
+        <date day="14" month="7" year="2009"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                 Can now use <code>LifecycleManager.markForRestart</code> to cause
+                 the application to restart after exiting. Formerly needed to
+                 create special files in the userdir or use similar tricks.
+            </p>
+        </description>
+        <class package="org.openide" name="LifecycleManager"/>
+        <issue number="168257"/>
+    </change>
     <change id="org.openide.util.Lookup.paths">
         <api name="lookup"/>
         <summary>Added

@@ -48,7 +48,7 @@ import org.netbeans.modules.php.project.ui.options.PhpOptions;
 /**
  * @author Petr Hrebejk, Tomas Mysik
  */
-public class GlobalIncludePathSupport extends BaseIncludePathSupport {
+public final class GlobalIncludePathSupport extends BasePathSupport {
     private static final GlobalIncludePathSupport INSTANCE = new GlobalIncludePathSupport();
 
     private GlobalIncludePathSupport() {

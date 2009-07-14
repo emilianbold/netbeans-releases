@@ -218,6 +218,26 @@ public class ThreadsDataManager {
             Integer number = IdToNumber.get(col.getThreadID());
             if (number == null) {
                 // this is dead thread
+                if (col.isAlive()) {
+                    final long endTimeStump = col.getThreadStateAt(col.size()-1).getTimeStamp() + 1000;
+                    col.add(new ThreadState(){
+                        public int size() {
+                            return 1;
+                        }
+                        public String getStateName(int index) {
+                            return ThreadState.ShortThreadState.NotExist.name();
+                        }
+                        public int getState(int index) {
+                            return 1000;
+                        }
+                        public long getTimeStamp(int index) {
+                            return endTimeStump;
+                        }
+                        public long getTimeStamp() {
+                            return endTimeStump;
+                        }
+                    });
+                }
             } else {
                 ThreadState lastState = col.getThreadStateAt(col.size()-1);
                 int newData = number.intValue();

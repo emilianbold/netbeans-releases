@@ -76,7 +76,7 @@ public class TempTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.PARAMETER; "+
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
-                "import javax.enterprise.inject.*;"+
+                "import javax.enterprise.inject.*; "+
                 "import java.lang.annotation.*; "+
                 "@BindingType " +
                 "@Retention(RUNTIME) "+
@@ -89,11 +89,11 @@ public class TempTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
                 "package foo; " +
-                "import javax.enterprise.inject.*"+
+                "import javax.enterprise.inject.*; "+
                 "public class CustomClass  {" +
                 " @foo.CustomBinding(value=\"a\", comment=\"comment\") Object myField = new Object(); "+
                 " String myText[];"+
-                " int myIndex; "+
+                " @foo.CustomBinding(value=\"d\", comment=\"comment\")  int myIndex; "+
                 " Class<String> myClass; "+
                 "@foo.CustomBinding(value=\"b\", comment=\"comment\")" +
                 " foo.Generic<? extends Thread> myThread; "+
@@ -113,8 +113,12 @@ public class TempTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
                 "package foo; " +
+                "import javax.enterprise.inject.*; "+
                 "@foo.CustomBinding() " +
-                "public class Three  {}" );
+                "public class Three  { " +
+                " @Produces @foo.CustomBinding(value=\"d\", comment=\"comment\") " +
+                "int productionField =1; " +
+                "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
                 "package foo; " +

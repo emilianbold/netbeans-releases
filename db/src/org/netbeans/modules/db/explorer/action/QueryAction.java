@@ -41,7 +41,6 @@ package org.netbeans.modules.db.explorer.action;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.node.ColumnNode;
@@ -107,7 +106,7 @@ public abstract class QueryAction extends BaseAction {
         String schemaName = provider.getSchemaName();
         String catName = provider.getCatalogName();
         if (schemaName == null) {
-            schemaName = catName;
+            schemaName = catName == null ? "" : catName; // NOI18N
         }
 
         boolean isColumn = activatedNodes[0].getLookup().lookup(ColumnNode.class) != null;

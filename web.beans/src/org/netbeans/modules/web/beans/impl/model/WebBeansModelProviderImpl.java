@@ -40,12 +40,12 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -58,22 +58,23 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
-
-import com.sun.source.tree.Tree;
 
 
 /**
@@ -118,13 +119,6 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         
         if ( parent instanceof TypeElement){
             /*if ( element.getSimpleName().contentEquals("myClass")){
-               try {
-                modelImpl.getHelper().getCompilationController().toPhase( Phase.RESOLVED);
-            }
-            catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
                Tree tree = modelImpl.getHelper().getCompilationController().
                     getTrees().getTree( element );
                 System.out.println("%% "+tree);
@@ -219,13 +213,13 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
          */
         boolean currentBindingType = false;
         /*
-         * It is not clear for me situation with new.
-         * Is it possible to assign this binding type manually ?
-         * If not then it also should be single binding .
-         * Otherwise the algorithm of finding injectable changes
-         * even in situation of several binding types with @New between them.  
+         * The @New target is 
+         * @Target(value={FIELD,PARAMETER})
+         * and injectable couldn't have any other bindings.
+         * So @New should be the only binding type for injection point 
+         * and it could be assigned by user to bean type.
          */
-        boolean newBindingType = false; // TODO ???
+        boolean newBindingType = false; 
         String annotationName = null; 
         List<Element> result = new LinkedList<Element>();
         if ( bindingAnnotations.size() == 1 ){
@@ -252,6 +246,9 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
             }
             result.addAll( assignableTypes );
         }
+        else if (newBindingType){
+            // TODO : one need to handle @New special case. 
+        }
         else {
             /*
              * This is list with types that have all required bindings. This
@@ -276,9 +273,134 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
          * that  have all required bindings.
          * This list will be also used for further typesafe resolution. 
          */
-        List<Element> productionElements = getProductions( bindingAnnotations, 
+        Set<Element> productionElements = getProductions( bindingAnnotations, 
                 modelImpl); 
-        return null;
+        filterBindingsByMembers( bindingAnnotations , productionElements , modelImpl );
+        filterProductionByType( element, productionElements, modelImpl );
+        addSpecializes( productionElements , modelImpl );
+        return result.size() >0 ? result.get( 0 ) : null;
+    }
+
+    private void addSpecializes( Set<Element> productionElements,
+            WebBeansModelImplementation modelImpl )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private void filterProductionByType( VariableElement element,
+            Set<Element> productionElements,
+            WebBeansModelImplementation model )
+    {
+        if ( filterPrimitives(element, productionElements , model) ){
+            return;
+        }
+        
+        if ( filterArray(element, productionElements, model) ){
+            return ;
+        }
+        
+        Set<TypeElement> types = new HashSet<TypeElement>( 
+                productionElements.size());
+        
+        // this cycle care only about declared types.
+        for ( Iterator<Element> iterator = productionElements.iterator() ; 
+            iterator.hasNext() ; ) 
+        {
+            Element productionElement = iterator.next();
+            TypeMirror mirror = productionElement.asType();
+            Element typeElement = model.getHelper().getCompilationController().
+                    getTypes().asElement( mirror );
+            if ( typeElement instanceof TypeElement ){
+                types.add( (TypeElement) typeElement );
+            }
+            else {
+                iterator.remove();
+            }
+        }
+        TypeBindingFilter filter = TypeBindingFilter.get();
+        filter.init(element, model);
+        filter.filter( types );
+        
+        for (Iterator<Element> iterator = productionElements.iterator(); iterator
+                .hasNext();)
+        {
+            Element productionElement = iterator.next();
+            TypeMirror mirror = productionElement.asType();
+            Element typeElement = model.getHelper().getCompilationController().
+                getTypes().asElement( mirror );
+            if ( !types.contains( typeElement)){
+                iterator.remove();
+            }
+        }
+    }
+
+    private boolean filterArray( VariableElement element,
+            Set<Element> productionElements, WebBeansModelImplementation model )
+    {
+        TypeMirror varType= element.asType();
+        if  ( varType.getKind() == TypeKind.ARRAY ){
+            TypeMirror arrayComponentType = ((ArrayType)varType).getComponentType();
+            for (Iterator<Element> iterator = productionElements.iterator() ; 
+                    iterator.hasNext() ; ) 
+            {
+                if ( element.asType().getKind() != TypeKind.ARRAY ){
+                    iterator.remove();
+                }
+                if ( !model.getHelper().getCompilationController().getTypes().
+                        isSameType( arrayComponentType,
+                                ((ArrayType) element.asType()).getComponentType()))
+                {
+                      iterator.remove();              
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean filterPrimitives( VariableElement element,
+            Set<Element> productionElements, WebBeansModelImplementation model )
+    {
+        TypeMirror varType= element.asType();
+        PrimitiveType primitive = null;
+        TypeElement boxedType = null;
+        if ( varType.getKind().isPrimitive() ){
+            primitive = model.getHelper().getCompilationController().
+                getTypes().getPrimitiveType( varType.getKind());
+            boxedType = model.getHelper().getCompilationController().
+                getTypes().boxedClass( primitive);
+        }
+        else if ( varType.getKind() == TypeKind.DECLARED ){
+            Element varElement = model.getHelper().getCompilationController().
+                    getTypes().asElement( varType );
+            if ( varElement instanceof TypeElement ){
+                String typeName = ((TypeElement)varElement).getQualifiedName().
+                    toString();
+                if ( WRAPPERS.contains( typeName )){
+                    primitive = model.getHelper().getCompilationController().
+                        getTypes().unboxedType( varElement.asType());
+                    boxedType = (TypeElement)varElement;
+                }
+                
+            }
+        }
+        
+        if ( primitive!= null ){
+            for( Iterator<Element> iterator = productionElements.iterator();
+                iterator.hasNext(); )
+            {
+                Element productionElement =iterator.next();
+                Types types = model.getHelper().getCompilationController().getTypes();
+                if ( !types.isSameType(productionElement.asType(), primitive ) &&
+                        !types.isSameType( productionElement.asType() , boxedType.asType()))
+                {
+                    iterator.remove();
+                }
+            }
+        }
+        
+        return primitive!= null;
     }
 
     private void filterBindnigsByCurrent( Set<TypeElement> assignableTypes,
@@ -380,11 +502,50 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
         filter.filter( typesWithBindings );
     }
 
-    private List<Element> getProductions( List<AnnotationMirror> bindings ,
-            WebBeansModelImplementation modelImpl ) 
+    private Set<Element> getProductions( 
+            List<AnnotationMirror> bindingAnnotations ,
+            final WebBeansModelImplementation model ) 
     {
-        // TODO Auto-generated method stub
-        return null;
+        List<Set<Element>> bindingCollections = 
+            new ArrayList<Set<Element>>( bindingAnnotations.size());
+        for (AnnotationMirror annotationMirror : bindingAnnotations) {
+            DeclaredType type = annotationMirror.getAnnotationType();
+            TypeElement annotationElement = (TypeElement)type.asElement();
+            String annotationFQN = annotationElement.getQualifiedName().toString();
+            final Set<Element> binding = new HashSet<Element>();
+            try {
+                model.getHelper().getAnnotationScanner().findAnnotations( 
+                        annotationFQN, 
+                        EnumSet.of( ElementKind.FIELD, ElementKind.PARAMETER), 
+                        new AnnotationHandler() {
+                            public void handleAnnotation( TypeElement type, 
+                                    Element element,AnnotationMirror annotation )
+                            {
+                                if ( AnnotationObjectProvider.hasAnnotation(element, 
+                                        PRODUCER_ANNOTATION, model.getHelper()))
+                                {
+                                    binding.add( element );
+                                }
+                            }
+                        });
+                bindingCollections.add( binding );
+            }
+            catch (InterruptedException e) {
+                LOGGER.warning("Finding annotation "+annotationFQN+
+                        " was interrupted"); // NOI18N
+            }
+        }
+        Set<Element> result= null;
+        for ( int i=0; i<bindingCollections.size() ; i++ ){
+            Set<Element> list = bindingCollections.get(i);
+            if ( i==0 ){
+                result = list;
+            }
+            else {
+                result.retainAll( list );
+            }
+        }
+        return result;
     }
 
     private Set<TypeElement> getBindingTypes( List<AnnotationMirror> bindingAnnotations ,
@@ -432,11 +593,25 @@ public class WebBeansModelProviderImpl implements WebBeansModelProvider {
 
     private void filterBindingsByMembers(
             List<AnnotationMirror> bindingAnnotations,
-            Set<TypeElement> typesWithBindings, WebBeansModelImplementation impl )
+            Set<? extends Element> elementsWithBindings, 
+            WebBeansModelImplementation impl )
     {
         MemberBindingFilter filter = MemberBindingFilter.get();
         filter.init( bindingAnnotations, impl );
-        filter.filter( typesWithBindings );
+        filter.filterElements( elementsWithBindings );
+    }
+    
+    private static final Set<String> WRAPPERS = new HashSet<String>();
+    
+    static {
+        WRAPPERS.add(Boolean.class.getCanonicalName());
+        WRAPPERS.add(Byte.class.getCanonicalName());
+        WRAPPERS.add(Character.class.getCanonicalName());
+        WRAPPERS.add(Double.class.getCanonicalName());
+        WRAPPERS.add(Float.class.getCanonicalName());
+        WRAPPERS.add(Integer.class.getCanonicalName());
+        WRAPPERS.add(Long.class.getCanonicalName());
+        WRAPPERS.add(Short.class.getCanonicalName());
     }
     
 }

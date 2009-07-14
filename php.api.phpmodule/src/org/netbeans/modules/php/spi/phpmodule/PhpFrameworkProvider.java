@@ -100,6 +100,8 @@ public abstract class PhpFrameworkProvider {
 
     /**
      * Finds out if a given PHP module has already been extended with this PHP framework.
+     * <p>
+     * <b>This method should be as fast as possible.</b>
      *
      * @param  phpModule the PHP module; never <code>null</code>.
      * @return <code>true</code> if the PHP module has already been extended with this framework, <code>false</code> otherwise.
@@ -141,7 +143,20 @@ public abstract class PhpFrameworkProvider {
      * and the given PHP module.
      *
      * @param  phpModule the PHP module which actions are going to be extended
-     * @return a new PHP module actions extender, never <code>null</code>.
+     * @return a new PHP module actions extender, can be <code>null</code> if the framework doesn't support
+     *         extending of actions
+     * @since 1.4
      */
-    public abstract PhpModuleActionsExtender createActionsProvider(PhpModule phpModule);
+    public abstract PhpModuleActionsExtender createActionsExtender(PhpModule phpModule);
+
+    /**
+     * Creates a {@link PhpModuleVisibilityExtender PHP module visibility extender} for this framework
+     * and the given PHP module.
+     *
+     * @param  phpModule the PHP module which visibility is going to be extended
+     * @return a new PHP module visibility extender, can be <code>null</code> if the framework doesn't need
+     *         to recommend to hide any files or folders
+     * @since 1.4
+     */
+    public abstract PhpModuleVisibilityExtender createVisibilityExtender(PhpModule phpModule);
 }
