@@ -418,17 +418,25 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private void autoCompleteNamespaces(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
 
-        PHPIndex index = request.index;
+        String nsPrefix = request.prefix;
 
-        int completedSegmentIdx = QualifiedName.createUnqualifiedName(request.prefix).getSegments().size() - 1;
+        if (nsPrefix.startsWith("\\")){
+            nsPrefix = nsPrefix.substring(1);
+        }
+
+        PHPIndex index = request.index;
+        int completedSegmentIdx = QualifiedName.create(nsPrefix).getSegments().size() - 1;
+        if (nsPrefix.endsWith("\\")){
+            completedSegmentIdx ++;
+        }
 
         Collection<IndexedNamespace> namespaces = index.getNamespaces(request.result,
-                request.prefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+                nsPrefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
 
         Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
 
         for (IndexedNamespace namespace : namespaces) {
-            if (namespace.getName().startsWith(request.prefix)) {
+            if (namespace.getName().startsWith(nsPrefix)) {
                 String completedSegment = namespace.getQualifiedName().getSegments().get(completedSegmentIdx);
 
                 IndexedNamespace existingNs = namespacesMap.get(completedSegment);
@@ -1131,6 +1139,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
+    private static final boolean isPrefixBreaker(char c){
+        return !(isPHPIdentifierPart(c) || c == '\\' || c == '$' || c == ':');
+    }
+
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
@@ -1151,7 +1163,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (lineOffset > 0) {
                         for (int i = lineOffset - 1; i >= 0; i--) {
                             char c = line.charAt(i);
-                            if (!isPHPIdentifierPart(c)) {
+                            if (!isPHPIdentifierPart(c) && c != '\\') {
                                 break;
                             } else {
                                 start = i;
@@ -1208,7 +1220,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         // end of identifiers for example.
                         if (prefix.length() == 1) {
                             char c = prefix.charAt(0);
-                            if (!(isPHPIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
+                            if (isPrefixBreaker(c)) {
                                 return null;
                             }
                         } else {
@@ -1217,13 +1229,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                                 char c = prefix.charAt(i);
                                 if (i == 0 && c == ':') {
                                     // : is okay at the begining of prefixes
-                                } else if (!(isPHPIdentifierPart(c) || c == '@' || c == '$')) {
+                                } else if (isPrefixBreaker(c)) {
                                     prefix = prefix.substring(i + 1);
                                     break;
                                 }
                             }
                         }
                     }
+
+                    if ("\\".equals(prefix)){ //NOI18N
+                        prefix = ""; //NOI18N
+                    }
+
                     return prefix;
                 }
             } finally {
