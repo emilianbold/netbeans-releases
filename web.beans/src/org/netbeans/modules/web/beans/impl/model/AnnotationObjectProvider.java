@@ -217,6 +217,16 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         return hasAnnotation(element , SPECILIZES_ANNOTATION , helper );
     }
     
+    static boolean hasAnnotation( Element element, String annotation, 
+            AnnotationModelHelper helper )
+    {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            helper.getCompilationController().getElements().
+            getAllAnnotationMirrors(element);
+        return helper.hasAnnotation(allAnnotationMirrors, 
+                annotation );
+    }
+    
     private String getAnnotationName(){
         return myAnnotationName;
     }
@@ -332,17 +342,6 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
             }
         }
     }
-    
-    private static boolean hasAnnotation( TypeElement element, String annotation, 
-            AnnotationModelHelper helper )
-    {
-        List<? extends AnnotationMirror> allAnnotationMirrors = 
-            helper.getCompilationController().getElements().
-            getAllAnnotationMirrors(element);
-        return helper.hasAnnotation(allAnnotationMirrors, 
-                annotation );
-    }
-
     
     private AnnotationModelHelper myHelper;
     private String myAnnotationName;
