@@ -81,6 +81,8 @@ public final class DeepReparsingUtils {
             for (CsmFile parent : coherence) {
                 if (!topParents.contains(parent)) {
                     invalidateFileAndPreprocState(project, parent);
+                } else {
+                    clearFileStateCache(parent);
                 }
             }
             if (scheduleParsing) {
@@ -112,6 +114,8 @@ public final class DeepReparsingUtils {
             for (CsmFile parent : coherence) {
                 if (!topParents.contains(parent)) {
                     invalidateFileAndPreprocState(project, parent);
+                } else {
+                    clearFileStateCache(parent);
                 }
             }
             if (scheduleParsing) {
@@ -142,6 +146,8 @@ public final class DeepReparsingUtils {
                 } else {
                     coherenceLibrary.add(parent);
                 }
+            } else {
+                clearFileStateCache(parent);
             }
         }
         if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
@@ -198,6 +204,8 @@ public final class DeepReparsingUtils {
                     } else {
                         coherenceLibrary.add(parent);
                     }
+                } else {
+                    clearFileStateCache(parent);
                 }
             }
             if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
@@ -324,6 +332,8 @@ public final class DeepReparsingUtils {
         for (CsmFile incl : coherence) {
             if (!topParents.contains(incl)) {
                 invalidateFileAndPreprocState(project, incl);
+            } else {
+                clearFileStateCache(incl);
             }
         }
         try {
@@ -367,6 +377,7 @@ public final class DeepReparsingUtils {
     private static void invalidateFileAndPreprocState(final ProjectBase project, final CsmFile parent) {
         if (parent.getProject() == project) {
             FileImpl parentImpl = (FileImpl) parent;
+            clearFileStateCache(parentImpl);
             project.invalidatePreprocState(parentImpl.getBuffer().getFile());
             parentImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -380,12 +391,19 @@ public final class DeepReparsingUtils {
             CsmProject project = parent.getProject();
             if (project instanceof ProjectBase) {
                 FileImpl parentImpl = (FileImpl) parent;
+                clearFileStateCache(parentImpl);
                 ((ProjectBase) project).invalidatePreprocState(parentImpl.getBuffer().getFile());
                 parentImpl.markReparseNeeded(false);
                 if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
                     System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N
                 }
             }
+        }
+    }
+
+    private static void clearFileStateCache(final CsmFile parent){
+        if (parent instanceof FileImpl){
+            ((FileImpl)parent).clearStateCache();
         }
     }
 }
