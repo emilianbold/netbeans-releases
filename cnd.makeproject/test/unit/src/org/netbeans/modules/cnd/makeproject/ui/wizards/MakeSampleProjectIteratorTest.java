@@ -131,15 +131,13 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 //        }
 //    }
 //
-//    @Test
-//    public void testFreeway() throws IOException {
-//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-//            setDefaultCompilerSet("SunStudio");
-//            testSample("Freeway", "all");
-//            setDefaultCompilerSet("GNU");
-//            testSample("Freeway", "all");
-//        }
-//    }
+    @Test
+    public void testFreeway() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(defaultSet, "Freeway", "all");
+            testSample(sunStudioSet, "Freeway", "all");
+        }
+    }
 //
 //    @Test
 //    public void testFractal() throws IOException {
