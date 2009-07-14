@@ -334,7 +334,7 @@ public class Utilities {
                 }
             }
         } else {
-            //TODO report error.. what is the error?
+            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "Cannot create model from current content of " + pomFileObject);
         }
     }
 
