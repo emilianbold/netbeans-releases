@@ -123,8 +123,8 @@ public final class UpdateHelper {
      * In the case that the project is of current version or shared is <code>false</code> it delegates to
      * {@link AntProjectHelper#getPrimaryConfigurationData(boolean)}.
      * Otherwise it creates an in memory update of shared configuration data and returns it.
-     * @param shared if <code>true</code>, refers to <e>project.xml</e>, else refers to
-     *               <e>private.xml</e>.
+     * @param shared if <code>true</code>, refers to <tt>project.xml</tt>, else refers to
+     *               <tt>private.xml</tt>.
      * @return the configuration data that is available.
      */
     public Element getPrimaryConfigurationData(final boolean shared) {

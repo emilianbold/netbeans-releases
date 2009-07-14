@@ -100,7 +100,7 @@ public class PhpActionProvider implements ActionProvider {
         return commandIds.toArray(new String[commandIds.size()]);
     }
 
-    public void invokeAction(final String commandId, final Lookup lookup) throws IllegalArgumentException {
+    public void invokeAction(final String commandId, final Lookup lookup) {
         final Command command = getCommand(commandId);
         command.getProject().getCopySupport().waitFinished();
         if (command.saveRequired()) {
@@ -117,7 +117,7 @@ public class PhpActionProvider implements ActionProvider {
         }
     }
 
-    public boolean isActionEnabled(String commandId, Lookup lookup) throws IllegalArgumentException {
+    public boolean isActionEnabled(String commandId, Lookup lookup) {
         return getCommand(commandId).isActionEnabled(lookup);
     }
 

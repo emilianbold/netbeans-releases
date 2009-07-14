@@ -42,7 +42,7 @@ package org.netbeans.modules.php.project.classpath;
 /**
  * @author Tomas Mysik
  */
-public abstract class BaseIncludePathSupport {
+public abstract class BasePathSupport {
 
     public static final class Item {
         public static enum Type {
@@ -162,7 +162,7 @@ public abstract class BaseIncludePathSupport {
     }
 
     /**
-     * Converts the ant reference to the name of the referenced property
+     * Converts the ant reference to the name of the referenced property.
      * @param ant reference
      * @param the name of the referenced property
      */

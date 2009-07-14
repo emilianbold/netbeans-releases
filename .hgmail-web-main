@@ -1,3 +1,2 @@
 [usersubs]
 cvs@php.netbeans.org=php*/*
-cvs@ruby.netbeans.org=ruby*/*,o.jruby*/*

@@ -112,6 +112,9 @@ public class WebProjectValidation extends J2eeTestCase {
             return new SourcePackagesNode(PROJECT_NAME);
         }
     };
+    public static final String J2EE_4 = "J2EE 1.4";
+    public static final String J2EE_3 = "J2EE 1.3";
+    public static final String JAVA_EE_5 = "JAVA EE 5";
     // location of sample project (parent of PROJECT_FOLDER)
     protected static String PROJECT_LOCATION;
     // name of sample project
@@ -230,7 +233,7 @@ public class WebProjectValidation extends J2eeTestCase {
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.cboServer().selectItem(0);
-        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14"));
+        serverStep.selectJavaEEVersion(J2EE_4);
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
         frameworkStep.finish();
@@ -555,6 +558,8 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testCreateTLD() {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        rootNode.select();
         new ActionNoBlock("File|New File", null).perform();
         // WORKAROUND
         new EventTool().waitNoEvent(1000);

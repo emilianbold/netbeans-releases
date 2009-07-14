@@ -52,7 +52,7 @@ public abstract class PhpModuleActionsExtender {
 
     /**
      * Get the name of the menu, typically the name of the framework.
-     * @return
+     * @return the name of the menu, typically the name of the framework.
      */
     public abstract String getMenuName();
 

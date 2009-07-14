@@ -185,13 +185,15 @@ public final class DLightCPUToolConfigurationProvider
     }
 
     private DataTableMetadata createProfilerTableMetadata() {
+        Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
         Column cpuId = new Column("cpu_id", Integer.class, loc("CPUMonitorTool.ColumnName.cpu_id"), null); // NOI18N
         Column threadId = new Column("thread_id", Integer.class, loc("CPUMonitorTool.ColumnName.thread_id"), null); // NOI18N
-        Column timestamp = new Column("time_stamp", Long.class, loc("CPUMonitorTool.ColumnName.time_stamp"), null); // NOI18N
+        Column mstate = new Column("mstate", Integer.class, loc("CPUMonitorTool.ColumnName.mstate"), null); // NOI18N
+        Column duration = new Column("duration", Integer.class, loc("CPUMonitorTool.ColumnName.duration"), null); // NOI18N
         Column stackId = new Column("leaf_id", Integer.class, loc("CPUMonitorTool.ColumnName.leaf_id"), null); // NOI18N
 
         return new DataTableMetadata("CallStack", // NOI18N
-                Arrays.asList(cpuId, threadId, timestamp, stackId), null);
+                Arrays.asList(timestamp, cpuId, threadId, mstate, duration, stackId), null);
     }
 
     private VisualizerConfiguration createDTraceBasedVisualizerConfiguration(DataTableMetadata profilerTableMetadata) {
