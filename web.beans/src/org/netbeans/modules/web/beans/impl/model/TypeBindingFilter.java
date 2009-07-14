@@ -60,13 +60,11 @@ class TypeBindingFilter extends TypeFilter {
         return new TypeBindingFilter();
     }
     
-    void init( VariableElement element,
-            WebBeansModelImplementation modelImpl )
-    {
+    void init( VariableElement element,WebBeansModelImplementation modelImpl ){
         myElement = element;
         myImpl = modelImpl;
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.TypeFilter#filter(java.util.Set)
      */
@@ -78,29 +76,7 @@ class TypeBindingFilter extends TypeFilter {
         TypeMirror typeMirror = getElement().asType();
         TypeKind kind = typeMirror.getKind();
         if ( kind == TypeKind.DECLARED ){
-            for ( Iterator<TypeElement> iterator = set.iterator(); 
-                iterator.hasNext(); )
-            {
-                TypeElement type = iterator.next();
-                if ( getImplementation().getHelper().getCompilationController().
-                        getTypes().isAssignable( type.asType(), typeMirror))
-                {
-                    WebBeansModelProviderImpl.LOGGER.fine("Found type element " +
-                            type.getQualifiedName() +
-                            " for variable element " +getElement().getSimpleName()+ 
-                            " by typesafe resolution");                 // NOI18N
-                }
-                else if ( checkAssignability(  type )){
-                    WebBeansModelProviderImpl.LOGGER.fine("Probably found " +
-                    		"castable parametrizied or raw type element " +
-                            type.getQualifiedName() +
-                            " for variable element " +getElement().getSimpleName()+ 
-                            " by typesafe resolution");                 // NOI18N
-                }
-                else {
-                    iterator.remove();
-                }
-            }
+            filterDeclaredTypes(set, typeMirror);
         }
         else if ( kind.isPrimitive()  ){
             WebBeansModelProviderImpl.LOGGER.fine("Variable element " +
@@ -113,6 +89,34 @@ class TypeBindingFilter extends TypeFilter {
                     getElement().getSimpleName()+ " " +
                     "couldn't have type as eligible for inection becuase its " +
                     "type has array type. It is unproxyable bean types");// NOI18N
+        }
+    }
+
+    private void filterDeclaredTypes( Set<TypeElement> set,
+            TypeMirror typeMirror )
+    {
+        for ( Iterator<TypeElement> iterator = set.iterator(); 
+            iterator.hasNext(); )
+        {
+            TypeElement type = iterator.next();
+            if ( getImplementation().getHelper().getCompilationController().
+                    getTypes().isAssignable( type.asType(), typeMirror))
+            {
+                WebBeansModelProviderImpl.LOGGER.fine("Found type element " +
+                        type.getQualifiedName() +
+                        " for variable element " +getElement().getSimpleName()+ 
+                        " by typesafe resolution");                 // NOI18N
+            }
+            else if ( checkAssignability(  type )){
+                WebBeansModelProviderImpl.LOGGER.fine("Probably found " +
+                        "castable parametrizied or raw type element " +
+                        type.getQualifiedName() +
+                        " for variable element " +getElement().getSimpleName()+ 
+                        " by typesafe resolution");                 // NOI18N
+            }
+            else {
+                iterator.remove();
+            }
         }
     }
     

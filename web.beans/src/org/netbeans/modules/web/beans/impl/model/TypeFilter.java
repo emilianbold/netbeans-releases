@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.Set;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 
@@ -52,5 +53,8 @@ import javax.lang.model.element.TypeElement;
 abstract class TypeFilter  {
 
     void filter( Set<TypeElement> set ){
+    }
+    
+    void filterElements( Set<? extends Element> set ){
     }
 }
