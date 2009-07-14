@@ -984,7 +984,7 @@ public class DependencyNode extends AbstractNode {
                         FileObject root = FileUtil.getArchiveRoot(jar);
                         String rel = FileUtil.getRelativePath(root, fil);
                         if (rel.endsWith(".class")) { //NOI18N
-                            rel = rel.replaceAll("class$", javadoc ? "html" : "java"); //NOI18N
+                            rel = rel.replaceAll("class$", javadoc ? "html" : ""); //NOI18N
                         }
                         if (javadoc) {
                             JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
@@ -1001,7 +1001,13 @@ public class DependencyNode extends AbstractNode {
                         } else {
                             SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(root.getURL());
                             for (FileObject srcRoot : res.getRoots()) {
-                                FileObject src = srcRoot.getFileObject(rel);
+                                FileObject src = srcRoot.getFileObject(rel + "java"); //NOI18N
+                                if (src == null) {
+                                    src = srcRoot.getFileObject(rel + "scala"); //NOI18N
+                                }
+                                if (src == null) {
+                                    src = srcRoot.getFileObject(rel + "groovy"); //NOI18N
+                                }
                                 if (src != null) {
                                     DataObject dobj2 = DataObject.find(src);
                                     if (tryOpen(dobj2)) {
