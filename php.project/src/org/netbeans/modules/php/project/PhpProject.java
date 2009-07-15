@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -225,6 +226,10 @@ public class PhpProject implements Project {
 
     private FileObject resolveSourcesDirectory() {
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
+        // # 168390 - more logging
+        if (srcDirProperty == null) {
+            Logger.getLogger(PhpProject.class.getName()).info("Property for Sources must be defined [" + eval.getProperties() + "]");
+        }
         assert srcDirProperty != null : "Property for Sources must be defined";
         FileObject srcDir = helper.resolveFileObject(srcDirProperty);
         if (srcDir != null) {
@@ -351,6 +356,10 @@ public class PhpProject implements Project {
             });
         }
         assert ignoredFolders != null : "Ignored folders cannot be null";
+        if (ignoredFolders.isEmpty()) {
+            return Collections.emptySet();
+        }
+
         Set<FileObject> ignored = new HashSet<FileObject>();
         File projectDir = FileUtil.toFile(getProjectDirectory());
         for (BasePathSupport.Item item : ignoredFolders) {
