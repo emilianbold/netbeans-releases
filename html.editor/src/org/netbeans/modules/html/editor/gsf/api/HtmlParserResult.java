@@ -83,7 +83,29 @@ public class HtmlParserResult extends ParserResult {
      * the postprocessing takes some time and is done lazily.
      */
     public AstNode root() {
-        return result.getASTRoot();
+        return root(null);
+    }
+
+    public AstNode root(String namespace) {
+        return result.getASTRoot(namespace);
+    }
+
+    public AstNode findLeaf(int offset) {
+        AstNode mostLeaf = null;
+        for(String uri : getNamespaces().keySet()) {
+            AstNode root = root(uri);
+            AstNode leaf = AstNodeUtils.findDescendant(root, offset);
+            if(mostLeaf == null) {
+                mostLeaf = leaf;
+            } else {
+                //they cannot overlap, just be nested, at least I think
+                if(leaf.logicalStartOffset() > mostLeaf.logicalStartOffset() &&
+                        leaf.logicalEndOffset() < mostLeaf.logicalEndOffset() ) {
+                    mostLeaf = leaf;
+                }
+            }
+        }
+        return mostLeaf;
     }
 
     /** @return a list of SyntaxElement-s representing parse elements of the html source. */
@@ -109,9 +131,10 @@ public class HtmlParserResult extends ParserResult {
         }
         return ids;
     }
-    
-    public Map<String, URI> getGlobalNamespaces() {
-        return result.getGlobalNamespaces();
+
+    /**uri to prefix map */
+    public Map<String, String> getNamespaces() {
+        return result.getDeclaredNamespaces();
     }
 
     @Override

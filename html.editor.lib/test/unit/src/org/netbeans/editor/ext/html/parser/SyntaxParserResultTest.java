@@ -111,4 +111,50 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals("http://java.sun.com/JSP/Page", nsmap.get("jsp").toString());
     }
     
+    public void testGetDeclaredNamespaces() {
+        String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" " +
+                "xmlns:jsp=\"http://java.sun.com/JSP/Page\">" +
+                "<ui:composition xmlns:ui=\"http://java.sun.com/jsf/facelets\"/>" +
+                "</html>";
+        
+        SyntaxParserResult result = SyntaxParser.parse(code);
+
+        assertNotNull(result);
+
+        Map<String, String> nsmap = result.getDeclaredNamespaces();
+
+        assertNotNull(nsmap);
+        assertEquals(3, nsmap.keySet().size());
+
+        assertTrue(nsmap.containsKey("http://www.w3.org/1999/xhtml"));
+        assertTrue(nsmap.containsKey("http://java.sun.com/JSP/Page"));
+        assertTrue(nsmap.containsKey("http://java.sun.com/jsf/facelets"));
+
+        assertEquals(null, nsmap.get("http://www.w3.org/1999/xhtml"));
+        assertEquals("ui", nsmap.get("http://java.sun.com/jsf/facelets"));
+        assertEquals("jsp", nsmap.get("http://java.sun.com/JSP/Page"));
+        
+    }
+
+    public void testGetAstRoot() {
+        String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui=\"http://java.sun.com/jsf/facelets\">" +
+                    "<ui:composition><div><ui:define></ui:define></div></ui:composition>" +
+                "</html>";
+
+        SyntaxParserResult result = SyntaxParser.parse(code);
+
+        AstNode froot = result.getASTRoot("http://java.sun.com/jsf/facelets");
+        assertNotNull(froot);
+        assertEquals(2, froot.children().size());
+        assertNotNull(AstNodeUtils.query(froot, "ui:composition"));
+        assertNotNull(AstNodeUtils.query(froot, "ui:composition/ui:define"));
+
+        AstNode root = result.getASTRoot();
+        assertNotNull(root);
+        assertEquals(2, root.children().size());
+        assertNotNull(AstNodeUtils.query(root, "html"));
+        assertNotNull(AstNodeUtils.query(root, "html/div"));
+        
+    }
+
 }

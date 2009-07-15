@@ -57,6 +57,8 @@ import org.netbeans.editor.ext.html.dtd.DTD.Element;
  */
 public class AstNode {
 
+    public static final String NAMESPACE_PROPERTY = "namespace";
+
     public enum NodeType {
 
         UNKNOWN_TAG, ROOT, COMMENT, DECLARATION, ERROR,
@@ -77,6 +79,7 @@ public class AstNode {
     private List<String> stack = null; //for debugging
     private AstNode matchingNode = null;
     private boolean isEmpty = false;
+    private Map<String, Object> properties;
 
     static AstNode createRootNode(int from, int to, DTD dtd) {
         return new RootAstNode(from, to, dtd);
@@ -285,6 +288,14 @@ public class AstNode {
         return endOffset;
     }
 
+    public int logicalStartOffset() {
+        return getLogicalRange()[0];
+    }
+
+    public int logicalEndOffset() {
+        return getLogicalRange()[1];
+    }
+
     public List<AstNode> children() {
         return children == null ? Collections.EMPTY_LIST : children;
     }
@@ -292,6 +303,36 @@ public class AstNode {
     public boolean isEmpty() {
         return isEmpty;
     }
+
+    public String getNamespacePrefix() {
+        int colonIndex = name().indexOf(':');
+        return colonIndex == -1 ? null : name().substring(0, colonIndex);
+    }
+
+    public String getNameWithoutPrefix() {
+        int colonIndex = name().indexOf(':');
+        return colonIndex == -1 ? name() : name().substring(colonIndex + 1);
+    }
+
+    public Object getProperty(String key) {
+        return properties == null ? null : properties.get(key);
+    }
+
+    public synchronized void setProperty(String key, Object value) {
+        if(properties == null) {
+            properties = new HashMap<String, Object>();
+        }
+        properties.put(key, value);
+    }
+
+    public AstNode getRootNode() {
+        if(this instanceof RootAstNode) {
+            return this;
+        } else {
+            return parent().getRootNode();
+        }
+    }
+
     void addChild(AstNode child) {
         if (children == null) {
             children = new LinkedList<AstNode>();

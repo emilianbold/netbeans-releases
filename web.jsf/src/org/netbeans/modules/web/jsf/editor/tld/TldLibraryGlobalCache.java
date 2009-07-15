@@ -36,33 +36,62 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor.tld;
 
-package org.netbeans.editor.ext.html.dtd;
-
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
+import java.util.WeakHashMap;
+import org.openide.filesystems.FileObject;
 
 /**
+ * TODO use indexing
  *
  * @author marekfukala
  */
-public class Utils {
+public class TldLibraryGlobalCache {
 
-    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
-        
-    private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        XHTML_STRINCT_PUBLIC_ID,
-        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-        "-//W3C//DTD XHTML 1.0 Frameset//EN"});
+    private static TldLibraryGlobalCache INSTANCE;
 
-     public static boolean isXHTMLPublicId(String publicId) {
-        return XHTML_PUBLIC_IDS.contains(publicId);
+    public static synchronized TldLibraryGlobalCache getDefault() {
+        if (INSTANCE == null) {
+            INSTANCE = new TldLibraryGlobalCache();
+        }
+        return INSTANCE;
+    }
+    //classpath entry -> libraries map
+    private final WeakHashMap<FileObject, Collection<TldLibrary>> LIBRARIES = new WeakHashMap<FileObject, Collection<TldLibrary>>();
+   
+    public Collection<TldLibrary> getLibraries(FileObject classpathRoot) {
+        synchronized (LIBRARIES) {
+            Collection<TldLibrary> cached = LIBRARIES.get(classpathRoot);
+            if (cached == null) {
+                //no entry for this jar so far
+                LIBRARIES.put(classpathRoot, findLibraries(classpathRoot));
+                cached = LIBRARIES.get(classpathRoot);
+            }
+            return cached;
+        }
     }
 
-     //XXX hack - resolve the namespaces propertly!
-    public static boolean isHtmlNs(String namespace) {
-        return namespace == null ? true : namespace.equals("http://www.w3.org/1999/xhtml");
+    private Collection<TldLibrary> findLibraries(FileObject classpathRoot) {
+        List<TldLibrary> libs = new ArrayList<TldLibrary>();
+        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
+        while (fos.hasMoreElements()) {
+            FileObject fo = fos.nextElement();
+            if ("META-INF".equals(fo.getName())) { //NOI18N
+                //look for tag library definition files (.taglib.xml)
+                for (FileObject file : fo.getChildren()) {
+                    if (file.getNameExt().toLowerCase(Locale.US).endsWith(".tld")) { //NOI18N
+                        //found library, create a new instance and cache it
+                        libs.add(TldLibrary.create(file));
+                    }
+                }
+            }
+        }
+        return libs;
     }
-
 
 }
