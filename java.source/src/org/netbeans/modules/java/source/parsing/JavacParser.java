@@ -222,18 +222,18 @@ public class JavacParser extends Parser {
             FileObject fo = source.getFileObject();
             if (fo != null) {
                 //fileless Source -- ie. debugger watch CC etc
-                filter = JavaFileFilterQuery.getFilter(source.getFileObject());
-            }
-            try {
-                final DataObject dobj = DataObject.find(source.getFileObject());
-                ec = dobj.getCookie(EditorCookie.Observable.class);
-                if (ec == null) {
-                    LOGGER.log(Level.FINE,
-                        String.format("File: %s has no EditorCookie.Observable", //NOI18N
-                        FileUtil.getFileDisplayName (source.getFileObject())));
+                filter = JavaFileFilterQuery.getFilter(fo);
+                try {
+                    final DataObject dobj = DataObject.find(fo);
+                    ec = dobj.getCookie(EditorCookie.Observable.class);
+                    if (ec == null) {
+                        LOGGER.log(Level.FINE,
+                            String.format("File: %s has no EditorCookie.Observable", //NOI18N
+                            FileUtil.getFileDisplayName (fo)));
+                    }
+                } catch (DataObjectNotFoundException e) {
+                    LOGGER.log(Level.FINE,"Invalid DataObject",e);
                 }
-            } catch (DataObjectNotFoundException e) {
-                LOGGER.log(Level.FINE,"Invalid DataObject",e);
             }
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
