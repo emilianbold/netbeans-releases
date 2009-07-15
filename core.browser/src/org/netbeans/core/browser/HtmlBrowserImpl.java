@@ -107,7 +107,7 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
     }
 
     @Override
-    protected void dispose() {
+    public void dispose() {
         browser.dispose();
     }
 
