@@ -41,9 +41,11 @@ package org.netbeans.modules.maven.webframeworks;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -78,6 +80,14 @@ public class WebFrameworksPanelProvider implements ProjectCustomizer.CompositeCa
         final WebFrameworksPanel panel = new WebFrameworksPanel(category, handle, prj);
         category.setOkButtonListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
+                if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            panel.applyChanges();
+                        }
+                    });
+                    return;
+                }
                 panel.applyChanges();
             }
         });
