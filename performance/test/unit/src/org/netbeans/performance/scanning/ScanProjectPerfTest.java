@@ -82,6 +82,11 @@ public class ScanProjectPerfTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDirPath());
     }
 
+    @Override
+    protected int timeOut() {
+        return 15*60000; // 15min
+    }
+
     public void testScanJEdit() throws IOException, ExecutionException, InterruptedException {
         String zipPath = Utilities.projectOpen("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", "jEdit41.zip");
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
@@ -98,7 +103,6 @@ public class ScanProjectPerfTest extends NbTestCase {
         scanProject(projectDir);
     }
 
-    @org.junit.Test(timeout=Long.MAX_VALUE)
     public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
         String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "mediawiki.zip";
         File f = new File(zipPath);
