@@ -187,38 +187,41 @@ public class HtmlCompletionQuery extends UserTask {
             //we are inside a tagname, the real content is the position before the tag
             astOffset -= (preText.length() + 1); // +"<" len
 
+            result = new ArrayList<CompletionItem>();
+
             if (Utils.isHtmlNs(namespace)) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
 
-                result = translateTags(documentItemOffset - 1,
+                result.addAll(translateTags(documentItemOffset - 1,
                         filterElements(openTags, preText),
                         filterElements(dtd.getElementList(null),
-                        preText));
-            } else {
-                //extensions
-                result = new ArrayList<CompletionItem>();
-                HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText);
-                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
-                    result.addAll(e.completeOpenTags(context));
-                }
+                        preText)));
             }
+                
+            //extensions
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText);
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                result.addAll(e.completeOpenTags(context));
+            }
+
 
         } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
             //complete open tags with no prefix
             anchor = offset;
+            result = new ArrayList<CompletionItem>();
 
             if (Utils.isHtmlNs(namespace)) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
-                result = translateTags(offset - 1, openTags, dtd.getElementList(null));
-            } else {
-                //extensions
-                HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "");
-                result = new ArrayList<CompletionItem>();
-                for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
-                    Collection<CompletionItem> items = e.completeOpenTags(context);
-                    result.addAll(items);
-                }
+                result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
             }
+            
+            //extensions
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "");
+            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
+                Collection<CompletionItem> items = e.completeOpenTags(context);
+                result.addAll(items);
+            }
+
 
         } else if ((id == HTMLTokenId.TEXT && preText.endsWith("</")) ||
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</"))) { // NOI18N
@@ -241,7 +244,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = offset - len;
 
             //TODO fix this later, the default namespace can be assigned to the xhtml
-            if (namespace != null) {
+            if (!Utils.isHtmlNs(namespace)) {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, node);

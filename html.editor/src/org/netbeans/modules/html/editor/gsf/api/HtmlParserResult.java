@@ -99,8 +99,7 @@ public class HtmlParserResult extends ParserResult {
                 mostLeaf = leaf;
             } else {
                 //they cannot overlap, just be nested, at least I think
-                if(leaf.logicalStartOffset() > mostLeaf.logicalStartOffset() &&
-                        leaf.logicalEndOffset() < mostLeaf.logicalEndOffset() ) {
+                if(leaf.logicalStartOffset() > mostLeaf.logicalStartOffset() ) {
                     mostLeaf = leaf;
                 }
             }

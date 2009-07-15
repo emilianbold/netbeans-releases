@@ -172,6 +172,13 @@ public class SyntaxTree {
             }
         }
 
+        //check the stack content and resolve left nodes
+        for (int i = stack.size() - 1; i > 0; i--) { // (i > 0) == do not process the very first (root) node
+            AstNode node = stack.get(i);
+            node.setLogicalEndOffset(lastEndOffset);
+
+        }
+
         return rootNode;
     }
 
