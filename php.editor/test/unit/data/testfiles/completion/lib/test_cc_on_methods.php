@@ -1,5 +1,5 @@
 <?php
-
+  TestCCOnMethods::create();
   class TestCCOnMethodsParentClass{
       /**
        * @return TestCCOnMethodsParentClass

@@ -57,11 +57,24 @@ import javax.lang.model.element.TypeElement;
  * @author ads
  *
  */
-class MemberCheckerFilter extends TypeFilter {
+class MemberCheckerFilter<T extends Element> extends Filter<T> {
     
-    public static MemberCheckerFilter get() {
+    private MemberCheckerFilter( Class<T> clazz ){
+        myClass = clazz;
+    }
+    
+    public static <T extends Element> MemberCheckerFilter<T> get(Class<T> clazz) {
+        assertElement( clazz );
         // could be changed to ThreadLocal cached access
-        return new MemberCheckerFilter();
+        if ( clazz.equals( Element.class)) {
+            return (MemberCheckerFilter<T>) new MemberCheckerFilter<Element>( 
+                    Element.class); 
+        }
+        else if ( clazz.equals( TypeElement.class)){
+            return (MemberCheckerFilter<T>) new MemberCheckerFilter<TypeElement>( 
+                    TypeElement.class);
+        }
+        return null;
     }
     
     void init( Map<? extends ExecutableElement, ? extends AnnotationValue> 
@@ -77,12 +90,8 @@ class MemberCheckerFilter extends TypeFilter {
      * @see org.netbeans.modules.web.beans.impl.model.TypeFilter#filter(java.util.Set)
      */
     @Override
-    void filter( Set<TypeElement> set ) {
+    void filter( Set<T> set ) {
         super.filter(set);
-        filterElements(set);
-    }
-    
-    void filterElements( Set<? extends Element> set ) {
         for( Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
             getValues().entrySet())
         {
@@ -92,6 +101,10 @@ class MemberCheckerFilter extends TypeFilter {
                 checkMember( execElement, value, set );
             }
         }    
+    }
+    
+    Class<T> getElementClass(){
+        return myClass;
     }
     
     private void checkMember( ExecutableElement exec, AnnotationValue value,
@@ -175,5 +188,6 @@ class MemberCheckerFilter extends TypeFilter {
     private WebBeansModelImplementation myImpl;
     private Map<? extends ExecutableElement, ? extends AnnotationValue> myValues;
     private Set<ExecutableElement> myMembers;
+    private Class<T> myClass;
 
 }

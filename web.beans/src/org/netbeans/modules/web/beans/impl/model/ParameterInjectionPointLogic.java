@@ -40,21 +40,31 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Set;
+import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 
 
 /**
  * @author ads
  *
  */
-abstract class TypeFilter  {
+abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
 
-    void filter( Set<TypeElement> set ){
-    }
-    
-    void filterElements( Set<? extends Element> set ){
+
+    protected Element findParameterInjectable( VariableElement element ) {
+        /*
+         * TODO : care about @Current, @Any , @New  
+         *
+         */
+        List<? extends AnnotationMirror> annotations = 
+            element.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotations) {
+            DeclaredType type = annotationMirror.getAnnotationType();
+        }
+        return null;
     }
 }

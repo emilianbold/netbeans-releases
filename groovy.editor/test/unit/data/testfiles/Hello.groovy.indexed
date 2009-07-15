@@ -14,6 +14,8 @@ Searchable Keys:
   class : Hello
   class-ig : hello
   fqn : foo.Hello
+  method : main(java.lang.String[]);void;08
+  method : run;java.lang.Object
 
 Not Searchable Keys:
 
