@@ -437,7 +437,18 @@ public class LayerUtils {
          * (or the user can save it explicitly if you don't).
          * @param create if true, and there is no layer yet, create it now; if false, just return null
          */
-        public synchronized FileSystem layer(boolean create) {
+        public FileSystem layer(boolean create) {
+            return layer(create, null);
+        }
+
+        /**
+         * Get the layer as a structured filesystem.
+         * See {@link #layer(boolean)} for details.
+         * @param create see {@link #layer(boolean)} for details
+         * @param cp optional classpath to search for resources specified with <code>nbres:</code>
+         *  or <code>nbresloc:</code> parameter; default is <code>null</code>
+         */
+        public synchronized FileSystem layer(boolean create, ClassPath cp) {
             if (fs == null) {
                 FileObject xml = getLayerFile();
                 if (xml == null) {
@@ -464,7 +475,7 @@ public class LayerUtils {
                     }
                 }
                 try {
-                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), /*XXX*/null);
+                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), cp);
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }
