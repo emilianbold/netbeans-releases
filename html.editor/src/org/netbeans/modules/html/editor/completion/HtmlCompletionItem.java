@@ -66,7 +66,7 @@ import org.openide.xml.XMLUtil;
  */
 public class HtmlCompletionItem implements CompletionItem {
 
-    private static final int DEFAULT_SORT_PRIORITY = 20;
+    protected static final int DEFAULT_SORT_PRIORITY = 20;
 
     //----------- Factory methods --------------
     public static HtmlCompletionItem createTag(String name, int substitutionOffset, String helpId, boolean possible) {
@@ -319,7 +319,7 @@ public class HtmlCompletionItem implements CompletionItem {
         private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
         private boolean possible;
 
-        Tag(String text, int substitutionOffset, String helpId, boolean possible) {
+        protected Tag(String text, int substitutionOffset, String helpId, boolean possible) {
             super(text, substitutionOffset, helpId);
             this.possible = possible;
         }

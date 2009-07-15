@@ -76,7 +76,7 @@ public class AstNodeUtilsTest extends TestBase {
 
 
 
-    public static Test suite() {
+    public static Test xsuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
         return suite;

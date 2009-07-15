@@ -1326,12 +1326,16 @@ public class JSFClientGenerator {
                         }
                     }
 
+
+
                     bodyText =
                             (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
                             "try {\n" +
+                            (useSessionBean ? "Exception transactionException = null;\n" : "")+
                             "jpaController.create(" + fieldName + ");\n" +
-                            (useSessionBean ? "try{utx.commit();} catch( Exception ex ){}\n" : "")+
-                            "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
+                            (useSessionBean ? "try{utx.commit();} catch(javax.transaction.RollbackException ex){transactionException = ex;} catch( Exception ex ){}\n" : "")+
+                            (useSessionBean ? "if(transactionException==null)" : "") +"JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
+                            (useSessionBean ? "else JsfUtil.ensureAddErrorMessage(transactionException, \"A persistence error occurred.\");\n" : "")+
                             (methodThrowsIllegalOrphanExceptionInCreate ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
@@ -1382,9 +1386,11 @@ public class JSFClientGenerator {
                     bodyText +=
                             (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
                             "try {\n" +
+                            (useSessionBean ? "Exception transactionException = null;\n" : "")+
                             "jpaController.edit(" + fieldName + ");\n" +
-                            (useSessionBean ? "try{utx.commit();} catch( Exception ex ){}\n" : "")+
-                            "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
+                            (useSessionBean ? "try{utx.commit();} catch(javax.transaction.RollbackException ex){transactionException = ex;} catch( Exception ex ){}\n" : "")+
+                            (useSessionBean ? "if(transactionException==null)" : "") +"JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
+                            (useSessionBean ? "else JsfUtil.ensureAddErrorMessage(transactionException, \"A persistence error occurred.\");\n" : "")+
                             (methodThrowsIllegalOrphanExceptionInEdit ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
@@ -1410,9 +1416,11 @@ public class JSFClientGenerator {
                     bodyText += 
                             (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
                             "try {\n" +
+                            (useSessionBean ? "Exception transactionException = null;\n" : "")+
                             "jpaController."+(useSessionBean ? "remove(jpaController.find(id))" : "destroy(id)")+";\n" +
-                            (useSessionBean ? "try{utx.commit();} catch( Exception ex ){}\n" : "")+
-                            "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
+                            (useSessionBean ? "try{utx.commit();} catch(javax.transaction.RollbackException ex){transactionException = ex;} catch( Exception ex ){}\n" : "")+
+                            (useSessionBean ? "if(transactionException==null)" : "") +"JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
+                            (useSessionBean ? "else JsfUtil.ensureAddErrorMessage(transactionException, \"A persistence error occurred.\");\n" : "")+
                             (methodThrowsIllegalOrphanExceptionInDestroy ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
