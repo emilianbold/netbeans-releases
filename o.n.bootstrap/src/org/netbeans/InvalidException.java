@@ -42,6 +42,7 @@
 package org.netbeans;
 
 import java.io.IOException;
+import java.util.jar.Manifest;
 
 /** Exception thrown indicating that a module's contents are ill-formed.
  * This could be a parse error in the manifest, or an inability to load
@@ -53,16 +54,25 @@ import java.io.IOException;
 public final class InvalidException extends IOException {
 
     private final Module m;
+    private final Manifest man;
     private String localizedMessage;
 
     public InvalidException(String detailMessage) {
         super(detailMessage);
         m = null;
+        man = null;
     }
     
     public InvalidException(Module m, String detailMessage) {
         super(m + ": " + detailMessage); // NOI18N
         this.m = m;
+        this.man = null;
+    }
+
+    InvalidException(String msg, Manifest manifest) {
+        super(msg);
+        this.m = null;
+        this.man = manifest;
     }
 
     public InvalidException(Module m, String detailMessage, String localizedMessage) {
@@ -76,6 +86,21 @@ public final class InvalidException extends IOException {
      */
     public Module getModule() {
         return m;
+    }
+
+    /** The manifest that caused this exception. Can be null, if the
+     * manifest cannot be obtained.
+     * @return manifest that contains error 
+     * @since 2.20
+     */
+    public Manifest getManifest() {
+        if (man != null) {
+            return man;
+        }
+        if (m != null) {
+            return m.getManifest();
+        }
+        return null;
     }
 
     @Override
