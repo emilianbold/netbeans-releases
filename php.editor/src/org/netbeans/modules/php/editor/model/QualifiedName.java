@@ -105,6 +105,10 @@ public class QualifiedName {
         }
         return createUnqualifiedName(name);
     }
+
+    public static QualifiedName createForDefaultNamespaceName() {
+        return QualifiedName.createUnqualifiedName(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME);
+    }
     public static QualifiedName createUnqualifiedName(String name) {
         QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
         assert kind.equals(QualifiedNameKind.UNQUALIFIED);
@@ -163,12 +167,20 @@ public class QualifiedName {
         return append(createUnqualifiedName(name));
     }
     public QualifiedName append(QualifiedName qualifiedName) {
-        LinkedList<String> list = new LinkedList<String>(getSegments());
+        return append(qualifiedName, false);
+    }
+    private  QualifiedName append(QualifiedName qualifiedName, boolean isFullyQualified) {
+        LinkedList<String> list = isDefaultNamespace() ? new LinkedList<String>() : new LinkedList<String>(getSegments());
         list.addAll(qualifiedName.getSegments());
-        return new QualifiedName(false, list);
+        return new QualifiedName(isFullyQualified, list);
     }
     public QualifiedName toFullyQualified() {
         return (getKind().isFullyQualified()) ? this : new QualifiedName(true, getSegments());
+    }
+    @CheckForNull
+    public QualifiedName toFullyQualified(QualifiedName namespaceName) {
+        Parameters.notNull("namespaceName", namespaceName);//NOI18N
+        return namespaceName.append(this, true);
     }
     @CheckForNull
     public QualifiedName toFullyQualified(NamespaceScope namespaceScope) {
@@ -208,6 +220,10 @@ public class QualifiedName {
         hash = 73 * hash + this.kind.hashCode();
         hash = 73 * hash + (this.segments != null ? this.segments.hashCode() : 0);
         return hash;
+    }
+
+    public boolean isDefaultNamespace() {
+        return getSegments().size() == 1 && getSegments().get(0).equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME);
     }
 
 }
