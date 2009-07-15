@@ -36,57 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.filesystems.FileObject;
-
 /**
- * Per web-module instance
  *
  * @author marekfukala
  */
-public class TldClassPathSupport implements PropertyChangeListener {
+public class TldLibraryException extends Exception {
 
-    private final ClassPath cp;
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private boolean cache_valid = false;
-
-    public TldClassPathSupport(ClassPath cp) {
-        this.cp = cp;
-        cp.addPropertyChangeListener(this);
+    public TldLibraryException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        cache_valid = false;
-    }
-
-    public synchronized Map<String, TldLibrary> getLibraries() {
-        if (!cache_valid) {
-            LIBRARIES.clear();
-            for (FileObject cpRoot : cp.getRoots()) {
-                Collection<TldLibrary> libs = TldLibraryGlobalCache.getDefault().getLibraries(cpRoot);
-                for(TldLibrary lib : libs) {
-                    LIBRARIES.put(lib.getURI(), lib);
-                }
-            }
-            cache_valid = true;
-            dumpLibs();
-        }
-        return LIBRARIES;
-    }
-
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : getLibraries().values()) {
-            System.out.println(l.getURI() + "("+ l.getDefinitionFile().getPath() +")");
-        }
-
-    }
 }
