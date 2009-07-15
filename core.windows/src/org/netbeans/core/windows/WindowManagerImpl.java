@@ -1626,6 +1626,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
         }
     }
+
+    @Override
+    public TopComponent[] getOpenedTopComponents(Mode mode) {
+        if( mode instanceof ModeImpl ) {
+            java.util.List<TopComponent> openedTcs = ((ModeImpl)mode).getOpenedTopComponents();
+            return openedTcs.toArray(new TopComponent[openedTcs.size()]);
+        }
+        return super.getOpenedTopComponents(mode);
+    }
     
     /**
      * An empty TopComponent needed for deselectEditorTopComponents()
