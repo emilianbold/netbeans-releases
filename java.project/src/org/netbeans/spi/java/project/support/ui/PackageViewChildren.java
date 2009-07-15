@@ -68,6 +68,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
@@ -168,12 +169,14 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     
     RequestProcessor.Task task = RequestProcessor.getDefault().create( this );
         
+    @Override
     protected void addNotify() {
         // System.out.println("ADD NOTIFY" + root + " : " + this );
         super.addNotify();
         task.schedule( 0 );
     }
     
+    @Override
     public Node[] getNodes( boolean optimal ) {
         if ( optimal ) {
             Node[] garbage = super.getNodes( false );        
@@ -182,6 +185,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         return super.getNodes( false );
     }
     
+    @Override
     public Node findChild (String name) {
         while (true) {
             Node n = super.findChild(name);
@@ -220,6 +224,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         VisibilityQuery.getDefault().addChangeListener( wvqcl );
     }
 
+    @Override
     protected void removeNotify() {
         // System.out.println("REMOVE NOTIFY" + root + " : " + this );        
         VisibilityQuery.getDefault().removeChangeListener( wvqcl );
@@ -387,9 +392,17 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
 
     public void fileChanged( FileEvent fe ) {} 
 
-    public void fileFolderCreated( FileEvent fe ) {
+    public void fileFolderCreated(final FileEvent fe ) {
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        fileFolderCreated(fe);
+                    }
+                });
+                return;
+            }
             cleanEmptyKeys( fo );                
 //            add( fo, false);
             findNonExcludedPackages( fo );
@@ -397,9 +410,18 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     }
     
-    public void fileDataCreated( FileEvent fe ) {
+    public void fileDataCreated( final FileEvent fe ) {
         FileObject fo = fe.getFile();
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        fileDataCreated(fe);
+                    }
+                });
+                return;
+            }
+
             FileObject parent = fo.getParent();
             // XXX consider using group.contains() here
             if ( !VisibilityQuery.getDefault().isVisible( parent ) ) {
@@ -416,12 +438,22 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     }
 
-    public void fileDeleted( FileEvent fe ) {
+    public void fileDeleted( final FileEvent fe ) {
         FileObject fo = fe.getFile();       
         
         // System.out.println("FILE DELETED " + FileUtil.getRelativePath( root, fo ) );
         
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        // why don't we jave closures in java? :(
+                        fileDeleted(fe);
+                    }
+                });
+                return;
+            }
+
             
             // System.out.println("IS FOLDER? " + fo + " : " + fo.isFolder() );
                                   /* Hack for MasterFS see #42464 */
@@ -497,9 +529,19 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     }
     
     
-    public void fileRenamed( FileRenameEvent fe ) {
+    public void fileRenamed( final FileRenameEvent fe ) {
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) && fo.isFolder() ) {
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        // why don't we jave closures in java? :(
+                        fileRenamed(fe);
+                    }
+                });
+                return;
+            }
+
             String rp = FileUtil.getRelativePath( root, fo.getParent() );
             String oldPath = rp + ( rp.length() == 0 ? "" : "/" ) + fe.getName() + fe.getExt(); // NOI18N
 
