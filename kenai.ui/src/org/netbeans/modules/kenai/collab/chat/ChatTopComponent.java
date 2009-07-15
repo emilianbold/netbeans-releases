@@ -488,6 +488,7 @@ public class ChatTopComponent extends TopComponent {
 
         noChats.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         org.openide.awt.Mnemonics.setLocalizedText(noChats, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.noChats.text", new Object[] {})); // NOI18N
+        noChats.setEnabled(false);
         newPanel.add(noChats, java.awt.BorderLayout.CENTER);
 
         chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.newPanel.TabConstraints.tabTitle"), newPanel); // NOI18N
@@ -576,14 +577,14 @@ public class ChatTopComponent extends TopComponent {
             .add(initPanelLayout.createSequentialGroup()
                 .add(5, 5, 5)
                 .add(initLabel)
-                .addContainerGap(292, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
                 .add(5, 5, 5)
                 .add(initLabel)
-                .addContainerGap(279, Short.MAX_VALUE))
+                .addContainerGap(278, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);
