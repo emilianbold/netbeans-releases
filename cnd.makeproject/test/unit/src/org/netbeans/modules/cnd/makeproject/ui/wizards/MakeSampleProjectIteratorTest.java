@@ -88,49 +88,38 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         testSample(sunStudioSet, "Arguments", "all");
     }
 
-//    @Test
-//    public void testInputOutput() throws IOException {
-//        testSample("InputOutput", "all");
-//    }
-//
+    @Test
+    public void testInputOutput() throws IOException {
+        testSample(defaultSet, "InputOutput", "all");
+        testSample(sunStudioSet, "InputOutput", "all");
+    }
+
     @Test
     public void testWelcome() throws IOException {
         testSample(defaultSet, "Welcome", "all");
         testSample(sunStudioSet, "Welcome", "all");
     }
-//
-//    @Test
-//    public void testQuote() throws IOException {
-//        testSample("Quote", "all");
-//    }
-//
-//    @Test
-//    public void testFractal() throws IOException {
-//        testSample("Fractal", "CONF=Debug");
-//        testSample("Fractal", "CONF=PerformanceDebug");
-//        testSample("Fractal", "CONF=DianogsableRelease");
-//        testSample("Fractal", "CONF=Release");
-//        testSample("Fractal", "CONF=PerformanceRelease");
-//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-//            setDefaultCompilerSet("SunStudio");
-//            testSample("Pi", "all");
-//        }
-//    }
-//
+
+    @Test
+    public void testQuote() throws IOException {
+        testSample(defaultSet, "Quote", "all");
+        testSample(sunStudioSet, "Quote", "all");
+    }
+
     @Test
     public void testSubProjects() throws IOException {
         testSample(defaultSet, "SubProjects", "all");
         testSample(sunStudioSet, "SubProjects", "all");
     }
 
-//    @Test
-//    public void testPi() throws IOException {
-//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-//            setDefaultCompilerSet("SunStudio");
-//            testSample("Pi", "all");
-//        }
-//    }
-//
+    @Test
+    public void testPi() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(defaultSet, "Pi", "all");
+            testSample(sunStudioSet, "Pi", "all");
+        }
+    }
+
     @Test
     public void testFreeway() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
@@ -138,25 +127,24 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             testSample(sunStudioSet, "Freeway", "all");
         }
     }
-//
-//    @Test
-//    public void testFractal() throws IOException {
-//        testSample("Fractal", "CONF=Debug");
-//        testSample("Fractal", "CONF=PerformanceDebug");
-//        testSample("Fractal", "CONF=DianogsableRelease");
-//        testSample("Fractal", "CONF=Release");
-//        testSample("Fractal", "CONF=PerformanceRelease");
-//    }
-//
-//    @Test
-//    public void testLexYacc() throws IOException {
-//        testSample("LexYacc", "all");
-//    }
-//
-//    @Test
-//    public void testMP() throws IOException {
-//        testSample("MP", "all");
-//    }
+
+    @Test
+    public void testFractal() throws IOException {
+        testSample(defaultSet, "Fractal", "all");
+        testSample(sunStudioSet, "Fractal", "all");
+    }
+
+    @Test
+    public void testLexYacc() throws IOException {
+        testSample(defaultSet, "LexYacc", "all");
+        testSample(sunStudioSet, "LexYacc", "all");
+    }
+
+    @Test
+    public void testMP() throws IOException {
+        testSample(defaultSet, "MP", "all");
+        testSample(sunStudioSet, "MP", "all");
+    }
     
     @Override
     protected List<Class> getServises() {
