@@ -679,11 +679,13 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     
         
+        @Override
         public String getName() {
             String relativePath = FileUtil.getRelativePath(root, dataFolder.getPrimaryFile());
             return relativePath == null ?  null : relativePath.replace('/', '.'); // NOI18N
         }
         
+        @Override
         public Action[] getActions( boolean context ) {
             
             if ( !context ) {
@@ -721,6 +723,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
         
+        @Override
         public boolean canRename() {
             if ( isDefaultPackage ) {
                 return false;
@@ -730,6 +733,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
 
+        @Override
         public boolean canCut () {
             return !isDefaultPackage;    
         }
@@ -737,6 +741,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         /**
          * Copy handling
          */
+        @Override
         public Transferable clipboardCopy () throws IOException {
             try {
                 return new PackageTransferable (this, DnDConstants.ACTION_COPY);
@@ -745,6 +750,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
         
+        @Override
         public Transferable clipboardCut () throws IOException {
             try {
                 return new PackageTransferable (this, DnDConstants.ACTION_MOVE);
@@ -753,6 +759,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
         
+        @Override
         public /*@Override*/ Transferable drag () throws IOException {
             try {
                 return new PackageTransferable (this, DnDConstants.ACTION_NONE);
@@ -761,6 +768,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
 
+        @Override
         public PasteType[] getPasteTypes(Transferable t) {
             if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
                 try {
@@ -792,6 +800,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
         
+        @Override
         public /*@Override*/ PasteType getDropType (Transferable t, int action, int index) {
             if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
                 try {
@@ -843,6 +852,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return handlers.iterator().next(); 
         }
         
+        @Override
         public void setName(String name) {
             PackageRenameHandler handler = getRenameHandler();
             if (handler!=null) {
@@ -912,6 +922,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         
         
         
+        @Override
         public boolean canDestroy() {
             if ( isDefaultPackage ) {
                 return false;
@@ -921,6 +932,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
         }
         
+        @Override
         public void destroy() throws IOException {
             FileObject parent = dataFolder.getPrimaryFile().getParent();
             // First; delete all files except packages
@@ -954,6 +966,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
          *  
          * @return annotated display name
          */ 
+        @Override
         public String getHtmlDisplayName() {
             String name = getDisplayName();
             try {
@@ -976,6 +989,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return name;
         }
         
+        @Override
         public String getDisplayName() {
             FileObject folder = dataFolder.getPrimaryFile();
             String path = FileUtil.getRelativePath(root, folder);
@@ -986,6 +1000,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return PackageDisplayUtils.getDisplayLabel( path.replace('/', '.'));
         }
         
+        @Override
         public String getShortDescription() {
             FileObject folder = dataFolder.getPrimaryFile();
             String path = FileUtil.getRelativePath(root, folder);
@@ -996,6 +1011,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return PackageDisplayUtils.getToolTip(folder, path.replace('/', '.'));
         }
 
+        @Override
         public Image getIcon (int type) {
             Image img = getMyIcon (type);
 
@@ -1010,6 +1026,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return img;
         }
 
+        @Override
         public Image getOpenedIcon (int type) {
             Image img = getMyOpenedIcon(type);
 
@@ -1293,6 +1310,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return ExTransferable.EMPTY;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(PackageViewChildren.class,"TXT_PastePackage");
         }
