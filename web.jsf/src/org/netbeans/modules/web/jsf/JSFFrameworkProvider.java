@@ -72,6 +72,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -295,6 +296,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         public void run() throws IOException {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
+            //we need deployment descriptor, create if null
+            if(dd==null)
+            {
+                dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), true, webModule.getWebInf());
+            }
             //faces servlet mapping
             String facesMapping = panel == null ? "faces/*" : panel.getURLPattern();
             
