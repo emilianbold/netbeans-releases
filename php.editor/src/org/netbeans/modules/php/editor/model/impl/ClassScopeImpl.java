@@ -45,7 +45,6 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +52,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.model.impl.ClassScopeImpl;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -188,7 +186,11 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
                 allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
             }
             interfaces.addAll(clz.getSuperInterfaces());
-            clz = ModelUtils.getFirst(clz.getSuperClasses());
+            ClassScope clzz = ModelUtils.getFirst(clz.getSuperClasses());
+            if (clzz != null && clzz.getName().equals(clz.getName())) {
+                break;
+            }
+            clz = clzz;
         }
 
         for (InterfaceScope ifaceScope : interfaces) {
@@ -323,6 +325,15 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
         return sb.toString();
 
+    }
+
+    @Override
+    public QualifiedName getNamespaceName() {
+        if (indexedElement instanceof IndexedClass) {
+            IndexedClass indexedClass = (IndexedClass)indexedElement;
+            return QualifiedName.create(indexedClass.getNamespaceName());
+        }
+        return super.getNamespaceName();
     }
 
     public Collection<? extends String> getSuperClassNames() {

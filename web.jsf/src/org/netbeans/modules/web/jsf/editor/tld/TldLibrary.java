@@ -66,11 +66,11 @@ public class TldLibrary {
     private String uri = null;
     private Map<String, Tag> tags = new HashMap<String, Tag>();
 
-    static TldLibrary create(FileObject definitionFile) {
+    static TldLibrary create(FileObject definitionFile) throws TldLibraryException {
         return new TldLibrary(definitionFile);
     }
 
-    private TldLibrary(FileObject definitionFile) {
+    private TldLibrary(FileObject definitionFile) throws TldLibraryException {
         this.definitionFile = definitionFile;
         parseLibrary();
     }
@@ -108,7 +108,7 @@ public class TldLibrary {
     }
 
     //--------------- private -------------------
-    private void parseLibrary() {
+    private void parseLibrary() throws TldLibraryException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -121,7 +121,15 @@ public class TldLibrary {
             Node tagLib = getNodeByName(doc, "taglib"); //NOI18N
 
             prefix = getTextContent(tagLib, "short-name"); //NOI18N
+            if(prefix == null) {
+                throw new TldLibraryException("Missing short-name entry in " + getDefinitionFile().getPath() + " library.", null);
+            }
+
+
             uri = getTextContent(tagLib, "uri"); //NOI18N
+            if(uri == null) {
+                throw new TldLibraryException("Missing uri entry in " + getDefinitionFile().getPath() + " library.", null);
+            }
 
             //scan the <tag> nodes content - the tag descriptions
             NodeList tagNodes = doc.getElementsByTagName("tag"); //NOI18N

@@ -236,12 +236,10 @@ public abstract class Module extends ModuleInfo {
     }
     
     public Set<Dependency> getDependencies() {
-        return new HashSet<Dependency>(Arrays.asList(dependenciesA));
+        return new HashSet<Dependency>(Arrays.asList(getDependenciesArray()));
     }
-    // Faster to loop over:
-    // @since JST-PENDING called from NbInstaller
     public final Dependency[]  getDependenciesArray() {
-        return dependenciesA;
+        return dependenciesA == null ? new Dependency[0] : dependenciesA;
     }
     
     public SpecificationVersion getSpecificationVersion() {
@@ -310,7 +308,7 @@ public abstract class Module extends ModuleInfo {
         // Code name
         codeName = attr.getValue("OpenIDE-Module"); // NOI18N
         if (codeName == null) {
-            InvalidException e = new InvalidException("Not a module: no OpenIDE-Module tag in manifest of " + /* #17629: important! */this); // NOI18N
+            InvalidException e = new InvalidException("Not a module: no OpenIDE-Module tag in manifest of " + /* #17629: important! */this, getManifest()); // NOI18N
             // #29393: plausible user mistake, deal with it politely.
             Exceptions.attachLocalizedMessage(e,
                                               NbBundle.getMessage(Module.class,

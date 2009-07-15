@@ -74,6 +74,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -4513,7 +4514,8 @@ public class JavaCompletionProvider implements CompletionProvider {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                CompilationController controller = CompilationController.get(resultIterator.getParserResult(caretOffset));
+                Result result = resultIterator.getParserResult(caretOffset);
+                CompilationController controller = result != null ? CompilationController.get(result) : null;
                 if (controller != null)
                     JavaCompletionQuery.this.run(controller);
             }

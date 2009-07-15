@@ -433,14 +433,14 @@ public final class Config {
     }
 
     private int integer(StringTokenizer stk) {
-        if (!stk.hasMoreTokens()) {
+        if ( !stk.hasMoreTokens()) {
             return -1;
         }
         return getInt(stk.nextToken());
     }
 
     private String getString(StringTokenizer stk) {
-        if (!stk.hasMoreTokens()) {
+        if ( !stk.hasMoreTokens()) {
             return null;
         }
         return stk.nextToken();

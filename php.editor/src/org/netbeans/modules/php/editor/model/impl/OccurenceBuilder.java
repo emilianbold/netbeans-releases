@@ -66,12 +66,13 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfoInContext;
+import org.netbeans.modules.php.editor.model.nodes.ElementInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -105,11 +106,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.openide.util.Union2;
 
 /**
  * @author Radek Matous
  */
-class OccurenceBuilder {
+class OccurenceBuilder {    
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
@@ -132,7 +134,7 @@ class OccurenceBuilder {
     private HashMap<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
     private HashMap<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
     private int offset;
-    private ASTNodeInfoInContext currentContextInfo;
+    private ElementInfo currentContextInfo;
     private ModelElement element;
 
     OccurenceBuilder(ModelElement element) {
@@ -168,7 +170,7 @@ class OccurenceBuilder {
         if (canBePrepared(fieldAccess, scope)) {
             ASTNodeInfo<FieldAccess> node = ASTNodeInfo.create(fieldAccess);
             fieldInvocations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -176,7 +178,7 @@ class OccurenceBuilder {
         if (canBePrepared(incl, inclImpl)) {
             IncludeInfo node = IncludeInfo.create(incl);
             includes.put(node, inclImpl);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, ModelUtils.getNamespaceScope(inclImpl)));
+            setOccurenceAsCurrent(new ElementInfo(node, ModelUtils.getNamespaceScope(inclImpl)));
         }
     }
 
@@ -184,7 +186,7 @@ class OccurenceBuilder {
         if (canBePrepared(methodInvocation, scope)) {
             ASTNodeInfo<MethodInvocation> node = ASTNodeInfo.create(methodInvocation);
             methodInvocations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -192,7 +194,7 @@ class OccurenceBuilder {
         SingleFieldDeclaration node = info.getOriginalNode();
         if (canBePrepared(node, fei)) {
             fldDeclarations.put(info, fei);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(info, fei));
+            setOccurenceAsCurrent(new ElementInfo(info, fei));
         }
     }
 
@@ -200,7 +202,7 @@ class OccurenceBuilder {
         if (canBePrepared(variable, scope)) {
             ASTNodeInfo<Variable> node = ASTNodeInfo.create(variable);
             variables.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -208,7 +210,7 @@ class OccurenceBuilder {
         if (canBePrepared(functionInvocation, scope)) {
             ASTNodeInfo<FunctionInvocation> node = ASTNodeInfo.create(functionInvocation);
             this.fncInvocations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -216,7 +218,7 @@ class OccurenceBuilder {
         if (canBePrepared(staticMethodInvocation, scope)) {
             ASTNodeInfo<StaticMethodInvocation> node = ASTNodeInfo.create(staticMethodInvocation);
             this.staticMethodInvocations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -224,7 +226,7 @@ class OccurenceBuilder {
         if (canBePrepared(staticFieldAccess, scope)) {
             ASTNodeInfo<StaticFieldAccess> node = ASTNodeInfo.create(staticFieldAccess);
             staticFieldInvocations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -232,7 +234,7 @@ class OccurenceBuilder {
         if (canBePrepared(staticConstantAccess, scope)) {
             ASTNodeInfo<StaticConstantAccess> node = ASTNodeInfo.create(staticConstantAccess);
             staticConstantInvocations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -240,7 +242,7 @@ class OccurenceBuilder {
         if (canBePrepared(clsName, scope)) {
             ASTNodeInfo<ClassName> node = ASTNodeInfo.create(clsName);
             clasNames.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -262,7 +264,7 @@ class OccurenceBuilder {
                 default:
                     throw new IllegalStateException();
             }
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(nodeInfo, scope));
+            setOccurenceAsCurrent(new ElementInfo(nodeInfo, scope));
         }
     }
 
@@ -270,7 +272,7 @@ class OccurenceBuilder {
         ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
         if (canBePrepared(node, scope)) {
             clasInstanceCreations.put(nodeInfo, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(nodeInfo, scope));
+            setOccurenceAsCurrent(new ElementInfo(nodeInfo, scope));
         }
     }
 
@@ -278,7 +280,7 @@ class OccurenceBuilder {
         ASTNodeInfo<Scalar> nodeInfo = ASTNodeInfo.create(kind, scalar);
         if (canBePrepared(scalar, scope)) {
             constInvocations.put(nodeInfo, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(nodeInfo, scope));
+            setOccurenceAsCurrent(new ElementInfo(nodeInfo, scope));
         }
     }
 
@@ -286,7 +288,7 @@ class OccurenceBuilder {
         Scalar scalar = nodeInfo.getOriginalNode();
         if (canBePrepared(scalar, constantElement)) {
             constDeclarations.put(nodeInfo, constantElement);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(nodeInfo, constantElement));
+            setOccurenceAsCurrent(new ElementInfo(nodeInfo, constantElement));
         }
     }
 
@@ -295,7 +297,7 @@ class OccurenceBuilder {
             List<? extends PhpDocTypeTagInfo> infos = PhpDocTypeTagInfo.create(pHPDocTag, scope);
             for (PhpDocTypeTagInfo typeTagInfo : infos) {
                 docTags.put(typeTagInfo, scope);
-                setOccurenceAsCurrent(new ASTNodeInfoInContext(typeTagInfo, scope));
+                setOccurenceAsCurrent(new ElementInfo(typeTagInfo, scope));
             }
         }
     }
@@ -309,7 +311,7 @@ class OccurenceBuilder {
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);
             }
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -321,7 +323,7 @@ class OccurenceBuilder {
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);
             }
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -329,7 +331,7 @@ class OccurenceBuilder {
         if (canBePrepared(functionDeclaration, scope)) {
             FunctionDeclarationInfo node = FunctionDeclarationInfo.create(functionDeclaration);
             fncDeclarations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
@@ -337,18 +339,18 @@ class OccurenceBuilder {
         if (canBePrepared(methodDeclaration, scope)) {
             MethodDeclarationInfo node = MethodDeclarationInfo.create(methodDeclaration);
             methodDeclarations.put(node, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(node, scope));
+            setOccurenceAsCurrent(new ElementInfo(node, scope));
         }
     }
 
     void prepare(ClassConstantDeclarationInfo constantNodeInfo, ClassConstantElement scope) {
         if (constantNodeInfo != null && canBePrepared(constantNodeInfo.getOriginalNode(), scope)) {
             classConstantDeclarations.put(constantNodeInfo, scope);
-            setOccurenceAsCurrent(new ASTNodeInfoInContext(constantNodeInfo, scope));
+            setOccurenceAsCurrent(new ElementInfo(constantNodeInfo, scope));
         }
     }
 
-    private void buildFieldDeclarations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
+    private void buildFieldDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<SingleFieldDeclarationInfo, FieldElementImpl> entry : fldDeclarations.entrySet()) {
             SingleFieldDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -358,8 +360,8 @@ class OccurenceBuilder {
         }
     }
     
-    private void buildFieldInvocations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildFieldInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         Map<String, List<FieldElementImpl>> unknownFieldNameCache = new HashMap<String, List<FieldElementImpl>>();
         for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
             ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
@@ -405,7 +407,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildMethodDeclarations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
+    private void buildMethodDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -414,8 +416,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildMethodInvocations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildMethodInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         Map<String, List<MethodScope>> unknownMethodNameCache = new HashMap<String, List<MethodScope>>();
         for (Entry<ASTNodeInfo<MethodInvocation>, Scope> entry : methodInvocations.entrySet()) {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
@@ -451,8 +453,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildIncludes(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildIncludes(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
             IncludeInfo nodeInfo = entry.getKey();
             if (idName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -461,8 +463,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildConstantInvocations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildConstantInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (idName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -474,8 +476,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildConstantDeclarations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildConstantDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<Scalar>, ConstantElement> entry : constDeclarations.entrySet()) {
             ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
             if (idName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -485,8 +487,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticConstantDeclarations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildStaticConstantDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<Identifier>, ClassConstantElement> entry : classConstantDeclarations.entrySet()) {
             ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -496,7 +498,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticMethodInvocations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
+    private void buildStaticMethodInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
             ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
             String methodName = nodeInfo.getName();
@@ -526,7 +528,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticFieldInvocations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
+    private void buildStaticFieldInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
             ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -548,8 +550,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildStaticConstantInvocations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildStaticConstantInvocations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
             ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -571,8 +573,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTagsForClasses(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildDocTagsForClasses(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             if (Kind.CLASS.equals(nodeInfo.getKind()) && idName.equalsIgnoreCase(nodeInfo.getName())) {
@@ -586,8 +588,8 @@ class OccurenceBuilder {
         }
     }
     
-    private void buildClassInstanceCreation(ASTNodeInfoInContext query, FileScopeImpl fileScope) {
-        String idName = query.getNodeInfo().getName();
+    private void buildClassInstanceCreation(ElementInfo query, FileScopeImpl fileScope) {
+        String idName = query.getName();
 
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
@@ -613,8 +615,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassNames(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildClassNames(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<ClassName>, Scope> entry : clasNames.entrySet()) {
             ASTNodeInfo<ClassName> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -626,8 +628,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildInterfaceIDs(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildInterfaceIDs(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<Expression>, Scope> entry : ifaceIDs.entrySet()) {
             ASTNodeInfo<Expression> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -640,8 +642,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassIDs(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildClassIDs(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<Expression>, Scope> entry : clasIDs.entrySet()) {
             ASTNodeInfo<Expression> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -655,7 +657,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildInterfaceDeclarations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
+    private void buildInterfaceDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
             InterfaceDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -665,7 +667,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildClassDeclarations(ASTNodeInfoInContext query, FileScopeImpl fileScope) {
+    private void buildClassDeclarations(ElementInfo query, FileScopeImpl fileScope) {
         for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
             ClassDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(query, nodeInfo, entry.getValue())) {
@@ -674,7 +676,7 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildFunctionDeclarations(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
+    private void buildFunctionDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
         for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
             ASTNodeInfo<FunctionDeclaration> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -684,8 +686,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildFunctionInvocations(final ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildFunctionInvocations(final ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<FunctionInvocation>, Scope> entry : fncInvocations.entrySet()) {
             ASTNodeInfo<FunctionInvocation> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
@@ -703,8 +705,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildDocTagsForVars(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildDocTagsForVars(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
@@ -723,8 +725,8 @@ class OccurenceBuilder {
             }
         }
     }
-    private void buildDocTagsForFields(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildDocTagsForFields(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
@@ -752,8 +754,8 @@ class OccurenceBuilder {
         }
     }
 
-    private void buildVariables(ASTNodeInfoInContext nodeCtxInfo, FileScopeImpl fileScope) {
-        String idName = nodeCtxInfo.getNodeInfo().getName();
+    private void buildVariables(ElementInfo nodeCtxInfo, FileScopeImpl fileScope) {
+        String idName = nodeCtxInfo.getName();
         for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
             ASTNodeInfo<Variable> nodeInfo = entry.getKey();
             String name = nodeInfo.getName();
@@ -773,37 +775,11 @@ class OccurenceBuilder {
     }
 
     void build(FileScopeImpl fileScope) {
-        ASTNodeInfo.Kind kind = currentContextInfo != null ? currentContextInfo.getNodeInfo().getKind() : null;
-        String name = currentContextInfo != null ? currentContextInfo.getNodeInfo().getName() : null;
-        //NamespaceScope namespace = currentContextInfo != null ? currentContextInfo.getNamespace() : null;
-        //currentContextInfo = null;
-        if (kind == null && element != null) {
-            switch(element.getPhpKind()) {
-                case CLASS:
-                    kind = Kind.CLASS;break;
-                case CLASS_CONSTANT:
-                    kind = Kind.CLASS_CONSTANT;break;
-                case CONSTANT:
-                    kind = Kind.CONSTANT;break;
-                case FIELD:
-                    kind = Kind.FIELD;break;
-                case FUNCTION:
-                    kind = Kind.FUNCTION;break;
-                case IFACE:
-                    kind = Kind.IFACE;break;
-                case INCLUDE:
-                    kind = Kind.INCLUDE;break;
-                case METHOD:
-                    boolean isStatic = element.getPhpModifiers().isStatic();
-                    kind = isStatic ? Kind.STATIC_METHOD : Kind.METHOD;break;
-                case VARIABLE:
-                    kind = Kind.VARIABLE;break;
-            }
+        if (currentContextInfo == null && element != null) {
+            currentContextInfo = new ElementInfo(element);
         }
-        if (name == null && element != null) {
-            name = element.getName();
-        }
-        if (name != null && name.trim().length() > 0 && kind != null) {
+        ASTNodeInfo.Kind kind = currentContextInfo != null ? currentContextInfo.getKind() : null;
+        if (currentContextInfo != null && kind != null) {
             switch (kind) {
                 case FUNCTION:
                     buildFunctionInvocations(currentContextInfo, fileScope);
@@ -869,9 +845,9 @@ class OccurenceBuilder {
         return (getOffset() >= 0 || element != null) && scope != null && node != null;
     }
 
-    private void setOccurenceAsCurrent(ASTNodeInfoInContext contextInfo) {
+    private void setOccurenceAsCurrent(ElementInfo contextInfo) {
         if (element == null) {
-            OffsetRange range = contextInfo.getNodeInfo().getRange();
+            OffsetRange range = contextInfo.getRange();
             if (range.containsInclusive(getOffset())) {
                 currentContextInfo = contextInfo;
            }
@@ -1002,21 +978,36 @@ class OccurenceBuilder {
             return mandatory;
     }
 
-    private static QualifiedName getFullyQualifiedName(ASTNodeInfo nodeInfo, Scope scope) {
-        return new ASTNodeInfoInContext(nodeInfo,scope).getFullyQualifiedName();
-    }
 
-    private static boolean isNameEquality(ASTNodeInfoInContext query, ASTNodeInfo node, ModelElement nodeScope) {
-        String idName = query.getNodeInfo().getName();
+    private static boolean isNameEquality(ElementInfo query, ASTNodeInfo node, ModelElement nodeScope) {
+        String idName = query.getName();
         if (idName.equalsIgnoreCase(node.getName())) {
             QualifiedName queryName = null;
             QualifiedName nodeName = null;
-            ASTNode originalNode = query.getNodeInfo().getOriginalNode();
             TypeScope typeScope = ModelUtils.getTypeScope(query.getScope());
-            if (typeScope != null && (originalNode instanceof MethodDeclaration ||
-                    originalNode instanceof SingleFieldDeclaration ||
-                    query.getNodeInfo() instanceof ClassConstantDeclarationInfo)) {
-                queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(query.getNamespaceScope());
+            Union2<ASTNodeInfo, ModelElement> rawElement = query.getRawElement();
+            ASTNodeInfo nodeInfo = rawElement.hasFirst() ? rawElement.first() : null;
+            ModelElement modelElemnt = rawElement.hasSecond() ? rawElement.second() : null;
+            ASTNode originalNode = nodeInfo != null ? nodeInfo.getOriginalNode() : null;
+            boolean isMemberDeclaration = false;
+            if (nodeInfo != null && originalNode != null) {
+                isMemberDeclaration = typeScope != null && (originalNode instanceof MethodDeclaration ||
+                        originalNode instanceof SingleFieldDeclaration ||
+                        nodeInfo instanceof ClassConstantDeclarationInfo);
+            } else if (modelElemnt != null) {
+                PhpKind phpKind = modelElemnt.getPhpKind();
+                isMemberDeclaration = phpKind.equals(PhpKind.METHOD) ||
+                        phpKind.equals(PhpKind.FIELD) ||
+                        phpKind.equals(PhpKind.CLASS_CONSTANT);
+            }
+            if (isMemberDeclaration) {
+                NamespaceScope namespaceScope = query.getNamespaceScope();
+                if (namespaceScope != null) {
+                    queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(namespaceScope);
+                } else if (modelElemnt != null) {
+                    QualifiedName namespaceName = modelElemnt.getNamespaceName();
+                    queryName = QualifiedName.createUnqualifiedName(typeScope.getName()).toFullyQualified(namespaceName);
+                }
             } else if (originalNode instanceof StaticDispatch) {
                 if (typeScope instanceof ClassScope) {
                     queryName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) originalNode).getClassName(), (ClassScope)typeScope).toFullyQualified(query.getNamespaceScope());
@@ -1032,19 +1023,39 @@ class OccurenceBuilder {
                 final TypeScope nodeTypeScope = ModelUtils.getTypeScope(nodeScope);
                 Scope inScope = nodeScope.getInScope();
                 if (nodeOriginalNode instanceof FunctionInvocation) {
-                    nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceScope);
+                    if (namespaceScope != null) {
+                        nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceScope);
+                    } else if (nodeScope != null) {
+                        QualifiedName namespaceName = nodeScope.getNamespaceName();
+                        nodeName = QualifiedName.create(((FunctionInvocation)nodeOriginalNode).getFunctionName().getName()).toFullyQualified(namespaceName);
+                    }
                 } else if (nodeTypeScope != null && (nodeOriginalNode instanceof MethodDeclaration ||
                     nodeOriginalNode instanceof SingleFieldDeclaration ||
                     node instanceof ClassConstantDeclarationInfo)) {
-                    nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceScope);
+                    if (namespaceScope != null) {
+                        nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceScope);
+                    } else if (nodeScope != null) {
+                        QualifiedName namespaceName = nodeScope.getNamespaceName();
+                        nodeName = QualifiedName.createUnqualifiedName(inScope.getName()).toFullyQualified(namespaceName);
+                    }
                 } else if (node.getOriginalNode() instanceof StaticDispatch) {
                     if (nodeTypeScope instanceof ClassScope) {
-                        nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceScope);
+                        if (namespaceScope != null) {
+                            nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceScope);
+                        } else if (nodeScope != null) {
+                            QualifiedName namespaceName = nodeScope.getNamespaceName();
+                            nodeName = QualifiedName.createUnqualifiedNameInClassContext(((StaticDispatch) node.getOriginalNode()).getClassName(),(ClassScope)nodeTypeScope).toFullyQualified(namespaceName);
+                        }
                     } else {
-                        nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceScope);
+                        if (namespaceScope != null) {
+                            nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceScope);
+                        } else if (nodeScope != null) {
+                            QualifiedName namespaceName = nodeScope.getNamespaceName();
+                            nodeName = QualifiedName.create(((StaticDispatch) node.getOriginalNode()).getClassName()).toFullyQualified(namespaceName);
+                        }
                     }
                 } else {
-                    nodeName = new ASTNodeInfoInContext(node, nodeScope).getFullyQualifiedName();
+                    nodeName = new ElementInfo(node, nodeScope).getFullyQualifiedName();
                 }
             }
             return (queryName != null && nodeName != null) ? queryName.equals(nodeName) : true;

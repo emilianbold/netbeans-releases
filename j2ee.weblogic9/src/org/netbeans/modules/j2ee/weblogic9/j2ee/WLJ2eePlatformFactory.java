@@ -79,7 +79,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
         
-        private static final String J2EE_API_DOC    = "docs/javaee5-doc-api.zip";    // NOI18N
+        private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
         private static final Set MODULE_TYPES = new HashSet();
         static {
             MODULE_TYPES.add(J2eeModule.EAR);
