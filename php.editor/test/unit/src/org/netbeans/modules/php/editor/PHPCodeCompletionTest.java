@@ -168,7 +168,23 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/namespaces1.php", "use ANS\\B^", false);
     }
 
-    public void testPhpContext2() throws Exception {
+    public void testNamespaces5() throws Exception {
+        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\^", false);
+    }
+
+    public void testNamespaces6() throws Exception {
+        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\C^", false);
+    }
+
+    public void testNamespaces7() throws Exception {
+        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\ANS\\^", false);
+    }
+
+    public void testNamespaces8() throws Exception {
+        checkCompletion("testfiles/completion/lib/namespaces1.php", "use \\ANS\\B^", false);
+    }
+
+    public void testPhpContext9() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
 
