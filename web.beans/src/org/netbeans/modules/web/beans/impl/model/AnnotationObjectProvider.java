@@ -211,7 +211,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
     }
     
     
-    static boolean hasSpecializes( TypeElement element , 
+    static boolean hasSpecializes( Element element , 
             AnnotationModelHelper helper )
     {
         return hasAnnotation(element , SPECILIZES_ANNOTATION , helper );
@@ -269,7 +269,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
     }
     
     private boolean  handleInterface( TypeElement element, TypeElement child,
-            Set<TypeElement> collectedElements )
+            Set<TypeElement> collectedElements , Set<TypeElement>  bindingTypes )
     {
         /* interfaces could not be injectables , but let's inspect them as possible 
          * injectables for notifying user about error if any.
@@ -290,13 +290,16 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
                     return false;
                 }
                 TypeElement interfaceElement = (TypeElement)el;
+                if ( bindingTypes.contains( interfaceElement) ){
+                    return true;
+                }
                 collectedElements.add( interfaceElement);
                 if ( !hasSpecializes( interfaceElement , getHelper() ) ){
                     return false;
                 }
                 else {
                     return handleInterface(element, interfaceElement, 
-                            collectedElements);
+                            collectedElements, bindingTypes );
                 }
             }
         }  
@@ -307,6 +310,11 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
     private void handleSuper(TypeElement type ,TypeElement child, 
             List<Binding> bindings, Set<TypeElement> set) 
     {
+        if ( !getHelper().getCompilationController().getTypes().isAssignable( 
+                child.asType(), type.asType()))
+        {
+            return;
+        }
         List<? extends TypeElement> superclasses = getHelper().getSuperclasses(
                 child);
         Set<TypeElement> collectedSuper = new HashSet<TypeElement>();
@@ -314,7 +322,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
         boolean specializes = true;
         TypeElement previous = child;
         for (TypeElement superElement : superclasses) {
-            if (superElement.equals(type)) {
+            if (superElement.equals(type) || set.contains( superElement)) {
                 break;
             }
             if ( getHelper().getCompilationController().getTypes().
@@ -328,7 +336,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
                     break;
                 }
                 collectedSuper.add(superElement);
-                specializes = handleInterface(type, previous, collectedSuper);
+                specializes = handleInterface(type, previous, collectedSuper, set );
                 break;
             }
         }

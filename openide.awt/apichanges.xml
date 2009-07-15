@@ -47,6 +47,22 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="HtmlBrowser.dispose">
+        <api name="awt"/>
+        <summary>Added dispose() method.</summary>
+        <version major="7" minor="11"/>
+        <date day="15" month="7" year="2009"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Added method dispose() to HtmlBrowser.Impl class which should be invoked
+            when the browser component is no longer needed. The method is needed
+            for embedded browser to release native component(s). The default
+            implementation does nothing.
+        </description>
+        <class package="org.openide.awt" name="HtmlBrowser"/>
+        <issue number="167901"/>
+    </change>
     <change id="Actions.context">
         <api name="awt"/>
         <summary>Context Aware Action Factories</summary>

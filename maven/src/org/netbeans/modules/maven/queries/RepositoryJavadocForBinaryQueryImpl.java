@@ -216,7 +216,7 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         }
         public URL[] getRoots() {
                 try {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
                     if (j2eeDoc != null) {
                         URL url = FileUtil.getArchiveRoot(j2eeDoc.toURI().toURL());
                         url = new URL(url + "docs/api/"); //NOI18N

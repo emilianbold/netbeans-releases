@@ -193,10 +193,15 @@ public class JDBCTable extends TableImplementation {
                         newIndexes.put(index.getName(), index.getIndex());
                         currentIndexName = indexName;
                     }
-                    
-                    IndexColumn col = createJDBCIndexColumn(index, rs).getIndexColumn();
-                    index.addColumn(col);
-                    LOGGER.log(Level.FINE, "Added column " + col.getName() + " to index " + indexName);
+
+                    JDBCIndexColumn idx = createJDBCIndexColumn(index, rs);
+                    if (idx == null) {
+                        LOGGER.log(Level.INFO, "Cannot create index column for " + indexName + " from " + rs);
+                    } else {
+                        IndexColumn col = idx.getIndexColumn();
+                        index.addColumn(col);
+                        LOGGER.log(Level.FINE, "Added column " + col.getName() + " to index " + indexName);
+                    }
                 }
             } finally {
                 rs.close();
@@ -230,6 +235,10 @@ public class JDBCTable extends TableImplementation {
             ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
         } catch (SQLException e) {
             filterSQLException(e);
+        }
+        if (column == null) {
+            LOGGER.log(Level.INFO, "Cannot get column for index " + parent + " from " + rs);
+            return null;
         }
         return new JDBCIndexColumn(parent.getIndex(), column.getName(), column, position, ordering);
     }

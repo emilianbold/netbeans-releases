@@ -970,7 +970,13 @@ public class NbModuleSuite {
                     is.close();
                 }
             }
-
+            for (;;) {
+                int index = builder.indexOf("\r\n");
+                if (index == -1) {
+                    break;
+                }
+                builder.deleteCharAt(index);
+            }
             return builder.toString();
         }
 

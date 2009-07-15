@@ -74,6 +74,6 @@ tick-1ms
 
 proc:::lwp-exit
 {
-      printf("%d %d %d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d\n", cpu, tid, timestamp,
+      printf("%d %d %d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d\n", cpu, ttid, timestamp,
                           0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0);
 }

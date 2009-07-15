@@ -372,7 +372,8 @@ public class StructureAnalyzer implements StructureScanner {
         if ((element.getKind() == ElementKind.METHOD)) {
             AstMethodElement method = (AstMethodElement) element;
             ASTNode node = method.getNode();
-            return !(node instanceof MethodNode) || !((MethodNode) node).isSynthetic();
+            return !(node instanceof MethodNode) 
+                    || (!((MethodNode) node).isSynthetic() && ((MethodNode) node).getLineNumber() >= 0);
         }
         return true;
     }

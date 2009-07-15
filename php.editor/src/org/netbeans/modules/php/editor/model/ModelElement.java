@@ -60,6 +60,7 @@ public interface ModelElement {
     PHPElement getPHPElement();
     OffsetRange getNameRange();
     PhpModifiers getPhpModifiers();
+    QualifiedName getNamespaceName();
     //PhpFileScope getFileScope();
     //IndexScope getIndexScope();
 }

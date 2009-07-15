@@ -227,8 +227,8 @@ public class ThreadsDataManager {
                         public String getStateName(int index) {
                             return ThreadState.ShortThreadState.NotExist.name();
                         }
-                        public int getState(int index) {
-                            return 1000;
+                        public byte getState(int index) {
+                            return 100;
                         }
                         public long getTimeStamp(int index) {
                             return endTimeStump;

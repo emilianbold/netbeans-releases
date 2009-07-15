@@ -106,7 +106,8 @@ public class ChatPanel extends javax.swing.JPanel {
     private boolean disableAutoScroll = false;
     private HTMLEditorKit editorKit = null;
     private static final String[][] smileysMap = new String[][] {
-        {"8)", "cool"}, // NOI18N
+        {"B)", "cool"}, // NOI18N
+        {"B-)", "cool"}, // NOI18N
         {"8-)", "cool"}, // NOI18N
         {":]", "grin"}, // NOI18N
         {":-]", "grin"}, // NOI18N
@@ -215,7 +216,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private void selectAbsoluteResource(Matcher m) {
-        String resource = "/" + m.group(1) + m.group(4);
+        String resource = "/" + m.group(1) + m.group(4);  //NOI18N
         int lineNumber = Integer.parseInt(m.group(5));
         File file = new File(resource);
         if (file.exists()) {
@@ -234,10 +235,15 @@ public class ChatPanel extends javax.swing.JPanel {
                 StyledDocument doc = ec.openDocument();
                 if (doc != null) {
                     if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line - 1);
+                        Line l = null;
+                        try {
+                            l = lc.getLineSet().getCurrent(line - 1);
+                        } catch (IndexOutOfBoundsException e) { // try to open at least the file (line no. is too high?)
+                            l = lc.getLineSet().getCurrent(0);
+                        }
 
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                             return true;
                         }
                     }
@@ -278,7 +284,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     public boolean isPrivate() {
-        return getName().startsWith("private.");
+        return getName().startsWith("private.");  //NOI18N
     }
 
     public String getPrivateName() {
@@ -387,7 +393,7 @@ public class ChatPanel extends javax.swing.JPanel {
                     JPopupMenu menu = new JPopupMenu();
                     String name = isPrivate()?getPrivateName():Kenai.getDefault().getProject(getName()).getDisplayName();
                     JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem(
-                            NbBundle.getMessage(ChatPanel.class, "CTL_NotificationsFor", new Object[]{name}),
+                            NbBundle.getMessage(ChatPanel.class, "CTL_NotificationsFor", new Object[]{name}),  //NOI18N
                             ChatNotifications.getDefault().isEnabled(getName()));
                     jCheckBoxMenuItem.addActionListener(this);
                     menu.add(jCheckBoxMenuItem);
@@ -414,18 +420,18 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String replaceLinks(String body) {
         // This regexp works quite nice, should be OK in most cases (does not handle [.,?!] in the end of the URL)
-        String result = body.replaceAll("  ", " &nbsp;").replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>");
+        String result = body.replaceAll("(http|https|ftp)://([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,4}(/[^ ]*)*", "<a href=\"$0\">$0</a>"); //NOI18N
 
-        result = RESOURCES.matcher(result).replaceAll("<a href=\"$0\">$0</a>");
-        return result; //NOI18N
+        result = RESOURCES.matcher(result).replaceAll("<a href=\"$0\">$0</a>");  //NOI18N
+        return result.replaceAll("  ", " &nbsp;"); //NOI18N
     }
 
     private String replaceSmileys(String body) {
-        if (body.matches(".*[8:;]-?[]D()].*")) { // NOI18N
+        if (body.matches(".*[B8:;]-?[]D()].*")) { // NOI18N
             for (int i = 0; i < smileysMap.length; i++) {
                 body = body.replace(smileysMap[i][0],
                         "<img align=\"center\" src=\"" + // NOI18N
-                        this.getClass().getResource("/org/netbeans/modules/kenai/collab/resources/emo_" + smileysMap[i][1] + "16.png") +
+                        this.getClass().getResource("/org/netbeans/modules/kenai/collab/resources/emo_" + smileysMap[i][1] + "16.png") +  //NOI18N
                         "\"></img>"); // NOI18N
             }
         }
@@ -453,7 +459,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void refreshOnlineStatus() throws MissingResourceException {
         if (muc!=null) {
-        online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));
+        online.setText(NbBundle.getMessage(ChatPanel.class, "CTL_PresenceOnline", muc.getOccupantsCount()));  //NOI18N
         Iterator<String> string = muc.getOccupants();
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html><body>"); // NOI18N
@@ -744,6 +750,8 @@ public class ChatPanel extends javax.swing.JPanel {
             text += "<div class=\"message\" style=\"background-color: rgb(" + rgb + ")\">" + replaceSmileys(replaceLinks(removeTags(message.getBody()))) + "</div>"; // NOI18N
 
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
+            inbox.revalidate();
+            inbox.repaint();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (BadLocationException e) {
@@ -808,7 +816,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
                 public void run() {
                     statusLine.setForeground(Color.black);
-                    statusLine.setText("<html><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</html>");
+                    statusLine.setText("<html><b>" + StringUtils.parseResource(presence.getFrom()) + "</b> is now " + presence.getType() + "</html>");  //NOI18N
                     //fadein.start();
                     new Fader(statusLine).start();
                 }
