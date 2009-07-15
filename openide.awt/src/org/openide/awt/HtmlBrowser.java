@@ -886,9 +886,10 @@ public class HtmlBrowser extends JPanel {
 
         /**
          * Method invoked by the infrastructure when the browser component is no
-         * longer needed.
+         * longer needed. The default implementation does nothing.
+         * @since 7.11
          */
-        protected void dispose() {
+        public void dispose() {
         }
     }
 
