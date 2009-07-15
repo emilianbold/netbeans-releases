@@ -112,6 +112,9 @@
     <mapID target="AS_RegServ_EnterNameAndPassword"                             url="runtimetab/RegServ_LogInfo.html" />
     <mapID target="AS_RegServ_EnterPlatformDir"      				url="runtimetab/RegServ_Choose.html" />
     <mapID target="AS_RegServ_DefinePorts"      				url="runtimetab/RegServ_Create.html" />
+
+    <mapID target="registering_app_server_hk2_location"      			url="runtimetab/RegServ_Choose_v3.html" />
+    <mapID target="registering_app_server_hk2_domain"      			url="runtimetab/RegServ_Remote_v3.html" />
   
 
   <!-- sun-application.xml DD editor CSH: -->

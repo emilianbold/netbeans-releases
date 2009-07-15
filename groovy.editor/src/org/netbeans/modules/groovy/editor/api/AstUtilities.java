@@ -340,7 +340,7 @@ public class AstUtilities {
                 // how to get only methods from source?
                 // for now, just check line number, if < 0 it is not from source
                 // Second part of condition is for generated accessors
-                if (method.getLineNumber() >= 0
+                if ((!method.isSynthetic() && method.getCode() != null)
                         || (method.isSynthetic() && possibleMethods.contains(method.getName()))) {
                     children.add(method);
                 }

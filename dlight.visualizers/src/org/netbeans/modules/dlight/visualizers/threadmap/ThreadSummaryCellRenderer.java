@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.Serializable;
@@ -59,14 +60,18 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     private Color unselectedForeground;
     private ThreadStateColumnImpl threadData;
     private ThreadsPanel viewManager; // view manager for this cell
-    private long dataEnd;
-    private long dataStart;
-    private long viewEnd;
-    private long viewStart;
+    private long threadTime;
+    private long threadRunningTime;
+    private long threadRunningRatio;
+    private Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadSummaryCellRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
+        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
     }
 
     /**
@@ -129,11 +134,6 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             threadData = (ThreadStateColumnImpl) value;
         }
 
-        viewStart = viewManager.getViewStart();
-        viewEnd = viewManager.getViewEnd();
-        dataStart = viewManager.getDataStart();
-        dataEnd = viewManager.getDataEnd();
-
         return this;
     }
 
@@ -147,12 +147,10 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
-        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
         int count = 0;
+        for (AtomicInteger i : map.values()) {
+            i.set(0);
+        }
         for(int i = 0; i < threadData.size(); i++){
             if (threadData.isAlive(i)) {
                 count++;
@@ -169,6 +167,9 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 }
             }
         }
+        threadTime = count;
+        threadRunningTime = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
+        int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
             int rest = 0;
             int oldRest = 0;
@@ -178,22 +179,30 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 rest = (value.get()+oldRest)%count;
                 value.set((value.get()+oldRest)/count);
             }
-            rest = 0;
+            rest = 100/2;
             oldRest = 0;
             int y = 6;
             int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
             for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
                 AtomicInteger value = entry.getValue();
                 oldRest = rest;
-                rest = (value.get()*ThreadWidth+oldRest)%1000;
-                int d = (value.get()*ThreadWidth+oldRest)/1000;
+                rest = (value.get()*ThreadWidth+oldRest)%100;
+                int d = (value.get()*ThreadWidth+oldRest)/100;
                 if (d > 0) {
                     g.setColor(ThreadStateColumnImpl.getThreadStateColor(entry.getKey()));
-                    g.fillRect(y, 6, d, 12);
+                    g.fillRect(y, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, d, height);
                 }
                 y += d;
             }
         }
+        threadRunningRatio = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
+        g.setColor(getBackground());
+        String s = ""+(threadRunningRatio/10)+"%"; // NOI18N
+        Font summary = new Font(null, Font.BOLD, height-2);
+        g.setFont(summary);
+        int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
+        g.drawString(s, 6 + 3, y);
+        threadData.setSummary((int)threadRunningRatio/10);
     }
 
     /**

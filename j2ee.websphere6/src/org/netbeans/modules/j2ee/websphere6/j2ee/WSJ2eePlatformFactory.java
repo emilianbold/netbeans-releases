@@ -231,7 +231,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
                 
-                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
                 if (j2eeDoc != null) {
                     list = new ArrayList();
                     list.add(fileToUrl(j2eeDoc));

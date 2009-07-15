@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
@@ -80,18 +80,17 @@ public class ThreadMapVisualizer extends JPanel implements
     private final Object uiLock = new UiLock();
     //private final List<String> columnNames = new ArrayList<String>();
     //private final List<Class> columnClasses = new ArrayList<Class>();
-    private final List<ThreadMapData> data = new ArrayList<ThreadMapData>();
+    private final List<ThreadData> data = new ArrayList<ThreadData>();
     private final JPanel threadsTimelinePanelContainer;
     private final ThreadsPanel threadsPanel;
     private final ThreadsDataManager dataManager;
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
-        if (provider == null) {
+        if (false) {
             provider = new MockThreadMapDataProviderImpl();
-        }
-        if (configuration == null) {
             configuration = new ThreadMapVisualizerConfiguration(new ThreadMapMetadata(null));
         }
+        
         this.provider = provider;
         this.configuration = configuration;
 
@@ -100,12 +99,14 @@ public class ThreadMapVisualizer extends JPanel implements
         //    columnClasses.add(col.getColumnClass());
         //}
         dataManager = new ThreadsDataManager();
+
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
             public void showDetails(int[] indexes) {
                 throw new UnsupportedOperationException("Not supported yet."); // NOI18N
             }
         });
+
         threadsTimelinePanelContainer = new JPanel() {
 
             @Override
@@ -122,12 +123,14 @@ public class ThreadMapVisualizer extends JPanel implements
         JPanel callStack = new JPanel();
         add(callStack, BorderLayout.SOUTH);
         // for testing only
-        DLightExecutorService.scheduleAtFixedRate(new Runnable(){
+        DLightExecutorService.scheduleAtFixedRate(new Runnable() {
+
             public void run() {
                 try {
-                    final List<ThreadMapData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, dataManager.getEndTime()/1000, 3000, 1, false));
+                    final List<ThreadData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(0, false)).getThreadsData();
                     final boolean isEmptyConent = list == null || list.isEmpty();
                     UIThread.invoke(new Runnable() {
+
                         public void run() {
                             setContent(isEmptyConent);
                             if (isEmptyConent) {
@@ -268,12 +271,11 @@ public class ThreadMapVisualizer extends JPanel implements
 
     }
 
-    protected void updateList(List<ThreadMapData> list) {
+    protected void updateList(List<ThreadData> list) {
         synchronized (uiLock) {
             threadsPanel.threadsMonitoringEnabled();
             dataManager.processData(MonitoredData.getMonitoredData(list));
             setNonEmptyContent();
         }
     }
-
 }

@@ -140,7 +140,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     @Override
     public void componentOpened() {
         // temporary for testing
-        instance.addVisualizer("Thread Map", new ThreadMapVisualizer(null, null)); //NOI18N
+//        instance.addVisualizer("Thread Map", new ThreadMapVisualizer(null, null)); //NOI18N
     }
 
     @Override

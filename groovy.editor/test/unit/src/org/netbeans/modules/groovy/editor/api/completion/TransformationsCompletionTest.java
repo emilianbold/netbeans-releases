@@ -84,4 +84,7 @@ public class TransformationsCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "Transformations1.groovy", "        Transformations1.in^", true);
     }
 
+    public void testTransformations2() throws Exception {
+        checkCompletion(TEST_BASE + "Transformations2.groovy", "        Transformations2.get^", true);
+    }
 }

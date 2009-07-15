@@ -119,4 +119,13 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         sb.append(qualifiedName.toString()).append(";");//NOI18N
         return sb.toString();
     }
+
+    @Override
+    public QualifiedName getNamespaceName() {
+        if (indexedElement instanceof IndexedInterface) {
+            IndexedInterface indexedInterface = (IndexedInterface)indexedElement;
+            return QualifiedName.create(indexedInterface.getNamespaceName());
+        }
+        return super.getNamespaceName();
+    }
 }

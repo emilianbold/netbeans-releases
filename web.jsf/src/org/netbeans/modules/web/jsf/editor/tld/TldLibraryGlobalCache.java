@@ -44,7 +44,9 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * TODO use indexing
@@ -86,7 +88,12 @@ public class TldLibraryGlobalCache {
                 for (FileObject file : fo.getChildren()) {
                     if (file.getNameExt().toLowerCase(Locale.US).endsWith(".tld")) { //NOI18N
                         //found library, create a new instance and cache it
-                        libs.add(TldLibrary.create(file));
+                        try {
+                            //found library, create a new instance and cache it
+                            libs.add(TldLibrary.create(file));
+                        } catch (TldLibraryException ex) {
+                            Logger.global.info(ex.getMessage());
+                        }
                     }
                 }
             }
