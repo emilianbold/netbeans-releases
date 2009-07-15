@@ -50,11 +50,12 @@ import javax.lang.model.element.TypeElement;
  * @author ads
  *
  */
-abstract class TypeFilter  {
-
-    void filter( Set<TypeElement> set ){
+abstract class Filter<T extends Element>  {
+    
+    void filter( Set<T> set ){
     }
     
-    void filterElements( Set<? extends Element> set ){
+    static <T extends Element> void assertElement( Class<T> clazz ){
+        assert clazz.equals( Element.class ) || clazz.equals( TypeElement.class );
     }
 }
