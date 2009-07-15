@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.editor.ext.html.parser;
 
-package org.netbeans.editor.ext.html.dtd;
-
-import java.util.Arrays;
-import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class Utils {
+public class AstNodeTest extends TestBase {
 
-    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
-        
-    private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        XHTML_STRINCT_PUBLIC_ID,
-        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-        "-//W3C//DTD XHTML 1.0 Frameset//EN"});
-
-     public static boolean isXHTMLPublicId(String publicId) {
-        return XHTML_PUBLIC_IDS.contains(publicId);
+    public AstNodeTest(String testName) {
+        super(testName);
     }
 
-     //XXX hack - resolve the namespaces propertly!
-    public static boolean isHtmlNs(String namespace) {
-        return namespace == null ? true : namespace.equals("http://www.w3.org/1999/xhtml");
+    public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new AstNodeTest(""));
+        return suite;
     }
 
+    public void testNamespaces() throws Exception {
+        AstNode node = new AstNode("div", AstNode.NodeType.OPEN_TAG, 0, 1, false);
+
+        assertEquals("div", node.name());
+        assertEquals("div", node.getNameWithoutPrefix());
+        assertNull(node.getNamespacePrefix());
+
+        node = new AstNode("ui:composition", AstNode.NodeType.OPEN_TAG, 0, 1, false);
+
+        assertEquals("ui:composition", node.name());
+        assertEquals("composition", node.getNameWithoutPrefix());
+        assertEquals("ui", node.getNamespacePrefix());
+
+    }
 
 }

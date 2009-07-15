@@ -72,9 +72,9 @@ public class SyntaxTreeTest extends TestBase {
         NbReaderProvider.setupReaders();
     }
 
-    public static Test xsuite(){
+    public static Test suite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testLogicalEndOfTagWithOptinalEnd"));
+        suite.addTest(new SyntaxTreeTest("testUncheckedAST"));
         return suite;
     }
 
@@ -101,6 +101,32 @@ public class SyntaxTreeTest extends TestBase {
     public void testIssue145821() throws Exception{
         testSyntaxTree("issues145821.html");
     }
+
+    public void testUncheckedAST() throws BadLocationException {
+        String code = "<div><a><b></a></b></div>";
+        //             01234567
+        AstNode root = parseUnchecked(code);
+
+//        System.out.println(AstNodeUtils.dumpTree(root));
+
+        AstNode div = AstNodeUtils.query(root, "div");
+        assertNotNull(div);
+
+        AstNode a = AstNodeUtils.query(root, "div/a");
+        assertNotNull(a);
+
+        AstNode b = AstNodeUtils.query(root, "div/a/b");
+        assertNotNull(b);
+
+        assertEquals(3, div.children().size()); //<a>,</a> and unmatched </b>
+        assertEquals(a, div.children().get(0));
+
+        assertEquals(1, a.children().size()); //<b>
+        assertEquals(b, a.children().get(0));
+        
+
+    }
+
     
     public void testAST() throws Exception {
         assertAST("<div><div>text</div></div>");
@@ -535,6 +561,12 @@ public class SyntaxTreeTest extends TestBase {
         }
         assertNotNull(dtd);
         return SyntaxTree.makeTree(result.getElements(), dtd);
+    }
+
+    private AstNode parseUnchecked(String code) throws BadLocationException {
+        SyntaxParserResult result = SyntaxParser.parse(code);
+        assertNotNull(result);
+        return SyntaxTree.makeTree(result.getElements(), null);
     }
 
 }

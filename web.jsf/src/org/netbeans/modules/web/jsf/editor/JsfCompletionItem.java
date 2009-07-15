@@ -36,33 +36,41 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor;
 
-package org.netbeans.editor.ext.html.dtd;
-
-import java.util.Arrays;
-import java.util.List;
+import java.awt.Color;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
 
 /**
  *
  * @author marekfukala
  */
-public class Utils {
+public class JsfCompletionItem {
 
-    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
-        
-    private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        XHTML_STRINCT_PUBLIC_ID,
-        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-        "-//W3C//DTD XHTML 1.0 Frameset//EN"});
-
-     public static boolean isXHTMLPublicId(String publicId) {
-        return XHTML_PUBLIC_IDS.contains(publicId);
+    //----------- Factory methods --------------
+    public static JsfTag createTag(String name, int substitutionOffset, String helpId, String uri, boolean autoimport) {
+        return new JsfTag(name, substitutionOffset, helpId, uri, autoimport);
     }
 
-     //XXX hack - resolve the namespaces propertly!
-    public static boolean isHtmlNs(String namespace) {
-        return namespace == null ? true : namespace.equals("http://www.w3.org/1999/xhtml");
+    public static class JsfTag extends HtmlCompletionItem.Tag {
+
+        private String uri;
+        private boolean autoimport; //autoimport (declare) the tag namespace if set to true
+
+        public JsfTag(String text, int substitutionOffset, String helpId, String uri, boolean autoimport) {
+            super(text, substitutionOffset, helpId, true);
+            this.uri = uri;
+            this.autoimport = autoimport;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + uri + "</font>";
+        }
+
+        @Override
+        public int getSortPriority() {
+            return DEFAULT_SORT_PRIORITY - 5;
+        }
     }
-
-
 }
