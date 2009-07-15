@@ -43,6 +43,10 @@ package org.netbeans.modules.dlight.api.storage.threadmap;
  * @author Alexander Simon
  */
 public interface ThreadState {
+    /**
+     * Sum of all MSA in any time.
+     */
+    public static final int POINTS = 100;
 
     /**
      * Aggregated thread states.
