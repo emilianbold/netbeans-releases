@@ -73,7 +73,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     private CompilerSet MinGWSet = null;
     private CompilerSet CygwinSet = null;
 
-    List<CompilerSet> compilerSets = null;
+    List<CompilerSet> allCompilerSets = null;
+    List<CompilerSet> SunStudioCompilerSet = null;
+    List<CompilerSet> GNUCompilerSet = null;
     String[] defaultConfs = new String[] {"Debug", "Release"};
 
     public MakeSampleProjectIteratorTest(String name) {
@@ -95,71 +97,78 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             }
         }
 
-        compilerSets = new ArrayList<CompilerSet>();
-        compilerSets.add(SunStudioSet);
-        compilerSets.add(GNUSet);
-        compilerSets.add(MinGWSet);
-        compilerSets.add(CygwinSet);
+        allCompilerSets = new ArrayList<CompilerSet>();
+        allCompilerSets.add(SunStudioSet);
+        allCompilerSets.add(GNUSet);
+        allCompilerSets.add(MinGWSet);
+        allCompilerSets.add(CygwinSet);
+
+        SunStudioCompilerSet = new ArrayList<CompilerSet>();
+        SunStudioCompilerSet.add(SunStudioSet);
+
+        GNUCompilerSet = new ArrayList<CompilerSet>();
+        GNUCompilerSet.add(GNUSet);
     }
 
     @Test
     public void testArguments() throws IOException {
-        testSample(compilerSets, "Arguments", defaultConfs);
+        testSample(allCompilerSets, "Arguments", defaultConfs);
     }
 
     @Test
     public void testInputOutput() throws IOException {
-        testSample(compilerSets, "InputOutput", defaultConfs);
+        testSample(allCompilerSets, "InputOutput", defaultConfs);
     }
 
     @Test
     public void testWelcome() throws IOException {
-        testSample(compilerSets, "Welcome", defaultConfs);
+        testSample(allCompilerSets, "Welcome", defaultConfs);
     }
 
     @Test
     public void testQuote() throws IOException {
-        testSample(compilerSets, "Quote", defaultConfs);
+        testSample(allCompilerSets, "Quote", defaultConfs);
     }
 
     @Test
     public void testSubProjects() throws IOException {
-        testSample(compilerSets, "SubProjects", defaultConfs);
+        testSample(allCompilerSets, "SubProjects", defaultConfs);
     }
 
     @Test
     public void testPi() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(compilerSets, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"});
+            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"});
+            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"});
         }
         else {
-            testSample(compilerSets, "Pi", new String[] {"Serial"});
+            testSample(allCompilerSets, "Pi", new String[] {"Serial"});
         }
     }
 
     @Test
     public void testFreeway() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(compilerSets, "Freeway", defaultConfs);
+            testSample(allCompilerSets, "Freeway", defaultConfs);
         }
     }
 
     @Test
     public void testFractal() throws IOException {
-        testSample(compilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"});
+        testSample(allCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"});
     }
 
     @Test
     public void testLexYacc() throws IOException {
         if (!Utilities.isWindows()) {
-            testSample(compilerSets, "LexYacc", defaultConfs);
+            testSample(allCompilerSets, "LexYacc", defaultConfs);
         }
     }
 
     @Test
     public void testMP() throws IOException {
         if (!Utilities.isWindows()) {
-            testSample(compilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"});
+            testSample(allCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"});
         }
     }
 
