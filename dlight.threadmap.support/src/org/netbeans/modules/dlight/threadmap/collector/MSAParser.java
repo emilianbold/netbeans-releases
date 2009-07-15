@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
@@ -74,8 +73,6 @@ public final class MSAParser extends DtraceParser {
 
         String[] chunks = line.split(" +"); // NOI18N
 
-        int total = 0;
-
         int cpuID = Integer.parseInt(chunks[0]);
         int threadID = Integer.parseInt(chunks[1]);
         long timestamp = Long.parseLong(chunks[2]);
@@ -93,26 +90,24 @@ public final class MSAParser extends DtraceParser {
 
         int[] threadStates = accumulatedData.get(threadID);
 
-        threadStates[0]++;
-
+        int total = 0;
+        
         for (int i = 3; i < chunks.length; i++) {
-            threadStates[i] += Integer.parseInt(chunks[i]);
+            int state = Integer.parseInt(chunks[i]);
+            threadStates[i] += state;
+            total += state;
         }
 
+        if (total == 0) {
+            threadInfo.setFinishTime(timestamp);
+        } else {
+            threadStates[0]++;
+        }
 
         if ((timestamp - lastTimestamp) > deltaTime) {
             lastTimestamp = timestamp;
 
-
             for (Integer thrID : accumulatedData.keySet()) {
-//                StringBuilder sb = new StringBuilder("DATA for " + thrID + ": ");
-//
-//                for (int i = 0; i < data.length; i++) {
-//                    sb.append(data[i] + ", ");
-//                }
-//
-//                System.out.println(sb.toString());
-
                 ThreadStateImpl state = new ThreadStateImpl(timestamp, accumulatedData.get(thrID));
                 storage.addThreadState(storage.getThreadInfo(thrID), state);
             }

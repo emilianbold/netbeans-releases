@@ -81,7 +81,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         DTDCConfiguration dtraceDataCollectorConfiguration =
                 new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
 
-        dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.MILLISECONDS, 50), msaTableMetadata));
+        dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), msaTableMetadata));
 
         toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa")); // NOI18N
 
