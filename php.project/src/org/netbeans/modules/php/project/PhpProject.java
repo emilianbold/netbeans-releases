@@ -458,6 +458,7 @@ public class PhpProject implements Project {
     }
 
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
+        PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
         return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(),
@@ -477,7 +478,8 @@ public class PhpProject implements Project {
                 new CustomizerProviderImpl(this),
                 new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpProjectOperations(this) ,
-                new PhpProjectEncodingQueryImpl(getEvaluator()),
+                phpProjectEncodingQueryImpl,
+                new TemplateAttributesProviderImpl(getHelper(), phpProjectEncodingQueryImpl),
                 new PhpTemplates(),
                 new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
