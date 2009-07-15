@@ -43,6 +43,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadsDataManager.MergedThreadInfo;
@@ -68,13 +69,13 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     public static final Color THREAD_STATUS_ZOMBIE_COLOR = Color.BLACK;
     /** Thread is runnable. Note that we unfortunately don't know whether it's actually running or
      * pre-empted by another thread...*/
-    public static final Color THREAD_STATUS_RUNNING_COLOR = new Color(58, 228, 103);
+    public static final Color THREAD_STATUS_RUNNING_COLOR = new Color(84, 185, 72);//new Color(58, 228, 103);
     /** Thread is sleeping - Thread.sleep() or JVM_Sleep() was called */
-    public static final Color THREAD_STATUS_SLEEPING_COLOR = new Color(155, 134, 221);
+    public static final Color THREAD_STATUS_SLEEPING_COLOR = new Color(255, 199, 38);//new Color(155, 134, 221);
     /** Thread is waiting on a java monitor */
-    public static final Color THREAD_STATUS_MONITOR_COLOR = new Color(255, 114, 102);
+    public static final Color THREAD_STATUS_MONITOR_COLOR = new Color(238, 29, 37);//new Color(255, 114, 102);
     /** Thread is waiting - Thread.wait() or JVM_MonitorWait() was called */
-    public static final Color THREAD_STATUS_WAIT_COLOR = new Color(255, 228, 90);
+    public static final Color THREAD_STATUS_WAIT_COLOR = new Color(83, 130, 161);//new Color(255, 228, 90);
 
     static final byte NO_STATE = 127;
 
@@ -121,9 +122,18 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
 
     private final MergedThreadInfo info;
     private final List<ThreadState> list = new ArrayList<ThreadState>();
+    private final AtomicInteger comparable = new AtomicInteger();
 
     ThreadStateColumnImpl(MergedThreadInfo info) {
         this.info = info;
+    }
+
+    public void setSummary(int sum) {
+        comparable.set(sum);
+    }
+
+    public int getSummary() {
+        return comparable.get();
     }
 
     public String getName(){
