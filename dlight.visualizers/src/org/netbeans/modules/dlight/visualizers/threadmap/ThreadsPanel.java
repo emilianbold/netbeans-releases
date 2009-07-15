@@ -64,7 +64,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -99,7 +98,6 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -146,6 +144,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final int NAME_COLUMN_WIDTH = 100;
     private static final int MIN_NAME_COLUMN_WIDTH = 55;
     static final int MIN_SUMMARY_COLUMN_WIDTH = 62;
+    private static final int TABLE_ROW_HEIGHT = 18;
+    static final int THREAD_LINE_TOP_BOTTOM_MARGIN = 3;
 
     private ArrayList<Integer> filteredDataToDataIndex = new ArrayList<Integer>();
     private CustomTimeLineViewport viewPort;
@@ -278,7 +278,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         table.setSelectionForeground(UIUtils.TABLE_SELECTION_FOREGROUND_COLOR);
         table.setShowGrid(false);
         table.setRowMargin(0);
-        table.setRowHeight(23);
+        table.setRowHeight(TABLE_ROW_HEIGHT);
 
         DefaultTableCellRenderer defaultHeaderRenderer = new DefaultTableCellRenderer() {
             @Override
@@ -361,27 +361,26 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         rest.add(scrollBar, BorderLayout.EAST);
 
         //
-        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 18, 9);
-        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 18, 9);
-        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 18, 9);
-        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 18, 9);
+        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 10, 10);// 18, 9);
+        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 10, 10);// 18, 9);
+        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 10, 10);// 18, 9);
+        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 10, 10);// 18, 9);
 
         runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
         runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
-        sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
-        waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
         monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
+        waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
+        sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         JPanel legendPanel = new JPanel();
         legendPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         legendPanel.add(runningLegend);
-        legendPanel.add(sleepingLegend);
-
-        legendPanel.add(waitLegend);
         legendPanel.add(monitorLegend);
+        legendPanel.add(waitLegend);
+        legendPanel.add(sleepingLegend);
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
@@ -559,7 +558,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     private void sortByColumn(int column){
         // sort table
-        if (column == 0) {
+        if (column == 0 || column == 2) {
             if (sortedColum == column) {
                 if (sortedOrder == 1) {
                     sortedOrder = -1;
@@ -1026,7 +1025,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (sortedColum == 0){
                     map.put(manager.getThreadData(i.intValue()).getName(),i);
                 } else {
-                    map.put(manager.getThreadData(i.intValue()).getName(),i);
+                    map.put(manager.getThreadData(i.intValue()).getSummary(),i);
                 }
             }
             filteredDataToDataIndex.clear();
