@@ -55,7 +55,7 @@ import java.util.List;
  * The same is for {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider},
  * that wants to read data from the DataStorage.
  */
-public abstract class DataStorage implements ServiceInfoDataStorage{
+public abstract class DataStorage implements ServiceInfoDataStorage {
 
     private final List<DataTableMetadata> tablesMetadata;
 
@@ -73,6 +73,10 @@ public abstract class DataStorage implements ServiceInfoDataStorage{
      * <code>false</code> otherwise
      */
     public final boolean hasData(DataTableMetadata data) {
+        if (data == null) {
+            return false;
+        }
+
         List<DataTableMetadata> sourceTables = data.getSourceTables();
         if (sourceTables != null) {
             for (DataTableMetadata tableWeSearch : sourceTables) {
@@ -98,9 +102,6 @@ public abstract class DataStorage implements ServiceInfoDataStorage{
         return false;
     }
 
-
-
-
     /**
      * Creates table on the in storage (whatever it means: table creatiion in data base or files creation or something else...)
      * @param tableMetadatas tables which should be created in the storage
@@ -122,7 +123,7 @@ public abstract class DataStorage implements ServiceInfoDataStorage{
      * without parameter)
      * @return storage types
      */
-     public abstract Collection<DataStorageType> getStorageTypes();
+    public abstract Collection<DataStorageType> getStorageTypes();
 
     /**
      * Checks if DataStorage supports {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}

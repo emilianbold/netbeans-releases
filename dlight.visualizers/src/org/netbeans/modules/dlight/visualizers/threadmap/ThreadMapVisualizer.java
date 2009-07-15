@@ -51,7 +51,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
@@ -89,9 +88,9 @@ public class ThreadMapVisualizer extends JPanel implements
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
         if (false) {
             provider = new MockThreadMapDataProviderImpl();
-            configuration = new ThreadMapVisualizerConfiguration(new ThreadMapMetadata(null));
+            configuration = new ThreadMapVisualizerConfiguration();
         }
-        
+
         this.provider = provider;
         this.configuration = configuration;
 
@@ -128,7 +127,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
             public void run() {
                 try {
-                    final ThreadMapData mapData =ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(0, false));
+                    final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(0, false));
                     final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
                     UIThread.invoke(new Runnable() {
 
