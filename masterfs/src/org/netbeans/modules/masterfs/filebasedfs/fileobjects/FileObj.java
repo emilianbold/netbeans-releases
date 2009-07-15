@@ -103,15 +103,17 @@ public class FileObj extends BaseFileObj {
         FileOutputStream retVal = null;
         try {
             retVal = new FileOutputStream(f) {
-                                public void close() throws IOException {
-                                    if (!closable.isClosed()) {
-                                        super.close();
-                                        closable.close();
-                                        setLastModified(f.lastModified());
-                                        fireFileChangedEvent(false);
-                                    }
-                                }
-                            };
+
+                @Override
+                public void close() throws IOException {
+                    if (!closable.isClosed()) {
+                        super.close();
+                        closable.close();
+                        setLastModified(f.lastModified());
+                        fireFileChangedEvent(false);
+                    }
+                }
+            };
         } catch (FileNotFoundException e) {
             if (closable != null) {
                 closable.close();
@@ -154,6 +156,8 @@ public class FileObj extends BaseFileObj {
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
             closeableReference = closable;            
             inputStream = new FileInputStream(f) {
+
+                @Override
                 public void close() throws IOException {
                     super.close();
                     closable.close();
@@ -270,6 +274,7 @@ public class FileObj extends BaseFileObj {
         }
     }
     
+    @Override
     public final void refresh(final boolean expected) {
         refresh(expected, true);
     }
@@ -277,15 +282,18 @@ public class FileObj extends BaseFileObj {
 
     
 
-    public final Enumeration getChildren(final boolean rec) {
+    @Override
+    public final Enumeration<FileObject> getChildren(final boolean rec) {
         return Enumerations.empty();
     }
 
-    public final Enumeration getFolders(final boolean rec) {
+    @Override
+    public final Enumeration<FileObject> getFolders(final boolean rec) {
         return Enumerations.empty();
     }
 
-    public final Enumeration getData(final boolean rec) {
+    @Override
+    public final Enumeration<FileObject> getData(final boolean rec) {
         return Enumerations.empty();
     }
 
@@ -319,6 +327,7 @@ public class FileObj extends BaseFileObj {
         return ((lock instanceof LockForFile) && (((LockForFile) lock).getFile().equals(f)));
     }
 
+    @Override
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
         setLastModified(getFileName().getFile().lastModified());
