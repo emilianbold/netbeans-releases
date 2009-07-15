@@ -57,6 +57,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.InternationalFormatter;
 import javax.swing.text.MaskFormatter;
@@ -970,7 +971,12 @@ public class FormatSelector {
             Component comp = delegate.getListCellRendererComponent(list, info.getDisplayName(), index, isSelected, cellHasFocus);
             if (comp instanceof JComponent) {
                 JComponent jcomp = (JComponent)comp;
-                panel.setBorder(jcomp.getBorder());            
+                Border border = jcomp.getBorder();
+                if ((border != null) && (border.getBorderInsets(panel) != null)) { // Issue 161997
+                    panel.setBorder(border);
+                } else {
+                    panel.setBorder(BorderFactory.createEmptyBorder());
+                }
                 panel.setOpaque(jcomp.isOpaque());
                 jcomp.setBorder(null);
             }
