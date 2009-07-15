@@ -49,9 +49,9 @@ public class ThreadStateImpl implements ThreadState {
     private final int size;
     private final long timestamp;
     static FullThreadState[] collectedStates = new FullThreadState[]{
-        FullThreadState.RunningUser,
-        FullThreadState.RunningUser,
-        FullThreadState.RunningUser,
+        null,
+        null,
+        null,
         FullThreadState.RunningUser,
         FullThreadState.RunningSystemCall,
         FullThreadState.RunningOther,
@@ -66,7 +66,7 @@ public class ThreadStateImpl implements ThreadState {
         FullThreadState.SOBJ_RWLock,
         FullThreadState.SOBJ_CV,
         FullThreadState.SOBJ_Sema,
-        FullThreadState.SOBJ_User,
+        FullThreadState.SOBJ_User
     };
 
     public ThreadStateImpl(long timestamp, int[] stat) {
@@ -96,12 +96,23 @@ public class ThreadStateImpl implements ThreadState {
     }
 
     public String getStateName(int index) {
-        try {
-        switch (collectedStates[stateIDs[index]]) {
+        if (index >= stateIDs.length) {
+            return ShortThreadState.NotExist.name();
+        }
+
+        final int stateIdx = stateIDs[index];
+
+        assert stateIdx > 2;
+        final FullThreadState fullState = collectedStates[stateIdx];
+
+        String result;
+
+        switch (fullState) {
             case RunningUser:
             case RunningSystemCall:
             case RunningOther:
-                return ShortThreadState.Running.name();
+                result = ShortThreadState.Running.name();
+                break;
             case SOBJ_Sema:
             case SOBJ_RWLock:
             case SOBJ_Mutex:
@@ -109,24 +120,26 @@ public class ThreadStateImpl implements ThreadState {
             case SleepingSemafore:
             case SleepingSystemSynchronization:
             case SleepingUserSynchronization:
-                return ShortThreadState.Blocked.name();
+                result = ShortThreadState.Blocked.name();
+                break;
             case SleepingUserTextPageFault:
             case SleepingKernelPageFault:
             case SleepingOther:
-                return ShortThreadState.Sleeping.name();
+                result = ShortThreadState.Sleeping.name();
+                break;
             case SleepingConditionalVariable:
             case SOBJ_CV:
             case WaitingCPU:
-                return ShortThreadState.Waiting.name();
+                result = ShortThreadState.Waiting.name();
+                break;
             case Stopped:
+                result = ShortThreadState.NotExist.name();
+                break;
             default:
-                System.out.println("!!!!!!!!!!!! " + collectedStates[stateIDs[index]].name());
-                return ShortThreadState.NotExist.name();
+                result = fullState.name();
         }
-        } catch (Throwable th) {
 
-        }
-        return ShortThreadState.Sleeping.name();
+        return result;
     }
 
     public byte getState(int index) {

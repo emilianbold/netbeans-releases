@@ -53,12 +53,20 @@ public class ThreadMapDataStorage {
 
     private static final List<ThreadMapDataStorage> instances = new ArrayList<ThreadMapDataStorage>();
     private final List<ThreadDataImpl> data;
+    private TimeDuration frequency;
 
 
     static {
         instances.add(new ThreadMapDataStorage());
     }
-    private TimeDuration frequency;
+
+    public static final ThreadMapDataStorage getInstance() {
+        return instances.get(0);
+    }
+
+    private ThreadMapDataStorage() {
+        data = new LinkedList<ThreadDataImpl>();
+    }
 
     public void addThreadInfo(ThreadInfoImpl threadInfo) {
         data.add(new ThreadDataImpl(threadInfo));
@@ -73,6 +81,11 @@ public class ThreadMapDataStorage {
         }
     }
 
+    /**
+     *
+     * @param tid - thread ID to get ThreadInfoImpl for.
+     * @return null if there is no data associated with this thread ID yet.
+     */
     public ThreadInfoImpl getThreadInfo(int tid) {
         for (ThreadDataImpl tmd : data) {
             if (tmd.getThreadInfo().getThreadId() == tid) {
@@ -81,17 +94,6 @@ public class ThreadMapDataStorage {
         }
 
         return null;
-    }
-
-    private ThreadMapDataStorage() {
-        data = new LinkedList<ThreadDataImpl>();
-    }
-
-    public static final ThreadMapDataStorage getInstance() {
-        return instances.get(0);
-    }
-
-    public void addThreadStatesRecord(ThreadData data) {
     }
 
     public void clear() {
@@ -107,7 +109,6 @@ public class ThreadMapDataStorage {
         final List<ThreadData> threadsData = new ArrayList<ThreadData>();
 
         for (ThreadDataImpl td : data) {
-//            if (td.getThreadState())
             threadsData.add(td);
         }
 
@@ -130,110 +131,3 @@ public class ThreadMapDataStorage {
         return true;
     }
 }
-//
-//
-//    public List<ThreadMapData> queryThreadMapData(ThreadMapDataQuery queryData) {
-//        List<ThreadMapData> result = new ArrayList<ThreadMapData>();
-//
-//        try {
-//            String tableName = "MSA";
-//            DataTableMetadata tableMetadata = tables.get(tableName); // NOI18N
-//            StringBuilder query = new StringBuilder("select "); //NOI18N
-//            Collection<? extends Column> columns = tableMetadata.getColumns();
-//
-//            query.append(new EnumStringConstructor<Column>().constructEnumString(columns,
-//                    new Convertor<Column>() {
-//
-//                        public String toString(Column item) {
-//                            return (item.getExpression() == null) ? item.getColumnName() : item.getExpression();
-//                        }
-//                    }));
-//
-//            query.append(" from ").append(tableName); //NOI18N
-//
-//            final ResultSet rs = select("MSA", tableMetadata.getColumns(), query.toString());
-//            if (rs == null) {
-//                return Collections.emptyList();
-//            }
-//            List<String> colnames = new ArrayList<String>();
-//
-//            for (Column c : columns) {
-//                colnames.add(c.getColumnName());
-//            }
-//
-//            while (rs.next()) {
-//                ArrayList<Object> data = new ArrayList<Object>();
-//                for (Column c : columns) {
-//                    data.add(rs.getObject(c.getColumnName()));
-//                }
-//
-//                ThreadMapData threadMapData = new ThreadMapData() {
-//
-//                    public ThreadInfo getThreadInfo() {
-//                        return new ThreadInfo() {
-//
-//                            public int getThreadId() {
-//                                int result = 0;
-//                                try {
-//                                    rs.getInt("THRID");
-//                                } catch (SQLException ex) {
-//                                    Exceptions.printStackTrace(ex);
-//                                }
-//                                return result;
-//                            }
-//
-//                            public String getThreadName() {
-//                                return "XXX";
-//                            }
-//                        };
-//                    }
-//
-//                    public List<ThreadState> getThreadState() {
-//                        return Arrays.<ThreadState>asList(new ThreadState() {
-//
-//                            public int size() {
-//                                return 5;
-//                            }
-//
-//                            public String getStateName(int index) {
-//                                return "ZOPA";
-//                            }
-//
-//                            public int getState(int index) {
-//                                if (index == 0) {
-//                                    return 30;
-//                                }
-//                                return 1;
-//                            }
-//
-//                            public long getTimeStamp(int index) {
-//                                long result = 0;
-//                                try {
-//                                    result = rs.getLong("TSTAMP");
-//                                } catch (SQLException ex) {
-//                                    Exceptions.printStackTrace(ex);
-//                                }
-//                                return result;
-//                            }
-//
-//                            public long getTimeStamp() {
-//                                long result = 0;
-//                                try {
-//                                    result = rs.getLong("TSTAMP");
-//                                } catch (SQLException ex) {
-//                                    Exceptions.printStackTrace(ex);
-//                                }
-//                                return result;
-//                            }
-//                        });
-//                    }
-//                };
-//
-//                result.add(threadMapData);
-//            }
-//
-//        } catch (Throwable th) {
-//        }
-//
-//        return result;
-//    }

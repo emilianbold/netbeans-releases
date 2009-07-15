@@ -1,4 +1,4 @@
-class ClassA : InterfaceA, InterfaceB, IntefaceC {
+class ClassA : InterfaceA, InterfaceB, InterfaceC {
 public:
 int number = 1;
 private:

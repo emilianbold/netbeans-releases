@@ -67,8 +67,14 @@ import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
 public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
-    CompilerSet defaultSet = null;
-    CompilerSet sunStudioSet = null;
+    private CompilerSet defaultSet = null;
+    private CompilerSet SunStudioSet = null;
+    private CompilerSet GNUSet = null;
+    private CompilerSet MinGWSet = null;
+    private CompilerSet CygwinSet = null;
+
+    List<CompilerSet> compilerSets = null;
+    String[] defaultConfs = new String[] {"Debug", "Release"};
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
@@ -76,92 +82,94 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
         for (CompilerSet set : sets) {
             if (set.getName().equals("SunStudio")) {
-                sunStudioSet = set;
-                break;
+                SunStudioSet = set;
+            }
+            if (set.getName().equals("GNU")) {
+                GNUSet = set;
+            }
+            if (set.getName().equals("MinGW")) {
+                MinGWSet = set;
+            }
+            if (set.getName().equals("Cygwin")) {
+                CygwinSet = set;
             }
         }
+
+        compilerSets = new ArrayList<CompilerSet>();
+        compilerSets.add(SunStudioSet);
+        compilerSets.add(GNUSet);
+        compilerSets.add(MinGWSet);
+        compilerSets.add(CygwinSet);
     }
 
     @Test
     public void testArguments() throws IOException {
-        testSample(defaultSet, "Arguments", "all");
-        testSample(sunStudioSet, "Arguments", "all");
+        testSample(compilerSets, "Arguments", defaultConfs);
     }
 
     @Test
     public void testInputOutput() throws IOException {
-        testSample(defaultSet, "InputOutput", "all");
-        testSample(sunStudioSet, "InputOutput", "all");
+        testSample(compilerSets, "InputOutput", defaultConfs);
     }
 
     @Test
     public void testWelcome() throws IOException {
-        testSample(defaultSet, "Welcome", "all");
-        testSample(sunStudioSet, "Welcome", "all");
+        testSample(compilerSets, "Welcome", defaultConfs);
     }
 
     @Test
     public void testQuote() throws IOException {
-        testSample(defaultSet, "Quote", "all");
-        testSample(sunStudioSet, "Quote", "all");
+        testSample(compilerSets, "Quote", defaultConfs);
     }
 
     @Test
     public void testSubProjects() throws IOException {
-        testSample(defaultSet, "SubProjects", "all");
-        testSample(sunStudioSet, "SubProjects", "all");
+        testSample(compilerSets, "SubProjects", defaultConfs);
     }
 
     @Test
     public void testPi() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(defaultSet, "Pi", "all");
-            testSample(sunStudioSet, "Pi", "all");
+            testSample(compilerSets, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"});
+        }
+        else {
+            testSample(compilerSets, "Pi", new String[] {"Serial"});
         }
     }
 
     @Test
     public void testFreeway() throws IOException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(defaultSet, "Freeway", "all");
-            testSample(sunStudioSet, "Freeway", "all");
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+            testSample(compilerSets, "Freeway", defaultConfs);
         }
     }
 
     @Test
     public void testFractal() throws IOException {
-        testSample(defaultSet, "Fractal", "all");
-        testSample(sunStudioSet, "Fractal", "all");
+        testSample(compilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"});
     }
 
     @Test
     public void testLexYacc() throws IOException {
-        testSample(defaultSet, "LexYacc", "all");
-        testSample(sunStudioSet, "LexYacc", "all");
+        if (!Utilities.isWindows()) {
+            testSample(compilerSets, "LexYacc", defaultConfs);
+        }
     }
 
     @Test
     public void testMP() throws IOException {
-        testSample(defaultSet, "MP", "all");
-        testSample(sunStudioSet, "MP", "all");
+        if (!Utilities.isWindows()) {
+            testSample(compilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"});
+        }
     }
-    
+
+
     @Override
     protected List<Class> getServises() {
         List<Class> list = new ArrayList<Class>();
         list.add(MakeProjectType.class);
         list.addAll(super.getServises());
         return list;
-    }
-
-    private void setDefaultCompilerSet(String setName) {
-        List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
-        for (CompilerSet set : sets) {
-            if (set.getName().equals(setName)) {
-                CompilerSetManager.getDefault().setDefault(set);
-                break;
-            }
-        }
     }
 
     private static Set<DataObject> instantiateSample(String name, File destdir) throws IOException {
@@ -178,27 +186,24 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         return projectCreator.instantiate(wiz);
     }
 
-    public void testSample(CompilerSet set, String sample, String target) throws IOException {
+    public void testSample(List<CompilerSet> sets, String sample, String[] confs) throws IOException {
+        for (CompilerSet set : sets) {
+            if (set != null) {
+                for (String conf : confs) {
+                    testSample(set, sample, conf);
+                }
+            }
+        }
+    }
+
+    public void testSample(CompilerSet set, String sample, String conf) throws IOException {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
-        if (set == null) {
-            return;
-        }
         CompilerSetManager.getDefault().setDefault(set);
-//        class MyExecutionListener implements ExecutionListener {
-//
-//            public void executionFinished(int rc) {
-//                build_rc.set(rc);
-//                done.countDown();
-//            }
-//
-//            public void executionStarted() {
-//            }
-//        }
 
         File workDir = getWorkDir();//new File("/tmp");
-        File projectDir = new File(workDir, sample + set.getName());
+        File projectDir = new File(workDir, sample + set.getName() + conf);
         File mainProjectDir = null;
         FileObject mainProjectDirFO = null;
         Set<DataObject> projectDataObjects;
@@ -213,6 +218,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             }
             ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
             MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
+            descriptor.getConfs().setActive(conf);
             descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         }
 

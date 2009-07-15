@@ -219,7 +219,7 @@ public class ThreadsDataManager {
             if (number == null) {
                 // this is dead thread
                 if (col.isAlive()) {
-                    final long endTimeStump = col.getThreadStateAt(col.size()-1).getTimeStamp() + 1000;
+                    final long endTimeStump = col.getThreadStateAt(col.size()-1).getTimeStamp() + monitoredData.getInterval();
                     col.add(new ThreadState(){
                         public int size() {
                             return 1;
@@ -228,7 +228,7 @@ public class ThreadsDataManager {
                             return ThreadState.ShortThreadState.NotExist.name();
                         }
                         public byte getState(int index) {
-                            return 100;
+                            return ThreadState.POINTS;
                         }
                         public long getTimeStamp(int index) {
                             return endTimeStump;
