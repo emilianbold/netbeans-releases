@@ -197,7 +197,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         }
         threadRunningRatio = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
         g.setColor(getBackground());
-        String s = ""+(threadRunningRatio/10)+"%";
+        String s = ""+(threadRunningRatio/10)+"%"; // NOI18N
         Font summary = new Font(null, Font.BOLD, height-2);
         g.setFont(summary);
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
