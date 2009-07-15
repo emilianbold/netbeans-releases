@@ -51,6 +51,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
@@ -68,6 +70,7 @@ public class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
     private boolean realLastModifiedCached;
+    private static final Logger LOGGER = Logger.getLogger(FileObj.class.getName());
 
 
     FileObj(final File file, final FileNaming name) {
@@ -217,6 +220,9 @@ public class FileObj extends BaseFileObj {
             if (this.lastModified != -1 && !realLastModifiedCached) {
                 realLastModifiedCached = true;
             }
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ")", new Exception("Stack trace"));  //NOI18N
+            }
             this.lastModified = lastModified;
         }
     }
@@ -247,6 +253,9 @@ public class FileObj extends BaseFileObj {
     }
 
     protected void setValid(boolean valid) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "setValid: " + valid + " (" + this + ")", new Exception("Stack trace"));  //NOI18N
+        }
         if (valid) {
             //I can't make valid fileobject when it was one invalidated
             assert isValid() : this.toString();
