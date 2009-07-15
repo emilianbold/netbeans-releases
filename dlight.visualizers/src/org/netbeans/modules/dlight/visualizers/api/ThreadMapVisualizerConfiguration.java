@@ -36,14 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.api;
 
 import java.util.List;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.ThreadMapVisualizerConfigurationAccessor;
@@ -53,15 +51,15 @@ import org.netbeans.modules.dlight.visualizers.api.impl.VisualizerConfigurationI
  *
  * @author Alexander Simon
  */
-public class ThreadMapVisualizerConfiguration  implements VisualizerConfiguration {
-    private ThreadMapMetadata threadMapMetadata;
+public class ThreadMapVisualizerConfiguration implements VisualizerConfiguration {
 
-    static{
+//    private ThreadMapMetadata threadMapMetadata;
+    static {
         ThreadMapVisualizerConfigurationAccessor.setDefault(new ThreadMapVisualizerConfigurationAccessorImpl());
     }
 
-    public ThreadMapVisualizerConfiguration(ThreadMapMetadata threadMapMetadata){
-        this.threadMapMetadata = threadMapMetadata;
+    public ThreadMapVisualizerConfiguration() {
+//        this.threadMapMetadata = threadMapMetadata;
 //        List<Column> list = ThreadTableMetrics.getThredMapColumn();
 //        threadTable = new DataTableMetadata("threadmap", list, null); //NOI18N
     }
@@ -71,17 +69,17 @@ public class ThreadMapVisualizerConfiguration  implements VisualizerConfiguratio
     }
 
     public DataTableMetadata getMetadata() {
-        return threadMapMetadata.getDataTableMetadata();
+        return null;
+//        return threadMapMetadata.getDataTableMetadata();
     }
 
     public String getID() {
         return VisualizerConfigurationIDsProvider.THREAD_MAP_VISUALIZER;
     }
 
-    public ThreadMapMetadata getThreadMapMetadata() {
-        return threadMapMetadata;
-    }
-
+//    public ThreadMapMetadata getThreadMapMetadata() {
+//        return threadMapMetadata;
+//    }
     private static final class ThreadMapVisualizerConfigurationAccessorImpl extends ThreadMapVisualizerConfigurationAccessor {
 
         @Override
@@ -89,9 +87,9 @@ public class ThreadMapVisualizerConfiguration  implements VisualizerConfiguratio
             return configuration.getMetadata().getColumns();
         }
 
-        @Override
-        public ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration) {
-            return configuration.getThreadMapMetadata();
-        }
+//        @Override
+//        public ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration) {
+//            return configuration.getThreadMapMetadata();
+//        }
     }
 }

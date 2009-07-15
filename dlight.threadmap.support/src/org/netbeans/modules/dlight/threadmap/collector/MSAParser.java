@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.threadmap.collector;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -91,7 +92,7 @@ public final class MSAParser extends DtraceParser {
         int[] threadStates = accumulatedData.get(threadID);
 
         int total = 0;
-        
+
         for (int i = 3; i < chunks.length; i++) {
             int state = Integer.parseInt(chunks[i]);
             threadStates[i] += state;
@@ -116,7 +117,9 @@ public final class MSAParser extends DtraceParser {
         }
 
         // Don't store to database
-        return null;
+        // TODO: Agregate states and return as datarow!
+        return new DataRow(Arrays.asList("State 1", "State 2"),
+                Arrays.asList(new Integer(100), new Double(5.6)));
     }
 }
 

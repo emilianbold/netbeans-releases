@@ -40,9 +40,9 @@ package org.netbeans.modules.dlight.threadmap;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -65,25 +65,27 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
 
-        DataTableMetadata msaTableMetadata = createMsaTableMetadata();
+        DataTableMetadata msaTableMetadata = createIndicatorTableMetadata();
 
-        ThreadMapIndicatorConfiguration indicatorConfig = new ThreadMapIndicatorConfiguration(null);
-        ThreadMapMetadata threadMapMetadata = new ThreadMapMetadata(msaTableMetadata);
-        VisualizerConfiguration visualizerConfig = new ThreadMapVisualizerConfiguration(threadMapMetadata);
+        ThreadMapIndicatorConfiguration indicatorConfig = new ThreadMapIndicatorConfiguration(new IndicatorMetadata(msaTableMetadata.getColumns()));
+
+        VisualizerConfiguration visualizerConfig = new ThreadMapVisualizerConfiguration();
 
         indicatorConfig.addVisualizerConfiguration(visualizerConfig);
         toolConfiguration.addIndicatorConfiguration(indicatorConfig);
 
-
         String scriptFile = Util.copyResource(getClass(),
                 Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
 
-        DTDCConfiguration dtraceDataCollectorConfiguration =
-                new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
+        DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(null, msaTableMetadata));
 
-        dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), msaTableMetadata));
+        dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
+        dtraceDataCollectorConfiguration.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
 
-        toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa")); // NOI18N
+        MultipleDTDCConfiguration collector = new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa"); // NOI18N
+
+        toolConfiguration.addIndicatorDataProviderConfiguration(collector);
+        toolConfiguration.addDataCollectorConfiguration(collector);
 
         return toolConfiguration;
     }
@@ -93,14 +95,11 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
                 ThreadMapToolConfigurationProvider.class, key, params);
     }
 
-    private DataTableMetadata createMsaTableMetadata() {
-        Column cpuId = new Column("CPUID", Integer.class, "CPUID", null); // NOI18N
-        Column threadId = new Column("THRID", Integer.class, "THRID", null); // NOI18N
-        Column timestamp = new Column("TSTAMP", Long.class, "TSTAMP", null); // NOI18N
+    private DataTableMetadata createIndicatorTableMetadata() {
         Column usrTime = new Column("LMS_USER", Integer.class, "LMS_USER", null); // NOI18N
         Column sysTime = new Column("LMS_SYSTEM", Integer.class, "LMS_SYSTEM", null); // NOI18N
 
         return new DataTableMetadata("MSA", // NOI18N
-                Arrays.asList(cpuId, threadId, timestamp, usrTime, sysTime), null);
+                Arrays.asList(usrTime, sysTime), null);
     }
 }
