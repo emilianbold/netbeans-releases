@@ -279,6 +279,7 @@ public class TreeLoader extends LazyTreeLoader {
         }
         if (!f.exists()) {
             try {
+                f.getParentFile().mkdirs();
                 OutputStream os = new FileOutputStream(f);
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
                 try {
