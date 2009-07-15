@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
@@ -54,26 +55,34 @@ import javax.lang.model.type.DeclaredType;
  * @author ads
  *
  */
-class CurrentBindingTypeFilter extends TypeFilter {
+class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
     
-    static CurrentBindingTypeFilter get() {
+    static <T extends Element> CurrentBindingTypeFilter<T> get( Class<T> clazz) {
+        assertElement(clazz);
         // could be changed to cached ThreadLocal access
-        return new CurrentBindingTypeFilter();
+        if ( clazz.equals( Element.class)){
+            return (CurrentBindingTypeFilter<T>) new CurrentBindingTypeFilter<Element>();
+        }
+        else if ( clazz.equals( TypeElement.class )){
+            return (CurrentBindingTypeFilter<T>)  new CurrentBindingTypeFilter<TypeElement>();
+        }
+        return null;
     }
     
     void init( WebBeansModelImplementation impl ) {
         myImpl = impl;
     }
-
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.TypeFilter#filter(java.util.Set)
+     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
      */
-    void filter( Set<TypeElement> set ) {
+    @Override
+    void filter( Set<T> set ) {
         super.filter(set);
-        for (Iterator<TypeElement> iterator = set.iterator(); iterator
+        for (Iterator<? extends Element> iterator = set.iterator(); iterator
                 .hasNext();)
         {
-            TypeElement typeElement = iterator.next();
+            Element typeElement = iterator.next();
             List<? extends AnnotationMirror> allAnnotationMirrors = getImplementation()
                     .getHelper().getCompilationController().getElements()
                     .getAllAnnotationMirrors(typeElement);

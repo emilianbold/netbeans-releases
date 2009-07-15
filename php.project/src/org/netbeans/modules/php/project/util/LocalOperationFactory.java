@@ -94,7 +94,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             writableFolder = writableFolder.getParentFile();
         }
         
-        boolean isWritable = Utils.isFolderWritable(writableFolder);
+        boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
         if (!isWritable) {
             if (IS_WARNING_LOGGABLE) {
                 LOGGER.warning(String.format("Copy support disabled %s. Reason: %s", project.getName(), "target root isn't writable"));//NOI18N

@@ -85,7 +85,7 @@ public class TldClassPathSupport implements PropertyChangeListener {
     private void dumpLibs() {
         System.out.println("Available TLD libraries:"); //NOI18N
         for (TldLibrary l : getLibraries().values()) {
-            System.out.println(l.getURI());
+            System.out.println(l.getURI() + "("+ l.getDefinitionFile().getPath() +")");
         }
 
     }

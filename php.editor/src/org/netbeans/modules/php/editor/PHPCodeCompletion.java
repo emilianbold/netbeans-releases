@@ -419,11 +419,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request) {
 
         String nsPrefix = request.prefix;
-
-        if (nsPrefix.startsWith("\\")){
-            nsPrefix = nsPrefix.substring(1);
-        }
-
         PHPIndex index = request.index;
         int completedSegmentIdx = QualifiedName.create(nsPrefix).getSegments().size() - 1;
         if (nsPrefix.endsWith("\\")){
@@ -1237,8 +1232,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
                     }
 
-                    if ("\\".equals(prefix)){ //NOI18N
-                        prefix = ""; //NOI18N
+                    if (prefix.startsWith("\\")){ //NOI18N
+                        prefix = prefix.substring(1); //NOI18N
                     }
 
                     return prefix;

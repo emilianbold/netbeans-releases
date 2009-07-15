@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
+        <resource>jar:nbinst:///docs/javaee6-doc-api.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
