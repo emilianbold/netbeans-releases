@@ -152,6 +152,11 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.web.client.tools.api");
         // schlieman is our diamond
         permittedDisabledAutoloads.add("org.netbeans.modules.languages");
+        // os-specific binaries for embedded browser
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.linux");
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.macosx");
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.solaris");
+        permittedDisabledAutoloads.add("org.netbeans.core.browser.win");
         SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, permittedDisabledAutoloads);
         if (!problems.isEmpty()) {
             StringBuilder message = new StringBuilder("Problems found with autoloads");
