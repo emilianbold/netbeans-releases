@@ -26,8 +26,12 @@ public class NbMavenWorkspaceStore
             Iterator<Map.Entry<String, ModelAndFile>> it1 = cache1.entrySet().iterator();
             while (it1.hasNext()) {
                 Map.Entry<String, ModelAndFile> ent = it1.next();
+                if (ent == null || ent.getValue() == null) {
+                    continue;
+                }
+                File f = ent.getValue().getFile();
                 // remove entries based on workspace projects.
-                if (ent.getValue().getFile().getName().equals("pom.xml")) { //NOI18N
+                if (f != null && f.getName().equals("pom.xml")) { //NOI18N
                     it1.remove();
                 }
             }
@@ -38,8 +42,12 @@ public class NbMavenWorkspaceStore
             Iterator<Map.Entry<String, ModelAndFile>> it2 = cache2.entrySet().iterator();
             while (it2.hasNext()) {
                 Map.Entry<String, ModelAndFile> ent = it2.next();
+                if (ent == null || ent.getValue() == null) {
+                    continue;
+                }
+                File f = ent.getValue().getFile();
                 // remove entries based on workspace projects.
-                if (ent.getValue().getFile().getName().equals("pom.xml")) { //NOI18N
+                if (f != null && f.getName().equals("pom.xml")) { //NOI18N
                     it2.remove();
                 }
             }
@@ -50,6 +58,9 @@ public class NbMavenWorkspaceStore
             Iterator<Map.Entry<String, MavenProject>> it3 = cache3.entrySet().iterator();
             while (it3.hasNext()) {
                 Map.Entry<String, MavenProject> ent = it3.next();
+                if (ent == null || ent.getKey() == null) {
+                    continue;
+                }
                 // remove entries based on workspace projects.
                 if (ent.getKey().endsWith("pom.xml")) { //NOI18N
                     it3.remove();
@@ -63,11 +74,11 @@ public class NbMavenWorkspaceStore
             while (it4.hasNext()) {
                 Map.Entry<String, MavenProject> ent = it4.next();
                 // remove entries based on workspace projects.
-                File f = ent.getValue().getFile();
-                if (f == null) {
+                if (ent == null || ent.getValue() == null) {
                     continue;
                 }
-                if (ent.getValue().getFile().getName().equals("pom.xml")) { //NOI18N
+                File f = ent.getValue().getFile();
+                if (f != null && f.getName().equals("pom.xml")) { //NOI18N
                     it4.remove();
                 }
             }
