@@ -95,10 +95,11 @@ public final class PrintAction extends IconAction {
         if (myProviders != null) {
             Preview.getDefault().print(myProviders, true);
 
-            if (!myEnabled) {
+            if ( !myEnabled) {
                 myProviders = null;
             }
-        } else {
+        }
+        else {
             PrintCookie cookie = getPrintCookie();
 
             if (cookie != null) {
@@ -200,7 +201,7 @@ public final class PrintAction extends IconAction {
     }
 
     private DataObject getData(JComponent top) {
-        if (!(top instanceof TopComponent)) {
+        if ( !(top instanceof TopComponent)) {
             return null;
         }
         return (DataObject) ((TopComponent) top).getLookup().lookup(DataObject.class);

@@ -101,6 +101,7 @@ public class RefactoringPanelContainer extends TopComponent {
         setFocusCycleRoot(true);
         JLabel label = new JLabel(NbBundle.getMessage(RefactoringPanelContainer.class, "LBL_NoUsages"));
         label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label.setEnabled(false);
         this.add(label, BorderLayout.CENTER);
         initActions();
     }

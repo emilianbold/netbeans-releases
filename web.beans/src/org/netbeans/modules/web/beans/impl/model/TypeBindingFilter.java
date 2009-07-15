@@ -53,7 +53,7 @@ import javax.lang.model.type.TypeMirror;
  * @author ads
  *
  */
-class TypeBindingFilter extends TypeFilter {
+class TypeBindingFilter extends Filter<TypeElement> {
     
     static TypeBindingFilter get() {
         // could be changed to cached ThreadLocal access 
@@ -68,7 +68,8 @@ class TypeBindingFilter extends TypeFilter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.TypeFilter#filter(java.util.Set)
      */
-    public void filter( Set<TypeElement> set ) {
+    @Override
+    void filter( Set<TypeElement> set ) {
         super.filter(set);
         if ( set.size() == 0 ){
             return;

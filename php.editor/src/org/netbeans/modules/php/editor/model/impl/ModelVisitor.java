@@ -828,8 +828,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         buildOccurences();
         Collection<? extends ModelElement> elements = scope.getElements();
         for (ModelElement varScope : elements) {
-            if (varScope instanceof ClassScope) {
-                atOffset = findNearestVarScope((ClassScope)varScope, offset, atOffset);
+            if (varScope instanceof ClassScope || varScope instanceof NamespaceScope) {
+                atOffset = findNearestVarScope((Scope)varScope, offset, atOffset);
             }
             if (varScope instanceof VariableScope) {
                 if (varScope.getNameRange().getStart() <= offset) {

@@ -227,4 +227,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         sb.append(qualifiedName.toString()).append(";");//NOI18N
         return sb.toString();
     }
+
+    @Override
+    public QualifiedName getNamespaceName() {
+        if (indexedElement instanceof IndexedFunction) {
+            IndexedFunction indexedFunction = (IndexedFunction)indexedElement;
+            return QualifiedName.create(indexedFunction.getNamespaceName());
+        }
+        return super.getNamespaceName();
+    }
 }
