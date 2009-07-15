@@ -67,18 +67,18 @@ import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
 public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
-    private CompilerSet defaultSet = null;
     private CompilerSet SunStudioSet = null;
     private CompilerSet GNUSet = null;
     private CompilerSet MinGWSet = null;
     private CompilerSet CygwinSet = null;
 
-    List<CompilerSet> compilerSets = null;
+    List<CompilerSet> allAvailableCompilerSets = null;
+    List<CompilerSet> SunStudioCompilerSet = null;
+    List<CompilerSet> GNUCompilerSet = null;
     String[] defaultConfs = new String[] {"Debug", "Release"};
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
-        defaultSet = CompilerSetManager.getDefault().getDefaultCompilerSet();
         List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
         for (CompilerSet set : sets) {
             if (set.getName().equals("SunStudio")) {
@@ -95,74 +95,101 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             }
         }
 
-        compilerSets = new ArrayList<CompilerSet>();
-        compilerSets.add(SunStudioSet);
-        compilerSets.add(GNUSet);
-        compilerSets.add(MinGWSet);
-        compilerSets.add(CygwinSet);
+        allAvailableCompilerSets = new ArrayList<CompilerSet>();
+        allAvailableCompilerSets.add(SunStudioSet);
+        allAvailableCompilerSets.add(GNUSet);
+        allAvailableCompilerSets.add(MinGWSet);
+        allAvailableCompilerSets.add(CygwinSet);
+
+        SunStudioCompilerSet = new ArrayList<CompilerSet>();
+        SunStudioCompilerSet.add(SunStudioSet);
+
+        GNUCompilerSet = new ArrayList<CompilerSet>();
+        GNUCompilerSet.add(GNUSet);
     }
 
     @Test
     public void testArguments() throws IOException {
-        testSample(compilerSets, "Arguments", defaultConfs);
+        testSample(allAvailableCompilerSets, "Arguments", defaultConfs);
     }
 
     @Test
     public void testInputOutput() throws IOException {
-        testSample(compilerSets, "InputOutput", defaultConfs);
+        testSample(allAvailableCompilerSets, "InputOutput", defaultConfs);
     }
 
     @Test
     public void testWelcome() throws IOException {
-        testSample(compilerSets, "Welcome", defaultConfs);
+        testSample(allAvailableCompilerSets, "Welcome", defaultConfs);
     }
 
     @Test
     public void testQuote() throws IOException {
-        testSample(compilerSets, "Quote", defaultConfs);
+        testSample(allAvailableCompilerSets, "Quote", defaultConfs);
     }
 
     @Test
     public void testSubProjects() throws IOException {
-        testSample(compilerSets, "SubProjects", defaultConfs);
+        testSample(allAvailableCompilerSets, "SubProjects", defaultConfs);
     }
 
     @Test
     public void testPi() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(compilerSets, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"});
+            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"});
+            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"});
         }
         else {
-            testSample(compilerSets, "Pi", new String[] {"Serial"});
+            testSample(allAvailableCompilerSets, "Pi", new String[] {"Serial"});
         }
     }
 
     @Test
     public void testFreeway() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(compilerSets, "Freeway", defaultConfs);
+            testSample(allAvailableCompilerSets, "Freeway", defaultConfs);
         }
     }
 
     @Test
     public void testFractal() throws IOException {
-        testSample(compilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"});
+        testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"});
     }
 
     @Test
     public void testLexYacc() throws IOException {
         if (!Utilities.isWindows()) {
-            testSample(compilerSets, "LexYacc", defaultConfs);
+            testSample(allAvailableCompilerSets, "LexYacc", defaultConfs);
         }
     }
 
     @Test
     public void testMP() throws IOException {
         if (!Utilities.isWindows()) {
-            testSample(compilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"});
+            testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"});
         }
     }
 
+    @Test
+    public void testHello() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(SunStudioCompilerSet, "Hello", defaultConfs);
+        }
+    }
+
+    @Test
+    public void testHelloQtWorld() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+            testSample(allAvailableCompilerSets, "HelloQtWorld", defaultConfs);
+        }
+    }
+
+    @Test
+    public void testProfilingDemo() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+            testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs);
+        }
+    }
 
     @Override
     protected List<Class> getServises() {

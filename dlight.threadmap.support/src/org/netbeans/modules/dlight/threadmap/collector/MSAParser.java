@@ -118,7 +118,7 @@ public final class MSAParser extends DtraceParser {
 
         // Don't store to database
         // TODO: Agregate states and return as datarow!
-        return new DataRow(Arrays.asList("State 1", "State 2"),
+        return new DataRow(Arrays.asList("State 1", "State 2"), // NOI18N
                 Arrays.asList(new Integer(100), new Double(5.6)));
     }
 }
