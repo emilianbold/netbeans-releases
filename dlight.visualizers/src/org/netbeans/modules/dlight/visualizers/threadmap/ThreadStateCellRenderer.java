@@ -268,14 +268,14 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         }
 
         int y = 0;
-        int rest = 1000/2;
+        int rest = 100/2;
         int oldRest = 0;
         for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
             int v = entry.getValue().get();
             Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
             oldRest = rest;
-            rest = (v*delta+oldRest)%1000;
-            int d = (v*delta+oldRest)/1000;
+            rest = (v*delta+oldRest)%100;
+            int d = (v*delta+oldRest)/100;
             y += d;
             if (d > 0) {
                 g.setColor(c);

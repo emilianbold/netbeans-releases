@@ -42,7 +42,7 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
@@ -50,12 +50,12 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
  * @author Alexander Simon (adapted for CND)
  */
 public class MonitoredData {
-    private List<ThreadMapData> data = new ArrayList<ThreadMapData>();
-    private MonitoredData(List<ThreadMapData> data) {
+    private List<ThreadData> data = new ArrayList<ThreadData>();
+    private MonitoredData(List<ThreadData> data) {
         this.data = data;
     }
 
-    public static MonitoredData getMonitoredData(List<ThreadMapData> data) {
+    public static MonitoredData getMonitoredData(List<ThreadData> data) {
         return new MonitoredData(data);
     }
 

@@ -36,29 +36,35 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.storage.threadmap;
+package org.netbeans.modules.dlight.threadmap.storage;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadInfo {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
-    /**
-     * @return ststem thread ID.
-     */
-    int getThreadId();
+public final class ThreadDataImpl implements ThreadData {
 
-    /**
-     * @return Thread name. It is a function full name that was called.
-     */
-    String getThreadName();
-//
-//    long getThreadStartTS();
-//
-//    /**
-//     *
-//     * @return -1 if not finished yet
-//     */
-//    long getThreadFinishTS();
+    private final ThreadInfoImpl threadInfo;
+    private final List<ThreadStateImpl> states;
+    private final List<ThreadState> pstates;
+
+    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
+        this.threadInfo = threadInfo;
+        this.states = new ArrayList<ThreadStateImpl>();
+        pstates = Collections.<ThreadState>unmodifiableList(states);
+    }
+
+    public ThreadInfoImpl getThreadInfo() {
+        return threadInfo;
+    }
+
+    public List<ThreadState> getThreadState() {
+        return pstates;
+    }
+
+    void addState(ThreadStateImpl state) {
+        states.add(state);
+    }
 }

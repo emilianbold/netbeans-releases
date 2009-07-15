@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 import java.util.List;
@@ -45,7 +44,8 @@ import java.util.List;
  *
  * @author Alexander Simon
  */
-public interface ThreadMapData {
+public interface ThreadData {
+
     /**
      * @return thread information.
      */

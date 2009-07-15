@@ -179,15 +179,15 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 rest = (value.get()+oldRest)%count;
                 value.set((value.get()+oldRest)/count);
             }
-            rest = 1000/2;
+            rest = 100/2;
             oldRest = 0;
             int y = 6;
             int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
             for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
                 AtomicInteger value = entry.getValue();
                 oldRest = rest;
-                rest = (value.get()*ThreadWidth+oldRest)%1000;
-                int d = (value.get()*ThreadWidth+oldRest)/1000;
+                rest = (value.get()*ThreadWidth+oldRest)%100;
+                int d = (value.get()*ThreadWidth+oldRest)/100;
                 if (d > 0) {
                     g.setColor(ThreadStateColumnImpl.getThreadStateColor(entry.getKey()));
                     g.fillRect(y, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, d, height);

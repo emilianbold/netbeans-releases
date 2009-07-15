@@ -55,8 +55,8 @@ public class DtraceParser {
 
     private static final Logger log =
             DLightLogger.getLogger(DtraceParser.class);
-    private DataTableMetadata metadata;
-    private List<String> colnames;
+    private final DataTableMetadata metadata;
+    private final List<String> colnames;
 
     public DtraceParser(DataTableMetadata metadata) {
         this.metadata = metadata;
