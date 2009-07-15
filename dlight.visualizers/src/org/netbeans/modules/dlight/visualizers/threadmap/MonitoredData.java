@@ -39,44 +39,49 @@
 
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 /**
  *
  * @author Alexander Simon (adapted for CND)
  */
 public class MonitoredData {
-    private List<ThreadMapData> data = new ArrayList<ThreadMapData>();
-    private MonitoredData(List<ThreadMapData> data) {
-        this.data = data;
+    private ThreadMapData mapData;
+    private MonitoredData(ThreadMapData mapData) {
+        this.mapData = mapData;
     }
 
-    public static MonitoredData getMonitoredData(List<ThreadMapData> data) {
-        return new MonitoredData(data);
+    public static MonitoredData getMonitoredData(ThreadMapData mapData) {
+        return new MonitoredData(mapData);
     }
 
     public int getThreadsSize() {
-        return data.size();
+        return mapData.getThreadsData().size();
     }
 
     public int getThreadStatesSize() {
-        return data.get(0).getThreadState().size();
+        return mapData.getThreadsData().get(0).getThreadState().size();
     }
 
     public ThreadInfo getThreadInfo(int index){
-        return data.get(index).getThreadInfo();
+        return mapData.getThreadsData().get(index).getThreadInfo();
     }
 
     public List<ThreadState> getThreadStates(int index) {
-        return data.get(index).getThreadState();
+        return mapData.getThreadsData().get(index).getThreadState();
     }
 
     public long getStartTimestamp(int index) {
-        List<ThreadState> states = data.get(index).getThreadState();
+        List<ThreadState> states = mapData.getThreadsData().get(index).getThreadState();
         return states.get(0).getTimeStamp();
+    }
+    
+    public int getInterval(){
+        return (int) mapData.getPrecision().getValueIn(TimeUnit.MILLISECONDS);
     }
 }

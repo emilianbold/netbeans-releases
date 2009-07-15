@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
@@ -44,6 +43,7 @@ package org.netbeans.modules.dlight.api.storage.threadmap;
  * @author Alexander Simon
  */
 public interface ThreadInfo {
+
     /**
      * @return ststem thread ID.
      */
@@ -53,4 +53,12 @@ public interface ThreadInfo {
      * @return Thread name. It is a function full name that was called.
      */
     String getThreadName();
+//
+//    long getThreadStartTS();
+//
+//    /**
+//     *
+//     * @return -1 if not finished yet
+//     */
+//    long getThreadFinishTS();
 }

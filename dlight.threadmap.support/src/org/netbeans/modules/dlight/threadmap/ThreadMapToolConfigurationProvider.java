@@ -39,13 +39,17 @@
 package org.netbeans.modules.dlight.threadmap;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.threadmap.collector.MSAParser;
 import org.netbeans.modules.dlight.threadmap.indicator.ThreadMapIndicatorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
@@ -77,7 +81,9 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         DTDCConfiguration dtraceDataCollectorConfiguration =
                 new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
 
-        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration);
+        dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), msaTableMetadata));
+
+        toolConfiguration.addDataCollectorConfiguration(new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa")); // NOI18N
 
         return toolConfiguration;
     }
@@ -88,11 +94,11 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     }
 
     private DataTableMetadata createMsaTableMetadata() {
-        Column cpuId = new Column("CPUID", Integer.class, loc("ThreadMapTool.ColumnName.CPUID"), null); // NOI18N
-        Column threadId = new Column("THRID", Integer.class, loc("ThreadMapTool.ColumnName.THRID"), null); // NOI18N
-        Column timestamp = new Column("TSTAMP", Long.class, loc("ThreadMapTool.ColumnName.TSTAMP"), null); // NOI18N
-        Column usrTime = new Column("LMS_USER", Integer.class, loc("ThreadMapTool.ColumnName.LMS_USER"), null); // NOI18N
-        Column sysTime = new Column("LMS_SYSTEM", Integer.class, loc("ThreadMapTool.ColumnName.LMS_SYSTEM"), null); // NOI18N
+        Column cpuId = new Column("CPUID", Integer.class, "CPUID", null); // NOI18N
+        Column threadId = new Column("THRID", Integer.class, "THRID", null); // NOI18N
+        Column timestamp = new Column("TSTAMP", Long.class, "TSTAMP", null); // NOI18N
+        Column usrTime = new Column("LMS_USER", Integer.class, "LMS_USER", null); // NOI18N
+        Column sysTime = new Column("LMS_SYSTEM", Integer.class, "LMS_SYSTEM", null); // NOI18N
 
         return new DataTableMetadata("MSA", // NOI18N
                 Arrays.asList(cpuId, threadId, timestamp, usrTime, sysTime), null);

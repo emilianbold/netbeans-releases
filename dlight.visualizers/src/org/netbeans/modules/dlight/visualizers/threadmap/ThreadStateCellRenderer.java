@@ -43,6 +43,9 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
@@ -53,6 +56,7 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer, Serializable {
+
     private Color unselectedBackground;
     private Color unselectedForeground;
     private ThreadStateColumnImpl threadData;
@@ -61,10 +65,15 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     private long dataStart;
     private long viewEnd;
     private long viewStart;
+    private Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadStateCellRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
+        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
     }
 
     /**
@@ -224,7 +233,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
 
             if (timestamp <= viewStart) {
-                if (threadData.getThreadStateAt(i+1).getTimeStamp() > viewStart) {
+                if (threadData.getThreadStateAt(i + 1).getTimeStamp() > viewStart) {
                     return i; // data unit ends between viewStart and viewEnd
                 }
             } else {
@@ -250,23 +259,30 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         }
 
         int size = threadStateColor.size();
-        int delta = getHeight() - 12;
+        int delta = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
+
+        for (AtomicInteger i : map.values()) {
+            i.set(0);
+        }
+
+        for (int i = 0; i < size; i++) {
+            map.get(threadStateColor.getStateName(i)).addAndGet(threadStateColor.getState(i));
+        }
 
         int y = 0;
-        int rest = 0;
+        int rest = ThreadState.POINTS/2;
         int oldRest = 0;
-
-        for(int i = 0; i < size; i++) {
-            int v = threadStateColor.getState(i);
-            Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor, i);
+        for (Map.Entry<String, AtomicInteger> entry : map.entrySet()) {
+            int v = entry.getValue().get();
+            Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
             oldRest = rest;
-            rest = (v*delta+oldRest)%1000;
-            int d = (v*delta+oldRest)/1000;
+            rest = (v*delta+oldRest)%ThreadState.POINTS;
+            int d = (v*delta+oldRest)/ThreadState.POINTS;
             y += d;
             if (d > 0) {
                 g.setColor(c);
-                g.fillRect(x, 6+delta-y, xx - x, d);
-                //g.fillRect(x, 6, xx - x, getHeight() - 12);
+                g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y, xx - x, d);
+            //g.fillRect(x, 6, xx - x, getHeight() - 12);
             }
         }
     }
