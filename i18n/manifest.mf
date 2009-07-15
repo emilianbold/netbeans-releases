@@ -5,6 +5,3 @@ OpenIDE-Module-Specification-Version: 1.27
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 AutoUpdate-Show-In-Client: false
 
-Name: org/netbeans/modules/i18n/I18nGroupAction.class
-OpenIDE-Module-Class: Action
-

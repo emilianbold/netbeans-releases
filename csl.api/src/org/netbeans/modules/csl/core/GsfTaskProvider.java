@@ -89,14 +89,14 @@ public final class GsfTaskProvider extends PushTaskScanner  {
     private TaskScanningScope scope;
 
     public GsfTaskProvider () {
-        this (getAllLanguageNames ());
+        this(null);
         INSTANCE = this;
     }
 
     private GsfTaskProvider (String languageList) {
         super (
-            NbBundle.getMessage (GsfTaskProvider.class, "GsfTasks", languageList), //NOI18N
-            NbBundle.getMessage (GsfTaskProvider.class, "GsfTasksDesc", languageList), //NOI18N
+            NbBundle.getMessage (GsfTaskProvider.class, "GsfTasks"), //NOI18N
+            NbBundle.getMessage (GsfTaskProvider.class, "GsfTasksDesc"), //NOI18N
             null
         );
     }

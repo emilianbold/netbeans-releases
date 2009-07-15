@@ -61,6 +61,7 @@ import javax.swing.JDialog;
 import javax.swing.event.ChangeListener;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.ModuleLifecycleManager;
 import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.netbeans.core.ui.SwingBrowser;
@@ -389,7 +390,7 @@ public abstract class NbTopManager {
         for (int i = 0; i < modifs.length; i++) {
             try {
                 dobj = modifs[i];
-                SaveCookie sc = dobj.getCookie(SaveCookie.class);
+                SaveCookie sc = dobj.getLookup().lookup(SaveCookie.class);
 
                 if (sc != null) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
@@ -559,6 +560,9 @@ public abstract class NbTopManager {
         }
         public void exit() {
             NbTopManager.exit();
+        }
+        public @Override void markForRestart() throws UnsupportedOperationException {
+            new ModuleLifecycleManager().markForRestart();
         }
     }
 
