@@ -13,17 +13,21 @@ import org.mozilla.browser.MozillaKeyEvent;
 import org.mozilla.browser.MozillaMouseEvent;
 import org.mozilla.browser.MozillaPanel;
 import org.mozilla.browser.MozillaRuntimeException;
+import org.mozilla.browser.impl.ChromeAdapter;
 import org.mozilla.browser.impl.DOMUtils;
 import org.mozilla.dom.NodeFactory;
 import org.mozilla.interfaces.nsIDOMRange;
 import org.mozilla.interfaces.nsISelection;
 import org.mozilla.interfaces.nsIWebBrowser;
+import org.mozilla.interfaces.nsIWebBrowserFocus;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import static org.mozilla.browser.XPCOMUtils.qi;
+import static org.mozilla.browser.MozillaExecutor.mozAsyncExec;
 
 /**
  * Extends MozSwing's browser component to handle various browser events.
@@ -213,5 +217,18 @@ public class BrowserPanel extends MozillaPanel {
 
     public String getTitleText() {
         return title;
+    }
+
+    public void requestFocusInBrowser() {
+        Runnable r = new Runnable() {
+            public void run() {
+                ChromeAdapter ca = getChromeAdapter();
+                if( null == ca )
+                    return;
+                nsIWebBrowserFocus webBrowserFocus = qi(ca.getWebBrowser(), nsIWebBrowserFocus.class);
+                webBrowserFocus.activate();
+            }
+        };
+        mozAsyncExec(r);
     }
 }
