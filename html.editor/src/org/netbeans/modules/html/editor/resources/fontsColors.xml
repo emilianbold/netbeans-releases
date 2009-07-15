@@ -61,4 +61,10 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-method">
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="mod-class">
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="mod-field">
+        <font style="strikethrough" />
+    </fontcolor>
 </fontscolors>

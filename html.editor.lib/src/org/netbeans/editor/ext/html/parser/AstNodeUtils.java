@@ -251,10 +251,7 @@ public class AstNodeUtils {
     }
 
     public static boolean hasForbiddenEndTag(AstNode node) {
-        DTD.Element e = node.getDTDElement();
-        assert e != null;
-
-        return e.isEmpty();
+        return node.getDTDElement() != null ? node.getDTDElement().isEmpty() : false;
     }
    
     public static void visitChildren(AstNode node, AstNodeVisitor visitor) {
