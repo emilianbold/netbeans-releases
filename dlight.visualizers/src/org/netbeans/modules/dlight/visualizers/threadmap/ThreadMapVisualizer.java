@@ -46,7 +46,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -126,7 +125,7 @@ public class ThreadMapVisualizer extends JPanel implements
         DLightExecutorService.scheduleAtFixedRate(new Runnable(){
             public void run() {
                 try {
-                    final List<ThreadMapData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, 0, 3000, 1, false));
+                    final List<ThreadMapData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(TimeUnit.SECONDS, dataManager.getEndTime()/1000, 3000, 1, false));
                     final boolean isEmptyConent = list == null || list.isEmpty();
                     UIThread.invoke(new Runnable() {
                         public void run() {
@@ -141,7 +140,7 @@ public class ThreadMapVisualizer extends JPanel implements
                     t.printStackTrace();
                 }
             }
-        }, 1, TimeUnit.SECONDS, "ThreadMapVisualizer Async data from provider load for " + configuration.getID());
+        }, 1, TimeUnit.SECONDS, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -139,6 +139,20 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="400"/>
             </file>
+            <file name="PHPUnitBootstrap" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitBootstrap.php">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="PHPUnitConfiguration.xml" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitConfiguration.xml">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="600"/>
+            </file>
         </folder>
     </folder>
     <folder name="OptionsDialog">
@@ -167,6 +181,10 @@ made subject to such option by the copyright holder.
                 <file name="PhpIncludePath.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpIncludePath"/>
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="IgnorePath.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createIgnorePath"/>
+                    <attr name="position" intvalue="310"/>
                 </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>

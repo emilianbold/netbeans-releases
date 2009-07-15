@@ -263,7 +263,15 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
                 if (RUN_MAIN.equals(actionName) ||
                     DEBUG_MAIN.equals(actionName)) {
-                    params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
+                    FileObject selected = config.getSelectedFileObject();
+                    ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
+                    ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
+                    String path = srcs.getResourceName(selected);
+                    if (path == null) {
+                        //#160776 only files on source classpath pass through
+                        return true;
+                    }
+                    params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
                 } else {
                     //only for the case of running the project itself, relevant for the run/debug-project action and
                     //jar packaging
@@ -368,6 +376,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 if (testFo != null) {
                     selected = testFo;
                 }
+            } else {
+                //#160776 only files on source classpath pass through
+                return true;
             }
             params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
 

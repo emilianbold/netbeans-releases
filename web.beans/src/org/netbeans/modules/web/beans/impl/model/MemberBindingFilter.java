@@ -80,6 +80,13 @@ class MemberBindingFilter extends TypeFilter {
      */
     void filter( Set<TypeElement> set ) {
         super.filter(set);
+        filterElements(set);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.TypeFilter#filterElements(java.util.Set)
+     */
+    void filterElements( Set<? extends Element> set ) {
         if ( set.size() == 0 ){
             return;
         }
@@ -95,7 +102,7 @@ class MemberBindingFilter extends TypeFilter {
          * One need to check presence of member in binding annotation at 
          * injected point and compare this member with member in annotation
          * for discovered type.
-         * Members with  @NonBinding annotation should be iognored. 
+         * Members with  @NonBinding annotation should be ignored. 
          */
          for (AnnotationMirror annotation : getBindingAnnotations()) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> 
@@ -108,11 +115,11 @@ class MemberBindingFilter extends TypeFilter {
     
     private void checkMembers(
             Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues,
-            Set<ExecutableElement> members, Set<TypeElement> set )
+            Set<ExecutableElement> members, Set<? extends Element> set )
     {
         MemberCheckerFilter filter = MemberCheckerFilter.get();
         filter.init( elementValues , members, getImplementation());
-        filter.filter(set);
+        filter.filterElements(set);
     }
     
     

@@ -153,9 +153,18 @@ public class QualifiedName {
      */
     @Override
     public String toString() {
+        return toString(segments.size() - 1);
+    }
+
+    public String toString(int numberOfSegments){
+        if (numberOfSegments >= segments.size()){
+            throw new IllegalArgumentException("n >= segments.size()");
+        }
+
         StringBuilder sb = new StringBuilder();
         QualifiedNameKind k = getKind();
-        for (String oneSegment : segments) {
+        for (int i = 0; i <= numberOfSegments; i ++) {
+            String oneSegment = segments.get(i);
             if (sb.length() > 0 || (k != null && k.isFullyQualified())) {
                 sb.append("\\");//NOI18N
             }
@@ -163,6 +172,7 @@ public class QualifiedName {
         }
         return sb.toString();
     }
+
     public QualifiedName append(String name) {
         return append(createUnqualifiedName(name));
     }

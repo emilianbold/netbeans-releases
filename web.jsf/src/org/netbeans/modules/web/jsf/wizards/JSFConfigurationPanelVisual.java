@@ -58,6 +58,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
@@ -625,7 +626,12 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void initLibSettings(Profile profile, String serverInstanceID) {
         try {
             File[] cp;
-            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            J2eePlatform platform = null;
+            try {
+                platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             // j2eeplatform can be null, when the target server is not accessible.
             if (platform != null) {
                 cp = platform.getClasspathEntries();

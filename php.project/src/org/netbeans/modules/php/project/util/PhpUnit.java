@@ -39,7 +39,11 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +60,16 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.util.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -77,9 +91,20 @@ public final class PhpUnit extends PhpProgram {
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     // for older PHP Unit versions
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
+    // bootstrap & config
+    public static final String PARAM_BOOTSTRAP = "--bootstrap"; // NOI18N
+    public static final String BOOTSTRAP_FILE = "bootstrap.php"; // NOI18N
+    public static final String PARAM_CONFIGURATION = "--configuration"; // NOI18N
+    public static final String CONFIGURATION_FILE = "configuration.xml"; // NOI18N
+
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
+
+    // php props
+    public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
+    public static final String DIRNAME_FILE = ".dirname(__FILE__).'/"; // NOI18N
+    public static final String REQUIRE_ONCE_REL_PART = "'" + DIRNAME_FILE; // NOI18N
 
     public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
 
@@ -173,6 +198,160 @@ public final class PhpUnit extends PhpProgram {
             params.add(String.valueOf(i));
         }
         return params.toArray(new String[params.size()]);
+    }
+
+    public File getBootstrapFile(PhpProject project, List<String> generatedFiles) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert testDirectory != null : "Test directory must already be set";
+
+        File bootstrap = new File(FileUtil.toFile(testDirectory), PhpUnit.BOOTSTRAP_FILE);
+        if (!bootstrap.isFile()) {
+            createBootstrapFile(project, testDirectory, bootstrap);
+            assert bootstrap.isFile() : "bootstrap file for phpunit must exist";
+            generatedFiles.add(PhpUnit.BOOTSTRAP_FILE);
+        }
+        if (bootstrap.isFile()) {
+            return bootstrap;
+        }
+        return null;
+    }
+
+    private void createBootstrapFile(final PhpProject project, FileObject testDirectory, final File bootstrapFile) {
+        final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitBootstrap"); // NOI18N
+        final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
+        FileUtil.runAtomicAction(new Runnable() {
+            public void run() {
+                try {
+                    DataObject dataTemplate = DataObject.find(configFile);
+                    DataObject bootstrap = dataTemplate.createFromTemplate(dataFolder, PhpUnit.BOOTSTRAP_FILE + "~"); // NOI18N
+                    assert bootstrap != null;
+                    moveAndAdjustBootstrap(project, FileUtil.toFile(bootstrap.getPrimaryFile()), bootstrapFile);
+                    assert bootstrapFile.isFile();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Cannot create PHPUnit bootstrap file", ex);
+                }
+            }
+        });
+    }
+
+    private void moveAndAdjustBootstrap(PhpProject project, File tmpBootstrap, File finalBootstrap) {
+        try {
+            // input
+            BufferedReader in = new BufferedReader(new FileReader(tmpBootstrap));
+            try {
+                // output
+                BufferedWriter out = new BufferedWriter(new FileWriter(finalBootstrap));
+                try {
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        if (line.contains("%INCLUDE_PATH%")) { // NOI18N
+                            line = processIncludePath(
+                                    finalBootstrap,
+                                    line,
+                                    ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH),
+                                    FileUtil.toFile(project.getProjectDirectory()));
+                        }
+                        out.write(line);
+                        out.newLine();
+                    }
+                } finally {
+                    out.flush();
+                    out.close();
+                }
+            } finally {
+                in.close();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+
+        if (!tmpBootstrap.delete()) {
+            LOGGER.info("Cannot delete temporary file " + tmpBootstrap);
+            tmpBootstrap.deleteOnExit();
+        }
+
+        FileUtil.refreshFor(finalBootstrap.getParentFile());
+    }
+
+    static String processIncludePath(File bootstrap, String line, String includePath, File projectDir) {
+        if (StringUtils.hasText(includePath)) {
+            if (includePath.startsWith(":")) { // NOI18N
+                includePath = includePath.substring(1);
+            }
+            StringBuilder buffer = new StringBuilder(200);
+            for (String path : PropertyUtils.tokenizePath(includePath)) {
+                File reference = PropertyUtils.resolveFile(projectDir, path);
+                buffer.append(".PATH_SEPARATOR"); // NOI18N
+                buffer.append(getDirnameFile(bootstrap, reference));
+            }
+            includePath = buffer.toString();
+        } else {
+            // comment out the line
+            line = "//" + line; // NOI18N
+        }
+        line = line.replace("%INCLUDE_PATH%", includePath); // NOI18N
+        return line;
+    }
+
+    public File getConfigurationFile(PhpProject project, List<String> generatedFiles) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert testDirectory != null : "Test directory must already be set";
+
+        File configuration = new File(FileUtil.toFile(testDirectory), PhpUnit.CONFIGURATION_FILE);
+        if (!configuration.isFile()) {
+            createConfigurationFile(testDirectory);
+            assert configuration.isFile() : "configuration file for phpunit must exist";
+            generatedFiles.add(PhpUnit.CONFIGURATION_FILE);
+        }
+        if (configuration.isFile()) {
+            return configuration;
+        }
+        return null;
+    }
+
+    private void createConfigurationFile(FileObject testDirectory) {
+        final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitConfiguration.xml");
+        final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
+        try {
+            DataObject dataTemplate = DataObject.find(configFile);
+            DataObject configuration = dataTemplate.createFromTemplate(dataFolder, PhpUnit.CONFIGURATION_FILE.replace(".xml", "")); // NOI18N
+            assert configuration != null;
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Cannot create PHPUnit configuration file", ex);
+        }
+    }
+
+    public static void informAboutGeneratedFiles(List<String> generatedFiles) {
+        if (generatedFiles.isEmpty()) {
+            return;
+        }
+        StringBuilder buffer = new StringBuilder(100);
+        for (String file : generatedFiles) {
+            buffer.append(file);
+            buffer.append("\n"); // NOI18N
+        }
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(NbBundle.getMessage(PhpUnit.class, "MSG_FilesGenerated", buffer.toString())));
+    }
+
+    public static String getDirnameFile(File testFile, File sourceFile) {
+        return getRelPath(testFile, sourceFile, DIRNAME_FILE, "'"); // NOI18N
+    }
+
+    public static String getRequireOnce(File testFile, File sourceFile) {
+        return getRelPath(testFile, sourceFile, REQUIRE_ONCE_REL_PART, ""); // NOI18N
+    }
+
+    // XXX improve this and related method
+    public static String getRelPath(File testFile, File sourceFile, String prefix, String suffix) {
+        File parentFile = testFile.getParentFile();
+        String relPath = PropertyUtils.relativizeFile(parentFile, sourceFile);
+        if (relPath == null) {
+            // cannot be versioned...
+            relPath = sourceFile.getAbsolutePath();
+        } else {
+            relPath = prefix + relPath + suffix;
+        }
+        return relPath.replace(File.separatorChar, PhpUnit.DIRECTORY_SEPARATOR);
     }
 
     static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {

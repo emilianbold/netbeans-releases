@@ -458,17 +458,21 @@ public class SourceAnalyser {
                     }
                     else if (sym.getKind().isField()) {
                         final Symbol owner = sym.getEnclosingElement();
-                        final String className = encodeClassName(owner);
-                        if (className != null) {
-                            addUsage (activeClass.peek(),className,p,ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                        }                        
+                        if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                            final String className = encodeClassName(owner);
+                            if (className != null) {
+                                addUsage (activeClass.peek(),className,p,ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                            }
+                        }
                     }
                     else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
                         final Symbol owner = sym.getEnclosingElement();
-                        final String className = encodeClassName(owner);
-                        if (className != null) {
-                            addUsage (activeClass.peek(),className,p,ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                        }                        
+                        if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                            final String className = encodeClassName(owner);
+                            if (className != null) {
+                                addUsage (activeClass.peek(),className,p,ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                            }
+                        }
                     }
                 }
             }

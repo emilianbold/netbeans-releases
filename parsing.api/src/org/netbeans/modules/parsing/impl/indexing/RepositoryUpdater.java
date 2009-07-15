@@ -603,22 +603,27 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (root != null) {
                         long version = DocumentUtilities.getDocumentVersion(d);
                         Long lastIndexedVersion = (Long) d.getProperty(PROP_LAST_INDEXED_VERSION);
+                        Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
                         boolean reindex = false;
                         
                         boolean openedInEditor = EditorRegistry.componentList().contains(jtc);
                         if (openedInEditor) {
                             if (lastIndexedVersion == null) {
-                                Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
                                 reindex = lastDirtyVersion != null;
                             } else {
                                 reindex = lastIndexedVersion < version;
                             }
                         } else {
-                            // editor closed, there were possibly discarded changes and
-                            // so we have to reindex the contents of the file
-                            Long lastDirtyVersion = (Long) d.getProperty(PROP_LAST_DIRTY_VERSION);
-                            reindex = lastIndexedVersion != null || lastDirtyVersion != null;
+                            // Editor closed. There were possibly discarded changes and
+                            // so we have to reindex the contents of the file.
+                            // This must not be done too agresively (eg reindex only when there really were
+                            // editor changes) otherwise it may cause unneccessary redeployments, etc (see #152222).
+                            reindex = lastDirtyVersion != null;
                         }
+
+                        LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
+                            f.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
+                        });
 
                         if (reindex) {
                             // we have already seen the document and it's been modified since the last time
@@ -2055,7 +2060,7 @@ out:            for (String mimeType : order) {
                                             deps.add(binaryRoot);
                                         }
                                     } else {
-                                        LOGGER.log(Level.INFO, "The root {0} is registsred for both {1} and {2}", new Object[] { //NOI18N
+                                        LOGGER.log(Level.INFO, "The root {0} is registered for both {1} and {2}", new Object[] { //NOI18N
                                             binaryRoot, id, sourceIds
                                         });
                                     }

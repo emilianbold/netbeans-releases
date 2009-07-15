@@ -44,8 +44,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadsDataManager.MergedThreadInfo;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,15 +100,18 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
-        String name = threadStateColor.getStateName(msa);
+        return getThreadStateColor(threadStateColor.getStateName(msa));
+    }
+
+    static Color getThreadStateColor(String name) {
         Color c;
         if (name.equals(ThreadState.ShortThreadState.Running.name())) {
             c = THREAD_STATUS_RUNNING_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Waiting.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Waiting.name())) {
             c = THREAD_STATUS_WAIT_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Blocked.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Blocked.name())) {
             c = THREAD_STATUS_MONITOR_COLOR;
-        } else if(name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
+        } else if (name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
             c = THREAD_STATUS_SLEEPING_COLOR;
         } else {
             c = THREAD_STATUS_UNKNOWN_COLOR;
@@ -116,10 +119,10 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return c;
     }
 
-    private final ThreadInfo info;
+    private final MergedThreadInfo info;
     private final List<ThreadState> list = new ArrayList<ThreadState>();
 
-    ThreadStateColumnImpl(ThreadInfo info) {
+    ThreadStateColumnImpl(MergedThreadInfo info) {
         this.info = info;
     }
 
@@ -149,5 +152,12 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
 
     void clearStates() {
         list.clear();
+    }
+
+    int getThreadID() {
+        return info.getThreadId();
+    }
+    long getThreadStartTimeStamp() {
+        return info.getStartTimeStamp();
     }
 }

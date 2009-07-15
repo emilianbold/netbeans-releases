@@ -43,7 +43,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
@@ -147,7 +147,11 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        Map<String, AtomicInteger> map = new HashMap<String, AtomicInteger>();
+        Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
+        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
+        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
         int count = 0;
         for(int i = 0; i < threadData.size(); i++){
             if (threadData.isAlive(i)) {
@@ -163,6 +167,31 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                         map.put(name, v);
                     }
                 }
+            }
+        }
+        if (count > 0) {
+            int rest = 0;
+            int oldRest = 0;
+            for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
+                AtomicInteger value = entry.getValue();
+                oldRest = rest;
+                rest = (value.get()+oldRest)%count;
+                value.set((value.get()+oldRest)/count);
+            }
+            rest = 0;
+            oldRest = 0;
+            int y = 6;
+            int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
+            for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
+                AtomicInteger value = entry.getValue();
+                oldRest = rest;
+                rest = (value.get()*ThreadWidth+oldRest)%1000;
+                int d = (value.get()*ThreadWidth+oldRest)/1000;
+                if (d > 0) {
+                    g.setColor(ThreadStateColumnImpl.getThreadStateColor(entry.getKey()));
+                    g.fillRect(y, 6, d, 12);
+                }
+                y += d;
             }
         }
     }

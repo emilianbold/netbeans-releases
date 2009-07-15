@@ -59,5 +59,10 @@ public class Utils {
         return XHTML_PUBLIC_IDS.contains(publicId);
     }
 
+     //XXX hack - resolve the namespaces propertly!
+    public static boolean isHtmlNs(String namespace) {
+        return namespace == null ? true : namespace.equals("http://www.w3.org/1999/xhtml");
+    }
+
 
 }

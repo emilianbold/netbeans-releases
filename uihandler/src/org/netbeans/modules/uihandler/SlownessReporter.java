@@ -101,10 +101,9 @@ class SlownessReporter {
                 break;
             }
             if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
-                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage()))) {
+                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage())) ||
+                    (UI_ACTION_KEY_PRESS.equals(rec.getMessage()))) {
                 latestActionClassName = getParam(rec, 4);
-            } else if (UI_ACTION_KEY_PRESS.equals(rec.getMessage())) {
-                latestActionClassName = getParam(rec, 2);
             }
             if (latestActionClassName != null) {
                 latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N

@@ -163,6 +163,7 @@ public final class CommandUtils {
      * @param fileObj {@link FileObject} to check.
      * @return <code>true</code> if {@link FileObject} is underneath project sources directory
      *         or sources directory itself.
+     * @see #isUnderAnySourceGroup(PhpProject, FileObject, boolean)
      */
     public static boolean isUnderSources(PhpProject project, FileObject fileObj) {
         assert project != null;
@@ -178,6 +179,7 @@ public final class CommandUtils {
      * @param fileObj {@link FileObject} to check.
      * @return <code>true</code> if {@link FileObject} is underneath project tests directory
      *         or tests directory itself.
+     * @see #isUnderAnySourceGroup(PhpProject, FileObject, boolean)
      */
     public static boolean isUnderTests(PhpProject project, FileObject fileObj, boolean showFileChooser) {
         assert project != null;
@@ -193,12 +195,27 @@ public final class CommandUtils {
      * @param fileObj {@link FileObject} to check.
      * @return <code>true</code> if {@link FileObject} is underneath project Selenium tests directory
      *         or Selenium tests directory itself.
+     * @see #isUnderAnySourceGroup(PhpProject, FileObject, boolean)
      */
     public static boolean isUnderSelenium(PhpProject project, FileObject fileObj, boolean showFileChooser) {
         assert project != null;
         assert fileObj != null;
         FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(project, showFileChooser);
         return selenium != null && (selenium.equals(fileObj) || FileUtil.isParentOf(selenium, fileObj));
+    }
+
+    /**
+     * Return <code>true</code> if {@link FileObject} is underneath project sources or tests or Selenium directory
+     * or any of that directories itself.
+     * @param project project to get "parent" directories from.
+     * @param fileObj {@link FileObject} to check.
+     * @return <code>true</code> if {@link FileObject} is underneath project sources or tests or Selenium directory
+     *         or any of that directories itself.
+     */
+    public static boolean isUnderAnySourceGroup(PhpProject project, FileObject fileObj, boolean showFileChooser) {
+        return isUnderSources(project, fileObj)
+                || isUnderTests(project, fileObj, showFileChooser)
+                || isUnderSelenium(project, fileObj, showFileChooser);
     }
 
     /**

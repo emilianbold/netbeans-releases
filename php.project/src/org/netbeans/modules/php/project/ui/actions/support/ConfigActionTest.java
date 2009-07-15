@@ -40,10 +40,13 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -260,6 +263,22 @@ class ConfigActionTest extends ConfigAction {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
+
+            List<String> generatedFiles = new ArrayList<String>(2);
+            File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
+            if (bootstrap != null) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_BOOTSTRAP)
+                        .addArgument(bootstrap.getAbsolutePath());
+            }
+            File configuration = phpUnit.getConfigurationFile(project, generatedFiles);
+            if (configuration != null) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_CONFIGURATION)
+                        .addArgument(configuration.getAbsolutePath());
+            }
+            PhpUnit.informAboutGeneratedFiles(generatedFiles);
+
             if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)

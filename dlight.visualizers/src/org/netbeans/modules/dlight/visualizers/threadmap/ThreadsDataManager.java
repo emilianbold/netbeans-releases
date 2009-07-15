@@ -38,10 +38,15 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
@@ -57,7 +62,7 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadsDataManager {
-    private ThreadStateColumnImpl[] threadData; // Per-thread array of points at which thread's state changes
+    private final List<ThreadStateColumnImpl> threadData = new ArrayList<ThreadStateColumnImpl>(); // Per-thread array of points at which thread's state changes
     private boolean threadsMonitoringEnabled = true;
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
@@ -76,7 +81,9 @@ public class ThreadsDataManager {
      * @param listener threadData listener to add
      */
     public void addDataListener(DataManagerListener listener) {
-        listeners.add(listener);
+        synchronized(listeners) {
+            listeners.add(listener);
+        }
     }
 
     /**
@@ -85,17 +92,15 @@ public class ThreadsDataManager {
      * @param listener threadData listener to remove
      */
     public void removeDataListener(DataManagerListener listener) {
-        listeners.remove(listener);
+        synchronized(listeners) {
+            listeners.remove(listener);
+        }
     }
 
     /**
      * Notifies all listeners about the threadData change.
      */
     private void fireDataChanged() {
-        if (listeners.isEmpty()) {
-            return;
-        }
-
         Set<DataManagerListener> toNotify;
         synchronized (listeners) {
             toNotify = new HashSet<DataManagerListener>(listeners);
@@ -110,9 +115,6 @@ public class ThreadsDataManager {
      * Notifies all listeners about the reset of threads data.
      */
     private void fireDataReset() {
-        if (listeners.isEmpty()) {
-            return;
-        }
         Set<DataManagerListener> toNotify;
         synchronized (listeners) {
             toNotify = new HashSet<DataManagerListener>(listeners);
@@ -138,18 +140,18 @@ public class ThreadsDataManager {
     }
 
     public synchronized ThreadStateColumnImpl getThreadData(int index) {
-        return threadData[index];
+        return threadData.get(index);
     }
 
     public synchronized String getThreadName(int index) {
-        return threadData[index].getName();
+        return threadData.get(index).getName();
     }
 
     /**
      * Returns the number of currently monitored threads
      */
     public synchronized int getThreadsCount() {
-        return threadData.length;
+        return threadData.size();
     }
 
     public synchronized void setThreadsMonitoringEnabled(boolean enabled) {
@@ -158,8 +160,8 @@ public class ThreadsDataManager {
         }
         threadsMonitoringEnabled = enabled;
         if (!threadsMonitoringEnabled) { // clear accumulated data, except thread ids and names
-            for (int i = 0; i < threadData.length; i++) {
-                threadData[i].clearStates();
+            for (int i = 0; i < threadData.size(); i++) {
+                threadData.get(i).clearStates();
             }
         }
     }
@@ -180,26 +182,88 @@ public class ThreadsDataManager {
         if (threadSize == 0) {
             return;
         }
-        threadData = new ThreadStateColumnImpl[threadSize];
-        for(int i = 0; i < threadSize; i++){
-            threadData[i] = new ThreadStateColumnImpl(monitoredData.getThreadInfo(i));
+        mergeData(monitoredData);
+        threadSize = threadData.size();
+        if (threadSize == 0) {
+            return;
         }
-        startTime = monitoredData.getStateTimestamps()[0];
-
+        startTime = Long.MAX_VALUE;
+        for(int i = 0; i < threadSize; i++){
+            startTime = Math.min(startTime, threadData.get(i).getThreadStartTimeStamp());
+        }
+        endTime = 0;
         if (threadsMonitoringEnabled) {
-            int nStates = monitoredData.getThreadStatesSize();
-            if (nStates == 0) {
-                return;
-            }
             for(int i = 0; i < threadSize; i++){
-                List<ThreadState> states = monitoredData.getThreadStates(i);
-                ThreadStateColumnImpl tData = threadData[i];
-                for (int j = 0; j < states.size(); j++) {
-                    tData.add(states.get(j));
-                    endTime = states.get(j).getTimeStamp();
-                }
+                ThreadStateColumnImpl col = threadData.get(i);
+                endTime = Math.max(endTime, col.getThreadStateAt(col.size()-1).getTimeStamp());
             }
             fireDataChanged(); // all listeners are notified about threadData change */
+        }
+    }
+
+    private void mergeData(MonitoredData monitoredData){
+        int updateThreadSize = monitoredData.getThreadsSize();
+        if (updateThreadSize == 0) {
+            return;
+        }
+        Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
+        for(int i = 0; i < updateThreadSize; i++){
+            ThreadInfo info = monitoredData.getThreadInfo(i);
+            IdToNumber.put(info.getThreadId(), i);
+        }
+        // merge old state and increment
+        int oldThreadSize = threadData.size();
+        for(int i = 0; i < oldThreadSize; i++){
+            ThreadStateColumnImpl col = threadData.get(i);
+            Integer number = IdToNumber.get(col.getThreadID());
+            if (number == null) {
+                // this is dead thread
+                if (col.isAlive()) {
+                    final long endTimeStump = col.getThreadStateAt(col.size()-1).getTimeStamp() + 1000;
+                    col.add(new ThreadState(){
+                        public int size() {
+                            return 1;
+                        }
+                        public String getStateName(int index) {
+                            return ThreadState.ShortThreadState.NotExist.name();
+                        }
+                        public int getState(int index) {
+                            return 1000;
+                        }
+                        public long getTimeStamp(int index) {
+                            return endTimeStump;
+                        }
+                        public long getTimeStamp() {
+                            return endTimeStump;
+                        }
+                    });
+                }
+            } else {
+                ThreadState lastState = col.getThreadStateAt(col.size()-1);
+                int newData = number.intValue();
+                List<ThreadState> states = monitoredData.getThreadStates(newData);
+                for (int j = 0; j < states.size(); j++) {
+                    ThreadState newState = states.get(j);
+                    if (newState.getTimeStamp()> lastState.getTimeStamp()) {
+                        col.add(newState);
+                    }
+                }
+                IdToNumber.remove(col.getThreadID());
+            }
+        }
+        // add new threads
+        for (Integer number : IdToNumber.values()) {
+            int i = number.intValue();
+            List<ThreadState> states = monitoredData.getThreadStates(i);
+            int size = states.size();
+            if (size > 0) {
+                MergedThreadInfo info = new MergedThreadInfo(monitoredData.getThreadInfo(i), monitoredData.getStartTimestamp(i));
+                ThreadStateColumnImpl col = new ThreadStateColumnImpl(info);
+                threadData.add(col);
+                for (int j = 0; j < size; j++) {
+                    col.add(states.get(j));
+                }
+            }
         }
     }
 
@@ -209,7 +273,40 @@ public class ThreadsDataManager {
     public synchronized void reset() {
         startTime = 0;
         endTime = 0;
-        threadData = new ThreadStateColumnImpl[0];
+        threadData.clear();
         fireDataReset(); // all listeners are notified about threadData change
+    }
+
+    static class MergedThreadInfo {
+        private final String name;
+        private final LinkedList<ProcessID> processes = new LinkedList<ProcessID>();
+        private MergedThreadInfo(ThreadInfo info, long startTime){
+            this.name = info.getThreadName();
+            processes.add(new ProcessID(info.getThreadId(), startTime));
+        }
+        String getThreadName() {
+            return name;
+        }
+        int getThreadId() {
+            return processes.getFirst().getId();
+        }
+        long getStartTimeStamp() {
+            return processes.getFirst().getStartTimeStamp();
+        }
+    }
+
+    private static final class ProcessID {
+        private final int id;
+        private final long startTimeStamp;
+        private ProcessID(int id, long startTimeStamp) {
+            this.id = id;
+            this.startTimeStamp = startTimeStamp;
+        }
+        private int getId() {
+            return id;
+        }
+        private long getStartTimeStamp() {
+            return startTimeStamp;
+        }
     }
 }

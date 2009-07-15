@@ -298,8 +298,16 @@ import org.openide.util.NbBundle;
         findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
         findAllOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
         findAllOptions.setQueryAttribute(getEntityName(entityFQN));
-        
-        return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions);
+
+        GenerationOptions findSubOptions = new GenerationOptions();
+        findSubOptions.setMethodName("findRange");//NOI18N
+        findSubOptions.setOperation(GenerationOptions.Operation.FIND_SUBSET);
+        findSubOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
+        findSubOptions.setQueryAttribute(getEntityName(entityFQN));
+        findSubOptions.setParameterName("range");//NOI18N
+        findSubOptions.setParameterType("int[]");//NOI18N
+
+        return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions, findSubOptions);
     }
 
     /**
