@@ -1307,27 +1307,46 @@ out:            for (String mimeType : order) {
         protected final void indexBinary(URL root) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
+            boolean isFolder = false;
+            boolean isUpToDate = false;
+            if ("file".equals(root.getProtocol())) { //NOI18N
+                FileObject rootFo = URLMapper.findFileObject(root);
+                if (rootFo != null && rootFo.isFolder()) {
+                    isFolder = true;
+                    FileObjectCrawler crawler = new FileObjectCrawler(rootFo, true, null, null, getShuttdownRequest());
+                    Map<String, Collection<Indexable>> modified = crawler.getResources();
+                    Collection<Indexable> deleted = crawler.getDeletedResources();
+                    if (crawler.isFinished()) {
+                        crawler.storeTimestamps();
+                        if (deleted.size() == 0) {
+                            int cnt = 0;
+                            for(String mimeType : modified.keySet()) {
+                                Collection<Indexable> indexables = modified.get(mimeType);
+                                cnt += indexables.size();
+                            }
+                            if (cnt == 0) {
+                                // no files have been deleted or modified since we have seen the folder
+                                isUpToDate = true;
+                                LOGGER.log(Level.FINE, "Binary folder {0} is up-to-date", root); //NOI18N
+                            }
+                        }
+                    } // XXX: we should now quit and let the work to be restarted
+                }
+            }
+
             List<Context> transactionContexts = new LinkedList<Context>();
             try {
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-//                String mimeType = ""; //NOI18N
-//
-//                final FileObject rootFo = URLMapper.findFileObject(root);
-//                if (rootFo != null) {
-//                    final File archiveOrDir = FileUtil.archiveOrDirForURL(root);
-//                    final FileObject archiveOrDirFo = archiveOrDir == null ? null : FileUtil.toFileObject(archiveOrDir);
-//                    if (archiveOrDirFo != null && archiveOrDirFo.isData()) {
-//                        mimeType = archiveOrDirFo.getMIMEType();
-//                    }
-//                }
-
                 final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.fine("Using BinaryIndexerFactories: " + factories); //NOI18N
                 }
 
                 for(BinaryIndexerFactory f : factories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false, false, false, null);
+                    final Context ctx = SPIAccessor.getInstance().createContext(
+                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
+                            !isFolder || !isUpToDate, // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
+                            false, null);
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1632,6 +1651,7 @@ out:            for (String mimeType : order) {
         }
     } // End of FileListWork class
 
+
     private static final class BinaryWork extends Work {
 
         private final URL root;
@@ -1649,6 +1669,16 @@ out:            for (String mimeType : order) {
             }
             return true;
         }
+
+        @Override
+        public boolean absorb(Work newWork) {
+            if (newWork instanceof BinaryWork) {
+                return root.equals(((BinaryWork) newWork).root);
+            } else {
+                return false;
+            }
+        }
+
     } // End of BinaryWork class
 
     private static final class DeleteWork extends Work {
