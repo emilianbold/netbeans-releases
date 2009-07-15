@@ -36,29 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.storage.threadmap;
+package org.netbeans.modules.dlight.spi.impl;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadInfo {
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 
-    /**
-     * @return ststem thread ID.
-     */
-    int getThreadId();
+public interface ThreadMapData {
 
-    /**
-     * @return Thread name. It is a function full name that was called.
-     */
-    String getThreadName();
-//
-//    long getThreadStartTS();
-//
-//    /**
-//     *
-//     * @return -1 if not finished yet
-//     */
-//    long getThreadFinishTS();
+    List<ThreadData> getThreadsData();
+
+    TimeDuration getPrecision();
 }

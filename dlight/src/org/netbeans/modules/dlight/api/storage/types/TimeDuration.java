@@ -36,29 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.storage.threadmap;
+package org.netbeans.modules.dlight.api.storage.types;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ThreadInfo {
+import java.util.concurrent.TimeUnit;
 
-    /**
-     * @return ststem thread ID.
-     */
-    int getThreadId();
+public class TimeDuration {
 
-    /**
-     * @return Thread name. It is a function full name that was called.
-     */
-    String getThreadName();
-//
-//    long getThreadStartTS();
-//
-//    /**
-//     *
-//     * @return -1 if not finished yet
-//     */
-//    long getThreadFinishTS();
+    private final long value;
+
+    public TimeDuration(TimeUnit timeUnit, long value) {
+        this.value = timeUnit.toNanos(value);
+    }
+
+    public long getValueIn(TimeUnit unit) {
+        return TimeUnit.NANOSECONDS.convert(value, unit);
+    }
 }

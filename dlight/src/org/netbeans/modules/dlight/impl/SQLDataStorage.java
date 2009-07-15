@@ -454,7 +454,7 @@ public abstract class SQLDataStorage extends DataStorage {
         return serviceInfoMap.put(name, value);
     }
 
-    private static class EnumStringConstructor<T> {
+    public static final class EnumStringConstructor<T> {
 
         public String constructEnumString(Collection<? extends T> collection, Convertor<T> conv) {
             StringBuilder sb = new StringBuilder();
@@ -473,7 +473,7 @@ public abstract class SQLDataStorage extends DataStorage {
         }
     }
 
-    private interface Convertor<T> {
+    public interface Convertor<T> {
 
         public String toString(T item);
     }

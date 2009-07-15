@@ -46,13 +46,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 /**
  *
@@ -61,10 +63,9 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     private static final int Interval = 1000; // frequency in ms of generating mock data
-
     private final ThreadMapStorage dataBase = new ThreadMapStorage();
 
-    public List<ThreadMapData> queryData(ThreadMapDataQuery query) {
+    public ThreadMapData queryData(ThreadMapDataQuery query) {
         return dataBase.getThreadMap(query);
     }
 
@@ -82,8 +83,9 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
         private final List<MockThreadMapData> storage = new ArrayList<MockThreadMapData>();
         private Timer timer = new Timer();
         private int currentTime = 0;
-//        private ThreadMapMetadata query;
+        private TimeDuration dataCollectionPrecision = new TimeDuration(TimeUnit.SECONDS, 1);
 
+//        private ThreadMapMetadata query;
         private ThreadMapStorage() {
             timer.schedule(new TimerTask() {
 
@@ -121,10 +123,8 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
             currentTime++;
         }
 
-        public synchronized List<ThreadMapData> getThreadMap(ThreadMapDataQuery query) {
-            List<ThreadMapData> result = new ArrayList<ThreadMapData>();
-            assert query.getTimeUnit() == TimeUnit.SECONDS;
-            assert query.getStep() == 1;
+        public synchronized ThreadMapData getThreadMap(ThreadMapDataQuery query) {
+            final List<ThreadData> result = new ArrayList<ThreadData>();
             assert !query.isFullState();
 //            this.query = query;
             for (MockThreadMapData data : storage) {
@@ -143,11 +143,20 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
                     result.add(new ThreadMapDataImpl(info, list));
                 }
             }
-            return result;
+            return new ThreadMapData() {
+
+                public List<ThreadData> getThreadsData() {
+                    return result;
+                }
+
+                public TimeDuration getPrecision() {
+                    return dataCollectionPrecision;
+                }
+            };
         }
     }
 
-    private static final class ThreadMapDataImpl implements ThreadMapData {
+    private static final class ThreadMapDataImpl implements ThreadData {
 
         private final ThreadInfo info;
         private final List<ThreadState> list;
@@ -166,7 +175,7 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
         }
     }
 
-    private static final class MockThreadMapData implements ThreadMapData {
+    private static final class MockThreadMapData implements ThreadData {
 
         private final ThreadInfo info;
         private final List<ThreadState> threadLine = new LinkedList<ThreadState>();
@@ -192,7 +201,7 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
             this.waiting = model.waiting;
             this.blocking = model.blocking;
             this.sleeping = model.sleeping;
-            assert  1000 - running - waiting - blocking - sleeping == 0;
+            assert 1000 - running - waiting - blocking - sleeping == 0;
             this.endTimeLine = endTimeLine;
         }
 
@@ -214,15 +223,15 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 int rest = 0;
                 int oldRest = 0;
                 oldRest = rest;
-                rest = (1000 * runningTime + rest) % s;
-                runningTime = (1000 * runningTime + oldRest) / s;
+                rest = (100 * runningTime + rest) % s;
+                runningTime = (100 * runningTime + oldRest) / s;
                 oldRest = rest;
-                rest = (1000 * waitingTime + rest) % s;
-                waitingTime = (1000 * waitingTime + oldRest) / s;
+                rest = (100 * waitingTime + rest) % s;
+                waitingTime = (100 * waitingTime + oldRest) / s;
                 oldRest = rest;
-                rest = (1000 * blockingTime + rest) % s;
-                blockingTime = (1000 * blockingTime + oldRest) / s;
-                sleepingTime = 1000 - runningTime - waitingTime - blockingTime;
+                rest = (100 * blockingTime + rest) % s;
+                blockingTime = (100 * blockingTime + oldRest) / s;
+                sleepingTime = 100 - runningTime - waitingTime - blockingTime;
                 MockThreadState state = new MockThreadState(currentTime * Interval, runningTime, waitingTime, blockingTime, sleepingTime);
                 threadLine.add(state);
             }
@@ -231,17 +240,17 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     private static final class MockThreadState implements ThreadState {
 
-        private final short runningTime;
-        private final short waitingTime;
-        private final short blockingTime;
-        private final short sleepingTime;
+        private final byte runningTime;
+        private final byte waitingTime;
+        private final byte blockingTime;
+        private final byte sleepingTime;
         private final long currentTime;
 
         public MockThreadState(int currentTime, int runningTime, int waitingTime, int blockingTime, int sleepingTime) {
-            this.runningTime = (short) runningTime;
-            this.waitingTime = (short) waitingTime;
-            this.blockingTime = (short) blockingTime;
-            this.sleepingTime = (short) sleepingTime;
+            this.runningTime = (byte) runningTime;
+            this.waitingTime = (byte) waitingTime;
+            this.blockingTime = (byte) blockingTime;
+            this.sleepingTime = (byte) sleepingTime;
             this.currentTime = currentTime;
         }
 
@@ -263,7 +272,7 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
             throw new IllegalArgumentException();
         }
 
-        public int getState(int index) {
+        public byte getState(int index) {
             switch (index) {
                 case 0:
                     return blockingTime;
@@ -287,6 +296,7 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
     }
 
     private static final class ThreadModel {
+
         private final int running;
         private final int waiting;
         private final int blocking;

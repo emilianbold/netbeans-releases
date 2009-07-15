@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
@@ -49,6 +48,7 @@ public interface ThreadState {
      * Aggregated thread states.
      */
     public static enum ShortThreadState {
+
         NotExist,
         Sleeping,
         Waiting,
@@ -60,6 +60,7 @@ public interface ThreadState {
      * All possible thread states.
      */
     public static enum FullThreadState {
+
         NotExist,
         Stopped,
         SleepingOther,
@@ -74,6 +75,11 @@ public interface ThreadState {
         RunningOther,
         RunningSystemCall,
         RunningUser,
+        SOBJ_Mutex,
+        SOBJ_RWLock,
+        SOBJ_CV,
+        SOBJ_Sema,
+        SOBJ_User,
     }
 
     /**
@@ -91,9 +97,9 @@ public interface ThreadState {
 
     /**
      * @param index of state.
-     * @return value of state by index. Unit of value is 0.1%. I.e. sum of all values is 1000.
+     * @return value of state by index. Unit of value is 1%. I.e. sum of all values is 100.
      */
-    int getState(int index);
+    byte getState(int index);
 
     /**
      * returns -1 if there are no stack avaliable.

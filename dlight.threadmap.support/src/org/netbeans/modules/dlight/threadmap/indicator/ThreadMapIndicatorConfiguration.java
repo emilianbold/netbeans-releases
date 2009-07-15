@@ -42,7 +42,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 
 public class ThreadMapIndicatorConfiguration extends IndicatorConfiguration {
-    /*package*/ static final String ID = "TreeMapIndicatorConfiguration_ID"; // NOI18N
+    /*package*/ static final String ID = "ThreadMapIndicatorConfiguration_ID"; // NOI18N
 
     public ThreadMapIndicatorConfiguration(IndicatorMetadata metadata) {
         super(metadata, 0);
