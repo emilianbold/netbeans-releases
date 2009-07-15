@@ -153,10 +153,12 @@ public final class Percent extends JComboBox implements ActionListener {
 
             if (i != -1) {
                 setValue(percent, i);
-            } else {
+            }
+            else {
                 valueChanged(percent, i);
             }
-        } else {
+        }
+        else {
 //out("  it's invalid value");
             myListener.invalidValue(value);
 //out("    restore.");
@@ -183,7 +185,8 @@ public final class Percent extends JComboBox implements ActionListener {
     public void increaseValue() {
         if (myCurrentValue < THRESHOLD) {
             setValue(myCurrentValue + SUBTRAHEND);
-        } else {
+        }
+        else {
             setValue(myCurrentValue * FACTOR);
         }
     }
@@ -191,7 +194,8 @@ public final class Percent extends JComboBox implements ActionListener {
     public void decreaseValue() {
         if (myCurrentValue > THRESHOLD) {
             setValue(myCurrentValue / FACTOR);
-        } else {
+        }
+        else {
             setValue(myCurrentValue - SUBTRAHEND);
         }
     }
@@ -222,7 +226,7 @@ public final class Percent extends JComboBox implements ActionListener {
         boolean isCustomValue = index != -1;
 //out("  value changed: " + value + " " + isCustomValue);
 
-        if (!isCustomValue && !isValid(value)) {
+        if ( !isCustomValue && !isValid(value)) {
 //out("  it's not valid value");
             return null;
         }
@@ -231,7 +235,8 @@ public final class Percent extends JComboBox implements ActionListener {
 
         if (isCustomValue && myCustoms != null) {
             myCurrentText = myCustoms[index];
-        } else {
+        }
+        else {
             myCurrentText = getPercent(value);
         }
 //out("myCurrentText: " + myCurrentText);

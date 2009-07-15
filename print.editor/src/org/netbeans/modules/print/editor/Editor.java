@@ -140,7 +140,8 @@ public final class Editor implements ActionListener {
             }
             if (font.isItalic()) {
                 style += " italic"; // NOI18N
-            } else {
+            }
+            else {
                 style += " plain"; // NOI18N
             }
             return "[" + font.getName() + ", " + style + ", " + font.getSize() + "]"; // NOI18N

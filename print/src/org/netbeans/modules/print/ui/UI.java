@@ -189,7 +189,8 @@ public final class UI {
         if (text == null) {
             Mnemonics.setLocalizedText(button, toolTip);
             button.setText(null);
-        } else {
+        }
+        else {
             Mnemonics.setLocalizedText(button, text);
             button.setText(cutMnemonicAndAmpersand(text));
         }
@@ -346,7 +347,8 @@ public final class UI {
     public static int getInt(String value) {
         try {
             return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             return -1;
         }
     }
@@ -354,7 +356,8 @@ public final class UI {
     public static double getDouble(String value) {
         try {
             return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             return -1.0;
         }
     }
@@ -387,13 +390,14 @@ public final class UI {
         if (k > 0) {
             builder.append(source.substring(k));
             return builder.toString();
-        } else {
+        }
+        else {
             return source;
         }
     }
 
     public static DataObject getDataObject(Object object) {
-        if (!(object instanceof Node)) {
+        if ( !(object instanceof Node)) {
             return null;
         }
         return (DataObject) ((Node) object).getLookup().lookup(DataObject.class);
@@ -592,7 +596,8 @@ public final class UI {
 
             if (node == null) {
                 node = myLastNode;
-            } else {
+            }
+            else {
                 myLastNode = node;
             }
             return node;
@@ -624,17 +629,13 @@ public final class UI {
     // --------------------------------------------------------
     public abstract static class Dialog extends WindowAdapter {
 
-        protected void opened() {
-        }
+        protected void opened() {}
 
-        protected void closed() {
-        }
+        protected void closed() {}
 
-        protected void resized() {
-        }
+        protected void resized() {}
 
-        protected void updated() {
-        }
+        protected void updated() {}
 
         protected abstract DialogDescriptor createDescriptor();
 
@@ -671,7 +672,8 @@ public final class UI {
                         }
                     }
                 );
-            } else {
+            }
+            else {
                 opened();
             }
             updated();
@@ -682,7 +684,8 @@ public final class UI {
                         myDialog.setVisible(true);
                     }
                 });
-            } else {
+            }
+            else {
                 myDialog.setVisible(true);
             }
         }
