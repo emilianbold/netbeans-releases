@@ -1632,6 +1632,7 @@ out:            for (String mimeType : order) {
         }
     } // End of FileListWork class
 
+
     private static final class BinaryWork extends Work {
 
         private final URL root;
@@ -1649,6 +1650,16 @@ out:            for (String mimeType : order) {
             }
             return true;
         }
+
+        @Override
+        public boolean absorb(Work newWork) {
+            if (newWork instanceof BinaryWork) {
+                return root.equals(((BinaryWork) newWork).root);
+            } else {
+                return false;
+            }
+        }
+
     } // End of BinaryWork class
 
     private static final class DeleteWork extends Work {
