@@ -74,6 +74,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -135,6 +136,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String COMBO_ACCESS_DESCR = messages.getString("ThreadsPanel_ComboAccessDescr"); // NOI18N
     private static final String ENABLE_THREADS_MONITORING_BUTTON_ACCESS_NAME = messages.getString("ThreadsPanel_EnableThreadsMonitoringAccessName"); // NOI18N
     private static final String SHOW_LABEL_TEXT = messages.getString("ThreadsPanel_ShowLabelText"); // NOI18N
+    private static final String MODE_MSA_TEXT = messages.getString("ThreadsPanel_ModeMSACheckboxText"); // NOI18N
+    private static final String MODE_MSA_TOOLTIP = messages.getString("ThreadsPanel_ModeMSACheckboxTooltip"); // NOI18N
+    private static final String FULL_MSA_TEXT = messages.getString("ThreadsPanel_FullMSACheckboxText"); // NOI18N
+    private static final String FULL_MSA_TOOLTIP = messages.getString("ThreadsPanel_FullMSACheckboxTooltip"); // NOI18N
     // -----
     private static final int NAME_COLUMN_INDEX = 0;
     private static final int DISPLAY_COLUMN_INDEX = 1;
@@ -159,10 +164,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JLabel enableThreadsMonitoringLabel1;
     private JLabel enableThreadsMonitoringLabel2;
     private JLabel enableThreadsMonitoringLabel3;
-    private JLabel monitorLegend;
-    private JLabel runningLegend;
-    private JLabel sleepingLegend;
-    private JLabel waitLegend;
+    private JPanel legendPanel;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showThreadsDetails;
     private JPanel contentPanel; // panel with CardLayout containing threadsTable & enable threads profiling notification and button
@@ -231,10 +233,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
             @Override
             public Dimension getMaximumSize() {
-                return new Dimension(250, getPreferredSize().height);
+                return new Dimension(120, getPreferredSize().height);
             }
-
-            ;
         };
         threadsSelectionCombo.getAccessibleContext().setAccessibleName(COMBO_ACCESS_NAME);
         threadsSelectionCombo.getAccessibleContext().setAccessibleDescription(COMBO_ACCESS_DESCR);
@@ -360,32 +360,27 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         scrollPanel.add(rest, BorderLayout.CENTER);
         rest.add(scrollBar, BorderLayout.EAST);
 
-        //
-        ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 10, 10);// 18, 9);
-        ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 10, 10);// 18, 9);
-        ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 10, 10);// 18, 9);
-        ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 10, 10);// 18, 9);
-
-        runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
-        runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
-        monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
-        waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
-        sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-
-        JPanel legendPanel = new JPanel();
+        legendPanel = new JPanel();
         legendPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-        legendPanel.add(runningLegend);
-        legendPanel.add(monitorLegend);
-        legendPanel.add(waitLegend);
-        legendPanel.add(sleepingLegend);
+        this.initLegend(false);
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.add(legendPanel, BorderLayout.EAST);
+
+        JPanel MSAPanel = new JPanel();
+        MSAPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+        MSAPanel.setLayout(new BorderLayout());
+        JCheckBox modeMSA = new JCheckBox(MODE_MSA_TEXT);
+        modeMSA.setSelected(true);
+        modeMSA.setToolTipText(MODE_MSA_TOOLTIP);
+        JCheckBox fullMSA = new JCheckBox(FULL_MSA_TEXT);
+        fullMSA.setSelected(false);
+        fullMSA.setToolTipText(FULL_MSA_TOOLTIP);
+        MSAPanel.add(modeMSA, BorderLayout.NORTH);
+        MSAPanel.add(fullMSA, BorderLayout.SOUTH);
+        bottomPanel.add(MSAPanel, BorderLayout.WEST);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
         JPanel dataPanel = new JPanel();
@@ -554,6 +549,29 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         updateScrollbar();
         updateZoomButtonsEnabledState();
         manager.addDataListener(this);
+    }
+
+    private void initLegend(boolean isFull){
+        legendPanel.removeAll();
+        if (!isFull) {
+            ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 10, 10);// 18, 9);
+            ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 10, 10);// 18, 9);
+            ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 10, 10);// 18, 9);
+            ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 10, 10);// 18, 9);
+
+            JLabel runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
+            runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
+            monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
+            waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+            JLabel sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
+            sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+            legendPanel.add(runningLegend);
+            legendPanel.add(monitorLegend);
+            legendPanel.add(waitLegend);
+            legendPanel.add(sleepingLegend);
+        }
     }
 
     private void sortByColumn(int column){
