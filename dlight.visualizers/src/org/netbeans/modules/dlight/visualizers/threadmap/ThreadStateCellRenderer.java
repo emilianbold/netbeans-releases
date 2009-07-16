@@ -267,7 +267,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         }
 
         for (int i = 0; i < size; i++) {
-            ThreadState.MSAState msa = threadStateColor.getMSAState(i, false);
+            ThreadState.MSAState msa = threadStateColor.getMSAState(i, viewManager.isFullMode());
             if (msa != null) {
                 AtomicInteger value = map.get(msa);
                 if (value == null) {

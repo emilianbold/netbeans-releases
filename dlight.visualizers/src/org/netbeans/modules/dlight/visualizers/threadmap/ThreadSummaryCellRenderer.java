@@ -153,7 +153,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 count++;
                 ThreadState state = threadData.getThreadStateAt(i);
                 for (int j = 0; j < state.size(); j++){
-                    MSAState msa = state.getMSAState(j, false);
+                    MSAState msa = state.getMSAState(j, viewManager.isFullMode());
                     if (msa != null) {
                         AtomicInteger v = map.get(msa);
                         if (v != null) {
