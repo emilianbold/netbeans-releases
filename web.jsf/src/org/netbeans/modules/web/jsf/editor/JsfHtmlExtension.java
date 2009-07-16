@@ -242,10 +242,14 @@ public class JsfHtmlExtension extends HtmlExtension {
             TldLibrary.Tag tag = lib.getTags().get(tagName);
             if(tag != null) {
                 Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
-                //TODO filter used attributes
                 //TODO resolve help
+                Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
+
                 for(TldLibrary.Attribute a : attrs) {
-                    items.add(HtmlCompletionItem.createAttribute(a.getName(), context.getCCItemStartOffset(), a.isRequired(), null));
+                    String attrName = a.getName();
+                    if(!existingAttrNames.contains(attrName)) {
+                        items.add(HtmlCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), a.isRequired(), null));
+                    }
                 }
 
             }

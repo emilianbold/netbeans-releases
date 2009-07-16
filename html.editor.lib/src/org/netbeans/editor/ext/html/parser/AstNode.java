@@ -86,7 +86,6 @@ public class AstNode {
     }
 
     //TODO - replace the public constructors by factory methods
-
     AstNode(String name, NodeType nodeType, int startOffset, int endOffset, Element dtdElement, boolean isEmpty, List<String> stack) {
         this(name, nodeType, startOffset, endOffset, isEmpty);
         this.dtdElement = dtdElement;
@@ -133,12 +132,18 @@ public class AstNode {
     }
 
     public boolean needsToHaveMatchingTag() {
-        if (type() == NodeType.OPEN_TAG) {
-            return !getDTDElement().hasOptionalEnd();
-        } else if (type() == NodeType.ENDTAG) {
-            return !getDTDElement().hasOptionalStart();
+        //non-dtd elements always need to have a pair
+        if (getDTDElement() == null) {
+            return true;
         } else {
-            return false;
+            //dtd elements
+            if (type() == NodeType.OPEN_TAG) {
+                return !getDTDElement().hasOptionalEnd();
+            } else if (type() == NodeType.ENDTAG) {
+                return !getDTDElement().hasOptionalStart();
+            } else {
+                return false;
+            }
         }
     }
 
@@ -319,14 +324,14 @@ public class AstNode {
     }
 
     public synchronized void setProperty(String key, Object value) {
-        if(properties == null) {
+        if (properties == null) {
             properties = new HashMap<String, Object>();
         }
         properties.put(key, value);
     }
 
     public AstNode getRootNode() {
-        if(this instanceof RootAstNode) {
+        if (this instanceof RootAstNode) {
             return this;
         } else {
             return parent().getRootNode();
@@ -367,13 +372,13 @@ public class AstNode {
             b.append(type() == NodeType.OPEN_TAG ? "<" : "");
             b.append(type() == NodeType.ENDTAG ? "</" : "");
         }
-        if(name() != null) {
+        if (name() != null) {
             b.append(name());
         }
         if (isTag) {
             b.append('>');
         } else {
-            if(name() != null) {
+            if (name() != null) {
                 b.append(':');
             }
             b.append(type());
@@ -540,7 +545,6 @@ public class AstNode {
     private static class RootAstNode extends AstNode {
 
         private static String ROOT_NODE_NAME = "root"; //NOI18N
-
         private DTD dtd;
 
         RootAstNode(int startOffset, int endOffset, DTD dtd) {
@@ -552,7 +556,5 @@ public class AstNode {
         public List<Element> getAllPossibleElements() {
             return dtd.getElementList(null);
         }
-
-
     }
 }

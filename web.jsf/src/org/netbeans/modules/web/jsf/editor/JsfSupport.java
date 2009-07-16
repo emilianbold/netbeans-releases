@@ -45,6 +45,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.tld.TldClassPathSupport;
@@ -110,7 +111,6 @@ public class JsfSupport {
             cpSupport = new TldClassPathSupport(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE));
             LOGGER.info(this + " activated"); //NOI18N
             JsfHtmlExtension.activate();
-
             activated = true;
         }
     }
@@ -120,11 +120,14 @@ public class JsfSupport {
         return wm.getDocumentBase().toString();
     }
 
-    public void face(Source source) {
+    public void face(HtmlParserResult result) {
         activate(); //activate the support if disable for this webmodule
+
+//        ELSupport.enableEL(result);
+
     }
 
-    public void unface(Source source) {
+    public void unface(HtmlParserResult result) {
         //XXX dispose the support if non of the source is jsfed - not now, not common scenario
     }
 
