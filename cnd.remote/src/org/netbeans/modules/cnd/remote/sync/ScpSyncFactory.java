@@ -55,8 +55,9 @@ public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd
 class ScpSyncFactory extends RemoteSyncFactory {
 
     @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        return new ScpSyncWorker(localDir, executionEnvironment, out, err, privProjectStorageDir);
     }
 
     @Override

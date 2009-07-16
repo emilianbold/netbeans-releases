@@ -62,7 +62,8 @@ import org.openide.util.Lookup;
  */
 public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
 
-    abstract BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, PrintWriter out, PrintWriter err);
+    abstract BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
+            PrintWriter out, PrintWriter err, File privProjectStorageDir);
 
     public AbstractSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -109,7 +110,8 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         PrintWriter out = new PrintWriter(System.out);
         PrintWriter err = new PrintWriter(System.err);
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
-        BaseSyncWorker worker = createWorker(src, execEnv, out, err);
+        File privProjectStorageDir = createTempFile(src.getName() + "-nbproject-private-", "", true);
+        BaseSyncWorker worker = createWorker(src, execEnv, out, err, privProjectStorageDir);
         worker.synchronizeImpl(dst);
         CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
     }

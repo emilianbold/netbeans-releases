@@ -69,8 +69,8 @@ import org.openide.util.NbPreferences;
     private int dirCount;
     private long totalSize;
 
-    public ZipSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        super(localDir, executionEnvironment, out, err);
+    public ZipSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        super(localDir, executionEnvironment, out, err, privProjectStorageDir);
         filter = new SmartFilter();
     }
 

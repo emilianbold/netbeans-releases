@@ -107,7 +107,8 @@ public class MeasurementTestCase extends RemoteTestBase {
             PrintWriter out = new PrintWriter(System.out);
             PrintWriter err = new PrintWriter(System.err);
             System.out.printf("testUploadFile: %s to %s:%s\n", srcDir.getAbsolutePath(), execEnv.getDisplayName(), dst);
-            ZipSyncWorker worker = new ZipSyncWorker(srcDir, execEnv, out, err);
+            File privProjectStorageDir = createTempFile(srcDir.getName() + "-nbproject-private-", "", true);
+            ZipSyncWorker worker = new ZipSyncWorker(srcDir, execEnv, out, err, privProjectStorageDir);
             long time = System.currentTimeMillis();
             worker.synchronizeImpl(dst);
             time = System.currentTimeMillis() - time;

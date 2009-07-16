@@ -63,8 +63,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     private int dirCount;
     private long totalSize;
 
-    public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        super(localDir, executionEnvironment, out, err);
+    public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        super(localDir, executionEnvironment, out, err, privProjectStorageDir);
         sharabilityFilter = new SharabilityFilter();
     }
 

@@ -55,7 +55,8 @@ import org.openide.util.NbBundle;
 public class SharedSyncFactory extends RemoteSyncFactory {
 
     @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
         return new SharedSyncWorker(localDir, executionEnvironment, out, err);
     }
 
