@@ -42,7 +42,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -53,10 +55,12 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,16 +105,30 @@ public class HtmlHintsProvider implements HintsProvider {
         FileObject fo = snapshot.getSource().getFileObject();
         if (isErrorCheckingEnabled(fo)) {
             for (Error e : context.parserResult.getDiagnostics()) {
-                assert e.getDescription() != null;
-                HintFix fix = new DisableErrorChecksFix(snapshot);
-                Hint h = new Hint(getRule(e.getSeverity()),
-                        e.getDescription(),
-                        e.getFile(),
-                        new OffsetRange(e.getStartPosition(), e.getEndPosition()),
-                        Collections.singletonList(fix),
-                        20);
+                    assert e.getDescription() != null;
+                    HintFix fix = new DisableErrorChecksFix(snapshot);
 
-                hints.add(h);
+                    //tweak the error position if close to embedding boundary
+                    int from = e.getStartPosition();
+                    int to = e.getEndPosition();
+
+                    if (from == -1 && to == -1) {
+                        //completely unknown position, give up
+                        continue;
+                    } else if (from == -1 && to != -1) {
+                        from = to;
+                    } else if (from != -1 && to == -1) {
+                        to = from;
+                    }
+
+                    Hint h = new Hint(getRule(e.getSeverity()),
+                            e.getDescription(),
+                            e.getFile(),
+                            new OffsetRange(from, to),
+                            Collections.singletonList(fix),
+                            20);
+
+                    hints.add(h);
             }
         } else {
             //add a special hint for reenabling disabled error checks
@@ -284,9 +302,11 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static void forceReparse(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 NbEditorDocument nbdoc = (NbEditorDocument) doc;
                 nbdoc.runAtomic(new Runnable() {
+
                     public void run() {
                         MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
                         if (mti != null) {
@@ -297,6 +317,4 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         });
     }
-
-    
 }

@@ -136,7 +136,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     //causes: java.lang.AssertionError: content is null after sibling 'meta'
     public void testOpenTagAtMetaTagEnd() throws BadLocationException, ParseException {
-//        assertItems("<html><head><meta><title></title><| </head></html>", arr("link"), Match.CONTAINS);
+        assertItems("<html><head><meta><title></title><| </head></html>", arr("link"), Match.CONTAINS);
         //           01234567
     }
 

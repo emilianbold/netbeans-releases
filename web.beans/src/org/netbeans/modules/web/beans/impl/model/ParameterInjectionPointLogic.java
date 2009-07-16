@@ -40,12 +40,13 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.Iterator;
 import java.util.List;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 
 
 /**
@@ -54,17 +55,71 @@ import javax.lang.model.type.DeclaredType;
  */
 abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
 
+    private static final String INITIALIZER_ANNOTATION = 
+            "javax.enterprise.inject.Initializer";                  // NOI18N
+    
+    private static final String DISPOSES_ANNOTATION = 
+            "javax.enterprise.inject.Disposes";                     // NOI18N
+    
+    private static final String OBSERVES_ANNOTATION = 
+            "javax.enterprise.event.Observes";                      // NOI18N
 
-    protected Element findParameterInjectable( VariableElement element ) {
-        /*
-         * TODO : care about @Current, @Any , @New  
-         *
-         */
-        List<? extends AnnotationMirror> annotations = 
-            element.getAnnotationMirrors();
-        for (AnnotationMirror annotationMirror : annotations) {
-            DeclaredType type = annotationMirror.getAnnotationType();
+    protected Element findParameterInjectable( VariableElement element , 
+            WebBeansModelImplementation model) 
+    {
+        ExecutableElement parent = (ExecutableElement)element.getEnclosingElement();
+        List<Element> injectables = null;
+        boolean disposes = AnnotationObjectProvider.hasAnnotation( element, 
+                DISPOSES_ANNOTATION, model.getHelper());
+        if ( AnnotationObjectProvider.hasAnnotation( parent, 
+                INITIALIZER_ANNOTATION, model.getHelper()) ||
+                AnnotationObjectProvider.hasAnnotation( parent, 
+                        PRODUCER_ANNOTATION, model.getHelper()) || disposes )
+        {
+            injectables = findVariableInjectable(element, model , true );
         }
-        return null;
+        if ( disposes ){
+            if( injectables!= null && injectables.size() >0 ){
+                TypeElement enclosingTypeElement = model.getHelper().
+                    getCompilationController().getElementUtilities().
+                        enclosingTypeElement(element);
+                for (Iterator<Element> iterator = injectables.iterator(); 
+                    iterator.hasNext(); ) 
+                {
+                    Element injectable = iterator.next();
+                    if ( !model.getHelper().getCompilationController().
+                            getElementUtilities().isMemberOf( injectable, 
+                                    enclosingTypeElement))
+                    {
+                        iterator.remove();
+                    }
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        if ( AnnotationObjectProvider.hasAnnotation( element, 
+                                    OBSERVES_ANNOTATION, model.getHelper()))
+        {
+            injectables = findVariableInjectable(element, model , false );
+        }
+        boolean isInjectionPoint = false;
+        List<? extends VariableElement> parameters = parent.getParameters();
+        for (VariableElement variableElement : parameters) {
+            if ( AnnotationObjectProvider.hasAnnotation(variableElement, 
+                    DISPOSES_ANNOTATION, model.getHelper()) ||
+                    AnnotationObjectProvider.hasAnnotation(variableElement, 
+                            OBSERVES_ANNOTATION, model.getHelper()) )
+            {
+                isInjectionPoint = true;
+                break;
+            }
+        }
+        if ( isInjectionPoint ){
+            injectables = findVariableInjectable(element, model , true );
+        }
+        return (injectables== null || injectables.size() ==0 )? null: 
+            injectables.get(0);
     }
 }
