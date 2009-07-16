@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 
@@ -49,20 +51,26 @@ import org.netbeans.modules.csl.api.ElementKind;
  */
 public class IndexedClass extends IndexedElement {
     private String superClass;
+    private final List<String> ifaces;
 
     public IndexedClass(String name, String in, PHPIndex index, String fileUrl,
-            String superClass, int offset,  int flags){
+            String superClass, List<String> ifaces, int offset,  int flags){
         super(name, in, index, fileUrl, offset, flags, ElementKind.CLASS);
         // empty string causes a serious performance problem
         if (superClass != null && superClass.length() == 0){
             throw new IllegalArgumentException("superClass cannot be empty string!");
         }
         this.superClass = superClass;
+        this.ifaces = new ArrayList<String>(ifaces);
     }
 
     @CheckForNull
     public String getSuperClass(){
         return superClass;
+    }
+
+    public List<String> getInterfaces(){
+        return ifaces;
     }
 
     public String getNamespaceName() {

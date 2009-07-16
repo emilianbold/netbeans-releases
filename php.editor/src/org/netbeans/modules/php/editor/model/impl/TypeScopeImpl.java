@@ -40,8 +40,10 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -94,36 +96,43 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
     public List<? extends String> getSuperInterfaceNames() {
+        if (indexedElement instanceof IndexedClass) {
+            return ((IndexedClass)indexedElement).getInterfaces();
+        }
         return new ArrayList<String>(ifaces.keySet());
     }
 
     public List<? extends InterfaceScope> getSuperInterfaces() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
-        Set<String> keySet = ifaces.keySet();
+        Set<String> keySet = (indexedElement instanceof IndexedClass) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
         for (String ifaceName : keySet) {
             List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
             if (iface == null) {
-                NamespaceScope top = (NamespaceScope) getInScope();
-                NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
-                retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
-                ifaces.put(ifaceName,iface);
-                /*for (InterfaceScopeImpl interfaceScope : iface) {
-                    retval.addAll(interfaceScope.getInterfaces());
-                }*/
-                if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
-                    IndexScope indexScope = ModelUtils.getIndexScope(ps);
-                    if (indexScope != null) {
-                        List<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
-                        ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
-                        for (InterfaceScope interfaceScope : cIfaces) {
-                            retval.add((InterfaceScopeImpl)interfaceScope);                            
+                if (indexedElement == null) {
+                    NamespaceScope top = (NamespaceScope) getInScope();
+                    NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
+                    retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
+                    ifaces.put(ifaceName,iface);
+                    /*for (InterfaceScopeImpl interfaceScope : iface) {
+                        retval.addAll(interfaceScope.getInterfaces());
+                    }*/
+                    if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
+                        IndexScope indexScope = ModelUtils.getIndexScope(ps);
+                        if (indexScope != null) {
+                            List<? extends InterfaceScope> cIfaces =CachingSupport.getInterfaces(ifaceName, this);
+                            ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
+                            for (InterfaceScope interfaceScope : cIfaces) {
+                                retval.add((InterfaceScopeImpl)interfaceScope);
+                            }
+                        } else {
+                            //TODO: create it from idx
+                            throw new UnsupportedOperationException();
+                            /*assert iface != null;
+                            ifaces.put(key, iface);*/
                         }
-                    } else {
-                        //TODO: create it from idx
-                        throw new UnsupportedOperationException();
-                        /*assert iface != null;
-                        ifaces.put(key, iface);*/
                     }
+                } else {
+                    iface = Collections.emptyList();
                 }
             } else {
                 retval.addAll(iface);
@@ -379,7 +388,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     @Override
     public String getNormalizedName() {
         StringBuilder sb = new StringBuilder();
-        Set<String> ifaceNames = ifaces.keySet();
+        //Set<String> ifaceNames = ifaces.keySet();
+        List<? extends String> ifaceNames = getSuperInterfaceNames();
         for (String ifName : ifaceNames) {
             sb.append(ifName);
         }
