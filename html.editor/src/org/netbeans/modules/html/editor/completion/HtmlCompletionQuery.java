@@ -166,12 +166,12 @@ public class HtmlCompletionQuery extends UserTask {
         }
         AstNode root = node.getRootNode();
 
-        //debug>>>
-        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
-        System.out.println("node = " + node);
-        System.out.println("root = " + root);
-        System.out.println("namepace = " + namespace);
-        //<<<debug
+//        //debug>>>
+//        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
+//        System.out.println("node = " + node);
+//        System.out.println("root = " + root);
+//        System.out.println("namepace = " + namespace);
+//        //<<<debug
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
