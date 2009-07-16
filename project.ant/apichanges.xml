@@ -108,7 +108,7 @@ is the proper place.
         <change id="SourcesHelper-SourceGroupModifierImplementation">
             <api name="general"/>
             <summary>Added <code>SourceGroupModifierImplementation</code> implementation for Ant-based projects</summary>
-            <version major="1" minor="33"/>
+            <version major="1" minor="31" subminor="2"/>
             <date day="4" month="6" year="2009"/>
             <author login="rmichalsky"/>
             <compatibility addition="yes"/>

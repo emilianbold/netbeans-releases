@@ -379,7 +379,7 @@ public final class SourcesHelper {
      * .type("java").add(); // adding as typed root
      * </pre>
      * </p>
-     * @since org.netbeans.modules.project.ant/1 1.33
+     * @since org.netbeans.modules.project.ant/1 1.31.2
      */
     public final class SourceRootConfig {
         private String location;
@@ -1096,7 +1096,7 @@ public final class SourcesHelper {
      * </p>
      * @return <tt>SourceGroupModifierImplementation</tt> implementation.
      * @see #sourceRoot(String)
-     * @since org.netbeans.modules.project.ant/1 1.33
+     * @since org.netbeans.modules.project.ant/1 1.31.2
      */
     public SourceGroupModifierImplementation createSourceGroupModifierImplementation() {
         return new SourceGroupModifierImpl();
