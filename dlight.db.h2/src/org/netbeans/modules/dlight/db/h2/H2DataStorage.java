@@ -122,15 +122,16 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             int newValue = 0;
             for (int i = 0; i < files.length; i++) {
                 String suffix = files[i].getName().substring(generalNameLength);
-                try{
+                try {
                     newValue = Math.max(newValue, Integer.valueOf(suffix));
-                }catch (NumberFormatException e){}
+                } catch (NumberFormatException e) {
+                }
             }
-           dbIndex.getAndSet(newValue);
+            dbIndex.getAndSet(newValue);
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    for (File file : files){
+                    for (File file : files) {
                         Util.deleteLocalDirectory(file);
                     }
                 }
@@ -173,6 +174,9 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     @Override
     public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {
         for (DataTableMetadata tdmd : tableMetadatas) {
+            if (tdmd == null) {
+                continue;
+            }
             if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
                 if (!createTable(tdmd)) {
                     return false;

@@ -56,6 +56,7 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer, Serializable {
+
     private Color unselectedBackground;
     private Color unselectedForeground;
     private ThreadStateColumnImpl threadData;
@@ -232,7 +233,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
 
             if (timestamp <= viewStart) {
-                if (threadData.getThreadStateAt(i+1).getTimeStamp() > viewStart) {
+                if (threadData.getThreadStateAt(i + 1).getTimeStamp() > viewStart) {
                     return i; // data unit ends between viewStart and viewEnd
                 }
             } else {
@@ -263,24 +264,25 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         for (AtomicInteger i : map.values()) {
             i.set(0);
         }
-        for(int i = 0; i < size; i++) {
-            map.get(threadStateColor.getStateName(i)).set(threadStateColor.getState(i));
+
+        for (int i = 0; i < size; i++) {
+            map.get(threadStateColor.getStateName(i)).addAndGet(threadStateColor.getState(i));
         }
 
         int y = 0;
-        int rest = 100/2;
+        int rest = ThreadState.POINTS/2;
         int oldRest = 0;
-        for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
+        for (Map.Entry<String, AtomicInteger> entry : map.entrySet()) {
             int v = entry.getValue().get();
             Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
             oldRest = rest;
-            rest = (v*delta+oldRest)%100;
-            int d = (v*delta+oldRest)/100;
+            rest = (v*delta+oldRest)%ThreadState.POINTS;
+            int d = (v*delta+oldRest)/ThreadState.POINTS;
             y += d;
             if (d > 0) {
                 g.setColor(c);
                 g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y, xx - x, d);
-                //g.fillRect(x, 6, xx - x, getHeight() - 12);
+            //g.fillRect(x, 6, xx - x, getHeight() - 12);
             }
         }
     }

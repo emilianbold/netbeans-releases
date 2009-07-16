@@ -53,7 +53,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     public ThreadMapData queryData(ThreadMapDataQuery query) {
         if (storage == null) {
-            throw new NullPointerException("No STORAGE");
+            throw new NullPointerException("No STORAGE"); // NOI18N
         }
 
         return storage.queryThreadMapData(query);
