@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -354,10 +354,10 @@ public final class DBMetaDataFactory {
             newTable.setPrimaryKey(keys);
 
             // now loop through all the columns flagging the primary keys
-            List columns = newTable.getColumnList();
+            List<DBColumn> columns = newTable.getColumnList();
             if (columns != null) {
                 for (int i = 0; i < columns.size(); i++) {
-                    DBColumn col = (DBColumn) columns.get(i);
+                    DBColumn col = columns.get(i);
                     if (keys.contains(col.getName())) {
                         col.setPrimaryKey(true);
                     }
@@ -383,10 +383,10 @@ public final class DBMetaDataFactory {
             }
 
             // now loop through all the columns flagging the foreign keys
-            List columns = newTable.getColumnList();
+            List<DBColumn> columns = newTable.getColumnList();
             if (columns != null) {
                 for (int i = 0; i < columns.size(); i++) {
-                    DBColumn col = (DBColumn) columns.get(i);
+                    DBColumn col = columns.get(i);
                     if (foreignKeysSet.contains(col.getName())) {
                         col.setForeignKey(true);
                     }
