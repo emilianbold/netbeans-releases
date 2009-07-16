@@ -118,7 +118,9 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@BindingType " +
                 "@Retention(RUNTIME) "+
                 "@Target({FIELD, PARAMETER}) "+          
-                "public @interface New  {}");
+                "public @interface New  { " +
+                " Class<?> value() default Object.class; "+
+                "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Current.java",
                 "package javax.enterprise.inject; " +
@@ -164,6 +166,27 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD,CONSTRUCTOR }) "+          
                 "public @interface Initializer  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/event/Observes.java",
+                "package javax.enterprise.event; " +
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({PARAMETER}) "+          
+                "public @interface Observes  {}");
+        
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Disposes.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({PARAMETER}) "+          
+                "public @interface Disposes  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/deployment/Specializes.java",
                 "package javax.enterprise.inject.deployment; " +
