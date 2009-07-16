@@ -57,6 +57,7 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyConfigurationProvider;
+import org.netbeans.modules.ruby.rubyproject.TemplateAttributesProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
@@ -126,7 +127,8 @@ public class RailsProject extends RubyBaseProject {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
-            new RubyProjectEncodingQueryImpl(evaluator()),
+            encodingQueryImpl,
+            new TemplateAttributesProviderImpl(helper, encodingQueryImpl),
             evaluator(),
             new RailsServerManager(this),
             new RailsFileLocator(null, this),
