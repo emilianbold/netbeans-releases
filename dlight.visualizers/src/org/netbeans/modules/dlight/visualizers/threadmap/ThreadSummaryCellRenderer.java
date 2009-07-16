@@ -154,12 +154,16 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 ThreadState state = threadData.getThreadStateAt(i);
                 for (int j = 0; j < state.size(); j++){
                     MSAState msa = state.getMSAState(j, false);
-                    AtomicInteger v = map.get(msa);
-                    if (v != null) {
-                        v.addAndGet(state.getState(j));
+                    if (msa != null) {
+                        AtomicInteger v = map.get(msa);
+                        if (v != null) {
+                            v.addAndGet(state.getState(j));
+                        } else {
+                            v = new AtomicInteger(state.getState(j));
+                            map.put(msa, v);
+                        }
                     } else {
-                        v = new AtomicInteger(state.getState(j));
-                        map.put(msa, v);
+                        System.err.println("Wrong MSA at index "+i+" MSA="+state); // NOI18N 
                     }
                 }
             }

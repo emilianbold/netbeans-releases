@@ -124,6 +124,13 @@ public final class ThreadStateImpl implements ThreadState {
 
     @Override
     public String toString() {
-        return Arrays.toString(statePercentage);
+        StringBuilder buf = new StringBuilder();
+        buf.append("MSA "+timestamp); // NOI18N
+        buf.append(" has "+size); // NOI18N
+        buf.append(" states\n\tMSA:"); // NOI18N
+        buf.append(Arrays.toString(stateIDs));
+        buf.append("\n\tValues:"); // NOI18N
+        buf.append(Arrays.toString(statePercentage));
+        return buf.toString();
     }
 }

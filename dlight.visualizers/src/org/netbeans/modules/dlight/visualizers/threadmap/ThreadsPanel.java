@@ -562,9 +562,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
             JLabel runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
             runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
+            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_BLOCKED_STRING, monitorIcon, SwingConstants.LEADING);
             monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
+            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAITING_STRING, waitIcon, SwingConstants.LEADING);
             waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
             JLabel sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
             sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));

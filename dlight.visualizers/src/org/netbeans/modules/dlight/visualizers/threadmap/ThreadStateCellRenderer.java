@@ -43,18 +43,13 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
 /**
  * @author Jiri Sedlacek
@@ -273,12 +268,16 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
         for (int i = 0; i < size; i++) {
             ThreadState.MSAState msa = threadStateColor.getMSAState(i, false);
-            AtomicInteger value = map.get(msa);
-            if (value == null) {
-                value = new AtomicInteger();
-                map.put(msa, value);
+            if (msa != null) {
+                AtomicInteger value = map.get(msa);
+                if (value == null) {
+                    value = new AtomicInteger();
+                    map.put(msa, value);
+                }
+                value.addAndGet(threadStateColor.getState(i));
+            } else {
+                System.err.println("Wrong MSA at index "+i+" MSA="+threadStateColor); // NOI18N
             }
-            value.addAndGet(threadStateColor.getState(i));
         }
 
         int y = 0;
