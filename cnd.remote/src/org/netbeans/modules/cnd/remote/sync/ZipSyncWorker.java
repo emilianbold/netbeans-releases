@@ -97,9 +97,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         File zipFile = null;
         upload: // the label allows us exiting this block on condition
         try  {
-            if (CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err).get() != 0) {
-                throw new IOException("Can not create directory " + remoteDir); //NOI18N
-            }
+            // nb: here we only launch the task! we'll wait for the completion after local zip is created
+            Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
 
             String localDirName = localDir.getName();
             if (localDirName.length() < 3) {
@@ -119,7 +118,12 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             if (zipper.getFileCount() == 0) {
                 break upload;
             }
-            
+
+            // wait/check whether the remote dir was created sucessfully
+            if (mkDir.get() != 0) {
+                throw new IOException("Can not create directory " + remoteDir); //NOI18N
+            }
+
             String remoteFile = remoteDir + '/' + zipFile.getName(); //NOI18N
             {
                 long uploaStart = System.currentTimeMillis();
