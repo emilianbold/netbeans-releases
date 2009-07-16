@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +71,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.PredefinedSymbols.VariableKind;
@@ -87,9 +89,13 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -184,9 +190,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList('=', ';', '+', '-', '*', '/',
                 '%', '(', ')', '[', ']', '{', '}', '?'));
-    
-    private final static Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_B4_WS = 
-            Arrays.asList(PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS);
+
+    private final static Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_B4_WS =
+            Arrays.asList(PHPTokenId.PHP_NS_SEPARATOR, PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS);
 
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
@@ -212,7 +218,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         String prefix = completionContext.getPrefix();
         prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
-        
+
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         BaseDocument doc = (BaseDocument) completionContext.getParserResult().getSnapshot().getSource().getDocument(false);
 
@@ -224,7 +230,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         try{
             ParserResult info = completionContext.getParserResult();
             int caretOffset = completionContext.getCaretOffset();
-            
+
             this.caseSensitive = completionContext.isCaseSensitive();
             this.nameKind = caseSensitive ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
 
@@ -266,16 +272,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
                     proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
                     break;
+                case NAMESPACE_CLASS_ELEMENT:
+                    autoCompleteNamespaces(proposals, request);
+                    autoCompleteNamespaceClassElement(proposals, request);
+                    break;
                 case NEW_CLASS:
-                    Collection<IndexedFunction> functions = request.index.getConstructors(result, prefix);
-                    if (!functions.isEmpty()) {
-                        for (IndexedFunction fnc : functions) {
-                            int[] optionalArgs = fnc.getOptionalArgs();
-                            for (int i = 0; i <= optionalArgs.length; i++) {
-                                proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
-                            }
+                    final NamespaceScope namespaceScope = getNamespaceScope(request);
+                    if (!namespaceScope.isDefaultNamespace()) {
+                        autoCompleteNamespaces(proposals, request);
+                    }
+                    Collection<IndexedFunction> functions2 = request.index.getConstructors(result, prefix);
+                    for (IndexedFunction fnc : functions2) {
+                        int[] optionalArgs = fnc.getOptionalArgs();
+                        for (int i = 0; i <= optionalArgs.length; i++) {
+                            proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
                         }
-                    } 
+                    }
                     break;
                 case CLASS_NAME:
                     autoCompleteClassNames(proposals, request,false);
@@ -320,17 +332,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
                     break;
-                case NAMESPACE_ONLY:
-                    autoCompleteNamespaces(proposals, request);
-                    break;
-                case NAMESPACE_ELEMENT:
-                    autoCompleteNamespaces(proposals, request);
-                    //TODO: add ns-specific items (class names, functions, constants)
-                    break;
-                case NAMESPACE_CLASS_ELEMENT:
-                    autoCompleteNamespaces(proposals, request);
-                    //TODO: add ns-specific class names
-                    break;
+//                case NAMESPACE_ONLY:
+//                    autoCompleteNamespaces(proposals, request);
+//                    break;
+//                case NAMESPACE_ELEMENT:
+//                    autoCompleteNamespaces(proposals, request);
+//                    //TODO: add ns-specific items (class names, functions, constants)
+//                    break;
                 case SERVER_ENTRY_CONSTANTS:
                     //TODO: probably better PHPCompletionItem instance should be used
                     //autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
@@ -414,38 +422,117 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     }
 
+    private NamespaceScope getNamespaceScope(CompletionRequest request) {
+        Model model = ModelFactory.getModel(request.result);
+        VariableScope variableScope = model.getVariableScope(request.anchor);
+        return (variableScope != null) ? ModelUtils.getNamespaceScope(variableScope) : null;
+    }
 
-    private void autoCompleteNamespaces(List<CompletionProposal> proposals,
+    private void autoCompleteNamespaceClassElement(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
 
         String nsPrefix = request.prefix;
-        PHPIndex index = request.index;
-        int completedSegmentIdx = QualifiedName.create(nsPrefix).getSegments().size() - 1;
-        if (nsPrefix.endsWith("\\")){
-            completedSegmentIdx ++;
+        final boolean isFullyQualified = QualifiedNameKind.resolveKind(nsPrefix).isFullyQualified();
+        final String namespaceSeparator = NamespaceDeclarationInfo.NAMESPACE_SEPARATOR;
+        final NamespaceScope namespaceScope = getNamespaceScope(request);
+        assert (namespaceScope != null);
+        if (!isFullyQualified) {
+            if (nsPrefix.endsWith(namespaceSeparator)) {
+                nsPrefix = String.format("%s%s", QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString(), namespaceSeparator);
+            } else {
+                nsPrefix = QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString();
+            }
+        }
+        int completedSegmentIdx = QualifiedName.create(nsPrefix.substring(1)).getSegments().size() - 1;
+        if (nsPrefix.endsWith(namespaceSeparator) && !nsPrefix.equals(namespaceSeparator)){
+            completedSegmentIdx++;
         }
 
-        Collection<IndexedNamespace> namespaces = index.getNamespaces(request.result,
-                nsPrefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+        Collection<IndexedFunction> constructors = request.index.getConstructors(null, "");
+        for (IndexedFunction indexedFunction : constructors) {
+            QualifiedName namespaceName = QualifiedName.create(indexedFunction.getNamespaceName()).toFullyQualified();
+            QualifiedName fqn = QualifiedName.createUnqualifiedName(indexedFunction.getName()).toFullyQualified(namespaceName);
+            if (fqn.toString().toLowerCase().startsWith(nsPrefix.toLowerCase())) {
+                  QualifiedName qnNamespace = QualifiedName.create(namespaceScope);
+                    final int nsSize = qnNamespace.getSegments().size();
+                QualifiedName qn = null;
+                if (!isFullyQualified) {
+                    LinkedList<String> segments = fqn.getSegments();
+                    LinkedList<String> newSegments = new LinkedList<String>();
+                    for (int i = nsSize; i <= completedSegmentIdx; i++) {
+                        newSegments.add(segments.get(i));
+                    }
+                    qn = QualifiedName.create(false, newSegments);
+                }
 
-        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
-
-        for (IndexedNamespace namespace : namespaces) {
-            if (namespace.getName().startsWith(nsPrefix)) {
-                String completedSegment = namespace.getQualifiedName().getSegments().get(completedSegmentIdx);
-
-                IndexedNamespace existingNs = namespacesMap.get(completedSegment);
-
-                if (existingNs == null || !existingNs.isResolved()){
-                    namespacesMap.put(completedSegment, namespace);
+                int[] optionalArgs = indexedFunction.getOptionalArgs();
+                for (int i = 0; i <= optionalArgs.length; i++) {
+                    proposals.add(new PHPCompletionItem.NewClassItem(indexedFunction, request, i, qn != null ? qn.toString() : null));
                 }
             }
         }
 
-        for (IndexedNamespace namespace : namespacesMap.values()){
-            String itm = namespace.getQualifiedName().toString(completedSegmentIdx);
-            proposals.add(new PHPCompletionItem.NamespaceItem(itm, namespace.isResolved(), request));
+    }
+
+     private void autoCompleteNamespaces(List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request) {
+
+        String nsPrefix = request.prefix;
+        final boolean isFullyQualified = QualifiedNameKind.resolveKind(nsPrefix).isFullyQualified();
+        final NamespaceScope namespaceScope = getNamespaceScope(request);
+        assert (namespaceScope != null);
+        final String namespaceSeparator = NamespaceDeclarationInfo.NAMESPACE_SEPARATOR;
+
+         if (!isFullyQualified) {
+             if (nsPrefix.endsWith(namespaceSeparator)) {
+                 nsPrefix = String.format("%s%s", QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString(), namespaceSeparator);
+             } else {
+                 nsPrefix = QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString();
+             }
+         }
+
+        if (nsPrefix.startsWith(namespaceSeparator)){
+            nsPrefix = nsPrefix.substring(1);
         }
+
+        int completedSegmentIdx = QualifiedName.create(nsPrefix).getSegments().size() - 1;
+        if (nsPrefix.endsWith(namespaceSeparator)){
+            completedSegmentIdx++;
+        }
+
+        Collection<IndexedNamespace> namespaces = request.index.getNamespaces(request.result,
+                nsPrefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+
+        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
+        for (IndexedNamespace namespace : namespaces) {
+            if (namespace.getName().trim().length() > 0 && namespace.getName().startsWith(nsPrefix)) {
+                String completedSegment = namespace.getQualifiedName().getSegments().get(completedSegmentIdx);
+                IndexedNamespace existingNs = namespacesMap.get(completedSegment);
+                if (existingNs == null || !existingNs.isResolved()){
+                    namespacesMap.put(completedSegment, namespace);
+                  QualifiedName qnNamespace = QualifiedName.create(namespaceScope);
+                    final int nsSize = qnNamespace.getSegments().size();
+                    QualifiedName qn = null;
+                    if (isFullyQualified) {
+                        LinkedList<String> segments = namespace.getQualifiedName().getSegments();
+                        LinkedList<String> newSegments = new LinkedList<String>(segments);
+                        for (int i = newSegments.size(); i > completedSegmentIdx+1; i--) {
+                            newSegments.removeLast();
+                        }
+                        qn = QualifiedName.create(true, newSegments);
+                    } else {
+                        LinkedList<String> segments = namespace.getQualifiedName().getSegments();
+                        LinkedList<String> newSegments = new LinkedList<String>();
+                        for (int i = nsSize; i <= completedSegmentIdx; i++) {
+                            newSegments.add(segments.get(i));
+                        }
+                        qn = QualifiedName.create(false, newSegments);
+                    }
+                    proposals.add(new PHPCompletionItem.NamespaceItem(qn.toString(), namespace.isResolved(), request));
+                }
+            }
+        }
+
     }
 
     private void autoCompleteMethodName(ParserResult info, int caretOffset, List<CompletionProposal> proposals,
@@ -550,7 +637,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
-        VariableKind varKind = VariableKind.STANDARD; 
+        VariableKind varKind = VariableKind.STANDARD;
         Document document = request.info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return;
@@ -775,13 +862,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 if (existingNs == null || !existingNs.isResolved()){
                     namespacesMap.put(prefix, (IndexedNamespace) element);
-                }        
+                }
             }
         }
 
         for (IndexedNamespace namespace : namespacesMap.values()){
             String prefix = namespace.getQualifiedName().getSegments().getFirst();
-            
+
             proposals.add(new PHPCompletionItem.NamespaceItem('\\' + prefix + '\\',
                     namespace.isResolved(), request));
         }
@@ -1121,7 +1208,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             return String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip);
         }
-            
+
         return (element instanceof MagicIndexedFunction) ? null :
             DocRenderer.document(info, element);
     }
@@ -1232,9 +1319,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
                     }
 
-                    if (prefix.startsWith("\\")){ //NOI18N
-                        prefix = prefix.substring(1); //NOI18N
-                    }
+                    /*if ("\\".equals(prefix)){ //NOI18N
+                        prefix = ""; //NOI18N
+                    }*/
 
                     return prefix;
                 }
@@ -1273,13 +1360,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (lastChar == ' ' || lastChar == '\t'){
                 if (ts.movePrevious()
                         && TOKENS_TRIGGERING_AUTOPUP_B4_WS.contains(ts.token().id())){
-                    
+
                     return QueryType.ALL_COMPLETION;
                 } else {
                     return QueryType.STOP;
                 }
             }
-            
+
             if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR
                     || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
