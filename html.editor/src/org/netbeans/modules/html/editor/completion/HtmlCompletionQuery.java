@@ -41,6 +41,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.*;
+import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -121,8 +122,10 @@ public class HtmlCompletionQuery extends UserTask {
 
         int diff = ts.move(astOffset);
         if (ts.moveNext()) {
-            if (diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS)) {
+            if (diff == 0 && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.WS ||
+                    ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL)) {
                 //looks like we are on a boundary of a text or whitespace, need the previous token
+                //or we are just before tag closing symbol
                 if (!ts.movePrevious()) {
                     //we cannot get previous token
                     return null;
@@ -158,6 +161,9 @@ public class HtmlCompletionQuery extends UserTask {
 //        AstNode node = AstNodeUtils.findDescendant(root, searchAstOffset);
 
         AstNode node = parserResult.findLeaf(searchAstOffset);
+        if(node == null) {
+            return null;
+        }
         AstNode root = node.getRootNode();
 
         //debug>>>
