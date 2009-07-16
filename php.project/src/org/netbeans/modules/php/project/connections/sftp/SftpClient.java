@@ -553,14 +553,7 @@ public class SftpClient implements RemoteClient {
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
                 String[] prompt, boolean[] echo) {
 
-            if (prompt.length == 1
-                    && echo.length == 1 && !echo[0]) {
-                // ask for password
-                passwd = getPasswordForUser(configuration);
-                if (passwd != null) {
-                    return new String[] {passwd};
-                }
-            }
+            // #166555 - always return null because password popup would be shown even if password is filled in server configuration
             return null;
         }
     }
