@@ -450,16 +450,20 @@ public final class CreateTestsAction extends NodeAction {
         final BaseDocument baseDoc = (BaseDocument) doc;
         final Reformat reformat = Reformat.get(baseDoc);
         reformat.lock();
-        // seems to be synchronous but no info in javadoc
-        baseDoc.runAtomic(new Runnable() {
-            public void run() {
-                try {
-                    reformat.reformat(0, baseDoc.getLength());
-                } catch (BadLocationException ex) {
-                    LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        try {
+            // seems to be synchronous but no info in javadoc
+            baseDoc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        reformat.reformat(0, baseDoc.getLength());
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+                    }
                 }
-            }
-        });
+            });
+        } finally {
+            reformat.unlock();
+        }
 
         // save
         SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
