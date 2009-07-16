@@ -48,6 +48,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -58,19 +59,16 @@ import org.openide.filesystems.FileUtil;
  * compilation output processing
  * @author  Milos Kleint
  */
-public class JavaOutputListenerProvider implements OutputProcessor {
+public class ScalaOutputListenerProvider implements OutputProcessor {
     
-    private static final String[] JAVAGOALS = new String[] {
-        "mojo-execute#compiler:compile", //NOI18N
-        "mojo-execute#compiler:testCompile" //NOI18N
+    private static final String[] SCALAGOALS = new String[] {
+        "mojo-execute#scala:compile", //NOI18N
+        "mojo-execute#scala:testCompile" //NOI18N
     };
     private Pattern failPattern;
     
-    /** Creates a new instance of JavaOutputListenerProvider */
-    public JavaOutputListenerProvider() {
-        //[javac] required because of forked compilation
-        //DOTALL seems to fix MEVENIDE-455 on windows. one of the characters seems to be a some kind of newline and that's why the line doesnt' get matched otherwise.
-        failPattern = Pattern.compile("\\s*(?:\\[WARNING\\])?(?:\\[javac\\])?(?:Compilation failure)?\\s*(.*)\\.java\\:\\[([0-9]*),([0-9]*)\\] (.*)", Pattern.DOTALL); //NOI18N
+    public ScalaOutputListenerProvider() {
+        failPattern = Pattern.compile("\\s*(?:\\[WARNING\\])?\\s*(.*)\\.scala\\:([0-9]*)\\:(.*)", Pattern.DOTALL); //NOI18N
     }
     
     public void processLine(String line, OutputVisitor visitor) {
@@ -78,10 +76,10 @@ public class JavaOutputListenerProvider implements OutputProcessor {
             if (match.matches()) {
                 String clazz = match.group(1);
                 String lineNum = match.group(2);
-                String text = match.group(4);
-                File clazzfile = FileUtil.normalizeFile(new File(clazz + ".java")); //NOI18N
+                String text = match.group(3);
+                File clazzfile = FileUtil.normalizeFile(new File(clazz + ".scala")); //NOI18N
                 visitor.setOutputListener(new CompileAnnotation(clazzfile, lineNum,
-                        text), text.indexOf("[deprecation]") < 0); //NOI18N
+                        text), true); 
                 FileUtil.refreshFor(clazzfile);
                 FileObject file = FileUtil.toFileObject(clazzfile);
                 String newclazz = clazz;
@@ -90,11 +88,11 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                     if (prj != null) {
                         Sources srcs = prj.getLookup().lookup(Sources.class);
                         if (srcs != null) {
-                            for (SourceGroup grp : srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                            for (SourceGroup grp : srcs.getSourceGroups(MavenSourcesImpl.TYPE_SCALA)) {
                                 if (FileUtil.isParentOf(grp.getRootFolder(), file)) {
                                     newclazz = FileUtil.getRelativePath(grp.getRootFolder(), file);
-                                    if (newclazz.endsWith(".java")) { //NOI18N
-                                        newclazz = newclazz.substring(0, newclazz.length() - ".java".length()); //NOI18N
+                                    if (newclazz.endsWith(".scala")) { //NOI18N
+                                        newclazz = newclazz.substring(0, newclazz.length() - ".scala".length()); //NOI18N
                                     }
                                 }
                             }
@@ -107,7 +105,7 @@ public class JavaOutputListenerProvider implements OutputProcessor {
     }
 
     public String[] getRegisteredOutputSequences() {
-        return JAVAGOALS;
+        return SCALAGOALS;
     }
 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
