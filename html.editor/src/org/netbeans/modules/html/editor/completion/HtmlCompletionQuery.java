@@ -165,9 +165,9 @@ public class HtmlCompletionQuery extends UserTask {
             return null;
         }
         AstNode root = node.getRootNode();
+        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
 
 //        //debug>>>
-//        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
 //        System.out.println("node = " + node);
 //        System.out.println("root = " + root);
 //        System.out.println("namepace = " + namespace);
