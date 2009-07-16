@@ -76,6 +76,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.HashSet;
 import java.util.Set;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -134,22 +135,33 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         });
         list.addListSelectionListener(this);
         cTarget.removeAllItems();
+        cTarget.addItem(org.openide.util.NbBundle.getMessage(ExportPanel.class, "MSG_Loading")); // NOI18N
         final Collection<JavaPlatform> javaMEPlatforms = getJavaMEPlatformsWithoutBdj();
-        for (final JavaPlatform platform : javaMEPlatforms) {
-            if (platform != null) {
-                if (platform instanceof J2MEPlatform) {
-                    J2MEPlatform.Device[] dev = ((J2MEPlatform) platform).getDevices();
-                    for (J2MEPlatform.Device device : dev) {
-                        if (null != MEKeyTool.keystoreForDevice(device)) {
-                            cTarget.addItem(device);
-                        } else {
-                            cTarget.addItem(platform); //platform only once
-                            break;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                boolean removedLoading = false;
+                for (final JavaPlatform platform : javaMEPlatforms) {
+                    if (platform != null) {
+                        if (platform instanceof J2MEPlatform) {
+                            J2MEPlatform.Device[] dev = ((J2MEPlatform) platform).getDevices();
+                            for (J2MEPlatform.Device device : dev) {
+                                if (null != MEKeyTool.keystoreForDevice(device)) {
+                                    if (!removedLoading) {
+                                        cTarget.removeAllItems();
+                                        removedLoading = true;
+                                    }
+                                    cTarget.addItem(device);
+                                } else {
+                                    cTarget.removeAllItems();
+                                    cTarget.addItem(platform); //platform only once
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
+        });
     }
     
     private boolean equivalent(String owner, String subjectName) {
@@ -382,7 +394,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         final String errorMessage = getErrorMessage();
         pError.setErrorMessage(errorMessage);
         final boolean valid = errorMessage == null;
-        bExport.setEnabled(valid  &&  cTarget.getSelectedItem() != null);
+        bExport.setEnabled(valid  &&  cTarget.getSelectedItem() != null && !(cTarget.getSelectedItem() instanceof String));
         if (dd != null && valid != dd.isValid())
             dd.setValid(valid);
     }
@@ -413,6 +425,10 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     public void itemStateChanged(@SuppressWarnings("unused")
             final ItemEvent e) {
         final Object target = cTarget.getSelectedItem();
+        if (target instanceof String){
+            reloadList(target);
+            return;
+        }
         final ArrayList<String> list = new ArrayList<String>();
         if (target != null) {
             if (target instanceof J2MEPlatform.Device) {
@@ -446,13 +462,13 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         cDomain.removeAllItems();
         for (int i = 0; i < list.size(); i++) {
             cDomain.addItem(list.get(i));
-    }
+        }
         reloadList(target);
     }
     
     protected void reloadList(final Object target) {
         bDelete.setEnabled(false);
-        if (target != null) {
+        if (target != null && !(target instanceof String)) {
             setListLoading();
             setList(MEKeyTool.listKeys(target));
         } else {
