@@ -84,7 +84,7 @@ public class TempTest extends CommonTestCase {
                 "@Inherited "+
                 "public @interface CustomBinding  {" +
                 "    String value(); "+
-                "    @NonBinding String comment(); "+
+                "    @NonBinding String comment() default \"\"; "+
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",

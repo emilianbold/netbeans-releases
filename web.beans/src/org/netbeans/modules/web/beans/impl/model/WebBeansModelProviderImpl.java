@@ -82,7 +82,7 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         Element parent = element.getEnclosingElement();
         
         if ( parent instanceof TypeElement){
-            return findFieldInjectable(element, modelImpl);
+            return findVariableInjectable(element, modelImpl);
         }
         else if ( parent instanceof ExecutableElement ){
             // Probably injected field in method. One need to check method.
@@ -93,7 +93,7 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
              * 2) Method is disposer method. In this case injectable
              * is producer corresponding method.
              */
-            return findParameterInjectable(element);
+            return findParameterInjectable(element, modelImpl );
         }
         
         return null;
@@ -105,10 +105,4 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#resolveType(java.lang.String, org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper)
-     */
-    public TypeMirror resolveType( String fqn , AnnotationModelHelper helper ) {
-        return helper.resolveType( fqn );
-    }
 }
