@@ -354,26 +354,31 @@ public class ProjectActionSupport {
                 ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
                 for (String subprojectDir : conf.getSubProjectLocations()) {
                     subprojectDir = IpeUtils.toAbsolutePath(baseDir, subprojectDir);
-                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(new File(subprojectDir), env, null, null);
-                    success &= syncWorker.synchronize();
+                    success &= sync(subprojectDir, env);
                     if (!success) {
                         break;
                     }
                 }
                 if (success) {
-                    PrintWriter err = null;
-                    PrintWriter out = null;
-                    InputOutput tab = getTab();
-                    if (tab != null) {
-                        out = this.ioTab.getOut();
-                        err = this.ioTab.getErr();
-                    }
-                    RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
-                            new File(baseDir), env, out, err);
-                    success &= syncWorker.synchronize();
+                    success &= sync(baseDir, env);
                 }
             }
             return success;
+        }
+
+        private boolean sync(String projectDir, ExecutionEnvironment env) {
+            PrintWriter err = null;
+            PrintWriter out = null;
+            InputOutput tab = getTab();
+            if (tab != null) {
+                out = this.ioTab.getOut();
+                err = this.ioTab.getErr();
+            }
+            File dir2sync = new File(projectDir);
+            File privProjectStorage = new File(new File(dir2sync, "nbproject"), "private");
+            RemoteSyncWorker syncWorker = ServerList.get(env).getSyncFactory().createNew(
+                    dir2sync, env, out, err, privProjectStorage);
+            return syncWorker.synchronize();
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
