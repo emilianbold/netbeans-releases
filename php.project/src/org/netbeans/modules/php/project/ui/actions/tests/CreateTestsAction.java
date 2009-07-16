@@ -228,7 +228,7 @@ public final class CreateTestsAction extends NodeAction {
             StringBuilder sb = new StringBuilder();
             for (FileObject file : failed) {
                 sb.append(file.getNameExt());
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                     NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
