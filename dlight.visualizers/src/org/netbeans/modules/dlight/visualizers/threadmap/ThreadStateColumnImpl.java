@@ -88,36 +88,20 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     public static final String THREAD_STATUS_MONITOR_STRING = messages.getString("CommonConstants_ThreadStatusMonitorString"); // NOI18N
     public static final String THREAD_STATUS_WAIT_STRING = messages.getString("CommonConstants_ThreadStatusWaitString"); // NOI18N
 
-    static Color getThreadStateColor(int threadState) {
+    static Color getThreadStateColor(ThreadState.MSAState threadState) {
         switch(threadState) {
-            case THREAD_STATUS_UNKNOWN: return THREAD_STATUS_UNKNOWN_COLOR;
-            case THREAD_STATUS_ZOMBIE: return THREAD_STATUS_ZOMBIE_COLOR;
-            case THREAD_STATUS_RUNNING: return THREAD_STATUS_RUNNING_COLOR;
-            case THREAD_STATUS_SLEEPING: return THREAD_STATUS_SLEEPING_COLOR;
-            case THREAD_STATUS_MONITOR: return THREAD_STATUS_MONITOR_COLOR;
-            case THREAD_STATUS_WAIT: return THREAD_STATUS_WAIT_COLOR;
+            case ThreadFinished: return THREAD_STATUS_ZOMBIE_COLOR;
+            case Running: return THREAD_STATUS_RUNNING_COLOR;
+            case Blocked: return THREAD_STATUS_MONITOR_COLOR;
+            case Waiting:  return THREAD_STATUS_WAIT_COLOR;
+            case Sleeping: return THREAD_STATUS_SLEEPING_COLOR;
+            case Stopped: return THREAD_STATUS_SLEEPING_COLOR;
         }
         return THREAD_STATUS_UNKNOWN_COLOR;
     }
 
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
-        return getThreadStateColor(threadStateColor.getMSAState(msa, false).name());
-    }
-
-    static Color getThreadStateColor(String name) {
-        Color c;
-        if (name.equals(ThreadState.MSAState.Running.name())) {
-            c = THREAD_STATUS_RUNNING_COLOR;
-        } else if (name.equals(ThreadState.MSAState.Waiting.name())) {
-            c = THREAD_STATUS_WAIT_COLOR;
-        } else if (name.equals(ThreadState.MSAState.Blocked.name())) {
-            c = THREAD_STATUS_MONITOR_COLOR;
-        } else if (name.equals(ThreadState.MSAState.Sleeping.name())) {
-            c = THREAD_STATUS_SLEEPING_COLOR;
-        } else {
-            c = THREAD_STATUS_UNKNOWN_COLOR;
-        }
-        return c;
+        return getThreadStateColor(threadStateColor.getMSAState(msa, false));
     }
 
     private final MergedThreadInfo info;
