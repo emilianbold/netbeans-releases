@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -209,7 +211,17 @@ public final class DBMetaDataFactory {
             String colName = rsMeta.getColumnName(i);
             int position = i;
             int scale = rsMeta.getScale(i);
-            int precision = rsMeta.getPrecision(i);
+            int precision;
+            try {
+                precision = rsMeta.getPrecision(i);
+            } catch (NumberFormatException nfe) {
+                // Oracle classes12.jar driver throws NumberFormatException while getting precision
+                // let's ignore it and set Integer.MAX_VALUE as fallback and log it
+                precision = Integer.MAX_VALUE;
+                Logger.getLogger(DBMetaDataFactory.class.getName()).log(Level.FINE,
+                        "Oracle classes12.jar driver throws NumberFormatException while getting precision, use Integer.MAX_VALUE as fallback.", // NOI18N
+                        nfe);
+            }
 
             boolean isNullable = (rsMeta.isNullable(i) == rsMeta.columnNullable);
             String displayName = rsMeta.getColumnLabel(i);
