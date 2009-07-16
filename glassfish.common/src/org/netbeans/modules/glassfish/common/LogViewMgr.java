@@ -142,7 +142,7 @@ public class LogViewMgr {
             Collections.synchronizedList(new ArrayList<WeakReference<LoggerRunnable>>());
 
     /**
-     * Creates and starts a new instance of Hk2Logger
+     * Creates and starts a new instance of LogViewMgr
      * 
      * @param uri the uri of the server
      */
@@ -163,10 +163,10 @@ public class LogViewMgr {
     }
     
     /**
-     * Returns uri specific instance of Hk2Logger
+     * Returns uri specific instance of LogViewMgr
      * 
      * @param uri the uri of the server
-     * @return uri specific instamce of OCHk2Logger
+     * @return uri specific instamce of LogViewMgr
      */
     public static LogViewMgr getInstance(String uri) {
         LogViewMgr logViewMgr = null;
