@@ -40,11 +40,13 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.simpletool</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <package>org.netbeans.modules.dlight.indicators</package>
                 <package>org.netbeans.modules.dlight.indicators.graph</package>

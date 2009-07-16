@@ -51,37 +51,34 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=5)
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
 class ZipSyncFactory extends RemoteSyncFactory {
 
     @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new ZipSyncWorker(localDir, executionEnvironment, out, err);
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        return new ZipSyncWorker(localDir, executionEnvironment, out, err, privProjectStorageDir);
     }
 
     @Override
     public String getDisplayName() {
         // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "ZIP_Factory_Name");
+        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
     }
 
     @Override
     public String getDescription() {
         // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "ZIP_Factory_Description");
+        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
     }
 
     @Override
     public String getID() {
-        return "zip"; //NOI18N
+        return "scp"; //NOI18N
     }
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        if (Boolean.getBoolean("cnd.remote.sync.zip")) {
-            return ! RemoteUtil.isForeign(execEnv);
-        } else {
-            return false;
-        }
+        return ! RemoteUtil.isForeign(execEnv);
     }
 }

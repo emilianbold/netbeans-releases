@@ -36,46 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.storage.threadmap;
 
-package org.netbeans.modules.cnd.remote.sync;
+import java.util.HashMap;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
-import java.io.File;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
+public final class ThreadStateMapper {
 
-/**
- *
- * @author Vladimir Kvashin
- */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
-class ScpSyncFactory extends RemoteSyncFactory {
+    private final static HashMap<MSAState, MSAState> translationTable;
 
-    @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
+    static {
+        translationTable = new HashMap<MSAState, MSAState>();
+        // Running
+        translationTable.put(MSAState.RunningUser, MSAState.Running);
+        translationTable.put(MSAState.RunningSystemCall, MSAState.Running);
+        translationTable.put(MSAState.RunningOther, MSAState.Running);
+        // Sleeping
+        translationTable.put(MSAState.SleepingUserDataPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingUserTextPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingKernelPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingOther, MSAState.Sleeping);
+        // Blocked
+        translationTable.put(MSAState.SleepingUserLock, MSAState.Blocked);
+        // Waiting
+        translationTable.put(MSAState.WaitingCPU, MSAState.Waiting);
+        // Stopped
+        translationTable.put(MSAState.ThreadStopped, MSAState.Stopped);
     }
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
+    private ThreadStateMapper() {
     }
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
-    }
-
-    @Override
-    public String getID() {
-        return "scp"; //NOI18N
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ! RemoteUtil.isForeign(execEnv);
+    public static final MSAState toSimpleState(MSAState detailedState) {
+        MSAState result = translationTable.get(detailedState);
+        return (result == null) ? detailedState : result;
     }
 }

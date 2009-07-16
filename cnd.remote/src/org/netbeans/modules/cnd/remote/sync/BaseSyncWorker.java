@@ -60,13 +60,15 @@ import org.openide.util.NbBundle;
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
     protected final File localDir;
+    protected final File privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
     protected final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
         this.localDir = localDir;
+        this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;
         this.err = err;

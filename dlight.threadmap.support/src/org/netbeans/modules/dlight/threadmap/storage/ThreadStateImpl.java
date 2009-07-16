@@ -41,32 +41,33 @@ package org.netbeans.modules.dlight.threadmap.storage;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateMapper;
 
-public class ThreadStateImpl implements ThreadState {
+public final class ThreadStateImpl implements ThreadState {
 
     private final byte[] stateIDs;
     private final byte[] statePercentage;
     private final int size;
     private final long timestamp;
-    static FullThreadState[] collectedStates = new FullThreadState[]{
+    static MSAState[] collectedStates = new MSAState[]{
         null,
         null,
         null,
-        FullThreadState.RunningUser,
-        FullThreadState.RunningSystemCall,
-        FullThreadState.RunningOther,
-        FullThreadState.SleepingUserTextPageFault,
-        FullThreadState.SleepingUserDataPageFault,
-        FullThreadState.SleepingKernelPageFault,
-        FullThreadState.WaitingCPU,
-        FullThreadState.Stopped,
-        FullThreadState.SleepingUserSynchronization,
-        FullThreadState.SleepingOther,
-        FullThreadState.SOBJ_Mutex,
-        FullThreadState.SOBJ_RWLock,
-        FullThreadState.SOBJ_CV,
-        FullThreadState.SOBJ_Sema,
-        FullThreadState.SOBJ_User
+        MSAState.RunningUser,
+        MSAState.RunningSystemCall,
+        MSAState.RunningOther,
+        MSAState.SleepingUserTextPageFault,
+        MSAState.SleepingUserDataPageFault,
+        MSAState.SleepingKernelPageFault,
+        MSAState.WaitingCPU,
+        MSAState.Stopped,
+        MSAState.SleepingUserLock,
+        MSAState.SleepingOther,
+        null,
+        null,
+        null,
+        null,
+        null
     };
 
     public ThreadStateImpl(long timestamp, int[] stat) {
@@ -95,51 +96,18 @@ public class ThreadStateImpl implements ThreadState {
         return size;
     }
 
-    public String getStateName(int index) {
+    public MSAState getMSAState(final int index, final boolean full) {
         if (index >= stateIDs.length) {
-            return ShortThreadState.NotExist.name();
+            return MSAState.ThreadFinished;
         }
 
         final int stateIdx = stateIDs[index];
 
         assert stateIdx > 2;
-        final FullThreadState fullState = collectedStates[stateIdx];
 
-        String result;
+        final MSAState fullState = collectedStates[stateIdx];
 
-        switch (fullState) {
-            case RunningUser:
-            case RunningSystemCall:
-            case RunningOther:
-                result = ShortThreadState.Running.name();
-                break;
-            case SOBJ_Sema:
-            case SOBJ_RWLock:
-            case SOBJ_Mutex:
-            case SOBJ_User:
-            case SleepingSemafore:
-            case SleepingSystemSynchronization:
-            case SleepingUserSynchronization:
-                result = ShortThreadState.Blocked.name();
-                break;
-            case SleepingUserTextPageFault:
-            case SleepingKernelPageFault:
-            case SleepingOther:
-                result = ShortThreadState.Sleeping.name();
-                break;
-            case SleepingConditionalVariable:
-            case SOBJ_CV:
-            case WaitingCPU:
-                result = ShortThreadState.Waiting.name();
-                break;
-            case Stopped:
-                result = ShortThreadState.NotExist.name();
-                break;
-            default:
-                result = fullState.name();
-        }
-
-        return result;
+        return (full) ? fullState : ThreadStateMapper.toSimpleState(fullState);
     }
 
     public byte getState(int index) {
@@ -156,6 +124,13 @@ public class ThreadStateImpl implements ThreadState {
 
     @Override
     public String toString() {
-        return Arrays.toString(statePercentage);
+        StringBuilder buf = new StringBuilder();
+        buf.append("MSA "+timestamp); // NOI18N
+        buf.append(" has "+size); // NOI18N
+        buf.append(" states\n\tMSA:"); // NOI18N
+        buf.append(Arrays.toString(stateIDs));
+        buf.append("\n\tValues:"); // NOI18N
+        buf.append(Arrays.toString(statePercentage));
+        return buf.toString();
     }
 }

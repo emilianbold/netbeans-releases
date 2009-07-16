@@ -58,7 +58,7 @@ public enum Platform {
         if ("Mac OS X".equals(osname)) { //NOI18N
             platform = Platform.OSX;
             codeNameBase = "org.netbeans.core.browser.macosx"; //NOI18N
-            xulRunnerHome = "modules/lib/native/maxosx/xulrunner"; //NOI18N
+            xulRunnerHome = "modules/lib/native/macosx/xulrunner"; //NOI18N
         } else if ("Linux".equals(osname)) { //NOI18N
             platform = Platform.Linux;
             codeNameBase = "org.netbeans.core.browser.linux"; //NOI18N

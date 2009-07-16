@@ -84,7 +84,7 @@ public final class DataProvidersManager {
                     Collection<? extends VisualizerDataProviderFactory> newSet = lookupResult.allInstances();
                     allVisualizerDataProviders.retainAll(newSet);
 
-                    for (VisualizerDataProviderFactory f : newSet) {
+                    for (VisualizerDataProviderFactory<?> f : newSet) {
                         if (!allVisualizerDataProviders.contains(f)) {
                             Collection<DataModelScheme> supportedSchemes = f.getProvidedDataModelScheme();
                             if (supportedSchemes != null) {

@@ -46,6 +46,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadsDataManager.MergedThreadInfo;
 import org.openide.util.NbBundle;
 
@@ -54,70 +55,51 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadStateColumnImpl implements ThreadStateColumn {
-
-    public static final byte THREAD_STATUS_UNKNOWN = -1; // Thread status is unknown.
-    public static final byte THREAD_STATUS_ZOMBIE = 0; // Thread is waiting to die. Also used for "doesn't exist yet" and "dead"
-    public static final byte THREAD_STATUS_RUNNING = 1; // Thread is runnable. Note that we unfortunately don't know whether it'
-                                                        // s actually running or pre-empted by another thread...
-    public static final byte THREAD_STATUS_SLEEPING = 2; // Thread is sleeping - Thread.sleep() or JVM_Sleep() was called
-    public static final byte THREAD_STATUS_MONITOR = 3; // Thread is waiting on a java monitor
-    public static final byte THREAD_STATUS_WAIT = 4; // Thread is waiting - Thread.wait() or JVM_MonitorWait() was called
-
     /** Thread status is unknown. */
     public static final Color THREAD_STATUS_UNKNOWN_COLOR = Color.LIGHT_GRAY;
     /** Thread is waiting to die. Also used for "doesn't exist yet" and "dead" */
     public static final Color THREAD_STATUS_ZOMBIE_COLOR = Color.BLACK;
-    /** Thread is runnable. Note that we unfortunately don't know whether it's actually running or
-     * pre-empted by another thread...*/
-    public static final Color THREAD_STATUS_RUNNING_COLOR = new Color(84, 185, 72);//new Color(58, 228, 103);
-    /** Thread is sleeping - Thread.sleep() or JVM_Sleep() was called */
-    public static final Color THREAD_STATUS_SLEEPING_COLOR = new Color(255, 199, 38);//new Color(155, 134, 221);
-    /** Thread is waiting on a java monitor */
-    public static final Color THREAD_STATUS_MONITOR_COLOR = new Color(238, 29, 37);//new Color(255, 114, 102);
-    /** Thread is waiting - Thread.wait() or JVM_MonitorWait() was called */
-    public static final Color THREAD_STATUS_WAIT_COLOR = new Color(83, 130, 161);//new Color(255, 228, 90);
-
-    static final byte NO_STATE = 127;
 
     // I18N String constants
     static final ResourceBundle messages = NbBundle.getBundle(ThreadStateColumnImpl.class);
-    public static final String THREAD_STATUS_UNKNOWN_STRING = messages.getString("CommonConstants_ThreadStatusUnknownString"); // NOI18N 
-    public static final String THREAD_STATUS_ZOMBIE_STRING = messages.getString("CommonConstants_ThreadStatusZombieString"); // NOI18N
-    public static final String THREAD_STATUS_RUNNING_STRING = messages.getString("CommonConstants_ThreadStatusRunningString"); // NOI18N
-    public static final String THREAD_STATUS_SLEEPING_STRING = messages.getString("CommonConstants_ThreadStatusSleepingString"); // NOI18N;
-    public static final String THREAD_STATUS_MONITOR_STRING = messages.getString("CommonConstants_ThreadStatusMonitorString"); // NOI18N
-    public static final String THREAD_STATUS_WAIT_STRING = messages.getString("CommonConstants_ThreadStatusWaitString"); // NOI18N
 
-    static Color getThreadStateColor(int threadState) {
+    public static final StateResources THREAD_RUNNING = new StateResources(new Color(84, 185, 72), MSAState.Running);
+    public static final StateResources THREAD_RUNNING_USER = new StateResources(new Color(84, 185, 72), MSAState.RunningUser);
+    public static final StateResources THREAD_RUNNING_SYSTEM = new StateResources(new Color(0, 166, 80), MSAState.RunningSystemCall);
+    public static final StateResources THREAD_RUNNING_OTHER = new StateResources(new Color(0, 169, 157), MSAState.RunningOther);
+
+    public static final StateResources THREAD_BLOCKED = new StateResources(new Color(238, 29, 37), MSAState.Blocked);
+//            add(list, MSAState.SleepingUserLock, map); new Color(238, 29, 37);
+
+    public static final StateResources THREAD_SLEEPING = new StateResources(new Color(255, 199, 38), MSAState.Sleeping);
+//            add(list, MSAState.SleepingUserDataPageFault, map);
+//            add(list, MSAState.SleepingUserTextPageFault, map);
+//            add(list, MSAState.SleepingKernelPageFault, map);
+//            add(list, MSAState.SleepingOther, map);
+//            add(list, MSAState.ThreadStopped, map);
+
+    public static final StateResources THREAD_WAITING = new StateResources(new Color(83, 130, 161), MSAState.Waiting);
+//            add(list, MSAState.WaitingCPU, map);
+
+    static Color getThreadStateColor(MSAState threadState) {
         switch(threadState) {
-            case THREAD_STATUS_UNKNOWN: return THREAD_STATUS_UNKNOWN_COLOR;
-            case THREAD_STATUS_ZOMBIE: return THREAD_STATUS_ZOMBIE_COLOR;
-            case THREAD_STATUS_RUNNING: return THREAD_STATUS_RUNNING_COLOR;
-            case THREAD_STATUS_SLEEPING: return THREAD_STATUS_SLEEPING_COLOR;
-            case THREAD_STATUS_MONITOR: return THREAD_STATUS_MONITOR_COLOR;
-            case THREAD_STATUS_WAIT: return THREAD_STATUS_WAIT_COLOR;
+            case ThreadFinished: return THREAD_STATUS_ZOMBIE_COLOR;
+            
+            case Running: return THREAD_RUNNING.color;
+            case RunningUser: return THREAD_RUNNING_USER.color;
+            case RunningSystemCall: return THREAD_RUNNING_SYSTEM.color;
+            case RunningOther: return THREAD_RUNNING_OTHER.color;
+
+            case Blocked: return THREAD_BLOCKED.color;
+            case Waiting:  return THREAD_WAITING.color;
+            case Sleeping: return THREAD_SLEEPING.color;
+            case Stopped: return THREAD_SLEEPING.color;
         }
         return THREAD_STATUS_UNKNOWN_COLOR;
     }
 
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
-        return getThreadStateColor(threadStateColor.getStateName(msa));
-    }
-
-    static Color getThreadStateColor(String name) {
-        Color c;
-        if (name.equals(ThreadState.ShortThreadState.Running.name())) {
-            c = THREAD_STATUS_RUNNING_COLOR;
-        } else if (name.equals(ThreadState.ShortThreadState.Waiting.name())) {
-            c = THREAD_STATUS_WAIT_COLOR;
-        } else if (name.equals(ThreadState.ShortThreadState.Blocked.name())) {
-            c = THREAD_STATUS_MONITOR_COLOR;
-        } else if (name.equals(ThreadState.ShortThreadState.Sleeping.name())) {
-            c = THREAD_STATUS_SLEEPING_COLOR;
-        } else {
-            c = THREAD_STATUS_UNKNOWN_COLOR;
-        }
-        return c;
+        return getThreadStateColor(threadStateColor.getMSAState(msa, false));
     }
 
     private final MergedThreadInfo info;
@@ -145,7 +127,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     public boolean isAlive(int index) {
-        return !list.get(index).getStateName(0).equals(ThreadState.ShortThreadState.NotExist.name());
+        return !list.get(index).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
     
     public ThreadState getThreadStateAt(int index){
@@ -153,7 +135,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     public boolean isAlive() {
-        return !list.get(list.size()-1).getStateName(0).equals(ThreadState.ShortThreadState.NotExist.name());
+        return !list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
 
     void add(ThreadState state) {
@@ -169,5 +151,16 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
     long getThreadStartTimeStamp() {
         return info.getStartTimeStamp();
+    }
+
+    public static final class StateResources {
+        final Color color;
+        final String name;
+        final String tooltip;
+        StateResources(Color color, MSAState state){
+            this.color = color;
+            name = messages.getString("ThreadState"+state.name()+"Name");
+            tooltip = messages.getString("ThreadState"+state.name()+"Tooltip");
+        }
     }
 }

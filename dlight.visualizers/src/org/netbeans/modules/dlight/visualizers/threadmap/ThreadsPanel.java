@@ -99,6 +99,8 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -165,6 +167,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JLabel enableThreadsMonitoringLabel2;
     private JLabel enableThreadsMonitoringLabel3;
     private JPanel legendPanel;
+    private JCheckBox modeMSA;
+    private JCheckBox fullMSA;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showThreadsDetails;
     private JPanel contentPanel; // panel with CardLayout containing threadsTable & enable threads profiling notification and button
@@ -361,8 +365,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         rest.add(scrollBar, BorderLayout.EAST);
 
         legendPanel = new JPanel();
+        legendPanel.setLayout(new BorderLayout());
         legendPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-        this.initLegend(false);
+        initLegend(false);
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
@@ -372,15 +377,16 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         JPanel MSAPanel = new JPanel();
         MSAPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         MSAPanel.setLayout(new BorderLayout());
-        JCheckBox modeMSA = new JCheckBox(MODE_MSA_TEXT);
+        modeMSA = new JCheckBox(MODE_MSA_TEXT);
         modeMSA.setSelected(true);
         modeMSA.setToolTipText(MODE_MSA_TOOLTIP);
-        JCheckBox fullMSA = new JCheckBox(FULL_MSA_TEXT);
+        fullMSA = new JCheckBox(FULL_MSA_TEXT);
         fullMSA.setSelected(false);
         fullMSA.setToolTipText(FULL_MSA_TOOLTIP);
         MSAPanel.add(modeMSA, BorderLayout.NORTH);
         MSAPanel.add(fullMSA, BorderLayout.SOUTH);
         bottomPanel.add(MSAPanel, BorderLayout.WEST);
+        fullMSA.addActionListener(this);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
         JPanel dataPanel = new JPanel();
@@ -554,24 +560,32 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private void initLegend(boolean isFull){
         legendPanel.removeAll();
         if (!isFull) {
-            ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 10, 10);// 18, 9);
-            ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 10, 10);// 18, 9);
-            ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 10, 10);// 18, 9);
-            ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 10, 10);// 18, 9);
-
-            JLabel runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
-            runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
-            monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
-            waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
-            sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            legendPanel.add(runningLegend);
-            legendPanel.add(monitorLegend);
-            legendPanel.add(waitLegend);
-            legendPanel.add(sleepingLegend);
+            JPanel container = new JPanel();
+            container.add(createLegendLabel(ThreadState.MSAState.Running, ThreadStateColumnImpl.THREAD_RUNNING));
+            container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateColumnImpl.THREAD_BLOCKED));
+            container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateColumnImpl.THREAD_WAITING));
+            container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateColumnImpl.THREAD_SLEEPING));
+            legendPanel.add(container, BorderLayout.CENTER);
+        } else {
+            JPanel container = new JPanel();
+            container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateColumnImpl.THREAD_RUNNING_USER));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateColumnImpl.THREAD_RUNNING_OTHER));
+            legendPanel.add(container, BorderLayout.NORTH);
+            container = new JPanel();
+            container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateColumnImpl.THREAD_BLOCKED));
+            container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateColumnImpl.THREAD_WAITING));
+            container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateColumnImpl.THREAD_SLEEPING));
+            legendPanel.add(container, BorderLayout.SOUTH);
         }
+    }
+
+    private JLabel createLegendLabel(ThreadState.MSAState state, StateResources resources){
+        ThreadStateIcon icon = new ThreadStateIcon(state, 10, 10);
+        JLabel label = new JLabel(resources.name, icon, SwingConstants.LEADING);
+        label.setToolTipText(resources.tooltip);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        return label;
     }
 
     private void sortByColumn(int column){
@@ -701,7 +715,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             table.clearSelection();
         } else if (e.getSource() == showThreadsDetails) {
             performDefaultAction();
+        } else if (e.getSource() == fullMSA) {
+            initLegend(isFullMode());
+            refreshViewData();
         }
+    }
+
+    boolean isFullMode(){
+        return fullMSA.isSelected();
     }
 
     // --- Save Current View action support --------------------------------------

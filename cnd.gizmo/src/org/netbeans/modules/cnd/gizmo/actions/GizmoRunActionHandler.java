@@ -225,7 +225,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             case STARTING:
                 break;
             case RUNNING:
-                targetStarted();
+                targetStarted(event.status);
                 break;
             case FAILED:
             case STOPPED:
@@ -240,10 +240,10 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
-    private void targetStarted() {
+    private void targetStarted(int pid) {
         startTimeMillis = System.currentTimeMillis();
         for (ExecutionListener l : listeners) {
-            l.executionStarted();
+            l.executionStarted(pid);
         }
     }
 

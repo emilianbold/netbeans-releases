@@ -91,7 +91,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
 
         final DataTableMetadata dtraceFopsMetadata =
-                new DataTableMetadata("fops", fopsColumns); // NOI18N
+                new DataTableMetadata("fops", fopsColumns, null); // NOI18N
 
         final String script = Util.copyResource(
                 FopsToolConfigurationProvider.class,

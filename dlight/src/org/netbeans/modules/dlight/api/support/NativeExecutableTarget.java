@@ -211,7 +211,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         // a runnable passed to an execution service as a postExecution parameter.
 
         if (doNotify) {
-            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, status));
+            Integer notificationValue = (newState == DLightTarget.State.RUNNING) ? Integer.valueOf(pid) : status;
+            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, notificationValue));
         }
     }
 
