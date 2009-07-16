@@ -44,10 +44,13 @@ package org.netbeans.modules.cnd.api.execution;
 import java.util.EventListener;
 
 public interface ExecutionListener extends EventListener {
+    int UNKNOWN_PID = -1;
+
     /**
      *  Announce the start of the execution. Do any related startup work.
+     *  pid is provided if available, UNKNOWN_PID otherwise
      */
-    public void executionStarted();
+    public void executionStarted(int pid);
 
 
     /**

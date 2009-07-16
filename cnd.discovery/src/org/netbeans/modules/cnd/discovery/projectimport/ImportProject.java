@@ -457,7 +457,7 @@ public class ImportProject implements PropertyChangeListener {
             //final File configureLog = createTempFile("configure");
             ExecutionListener listener = new ExecutionListener() {
 
-                public void executionStarted() {
+                public void executionStarted(int pid) {
                 }
 
                 public void executionFinished(int rc) {
@@ -532,7 +532,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         ExecutionListener listener = new ExecutionListener() {
 
-            public void executionStarted() {
+            public void executionStarted(int pid) {
             }
 
             public void executionFinished(int rc) {
@@ -565,7 +565,7 @@ public class ImportProject implements PropertyChangeListener {
         final File makeLog = createTempFile("make"); // NOI18N
         ExecutionListener listener = new ExecutionListener() {
 
-            public void executionStarted() {
+            public void executionStarted(int pid) {
             }
 
             public void executionFinished(int rc) {
