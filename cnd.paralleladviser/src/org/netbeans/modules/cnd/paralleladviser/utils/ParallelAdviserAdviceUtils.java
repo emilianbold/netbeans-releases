@@ -59,32 +59,32 @@ public class ParallelAdviserAdviceUtils {
 
     public static JComponent createAdviceComponent(URL icon, String text) {
 
-        JEditorPane jEditorPane = createJEditorPane("<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" +
-                "        <tr bgcolor=\"#c7e3e8\">" +
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-tl.png\" height=\"21\" width=\"7\"></td>" +
-                "            <td colspan=\"2\" width=\"800\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>Loop for parallelization has been found</b></td>" +
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-tr.png\" height=\"21\" width=\"7\"></td>" +
-                "        </tr>" +
-                "    </table>" +
-                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" +
-                "        <tr>" +
-                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" +
-                "            <td width=\"50\" style=\"margin:4px;\">" +
-                "                <img src=\"" + icon + "\">" +
-                "            </td>" +
-                "            <td width=\"762\" style=\"margin:4px;\">" +
+        JEditorPane jEditorPane = createJEditorPane("<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+                "        <tr bgcolor=\"#c7e3e8\">" + // NOI18N
+                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-tl.png\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "            <td colspan=\"2\" width=\"800\" style=\"font-size:1.1em;color:#0e1b55;\">&nbsp;&nbsp;<b>Loop for parallelization has been found</b></td>" + // NOI18N
+                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-tr.png\" height=\"21\" width=\"7\"></td>" + // NOI18N
+                "        </tr>" + // NOI18N
+                "    </table>" + // NOI18N
+                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+                "        <tr>" + // NOI18N
+                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" + // NOI18N
+                "            <td width=\"50\" style=\"margin:4px;\">" + // NOI18N
+                "                <img src=\"" + icon + "\">" + // NOI18N
+                "            </td>" + // NOI18N
+                "            <td width=\"762\" style=\"margin:4px;\">" + // NOI18N
                 text +
-                "            </td>" +
-                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" +
-                "        </tr>" +
-                "    </table>" +
-                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" +
-                "        <tr>" +
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-bl.png\" height=\"6\" width=\"7\"></td>" +
-                "            <td colspan=\"2\" width=\"800\"><img src=\"http://netbeans.org/images/v6/trails/trails-box-bm.png\" height=\"6\" width=\"800\"></td>" +
-                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-br.png\" height=\"6\" width=\"7\"></td>" +
-                "        </tr>" +
-                "    </table>", true);
+                "            </td>" + // NOI18N
+                "            <td bgcolor=\"#c7e3e8\" width=\"1\"></td>" + // NOI18N
+                "        </tr>" + // NOI18N
+                "    </table>" + // NOI18N
+                "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" + // NOI18N
+                "        <tr>" + // NOI18N
+                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-bl.png\" height=\"6\" width=\"7\"></td>" + // NOI18N
+                "            <td colspan=\"2\" width=\"800\"><img src=\"http://netbeans.org/images/v6/trails/trails-box-bm.png\" height=\"6\" width=\"800\"></td>" + // NOI18N
+                "            <td><img src=\"http://netbeans.org/images/v6/trails/trails-box-br.png\" height=\"6\" width=\"7\"></td>" + // NOI18N
+                "        </tr>" + // NOI18N
+                "    </table>", true); // NOI18N
 
         jEditorPane.setBackground(new java.awt.Color(255, 255, 255));
         jEditorPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -107,7 +107,7 @@ public class ParallelAdviserAdviceUtils {
 //        String bodyRule = "body { font-family: " + font.getFamily() + "; " +//NOI18N
 //                "font-size: " + font.getSize() + "pt; }";//NOI18N
 
-        String rule1 = "body {margin:6px 6px 6px 6px;}";
+        String rule1 = "body {margin:6px 6px 6px 6px;}"; // NOI18N
         ((HTMLDocument) editorPane.getDocument()).getStyleSheet().addRule(rule1);
 
         editorPane.setOpaque(false);

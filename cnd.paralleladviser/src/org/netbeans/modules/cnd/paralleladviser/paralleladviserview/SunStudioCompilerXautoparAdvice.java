@@ -64,23 +64,23 @@ public class SunStudioCompilerXautoparAdvice implements Advice {
 
     public JComponent getComponent() {
 
-        URL iconUrl = SunStudioCompilerXautoparAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png");
+        URL iconUrl = SunStudioCompilerXautoparAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
 
         return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl,
-                "<b>-xautopar</b> turns on automatic parallelization for multiple processors. " +
-                "Does dependence analysis (analyze loops for inter-iteration data dependence) and loop restructuring. " +
-                "If optimization is not at-xO3 or higher, optimization is raised to-xO3 and a warning is emitted." +
-                "<br>" +
-                "<br>" +
-                "To achieve faster execution, this option requires a multiple processor system. " +
-                "On a single-processor system, the resulting binary usually runs slower." +
-                "<br>" +
-                "<br>" +
-                "If you use <b>-xautopar</b> and compile and link in one step, " +
-                "then linking automatically includes the microtasking library and the threads-safe C runtime library. " +
-                "If you use <b>-xautopar</b> and compile and link in separate steps, then you must also link with <b>-xautopar</b>." +
-                "<br>" +
-                "<br>" +
-                "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>.");
+                "<b>-xautopar</b> turns on automatic parallelization for multiple processors. " + // NOI18N
+                "Does dependence analysis (analyze loops for inter-iteration data dependence) and loop restructuring. " + // NOI18N
+                "If optimization is not at-xO3 or higher, optimization is raised to-xO3 and a warning is emitted." + // NOI18N
+                "<br>" + // NOI18N
+                "<br>" + // NOI18N
+                "To achieve faster execution, this option requires a multiple processor system. " + // NOI18N
+                "On a single-processor system, the resulting binary usually runs slower." + // NOI18N
+                "<br>" + // NOI18N
+                "<br>" + // NOI18N
+                "If you use <b>-xautopar</b> and compile and link in one step, " + // NOI18N
+                "then linking automatically includes the microtasking library and the threads-safe C runtime library. " + // NOI18N
+                "If you use <b>-xautopar</b> and compile and link in separate steps, then you must also link with <b>-xautopar</b>." + // NOI18N
+                "<br>" + // NOI18N
+                "<br>" + // NOI18N
+                "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>."); // NOI18N
     }
 }

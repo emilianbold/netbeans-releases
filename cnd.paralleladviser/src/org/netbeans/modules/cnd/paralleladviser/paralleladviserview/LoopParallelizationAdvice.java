@@ -63,14 +63,14 @@ import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils
 public class LoopParallelizationAdvice implements Advice {
 
     public JComponent getComponent() {
-        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png");
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
         return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl,
-                "Parallel computing is a form of computation in which many calculations are carried out simultaneously, " +
-                "operating on the principle that large problems can often be divided into smaller ones, " +
-                "which are then solved concurrently (\"in parallel\"). There are several different forms of parallel computing: bit-level, " +
-                "instruction level, data, and task parallelism. Parallelism has been employed for many years, mainly in high-performance computing, " +
-                "but interest in it has grown lately due to the physical constraints preventing frequency scaling. " +
-                "As power consumption (and consequently heat generation) by computers has become a concern in recent years, " +
-                "parallel computing has become the dominant paradigm in computer architecture, mainly in the form of multicore processors.");
+                "Parallel computing is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
+                "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
+                "which are then solved concurrently (\"in parallel\"). There are several different forms of parallel computing: bit-level, " + // NOI18N
+                "instruction level, data, and task parallelism. Parallelism has been employed for many years, mainly in high-performance computing, " + // NOI18N
+                "but interest in it has grown lately due to the physical constraints preventing frequency scaling. " + // NOI18N
+                "As power consumption (and consequently heat generation) by computers has become a concern in recent years, " + // NOI18N
+                "parallel computing has become the dominant paradigm in computer architecture, mainly in the form of multicore processors."); // NOI18N
     }
 }
