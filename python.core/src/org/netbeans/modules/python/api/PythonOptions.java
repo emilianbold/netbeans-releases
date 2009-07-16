@@ -149,15 +149,19 @@ public class PythonOptions {
       return new Color(R,G,B) ;
     }
 
-    private Font stringToFont( String strFont ) {
-    int offsetStyle = strFont.indexOf('-') ;
-    int offsetSize = strFont.lastIndexOf('-') ;
-      if ( ( offsetStyle == -1 ) || ( offsetSize == -1 ) )
-        return null ;
-      String name = strFont.substring(0,offsetStyle) ;
-      int style = Integer.parseInt( strFont.substring(offsetStyle+1,offsetSize) );
-      int size = Integer.parseInt( strFont.substring(offsetSize+1) );
-      return new Font( name , style , size ) ;
+    private Font stringToFont(String strFont) {
+        int offsetSize = strFont.lastIndexOf('-');
+        if (offsetSize == -1) {
+            return null;
+        }
+        int offsetStyle = strFont.substring(0, offsetSize).lastIndexOf('-');
+        if (offsetStyle == -1) {
+            return null;
+        }
+        String name = strFont.substring(0, offsetStyle);
+        int style = Integer.parseInt(strFont.substring(offsetStyle + 1, offsetSize));
+        int size = Integer.parseInt(strFont.substring(offsetSize + 1));
+        return new Font(name, style, size);
     }
 
     private String fontToString( Font font ) {
