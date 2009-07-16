@@ -384,7 +384,7 @@ public class HtmlCompletionQueryTest extends TestBase {
             return ;
         }
 
-        Collection<HtmlCompletionItem> items = completionResult.getItems();
+        Collection<CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
         if(expectedAnchor > 0) {
@@ -442,12 +442,12 @@ public class HtmlCompletionQueryTest extends TestBase {
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
 
         assertNotNull(result);
-        Collection<HtmlCompletionItem> items = completionResult.getItems();
+        Collection<CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
-        HtmlCompletionItem item = null;
-        for (HtmlCompletionItem htmlci : items) {
-            if (htmlci.getItemText().equals(itemToCompleteName)) {
+        CompletionItem item = null;
+        for (CompletionItem htmlci : items) {
+            if (((HtmlCompletionItem)htmlci).getItemText().equals(itemToCompleteName)) {
                 item = htmlci; //found
                 break;
             }
@@ -464,7 +464,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     }
 
-    private void assertCompletionItemNames(String[] expected, Collection<HtmlCompletionItem> ccresult, Match type) {
+    private void assertCompletionItemNames(String[] expected, Collection<CompletionItem> ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionItem ccp : ccresult) {
             //check only html items
@@ -506,20 +506,20 @@ public class HtmlCompletionQueryTest extends TestBase {
         for (int i = 0; i < doc.getLength(); i++) {
             HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, i).query();
             if (result != null) {
-                Collection<HtmlCompletionItem> items = result.getItems();
+                Collection<CompletionItem> items = result.getItems();
                 output.append(i + ":");
                 output.append('[');
-                List<HtmlCompletionItem> itemsList = new ArrayList<HtmlCompletionItem>(items);
+                List<CompletionItem> itemsList = new ArrayList<CompletionItem>(items);
                 //sort the collection according to the sort text.
                 //normally the html completion infrastr. does this
-                Collections.sort(itemsList, new Comparator<HtmlCompletionItem>() {
-                    public int compare(HtmlCompletionItem o1, HtmlCompletionItem o2) {
+                Collections.sort(itemsList, new Comparator<CompletionItem>() {
+                    public int compare(CompletionItem o1, CompletionItem o2) {
                         return o1.getSortText().toString().compareTo(o2.getSortText().toString());
                     }
                 });
-                Iterator<HtmlCompletionItem> itr = itemsList.iterator();
+                Iterator<CompletionItem> itr = itemsList.iterator();
                 while (itr.hasNext()) {
-                    HtmlCompletionItem htmlci = itr.next();
+                    HtmlCompletionItem htmlci = (HtmlCompletionItem)itr.next();
                     output.append(htmlci.getItemText());
                     if (itr.hasNext()) {
                         output.append(',');
