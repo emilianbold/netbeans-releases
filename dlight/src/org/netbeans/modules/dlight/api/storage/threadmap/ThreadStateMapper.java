@@ -45,7 +45,6 @@ public final class ThreadStateMapper {
 
     private final static HashMap<MSAState, MSAState> translationTable;
 
-
     static {
         translationTable = new HashMap<MSAState, MSAState>();
         // Running
@@ -65,9 +64,11 @@ public final class ThreadStateMapper {
         translationTable.put(MSAState.ThreadStopped, MSAState.Stopped);
     }
 
+    private ThreadStateMapper() {
+    }
+
     public static final MSAState toSimpleState(MSAState detailedState) {
         MSAState result = translationTable.get(detailedState);
-        assert result != null;
-        return result;
+        return (result == null) ? detailedState : result;
     }
 }

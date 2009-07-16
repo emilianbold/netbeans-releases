@@ -99,6 +99,7 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.openide.util.NbBundle;
 
 /**
@@ -554,16 +555,16 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private void initLegend(boolean isFull){
         legendPanel.removeAll();
         if (!isFull) {
-            ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_RUNNING, 10, 10);// 18, 9);
-            ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_MONITOR, 10, 10);// 18, 9);
-            ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_WAIT, 10, 10);// 18, 9);
-            ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING, 10, 10);// 18, 9);
+            ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadState.MSAState.Running, 10, 10);// 18, 9);
+            ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadState.MSAState.Blocked, 10, 10);// 18, 9);
+            ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadState.MSAState.Waiting, 10, 10);// 18, 9);
+            ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadState.MSAState.Sleeping, 10, 10);// 18, 9);
 
             JLabel runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
             runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_MONITOR_STRING, monitorIcon, SwingConstants.LEADING);
+            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_BLOCKED_STRING, monitorIcon, SwingConstants.LEADING);
             monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAIT_STRING, waitIcon, SwingConstants.LEADING);
+            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAITING_STRING, waitIcon, SwingConstants.LEADING);
             waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
             JLabel sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
             sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
