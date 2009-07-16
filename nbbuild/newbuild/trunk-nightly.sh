@@ -65,8 +65,8 @@ if [ -n $BUILD_ID ]; then
 fi
 
 if [ $UPLOAD_ML == 1 ]; then
-    cp $DIST/jnlp $DIST/ml/
-    cp $DIST/javadoc $DIST/ml/
+    mv $DIST/jnlp $DIST/ml/
+    mv $DIST/javadoc $DIST/ml/
     cp $DIST/zip/$BASENAME-platform-src.zip $DIST/ml/zip/
     cp $DIST/zip/$BASENAME-src.zip $DIST/ml/zip/
     cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
