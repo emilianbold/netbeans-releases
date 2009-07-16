@@ -74,6 +74,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -144,6 +145,7 @@ public final class CreateTestsAction extends NodeAction {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
                 handle.start();
                 try {
+                    LifecycleManager.getDefault().saveAll();
                     generateTests(activatedNodes, phpUnit, phpProject);
                 } finally {
                     handle.finish();
