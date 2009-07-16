@@ -78,7 +78,7 @@ public class FileCommandActionTest extends NbTestCase {
     private TestSupport.TestProject project1;
     private TestSupport.TestProject project2;
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir();
@@ -104,7 +104,7 @@ public class FileCommandActionTest extends NbTestCase {
         
     }
     
-    public boolean runInEQ () {
+    public @Override boolean runInEQ() {
         return true;
     }
     
