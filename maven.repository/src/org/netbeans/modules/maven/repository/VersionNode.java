@@ -110,7 +110,7 @@ public class VersionNode extends AbstractNode {
         this.record = versionInfo;
         if (dispNameShort) {
             setName(versionInfo.getVersion());
-            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() //NOI18N
+            setDisplayName(versionInfo.getVersion() + " [ " + (versionInfo.getType() != null ? versionInfo.getType() : "jar") //NOI18N
                     + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ]");//NOI18N
         } else {
             setName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
