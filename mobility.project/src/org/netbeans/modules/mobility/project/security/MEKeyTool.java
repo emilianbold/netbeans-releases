@@ -222,7 +222,14 @@ public class MEKeyTool {
         }
         File deviceWorkingDir = new File(System.getProperty("user.home") + File.separatorChar + systemProps.getProperty("toolkits.dir") + File.separatorChar + systemProps.getProperty("release.dir") + File.separatorChar + systemProps.getProperty("work.dir")); //NOI18N
         if (!deviceWorkingDir.exists()) {
-            return null;
+            FileObject manager = platform.findTool("emulator"); //NOI18N
+            if (manager == null) return null;
+            try {
+                execute(new String[]{FileUtil.toFile(manager).toString()});
+            } catch (IOException ex) { } //no need to notify
+            if (!deviceWorkingDir.exists()){
+                return null;
+            }
         }
 
         FileObject deviceFolderFO = FileUtil.toFileObject(FileUtil.normalizeFile(deviceWorkingDir));
