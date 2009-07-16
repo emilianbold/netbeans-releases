@@ -569,13 +569,17 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         } else {
             JPanel container = new JPanel();
             container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateColumnImpl.THREAD_RUNNING_USER));
-            container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING_SYSTEM));
             container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateColumnImpl.THREAD_RUNNING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateColumnImpl.THREAD_SLEEP_USE_LOCK));
+            container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateColumnImpl.THREAD_THREAD_STOPPED));
             legendPanel.add(container, BorderLayout.NORTH);
             container = new JPanel();
-            container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateColumnImpl.THREAD_BLOCKED));
-            container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateColumnImpl.THREAD_WAITING));
-            container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateColumnImpl.THREAD_SLEEPING));
+            container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateColumnImpl.THREAD_WAITING_CPU));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingOther, ThreadStateColumnImpl.THREAD_SLEEPING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserTextPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_TEXT_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingKernelPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_KERNEL_PAGE_FAULT));
             legendPanel.add(container, BorderLayout.SOUTH);
         }
     }
