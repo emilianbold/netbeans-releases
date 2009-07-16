@@ -16,10 +16,12 @@ import org.mozilla.browser.MozillaRuntimeException;
 import org.mozilla.browser.impl.ChromeAdapter;
 import org.mozilla.browser.impl.DOMUtils;
 import org.mozilla.dom.NodeFactory;
+import org.mozilla.interfaces.nsIBaseWindow;
 import org.mozilla.interfaces.nsIDOMRange;
 import org.mozilla.interfaces.nsISelection;
 import org.mozilla.interfaces.nsIWebBrowser;
 import org.mozilla.interfaces.nsIWebBrowserFocus;
+import org.mozilla.xpcom.XPCOMException;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -227,6 +229,25 @@ public class BrowserPanel extends MozillaPanel {
                     return;
                 nsIWebBrowserFocus webBrowserFocus = qi(ca.getWebBrowser(), nsIWebBrowserFocus.class);
                 webBrowserFocus.activate();
+            }
+        };
+        mozAsyncExec(r);
+    }
+
+    public void requestRepaint() {
+        Runnable r = new Runnable() {
+            public void run() {
+                ChromeAdapter ca = getChromeAdapter();
+                if( null == ca )
+                    return;
+                nsIBaseWindow baseWindow = qi(ca.getWebBrowser(), nsIBaseWindow.class);
+                if( null == baseWindow )
+                    return;
+                try {
+                    baseWindow.repaint(false);
+                } catch( XPCOMException e ) {
+                    //ignore
+                }
             }
         };
         mozAsyncExec(r);

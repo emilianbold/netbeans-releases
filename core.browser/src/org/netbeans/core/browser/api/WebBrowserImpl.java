@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -63,6 +64,8 @@ import org.netbeans.core.browser.BrowserCallback;
 import org.netbeans.core.browser.BrowserManager;
 import org.netbeans.core.browser.BrowserPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -80,6 +83,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final List<WebBrowserListener> browserListners = new ArrayList<WebBrowserListener>(10);
     private final Object LOCK = new Object();
+    private PropertyChangeListener tcListener;
 
     public WebBrowserImpl() {
     }
@@ -99,7 +103,9 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                                     browser.requestFocusInBrowser();
                                     //for some reason the native browser has invalid
                                     //position/size when activated in a topcomponent
-                                    forceLayout();
+                                    if( Utilities.isWindows() ) {
+                                        forceLayout();
+                                    }
                                 }
                             }
                         });
@@ -124,6 +130,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                             }
                         }
                     });
+                }
+                if( Utilities.isMac() ) {
+                    tcListener = createTopComponentListener();
+                    TopComponent.getRegistry().addPropertyChangeListener( tcListener );
                 }
             }
         }
@@ -288,6 +298,9 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             browserListners.clear();
             container = null;
         }
+        if( null != tcListener ) {
+            TopComponent.getRegistry().removePropertyChangeListener( tcListener );
+        }
     }
 
     @Override
@@ -370,5 +383,17 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             frame.getRootPane().revalidate();
             frame.getRootPane().repaint();
         }
+    }
+
+    private PropertyChangeListener createTopComponentListener() {
+        return new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName() )
+                    && browser != null && browser.isShowing() ) {
+                    browser.requestRepaint();
+                }
+            }
+        };
     }
 }
