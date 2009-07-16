@@ -301,7 +301,7 @@ public class FormLAF {
         }
     }
 
-    static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
+    public static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
         Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
             public Object run() {
                 // FIXME(-ttran) needs to hold a lock on UIDefaults to
