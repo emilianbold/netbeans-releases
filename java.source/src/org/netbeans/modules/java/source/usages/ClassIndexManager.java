@@ -112,17 +112,25 @@ public final class ClassIndexManager {
             try {
                 return r.run();
             } finally {
+                Set<URL> addedCp = null;
+                Set<URL> removedCp = null;
                 synchronized (internalLock) {
                     if (depth == 1) {
                         if (!removed.isEmpty()) {
-                            fire (removed, OP_REMOVE);
+                            removedCp = new HashSet<URL>(removed);
                             removed.clear();
                         }
                         if (!added.isEmpty()) {
-                            fire (added, OP_ADD);
+                            addedCp = new HashSet<URL>(added);
                             added.clear();
                         }
                     }
+                }
+                if (removedCp != null) {
+                    fire (removedCp, OP_REMOVE);
+                }
+                if (addedCp != null) {
+                    fire (addedCp, OP_ADD);
                 }
             }
         } finally {
