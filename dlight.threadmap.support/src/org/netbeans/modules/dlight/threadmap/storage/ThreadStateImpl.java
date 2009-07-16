@@ -48,25 +48,25 @@ public class ThreadStateImpl implements ThreadState {
     private final byte[] statePercentage;
     private final int size;
     private final long timestamp;
-    static FullThreadState[] collectedStates = new FullThreadState[]{
+    static MSAState[] collectedStates = new MSAState[]{
         null,
         null,
         null,
-        FullThreadState.RunningUser,
-        FullThreadState.RunningSystemCall,
-        FullThreadState.RunningOther,
-        FullThreadState.SleepingUserTextPageFault,
-        FullThreadState.SleepingUserDataPageFault,
-        FullThreadState.SleepingKernelPageFault,
-        FullThreadState.WaitingCPU,
-        FullThreadState.Stopped,
-        FullThreadState.SleepingUserSynchronization,
-        FullThreadState.SleepingOther,
-        FullThreadState.SOBJ_Mutex,
-        FullThreadState.SOBJ_RWLock,
-        FullThreadState.SOBJ_CV,
-        FullThreadState.SOBJ_Sema,
-        FullThreadState.SOBJ_User
+        MSAState.RunningUser,
+        MSAState.RunningSystemCall,
+        MSAState.RunningOther,
+        MSAState.SleepingUserTextPageFault,
+        MSAState.SleepingUserDataPageFault,
+        MSAState.SleepingKernelPageFault,
+        MSAState.WaitingCPU,
+        MSAState.Stopped,
+        MSAState.SleepingUserSynchronization,
+        MSAState.SleepingOther,
+        MSAState.SOBJ_Mutex,
+        MSAState.SOBJ_RWLock,
+        MSAState.SOBJ_CV,
+        MSAState.SOBJ_Sema,
+        MSAState.SOBJ_User
     };
 
     public ThreadStateImpl(long timestamp, int[] stat) {
@@ -95,23 +95,25 @@ public class ThreadStateImpl implements ThreadState {
         return size;
     }
 
-    public String getStateName(int index) {
+    public MSAState getMSAState(int index, boolean full) {
         if (index >= stateIDs.length) {
-            return ShortThreadState.NotExist.name();
+            return MSAState.NotExist;
         }
 
         final int stateIdx = stateIDs[index];
 
         assert stateIdx > 2;
-        final FullThreadState fullState = collectedStates[stateIdx];
+        final MSAState fullState = collectedStates[stateIdx];
+        if (full) {
+            return fullState;
+        }
 
-        String result;
-
+        MSAState result;
         switch (fullState) {
             case RunningUser:
             case RunningSystemCall:
             case RunningOther:
-                result = ShortThreadState.Running.name();
+                result = MSAState.Running;
                 break;
             case SOBJ_Sema:
             case SOBJ_RWLock:
@@ -120,23 +122,23 @@ public class ThreadStateImpl implements ThreadState {
             case SleepingSemafore:
             case SleepingSystemSynchronization:
             case SleepingUserSynchronization:
-                result = ShortThreadState.Blocked.name();
+                result = MSAState.Blocked;
                 break;
             case SleepingUserTextPageFault:
             case SleepingKernelPageFault:
             case SleepingOther:
-                result = ShortThreadState.Sleeping.name();
+                result = MSAState.Sleeping;
                 break;
             case SleepingConditionalVariable:
             case SOBJ_CV:
             case WaitingCPU:
-                result = ShortThreadState.Waiting.name();
+                result = MSAState.Waiting;
                 break;
             case Stopped:
-                result = ShortThreadState.NotExist.name();
+                result = MSAState.NotExist;
                 break;
             default:
-                result = fullState.name();
+                result = fullState;
         }
 
         return result;

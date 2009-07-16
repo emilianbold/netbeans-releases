@@ -70,10 +70,10 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadStateCellRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
-        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Running.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Blocked.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Waiting.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Sleeping.name(), new AtomicInteger());
     }
 
     /**
@@ -266,7 +266,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         }
 
         for (int i = 0; i < size; i++) {
-            map.get(threadStateColor.getStateName(i)).addAndGet(threadStateColor.getState(i));
+            map.get(threadStateColor.getMSAState(i, false).name()).addAndGet(threadStateColor.getState(i));
         }
 
         int y = 0;
