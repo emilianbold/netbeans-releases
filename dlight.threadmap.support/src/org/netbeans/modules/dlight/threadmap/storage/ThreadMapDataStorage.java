@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
@@ -107,6 +108,8 @@ public class ThreadMapDataStorage {
 
     public ThreadMapData queryThreadMapData(ThreadMapDataQuery query) {
         final List<ThreadData> threadsData = new ArrayList<ThreadData>();
+
+        System.out.println("Query: " + TimeUnit.MILLISECONDS.toSeconds(query.getTimeFrom()) + " - " + TimeUnit.MILLISECONDS.toSeconds(query.getTimeTo()));
 
         for (ThreadDataImpl td : data) {
             threadsData.add(td);

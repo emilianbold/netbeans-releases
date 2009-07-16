@@ -43,6 +43,7 @@ package org.netbeans.modules.dlight.api.storage.threadmap;
  * @author Alexander Simon
  */
 public interface ThreadState {
+
     /**
      * Sum of all MSA in any time.
      */
@@ -52,31 +53,29 @@ public interface ThreadState {
      * Aggregated thread states.
      */
     public static enum MSAState {
+        // Short states list ...
 
-        NotExist,
-        Sleeping,
-        Waiting,
-        Blocked,
-        Running,
-
-        Stopped,
-        SleepingOther,
-        SleepingUserTextPageFault,
-        SleepingUserDataPageFault,
-        SleepingKernelPageFault,
-        SleepingSemafore,
-        SleepingConditionalVariable,
-        SleepingSystemSynchronization,
-        SleepingUserSynchronization,
-        WaitingCPU,
-        RunningOther,
-        RunningSystemCall,
-        RunningUser,
-        SOBJ_Mutex,
-        SOBJ_RWLock,
-        SOBJ_CV,
-        SOBJ_Sema,
-        SOBJ_User,
+        START_SHORT_LIST,
+        Running, // on cpu and runn
+        Sleeping, // sleep()
+        Waiting, // pthread_join, for example
+        Blocked, // on some mutex
+        Stopped, // lwp_suspend()
+        END_SHORT_LIST,
+        // Long states list ...
+        START_LONG_LIST,
+        RunningUser, // running in user mode
+        RunningSystemCall, // running in sys call or page fault
+        RunningOther, // running in other trap
+        SleepingUserTextPageFault, // asleep in user text page fault
+        SleepingUserDataPageFault, // asleep in user data page fault
+        SleepingKernelPageFault, // asleep in kernel page fault
+        SleepingUserLock, // asleep waiting for user-mode lock
+        SleepingOther, // asleep for any other reason
+        WaitingCPU, // waiting for CPU (latency)
+        ThreadStopped, // stopped (/proc, jobcontrol, lwp_suspend)
+        END_LONG_LIST,
+        ThreadFinished, // Thread is gone
     }
 
     /**
@@ -97,6 +96,7 @@ public interface ThreadState {
      * @return value of state by index. Unit of value is 1%. I.e. sum of all values is 100.
      */
     public byte getState(int index);
+
     /**
      * returns -1 if there are no stack avaliable.
      *

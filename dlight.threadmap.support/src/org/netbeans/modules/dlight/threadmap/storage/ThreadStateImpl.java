@@ -41,8 +41,9 @@ package org.netbeans.modules.dlight.threadmap.storage;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateMapper;
 
-public class ThreadStateImpl implements ThreadState {
+public final class ThreadStateImpl implements ThreadState {
 
     private final byte[] stateIDs;
     private final byte[] statePercentage;
@@ -60,13 +61,13 @@ public class ThreadStateImpl implements ThreadState {
         MSAState.SleepingKernelPageFault,
         MSAState.WaitingCPU,
         MSAState.Stopped,
-        MSAState.SleepingUserSynchronization,
+        MSAState.SleepingUserLock,
         MSAState.SleepingOther,
-        MSAState.SOBJ_Mutex,
-        MSAState.SOBJ_RWLock,
-        MSAState.SOBJ_CV,
-        MSAState.SOBJ_Sema,
-        MSAState.SOBJ_User
+        null,
+        null,
+        null,
+        null,
+        null
     };
 
     public ThreadStateImpl(long timestamp, int[] stat) {
@@ -95,53 +96,18 @@ public class ThreadStateImpl implements ThreadState {
         return size;
     }
 
-    public MSAState getMSAState(int index, boolean full) {
+    public MSAState getMSAState(final int index, final boolean full) {
         if (index >= stateIDs.length) {
-            return MSAState.NotExist;
+            return MSAState.ThreadFinished;
         }
 
         final int stateIdx = stateIDs[index];
 
         assert stateIdx > 2;
+
         final MSAState fullState = collectedStates[stateIdx];
-        if (full) {
-            return fullState;
-        }
 
-        MSAState result;
-        switch (fullState) {
-            case RunningUser:
-            case RunningSystemCall:
-            case RunningOther:
-                result = MSAState.Running;
-                break;
-            case SOBJ_Sema:
-            case SOBJ_RWLock:
-            case SOBJ_Mutex:
-            case SOBJ_User:
-            case SleepingSemafore:
-            case SleepingSystemSynchronization:
-            case SleepingUserSynchronization:
-                result = MSAState.Blocked;
-                break;
-            case SleepingUserTextPageFault:
-            case SleepingKernelPageFault:
-            case SleepingOther:
-                result = MSAState.Sleeping;
-                break;
-            case SleepingConditionalVariable:
-            case SOBJ_CV:
-            case WaitingCPU:
-                result = MSAState.Waiting;
-                break;
-            case Stopped:
-                result = MSAState.NotExist;
-                break;
-            default:
-                result = fullState;
-        }
-
-        return result;
+        return (full) ? fullState : ThreadStateMapper.toSimpleState(fullState);
     }
 
     public byte getState(int index) {
