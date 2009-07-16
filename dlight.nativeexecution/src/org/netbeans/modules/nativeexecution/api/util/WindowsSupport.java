@@ -93,7 +93,7 @@ public final class WindowsSupport {
     public void init() {
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
-                "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\", // NOI18N
+                "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
                 "native", // NOI18N
                 ".*native.*REG_SZ(.*)"); // NOI18N
 

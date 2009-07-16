@@ -223,15 +223,15 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 int rest = 0;
                 int oldRest = 0;
                 oldRest = rest;
-                rest = (100 * runningTime + rest) % s;
-                runningTime = (100 * runningTime + oldRest) / s;
+                rest = (ThreadState.POINTS * runningTime + rest) % s;
+                runningTime = (ThreadState.POINTS * runningTime + oldRest) / s;
                 oldRest = rest;
-                rest = (100 * waitingTime + rest) % s;
-                waitingTime = (100 * waitingTime + oldRest) / s;
+                rest = (ThreadState.POINTS * waitingTime + rest) % s;
+                waitingTime = (ThreadState.POINTS * waitingTime + oldRest) / s;
                 oldRest = rest;
-                rest = (100 * blockingTime + rest) % s;
-                blockingTime = (100 * blockingTime + oldRest) / s;
-                sleepingTime = 100 - runningTime - waitingTime - blockingTime;
+                rest = (ThreadState.POINTS * blockingTime + rest) % s;
+                blockingTime = (ThreadState.POINTS * blockingTime + oldRest) / s;
+                sleepingTime = ThreadState.POINTS - runningTime - waitingTime - blockingTime;
                 MockThreadState state = new MockThreadState(currentTime * Interval, runningTime, waitingTime, blockingTime, sleepingTime);
                 threadLine.add(state);
             }

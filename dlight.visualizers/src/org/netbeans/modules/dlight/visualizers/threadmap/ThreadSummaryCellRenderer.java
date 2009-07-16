@@ -179,15 +179,15 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 rest = (value.get()+oldRest)%count;
                 value.set((value.get()+oldRest)/count);
             }
-            rest = 100/2;
+            rest = ThreadState.POINTS/2;
             oldRest = 0;
             int y = 6;
             int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
             for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
                 AtomicInteger value = entry.getValue();
                 oldRest = rest;
-                rest = (value.get()*ThreadWidth+oldRest)%100;
-                int d = (value.get()*ThreadWidth+oldRest)/100;
+                rest = (value.get()*ThreadWidth+oldRest)%ThreadState.POINTS;
+                int d = (value.get()*ThreadWidth+oldRest)/ThreadState.POINTS;
                 if (d > 0) {
                     g.setColor(ThreadStateColumnImpl.getThreadStateColor(entry.getKey()));
                     g.fillRect(y, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, d, height);
@@ -197,12 +197,13 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         }
         threadRunningRatio = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
         g.setColor(getBackground());
-        String s = ""+(threadRunningRatio/10)+"%"; // NOI18N
+        int percent = (int)(100*threadRunningRatio)/ThreadState.POINTS;
+        String s = ""+percent+"%"; // NOI18N
         Font summary = new Font(null, Font.BOLD, height-2);
         g.setFont(summary);
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
         g.drawString(s, 6 + 3, y);
-        threadData.setSummary((int)threadRunningRatio/10);
+        threadData.setSummary(percent);
     }
 
     /**
