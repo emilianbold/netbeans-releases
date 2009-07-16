@@ -94,6 +94,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         }
 
         boolean success = false;
+        File zipFile = null;
         upload: // the label allows us exiting this block on condition
         try  {
             if (CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err).get() != 0) {
@@ -104,7 +105,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             if (localDirName.length() < 3) {
                 localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
             }
-            File zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
+            zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
             Zipper zipper = new Zipper(zipFile);
             {
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("Zipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
@@ -172,6 +173,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 filter.flush();
             } catch (IOException ex) {
                 ex.printStackTrace();
+            }
+            if (zipFile != null & zipFile.exists()) {
+                if (!zipFile.delete()) {
+                    logger.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
+                }
             }
         }
 
