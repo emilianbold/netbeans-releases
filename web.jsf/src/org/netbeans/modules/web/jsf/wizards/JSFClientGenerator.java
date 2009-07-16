@@ -131,7 +131,8 @@ import org.openide.util.NbBundle;
  */
 public class JSFClientGenerator {
     
-    private static final String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
+    private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
+    private static final String WELCOME_JSF_FL_PAGE = "template-client.xhtml";  //NOI18N
     private static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
@@ -264,11 +265,14 @@ public class JSFClientGenerator {
         
         String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, controllerFileObject);
         
-        if (wm.getDocumentBase().getFileObject(WELCOME_JSF_PAGE) == null) {
-            String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
-            content = content.replaceAll("__ENCODING__", projectEncoding);
-            FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_PAGE);//NOI18N
-            JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
+        if (wm.getDocumentBase().getFileObject(WELCOME_JSF_JSP_PAGE) == null) {
+            if(wm.getDocumentBase().getFileObject(WELCOME_JSF_FL_PAGE)==null)//also there is no default facelet
+            {
+                String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_JSP_PAGE), "UTF-8"); //NOI18N
+                content = content.replaceAll("__ENCODING__", projectEncoding);
+                FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_JSP_PAGE);//NOI18N
+                JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
+            }
         }
         
         if (pagesRootFolder.getFileObject(JSFCRUD_STYLESHEET) == null) {
@@ -382,8 +386,9 @@ public class JSFClientGenerator {
 
     private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, String projectEncoding) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
-        FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
-        
+        FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_JSP_PAGE); //NOI18N
+        FileObject indexfl = documentBase.getFileObject(WELCOME_JSF_FL_PAGE);
+
         if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), projectEncoding); //NO18N
             String endLine = System.getProperty("line.separator"); //NOI18N
@@ -444,6 +449,71 @@ public class JSFClientGenerator {
                 }
                 content = content.replace(find, replace.toString()); //NOI18N
                 JSFFrameworkProvider.createFile(indexjsp, content, projectEncoding); //NOI18N
+                //return, indicating welcomeJsp exists
+                return true;
+            }
+        }
+        else if(indexfl!=null)
+        {
+            String content = JSFFrameworkProvider.readResource(indexfl.getInputStream(), projectEncoding); //NO18N
+            String endLine = System.getProperty("line.separator"); //NOI18N
+
+            //insert style and script tags if not already present
+            if (content.indexOf(styleAndScriptTags) == -1) {
+                String justTitleEnd = "</title>"; //NOI18N
+                String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
+                content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
+            }
+
+            //make sure <f:view> is outside of <html>
+            String html = "<html>";
+            String htmlEnd = "</html>";
+            int htmlIndex = content.indexOf(html);
+            int htmlEndIndex = content.indexOf(htmlEnd);
+            if (htmlIndex != -1 && htmlEndIndex != -1) {
+                String fview = "<f:view>";
+                String fviewEnd = "</f:view>";
+                int fviewIndex = content.indexOf(fview);
+                if (fviewIndex != -1 && fviewIndex > htmlIndex) {
+                    content = content.replace(fview, ""); //NOI18N
+                    content = content.replace(fviewEnd, ""); //NOI18N
+                    String fviewPlusHtml = fview + endLine + html;
+                    String htmlEndPlusFviewEnd = htmlEnd + endLine + fviewEnd;
+                    content = content.replace(html, fviewPlusHtml); //NOI18N
+                    content = content.replace(htmlEnd, htmlEndPlusFviewEnd); //NOI18N
+                }
+            }
+
+            String find = "Hello from the Facelets client template!"; //NOI18N
+            if ( content.indexOf(find) > -1){
+                StringBuffer replace = new StringBuffer();
+                String findForm = "<h:form>";
+                boolean needsForm = content.indexOf(findForm) == -1;
+                if (needsForm) {
+                    replace.append(findForm);
+                    replace.append(endLine);
+                }
+                replace.append(find);
+                replace.append(endLine);
+                StringBuffer replaceCrux = new StringBuffer();
+                replaceCrux.append("    <br/>");                        //NOI18N
+                replaceCrux.append(endLine);
+                String managedBeanName = getManagedBeanName(simpleEntityName);
+                replaceCrux.append("<h:commandLink action=\"#{" + managedBeanName + ".listSetup}\" value=\"");
+                replaceCrux.append("Show All " + simpleEntityName + " Items");
+                replaceCrux.append("\"/>");
+                replaceCrux.append(endLine);
+                if (content.indexOf(replaceCrux.toString()) > -1) {
+                    //return, indicating welcomeJsp exists
+                    return true;
+                }
+                replace.append(replaceCrux);
+                if (needsForm) {
+                    replace.append("</h:form>");
+                    replace.append(endLine);
+                }
+                content = content.replace(find, replace.toString()); //NOI18N
+                JSFFrameworkProvider.createFile(indexfl, content, projectEncoding); //NOI18N
                 //return, indicating welcomeJsp exists
                 return true;
             }
