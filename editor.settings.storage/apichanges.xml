@@ -105,6 +105,19 @@ is the proper place.
 
     <changes>
         <change>
+            <summary>EditorSettings.PROP_MIME_TYPES</summary>
+            <version major="1" minor="21"/>
+            <date day="16" month="7" year="2009"/>
+            <author login="vstejskal"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding <code>EditorSettings.PROP_MIME_TYPES</code> to notify about changes in mimetypes returned
+                from <code>EditorSettings.getAllMimeTypes()</code> and <code>EditorSettings.getMimeTypes()</code>.
+            </p>
+            </description>
+        </change>
+        <change>
             <summary>SPI refinements</summary>
             <version major="1" minor="17"/>
             <date day="14" month="2" year="2008"/>

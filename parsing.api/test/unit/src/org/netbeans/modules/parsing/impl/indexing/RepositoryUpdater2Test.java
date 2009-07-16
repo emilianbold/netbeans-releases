@@ -160,10 +160,10 @@ public class RepositoryUpdater2Test extends NbTestCase {
                 return indexer;
             }
 
-            public @Override void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+            public @Override void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             }
 
-            public @Override void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+            public @Override void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             }
 
             public @Override String getIndexerName() {
@@ -509,11 +509,11 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
         }
 
         @Override

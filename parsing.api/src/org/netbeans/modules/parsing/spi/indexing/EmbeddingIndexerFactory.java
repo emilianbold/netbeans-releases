@@ -61,8 +61,9 @@ public abstract class EmbeddingIndexerFactory {
      * Called by indexing infrastructure to allow indexer to clean indexes for deleted files.
      * @param deleted the collection of deleted {@link Indexable}s
      * @param contents an indexing context
+     * @since 1.18
      */
-    public abstract void filesDeleted (Collection<? extends Indexable> deleted, Context context);
+    public abstract void filesDeleted (Iterable<? extends Indexable> deleted, Context context);
     
     /**
      * Called by indexing infrastructure to notify indexer that a file was modified and so its
@@ -70,9 +71,9 @@ public abstract class EmbeddingIndexerFactory {
      *
      * @param dirty the collection of dirty {@link Indexable}s
      * @param context an indexing context
-     * @since 1.4
+     * @since 1.18
      */
-    public abstract void filesDirty (Collection<? extends Indexable> dirty, Context context);
+    public abstract void filesDirty (Iterable<? extends Indexable> dirty, Context context);
 
     /**
      * Return the name of this indexer. This name should be unique because the infrastructure 
