@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
@@ -75,6 +74,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -555,19 +555,10 @@ public class ProjectActionSupport {
 
         public StopAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/stop.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.StopAction.stop")); // NOI18N
         //System.out.println("handleEvents 1 " + handleEvents);
         //setEnabled(false); // initially, until ready
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return getString("TargetExecutor.StopAction.stop");
-            } else {
-                return super.getValue(key);
-            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -587,17 +578,8 @@ public class ProjectActionSupport {
 
         public RerunAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return getString("TargetExecutor.RerunAction.rerun");
-            } else {
-                return super.getValue(key);
-            }
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun")); // NOI18N
         }
 
         public void actionPerformed(ActionEvent e) {

@@ -74,7 +74,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
 
         public AttachAction(ProjectActionEvent[] events) {
             this.events = events;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImage("org/netbeans/modules/debugger/resources/actions/Attach.gif")); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/actions/Attach.gif", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, NbBundle.getBundle(AttachOutputActionProvider.class).getString("OUTPUT_ATTACH_ACTION_TEXT")); // NOI18N
             setEnabled(false);
         }
