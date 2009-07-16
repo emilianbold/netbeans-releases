@@ -43,6 +43,7 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -51,8 +52,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.mozilla.browser.MozillaRuntimeException;
@@ -90,8 +93,16 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
                     @Override
                     public boolean requestFocusInWindow() {
-                        if( null != browser )
-                            return browser.requestFocusInWindow();
+                        SwingUtilities.invokeLater( new Runnable() {
+                            public void run() {
+                                if( null != browser ) {
+                                    browser.requestFocusInBrowser();
+                                    //for some reason the native browser has invalid
+                                    //position/size when activated in a topcomponent
+                                    forceLayout();
+                                }
+                            }
+                        });
                         return super.requestFocusInWindow();
                     }
 
@@ -347,6 +358,17 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             for( WebBrowserListener l : browserListners ) {
                 l.onDispatchEvent(event);
             }
+        }
+    }
+
+    private void forceLayout() {
+        Window w = SwingUtilities.getWindowAncestor(browser);
+        if( w instanceof JFrame ) {
+            JFrame frame = (JFrame) w;
+            frame.getRootPane().doLayout();
+            frame.getRootPane().invalidate();
+            frame.getRootPane().revalidate();
+            frame.getRootPane().repaint();
         }
     }
 }

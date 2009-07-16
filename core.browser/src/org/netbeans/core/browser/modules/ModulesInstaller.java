@@ -234,7 +234,6 @@ public class ModulesInstaller {
         progressMonitor.onInstall(installHandle);
         Restarter r = installSupport.doInstall (i, installHandle);
         assert r == null : "Restart cannot be needed";
-        waitToModuleLoaded ();
         /// XXX FindBrokenModules.clearModulesForRepair ();
     }
 
@@ -244,21 +243,6 @@ public class ModulesInstaller {
             res += res.length () == 0 ? el.getDisplayName () : ", " + el.getDisplayName (); // NOI18N
         }
         return res;
-    }
-
-    private void waitToModuleLoaded () {
-        assert ! SwingUtilities.isEventDispatchThread () : "Cannot be called in EQ.";
-        RequestProcessor.Task waitTask = RequestProcessor.getDefault ().create (new Runnable () {
-            public void run () {
-            }
-        });
-        for (UpdateElement m : modules4install) {
-           while (! m.isEnabled ()) {
-               waitTask.schedule (100);
-               waitTask.waitFinished ();
-           }
-        }
-
     }
 
     private static String getBundle (String key, Object... params) {
