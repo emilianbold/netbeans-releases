@@ -169,7 +169,11 @@ public class PHPIndex {
                 superClass = superClass.length() == 0 ? null : superClass;
                 String namespaceName = sig.string(4);
                 boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
-                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, offset, 0);
+                List<String> ifaces = Collections.emptyList();
+                if (sig.string(5) != null) {
+                     ifaces = Arrays.asList(sig.string(5).split(","));//NOI18N
+                }
+                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass,ifaces, offset, 0);
                 //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 classes.add(clazz);
             }

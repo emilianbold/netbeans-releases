@@ -295,10 +295,23 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getSuperClassName()).append(";");//NOI18N
+        final String superClassName = getSuperClassName();
+        if (superClassName != null) {
+            sb.append(superClassName);
+        }
+        sb.append(";");//NOI18N
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(";");//NOI18N
+        List<? extends String> superInterfaceNames = getSuperInterfaceNames();
+        StringBuilder ifaceSb = new StringBuilder();
+        for (String iface : superInterfaceNames) {
+            if (ifaceSb.length() > 0) {
+                sb.append(",");//NOI18N
+            }
+            sb.append(iface);//NOI18N
+        }
+        sb.append(";");//NOI18N
         //TODO: add ifaces
         return sb.toString();
     }

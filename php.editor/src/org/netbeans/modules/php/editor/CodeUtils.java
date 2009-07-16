@@ -110,9 +110,11 @@ public class CodeUtils {
         } else if (typeName instanceof Variable){
             Variable v = (Variable)typeName;
             return extractUnqualifiedIdentifier(v.getName()); // #167863
+        } else if (typeName instanceof FieldAccess) {
+            return extractUnqualifiedIdentifier(((FieldAccess)typeName).getField()); // #167863
         }
         //TODO: php5.3 !!!
-        assert false : typeName.getClass(); //NOI18N
+        //assert false : typeName.getClass(); //NOI18N
         return null;
     }
 

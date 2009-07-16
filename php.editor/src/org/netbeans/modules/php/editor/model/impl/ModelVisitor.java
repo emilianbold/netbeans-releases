@@ -819,6 +819,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             assert occ != null;
             if (occ.getDeclaration().equals(element)) {
                 retval = occ;
+            } else {
+                System.out.println(occ.getDeclaration().equals(element));
             }
         }
         return retval;

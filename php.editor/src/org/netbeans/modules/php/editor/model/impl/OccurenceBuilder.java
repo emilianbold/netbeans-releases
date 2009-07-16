@@ -1058,7 +1058,7 @@ class OccurenceBuilder {
                     nodeName = new ElementInfo(node, nodeScope).getFullyQualifiedName();
                 }
             }
-            return (queryName != null && nodeName != null) ? queryName.equals(nodeName) : true;
+            return (queryName != null && nodeName != null) ? queryName.equals(nodeName) : false;
         }
         return false;
     }
