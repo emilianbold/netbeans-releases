@@ -185,14 +185,19 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                             NotifyDescriptor.INFORMATION_MESSAGE, false);
                         return;
                     } else {
-                        Subversion.LOG.warning("MissingClient: cannot install " + updateElement.toString());
-                        if (updateElement.getUpdateUnit().getInstalled() != null) {
-                            Subversion.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString());
+                        oc = OperationContainer.createForUpdate();
+                        if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
+                            oc.add(updateElement);
+                        } else {
+                            Subversion.LOG.warning("MissingClient: cannot install " + updateElement.toString());
+                            if (updateElement.getUpdateUnit().getInstalled() != null) {
+                                Subversion.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString());
+                            }
+                            notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
+                                    NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
+                                    NotifyDescriptor.ERROR_MESSAGE, false);
+                            return;
                         }
-                        notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
-                            NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE, false);
-                        return;
                     }
                     Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), panel.forceGlobalCheckBox.isSelected());
                     if(ic.cancelled) return;
