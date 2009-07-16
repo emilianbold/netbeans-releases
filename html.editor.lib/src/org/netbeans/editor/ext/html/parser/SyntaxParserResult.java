@@ -122,7 +122,7 @@ public class SyntaxParserResult {
             }
 
             //XXX this is also incorrect, html tags can have namespace and can use prefixes as well
-            DTD dtd = Utils.isHtmlNs(namespace) ? getDTD() : null; //do not use DTD for namespaced tags
+            DTD dtd = Utils.isXhtmlNs(namespace) ? getDTD() : null; //do not use DTD for namespaced tags
             AstNode root = SyntaxTree.makeTree(filtered, dtd);
             root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace); //NOI18N
             astRoots.put(namespace, root);
@@ -180,6 +180,12 @@ public class SyntaxParserResult {
                 }
             }
         }
+
+        //add default xhtml namespace if necessary
+        if(!namespaces.containsKey(Utils.XHTML_NAMESPACE)) {
+            namespaces.put(Utils.XHTML_NAMESPACE, null);
+        }
+
         return namespaces;
     }
 

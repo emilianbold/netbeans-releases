@@ -195,7 +195,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             result = new ArrayList<CompletionItem>();
 
-            if (Utils.isHtmlNs(namespace)) {
+            if (Utils.isXhtmlNs(namespace)) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
 
                 result.addAll(translateTags(documentItemOffset - 1,
@@ -216,7 +216,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = offset;
             result = new ArrayList<CompletionItem>();
 
-            if (Utils.isHtmlNs(namespace)) {
+            if (Utils.isXhtmlNs(namespace)) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
             }
@@ -250,7 +250,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = offset - len;
 
             //TODO fix this later, the default namespace can be assigned to the xhtml
-            if (!Utils.isHtmlNs(namespace)) {
+            if (!Utils.isXhtmlNs(namespace)) {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, node);
