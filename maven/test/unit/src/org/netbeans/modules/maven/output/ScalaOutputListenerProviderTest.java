@@ -36,41 +36,50 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.output;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.output.OutputProcessor;
-import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.output.CompileAnnotation;
+import org.netbeans.modules.maven.output.JavaOutputListenerProvider;
+import java.io.File;
+import junit.framework.*;
+import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Milos Kleint 
+ * @author  Milos Kleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
-public class DefaultOutputProcessorFactory implements OutputProcessorFactory {
-    
-    /** Creates a new instance of DefaultOutputProcessor */
-    public DefaultOutputProcessorFactory() {
+public class ScalaOutputListenerProviderTest extends TestCase {
+    private ScalaOutputListenerProvider provider;
+    public ScalaOutputListenerProviderTest(java.lang.String testName) {
+        super(testName);
+    }
+   
+    public static Test suite() {
+        TestSuite suite = new TestSuite(ScalaOutputListenerProviderTest.class);
+        return suite;
     }
 
-    public Set<OutputProcessor> createProcessorsSet(Project project) {
-        Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
-        toReturn.add(new GlobalOutputProcessor());
-        if (project != null) {
-            toReturn.add(new JavaOutputListenerProvider());
-            toReturn.add(new ScalaOutputListenerProvider());
-            toReturn.add(new TestOutputListenerProvider());
-            toReturn.add(new JavadocOutputProcessor());
-            toReturn.add(new SiteOutputProcessor(project));
-            NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
-            toReturn.add(new ExecPluginOutputListenerProvider(nbprj));
-            toReturn.add(new DependencyAnalyzeOutputProcessor(nbprj));
-        }
-        return toReturn;
+    protected void setUp() throws java.lang.Exception {
+        provider = new ScalaOutputListenerProvider();
     }
-    
+
+    protected void tearDown() throws java.lang.Exception {
+    }
+
+    public void testRecognizeLine() {
+        OutputVisitor visitor = new OutputVisitor();
+        visitor.resetVisitor();
+        provider.sequenceStart("mojoexecute#scala:compile", visitor);
+        assertNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("Compiling 9 source files to /home/mkleint/src/hg-working/nb-maven-generators~mercurial/scalarebel/module1/target/classes", visitor);
+        assertNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("[WARNING] /home/mkleint/src/hg-working/nb-maven-generators~mercurial/scalarebel/module1/src/main/scala/org/mkleint/scalarebel/GroovyGenerator.scala:55: error: not found: value x", visitor);
+        assertNotNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+
+        provider.sequenceFail("mojoexecute#scala:compile", visitor);
+    }
 }
