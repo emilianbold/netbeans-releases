@@ -68,10 +68,10 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadSummaryCellRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
-        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Running.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Blocked.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Waiting.name(), new AtomicInteger());
+        map.put(ThreadState.MSAState.Sleeping.name(), new AtomicInteger());
     }
 
     /**
@@ -156,7 +156,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 count++;
                 ThreadState state = threadData.getThreadStateAt(i);
                 for (int j = 0; j < state.size(); j++){
-                    String name = state.getStateName(j);
+                    String name = state.getMSAState(j, false).name();
                     AtomicInteger v = map.get(name);
                     if (v != null) {
                         v.set(v.get()+state.getState(j));
@@ -168,7 +168,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             }
         }
         threadTime = count;
-        threadRunningTime = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
+        threadRunningTime = map.get(ThreadState.MSAState.Running.name()).intValue();
         int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
             int rest = 0;
@@ -195,7 +195,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 y += d;
             }
         }
-        threadRunningRatio = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
+        threadRunningRatio = map.get(ThreadState.MSAState.Running.name()).intValue();
         g.setColor(getBackground());
         int percent = (int)(100*threadRunningRatio)/ThreadState.POINTS;
         String s = ""+percent+"%"; // NOI18N
