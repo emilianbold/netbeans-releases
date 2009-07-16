@@ -998,38 +998,38 @@ public class LogViewMgr {
                     ioWeakMap.put(si, null);
                 }
             }
-
-            // look up the node that belongs to the given server instance
-            Node node = si.getFullNode();
-
-            // it looks like that the server instance has been removed
-            if (node == null) {
-                return null;
-            }
-
-            // No server control interface...
-            GlassfishModule commonSupport = node.getLookup().lookup(GlassfishModule.class);
-            if(commonSupport == null) {
-                return null;
-            }
-
-            Action[] actions = new Action[] {
-                new StartServerAction.OutputAction(commonSupport),
-                new DebugAction.OutputAction(commonSupport),
-                new RestartAction.OutputAction(commonSupport),
-                new StopServerAction.OutputAction(commonSupport),
-                new RefreshAction.OutputAction(commonSupport)
-            };
-
-            InputOutput newIO = null;
-            synchronized (ioWeakMap) {
-                newIO = ioWeakMap.get(si);
-                if(newIO == null) {
-                    newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
-                    ioWeakMap.put(si, newIO);
-                }
-            }
-            return newIO;
         }
+
+        // look up the node that belongs to the given server instance
+        Node node = si.getFullNode();
+
+        // it looks like that the server instance has been removed
+        if (node == null) {
+            return null;
+        }
+
+        // No server control interface...
+        GlassfishModule commonSupport = node.getLookup().lookup(GlassfishModule.class);
+        if(commonSupport == null) {
+            return null;
+        }
+
+        Action[] actions = new Action[] {
+            new StartServerAction.OutputAction(commonSupport),
+            new DebugAction.OutputAction(commonSupport),
+            new RestartAction.OutputAction(commonSupport),
+            new StopServerAction.OutputAction(commonSupport),
+            new RefreshAction.OutputAction(commonSupport)
+        };
+
+        InputOutput newIO = null;
+        synchronized (ioWeakMap) {
+            newIO = ioWeakMap.get(si);
+            if(newIO == null) {
+                newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
+                ioWeakMap.put(si, newIO);
+            }
+        }
+        return newIO;
     }
 }
