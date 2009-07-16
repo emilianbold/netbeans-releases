@@ -389,11 +389,11 @@ public class ProjectActionSupport {
             return currentHandler;
         }
 
-        public void executionStarted() {
+        public void executionStarted(int pid) {
             if (additional != null) {
                 for (BuildAction action : additional) {
                     action.setStep(currentAction);
-                    action.executionStarted();
+                    action.executionStarted(pid);
                 }
             }
         }
