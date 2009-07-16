@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.storage.threadmap;
 
-package org.netbeans.modules.maven.output;
+import java.util.HashMap;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.output.OutputProcessor;
-import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
-import org.netbeans.api.project.Project;
+public final class ThreadStateMapper {
 
-/**
- *
- * @author Milos Kleint 
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
-public class DefaultOutputProcessorFactory implements OutputProcessorFactory {
-    
-    /** Creates a new instance of DefaultOutputProcessor */
-    public DefaultOutputProcessorFactory() {
+    private final static HashMap<MSAState, MSAState> translationTable;
+
+    static {
+        translationTable = new HashMap<MSAState, MSAState>();
+        // Running
+        translationTable.put(MSAState.RunningUser, MSAState.Running);
+        translationTable.put(MSAState.RunningSystemCall, MSAState.Running);
+        translationTable.put(MSAState.RunningOther, MSAState.Running);
+        // Sleeping
+        translationTable.put(MSAState.SleepingUserDataPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingUserTextPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingKernelPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingOther, MSAState.Sleeping);
+        // Blocked
+        translationTable.put(MSAState.SleepingUserLock, MSAState.Blocked);
+        // Waiting
+        translationTable.put(MSAState.WaitingCPU, MSAState.Waiting);
+        // Stopped
+        translationTable.put(MSAState.ThreadStopped, MSAState.Stopped);
     }
 
-    public Set<OutputProcessor> createProcessorsSet(Project project) {
-        Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
-        toReturn.add(new GlobalOutputProcessor());
-        if (project != null) {
-            toReturn.add(new JavaOutputListenerProvider());
-            toReturn.add(new ScalaOutputListenerProvider());
-            toReturn.add(new TestOutputListenerProvider());
-            toReturn.add(new JavadocOutputProcessor());
-            toReturn.add(new SiteOutputProcessor(project));
-            NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
-            toReturn.add(new ExecPluginOutputListenerProvider(nbprj));
-            toReturn.add(new DependencyAnalyzeOutputProcessor(nbprj));
-        }
-        return toReturn;
+    private ThreadStateMapper() {
     }
-    
+
+    public static final MSAState toSimpleState(MSAState detailedState) {
+        MSAState result = translationTable.get(detailedState);
+        return (result == null) ? detailedState : result;
+    }
 }

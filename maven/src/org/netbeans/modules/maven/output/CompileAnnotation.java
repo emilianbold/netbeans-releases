@@ -40,24 +40,15 @@
 package org.netbeans.modules.maven.output;
 
 import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
 import org.openide.text.Line;
-import org.openide.util.WeakSet;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -68,34 +59,18 @@ import org.openide.windows.OutputListener;
  */
 public final class CompileAnnotation /*extends Annotation */implements /*PropertyChangeListener,*/ OutputListener {
     
-//    private static final Set<CompileAnnotation> hyperlinks = new WeakSet<CompileAnnotation>(); // Set<Hyperlink>
-//    private boolean dead = false;
-    
-//    public static void detachAllAnnotations() {
-//        synchronized (hyperlinks) {
-//            Iterator it = hyperlinks.iterator();
-//            while (it.hasNext()) {
-//                ((CompileAnnotation)it.next()).destroy();
-//            }
-//        }
-//    }
-    
     File clazzfile; //for tests..
     private int lineNum;
     private String text;
     
-    public CompileAnnotation(String clazz, String line, String textAnn) {
-        clazzfile = FileUtil.normalizeFile(new File(clazz + ".java")); //NOI18N
+    public CompileAnnotation(File clazz, String line, String textAnn) {
+        clazzfile = clazz;
         text = textAnn;
         try {
             lineNum = Integer.parseInt(line);
         } catch (NumberFormatException exc) {
             lineNum = -1;
         }
-//        synchronized (hyperlinks) {
-//            hyperlinks.add(this);
-//        }
-        
     }
     
     
@@ -225,7 +200,7 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
     
     @Override
     public String toString() {
-        return "javaerror[" + clazzfile + ":" + lineNum + ":" + text + "]"; // NOI18N
+        return "error[" + clazzfile + ":" + lineNum + ":" + text + "]"; // NOI18N
     }
     
 }

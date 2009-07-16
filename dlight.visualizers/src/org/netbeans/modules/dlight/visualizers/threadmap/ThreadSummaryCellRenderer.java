@@ -44,13 +44,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
 /**
  * @author Alexander Simon
@@ -63,15 +64,11 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     private long threadTime;
     private long threadRunningTime;
     private long threadRunningRatio;
-    private Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
+    private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadSummaryCellRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
-        map.put(ThreadState.ShortThreadState.Running.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Blocked.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Waiting.name(), new AtomicInteger());
-        map.put(ThreadState.ShortThreadState.Sleeping.name(), new AtomicInteger());
     }
 
     /**
@@ -156,24 +153,31 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 count++;
                 ThreadState state = threadData.getThreadStateAt(i);
                 for (int j = 0; j < state.size(); j++){
-                    String name = state.getStateName(j);
-                    AtomicInteger v = map.get(name);
-                    if (v != null) {
-                        v.set(v.get()+state.getState(j));
+                    MSAState msa = state.getMSAState(j, false);
+                    if (msa != null) {
+                        AtomicInteger v = map.get(msa);
+                        if (v != null) {
+                            v.addAndGet(state.getState(j));
+                        } else {
+                            v = new AtomicInteger(state.getState(j));
+                            map.put(msa, v);
+                        }
                     } else {
-                        v = new AtomicInteger(state.getState(j));
-                        map.put(name, v);
+                        System.err.println("Wrong MSA at index "+i+" MSA="+state); // NOI18N 
                     }
                 }
             }
         }
         threadTime = count;
-        threadRunningTime = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
+        AtomicInteger r = map.get(MSAState.Running);
+        if (r != null) {
+            threadRunningTime = r.intValue();
+        }
         int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
             int rest = 0;
             int oldRest = 0;
-            for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
+            for (Map.Entry<MSAState, AtomicInteger> entry : map.entrySet()){
                 AtomicInteger value = entry.getValue();
                 oldRest = rest;
                 rest = (value.get()+oldRest)%count;
@@ -183,7 +187,8 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             oldRest = 0;
             int y = 6;
             int ThreadWidth = ThreadsPanel.MIN_SUMMARY_COLUMN_WIDTH - 12;
-            for (Map.Entry<String, AtomicInteger> entry : map.entrySet()){
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(map); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
                 AtomicInteger value = entry.getValue();
                 oldRest = rest;
                 rest = (value.get()*ThreadWidth+oldRest)%ThreadState.POINTS;
@@ -195,7 +200,10 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 y += d;
             }
         }
-        threadRunningRatio = map.get(ThreadState.ShortThreadState.Running.name()).intValue();
+        r = map.get(MSAState.Running);
+        if (r != null) {
+            threadRunningRatio = r.intValue();
+        }
         g.setColor(getBackground());
         int percent = (int)(100*threadRunningRatio)/ThreadState.POINTS;
         String s = ""+percent+"%"; // NOI18N

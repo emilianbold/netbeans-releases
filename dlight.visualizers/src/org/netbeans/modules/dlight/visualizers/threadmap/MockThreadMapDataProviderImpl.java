@@ -258,16 +258,16 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
             return 4;
         }
 
-        public String getStateName(int index) {
+        public MSAState getMSAState(int index, boolean full) {
             switch (index) {
                 case 0:
-                    return ThreadState.ShortThreadState.Blocked.name();
+                    return ThreadState.MSAState.Blocked;
                 case 1:
-                    return ThreadState.ShortThreadState.Running.name();
+                    return ThreadState.MSAState.Running;
                 case 2:
-                    return ThreadState.ShortThreadState.Sleeping.name();
+                    return ThreadState.MSAState.Sleeping;
                 case 3:
-                    return ThreadState.ShortThreadState.Waiting.name();
+                    return ThreadState.MSAState.Waiting;
             }
             throw new IllegalArgumentException();
         }

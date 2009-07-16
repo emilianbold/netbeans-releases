@@ -224,8 +224,8 @@ public class ThreadsDataManager {
                         public int size() {
                             return 1;
                         }
-                        public String getStateName(int index) {
-                            return ThreadState.ShortThreadState.NotExist.name();
+                        public MSAState getMSAState(int index, boolean full) {
+                            return ThreadState.MSAState.ThreadFinished;
                         }
                         public byte getState(int index) {
                             return ThreadState.POINTS;

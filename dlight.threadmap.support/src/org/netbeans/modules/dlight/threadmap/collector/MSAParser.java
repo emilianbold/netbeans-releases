@@ -38,11 +38,15 @@
  */
 package org.netbeans.modules.dlight.threadmap.collector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.dtrace.collector.support.DtraceParser;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
@@ -50,6 +54,18 @@ import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 
 public final class MSAParser extends DtraceParser {
+
+    private static final List<String> COLUMN_NAMES = Arrays.asList(
+            MSAState.RunningUser.toString(),
+            MSAState.RunningSystemCall.toString(),
+            MSAState.RunningOther.toString(),
+            MSAState.SleepingUserTextPageFault.toString(),
+            MSAState.SleepingUserDataPageFault.toString(),
+            MSAState.SleepingKernelPageFault.toString(),
+            MSAState.SleepingUserLock.toString(),
+            MSAState.SleepingOther.toString(),
+            MSAState.WaitingCPU.toString(),
+            MSAState.ThreadStopped.toString());
 
     private static final TimeUnit dtraceTimeUnits = TimeUnit.NANOSECONDS;
     // Thread ID to states map
@@ -95,7 +111,13 @@ public final class MSAParser extends DtraceParser {
 
         for (int i = 3; i < chunks.length; i++) {
             int state = Integer.parseInt(chunks[i]);
-            threadStates[i] += state;
+            if (i > 13 && state > 0) {
+                // Add all locks to collectedStates collectedStates.SleepingUserLock
+                // TODO: index
+                threadStates[11] += state;
+            } else {
+                threadStates[i] += state;
+            }
             total += state;
         }
 
@@ -108,18 +130,30 @@ public final class MSAParser extends DtraceParser {
         if ((timestamp - lastTimestamp) > deltaTime) {
             lastTimestamp = timestamp;
 
-            for (Integer thrID : accumulatedData.keySet()) {
-                ThreadStateImpl state = new ThreadStateImpl(timestamp, accumulatedData.get(thrID));
-                storage.addThreadState(storage.getThreadInfo(thrID), state);
+//            System.out.println("Adding info about " + accumulatedData.size() + " threads");
+
+            int aggregatedStates[] = new int[10];
+            int sum = 0;
+            for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
+                int[] states = entry.getValue();
+                ThreadStateImpl state = new ThreadStateImpl(timestamp, states);
+                storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
+                for (int i = 4; i < 14; ++i) {
+                    aggregatedStates[i - 4] += states[i];
+                    sum += states[i];
+                }
             }
 
             accumulatedData.clear();
-        }
 
-        // Don't store to database
-        // TODO: Agregate states and return as datarow!
-        return new DataRow(Arrays.asList("State 1", "State 2"), // NOI18N
-                Arrays.asList(new Integer(100), new Double(5.6)));
+            List<Object> values = new ArrayList<Object>();
+            for (int i = 0; i < aggregatedStates.length; ++i) {
+                values.add(100.0 * aggregatedStates[i] / sum);
+            }
+            return new DataRow(COLUMN_NAMES, values);
+        } else {
+            return null;
+        }
     }
 }
 

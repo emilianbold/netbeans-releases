@@ -91,6 +91,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private DLightSessionHandler session;
     private InputOutput io;
     private long startTimeMillis;
+    private int targetPID;
 
     public GizmoRunActionHandler() {
         this.listeners = new CopyOnWriteArrayList<ExecutionListener>();
@@ -209,6 +210,10 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
+    public int getTargetPID() {
+        return targetPID;
+    }
+
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
@@ -225,7 +230,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             case STARTING:
                 break;
             case RUNNING:
-                targetStarted();
+                targetStarted(event.status);
                 break;
             case FAILED:
             case STOPPED:
@@ -240,7 +245,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
-    private void targetStarted() {
+    private void targetStarted(int pid) {
+        targetPID = pid;
         startTimeMillis = System.currentTimeMillis();
         for (ExecutionListener l : listeners) {
             l.executionStarted();
