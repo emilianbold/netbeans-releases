@@ -79,6 +79,7 @@ public class ModulesInstaller {
     private ProgressHandle verifyHandle;
     private ProgressHandle installHandle;
     private final ProgressMonitor progressMonitor;
+    private final static Logger LOG = Logger.getLogger(ModulesInstaller.class.getName());
 
     public ModulesInstaller (Collection<UpdateElement> modules, ProgressMonitor progressMonitor) {
         if (modules == null || modules.isEmpty ()) {
@@ -100,11 +101,18 @@ public class ModulesInstaller {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
         boolean success = false;
 
+        if( null != codeNames && codeNames.length > 0 ) {
+            LOG.log(Level.FINE, "Searching for module: " + codeNames[0]); //NOI18N
+        }
+
         FindComponentModules findModules = new FindComponentModules(codeNames);
         findModules.createFindingTask().waitFinished();
 
         Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
         Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
+        if( toInstall == null || toInstall.isEmpty() ) {
+            LOG.log(Level.INFO, "No modules found to install."); //NOI18N
+        }
         if (toInstall != null && !toInstall.isEmpty()) {
             ModulesInstaller installer = new ModulesInstaller(toInstall, progressMonitor);
             installer.getInstallTask ().schedule (10);
@@ -152,8 +160,7 @@ public class ModulesInstaller {
                         try {
                             installContainer.getSupport ().doCancel ();
                         } catch (Exception ex) {
-                            Logger.getLogger (ModulesInstaller.class.getName ()).
-                                    log (Level.INFO, ex.getLocalizedMessage (), ex);
+                            LOG.log (Level.INFO, ex.getLocalizedMessage (), ex);
                         }
                     }
                     RequestProcessor.Task task = getInstallTask ();
@@ -162,7 +169,7 @@ public class ModulesInstaller {
                     }
                 }
             });
-            Logger.getLogger (ModulesInstaller.class.getName ()).log (Level.INFO, x.getLocalizedMessage (), x);
+            LOG.log (Level.INFO, x.getLocalizedMessage (), x);
             tryAgain.setEnabled (getInstallTask () != null);
             Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallerMissingModules_TryAgainButton"));
             NotifyDescriptor nd = new NotifyDescriptor (
@@ -193,6 +200,7 @@ public class ModulesInstaller {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot be called in EQ.";
         installContainer = null;
         for (UpdateElement module : modules4install) {
+            LOG.log(Level.FINE, "Module to install: " + module.getCodeName()); //NOI18N
             if (installContainer == null) {
                 boolean isNewOne = module.getUpdateUnit ().getInstalled () == null;
                 if (isNewOne) {
@@ -234,7 +242,6 @@ public class ModulesInstaller {
         progressMonitor.onInstall(installHandle);
         Restarter r = installSupport.doInstall (i, installHandle);
         assert r == null : "Restart cannot be needed";
-        waitToModuleLoaded ();
         /// XXX FindBrokenModules.clearModulesForRepair ();
     }
 
@@ -244,21 +251,6 @@ public class ModulesInstaller {
             res += res.length () == 0 ? el.getDisplayName () : ", " + el.getDisplayName (); // NOI18N
         }
         return res;
-    }
-
-    private void waitToModuleLoaded () {
-        assert ! SwingUtilities.isEventDispatchThread () : "Cannot be called in EQ.";
-        RequestProcessor.Task waitTask = RequestProcessor.getDefault ().create (new Runnable () {
-            public void run () {
-            }
-        });
-        for (UpdateElement m : modules4install) {
-           while (! m.isEnabled ()) {
-               waitTask.schedule (100);
-               waitTask.waitFinished ();
-           }
-        }
-
     }
 
     private static String getBundle (String key, Object... params) {

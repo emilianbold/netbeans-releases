@@ -1635,6 +1635,30 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         return super.getOpenedTopComponents(mode);
     }
+
+    public boolean isHeavyWeightShowing() {
+        TopComponent.Registry registry = TopComponent.getRegistry();
+        Set<TopComponent> opened = new HashSet<TopComponent>(registry.getOpened());
+        for( TopComponent tc : opened ) {
+            if( !tc.isShowing() )
+                continue;
+            if( isHeavyWeight( tc ) )
+                return true;
+        }
+        return false;
+    }
+
+    private boolean isHeavyWeight( java.awt.Component c ) {
+        if( null != c && !c.isLightweight() )
+            return true;
+        if( c instanceof Container ) {
+            for( java.awt.Component child : ((Container)c).getComponents() ) {
+                if( isHeavyWeight(child) )
+                    return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * An empty TopComponent needed for deselectEditorTopComponents()

@@ -36,33 +36,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.core.browser;
 
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
-import org.netbeans.core.browser.api.WebBrowser;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.modules.ModuleInstall;
 
 /**
- * Embedded browser factory.
- * 
- * @author S. Aubrecht
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
  */
-@ServiceProvider(service=EmbeddedBrowserFactory.class)
-public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
-
-    public EmbeddedBrowserFactoryImpl() {
-    }
+public class Installer extends ModuleInstall {
 
     @Override
-    public boolean isEnabled() {
-        return BrowserManager.isSupportedPlatform() && BrowserManager.getDefault().isEnabled();
-    }
-
-    @Override
-    public WebBrowser createEmbeddedBrowser() {
-        if( !isEnabled() )
-            throw new IllegalStateException();
-        return ApiAccessor.DEFAULT.createWebBrowser();
+    public void restored() {
+        System.setProperty("mozswing.gtklaf_check", "false"); //NOI18N
     }
 }
