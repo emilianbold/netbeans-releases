@@ -115,7 +115,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     if (from == -1 && to == -1) {
                         //completely unknown position, give up
                         continue;
-                    } else if (from == -1 || to != -1) {
+                    } else if (from == -1 && to != -1) {
                         from = to;
                     } else if (from != -1 && to == -1) {
                         to = from;
