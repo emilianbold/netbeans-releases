@@ -225,7 +225,7 @@ public class ThreadsDataManager {
                             return 1;
                         }
                         public MSAState getMSAState(int index, boolean full) {
-                            return ThreadState.MSAState.NotExist;
+                            return ThreadState.MSAState.ThreadFinished;
                         }
                         public byte getState(int index) {
                             return ThreadState.POINTS;

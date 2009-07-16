@@ -95,7 +95,13 @@ public final class MSAParser extends DtraceParser {
 
         for (int i = 3; i < chunks.length; i++) {
             int state = Integer.parseInt(chunks[i]);
-            threadStates[i] += state;
+            if (i > 13 && state > 0) {
+                // Add all locks to collectedStates collectedStates.SleepingUserLock
+                // TODO: index
+                threadStates[11] += state;
+            } else {
+                threadStates[i] += state;
+            }
             total += state;
         }
 
@@ -107,6 +113,8 @@ public final class MSAParser extends DtraceParser {
 
         if ((timestamp - lastTimestamp) > deltaTime) {
             lastTimestamp = timestamp;
+
+//            System.out.println("Adding info about " + accumulatedData.size() + " threads");
 
             for (Integer thrID : accumulatedData.keySet()) {
                 ThreadStateImpl state = new ThreadStateImpl(timestamp, accumulatedData.get(thrID));

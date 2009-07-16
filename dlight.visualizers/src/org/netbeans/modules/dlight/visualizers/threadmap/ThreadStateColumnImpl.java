@@ -145,7 +145,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     public boolean isAlive(int index) {
-        return !list.get(index).getMSAState(0, false).name().equals(ThreadState.MSAState.NotExist.name());
+        return !list.get(index).getMSAState(0, false).name().equals(ThreadState.MSAState.ThreadFinished.name());
     }
     
     public ThreadState getThreadStateAt(int index){
@@ -153,7 +153,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     public boolean isAlive() {
-        return !list.get(list.size()-1).getMSAState(0, false).name().equals(ThreadState.MSAState.NotExist.name());
+        return !list.get(list.size()-1).getMSAState(0, false).name().equals(ThreadState.MSAState.ThreadFinished.name());
     }
 
     void add(ThreadState state) {

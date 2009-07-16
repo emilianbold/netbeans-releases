@@ -36,45 +36,38 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+package org.netbeans.modules.dlight.api.storage.threadmap;
 
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import java.util.HashMap;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
-public class ThreadInfoImpl implements ThreadInfo {
+public final class ThreadStateMapper {
 
-    private final int threadID;
-    private final String threadName;
-    private final long startTime;
-    private long finishTime = -1;
+    private final static HashMap<MSAState, MSAState> translationTable;
 
-    public ThreadInfoImpl(int threadID, String threadName, long startTimeNano) {
-        this.threadID = threadID;
-        this.threadName = threadName;
-        this.startTime = startTimeNano;
+
+    static {
+        translationTable = new HashMap<MSAState, MSAState>();
+        // Running
+        translationTable.put(MSAState.RunningUser, MSAState.Running);
+        translationTable.put(MSAState.RunningSystemCall, MSAState.Running);
+        translationTable.put(MSAState.RunningOther, MSAState.Running);
+        // Sleeping
+        translationTable.put(MSAState.SleepingUserDataPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingUserTextPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingKernelPageFault, MSAState.Sleeping);
+        translationTable.put(MSAState.SleepingOther, MSAState.Sleeping);
+        // Blocked
+        translationTable.put(MSAState.SleepingUserLock, MSAState.Blocked);
+        // Waiting
+        translationTable.put(MSAState.WaitingCPU, MSAState.Waiting);
+        // Stopped
+        translationTable.put(MSAState.ThreadStopped, MSAState.Stopped);
     }
 
-    public int getThreadId() {
-        return threadID;
-    }
-
-    public String getThreadName() {
-        return threadName;
-    }
-
-    public long getThreadStartTS() {
-        return startTime;
-    }
-
-    public long getThreadFinishTS() {
-        return finishTime;
-    }
-
-    public synchronized void setFinishTime(long endTime) {
-//        if (this.finishTime > 0) {
-//            System.out.println("HERE WE ARE!!!! " + threadName);
-//            throw new IllegalStateException("End time is already set!"); // NOI18N
-//        }
-
-        this.finishTime = endTime;
+    public static final MSAState toSimpleState(MSAState detailedState) {
+        MSAState result = translationTable.get(detailedState);
+        assert result != null;
+        return result;
     }
 }
