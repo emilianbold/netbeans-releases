@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -101,6 +102,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     protected final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     protected final UpdateHelper updateHelper;
+    protected final RubyProjectEncodingQueryImpl encodingQueryImpl;
     private final String projectConfigurationNamespace;
     private CopyOnWriteArrayList<PlatformChangeListener> platformCLs;
 
@@ -108,6 +110,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         this.helper = helper;
         this.projectConfigurationNamespace = projectConfigurationNamespace;
         eval = createEvaluator();
+        encodingQueryImpl = new RubyProjectEncodingQueryImpl(eval);
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
