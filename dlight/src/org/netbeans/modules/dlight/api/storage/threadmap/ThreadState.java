@@ -51,21 +51,14 @@ public interface ThreadState {
     /**
      * Aggregated thread states.
      */
-    public static enum ShortThreadState {
+    public static enum MSAState {
 
         NotExist,
         Sleeping,
         Waiting,
         Blocked,
         Running,
-    }
 
-    /**
-     * All possible thread states.
-     */
-    public static enum FullThreadState {
-
-        NotExist,
         Stopped,
         SleepingOther,
         SleepingUserTextPageFault,
@@ -92,26 +85,25 @@ public interface ThreadState {
     int size();
 
     /**
-     * returns string representation of enum value of ShortThreadState or FullThreadState.
+     * returns string representation of enum value of MSAState.
      *
      * @param index of state.
      * @return state ID by index.
      */
-    String getStateName(int index);
+    public MSAState getMSAState(int index, boolean full);
 
     /**
      * @param index of state.
      * @return value of state by index. Unit of value is 1%. I.e. sum of all values is 100.
      */
-    byte getState(int index);
-
+    public byte getState(int index);
     /**
      * returns -1 if there are no stack avaliable.
      *
      * @param index interested state.
      * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
      */
-    long getTimeStamp(int index);
+    public long getTimeStamp(int index);
 
     /**
      *

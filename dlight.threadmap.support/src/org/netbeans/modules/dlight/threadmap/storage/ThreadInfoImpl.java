@@ -70,9 +70,9 @@ public class ThreadInfoImpl implements ThreadInfo {
     }
 
     public synchronized void setFinishTime(long endTime) {
-        if (this.finishTime > 0) {
-            throw new IllegalStateException("End time is already set!"); // NOI18N
-        }
+//        if (this.finishTime > 0) {
+//            throw new IllegalStateException("End time is already set!"); // NOI18N
+//        }
 
         this.finishTime = endTime;
     }
