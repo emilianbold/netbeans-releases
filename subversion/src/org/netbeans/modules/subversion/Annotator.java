@@ -564,20 +564,10 @@ public class Annotator {
     }
 
     private static boolean isNothingVersioned(File[] files) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        boolean nothingVersioned = true;
-        List<File> filesToRefresh = new LinkedList<File>();
         for (File file : files) {
-            FileInformation status = cache.getCachedStatus(file);
-            if (status == null) {
-                filesToRefresh.add(file);
-            } else if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                nothingVersioned = false;
-                break;
-            }
+            if (SvnUtils.isManaged(file)) return false;
         }
-        cache.refreshAsync(filesToRefresh);
-        return nothingVersioned;
+        return true;
     }
 
     private static boolean onlyProjects(Node[] nodes) {
