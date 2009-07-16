@@ -201,24 +201,28 @@ public final class CreateTestsAction extends NodeAction {
     void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
         assert phpProject != null;
 
-        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
+        final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
         final Set<FileObject> proceeded = new HashSet<FileObject>();
         final Set<FileObject> failed = new HashSet<FileObject>();
         final Set<File> toOpen = new HashSet<File>();
-        try {
-            for (FileObject fo : files) {
-                generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
-                Enumeration<? extends FileObject> children = fo.getChildren(true);
-                while (children.hasMoreElements()) {
-                    generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+        FileUtil.runAtomicAction(new Runnable() {
+            public void run() {
+                try {
+                    for (FileObject fo : files) {
+                        generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
+                        Enumeration<? extends FileObject> children = fo.getChildren(true);
+                        while (children.hasMoreElements()) {
+                            generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+                        }
+                    }
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    UiUtils.processExecutionException(ex);
                 }
             }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex);
-        }
+        });
 
         if (!failed.isEmpty()) {
             StringBuilder sb = new StringBuilder();
