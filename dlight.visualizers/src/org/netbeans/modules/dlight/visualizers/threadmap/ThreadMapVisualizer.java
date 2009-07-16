@@ -51,7 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -88,9 +88,9 @@ public class ThreadMapVisualizer extends JPanel implements
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
         if (false) {
             provider = new MockThreadMapDataProviderImpl();
-            configuration = new ThreadMapVisualizerConfiguration(new ThreadMapMetadata(null));
+            configuration = new ThreadMapVisualizerConfiguration();
         }
-        
+
         this.provider = provider;
         this.configuration = configuration;
 
@@ -127,8 +127,8 @@ public class ThreadMapVisualizer extends JPanel implements
 
             public void run() {
                 try {
-                    final List<ThreadData> list = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(0, false)).getThreadsData();
-                    final boolean isEmptyConent = list == null || list.isEmpty();
+                    final ThreadMapData mapData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapDataQuery(0, false));
+                    final boolean isEmptyConent = mapData == null || mapData.getThreadsData().isEmpty();
                     UIThread.invoke(new Runnable() {
 
                         public void run() {
@@ -136,7 +136,7 @@ public class ThreadMapVisualizer extends JPanel implements
                             if (isEmptyConent) {
                                 return;
                             }
-                            updateList(list);
+                            updateList(mapData);
                         }
                     });
                 } catch (Throwable t) {
@@ -271,10 +271,10 @@ public class ThreadMapVisualizer extends JPanel implements
 
     }
 
-    protected void updateList(List<ThreadData> list) {
+    protected void updateList(ThreadMapData mapData) {
         synchronized (uiLock) {
             threadsPanel.threadsMonitoringEnabled();
-            dataManager.processData(MonitoredData.getMonitoredData(list));
+            dataManager.processData(MonitoredData.getMonitoredData(mapData));
             setNonEmptyContent();
         }
     }

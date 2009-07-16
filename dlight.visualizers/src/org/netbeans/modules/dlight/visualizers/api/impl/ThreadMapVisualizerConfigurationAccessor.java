@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.visualizers.api.impl;
 
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 
 /**
@@ -76,5 +75,5 @@ public abstract class ThreadMapVisualizerConfigurationAccessor {
 
     public abstract List<Column> getTableColumns(ThreadMapVisualizerConfiguration configuration);
 
-    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
+//    public abstract ThreadMapMetadata getThreadMapMetadata(ThreadMapVisualizerConfiguration configuration);
 }

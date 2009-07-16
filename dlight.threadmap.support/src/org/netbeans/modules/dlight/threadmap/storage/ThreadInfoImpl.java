@@ -36,15 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.threadmap.storage;
 
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 
 public class ThreadInfoImpl implements ThreadInfo {
+
     private final int threadID;
     private final String threadName;
     private final long startTime;
+    private long finishTime = -1;
 
     public ThreadInfoImpl(int threadID, String threadName, long startTimeNano) {
         this.threadID = threadID;
@@ -65,7 +66,14 @@ public class ThreadInfoImpl implements ThreadInfo {
     }
 
     public long getThreadFinishTS() {
-        return -1;
+        return finishTime;
     }
 
+    public synchronized void setFinishTime(long endTime) {
+        if (this.finishTime > 0) {
+            throw new IllegalStateException("End time is already set!"); // NOI18N
+        }
+
+        this.finishTime = endTime;
+    }
 }

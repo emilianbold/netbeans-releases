@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
 <change id="wm_openedtcs">
     <api name="winsys"/>
     <summary>New method to retrieve the list of TopComponents opened in a Mode.</summary>
-    <version major="6" minor="27"/>
+    <version major="6" minor="28"/>
     <date day="15" month="7" year="2009"/>
     <author login="saubrecht"/>
     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>

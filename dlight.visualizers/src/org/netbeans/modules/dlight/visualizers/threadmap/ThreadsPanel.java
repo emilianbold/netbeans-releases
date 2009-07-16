@@ -1040,10 +1040,13 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         if ((sortedColum == 0 || sortedColum == 2) && sortedOrder != 0) {
             Map<Comparable,Integer> map = new TreeMap<Comparable,Integer>();
             for(Integer i : filteredDataToDataIndex){
+                ThreadStateColumnImpl col = manager.getThreadData(i.intValue());
                 if (sortedColum == 0){
-                    map.put(manager.getThreadData(i.intValue()).getName(),i);
+                    map.put(col.getName()+col.getThreadID(),i);
                 } else {
-                    map.put(manager.getThreadData(i.intValue()).getSummary(),i);
+                    long l = col.getSummary();
+                    l = (l << 32) + col.getThreadID();
+                    map.put(l,i);
                 }
             }
             filteredDataToDataIndex.clear();
