@@ -84,7 +84,7 @@ public class Zipper {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.err.printf("Zipping %s to %s took %d ms\n", srcDir, zipFile, System.currentTimeMillis() - time);
+        //System.err.printf("Zipping %s to %s took %d ms\n", srcDir, zipFile, System.currentTimeMillis() - time);
     }
 
     public int getFileCount() {
