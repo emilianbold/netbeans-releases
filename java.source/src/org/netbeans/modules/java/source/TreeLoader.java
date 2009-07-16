@@ -99,6 +99,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.OutputFileManager.InvalidSourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -254,6 +255,8 @@ public class TreeLoader extends LazyTreeLoader {
             File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
             jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
             jti.generate(Collections.singletonList(clazz));
+        } catch (InvalidSourcePath isp) {
+            LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
         }
