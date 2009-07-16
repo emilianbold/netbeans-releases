@@ -1400,9 +1400,9 @@ final class PropUtils {
             if (!wasHtml) {
                 // HTML-ize only non-html values. HTML values should already
                 // contain correct HTML strings.
-                a = Utilities.replaceString(a, "&", "&amp;"); //NOI18N
-                a = Utilities.replaceString(a, "<", "&lt;"); //NOI18N
-                a = Utilities.replaceString(a, ">", "&gt;"); //NOI18N
+                a = a.replace("&", "&amp;"); //NOI18N
+                a = a.replace("<", "&lt;"); //NOI18N
+                a = a.replace(">", "&gt;"); //NOI18N
             }
 
             charCount += a.length();
