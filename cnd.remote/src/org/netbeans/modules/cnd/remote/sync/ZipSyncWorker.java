@@ -39,23 +39,24 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -99,16 +100,22 @@ import org.openide.util.NbPreferences;
                 throw new IOException("Can not create directory " + remoteDir); //NOI18N
             }
 
-            File zipFile = File.createTempFile(localDir.getName(), ".zip", getTemp()); // NOI18N
+            String localDirName = localDir.getName();
+            if (localDirName.length() < 3) {
+                localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
+            }
+            File zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
+            Zipper zipper = new Zipper(zipFile);
             {
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("Zipping %s to %s...\n", localDir.getAbsolutePath(), zipFile); } // NOI18N
-                long zipStart = System.currentTimeMillis();
-                ZipUtils.zip(zipFile, localDir, filter);
+                long zipStart = System.currentTimeMillis();                
+                zipper.add(localDir, filter);
                 float zipTime = ((float) (System.currentTimeMillis() - zipStart))/1000f;
+                if (logger.isLoggable(Level.FINE)) {System.out.printf("\t%d files zipped; file size is %d\n", zipper.getFileCount(), zipFile.length()); } // NOI18N
                 if (logger.isLoggable(Level.FINE)) {System.out.printf("Zipping %s to %s took %f s\n", localDir.getAbsolutePath(), zipFile, zipTime); } // NOI18N
             }
 
-            if (zipFile.length() == 0) {
+            if (zipper.getFileCount() == 0) {
                 break upload;
             }
             
@@ -163,8 +170,8 @@ import org.openide.util.NbPreferences;
         } finally {
             try {
                 filter.flush();
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
 
@@ -188,7 +195,7 @@ import org.openide.util.NbPreferences;
         final FileTimeStamps timeStamps;
 
         public SmartFilter() {
-            timeStamps = new FileTimeStamps(executionEnvironment);
+            timeStamps = new FileTimeStamps();
         }
 
         @Override
@@ -206,44 +213,58 @@ import org.openide.util.NbPreferences;
             return accept;
         }
 
-        public void flush() throws BackingStoreException {
+        public void flush() throws IOException {
             timeStamps.flush();
         }
     }
 
-    private static class FileTimeStamps {
+    private class FileTimeStamps {
 
-        //private final Properties data;
-        //private final File storageFile;
-        Preferences prefs;
+        private final Properties data;
+        private final File dataFile;
 
-        public FileTimeStamps(ExecutionEnvironment executionEnvironment) {
-            //data = new Properties();
-            //storageFile = new File();
-            prefs = NbPreferences.forModule(getClass());
-            Preferences node = prefs.node(ExecutionEnvironmentFactory.toUniqueID(executionEnvironment));
-            if (node != null) {
-                prefs = node;
+        public FileTimeStamps() {
+            data = new Properties();
+            String dataFileName = "timestamps-" + executionEnvironment.getHost()+'-'+executionEnvironment.getUser()+executionEnvironment.getSSHPort();
+            dataFile = new File(privProjectStorageDir, dataFileName);
+            if (dataFile.exists()) {
+                try {
+                    data.load(new BufferedInputStream(new FileInputStream(dataFile)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    data.clear();
+                }
             }
         }
 
         public boolean isChanged(File file) {
-            long lastTimeStamp = prefs.getLong(getFileKey(file), -1);
+            String strValue = data.getProperty(getFileKey(file), "-1");
+            long lastTimeStamp;
+            try {
+                lastTimeStamp = Long.parseLong(strValue);
+            } catch (NumberFormatException nfe) {
+                lastTimeStamp = -1;
+            }
             long currTimeStamp = file.lastModified();
             return currTimeStamp != lastTimeStamp;
         }
 
         public void rememberTimeStamp(File file) {
-            prefs.putLong(getFileKey(file), file.lastModified());
+            data.put(getFileKey(file), Long.toString(file.lastModified()));
         }
 
         private String getFileKey(File file) {
             return file.getAbsolutePath();
         }
 
-        public void flush() throws BackingStoreException {
-            prefs.flush();
+        public void flush() throws IOException {
+            File dir = dataFile.getParentFile();
+            if (!dir.exists()) {
+                dir.mkdirs(); // no ret value check - the code below will throw exception
+            }
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
+            data.store(os, null);
+            os.close();
         }
     }
-
 }

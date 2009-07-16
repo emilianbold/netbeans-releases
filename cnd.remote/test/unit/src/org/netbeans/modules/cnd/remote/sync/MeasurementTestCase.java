@@ -100,14 +100,21 @@ public class MeasurementTestCase extends RemoteTestBase {
     }
 
    
-    private void do_test() throws Exception {
+    private void do_test(boolean removeFileStampsStorage) throws Exception {
+        File privProjectStorageDir = null;
         try {
             ExecutionEnvironment execEnv = getTestExecutionEnvironment();
             String dst = getDestDir(execEnv);
             PrintWriter out = new PrintWriter(System.out);
             PrintWriter err = new PrintWriter(System.err);
             System.out.printf("testUploadFile: %s to %s:%s\n", srcDir.getAbsolutePath(), execEnv.getDisplayName(), dst);
-            File privProjectStorageDir = createTempFile(srcDir.getName() + "-nbproject-private-", "", true);
+
+            File tmp = new File(System.getProperty("java.io.tmpdir"));
+            tmp = new File(tmp, System.getProperty("user.name"));
+            tmp = new File(tmp, "testdata");
+            privProjectStorageDir = new File(tmp, srcDir.getName() + "-nbproject-private");
+            //removeDirectoryContent(privProjectStorageDir);
+
             ZipSyncWorker worker = new ZipSyncWorker(srcDir, execEnv, out, err, privProjectStorageDir);
             long time = System.currentTimeMillis();
             worker.synchronizeImpl(dst);
@@ -117,16 +124,20 @@ public class MeasurementTestCase extends RemoteTestBase {
         } catch (Exception e) {
             statistics.add(new StatEntry(getName(), -1));
             throw e;
+        } finally {
+            if (removeFileStampsStorage) {
+                //removeDirectory(privProjectStorageDir);
+            }
         }
     }
 
     public void test_upload_first() throws Exception {
-        do_test();
+        do_test(true);
     }
 
     public void test_upload_changed() throws Exception {
         change();
-        do_test();
+        do_test(false);
     }
 
     private static final int MAX_SIZE = 1024 * 1024; // max size of files to be changed

@@ -135,6 +135,44 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         writer.close();
     }
 
+    /**
+     * Removes directory recursively
+     * @param dir directory  to remove
+     * @return true in the case the directory was removed sucessfully, otherwise false
+     */
+    public static boolean removeDirectory(File dir) {
+        return removeDirectory(dir, true);
+    }
+
+    /**
+     * Removes directory content (recursively)
+     * @param dir directory  to remove
+     * @return true in the case the directory content was removed sucessfully, otherwise false
+     */
+    public static boolean removeDirectoryContent(File dir) {
+        return removeDirectory(dir, false);
+    }
+
+    /**
+     * Removes directory recursively
+     * @param dir directory  to remove
+     * @return true in the case the directory was removed sucessfully, otherwise false
+     */
+    private static boolean removeDirectory(File dir, boolean removeItself) {
+        boolean success = true;
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                if (!removeDirectory(new File(dir, children[i]), true)) {
+                    success = false;
+                }
+            }
+        }
+        if (success && removeItself) {
+            success = dir.delete();
+        }
+        return success;
+    }
     public static File createTempFile(String prefix, String suffix, boolean directory) throws IOException {
         File tmpFile = File.createTempFile(prefix, suffix);
         if (directory) {

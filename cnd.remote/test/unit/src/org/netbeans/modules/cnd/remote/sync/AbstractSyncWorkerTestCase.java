@@ -114,6 +114,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         BaseSyncWorker worker = createWorker(src, execEnv, out, err, privProjectStorageDir);
         worker.synchronizeImpl(dst);
         CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
+        removeDirectory(privProjectStorageDir);
     }
 
     private File createTestDir() throws IOException {
