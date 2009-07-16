@@ -169,10 +169,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             }
         }
         threadTime = count;
-        AtomicInteger r = map.get(MSAState.Running);
-        if (r != null) {
-            threadRunningTime = r.intValue();
-        }
+        threadRunningTime = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
         int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
             int rest = 0;
@@ -200,10 +197,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 y += d;
             }
         }
-        r = map.get(MSAState.Running);
-        if (r != null) {
-            threadRunningRatio = r.intValue();
-        }
+        threadRunningRatio = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
         g.setColor(getBackground());
         int percent = (int)(100*threadRunningRatio)/ThreadState.POINTS;
         String s = ""+percent+"%"; // NOI18N
@@ -212,6 +206,17 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
         g.drawString(s, 6 + 3, y);
         threadData.setSummary(percent);
+    }
+
+    private int sumStates(MSAState ... states){
+        int i = 0;
+        for(MSAState state : states){
+            AtomicInteger r = map.get(state);
+            if (r != null) {
+                i += r.get();
+            }
+        }
+        return i;
     }
 
     /**

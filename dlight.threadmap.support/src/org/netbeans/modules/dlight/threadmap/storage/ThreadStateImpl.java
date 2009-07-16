@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.threadmap.storage;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateMapper;
 
@@ -119,7 +118,7 @@ public final class ThreadStateImpl implements ThreadState {
     }
 
     public long getTimeStamp() {
-        return TimeUnit.NANOSECONDS.toMillis(timestamp);
+        return timestamp;
     }
 
     @Override

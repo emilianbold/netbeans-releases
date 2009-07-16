@@ -166,7 +166,8 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 if ((viewEnd - viewStart) > 0) {
                     float factor = (float) width / (float) (viewEnd - viewStart);
 
-                    while ((index < threadData.size()) && (threadData.getThreadStateAt(index).getTimeStamp() <= viewEnd)) {
+                    while ((index < threadData.size()) &&
+                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= viewEnd)) {
                         // Thread alive
                         if (threadData.isAlive(index)) {
                             paintThreadState(g, index, threadData.getThreadStateAt(index), factor, width);
@@ -227,14 +228,14 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
     private int getFirstVisibleDataUnit() {
         for (int i = 0; i < threadData.size(); i++) {
-            long timestamp = threadData.getThreadStateAt(i).getTimeStamp();
+            long timestamp = ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i).getTimeStamp());
 
             if ((timestamp <= viewEnd) && (i == (threadData.size() - 1))) {
                 return i; // last data unit before viewEnd
             }
 
             if (timestamp <= viewStart) {
-                if (threadData.getThreadStateAt(i + 1).getTimeStamp() > viewStart) {
+                if (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i + 1).getTimeStamp()) > viewStart) {
                     return i; // data unit ends between viewStart and viewEnd
                 }
             } else {
@@ -251,10 +252,10 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         int x; // Begin of rectangle
         int xx; // End of rectangle
 
-        x = Math.max((int) ((float) (threadData.getThreadStateAt(index).getTimeStamp() - viewStart) * factor), 0);
+        x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
 
         if (index < (threadData.size() - 1)) {
-            xx = Math.min((int) ((float) (threadData.getThreadStateAt(index + 1).getTimeStamp() - viewStart) * factor), width);
+            xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
         } else {
             xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
         }
