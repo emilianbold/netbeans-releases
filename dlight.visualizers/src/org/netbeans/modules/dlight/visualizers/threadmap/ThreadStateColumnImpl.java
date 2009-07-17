@@ -110,6 +110,31 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return THREAD_STATUS_UNKNOWN_COLOR;
     }
 
+    static StateResources getThreadStateResources(MSAState threadState) {
+        switch(threadState) {
+            case Running: return THREAD_RUNNING;
+            case RunningUser: return THREAD_RUNNING_USER;
+            case RunningSystemCall: return THREAD_RUNNING_SYSTEM;
+            case RunningOther: return THREAD_RUNNING_OTHER;
+
+            case Blocked: return THREAD_BLOCKED;
+            case SleepingUserLock: return THREAD_SLEEP_USE_LOCK;
+
+            case Waiting: return THREAD_WAITING;
+            case WaitingCPU: return THREAD_WAITING_CPU;
+
+            case Sleeping: return THREAD_SLEEPING;
+            case SleepingOther: return THREAD_SLEEPING_OTHER;
+            case SleepingUserDataPageFault: return THREAD_SLEEPING_USER_DATA_PAGE_FAULT;
+            case SleepingUserTextPageFault: return THREAD_SLEEPING_USER_TEXT_PAGE_FAULT;
+            case SleepingKernelPageFault: return THREAD_SLEEPING_KERNEL_PAGE_FAULT;
+
+            case Stopped: return THREAD_SLEEPING;
+            case ThreadStopped: return THREAD_THREAD_STOPPED;
+        }
+        return null;
+    }
+
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
         return getThreadStateColor(threadStateColor.getMSAState(msa, false));
     }

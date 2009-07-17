@@ -41,7 +41,9 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
@@ -50,6 +52,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
 
 /**
  * @author Jiri Sedlacek
@@ -66,15 +70,11 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     private long viewEnd;
     private long viewStart;
     //private Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
-    private EnumMap<ThreadState.MSAState, AtomicInteger> map = new EnumMap<ThreadState.MSAState, AtomicInteger>(ThreadState.MSAState.class);
+    private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadStateCellRenderer(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
-        map.put(ThreadState.MSAState.Running, new AtomicInteger());
-        map.put(ThreadState.MSAState.Blocked, new AtomicInteger());
-        map.put(ThreadState.MSAState.Waiting, new AtomicInteger());
-        map.put(ThreadState.MSAState.Sleeping, new AtomicInteger());
     }
 
     /**
@@ -143,6 +143,91 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         dataEnd = viewManager.getDataEnd();
 
         return this;
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        String tip = getToolTipText(event.getPoint());
+        if (tip != null) {
+            return tip;
+        }
+        return super.getToolTipText(event);
+    }
+
+    public String getToolTipText(Point point) {
+        int index = getStateIndex(point);
+        if (index >= 0) {
+            ThreadState state = threadData.getThreadStateAt(index);
+            long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp()) - dataStart;
+            StringBuilder buf = new StringBuilder();
+            buf.append("<html>");// NOI18N
+            buf.append("Time ");// NOI18N
+            buf.append(TimeLineUtils.getMillisValue(ms));
+            EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+            fillMap(state, aMap);
+            buf.append("<table>");// NOI18N
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
+                int value = entry.getValue().get();
+                MSAState s = entry.getKey();
+                StateResources res = ThreadStateColumnImpl.getThreadStateResources(s);
+                if (res != null) {
+                    buf.append("<tr>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append("<font bgcolor=#");// NOI18N
+                    buf.append(Integer.toHexString(res.color.getRed()));
+                    buf.append(Integer.toHexString(res.color.getGreen()));
+                    buf.append(Integer.toHexString(res.color.getBlue()));
+                    buf.append(">&nbsp;&nbsp;");// NOI18N
+                    buf.append("</font></td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(res.name);
+                    buf.append("</td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(""+value+"%");// NOI18N
+                    buf.append("</td>");// NOI18N
+                    buf.append("</tr>");// NOI18N
+                }
+            }
+            buf.append("</table>");// NOI18N
+            buf.append("</html>");// NOI18N
+            return buf.toString();
+        }
+        return null;
+    }
+
+    private int getStateIndex(Point point){
+        if (threadData != null) {
+            int index = getFirstVisibleDataUnit();
+            if (index != -1) {
+                int width = Math.abs(getX());
+                if ((viewEnd - viewStart) > 0) {
+                    float factor = (float) width / (float) (viewEnd - viewStart);
+
+                    while ((index < threadData.size()) &&
+                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= viewEnd)) {
+                        // Thread alive
+                        if (threadData.isAlive(index)) {
+                            int x; // Begin of rectangle
+                            int xx; // End of rectangle
+
+                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
+
+                            if (index < (threadData.size() - 1)) {
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
+                            } else {
+                                xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
+                            }
+                            if (x <= point.x && point.x < xx) {
+                                return index;
+                            }
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     /**
@@ -260,32 +345,19 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
         }
 
-        int size = threadStateColor.size();
         int delta = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
 
         for (AtomicInteger i : map.values()) {
             i.set(0);
         }
 
-        for (int i = 0; i < size; i++) {
-            ThreadState.MSAState msa = threadStateColor.getMSAState(i, viewManager.isFullMode());
-            if (msa != null) {
-                AtomicInteger value = map.get(msa);
-                if (value == null) {
-                    value = new AtomicInteger();
-                    map.put(msa, value);
-                }
-                value.addAndGet(threadStateColor.getState(i));
-            } else {
-                System.err.println("Wrong MSA at index "+i+" MSA="+threadStateColor); // NOI18N
-            }
-        }
+        fillMap(threadStateColor, map);
 
         int y = 0;
         int rest = ThreadState.POINTS/2;
         int oldRest = 0;
         for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(map); it.hasNext();){
-            Map.Entry<ThreadState.MSAState, AtomicInteger> entry = it.next();
+            Map.Entry<MSAState, AtomicInteger> entry = it.next();
             int v = entry.getValue().get();
             Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
             oldRest = rest;
@@ -296,6 +368,23 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 g.setColor(c);
                 g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y, xx - x, d);
             //g.fillRect(x, 6, xx - x, getHeight() - 12);
+            }
+        }
+    }
+
+    private void fillMap(ThreadState threadStateColor, EnumMap<MSAState, AtomicInteger> aMap) {
+        int size = threadStateColor.size();
+        for (int i = 0; i < size; i++) {
+            MSAState msa = threadStateColor.getMSAState(i, viewManager.isFullMode());
+            if (msa != null) {
+                AtomicInteger value = aMap.get(msa);
+                if (value == null) {
+                    value = new AtomicInteger();
+                    aMap.put(msa, value);
+                }
+                value.addAndGet(threadStateColor.getState(i));
+            } else {
+                System.err.println("Wrong MSA at index " + i + " MSA=" + threadStateColor); // NOI18N
             }
         }
     }
