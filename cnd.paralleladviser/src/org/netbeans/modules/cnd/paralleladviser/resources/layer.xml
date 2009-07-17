@@ -11,11 +11,11 @@
     <folder name="Menu">
         <folder name="Window">
             <folder name="Other">
-                <attr name="position" intvalue="1800"/>
+                <attr name="position" intvalue="25000"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Bundle"/>
                 <file name="ParallelAdviserViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-paralleladviser-paralleladviserview-ParallelAdviserViewAction.instance"/>
-                    <attr name="position" intvalue="1200"/>
+                    <attr name="position" intvalue="25000"/>
                 </file>
             </folder>
         </folder>
@@ -27,7 +27,7 @@
         <folder name="Modes">
             <folder name="output">
                 <file name="ParallelAdviserTopComponent.wstcref" url="ParallelAdviserTopComponentWstcref.xml">
-                    <attr name="position" intvalue="1300"/>
+                    <attr name="position" intvalue="25000"/>
                 </file>
             </folder>
         </folder>

@@ -82,6 +82,9 @@ public final class DLightParallelAdviserToolConfigurationProvider
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
 
         List<Column> resultColumns = new ArrayList<Column>();
+        resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
+        resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
+        resultColumns.add(ProcDataProviderConfiguration.THREADS);
         IndicatorMetadata indicatorMetadata =
                 new IndicatorMetadata(resultColumns);
         ParallelAdviserIndicatorConfiguration indicatorConfiguration = new ParallelAdviserIndicatorConfiguration(

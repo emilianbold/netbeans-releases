@@ -55,6 +55,7 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,14 +78,37 @@ import org.openide.util.NbBundle;
     }
 
     public void reset() {
+        System.out.println("reset"); // NOI18N
     }
+
+    int intervalOfHighLoad = 0;
+    int intervalOfHighLoadBound = 10;
 
     @Override
     public void updated(List<DataRow> data) {
+        System.out.println("updated"); // NOI18N
+        System.out.println(data);
+
+        int processorsNumber = Runtime.getRuntime().availableProcessors();
+        if(processorsNumber <= 1) {
+            return;
+        }
+
+        if(isSingleThreadOnOneProcessorHighLoaded(data, processorsNumber)) {
+            intervalOfHighLoad++;
+        } else {
+            intervalOfHighLoad = 0;
+        }
+
+        if(intervalOfHighLoad == intervalOfHighLoadBound) {
+            panel.notifyUser();
+        }
+
     }
 
     @Override
     protected void tick() {
+        System.out.println("tick"); // NOI18N
     }
 
     @Override
@@ -93,5 +117,16 @@ import org.openide.util.NbBundle;
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(ParallelAdviserIndicator.class, name);
+    }
+
+    private static boolean isSingleThreadOnOneProcessorHighLoaded(List<DataRow> data, int processorsNumber) {
+        for (DataRow dataRow : data) {
+            double utime = (Float)dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+            int threads = (Integer)dataRow.getData(ProcDataProviderConfiguration.THREADS.getColumnName());
+            if(threads == 1 && 0.9 < utime*processorsNumber) {
+                return true;
+            }
+        }
+        return false;
     }
 }
