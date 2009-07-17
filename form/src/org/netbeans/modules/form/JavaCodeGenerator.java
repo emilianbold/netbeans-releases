@@ -970,13 +970,39 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    private FoldHierarchyListener listener;
+    private boolean expandFold;
     private void expandInitComponentsInAWT(int initComponentsOffset) {
         javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
         if (editorPane != null) {
-            FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
+            final String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
+            final FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
             Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
             if (fold != null) {
-                foldHierarchy.expand(fold);
+                if (foldDescription.equals(fold.getDescription())) {
+                    // The fold exists and we found it => expand it
+                    FoldUtilities.expand(foldHierarchy, fold.getType());
+                    expandFold = false;
+                } else {
+                    // The fold doesn't exist yet => expand it once it is created
+                    expandFold = true;
+                }
+                if (listener == null) {
+                    listener = new FoldHierarchyListener() {
+                        public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+                            if (expandFold) {
+                                for (int i=0; i<evt.getAddedFoldCount(); i++) {
+                                    Fold candidate = evt.getAddedFold(i);
+                                    if (foldDescription.equals(candidate.getDescription())) {
+                                        FoldUtilities.expand(foldHierarchy, candidate.getType());
+                                        expandFold = false;
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    foldHierarchy.addFoldHierarchyListener(listener);
+                }
             }
         }
     }
