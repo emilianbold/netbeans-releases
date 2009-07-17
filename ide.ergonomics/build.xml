@@ -83,6 +83,7 @@
             <property name="ergonomicsdir" location="${basedir}"/>
             <property name="src-ant.cp" value="${src-ant.cp}"/>
             <dirset refid="ergonomic.clusters"/>
+            <dirset file="${ergonomic.clusters.extra}"/>
         </subant>
         <pathconvert property="extra.module.files" pathsep=",">
             <path>
@@ -111,6 +112,7 @@
             <property name="ergonomicsdir" location="${basedir}"/>
             <property name="src-ant.cp" value="${src-ant.cp}"/>
             <dirset refid="ergonomic.clusters"/>
+            <dirset file="${ergonomic.clusters.extra}"/>
         </subant>
     </target>
 
