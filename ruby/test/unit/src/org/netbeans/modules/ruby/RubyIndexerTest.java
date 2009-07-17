@@ -103,15 +103,15 @@ public class RubyIndexerTest extends RubyTestBase {
         return value;
     }
 
-    public void testAnalysis2() throws Exception {
+    public void xtestAnalysis2() throws Exception {
         checkIndexer("testfiles/ape.rb");
     }
 
-    public void testAnalysis() throws Exception {
+    public void xtestAnalysis() throws Exception {
         checkIndexer("testfiles/postgresql_adapter.rb");
     }
 
-    public void testAnalysis3() throws Exception {
+    public void xtestAnalysis3() throws Exception {
         checkIndexer("testfiles/date.rb");
     }
 
@@ -119,137 +119,137 @@ public class RubyIndexerTest extends RubyTestBase {
         checkIndexer("testfiles/resolv.rb");
     }
 
-    public void testUnused() throws Exception {
+    public void xtestUnused() throws Exception {
         checkIndexer("testfiles/unused.rb");
     }
 
-    public void testRails1() throws Exception {
+    public void xtestRails1() throws Exception {
         checkIndexer("testfiles/action_controller.rb");
     }
 
-    public void testRails2() throws Exception {
+    public void xtestRails2() throws Exception {
         checkIndexer("testfiles/action_view.rb");
     }
 
-    public void testRails3() throws Exception {
+    public void xtestRails3() throws Exception {
         checkIndexer("testfiles/action_mailer.rb");
     }
 
-    public void testRails4() throws Exception {
+    public void xtestRails4() throws Exception {
         checkIndexer("testfiles/action_web_service.rb");
     }
 
-    public void testRails5() throws Exception {
+    public void xtestRails5() throws Exception {
         checkIndexer("testfiles/active_record.rb");
     }
 
-    public void testRails6() throws Exception {
+    public void xtestRails6() throws Exception {
         checkIndexer("testfiles/lib/action_controller/assertions.rb");
     }
 
-    public void testTopLevel() throws Exception {
+    public void xtestTopLevel() throws Exception {
         checkIndexer("testfiles/top_level.rb");
     }
 
-    public void testTopLevel2() throws Exception {
+    public void xtestTopLevel2() throws Exception {
         checkIndexer("testfiles/option_parser_spec.rb");
     }
 
-    public void testTopLevel3() throws Exception {
+    public void xtestTopLevel3() throws Exception {
         checkIndexer("testfiles/method_definer_test.rb");
     }
 
-    public void testMigration1() throws Exception {
+    public void xtestMigration1() throws Exception {
         checkIndexer("testfiles/migrate/001_create_products.rb");
     }
-    public void testMigration2() throws Exception {
+    public void xtestMigration2() throws Exception {
         checkIndexer("testfiles/migrate/002_add_price.rb");
     }
-    public void testMigration3() throws Exception {
+    public void xtestMigration3() throws Exception {
         checkIndexer("testfiles/migrate/003_add_test_data.rb");
     }
-    public void testMigration4() throws Exception {
+    public void xtestMigration4() throws Exception {
         checkIndexer("testfiles/migrate/004_add_sessions.rb");
     }
-    public void testMigration5() throws Exception {
+    public void xtestMigration5() throws Exception {
         checkIndexer("testfiles/migrate/005_create_orders.rb");
     }
-    public void testMigration6() throws Exception {
+    public void xtestMigration6() throws Exception {
         checkIndexer("testfiles/migrate/006_create_line_items.rb");
     }
-    public void testMigration7() throws Exception {
+    public void xtestMigration7() throws Exception {
         checkIndexer("testfiles/migrate/007_create_users.rb");
     }
-    public void testMigration8() throws Exception {
+    public void xtestMigration8() throws Exception {
         checkIndexer("testfiles/migrate/007_add_assets_and_resources.rb");
     }
-    public void testMigration9() throws Exception {
+    public void xtestMigration9() throws Exception {
         checkIndexer("testfiles/migrate/029_add_correct_comment_lifetime.rb");
     }
-    public void testMigration10() throws Exception {
+    public void xtestMigration10() throws Exception {
         checkIndexer("testfiles/migrate/044_store_single_filter.rb");
     }
-    public void testMigration11() throws Exception {
+    public void xtestMigration11() throws Exception {
         checkIndexer("testfiles/migrate/001_create_products_renamed.rb");
     }
 
-    public void testRails20Migrations() throws Exception {
+    public void xtestRails20Migrations() throws Exception {
         checkIndexer("testfiles/migrate/100_rails20_migrations.rb");
     }
 
-    public void testRails20Migrations2() throws Exception {
+    public void xtestRails20Migrations2() throws Exception {
         checkIndexer("testfiles/migrate/101_rails20_migrations.rb");
     }
 
-    public void testRails20Migrations3() throws Exception {
+    public void xtestRails20Migrations3() throws Exception {
         checkIndexer("testfiles/migrate/102_rails20_migrations.rb");
     }
 
-    public void testSchemaDepot() throws Exception {
+    public void xtestSchemaDepot() throws Exception {
         checkIndexer("testfiles/migrate/schemas/depot/db/schema.rb");
     }
 
-    public void testSchemaMephisto() throws Exception {
+    public void xtestSchemaMephisto() throws Exception {
         checkIndexer("testfiles/migrate/schemas/mephisto/db/schema.rb");
     }
 
-    public void testClassvar() throws Exception {
+    public void xtestClassvar() throws Exception {
         checkIndexer("testfiles/classvar.rb");
     }
 
-    public void testRails20SchemaDefs() throws Exception {
+    public void xtestRails20SchemaDefs() throws Exception {
         checkIndexer("testfiles/activerecord-2.0.1/schema_definitions.rb");
     }
 
-    public void testTwoClasses() throws Exception {
+    public void xtestTwoClasses() throws Exception {
         checkIndexer("testfiles/twoclasses.rb");
     }
 
-    public void testRails21Migrations1() throws Exception {
+    public void xtestRails21Migrations1() throws Exception {
         checkIndexer("testfiles/migrate/20070403225818_create_posts.rb");
     }
 
-    public void testRails21Migrations2() throws Exception {
+    public void xtestRails21Migrations2() throws Exception {
         checkIndexer("testfiles/migrate/20080403222904_add_names.rb");
     }
 
-    public void testEmpty1() throws Exception {
+    public void xtestEmpty1() throws Exception {
         checkIndexer("testfiles/empty.rb");
     }
 
-    public void testGlobals() throws Exception {
+    public void xtestGlobals() throws Exception {
         checkIndexer("testfiles/globals.rb");
     }
 
-    public void testGlobals2() throws Exception {
+    public void xtestGlobals2() throws Exception {
         checkIndexer("testfiles/globals2.rb");
     }
 
-    public void testConstants() throws Exception {
+    public void xtestConstants() throws Exception {
         checkIndexer("testfiles/constants.rb");
     }
 
-    public void testMethodTypeInference() throws Exception {
+    public void xtestMethodTypeInference() throws Exception {
         checkIndexer("testfiles/method_type_inference.rb");
     }
 
