@@ -19,6 +19,8 @@ config/Preferences
 config/Preferences/org
 config/Preferences/org/netbeans
 config/Preferences/org/netbeans/modules
+config/Preferences/org/netbeans/modules/project
+config/Preferences/org/netbeans/modules/project/ant.properties
 config/Preferences/org/netbeans/modules/uihandler.properties
 config/Preferences/org/netbeans/modules/welcome.properties
 config/Preferences/org/netbeans/modules/mercurial.properties
