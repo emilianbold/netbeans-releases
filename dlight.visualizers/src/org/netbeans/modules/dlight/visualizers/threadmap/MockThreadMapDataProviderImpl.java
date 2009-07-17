@@ -46,6 +46,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
@@ -296,6 +297,14 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
         public MSAState getSamplingMSAState(boolean full) {
             return ThreadState.MSAState.Running;
+        }
+
+        public StackTrace getStackTrace(int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public StackTrace getSamplingStackTrace() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
