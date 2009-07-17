@@ -67,6 +67,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      * 
      * @return an object for starting/stopping the server
      */
+    @Override
     public StartServer getStartServer(DeploymentManager dm) {
         return new WLStartServer(dm);
     }
@@ -81,6 +82,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      * 
      * @return an object for performing the incremental deployment, i.e. null
      */
+    @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
         return null;
     }
@@ -95,6 +97,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      * 
      * @return an object for finding the servlet, i.e. null
      */
+    @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
         return null;
     }
@@ -104,6 +107,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      * 
      * @return a custom wizard
      */
+    @Override
     public InstantiatingIterator getAddInstanceIterator() {
         return new WLInstantiatingIterator();
     }
