@@ -254,6 +254,7 @@ abstract class FieldInjectionPointLogic {
         }
         filterProductionByType( element, productionElements, modelImpl );
         addSpecializes( productionElements , modelImpl );
+        result.addAll( productionElements );
         return result;
     }
     

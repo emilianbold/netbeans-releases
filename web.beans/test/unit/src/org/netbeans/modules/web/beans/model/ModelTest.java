@@ -65,9 +65,9 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
  * @author ads
  *
  */
-public class TempTest extends CommonTestCase {
+public class ModelTest extends CommonTestCase {
 
-    public TempTest( String testName ) {
+    public ModelTest( String testName ) {
         super(testName);
     }
     
@@ -122,7 +122,7 @@ public class TempTest extends CommonTestCase {
                 "import javax.enterprise.inject.*; "+
                 "@foo.CustomBinding() " +
                 "public class Three  { " +
-                " @Produces @foo.CustomBinding(value=\"d\", comment=\"comment\") " +
+                " @Produces @foo.CustomBinding(value=\"d\") " +
                 "int productionField =1; " +
                 "}" );
         
@@ -133,7 +133,6 @@ public class TempTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyThread.java",
                 "package foo; " +
-                "@foo.CustomBinding() " +
                 "public class MyThread extends Thread  {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyClass.java",
@@ -167,13 +166,21 @@ public class TempTest extends CommonTestCase {
                     if ( element.getSimpleName().contentEquals("myFieldA")){
                         checkA( element , model);
                     }
+                    else if ( element.getSimpleName().contentEquals("myGen")){
+                        checkGen( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myIndex")){
+                        checkIndex( element , model);
+                    }
                 }
                 
+                assert names.contains("myFieldA");
+                assert names.contains("myGen");
+                assert names.contains("myIndex");
                 
                 return null;
             }
 
-            
         });
     }
     
@@ -191,9 +198,39 @@ public class TempTest extends CommonTestCase {
             }
             
             assertTrue( "Result of typesafe resolution should contains foo.One" +
-                    " class" , set.contains("foo.One"));
+                    " class definition" , set.contains("foo.One"));
             assertTrue( "Result of typesafe resolution should contains foo.Two" +
-            		" class" , set.contains("foo.Two"));
+            		" class definition" , set.contains("foo.Two"));
+        }
+        catch(WebBeansModelException e ){
+            assert false : "Unexpected exception " +e.getClass()+ " appears"; 
+        }
+    }
+    
+    private void checkGen( VariableElement element, WebBeansModel model ){
+        try {
+            inform("test field myGen");
+            Element injectable = model.getInjectable(element);
+            assertNotNull( injectable );
+            assertTrue ( "Found injectable should be a class definition" , 
+                    injectable instanceof TypeElement );
+            assertEquals( "foo.Generic", ((TypeElement)injectable).
+                    getQualifiedName().toString());
+        }
+        catch(WebBeansModelException e ){
+            assert false : "Unexpected exception " +e.getClass()+ " appears"; 
+        }
+    }
+    
+    private void checkIndex( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myIndex");
+            Element injectable = model.getInjectable(element);
+            assertNotNull( injectable );
+            assertTrue ( "Found injectable should be a producer field" , 
+                    injectable instanceof VariableElement );
+            
+            assertEquals( "productionField", injectable.getSimpleName().toString());
         }
         catch(WebBeansModelException e ){
             assert false : "Unexpected exception " +e.getClass()+ " appears"; 
