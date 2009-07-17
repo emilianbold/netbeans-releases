@@ -93,6 +93,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             time = System.currentTimeMillis();
         }
         filter = new SmartFilter();
+        // success flag is for tracing only. TODO: should we drop it?
         boolean success = false;
         File zipFile = null;
         upload: // the label allows us exiting this block on condition
@@ -173,6 +174,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 }
             }
             success = true;
+            CommonTasksSupport.rmFile(executionEnvironment, remoteFile, err);
+            // NB: we aren't waining for completion,
+            // since the name of the file made my File.createTempFile is new each time
             try {
                 filter.flush();
             } catch (IOException ex) {
