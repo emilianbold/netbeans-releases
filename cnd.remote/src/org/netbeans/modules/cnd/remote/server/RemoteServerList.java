@@ -104,10 +104,16 @@ public class RemoteServerList implements ServerListImplementation {
                 if (arr.length > 1) {
                     displayName = arr[1];
                 }
-                if (arr.length > 2) {
-                    syncFactory = RemoteSyncFactory.fromID(arr[2]);
-                }
                 ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostKey);
+                if (arr.length > 2) {
+                    final String syncId = arr[2];
+                    syncFactory = RemoteSyncFactory.fromID(syncId);
+                    if (syncFactory == null) {
+                        syncFactory = RemoteSyncFactory.getDefault();
+                        log.warning("Unsupported synchronization mode \"" + syncId + "\" for " + env.toString() + //NOI18N
+                                ". Switching to default one."); //NOI18N
+                    }
+                }
                 if (env.isRemote()) {
                     addServer(env, displayName, syncFactory, false, RemoteServerRecord.State.OFFLINE);
                 }
