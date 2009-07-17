@@ -8,7 +8,7 @@ Searchable Keys:
   field : base
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
   method : [](name)|DOCUMENTED|
-  method : column(name,type,options)|DOCUMENTED|
+  method : column(name,type,options)|DOCUMENTED|;;TableDefinition;
   method : initialize(base)|PRIVATE|
   method : native|PRIVATE|
   method : new(base)|PRIVATE|STATIC|
