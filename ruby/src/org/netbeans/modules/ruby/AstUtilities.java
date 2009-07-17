@@ -98,7 +98,6 @@ import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Various utilities for operating on the JRuby ASTs that are used

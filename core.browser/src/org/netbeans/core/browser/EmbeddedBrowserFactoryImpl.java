@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
 
     public EmbeddedBrowserFactoryImpl() {
-        System.setProperty("mozswing.gtklaf_check", "false"); //NOI18N
     }
 
     @Override
