@@ -88,9 +88,9 @@ public final class ImportAction extends NodeAction {
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             File dir = lookupImportDirectory(nodes[0]);
             if (dir != null && dir.isDirectory()) {
-                FileInformation status = cache.getStatus(dir);
+                FileInformation status = cache.getCachedStatus(dir);
                 // mutually exclusive enablement logic with commit
-                if ((status.getStatus() & FileInformation.STATUS_MANAGED) == 0) {
+                if (!SvnUtils.isManaged(dir) && (status == null || (status.getStatus() & FileInformation.STATUS_MANAGED) == 0)) {
                     // do not allow to import partial/nonatomic project, all must lie under imported common root
                     FileObject fo = FileUtil.toFileObject(dir);
                     Project p = FileOwnerQuery.getOwner(fo);
