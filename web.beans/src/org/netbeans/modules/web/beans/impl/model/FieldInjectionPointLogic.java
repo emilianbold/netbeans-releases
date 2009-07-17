@@ -60,6 +60,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
+import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
 /**
@@ -90,7 +92,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     protected Element findVariableInjectable( VariableElement element,
-            WebBeansModelImplementation modelImpl )
+            WebBeansModelImplementation modelImpl ) throws WebBeansModelException
     {
         List<Element> injectables = findVariableInjectable(element, 
                 modelImpl, false);
@@ -101,8 +103,7 @@ abstract class FieldInjectionPointLogic {
             return null;
         }
         else {
-            // TODO : throw exception
-            return null;
+            throw new AmbiguousDependencyException( injectables );
         }
     }
     
@@ -139,6 +140,7 @@ abstract class FieldInjectionPointLogic {
             }
             /* TODO : one needs somehow to check absence of initialization
              * for field... 
+             * Throw exception if it initialized. 
              */
         }
         // producer is not injection point , it is injectable
