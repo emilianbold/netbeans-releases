@@ -44,7 +44,7 @@ if [ -z ${UPLOAD_ML} ]; then
     export UPLOAD_ML=0
 fi
 
-export ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
+export ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m -Dergonomic.clusters.extra=/space/javafx/javafx2"
 export JAVA_HOME=$JDK_HOME
 
 if [ -z ${DATESTAMP} ]; then
