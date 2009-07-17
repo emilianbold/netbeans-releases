@@ -116,6 +116,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             }
 
             if (zipper.getFileCount() == 0) {
+                success = true; // just no changed files
                 break upload;
             }
 
