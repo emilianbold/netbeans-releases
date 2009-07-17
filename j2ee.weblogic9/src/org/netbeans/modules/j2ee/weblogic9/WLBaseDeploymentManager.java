@@ -80,7 +80,7 @@ import org.netbeans.modules.j2ee.weblogic9.util.WLOutputManager;
  */
 public abstract class WLBaseDeploymentManager implements DeploymentManager {
 
-    protected static final Logger LOGGER = Logger.getLogger(WLBaseDeploymentManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WLBaseDeploymentManager.class.getName());
 
     protected final WLDeploymentFactory factory;
 
@@ -224,7 +224,7 @@ public abstract class WLBaseDeploymentManager implements DeploymentManager {
 
     public abstract ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException;
 
-    protected ClassLoader modifyLoader() {
+    protected final ClassLoader modifyLoader() {
         ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
         String serverRoot = getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         // if serverRoot is null, then we are in a server instance registration process, thus this call
@@ -236,7 +236,8 @@ public abstract class WLBaseDeploymentManager implements DeploymentManager {
         Thread.currentThread().setContextClassLoader(getWLClassLoader(serverRoot));
         return originalLoader;
     }
-    protected void originalLoader(ClassLoader originalLoader) {
+    
+    protected final void originalLoader(ClassLoader originalLoader) {
         Thread.currentThread().setContextClassLoader(originalLoader);
     }
 

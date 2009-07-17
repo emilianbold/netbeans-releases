@@ -84,6 +84,8 @@ public class WLOldDeploymentManager extends WLBaseDeploymentManager{
     private String password;
     private boolean isConnected;
 
+    private static final Logger LOGGER = Logger.getLogger(WLOldDeploymentManager.class.getName());
+
     /** Create connected DM */
     public WLOldDeploymentManager(WLDeploymentFactory factory, String uri,
             String username, String password, String host, String port) {
