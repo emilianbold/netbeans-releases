@@ -36,45 +36,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.api;
+package org.netbeans.modules.dlight.api.stack;
 
 /**
- * Function Call with metrics for function.
- * As an example: you have the following
+ * Function
  */
-public abstract class FunctionCall {
-
-    private final Function function;
-    private final long offset;
-
-    protected FunctionCall(Function function) {
-        this(function, -1);
-    }
-
-    protected FunctionCall(Function function, long offset) {
-        this.function = function;
-        this.offset = offset;
-    }
-
-    public String getDisplayedName() {
-        return getFunction().getName();
-    }
-
-    public final Function getFunction() {
-        return function;
-    }
-
-    public final long getOffset() {
-        return offset;
-    }
-
-    public final boolean hasOffset() {
-        return offset >= 0;
-    }
-
-    public abstract Object getMetricValue(FunctionMetric metric);
-
-    public abstract Object getMetricValue(String metric_id);
-
-    public abstract boolean hasMetric(String metric_id);
+public interface Function {
+  public String getName();
+  public String getQuilifiedName();
 }

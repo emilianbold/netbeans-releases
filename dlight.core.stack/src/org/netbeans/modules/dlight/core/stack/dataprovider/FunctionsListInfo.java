@@ -39,7 +39,7 @@
 package org.netbeans.modules.dlight.core.stack.dataprovider;
 
 import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
 /**
@@ -48,7 +48,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
  */
 public interface FunctionsListInfo {
 
-    List<FunctionCall> getFunctionCalls();
+    List<FunctionCallWithMetric> getFunctionCalls();
 
     MetricsSummary getMetricsSummary();
 

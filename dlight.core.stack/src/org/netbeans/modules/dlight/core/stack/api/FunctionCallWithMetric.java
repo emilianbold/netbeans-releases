@@ -36,44 +36,48 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.dataprovider;
+package org.netbeans.modules.dlight.core.stack.api;
 
-import org.netbeans.modules.dlight.core.stack.api.*;
-import java.util.Hashtable;
+import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
 
-public class NaturalFunctionCallComparator implements FunctionCallComparator {
+/**
+ * Function Call with metrics for function.
+ * As an example: you have the following
+ */
+public abstract class FunctionCallWithMetric implements FunctionCall {
 
-  private final FunctionMetric metric;
-  private static final Hashtable<FunctionMetric, NaturalFunctionCallComparator> instances =
-          new Hashtable<FunctionMetric, NaturalFunctionCallComparator>();
+    private final Function function;
+    private final long offset;
 
-  private NaturalFunctionCallComparator(FunctionMetric metric) {
-    this.metric = metric;
-  }
-
-  public static final NaturalFunctionCallComparator getInstance(FunctionMetric metric) {
-    if (instances.get(metric) == null) {
-      instances.put(metric, new NaturalFunctionCallComparator(metric));
+    protected FunctionCallWithMetric(Function function) {
+        this(function, -1);
     }
 
-    return instances.get(metric);
-  }
-
-  public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
-    int res = 0;
-    Object c1 = o1.getMetricValue(metric);
-    Object c2 = o2.getMetricValue(metric);
-    if (c1 instanceof String && c2 instanceof String) {
-      res = ((String) c1).compareTo((String) c2);
+    protected FunctionCallWithMetric(Function function, long offset) {
+        this.function = function;
+        this.offset = offset;
     }
 
-    if (c1 instanceof Number && c2 instanceof Number) {
-      double l1 = ((Number) c1).doubleValue();
-      double l2 = ((Number) c2).doubleValue();
-      res = l1 == l2 ? 0 : l1 < l2 ? 1 : -1;
+    public String getDisplayedName() {
+        return getFunction().getName();
     }
 
-    return res == 0 ? o1.getFunction().getQuilifiedName().compareTo(o2.getFunction().getQuilifiedName()) : res;
+    public final Function getFunction() {
+        return function;
+    }
 
-  }
+    public final long getOffset() {
+        return offset;
+    }
+
+    public final boolean hasOffset() {
+        return offset >= 0;
+    }
+
+    public abstract Object getMetricValue(FunctionMetric metric);
+
+    public abstract Object getMetricValue(String metric_id);
+
+    public abstract boolean hasMetric(String metric_id);
 }

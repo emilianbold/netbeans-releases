@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateMapper;
 
@@ -161,5 +162,13 @@ public final class ThreadStateImpl implements ThreadState {
             return res;
         }
         return getMSAState(0, full);
+    }
+
+    public StackTrace getStackTrace(int index) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public StackTrace getSamplingStackTrace() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

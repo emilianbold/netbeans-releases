@@ -45,7 +45,7 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
@@ -77,15 +77,15 @@ final class StackDataProviderImpl implements StackDataProvider {
     return metricsList;
   }
 
-  public List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate) {
+  public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
     return storage.getCallers(path, aggregate);
   }
 
-  public List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate) {
+  public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
     return storage.getCallees(path, aggregate);
   }
 
-  public List<FunctionCall> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
+  public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
     return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
   }
 
@@ -94,7 +94,7 @@ final class StackDataProviderImpl implements StackDataProvider {
   }
 
   public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-    return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCall[0]), false));
+    return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
   }
 
   public FunctionCallTreeTableNode getValueAt(int row) {
@@ -111,7 +111,7 @@ final class StackDataProviderImpl implements StackDataProvider {
      //   throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
+    public SourceFileInfo getSourceFileInfo(FunctionCallWithMetric functionCall) {
         //we should get here SourceFileInfoProvider
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
