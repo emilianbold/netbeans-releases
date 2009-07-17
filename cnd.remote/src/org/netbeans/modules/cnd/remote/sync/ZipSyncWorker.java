@@ -244,9 +244,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
         public FileTimeStamps() {
             data = new Properties();
-            String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18B
-                    '-' + executionEnvironment.getUser()+ //NOI18B
-                    '-' + executionEnvironment.getSSHPort(); //NOI18B
+            String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
+                    '-' + executionEnvironment.getUser()+ //NOI18N
+                    '-' + executionEnvironment.getSSHPort(); //NOI18N
             dataFile = new File(privProjectStorageDir, dataFileName);
             if (dataFile.exists()) {
                 try {
@@ -256,7 +256,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                     is.close();                    
                     if (logger.isLoggable(Level.FINEST)) {
                         time = System.currentTimeMillis() - time;
-                        System.out.printf("\treading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time);
+                        System.out.printf("\treading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time); // NOI18N
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
