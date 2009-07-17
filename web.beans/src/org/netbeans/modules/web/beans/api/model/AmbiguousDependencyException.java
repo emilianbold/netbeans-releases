@@ -38,69 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.api.model;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
-import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
 
 /**
  * @author ads
  *
  */
-@org.openide.util.lookup.ServiceProvider(service=WebBeansModelProvider.class)
-public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic 
-    implements WebBeansModelProvider 
-{
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectable(javax.lang.model.element.VariableElement, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public Element getInjectable( VariableElement element , 
-            AbstractModelImplementation impl) throws WebBeansModelException
-    {
-        WebBeansModelImplementation modelImpl = null;
-        try {
-            modelImpl = (WebBeansModelImplementation)impl;
-        }
-        catch( ClassCastException e ){
-            return null;
-        }
-        /* 
-         * Element could be injection point. One need first if all to check this.  
-         */
-        Element parent = element.getEnclosingElement();
-        
-        if ( parent instanceof TypeElement){
-            return findVariableInjectable(element, modelImpl);
-        }
-        else if ( parent instanceof ExecutableElement ){
-            // Probably injected field in method. One need to check method.
-            /*
-             * There are two cases where parameter is injected :
-             * 1) Method has some annotation which require from 
-             * parameters to be injection points.
-             * 2) Method is disposer method. In this case injectable
-             * is producer corresponding method.
-             */
-            return findParameterInjectable(element, modelImpl );
-        }
-        
-        return null;
-    }
-    
-    public List<Element> getInjectables( VariableElement element ,
-            AbstractModelImplementation impl )
-    {
-        return null;
-    }
+public class AmbiguousDependencyException extends WebBeansModelException {
 
+    private static final long serialVersionUID = 5833956523263809658L;
+
+    public AmbiguousDependencyException(List<Element> elements){
+        myElements = elements;
+    }
+    
+    public List<Element> getElements(){
+        return Collections.unmodifiableList( myElements );
+    }
+    
+    private List<Element> myElements;
 }
