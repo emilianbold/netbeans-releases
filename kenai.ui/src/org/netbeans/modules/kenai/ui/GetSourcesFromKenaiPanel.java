@@ -180,7 +180,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         proxyConfigButton = new JButton();
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
-        setPreferredSize(new Dimension(700, 350));
+        setPreferredSize(new Dimension(700, 250));
+        setRequestFocusEnabled(false);
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.text"));
         gridBagConstraints = new GridBagConstraints();

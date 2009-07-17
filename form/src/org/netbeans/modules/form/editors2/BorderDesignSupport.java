@@ -96,8 +96,8 @@ public class BorderDesignSupport implements FormDesignValue
         throws Exception
     {
         this(borderDesignSupport.getBorderClass());
+        setPropertyContext(propertyContext);
         createProperties();
-        setPropertyContext(propertyContext);        
         int copyMode = FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING;
             
         FormUtils.copyProperties(borderDesignSupport.getProperties(),
@@ -180,6 +180,14 @@ public class BorderDesignSupport implements FormDesignValue
     }
 
     private void createProperties() {
+        FormLAF.executeWithLookAndFeel(propertyContext.getFormModel(), new Runnable() {
+            public void run() {
+                createPropertiesInLAFBlock();
+            }
+        });
+    }
+
+    private void createPropertiesInLAFBlock() {
         BeanInfo bInfo;
         try {
             bInfo = FormUtils.getBeanInfo(theBorder.getClass());
@@ -259,7 +267,11 @@ public class BorderDesignSupport implements FormDesignValue
     }
 
     public Object getDesignValue(Object target) {
-        return null;
+        if (FormLAF.getUsePreviewDefaults()) {
+            return copy((FormProperty)propertyContext.getOwner()).getDesignValue();
+        } else {
+            return null;
+        }
     }
 
     public String getDescription() {
@@ -292,6 +304,13 @@ public class BorderDesignSupport implements FormDesignValue
             if (canReadFromTarget()) {
                 try {
                     defaultValue = getTargetValue();
+                    if ((theBorder instanceof TitledBorder) && canWriteToTarget()) {
+                        // TitledBorder doesn't remember its default values.
+                        // We have to set them explicitly because otherwise
+                        // it will start to return other "default" values
+                        // when we leave the LAF block
+                        setTargetValue(defaultValue);
+                    }
                 } catch (Exception ex) {}
             }
         }
