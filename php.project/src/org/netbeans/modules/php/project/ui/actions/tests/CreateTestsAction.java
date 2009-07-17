@@ -57,15 +57,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -77,7 +73,6 @@ import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -206,30 +201,34 @@ public final class CreateTestsAction extends NodeAction {
     void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
         assert phpProject != null;
 
-        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
+        final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
         final Set<FileObject> proceeded = new HashSet<FileObject>();
         final Set<FileObject> failed = new HashSet<FileObject>();
         final Set<File> toOpen = new HashSet<File>();
-        try {
-            for (FileObject fo : files) {
-                generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
-                Enumeration<? extends FileObject> children = fo.getChildren(true);
-                while (children.hasMoreElements()) {
-                    generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+        FileUtil.runAtomicAction(new Runnable() {
+            public void run() {
+                try {
+                    for (FileObject fo : files) {
+                        generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
+                        Enumeration<? extends FileObject> children = fo.getChildren(true);
+                        while (children.hasMoreElements()) {
+                            generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+                        }
+                    }
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    UiUtils.processExecutionException(ex);
                 }
             }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex);
-        }
+        });
 
         if (!failed.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (FileObject file : failed) {
                 sb.append(file.getNameExt());
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                     NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
@@ -381,10 +380,8 @@ public final class CreateTestsAction extends NodeAction {
         assert testFile.isFile() : "Test file must exist: " + testFile;
 
         // reformat the file
-        // XXX see AssertionError at HtmlIndenter.java:68
-        // NbReaderProvider.setupReaders(); cannot be called because of deps
         try {
-            reformat(testFile);
+            PhpProjectUtils.reformat(testFile);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
         }
@@ -435,42 +432,5 @@ public final class CreateTestsAction extends NodeAction {
             LOGGER.info("Cannot delete generated file " + generatedFile);
         }
         return testFile;
-    }
-
-    private void reformat(final File testFile) throws IOException {
-        FileObject testFileObject = FileUtil.toFileObject(testFile);
-        assert testFileObject != null : "No fileobject for " + testFile;
-
-        final DataObject dataObject = DataObject.find(testFileObject);
-        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        assert ec != null : "No editorcookie for " + testFileObject;
-
-        Document doc = ec.openDocument();
-        assert doc instanceof BaseDocument;
-
-        // reformat
-        final BaseDocument baseDoc = (BaseDocument) doc;
-        final Reformat reformat = Reformat.get(baseDoc);
-        reformat.lock();
-        try {
-            // seems to be synchronous but no info in javadoc
-            baseDoc.runAtomic(new Runnable() {
-                public void run() {
-                    try {
-                        reformat.reformat(0, baseDoc.getLength());
-                    } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-                    }
-                }
-            });
-        } finally {
-            reformat.unlock();
-        }
-
-        // save
-        SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
-        if (saveCookie != null) {
-            saveCookie.save();
-        }
     }
 }
