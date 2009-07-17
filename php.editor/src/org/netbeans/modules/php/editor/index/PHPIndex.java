@@ -547,6 +547,7 @@ public class PHPIndex {
     @NonNull
     private Collection<String>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
         Collection<String> ancestors = new TreeSet<String>();
+        List<String> interfaces = Collections.emptyList();
 
         if (processedClasses.contains(className)) {
             return Collections.<String>emptyList(); //TODO: circular reference, warn the user
@@ -560,7 +561,7 @@ public class PHPIndex {
             for (IndexedClass clazz : classes) {
                 ancestors.add(clazz.getName());
                 String parent = clazz.getSuperClass();
-
+                interfaces = clazz.getInterfaces();
                 if (parent != null) {
                     assumedParents.add(parent);
                 }
@@ -570,7 +571,12 @@ public class PHPIndex {
         for (String parent : assumedParents){
             ancestors.addAll(getClassAncestors(context, parent, processedClasses));
         }
-
+        for (String ifaceName : interfaces) {
+            Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, ifaceName);
+            for (IndexedInterface indexedInterface : interfaceTree) {
+                ancestors.add(indexedInterface.getName());
+            }
+        }
         return ancestors;
     }
 

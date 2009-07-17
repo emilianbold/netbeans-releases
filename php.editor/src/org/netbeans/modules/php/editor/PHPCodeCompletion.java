@@ -278,7 +278,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case NEW_CLASS:
                     final NamespaceScope namespaceScope = getNamespaceScope(request);
-                    if (!namespaceScope.isDefaultNamespace()) {
+                    if (namespaceScope != null && !namespaceScope.isDefaultNamespace()) {
                         autoCompleteNamespaces(proposals, request);
                     }
                     Collection<IndexedFunction> functions2 = request.index.getConstructors(result, prefix);
@@ -435,7 +435,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         final boolean isFullyQualified = QualifiedNameKind.resolveKind(nsPrefix).isFullyQualified();
         final String namespaceSeparator = NamespaceDeclarationInfo.NAMESPACE_SEPARATOR;
         final NamespaceScope namespaceScope = getNamespaceScope(request);
-        assert (namespaceScope != null);
+        if (namespaceScope == null) return;
         if (!isFullyQualified) {
             if (nsPrefix.endsWith(namespaceSeparator)) {
                 nsPrefix = String.format("%s%s", QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString(), namespaceSeparator);
@@ -480,7 +480,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         String nsPrefix = request.prefix;
         final boolean isFullyQualified = QualifiedNameKind.resolveKind(nsPrefix).isFullyQualified();
         final NamespaceScope namespaceScope = getNamespaceScope(request);
-        assert (namespaceScope != null);
+        if (namespaceScope == null) return;
         final String namespaceSeparator = NamespaceDeclarationInfo.NAMESPACE_SEPARATOR;
 
          if (!isFullyQualified) {

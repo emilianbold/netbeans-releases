@@ -474,8 +474,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression parameterName = node.getParameterName();
         Expression parameterType = node.getParameterType();
         String typeName = parameterType != null ? CodeUtils.extractUnqualifiedTypeName(node) : null;
-        //FunctionScope scope = (FunctionScope) currentScope.peek();
-        FunctionScopeImpl scope =  (FunctionScopeImpl) modelBuilder.getCurrentScope();
+        Scope scp = modelBuilder.getCurrentScope();
+        if (scp instanceof NamespaceScope) {
+            System.out.println("");
+        }
+        FunctionScopeImpl fncScope =  (FunctionScopeImpl)scp;
         while(parameterName instanceof Reference) {
             Reference ref = (Reference)parameterName;
             Expression expression = ref.getExpression();
@@ -484,16 +487,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         if (typeName != null && parameterName instanceof Variable) {
-            VariableNameImpl varNameImpl = scope.createElement( (Variable) parameterName);
-            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, scope.getBlockRange(),
+            VariableNameImpl varNameImpl = fncScope.createElement( (Variable) parameterName);
+            varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, fncScope, fncScope.getBlockRange(),
                     new OffsetRange(parameterType.getStartOffset(), parameterType.getEndOffset()), typeName));
         }
 
         if (parameterName instanceof Variable) {
             //Identifier paramId = parameterType != null ? CodeUtils.extractUnqualifiedIdentifier(parameterType) : null;
-            occurencesBuilder.prepare(Kind.CLASS, parameterType, scope);
-            occurencesBuilder.prepare(Kind.IFACE, parameterType, scope);
-            occurencesBuilder.prepare((Variable) parameterName, scope);
+            occurencesBuilder.prepare(Kind.CLASS, parameterType, fncScope);
+            occurencesBuilder.prepare(Kind.IFACE, parameterType, fncScope);
+            occurencesBuilder.prepare((Variable) parameterName, fncScope);
         }
         super.visit(node);
     }
