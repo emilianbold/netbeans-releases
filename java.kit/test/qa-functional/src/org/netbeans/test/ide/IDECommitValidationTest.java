@@ -75,21 +75,8 @@ public class IDECommitValidationTest extends IDEValidation {
         .failOnException(Level.INFO)
         .failOnMessage(Level.WARNING)*/;
         
-        Set<String> allowedFiles = new HashSet<String>();
-        InputStream is = IDECommitValidationTest.class.getResourceAsStream("allowed-file-writes.txt");
-        BufferedReader r = new BufferedReader(new InputStreamReader(is));
-        for (;;) {
-            String line = r.readLine();
-            if (line == null) {
-                break;
-            }
-            if (line.startsWith("#")) {
-                continue;
-            }
-            allowedFiles.add(line);
-        }
-
-        CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
+        
+        CountingSecurityManager.initWrites();
         
         /* too easy to break:
         conf = conf.addTest("testReflectionUsage");
