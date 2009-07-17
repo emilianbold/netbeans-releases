@@ -810,31 +810,31 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             });
         } else if (component instanceof RADVisualComponent) {
-            propList.add(new PropertySupport.ReadOnly(
+            propList.add(new PropertySupport.ReadWrite<Dimension>(
                 FormDesigner.PROP_DESIGNER_SIZE,
                 Dimension.class,
                 bundle.getString("MSG_DesignerSize"), // NOI18N
                 bundle.getString("HINT_DesignerSize")) // NOI18N
             {
                 @Override
-                public void setValue(Object value) {
-                    if (!(value instanceof Dimension))
-                        throw new IllegalArgumentException();
+                public void setValue(Dimension value) {
                     if (!getDefaultValue().equals(value))
                         component.setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
                     else if (component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE) != null) {
                         component.getAuxValues().remove(FormDesigner.PROP_DESIGNER_SIZE);
                     }
+                    formModel.fireSyntheticPropertyChanged(component,
+                        FormDesigner.PROP_DESIGNER_SIZE, null, null);
                 }
 
-                public Object getValue() {
-                    Object value = component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+                public Dimension getValue() {
+                    Dimension value = (Dimension)component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
                     if (value == null)
                         value = getDefaultValue();
                     return value;
                 }
 
-                private Object getDefaultValue() {
+                private Dimension getDefaultValue() {
                     return new Dimension(400, 300);
                 }
             });
