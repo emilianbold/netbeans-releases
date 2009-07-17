@@ -207,6 +207,9 @@
                 <include name="**/modules/*.jar"/>
                 <exclude name="ergonomics*/**/*"/>
             </entries>
+           <entries dir="${ergonomic.clusters.extra}">
+                <include name="**/modules/*.jar"/>
+            </entries>
             <bundlefilter>
                 <concatfilter prepend="${proxyprop}"/>
             </bundlefilter>
