@@ -144,7 +144,7 @@ import org.openide.util.NbBundle;
         } catch (IOException ex) {
             logger.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s asdasd \n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         }
