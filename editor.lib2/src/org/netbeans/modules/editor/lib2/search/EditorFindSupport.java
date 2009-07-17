@@ -737,6 +737,15 @@ public final class EditorFindSupport {
      * @param c
      */
     void replaceAllImpl(Map<String, Object> props, JTextComponent c) {
+        String replaceWith = (String)props.get(FIND_REPLACE_WITH);
+        Object findWhat = props.get(FIND_WHAT);
+        if (findWhat == null) { // nothing to search for
+            return;
+        }
+        if (findWhat.equals(replaceWith)) {
+            return;
+        }
+
         Document doc = c.getDocument();
         int replacedCnt = 0;
         int totalCnt = 0;
@@ -803,7 +812,6 @@ public final class EditorFindSupport {
                 } while (continueReplace);
                 // Display message about replacement
                 if (totalCnt == 0) {
-                    Object findWhat = props.get(FIND_WHAT);
                     String exp = "'' "; //NOI18N
                     if (findWhat != null) { // nothing to search for
                         exp = "'" + findWhat + "' "; // NOI18N
