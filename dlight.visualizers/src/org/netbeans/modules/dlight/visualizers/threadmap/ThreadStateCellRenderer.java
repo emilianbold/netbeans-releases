@@ -346,29 +346,33 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         }
 
         int delta = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
-
-        for (AtomicInteger i : map.values()) {
-            i.set(0);
-        }
-
-        fillMap(threadStateColor, map);
-
-        int y = 0;
-        int rest = ThreadState.POINTS/2;
-        int oldRest = 0;
-        for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(map); it.hasNext();){
-            Map.Entry<MSAState, AtomicInteger> entry = it.next();
-            int v = entry.getValue().get();
-            Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
-            oldRest = rest;
-            rest = (v*delta+oldRest)%ThreadState.POINTS;
-            int d = (v*delta+oldRest)/ThreadState.POINTS;
-            y += d;
-            if (d > 0) {
-                g.setColor(c);
-                g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y, xx - x, d);
-            //g.fillRect(x, 6, xx - x, getHeight() - 12);
+        if (viewManager.isMSAMode()){
+            for (AtomicInteger i : map.values()) {
+                i.set(0);
             }
+
+            fillMap(threadStateColor, map);
+
+            int y = 0;
+            int rest = ThreadState.POINTS/2;
+            int oldRest = 0;
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(map); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
+                int v = entry.getValue().get();
+                Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
+                oldRest = rest;
+                rest = (v*delta+oldRest)%ThreadState.POINTS;
+                int d = (v*delta+oldRest)/ThreadState.POINTS;
+                y += d;
+                if (d > 0) {
+                    g.setColor(c);
+                    g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y, xx - x, d);
+                }
+            }
+        } else {
+            Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor.getSamplingMSAState(viewManager.isFullMode()));
+            g.setColor(c);
+            g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, xx - x, delta);
         }
     }
 

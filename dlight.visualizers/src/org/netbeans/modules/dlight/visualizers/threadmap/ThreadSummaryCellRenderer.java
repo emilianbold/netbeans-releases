@@ -179,12 +179,17 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
             }
         }
         threadRunningRatio = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
-        g.setColor(getBackground());
         int percent = (int)(100*threadRunningRatio)/ThreadState.POINTS;
         String s = ""+percent+"%"; // NOI18N
         Font summary = new Font(null, Font.BOLD, height-2);
         g.setFont(summary);
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
+        g.setColor(UIUtils.getDarker(getBackground(),0.4f));
+        g.drawString(s, 6 + 3 + 1, y);
+        g.drawString(s, 6 + 3 - 1, y);
+        g.drawString(s, 6 + 3, y + 1);
+        g.drawString(s, 6 + 3, y - 1);
+        g.setColor(getBackground());
         g.drawString(s, 6 + 3, y);
         threadData.setSummary(percent);
     }

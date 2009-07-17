@@ -571,11 +571,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateColumnImpl.THREAD_RUNNING_USER));
             container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING_SYSTEM));
             container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateColumnImpl.THREAD_RUNNING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateColumnImpl.THREAD_WAITING_CPU));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateColumnImpl.THREAD_SLEEP_USE_LOCK));
-            container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateColumnImpl.THREAD_THREAD_STOPPED));
             legendPanel.add(container, BorderLayout.NORTH);
             container = new JPanel();
-            container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateColumnImpl.THREAD_WAITING_CPU));
+            container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateColumnImpl.THREAD_THREAD_STOPPED));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingOther, ThreadStateColumnImpl.THREAD_SLEEPING_OTHER));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserTextPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_TEXT_PAGE_FAULT));
@@ -722,11 +722,17 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         } else if (e.getSource() == fullMSA) {
             initLegend(isFullMode());
             refreshViewData();
+        } else if (e.getSource() == modeMSA) {
+            refreshViewData();
         }
     }
 
     boolean isFullMode(){
         return fullMSA.isSelected();
+    }
+
+    boolean isMSAMode(){
+        return modeMSA.isSelected();
     }
 
     // --- Save Current View action support --------------------------------------

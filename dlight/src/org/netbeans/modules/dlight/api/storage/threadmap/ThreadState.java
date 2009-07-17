@@ -84,7 +84,7 @@ public interface ThreadState {
     int size();
 
     /**
-     * returns string representation of enum value of MSAState.
+     * returns MSAState.
      *
      * @param index of state.
      * @return state ID by index.
@@ -110,4 +110,11 @@ public interface ThreadState {
      * @return beginning time in natural unit of state.
      */
     long getTimeStamp();
+
+    /**
+     * returns MSAState.
+     *
+     * @return state ID by index.
+     */
+    public MSAState getSamplingMSAState(boolean full);
 }

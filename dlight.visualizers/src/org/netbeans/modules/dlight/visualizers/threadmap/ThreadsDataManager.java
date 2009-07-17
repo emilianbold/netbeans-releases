@@ -281,6 +281,10 @@ public class ThreadsDataManager {
             public String toString() {
                 return "MSA "+getTimeStamp()+" "+getMSAState(0, false).name(); // NOI18N
             }
+
+            public MSAState getSamplingMSAState(boolean full) {
+                return ThreadState.MSAState.ThreadFinished;
+            }
         });
     }
 

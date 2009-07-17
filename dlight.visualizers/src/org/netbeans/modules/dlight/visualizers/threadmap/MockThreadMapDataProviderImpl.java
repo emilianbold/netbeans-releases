@@ -293,6 +293,10 @@ public class MockThreadMapDataProviderImpl implements ThreadMapDataProvider {
         public long getTimeStamp() {
             return currentTime;
         }
+
+        public MSAState getSamplingMSAState(boolean full) {
+            return ThreadState.MSAState.Running;
+        }
     }
 
     private static final class ThreadModel {
