@@ -103,16 +103,17 @@ public final class FileObjectCrawler extends Crawler {
                 rootUrl = root.toString();
             }
 
-            LOG.log(Level.FINE, "Up-to-date check of {0} files under {1} took {2} ms", new Object[]{ stats.filesCount, rootUrl, tm2 - tm1 }); //NOI18N
+            LOG.log(Level.FINE, String.format("Up-to-date check of %d files under %s took %d ms", stats.filesCount, rootUrl, tm2 - tm1 )); //NOI18N
 
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.FINER, "File extensions histogram for {0}:", rootUrl);
                 Stats.logHistogram(Level.FINER, stats.extensions);
                 LOG.finer("----");
 
-                LOG.log(Level.FINER, "Mime types histogram for {0}:", rootUrl);
-                Stats.logHistogram(Level.FINER, stats.mimeTypes);
-                LOG.finer("----");
+// mimetypes histogram is no longer available after crawling the files
+//                LOG.log(Level.FINER, "Mime types histogram for {0}:", rootUrl);
+//                Stats.logHistogram(Level.FINER, stats.mimeTypes);
+//                LOG.finer("----");
             }
         }
 
