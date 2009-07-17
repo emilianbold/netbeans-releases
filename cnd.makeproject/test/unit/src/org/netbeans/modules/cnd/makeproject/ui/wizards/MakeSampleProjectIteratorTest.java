@@ -179,7 +179,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Test
     public void testHelloQtWorld() throws IOException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs);
         }
     }
