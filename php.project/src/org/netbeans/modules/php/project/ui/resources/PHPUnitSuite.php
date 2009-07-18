@@ -4,6 +4,8 @@
 <#assign licenseLast = " */">
 <#include "../Licenses/license-${project.license}.txt">
 
+// @codeCoverageIgnoreStart - seems to be broken - a PHPUnit bug?
+
 /**
  * To regenerate this file, simply delete it and run all PHPUnit tests.
  * @author ${user}
@@ -45,5 +47,7 @@ class NetBeansSuite extends PHPUnit_Framework_TestSuite {
         return $files;
     }
 }
+
+// @codeCoverageIgnoreEnd
 
 ?>
