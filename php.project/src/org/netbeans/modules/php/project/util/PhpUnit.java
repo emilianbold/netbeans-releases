@@ -96,6 +96,7 @@ public final class PhpUnit extends PhpProgram {
     public static final String BOOTSTRAP_FILE = "bootstrap.php"; // NOI18N
     public static final String PARAM_CONFIGURATION = "--configuration"; // NOI18N
     public static final String CONFIGURATION_FILE = "configuration.xml"; // NOI18N
+    public static final String SUITE_FILE = "NetBeansSuite.php"; // NOI18N
 
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
@@ -127,10 +128,15 @@ public final class PhpUnit extends PhpProgram {
         super(command);
     }
 
+    // XXX see 2nd paragraph
     /**
      * The minimum version of PHPUnit is <b>3.3.0</b> because:
      * - of XML log format changes (used for parsing of test results)
      * - running project action Test (older versions don't support directory as a parameter to run)
+     * <p>
+     * Since issue #167519 is fixed, this is not necessary true any more:
+     * - test listener could be used instead of XML file (this would be more reliable and XML file independent)
+     * - all tests are run using suite file, so no need to support directory as a parameter
      * @return <code>true</code> if PHPUnit in minimum version was found
      */
     public boolean supportedVersionFound() {
@@ -206,9 +212,10 @@ public final class PhpUnit extends PhpProgram {
 
         File bootstrap = new File(FileUtil.toFile(testDirectory), PhpUnit.BOOTSTRAP_FILE);
         if (!bootstrap.isFile()) {
-            createBootstrapFile(project, testDirectory, bootstrap);
-            assert bootstrap.isFile() : "bootstrap file for phpunit must exist";
-            generatedFiles.add(PhpUnit.BOOTSTRAP_FILE);
+            if (createBootstrapFile(project, testDirectory, bootstrap)) {
+                assert bootstrap.isFile() : "bootstrap file for phpunit must exist";
+                generatedFiles.add(PhpUnit.BOOTSTRAP_FILE);
+            }
         }
         if (bootstrap.isFile()) {
             return bootstrap;
@@ -216,9 +223,10 @@ public final class PhpUnit extends PhpProgram {
         return null;
     }
 
-    private void createBootstrapFile(final PhpProject project, FileObject testDirectory, final File bootstrapFile) {
+    private boolean createBootstrapFile(final PhpProject project, FileObject testDirectory, final File bootstrapFile) {
         final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitBootstrap"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
+        final boolean[] success = new boolean[] {true};
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
                 try {
@@ -229,9 +237,11 @@ public final class PhpUnit extends PhpProgram {
                     assert bootstrapFile.isFile();
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Cannot create PHPUnit bootstrap file", ex);
+                    success[0] = false;
                 }
             }
         });
+        return success[0];
     }
 
     private void moveAndAdjustBootstrap(PhpProject project, File tmpBootstrap, File finalBootstrap) {
@@ -299,9 +309,10 @@ public final class PhpUnit extends PhpProgram {
 
         File configuration = new File(FileUtil.toFile(testDirectory), PhpUnit.CONFIGURATION_FILE);
         if (!configuration.isFile()) {
-            createConfigurationFile(testDirectory);
-            assert configuration.isFile() : "configuration file for phpunit must exist";
-            generatedFiles.add(PhpUnit.CONFIGURATION_FILE);
+            if (createConfigurationFile(testDirectory)) {
+                assert configuration.isFile() : "configuration file for phpunit must exist";
+                generatedFiles.add(PhpUnit.CONFIGURATION_FILE);
+            }
         }
         if (configuration.isFile()) {
             return configuration;
@@ -309,7 +320,7 @@ public final class PhpUnit extends PhpProgram {
         return null;
     }
 
-    private void createConfigurationFile(FileObject testDirectory) {
+    private boolean createConfigurationFile(FileObject testDirectory) {
         final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitConfiguration.xml");
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
         try {
@@ -318,7 +329,40 @@ public final class PhpUnit extends PhpProgram {
             assert configuration != null;
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Cannot create PHPUnit configuration file", ex);
+            return false;
         }
+        return true;
+    }
+
+    public File getSuiteFile(PhpProject project, List<String> generatedFiles) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        assert testDirectory != null : "Test directory must already be set";
+
+        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_FILE);
+        if (!suite.isFile()) {
+            if (createSuiteFile(testDirectory)) {
+                assert suite.isFile() : "suite file for phpunit must exist";
+                generatedFiles.add(PhpUnit.SUITE_FILE);
+            }
+        }
+        if (suite.isFile()) {
+            return suite;
+        }
+        return null;
+    }
+
+    private boolean createSuiteFile(FileObject testDirectory) {
+        final FileObject suiteFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitSuite");
+        final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
+        try {
+            DataObject dataTemplate = DataObject.find(suiteFile);
+            DataObject suite = dataTemplate.createFromTemplate(dataFolder, PhpUnit.SUITE_FILE);
+            assert suite != null;
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Cannot create PHPUnit suite file", ex);
+            return false;
+        }
+        return true;
     }
 
     public static void informAboutGeneratedFiles(List<String> generatedFiles) {

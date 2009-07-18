@@ -9,7 +9,7 @@
  * @author ${user}
  */
 
-// TODO: check include path
+// TODO: check include path, DO NOT REMOVE "%INCLUDE_PATH%" from template!
 ini_set('include_path', ini_get('include_path')%INCLUDE_PATH%);
 
 // put your code here
