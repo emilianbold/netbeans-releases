@@ -224,7 +224,7 @@ public final class PhpUnit extends PhpProgram {
     }
 
     private boolean createBootstrapFile(final PhpProject project, FileObject testDirectory, final File bootstrapFile) {
-        final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitBootstrap"); // NOI18N
+        final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitBootstrap"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
         final boolean[] success = new boolean[] {true};
         FileUtil.runAtomicAction(new Runnable() {
@@ -321,7 +321,7 @@ public final class PhpUnit extends PhpProgram {
     }
 
     private boolean createConfigurationFile(FileObject testDirectory) {
-        final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitConfiguration.xml");
+        final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitConfiguration.xml"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
         try {
             DataObject dataTemplate = DataObject.find(configFile);
@@ -352,7 +352,7 @@ public final class PhpUnit extends PhpProgram {
     }
 
     private boolean createSuiteFile(FileObject testDirectory) {
-        final FileObject suiteFile = FileUtil.getConfigFile("Templates/Scripting/PHPUnitSuite");
+        final FileObject suiteFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitSuite"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
         try {
             DataObject dataTemplate = DataObject.find(suiteFile);
