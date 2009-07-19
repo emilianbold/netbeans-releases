@@ -80,6 +80,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.CommandDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -721,7 +722,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
         private List<FrameworkCommand> filter() {
             List<FrameworkCommand> matching = new ArrayList<FrameworkCommand>();
-            Pattern pattern = getPattern();
+            Pattern pattern = StringUtils.getPattern(filter);
             if (pattern != null) {
                 for (FrameworkCommand task : tasks) {
                     Matcher m = pattern.matcher(task.getCommand());
@@ -744,32 +745,6 @@ public final class FrameworkCommandChooser extends JPanel {
                 matching.addAll(0, exact);
             }
             return matching;
-        }
-
-        private Pattern getPattern() {
-            if (filter.contains("?") || filter.contains("*")) { // NOI18N
-                String reFilter = removeRegexpEscapes(filter);
-                reFilter = reFilter.replace(".", "\\."); // NOI18N
-                reFilter = reFilter.replace("?", "."); // NOI18N
-                reFilter = reFilter.replace("*", ".*"); // NOI18N
-                return Pattern.compile(".*" + reFilter + ".*", Pattern.CASE_INSENSITIVE); // NOI18N
-            }
-            return null;
-        }
-
-        private static String removeRegexpEscapes(String text) {
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-                switch (c) {
-                    case '\\': // NOI18N
-                        continue;
-                    default:
-                        sb.append(c);
-                }
-            }
-            return sb.toString();
         }
     }
 

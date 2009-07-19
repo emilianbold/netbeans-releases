@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.openide.util.Parameters;
 
 /**
  * Miscellaneous string utilities.
@@ -56,7 +57,7 @@ public final class StringUtils {
     /**
      * Return <code>true</code> if the String is not <code>null</code>
      * and has any character after trimming.
-     * @param input input String.
+     * @param input input <tt>String</tt>, can be <code>null</code>.
      * @return <code>true</code> if the String is not <code>null</code>
      *         and has any character after trimming.
      */
@@ -68,12 +69,12 @@ public final class StringUtils {
      * Implode list of strings to one string using delimiter.
      * @param items string to be imploded
      * @param delimiter delimiter to be used
-     * @return one string of imploded strings using delimiter
+     * @return one string of imploded strings using delimiter, never <code>null</code>
      * @see #explode(String, String)
      */
     public static String implode(List<String> items, String delimiter) {
-        assert items != null;
-        assert delimiter != null;
+        Parameters.notNull("items", items);
+        Parameters.notNull("delimiter", delimiter);
 
         if (items.isEmpty()) {
             return ""; // NOI18N
@@ -93,15 +94,38 @@ public final class StringUtils {
 
     /**
      * Explode the string using the delimiter.
-     * @param string string to be exploded
+     * @param string string to be exploded, can be <code>null</code>
      * @param delimiter delimiter to be used
      * @return list of exploded strings using delimiter
      * @see #implode(List, String)
      */
     public static List<String> explode(String string, String delimiter) {
+        Parameters.notNull("delimiter", delimiter); // NOI18N
+
         if (!hasText(string)) {
             return Collections.<String>emptyList();
         }
         return Arrays.asList(string.split(Pattern.quote(delimiter)));
+    }
+
+    /**
+     * Get the case-insensitive {@link Pattern pattern} for the given <tt>String</tt>
+     * or <code>null</code> if it does not contain any "?" or "*" characters.
+     * @param text the text to get {@link Pattern pattern} for
+     * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
+     *         if the <tt>text</tt> does not contain any "?" or "*" characters
+     * @since 1.6
+     */
+    public static Pattern getPattern(String text) {
+        Parameters.notNull("text", text); // NOI18N
+
+        if (text.contains("?") || text.contains("*")) { // NOI18N
+            String pattern = text.replace("\\", "") // remove regexp escapes first // NOI18N
+                    .replace(".", "\\.") // NOI18N
+                    .replace("?", ".") // NOI18N
+                    .replace("*", ".*"); // NOI18N
+            return Pattern.compile(".*" + pattern + ".*", Pattern.CASE_INSENSITIVE); // NOI18N
+        }
+        return null;
     }
 }
