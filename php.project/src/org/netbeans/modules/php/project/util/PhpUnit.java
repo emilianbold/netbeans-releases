@@ -368,13 +368,22 @@ public final class PhpUnit extends PhpProgram {
     private boolean createSuiteFile(FileObject testDirectory) {
         final FileObject suiteFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitSuite"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
+        DataObject suite = null;
         try {
             DataObject dataTemplate = DataObject.find(suiteFile);
-            DataObject suite = dataTemplate.createFromTemplate(dataFolder, PhpUnit.SUITE_FILE);
-            assert suite != null;
+            suite = dataTemplate.createFromTemplate(dataFolder, PhpUnit.SUITE_FILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Cannot create PHPUnit suite file", ex);
             return false;
+        }
+
+        assert suite != null;
+        // reformat the file
+        File file = FileUtil.toFile(suite.getPrimaryFile());
+        try {
+            PhpProjectUtils.reformat(file);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
         }
         return true;
     }
