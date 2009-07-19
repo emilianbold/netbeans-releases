@@ -36,46 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.stack;
 
-package org.netbeans.modules.cnd.remote.sync;
+public interface FunctionCall {
 
-import java.io.File;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
+    String getDisplayedName();
 
-/**
- *
- * @author Vladimir Kvashin
- */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
-class ScpSyncFactory extends RemoteSyncFactory {
+    Function getFunction();
 
-    @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(localDir, executionEnvironment, out, err);
-    }
+    boolean hasOffset();
 
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
-    }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
-    }
-
-    @Override
-    public String getID() {
-        return "scp"; //NOI18N
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ! RemoteUtil.isForeign(execEnv);
-    }
+    long getOffset();
 }

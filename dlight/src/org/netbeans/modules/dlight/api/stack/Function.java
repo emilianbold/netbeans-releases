@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,39 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.remote.sync;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.dlight.api.stack;
 
 /**
- *
- * @author Vladimir Kvashin
+ * Function
  */
-/*package-local*/ class RsyncSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
-
-    public RsyncSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        super(localDir, executionEnvironment, out, err);
-    }
-    
-    public boolean synchronize() {
-        return true;
-    }
-
-    @Override
-    public boolean cancel() {
-        return false;
-    }
-
-    @Override
-    protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
+public interface Function {
+  public String getName();
+  public String getQuilifiedName();
 }

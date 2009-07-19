@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
+import org.netbeans.modules.dlight.api.stack.StackTrace;
+
 /**
  *
  * @author Alexander Simon
@@ -47,12 +49,12 @@ public interface ThreadState {
     /**
      * Sum of all MSA in any time.
      */
-    public static final int POINTS = 100;
+    static final int POINTS = 100;
 
     /**
      * Aggregated thread states.
      */
-    public static enum MSAState {
+    static enum MSAState {
         // Short states list ...
 
         START_SHORT_LIST,
@@ -84,18 +86,18 @@ public interface ThreadState {
     int size();
 
     /**
-     * returns string representation of enum value of MSAState.
+     * returns MSAState.
      *
      * @param index of state.
      * @return state ID by index.
      */
-    public MSAState getMSAState(int index, boolean full);
+    MSAState getMSAState(int index, boolean full);
 
     /**
      * @param index of state.
      * @return value of state by index. Unit of value is 1%. I.e. sum of all values is 100.
      */
-    public byte getState(int index);
+    byte getState(int index);
 
     /**
      * returns -1 if there are no stack avaliable.
@@ -103,11 +105,22 @@ public interface ThreadState {
      * @param index interested state.
      * @return time in natural unit of state. It is guaranteed that exist stack damp on this time.
      */
-    public long getTimeStamp(int index);
+    long getTimeStamp(int index);
+
+    StackTrace getStackTrace(int index);
 
     /**
      *
      * @return beginning time in natural unit of state.
      */
     long getTimeStamp();
+
+    /**
+     * returns MSAState.
+     *
+     * @return state ID by index.
+     */
+    MSAState getSamplingMSAState(boolean full);
+
+    StackTrace getSamplingStackTrace();
 }

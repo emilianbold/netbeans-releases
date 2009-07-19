@@ -56,11 +56,13 @@ import java.awt.event.MouseWheelListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import org.openide.awt.HtmlRenderer;
 
 /**
  * This class implements JTable with extended CellTip support.
@@ -200,6 +202,12 @@ public class JExtendedTable extends JTable implements CellTipAware, MouseListene
         // Identify table row and column at cursor
         int row = rowAtPoint(event.getPoint());
         int column = columnAtPoint(event.getPoint());
+
+        // Only celltip for thread name is supported
+        if (getColumnClass(column) != ThreadNameCellRenderer.class) {
+            CellTipManager.sharedInstance().setEnabled(false);
+            return;
+        }
 
         // Return if table cell is the same as in previous event
         if ((row == lastRow) && (column == lastColumn)) {

@@ -68,9 +68,15 @@ public abstract class RemoteSyncFactory {
      * in the case implementation uses an external program (rsync? scp?),
      * it can redirect its stderr here
      *
+     * @param privProjectStorageDir a directory to store misc. cache-ing information;
+     * it is caller's responsibility top guarantee that different local dirs
+     * has different privProjectStorage associated
+     * (usually it is "nbprohect/private" :-))
+     *
      * @return new instance of the RemoteSyncWorker
      */
-    public abstract RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err);
+    public abstract RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, 
+            PrintWriter out, PrintWriter err, File privProjectStorageDir);
 
     /**
      * Determines whether this factory is applicable for the given execution environment

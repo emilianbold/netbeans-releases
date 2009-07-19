@@ -52,6 +52,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
 
 /**
  * @author Alexander Simon
@@ -144,35 +145,12 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        int count = 0;
         for (AtomicInteger i : map.values()) {
             i.set(0);
         }
-        for(int i = 0; i < threadData.size(); i++){
-            if (threadData.isAlive(i)) {
-                count++;
-                ThreadState state = threadData.getThreadStateAt(i);
-                for (int j = 0; j < state.size(); j++){
-                    MSAState msa = state.getMSAState(j, false);
-                    if (msa != null) {
-                        AtomicInteger v = map.get(msa);
-                        if (v != null) {
-                            v.addAndGet(state.getState(j));
-                        } else {
-                            v = new AtomicInteger(state.getState(j));
-                            map.put(msa, v);
-                        }
-                    } else {
-                        System.err.println("Wrong MSA at index "+i+" MSA="+state); // NOI18N 
-                    }
-                }
-            }
-        }
+        int count = countSum(map);
         threadTime = count;
-        AtomicInteger r = map.get(MSAState.Running);
-        if (r != null) {
-            threadRunningTime = r.intValue();
-        }
+        threadRunningTime = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
         int height = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
         if (count > 0) {
             int rest = 0;
@@ -200,18 +178,105 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 y += d;
             }
         }
-        r = map.get(MSAState.Running);
-        if (r != null) {
-            threadRunningRatio = r.intValue();
-        }
-        g.setColor(getBackground());
+        threadRunningRatio = sumStates(MSAState.Running, MSAState.RunningUser, MSAState.RunningSystemCall, MSAState.RunningOther);
         int percent = (int)(100*threadRunningRatio)/ThreadState.POINTS;
         String s = ""+percent+"%"; // NOI18N
         Font summary = new Font(null, Font.BOLD, height-2);
         g.setFont(summary);
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
+        g.setColor(UIUtils.getDarker(getBackground(),0.4f));
+        g.drawString(s, 6 + 3 + 1, y);
+        g.drawString(s, 6 + 3 - 1, y);
+        g.drawString(s, 6 + 3, y + 1);
+        g.drawString(s, 6 + 3, y - 1);
+        g.setColor(getBackground());
         g.drawString(s, 6 + 3, y);
         threadData.setSummary(percent);
+    }
+
+    @Override
+    public String getToolTipText() {
+        EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+        int count = countSum(aMap);
+        if (count > 0) {
+            int rest = 0;
+            int oldRest = 0;
+            for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()){
+                AtomicInteger value = entry.getValue();
+                oldRest = rest;
+                rest = (value.get()+oldRest)%count;
+                value.set((value.get()+oldRest)/count);
+            }
+            StringBuilder buf = new StringBuilder();
+            buf.append("<html>");// NOI18N
+            buf.append("<table>");// NOI18N
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
+                int value = entry.getValue().get();
+                MSAState s = entry.getKey();
+                StateResources res = ThreadStateColumnImpl.getThreadStateResources(s);
+                if (res != null) {
+                    buf.append("<tr>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append("<font bgcolor=#");// NOI18N
+                    buf.append(Integer.toHexString(res.color.getRed()));
+                    buf.append(Integer.toHexString(res.color.getGreen()));
+                    buf.append(Integer.toHexString(res.color.getBlue()));
+                    buf.append(">&nbsp;&nbsp;");// NOI18N
+                    buf.append("</font></td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(res.name);
+                    buf.append("</td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(TimeLineUtils.getSecondsValue(value*count*10));
+                    buf.append("</td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(""+value+"%");// NOI18N
+                    buf.append("</td>");// NOI18N
+                    buf.append("</tr>");// NOI18N
+                }
+            }
+            buf.append("</table>");// NOI18N
+            buf.append("</html>");// NOI18N
+            return buf.toString();
+        }
+        return super.getToolTipText();
+    }
+
+    private int countSum(EnumMap<MSAState, AtomicInteger> aMap) {
+        int count = 0;
+        for (int i = 0; i < threadData.size(); i++) {
+            if (threadData.isAlive(i)) {
+                count++;
+                ThreadState state = threadData.getThreadStateAt(i);
+                for (int j = 0; j < state.size(); j++) {
+                    MSAState msa = state.getMSAState(j, viewManager.isFullMode());
+                    if (msa != null) {
+                        AtomicInteger v = aMap.get(msa);
+                        if (v != null) {
+                            v.addAndGet(state.getState(j));
+                        } else {
+                            v = new AtomicInteger(state.getState(j));
+                            aMap.put(msa, v);
+                        }
+                    } else {
+                        System.err.println("Wrong MSA at index " + i + " MSA=" + state); // NOI18N
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    private int sumStates(MSAState ... states){
+        int i = 0;
+        for(MSAState state : states){
+            AtomicInteger r = map.get(state);
+            if (r != null) {
+                i += r.get();
+            }
+        }
+        return i;
     }
 
     /**
