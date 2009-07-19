@@ -385,7 +385,7 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Descriptor for the selected framework command.
-     * @see FrameworkCommandChooser#select(PhpModule)
+     * @see FrameworkCommandChooser#open(PhpModule, String, FrameworkCommandSupport.RunCommandListener)
      */
     public static final class CommandDescriptor {
 
