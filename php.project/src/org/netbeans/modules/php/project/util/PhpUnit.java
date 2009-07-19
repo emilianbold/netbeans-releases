@@ -255,6 +255,10 @@ public final class PhpUnit extends PhpProgram {
                     String line;
                     while ((line = in.readLine()) != null) {
                         if (line.contains("%INCLUDE_PATH%")) { // NOI18N
+                            if (line.startsWith("//")) { // NOI18N
+                                // comment about %INCLUDE_PATH%, let's skip it
+                                continue;
+                            }
                             line = processIncludePath(
                                     finalBootstrap,
                                     line,
