@@ -334,6 +334,16 @@ public final class PhpUnit extends PhpProgram {
         return true;
     }
 
+    public String getSuiteFilePath(PhpProject project) {
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        if (testDirectory == null) {
+            return null;
+        }
+
+        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_FILE);
+        return suite.getAbsolutePath();
+    }
+
     public File getSuiteFile(PhpProject project, List<String> generatedFiles) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
         assert testDirectory != null : "Test directory must already be set";
