@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.csl.core;
 
-import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -63,12 +62,12 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
     }
 
     @Override
-    public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+    public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
         getFactory().filesDeleted(deleted, context);
     }
     
     @Override
-    public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+    public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
         getFactory().filesDirty(dirty, context);
     }
 
@@ -117,12 +116,12 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             // no-op
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             // no-op
         }
     };
