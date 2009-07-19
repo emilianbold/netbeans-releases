@@ -381,7 +381,7 @@ public final class CreateTestsAction extends NodeAction {
 
         // reformat the file
         try {
-            PhpProjectUtils.reformat(testFile);
+            PhpProjectUtils.reformatFile(testFile);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
         }

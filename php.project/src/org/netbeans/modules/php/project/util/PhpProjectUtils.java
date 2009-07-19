@@ -176,7 +176,7 @@ public final class PhpProjectUtils {
      * Reformat the file.
      * @param file file to reformat.
      */
-    public static void reformat(final File file) throws IOException {
+    public static void reformatFile(final File file) throws IOException {
         FileObject testFileObject = FileUtil.toFileObject(file);
         assert testFileObject != null : "No fileobject for " + file;
 

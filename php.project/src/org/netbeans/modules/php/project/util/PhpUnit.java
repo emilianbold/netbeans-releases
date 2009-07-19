@@ -381,7 +381,7 @@ public final class PhpUnit extends PhpProgram {
         // reformat the file
         File file = FileUtil.toFile(suite.getPrimaryFile());
         try {
-            PhpProjectUtils.reformat(file);
+            PhpProjectUtils.reformatFile(file);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
         }
