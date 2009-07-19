@@ -359,12 +359,12 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(agreeCheckBox)
                         .add(2, 2, 2)
-                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
-                    .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE))
+                    .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

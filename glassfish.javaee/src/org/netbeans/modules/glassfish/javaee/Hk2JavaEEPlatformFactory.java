@@ -90,7 +90,7 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
             J2eeModule.Type.CAR, J2eeModule.Type.EAR, J2eeModule.Type.EJB, J2eeModule.Type.RAR }));
         return new Hk2JavaEEPlatformFactory(dn,jp,ln,lk,sjp,smt,
                 new HashSet<Profile>(Arrays.asList(new Profile[] { Profile.J2EE_13, Profile.J2EE_14,
-                Profile.JAVA_EE_5, Profile.JAVA_EE_6_FULL })));
+                Profile.JAVA_EE_5, Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_6_WEB })));
 
     }
 

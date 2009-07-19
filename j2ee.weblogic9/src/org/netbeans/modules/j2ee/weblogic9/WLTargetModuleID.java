@@ -47,19 +47,19 @@ import javax.enterprise.deploy.spi.TargetModuleID;
  *
  * @author whd
  */
-class WLTargetModuleID implements TargetModuleID{
+public class WLTargetModuleID implements TargetModuleID{
     private Target target;
     private String jar_name;
     private String context_url;
 
     Vector childs = new Vector();
     TargetModuleID  parent = null;
-    WLTargetModuleID(Target target  ){
+    public WLTargetModuleID(Target target  ){
         this( target, "");
 
 
     }
-    WLTargetModuleID(Target target, String jar_name  ){
+    public WLTargetModuleID(Target target, String jar_name  ){
         this.target = target;
         this.setJARName(jar_name);
         
@@ -102,6 +102,7 @@ class WLTargetModuleID implements TargetModuleID{
         return context_url;//"http://" + module_id; //NOI18N
     }
     //If this TargetModulID represents a web module retrieve the URL for it.
+    @Override
     public java.lang.String     toString() {
         return getModuleID() +  hashCode();
     }

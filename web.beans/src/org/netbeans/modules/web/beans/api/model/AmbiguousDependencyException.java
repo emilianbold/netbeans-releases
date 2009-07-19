@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,67 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.j2ee.common.method.impl;
+package org.netbeans.modules.web.beans.api.model;
 
 import java.util.Collections;
-import javax.lang.model.element.Modifier;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.openide.DialogDescriptor;
+import java.util.List;
+
+import javax.lang.model.element.Element;
+
 
 /**
+ * @author ads
  *
- * @author Martin Adamek
  */
-public class ValidatingPropertyChangeListenerTest extends NbTestCase {
-    
-    public ValidatingPropertyChangeListenerTest(String testName) {
-        super(testName);
+public class AmbiguousDependencyException extends WebBeansModelException {
+
+    private static final long serialVersionUID = 5833956523263809658L;
+
+    public AmbiguousDependencyException(List<Element> elements){
+        myElements = elements;
     }
     
-    public void testValidate() {
-        MethodModel methodModel = MethodModel.create(
-                "m1",
-                "void",
-                null,
-                Collections.<MethodModel.Variable>emptyList(),
-                Collections.<String>emptyList(),
-                Collections.<Modifier>emptySet()
-                );
-        MethodCustomizerPanel mcPanel = MethodCustomizerPanel.create(
-                methodModel,
-                null,
-                false,
-                false,
-                false,
-                false,
-                true,
-                null,
-                false,
-                true,
-                false,
-                false
-                );
-        DialogDescriptor dialogDescriptor = new DialogDescriptor("Test", "Test");
-        ValidatingPropertyChangeListener validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList());
-        assertTrue(validator.validate());
-        mcPanel = MethodCustomizerPanel.create(
-                methodModel,
-                null,
-                false,
-                false,
-                false,
-                false,
-                true,
-                null,
-                false,
-                true,
-                true,
-                false
-                );
-        validator = new ValidatingPropertyChangeListener(mcPanel, dialogDescriptor, Collections.<MethodModel>emptyList());
-        assertFalse(validator.validate());
+    public List<Element> getElements(){
+        return Collections.unmodifiableList( myElements );
     }
     
+    private List<Element> myElements;
 }

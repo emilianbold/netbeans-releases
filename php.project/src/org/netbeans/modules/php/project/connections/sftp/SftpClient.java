@@ -81,7 +81,6 @@ public class SftpClient implements RemoteClient {
     private Session sftpSession;
     private ChannelSftp sftpClient;
 
-
     public SftpClient(SftpConfiguration configuration, InputOutput io) {
         assert configuration != null;
         this.configuration = configuration;
@@ -516,7 +515,6 @@ public class SftpClient implements RemoteClient {
             this.configuration = configuration;
         }
 
-
         public boolean promptYesNo(String message) {
             NotifyDescriptor descriptor = new NotifyDescriptor(
                     message,
@@ -534,7 +532,7 @@ public class SftpClient implements RemoteClient {
 
         public boolean promptPassphrase(String message) {
             passphrase = getPasswordForCertificate(configuration);
-            return true;
+            return passphrase != null;
         }
 
         public String getPassword() {
@@ -543,7 +541,7 @@ public class SftpClient implements RemoteClient {
 
         public boolean promptPassword(String message) {
             passwd = getPasswordForUser(configuration);
-            return true;
+            return passwd != null;
         }
 
         public void showMessage(String message) {
@@ -553,7 +551,18 @@ public class SftpClient implements RemoteClient {
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
                 String[] prompt, boolean[] echo) {
 
-            // #166555 - always return null because password popup would be shown even if password is filled in server configuration
+            // #166555
+            if (prompt.length == 1
+                    && echo.length == 1 && !echo[0]) {
+                // ask for password
+                passwd = configuration.getPassword();
+                if (!StringUtils.hasText(passwd)) {
+                    passwd = getPasswordForUser(configuration);
+                }
+                if (StringUtils.hasText(passwd)) {
+                    return new String[] {passwd};
+                }
+            }
             return null;
         }
     }

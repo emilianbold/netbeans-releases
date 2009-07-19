@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class DDHelper {
 
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/j2ee/common/dd/resources/"; //NOI18N
+    private static final String RESOURCE_FOLDER = "org/netbeans/modules/j2ee/common/dd/resources/"; //NOI18N
 
     private DDHelper() {
     }
@@ -70,34 +70,26 @@ public class DDHelper {
      * @throws java.io.IOException
      */
     public static FileObject createWebXml(Profile j2eeProfile, boolean webXmlRequired, FileObject dir) throws IOException {
-        String webXmlTemplate = null;
+        String template = null;
         if ((Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) && webXmlRequired) {
-            webXmlTemplate = "web-3.0.xml"; //NOI18N
+            template = "web-3.0.xml"; //NOI18N
         } else if (Profile.JAVA_EE_5 == j2eeProfile) {
-            webXmlTemplate = "web-2.5.xml"; //NOI18N
+            template = "web-2.5.xml"; //NOI18N
         } else if (Profile.J2EE_14 == j2eeProfile) {
-            webXmlTemplate = "web-2.4.xml"; //NOI18N
+            template = "web-2.4.xml"; //NOI18N
         } else if (Profile.J2EE_13 == j2eeProfile) {
-            webXmlTemplate = "web-2.3.xml"; //NOI18N
+            template = "web-2.3.xml"; //NOI18N
         }
 
-        if (webXmlTemplate == null)
+        if (template == null)
             return null;
 
-        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
-        FileObject webXML = FileUtil.createData(dir, "web.xml"); //NOI18N
-        String webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + webXmlTemplate));
-        if (webXMLContent != null) {
-            FileLock lock = webXML.lock();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
-            try {
-                bw.write(webXMLContent);
-            } finally {
-                bw.close();
-                lock.releaseLock();
-            }
-        }
-        return webXML;
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, "web.xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null)
+            throw action.getException();
+        else
+            return action.getResult();
     }
 
     /**
@@ -108,45 +100,82 @@ public class DDHelper {
      * @throws java.io.IOException
      */
     public static FileObject createWebFragmentXml(Profile j2eeProfile, FileObject dir) throws IOException {
-        String webXmlTemplate = null;
+        String template = null;
         if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
-            webXmlTemplate = "web-fragment-3.0.xml"; //NOI18N
+            template = "web-fragment-3.0.xml"; //NOI18N
         }
 
-        if (webXmlTemplate == null)
+        if (template == null)
             return null;
 
-        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
-        FileObject webXML = FileUtil.createData(dir, "web-fragment.xml"); //NOI18N
-        String webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + webXmlTemplate));
-        if (webXMLContent != null) {
-            FileLock lock = webXML.lock();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
-            try {
-                bw.write(webXMLContent);
-            } finally {
-                bw.close();
-                lock.releaseLock();
-            }
-        }
-        return webXML;
-    }
-
-    private static String readResource(InputStream is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        String lineSep = System.getProperty("line.separator"); // NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        try {
-            String line = br.readLine();
-            while (line != null) {
-                sb.append(line);
-                sb.append(lineSep);
-                line = br.readLine();
-            }
-        } finally {
-            br.close();
-        }
-        return sb.toString();
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, "web-fragment.xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null)
+            throw action.getException();
+        else
+            return action.getResult();
     }
     
+    // -------------------------------------------------------------------------
+    private static class MakeFileCopy implements Runnable {
+        private String fromFile;
+        private FileObject toDir;
+        private String toFile;
+        private IOException exception;
+        private FileObject result;
+
+        MakeFileCopy(String fromFile, FileObject toDir, String toFile) {
+            this.fromFile = fromFile;
+            this.toDir = toDir;
+            this.toFile = toFile;
+        }
+
+        IOException getException() {
+            return exception;
+        }
+
+        FileObject getResult() {
+            return result;
+        }
+
+        public void run() {
+            try {
+                // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
+                FileObject xml = FileUtil.createData(toDir, toFile);
+                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(fromFile));
+                if (content != null) {
+                    FileLock lock = xml.lock();
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(xml.getOutputStream(lock)));
+                    try {
+                        bw.write(content);
+                    } finally {
+                        bw.close();
+                        lock.releaseLock();
+                    }
+                }
+                result = xml;
+            }
+            catch (IOException e) {
+                exception = e;
+            }
+        }
+
+        private String readResource(InputStream is) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            String lineSep = System.getProperty("line.separator"); // NOI18N
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            try {
+                String line = br.readLine();
+                while (line != null) {
+                    sb.append(line);
+                    sb.append(lineSep);
+                    line = br.readLine();
+                }
+            } finally {
+                br.close();
+            }
+            return sb.toString();
+        }
+    }
+
 }

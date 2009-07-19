@@ -24,14 +24,14 @@
                       <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                       <Component id="agreeCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-                      <Component id="readlicenseButton" max="32767" attributes="0"/>
+                      <Component id="readlicenseButton" pref="118" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="hk2HomeTextField" pref="387" max="32767" attributes="0"/>
+                      <Component id="hk2HomeTextField" pref="220" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="downloadStatusLabel" alignment="0" pref="480" max="32767" attributes="0"/>
+                  <Component id="downloadStatusLabel" alignment="0" pref="326" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>

@@ -237,12 +237,22 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
 
     @Override
     public Set<Profile> getSupportedProfiles() {
-        return pf.getSupportedProfiles();
+        return getCorrectedProfileSet();
     }
     
     @Override
     public Set<Profile> getSupportedProfiles(J2eeModule.Type type) {
-        return pf.getSupportedProfiles();
+        return getCorrectedProfileSet();
+    }
+
+    private Set<Profile> getCorrectedProfileSet() {
+        Set<Profile> retVal = pf.getSupportedProfiles();
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
+        File descriminator = new File(gfRootStr,"modules/appclient-server-core.jar");
+        if (!descriminator.exists()) {
+            retVal.remove(Profile.JAVA_EE_6_FULL);
+        }
+        return retVal;
     }
 
     @Override
@@ -252,7 +262,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         if (null == dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)) {
             return Collections.EMPTY_SET;
         }
-        return pf.getSupportedTypes();
+        Set<Type> retVal = pf.getSupportedTypes();
+        Set<Profile> ps = getCorrectedProfileSet();
+        if (ps.contains(Profile.JAVA_EE_6_WEB) && !ps.contains(Profile.JAVA_EE_6_FULL)) {
+            retVal.remove(Type.CAR);
+            retVal.remove(Type.EAR);
+            retVal.remove(Type.EJB);
+            retVal.remove(Type.RAR);
+        }
+        return retVal;
     }
 
     

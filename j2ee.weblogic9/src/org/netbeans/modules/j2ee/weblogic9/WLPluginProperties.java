@@ -67,9 +67,6 @@ public class WLPluginProperties {
     
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
     
-    private static final boolean verboseRegistration =
-            System.getProperty("netbeans.weblogic.registration") != null;
-    
     private static final String CONFIG_XML = "config/config.xml";
     
     // additional properties that are stored in the InstancePropeties object
