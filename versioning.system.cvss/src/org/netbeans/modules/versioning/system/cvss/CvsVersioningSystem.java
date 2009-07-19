@@ -406,7 +406,7 @@ public class CvsVersioningSystem {
      * @param file a file or directory
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
-    static boolean isManaged(File file) {
+    public static boolean isManaged(File file) {
         return VersioningSupport.getOwner(file) instanceof CVS && !Utils.isPartOfCVSMetadata(file);
     }
 
