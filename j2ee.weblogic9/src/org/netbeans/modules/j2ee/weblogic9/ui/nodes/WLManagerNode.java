@@ -64,7 +64,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
      * The associated deployment manager, i.e. the plugin's wrapper for
      * the server implementation of the DEploymentManager interface
      */
-    private WLDeploymentManager deploymentManager;
+    private WLBaseDeploymentManager deploymentManager;
     
     // properties names
     private static final String DISPLAY_NAME = "displayName"; // NOI18N
@@ -92,7 +92,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         super(children);
         
         // get the deployment manager from the lookup and save it
-        this.deploymentManager = (WLDeploymentManager) lookup.lookup(DeploymentManager.class);
+        this.deploymentManager = (WLBaseDeploymentManager) lookup.lookup(DeploymentManager.class);
                 
         // add the node itself to its cookie list
         getCookieSet().add(this);
@@ -301,7 +301,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         return new Customizer(new WLJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
     }
     
-    public WLDeploymentManager getDeploymentManager() {
+    public WLBaseDeploymentManager getDeploymentManager() {
         return deploymentManager;
     }
     

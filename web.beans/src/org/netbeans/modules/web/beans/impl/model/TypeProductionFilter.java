@@ -45,6 +45,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -93,7 +95,14 @@ class TypeProductionFilter extends Filter<Element> {
             iterator.hasNext() ; ) 
         {
             Element productionElement = iterator.next();
-            TypeMirror mirror = productionElement.asType();
+            TypeMirror mirror= null;
+            if ( productionElement.getKind() == ElementKind.FIELD){
+                mirror = productionElement.asType();
+            }
+            else if ( productionElement.getKind() == ElementKind.METHOD){
+                mirror = ((ExecutableElement)productionElement).
+                    getReturnType();
+            }
             Element typeElement = getImplementation().getHelper().
                 getCompilationController().getTypes().asElement( mirror );
             if ( typeElement instanceof TypeElement ){
@@ -128,12 +137,24 @@ class TypeProductionFilter extends Filter<Element> {
             for (Iterator<? extends Element> iterator = productionElements.iterator() ; 
                     iterator.hasNext() ; ) 
             {
-                if ( getElement().asType().getKind() != TypeKind.ARRAY ){
+                Element productionElement = iterator.next();
+                TypeMirror productionType= null;
+                if ( productionElement.getKind() == ElementKind.FIELD){
+                    productionType = productionElement.asType();
+                }
+                else if ( productionElement.getKind() == ElementKind.METHOD){
+                    productionType = ((ExecutableElement)productionElement).
+                        getReturnType();
+                }
+                if ( productionType == null ){
+                    continue;
+                }
+                if ( productionType.getKind() != TypeKind.ARRAY ){
                     iterator.remove();
                 }
                 if ( !getImplementation().getHelper().getCompilationController().
                         getTypes().isSameType( arrayComponentType,
-                                ((ArrayType) getElement().asType()).getComponentType()))
+                                ((ArrayType) productionType).getComponentType()))
                 {
                       iterator.remove();              
                 }
@@ -175,9 +196,19 @@ class TypeProductionFilter extends Filter<Element> {
                 iterator.hasNext(); )
             {
                 Element productionElement =iterator.next();
-                Types types = getImplementation().getHelper().getCompilationController().getTypes();
-                if ( !types.isSameType(productionElement.asType(), primitive ) &&
-                        !types.isSameType( productionElement.asType() , boxedType.asType()))
+                Types types = getImplementation().getHelper().
+                    getCompilationController().getTypes();
+                TypeMirror productionType = null;
+                if ( productionElement.getKind() == ElementKind.FIELD){
+                    productionType = productionElement.asType();
+                }
+                else if ( productionElement.getKind() == ElementKind.METHOD){
+                    productionType = ((ExecutableElement)productionElement).
+                        getReturnType();
+                }
+                if ( productionType!= null && 
+                        !types.isSameType( productionType, primitive ) &&
+                        !types.isSameType( productionType , boxedType.asType()))
                 {
                     iterator.remove();
                 }

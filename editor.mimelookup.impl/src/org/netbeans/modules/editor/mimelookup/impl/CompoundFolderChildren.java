@@ -44,12 +44,10 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -62,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -173,6 +172,11 @@ public final class CompoundFolderChildren implements FileChangeListener {
                 event = new PropertyChangeEvent(this, PROP_CHILDREN, children, sorted);
             }
             children = sorted;
+
+            if (LOG.isLoggable(Level.FINE)) {
+                rebuildCnt++;
+                LOG.log(Level.FINE, "{0} rebuilt {1} times", new Object [] { this, rebuildCnt });
+            }
         }
         if (event != null) {
             pcs.firePropertyChange(event);
@@ -200,46 +204,43 @@ public final class CompoundFolderChildren implements FileChangeListener {
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        if (FileUtil.affectsOrder(fe) && !filterEvents(fe)) {
-            rebuild();
+        if (FileUtil.affectsOrder(fe)) {
+            if (!filterEvents(fe)) {
+                rebuild();
+            } else {
+                rebuildTask.schedule(DELAY);
+            }
         }
     }
 
     // ignoring loads of fileAttributeChanged events fired when installing plugins
-    // see issue #161201
-    private final List<Reference<FileEvent>> recentEvents = new LinkedList<Reference<FileEvent>>();
+    // see issue #161201 and #168536
+    private static final int DELAY = 1000; // milliseconds
+    private final RequestProcessor.Task rebuildTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            synchronized (times) {
+                times.clear();
+            }
+            rebuild();
+        }
+    });
+    private final Map<String, Long> times = new HashMap<String, Long>();
+    private long rebuildCnt = 0;
     private boolean filterEvents(FileEvent event) {
         // filter out duplicate events
-        synchronized (recentEvents) {
-            for(Iterator<Reference<FileEvent>> i = recentEvents.iterator(); i.hasNext(); ) {
-                Reference<FileEvent> ref = i.next();
-                FileEvent e = ref.get();
-                if (e == null) {
-                    i.remove();
+        synchronized (times) {
+            Long timestamp = times.get(event.getFile().getPath());
+            times.put(event.getFile().getPath(), event.getTime());
+            boolean filterOut = timestamp != null && Math.abs(event.getTime() - timestamp) < DELAY;
+            if (LOG.isLoggable(Level.FINER)) {
+                if (filterOut) {
+                    LOG.fine("Filtering out filesystem event: [" + printEvent(event) + "]"); //NOI18N
                 } else {
-                    if (e == event) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Filtering out duplicate filesystem event (1): original=[" + printEvent(e) + "]" //NOI18N
-                                + ", duplicate=[" + printEvent(event) + "]"); //NOI18N
-                        }
-                        return true;
-                    }
-
-                    if (e.getTime() == event.getTime() && e.getFile().getPath().equals(event.getFile().getPath())) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Filtering out duplicate filesystem event (2): original=[" + printEvent(e) + "]" //NOI18N
-                                    + ", duplicate=[" + printEvent(event) + "]"); //NOI18N
-                        }
-                        return true;
-                    }
+                    LOG.fine("Processing filesystem event: [" + printEvent(event) + "]"); //NOI18N
                 }
             }
+            return filterOut;
 
-            if (recentEvents.size() > 20) {
-                recentEvents.remove(recentEvents.size() - 1);
-            }
-            recentEvents.add(0, new WeakReference<FileEvent>(event));
-            return false;
         }
     }
 
