@@ -101,7 +101,7 @@ public class LuceneIndex implements IndexImpl {
             assert document instanceof LuceneDocument;
 
             toAdd.add((LuceneDocument) document);
-            forceFlush = toAdd.size() > MAX_DOCS || lmListener.isLowMemory();
+            forceFlush = lmListener.isLowMemory();
         }
 
         if (forceFlush) {
