@@ -111,13 +111,43 @@ public final class StringUtils {
     /**
      * Get the case-insensitive {@link Pattern pattern} for the given <tt>String</tt>
      * or <code>null</code> if it does not contain any "?" or "*" characters.
+     * <p>
+     * This pattern is "unbounded", it means that the <tt>text</tt> can be anywhere
+     * in the matching string. See {@link #getExactPattern(String)} for pattern matching the whole string.
      * @param text the text to get {@link Pattern pattern} for
      * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
      *         if the <tt>text</tt> does not contain any "?" or "*" characters
      * @since 1.6
+     * @see #getExactPattern(String)
      */
     public static Pattern getPattern(String text) {
         Parameters.notNull("text", text); // NOI18N
+
+        return getPattern0(text, ".*", ".*"); // NOI18N
+    }
+
+    /**
+     * Get the case-insensitive {@link Pattern pattern} for the given <tt>String</tt>
+     * or <code>null</code> if it does not contain any "?" or "*" characters.
+     * <p>
+     * This pattern exactly matches the string, it means that the <tt>text</tt> must be fully matched in the
+     * matching string. See {@link #getPattern(String)} for pattern matching any substring in the matching string.
+     * @param text the text to get {@link Pattern pattern} for
+     * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
+     *         if the <tt>text</tt> does not contain any "?" or "*" characters
+     * @since 1.6
+     * @see #getPattern(String)
+     */
+    public static Pattern getExactPattern(String text) {
+        Parameters.notNull("text", text); // NOI18N
+
+        return getPattern0(text, "^", "$"); // NOI18N
+    }
+
+    private static Pattern getPattern0(String text, String prefix, String suffix) {
+        assert text != null;
+        assert prefix != null;
+        assert suffix != null;
 
         if (text.contains("?") || text.contains("*")) { // NOI18N
             String pattern = text.replace("\\", "") // remove regexp escapes first // NOI18N
@@ -129,7 +159,7 @@ public final class StringUtils {
                     .replace("]", "\\]") // NOI18N
                     .replace("?", ".") // NOI18N
                     .replace("*", ".*"); // NOI18N
-            return Pattern.compile(".*" + pattern + ".*", Pattern.CASE_INSENSITIVE); // NOI18N
+            return Pattern.compile(prefix + pattern + suffix, Pattern.CASE_INSENSITIVE); // NOI18N
         }
         return null;
     }
