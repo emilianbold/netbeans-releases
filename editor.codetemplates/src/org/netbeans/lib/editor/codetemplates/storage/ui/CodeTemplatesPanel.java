@@ -237,10 +237,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     
     // ActionListener ..........................................................
     private boolean languagePopupVisible = false;
-    private ActionEvent lastActionEvent;
 
     public void actionPerformed (ActionEvent e) {
-        lastActionEvent = e;
         if (e.getSource () == cbLanguage && !languagePopupVisible) {
             saveCurrentTemplate ();
             final String language = (String) cbLanguage.getSelectedItem ();
@@ -578,7 +576,6 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     private void cbLanguagePopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cbLanguagePopupMenuWillBecomeInvisible
         // TODO add your handling code here:
         languagePopupVisible = false;
-        actionPerformed(lastActionEvent);
     }//GEN-LAST:event_cbLanguagePopupMenuWillBecomeInvisible
         
     // Variables declaration - do not modify//GEN-BEGIN:variables

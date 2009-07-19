@@ -58,6 +58,10 @@ import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
+import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
 /**
@@ -80,8 +84,31 @@ abstract class FieldInjectionPointLogic {
     static final Logger LOGGER = Logger.getLogger(WebBeansModelProvider.class
             .getName());
     
-    protected Element findFieldInjectable( VariableElement element,
-            WebBeansModelImplementation modelImpl )
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#resolveType(java.lang.String, org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper)
+     */
+    public TypeMirror resolveType( String fqn , AnnotationModelHelper helper ) {
+        return helper.resolveType( fqn );
+    }
+    
+    protected Element findVariableInjectable( VariableElement element,
+            WebBeansModelImplementation modelImpl ) throws WebBeansModelException
+    {
+        List<Element> injectables = findVariableInjectable(element, 
+                modelImpl, false);
+        if ( injectables.size() ==1 ){
+            return injectables.get(0);
+        }
+        else if ( injectables.size() == 0 ){
+            return null;
+        }
+        else {
+            throw new AmbiguousDependencyException( injectables );
+        }
+    }
+    
+    protected List<Element> findVariableInjectable( VariableElement element,
+            WebBeansModelImplementation modelImpl , boolean currentByDefault )
     {
         // Probably injected field.
         List<? extends AnnotationMirror> annotations = 
@@ -113,10 +140,13 @@ abstract class FieldInjectionPointLogic {
             }
             /* TODO : one needs somehow to check absence of initialization
              * for field... 
+             * Throw exception if it initialized. 
              */
         }
         // producer is not injection point , it is injectable
-        if ( isProducer || ( bindingAnnotations.size() == 0 && !anyBindingType )){
+        if ( isProducer || ( bindingAnnotations.size() == 0 && !anyBindingType 
+                && !currentByDefault))
+        {
             return null;
         }
         /*
@@ -126,6 +156,9 @@ abstract class FieldInjectionPointLogic {
          * be also considered as injectable.  
          */
         boolean currentBindingType = false;
+        if ( currentByDefault && bindingAnnotations.size() == 0 ){
+            currentBindingType = true;
+        }
         /*
          * The @New target is 
          * @Target(value={FIELD,PARAMETER})
@@ -161,7 +194,24 @@ abstract class FieldInjectionPointLogic {
             result.addAll( assignableTypes );
         }
         else if (newBindingType){
-            // TODO : one need to handle @New special case. 
+            AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
+            AnnotationParser parser = AnnotationParser.create( modelImpl.getHelper());
+            parser.expectClass( "value",                                // NOI18N
+                    AnnotationParser.defaultValue(Object.class.getCanonicalName()));
+            ParseResult parseResult = parser.parse(annotationMirror);
+            String clazz = parseResult.get( "value" , String.class );   // NOI18N 
+            TypeMirror typeMirror;
+            if ( clazz.equals( Object.class.getCanonicalName()) || clazz == null ){
+                typeMirror = element.asType();
+            }
+            else {
+                typeMirror = resolveType( clazz, modelImpl.getHelper());
+            }
+            Element typeElement = modelImpl.getHelper().getCompilationController().
+                getTypes().asElement(typeMirror);
+            if ( element!= null ){
+                result.addAll(getImplementors(modelImpl, typeElement ));
+            }
         }
         else {
             /*
@@ -204,7 +254,16 @@ abstract class FieldInjectionPointLogic {
         }
         filterProductionByType( element, productionElements, modelImpl );
         addSpecializes( productionElements , modelImpl );
-        return result.size() >0 ? result.get( 0 ) : null;
+        result.addAll( productionElements );
+        return result;
+    }
+    
+    protected boolean isBinding( TypeElement element, 
+            AnnotationModelHelper helper)
+    {
+        BindingChecker checker = BindingChecker.get();
+        checker.init( element , helper );
+        return checker.check();
     }
     
     private void filterCurrentProductions( Set<Element> productionElements , 
@@ -358,6 +417,7 @@ abstract class FieldInjectionPointLogic {
             return getImplementors(modelImpl, typeElement);
         }
     }
+    
     private Set<TypeElement> getAssignables( WebBeansModelImplementation model , 
             TypeElement typeElement  , VariableElement element) 
     {
@@ -510,13 +570,6 @@ abstract class FieldInjectionPointLogic {
             }
             return list;
         }
-    }
-
-    private boolean isBinding( TypeElement element, AnnotationModelHelper helper)
-    {
-        BindingChecker checker = BindingChecker.get();
-        checker.init( element , helper );
-        return checker.check();
     }
 
     private <T extends Element> void filterBindingsByMembers(
