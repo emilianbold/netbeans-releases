@@ -122,6 +122,11 @@ public final class StringUtils {
         if (text.contains("?") || text.contains("*")) { // NOI18N
             String pattern = text.replace("\\", "") // remove regexp escapes first // NOI18N
                     .replace(".", "\\.") // NOI18N
+                    .replace("-", "\\-") // NOI18N
+                    .replace("(", "\\(") // NOI18N
+                    .replace(")", "\\)") // NOI18N
+                    .replace("[", "\\[") // NOI18N
+                    .replace("]", "\\]") // NOI18N
                     .replace("?", ".") // NOI18N
                     .replace("*", ".*"); // NOI18N
             return Pattern.compile(".*" + pattern + ".*", Pattern.CASE_INSENSITIVE); // NOI18N
