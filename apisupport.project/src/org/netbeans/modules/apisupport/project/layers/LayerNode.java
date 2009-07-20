@@ -52,9 +52,11 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.openide.ErrorManager;
@@ -151,7 +153,10 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         } catch (IOException e) {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
-                        layerfs = handle.layer(false);
+                        // just this project's source path, whole cp is too slow
+                        ClassPathProviderImpl cppi = p.getLookup().lookup(ClassPathProviderImpl.class);
+                        ClassPath srcPath = cppi.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+                        layerfs = handle.layer(false, srcPath);
                         setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
                         Project p = FileOwnerQuery.getOwner(handle.getLayerFile());
                         boolean context = false;

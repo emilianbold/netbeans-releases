@@ -1,10 +1,10 @@
 Date:CLASS:[]:ESCAPED{Date}:
   +:METHOD:[PUBLIC]:ESCAPED{+}(PARAMETERS{ESCAPED{n}}):
   -:METHOD:[PUBLIC]:ESCAPED{-}(PARAMETERS{ESCAPED{x}}):
-  <<:METHOD:[PUBLIC]:ESCAPED{<<}(PARAMETERS{ESCAPED{n}}):
+  <<:METHOD:[PUBLIC]:ESCAPED{<<}(PARAMETERS{ESCAPED{n}})<font color='#777777'> : ESCAPED{Date}</font>:
   <=>:METHOD:[PUBLIC]:ESCAPED{<=>}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{Fixnum, NilClass}</font>:
   ===:METHOD:[PUBLIC]:ESCAPED{===}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
-  >>:METHOD:[PUBLIC]:ESCAPED{>>}(PARAMETERS{ESCAPED{n}}):
+  >>:METHOD:[PUBLIC]:ESCAPED{>>}(PARAMETERS{ESCAPED{n}})<font color='#777777'> : ESCAPED{Date}</font>:
   ABBR_DAYNAMES:CONSTANT:[]:ESCAPED{ABBR_DAYNAMES}<font color='#777777'> : ESCAPED{Array}</font>:
   ABBR_MONTHNAMES:CONSTANT:[]:ESCAPED{ABBR_MONTHNAMES}<font color='#777777'> : ESCAPED{Array}</font>:
   DAYNAMES:CONSTANT:[]:ESCAPED{DAYNAMES}<font color='#777777'> : ESCAPED{Array}</font>:
@@ -84,9 +84,9 @@ Date:CLASS:[]:ESCAPED{Date}:
     once:METHOD:[STATIC, PRIVATE]:ESCAPED{once}(PARAMETERS{ESCAPED{*ids}}):
   sg:FIELD:[]:ESCAPED{sg}:
   start:METHOD:[PUBLIC]:ESCAPED{start}:
-  step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{limit}, ESCAPED{step}}):
+  step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{limit}, ESCAPED{step}})<font color='#777777'> : ESCAPED{Date, Unknown}</font>:
   strptime:METHOD:[PUBLIC, STATIC]:ESCAPED{strptime}(PARAMETERS{ESCAPED{str}, ESCAPED{fmt}, ESCAPED{sg}}):
-  succ:METHOD:[PUBLIC]:ESCAPED{succ}:
+  succ:METHOD:[PUBLIC]:ESCAPED{succ}<font color='#777777'> : ESCAPED{Date}</font>:
   time:METHOD:[PRIVATE]:ESCAPED{time}:
   time_to_day_fraction:METHOD:[PUBLIC, STATIC]:ESCAPED{time_to_day_fraction}(PARAMETERS{ESCAPED{h}, ESCAPED{min}, ESCAPED{s}}):
   to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:

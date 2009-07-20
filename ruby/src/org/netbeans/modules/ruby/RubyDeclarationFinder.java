@@ -367,11 +367,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             } else if (closest instanceof InstVarNode) {
                 // A field variable read
                 String name = ((INameNode)closest).getName();
-                return findInstanceFromIndex(parserResult, name, path, index);
+                return findInstanceFromIndex(parserResult, name, path, index, false);
             } else if (closest instanceof ClassVarNode) {
                 // A class variable read
                 String name = ((INameNode)closest).getName();
-                return findInstanceFromIndex(parserResult, name, path, index);
+                return findInstanceFromIndex(parserResult, name, path, index, false);
             } else if (closest instanceof GlobalVarNode) {
                 // A global variable read
                 String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
@@ -1790,7 +1790,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
 
             for (int i = 0; i < symbols.length; i++) {
-                if (name.equals("@" + symbols[i].getName())) {
+                // possibly an instance variable referred by attr_accessor and like
+                if (name.equals(symbols[i].getName())) {
+                    Node root = AstUtilities.getRoot(info);
+                    DeclarationLocation location =
+                            findInstanceFromIndex(info, name, new AstPath(root, node), RubyIndex.get(info), true);
+                    if (location != DeclarationLocation.NONE) {
+                        return location;
+                    }
                     return getLocation(info, symbols[i]);
                 }
             }
@@ -1851,12 +1858,12 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return DeclarationLocation.NONE;
     }
 
-    private DeclarationLocation findInstanceFromIndex(ParserResult info, String name, AstPath path, RubyIndex index) {
+    private DeclarationLocation findInstanceFromIndex(ParserResult info, String name, AstPath path, RubyIndex index, boolean inherited) {
         String fqn = AstUtilities.getFqnName(path);
 
         // TODO - if fqn has multiple ::'s, try various combinations? or is 
         // add inherited already doing that?
-        Set<IndexedField> f = index.getInheritedFields(fqn, name, QuerySupport.Kind.EXACT, false);
+        Set<IndexedField> f = index.getInheritedFields(fqn, name, QuerySupport.Kind.EXACT, inherited);
         for (IndexedField field : f) {
             // How do we choose one?
             // For now, just pick the first one
