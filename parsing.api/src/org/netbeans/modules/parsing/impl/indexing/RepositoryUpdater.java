@@ -1295,12 +1295,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     continue;
                 }
 
-                Source src = Source.create(fileObject);
+                final Source src = Source.create(fileObject);
                 try {
                     ParserManager.parse(Collections.singleton(src), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            final String mimeType = resultIterator.getSnapshot().getMimeType();
+                            final String mimeType = src.getMimeType();
                             final Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> infos = IndexerCache.getEifCache().getIndexersFor(mimeType);
 
                             for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
