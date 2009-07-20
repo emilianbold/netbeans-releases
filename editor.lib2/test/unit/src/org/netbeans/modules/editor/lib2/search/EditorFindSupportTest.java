@@ -39,13 +39,9 @@
 
 package org.netbeans.modules.editor.lib2.search;
 
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.JTextArea;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -286,30 +282,31 @@ public class EditorFindSupportTest {
         instance.replaceAllImpl(props, ta);
         assertEquals("0123456789 ahoj xxx svete", ta.getText());
     }
-    /**
-     * Test of replaceAll method, of class EditorFindSupport.
-     */
-    @Test
-    public void testReplaceAll3() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
-        props.put(EditorFindSupport.FIND_WHAT, "ahoj");
-        props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
-        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
-
-        final EditorFindSupport instance = EditorFindSupport.getInstance();
-        JTextArea ta = new JTextArea("0123456789 ahoj ahoj svete");
-        ta.setCaretPosition(15);
-        instance.replaceAllImpl(props, ta);
-        assertEquals("0123456789 xxx ahoj svete", ta.getText());
-    }
+//    /**
+//     * Test of replaceAll method, of class EditorFindSupport.
+//     * Commented out bacause it uses FIND_WRAP_SEARCH, Boolean.FALSE
+//     */
+//    @Test
+//    public void testReplaceAll3() throws Exception {
+//        final Map<String, Object> props = new HashMap<String, Object>();
+//        props.put(EditorFindSupport.FIND_WHAT, "ahoj");
+//        props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
+//        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+//
+//        final EditorFindSupport instance = EditorFindSupport.getInstance();
+//        JTextArea ta = new JTextArea("0123456789 ahoj ahoj svete");
+//        ta.setCaretPosition(15);
+//        instance.replaceAllImpl(props, ta);
+//        assertEquals("0123456789 xxx ahoj svete", ta.getText());
+//    }
     /**
      * Test of replaceAll method, of class EditorFindSupport.
      */
@@ -334,33 +331,34 @@ public class EditorFindSupportTest {
         instance.replaceAllImpl(props, ta);
         assertEquals("0123456789 ahoj ahoj svete", ta.getText());
     }
-    /**
-     * Test of replaceAll method, of class EditorFindSupport.
-     */
-    @Test
-    public void testReplaceAll5() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
-        props.put(EditorFindSupport.FIND_WHAT, "ahoj");
-        props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
-        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
-
-        final EditorFindSupport instance = EditorFindSupport.getInstance();
-        JTextArea ta = new JTextArea("0123456789 ahoj ahoj svete");
-        ta.setCaretPosition(1);
-        instance.replaceAllImpl(props, ta);
-        assertEquals("0123456789 ahoj ahoj svete", ta.getText());
-//        ta.setCaretPosition(0);
+//    /**
+//     * Test of replaceAll method, of class EditorFindSupport.
+//     * Commented out bacause it uses FIND_WRAP_SEARCH, Boolean.FALSE
+//     */
+//    @Test
+//    public void testReplaceAll5() throws Exception {
+//        final Map<String, Object> props = new HashMap<String, Object>();
+//        props.put(EditorFindSupport.FIND_WHAT, "ahoj");
+//        props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
+//        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+//
+//        final EditorFindSupport instance = EditorFindSupport.getInstance();
+//        JTextArea ta = new JTextArea("0123456789 ahoj ahoj svete");
+//        ta.setCaretPosition(1);
 //        instance.replaceAllImpl(props, ta);
 //        assertEquals("0123456789 ahoj ahoj svete", ta.getText());
-    }
+////        ta.setCaretPosition(0);
+////        instance.replaceAllImpl(props, ta);
+////        assertEquals("0123456789 ahoj ahoj svete", ta.getText());
+//    }
     /**
      * Test of replaceAll method, of class EditorFindSupport.
      */
@@ -480,28 +478,29 @@ public class EditorFindSupportTest {
         instance.replaceAllImpl(props, ta);
         assertEquals("ab", ta.getText());
     }
-    /**
-     * Test of replaceAll method, of class EditorFindSupport.
-     */
-    @Test
-    public void testReplaceAll11() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
-        props.put(EditorFindSupport.FIND_WHAT, "a");
-        props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
-        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
-        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
-        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
-
-        final EditorFindSupport instance = EditorFindSupport.getInstance();
-        JTextArea ta = new JTextArea("aa aaaa");
-        ta.setCaretPosition(1);
-        instance.replaceAllImpl(props, ta);
-        assertEquals("ba aaaa", ta.getText());
-    }
+//    /**
+//     * Test of replaceAll method, of class EditorFindSupport.
+//     * Commented out bacause it uses FIND_WRAP_SEARCH, Boolean.FALSE
+//     */
+//    @Test
+//    public void testReplaceAll11() throws Exception {
+//        final Map<String, Object> props = new HashMap<String, Object>();
+//        props.put(EditorFindSupport.FIND_WHAT, "a");
+//        props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
+//        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
+//        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+//        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+//
+//        final EditorFindSupport instance = EditorFindSupport.getInstance();
+//        JTextArea ta = new JTextArea("aa aaaa");
+//        ta.setCaretPosition(1);
+//        instance.replaceAllImpl(props, ta);
+//        assertEquals("ba aaaa", ta.getText());
+//    }
 }
