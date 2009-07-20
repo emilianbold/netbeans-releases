@@ -72,6 +72,15 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/declaration.rb", "File.fil^e?", "stub_file.rb", 12373);
     }
 
+    public void testAttrAccessorDeclaration() throws Exception {
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :b^az", "attr_declaration.rb", 45);
+    }
+
+    public void testAttrAccessorDeclaration2() throws Exception {
+        checkDeclaration("testfiles/attr_declaration.rb", "attr_accessor :th^ud", "attr_declaration.rb", 58);
+    }
+
+
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
     //}
