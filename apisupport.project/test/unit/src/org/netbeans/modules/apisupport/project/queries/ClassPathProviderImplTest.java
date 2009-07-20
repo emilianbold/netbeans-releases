@@ -56,6 +56,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -112,7 +113,9 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private String urlForJar(String path) {
-        return FileUtil.urlForArchiveOrDir(PropertyUtils.resolveFile(nbRootFile(), path)).toExternalForm();
+        File fp = new File(path);
+        fp = fp.isAbsolute() ? fp : PropertyUtils.resolveFile(nbRootFile(), path);
+        return FileUtil.urlForArchiveOrDir(fp).toExternalForm();
     }
     
     private String urlForDir(String path) {
@@ -827,7 +830,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         assertEquals("right COMPILE classpath after changing project.xml again", expectedRoots, urlsOfCp(cp));
     }
-    
+
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testExecuteClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("src"), ClassPath.EXECUTE);
         Set<String> expectedRoots = new TreeSet<String>();
