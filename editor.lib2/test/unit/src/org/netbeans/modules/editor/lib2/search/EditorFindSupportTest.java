@@ -235,6 +235,40 @@ public class EditorFindSupportTest {
     }
 
     /**
+     * Test of replaceAll method, of class EditorFindSupport for regressions in #165497.
+     */
+    @Test
+    public void testReplaceAllFinishes_165497_f() throws Exception {
+        final Map<String, Object> props = new HashMap<String, Object>();
+        props.put(EditorFindSupport.FIND_WHAT, "a");
+        props.put(EditorFindSupport.FIND_REPLACE_WITH, "A");
+        props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_WRAP_SEARCH, Boolean.TRUE);
+        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_SMART_CASE, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_REG_EXP, Boolean.FALSE);
+        props.put(EditorFindSupport.FIND_HISTORY, new Integer(30));
+
+        final EditorFindSupport instance = EditorFindSupport.getInstance();
+        final boolean [] finished = new boolean[1];
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                JTextArea ta = new JTextArea("aaaa");
+                instance.replaceAllImpl(props, ta);
+                finished[0] = true;
+            }
+        });
+        t.start();
+        Thread.sleep(1000);
+        if (!finished[0]) {
+            t.stop();
+        }
+        assertTrue(finished[0]);
+    }
+    /**
      * Test of replaceAll method, of class EditorFindSupport.
      */
     @Test

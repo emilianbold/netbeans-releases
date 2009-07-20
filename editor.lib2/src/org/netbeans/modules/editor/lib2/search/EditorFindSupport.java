@@ -836,6 +836,12 @@ public final class EditorFindSupport {
                         pos = backSearch ? blk[0] : blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
                         replacedCnt++;
                     }
+                    // The following is lame attempt to break the loop: if
+                    // someone knows a better way please remove this but check
+                    // that all tests in EditorFindSupportTest pass!
+                    if (replacedCnt > maxCnt) {
+                        break;
+                    }
                 }
 
                 // Display message about replacement
