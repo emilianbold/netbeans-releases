@@ -65,14 +65,14 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "CallStackTopComponent";
+    private static final String PREFERRED_ID = "CallStackTopComponent"; //NOI18N
     private String currentToolName;
     private JComponent viewComponent;
 
     public CallStackTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(CallStackTopComponent.class, "CTL_CallStackTopComponent"));
-        setToolTipText(NbBundle.getMessage(CallStackTopComponent.class, "HINT_CallStackTopComponent"));
+        setName(NbBundle.getMessage(CallStackTopComponent.class, "CTL_CallStackTopComponent")); //NOI18N
+        setToolTipText(NbBundle.getMessage(CallStackTopComponent.class, "HINT_CallStackTopComponent")); //NOI18N
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
     }
@@ -118,15 +118,15 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(CallStackTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
         if (win instanceof CallStackTopComponent) {
             return (CallStackTopComponent) win;
         }
         Logger.getLogger(CallStackTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); //NOI18N
         return getDefault();
     }
 
@@ -148,7 +148,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0"); //NOI18N
         // TODO store your settings
     }
 
@@ -159,7 +159,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
+        String version = p.getProperty("version"); //NOI18N
         // TODO read your settings according to their version
     }
 

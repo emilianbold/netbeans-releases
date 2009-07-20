@@ -143,7 +143,7 @@ public final class ThreadStateImpl implements ThreadState {
             if (msa != null) {
                 AtomicInteger value = map.get(msa);
                 if (value == null) {
-                    value = new AtomicInteger();
+                    value = new AtomicInteger(getState(i));
                     map.put(msa, value);
                 } else {
                     value.addAndGet(getState(i));

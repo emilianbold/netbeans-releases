@@ -152,7 +152,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final int LEFT_DISPLAY_MARGIN = 20;
     private static final int NAME_COLUMN_WIDTH = 100;
     private static final int MIN_NAME_COLUMN_WIDTH = 55;
-    static final int MIN_SUMMARY_COLUMN_WIDTH = 62;
+    static final int MIN_SUMMARY_COLUMN_WIDTH = 72;
     private static final int TABLE_ROW_HEIGHT = 18;
     static final int THREAD_LINE_TOP_BOTTOM_MARGIN = 3;
 
@@ -388,6 +388,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         MSAPanel.add(modeMSA, BorderLayout.NORTH);
         MSAPanel.add(fullMSA, BorderLayout.SOUTH);
         bottomPanel.add(MSAPanel, BorderLayout.WEST);
+        modeMSA.addActionListener(this);
         fullMSA.addActionListener(this);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -727,9 +728,15 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             performDefaultAction();
         } else if (e.getSource() == fullMSA) {
             initLegend(isFullMode());
-            refreshViewData();
+            refreshUI();
+            viewPort.repaint();
+            //refreshViewData();
+            //repaint();
         } else if (e.getSource() == modeMSA) {
-            refreshViewData();
+            refreshUI();
+            viewPort.repaint();
+            //refreshViewData();
+            //repaint();
         }
     }
 

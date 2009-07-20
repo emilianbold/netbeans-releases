@@ -63,6 +63,6 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
     }
 
     public StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
