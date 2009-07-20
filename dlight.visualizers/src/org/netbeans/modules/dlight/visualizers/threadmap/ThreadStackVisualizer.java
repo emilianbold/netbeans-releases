@@ -70,10 +70,12 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private final int detailedState;
     private final List<Integer> filteredThreads;
     private final int index;
+    private final int row;
 
     ThreadStackVisualizer(ThreadsDataManager manager, int row, int index, List<Integer> filteredThreads, boolean isFullMode, int detailedState) {
         this.manager = manager;
         this.index = index;
+        this.row = row;
         stateCol = manager.getThreadData(row);
         state = stateCol.getThreadStateAt(index);
         threadName = manager.getThreadName(row);
@@ -97,17 +99,20 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         buf.append("<html>");// NOI18N
         buf.append("Time ");// NOI18N
         buf.append(TimeLineUtils.getMillisValue(time));
-        printStack(buf, state);
+        printStack(buf, state, threadName);
         for(Integer i : filteredThreads){
-            if (i.intValue() != index) {
-
+            if (i.intValue() != row) {
+                ThreadStateColumnImpl col = manager.getThreadData(i.intValue());
+                if (index < col.size()) {
+                    printStack(buf, col.getThreadStateAt(index), col.getName());
+                }
             }
         }
         buf.append("</html>");// NOI18N
         pane.setViewportView(new JLabel(buf.toString()));
     }
 
-    private void printStack(StringBuilder buf, ThreadState aState) {
+    private void printStack(StringBuilder buf, ThreadState aState, String aThreadName) {
         StackTrace stack; // = state.getSamplingStackTrace();
         buf.append("<p>"); // NOI18N
         StateResources res = ThreadStateColumnImpl.getThreadStateResources(aState.getMSAState(aState.getSamplingStateIndex(isFullMode), isFullMode));
@@ -122,7 +127,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
         buf.append(" "); // NOI18N
         buf.append(aState.getMSAState(aState.getSamplingStateIndex(isFullMode), isFullMode).name());
         buf.append(" "); // NOI18N
-        buf.append(threadName);
+        buf.append(aThreadName);
         for (int i = 0; i < 5; i++) {
             buf.append("<p>"); // NOI18N
             buf.append("&nbsp;&nbsp;"); // NOI18N
