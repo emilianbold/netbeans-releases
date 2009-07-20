@@ -94,10 +94,10 @@ abstract class FieldInjectionPointLogic {
     protected Element findVariableInjectable( VariableElement element,
             WebBeansModelImplementation modelImpl ) throws WebBeansModelException
     {
-        List<Element> injectables = findVariableInjectable(element, 
+        Set<Element> injectables = findVariableInjectable(element, 
                 modelImpl, false);
         if ( injectables.size() ==1 ){
-            return injectables.get(0);
+            return injectables.iterator().next();
         }
         else if ( injectables.size() == 0 ){
             return null;
@@ -107,7 +107,7 @@ abstract class FieldInjectionPointLogic {
         }
     }
     
-    protected List<Element> findVariableInjectable( VariableElement element,
+    protected Set<Element> findVariableInjectable( VariableElement element,
             WebBeansModelImplementation modelImpl , boolean currentByDefault )
     {
         // Probably injected field.
@@ -168,7 +168,7 @@ abstract class FieldInjectionPointLogic {
          */
         boolean newBindingType = false; 
         String annotationName = null; 
-        List<Element> result = new LinkedList<Element>();
+        Set<Element> result = new HashSet<Element>();
         if ( bindingAnnotations.size() == 1 ){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
             DeclaredType type = annotationMirror.getAnnotationType();
@@ -232,6 +232,9 @@ abstract class FieldInjectionPointLogic {
             result.addAll( typesWithBindings );
         }
         
+        
+        filterBeans( result );
+        
         /*
          * This is list with production fields or methods ( they have @Produces annotation )
          * that  have all required bindings.
@@ -281,7 +284,7 @@ abstract class FieldInjectionPointLogic {
         try {
             model.getHelper().getAnnotationScanner().findAnnotations( 
                     PRODUCER_ANNOTATION, 
-                    EnumSet.of( ElementKind.FIELD, ElementKind.PARAMETER), 
+                    EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
@@ -454,6 +457,9 @@ abstract class FieldInjectionPointLogic {
     private Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
             Element typeElement )
     {
+        if (! (typeElement instanceof TypeElement )){
+            return Collections.emptySet();
+        }
         Set<TypeElement> result = new HashSet<TypeElement>();
         ElementHandle<TypeElement> handle = ElementHandle
                 .create((TypeElement) typeElement);
@@ -479,6 +485,7 @@ abstract class FieldInjectionPointLogic {
             }
             result.add(derivedElement);
         }
+        result.add( (TypeElement)typeElement);
         return result;
     }
 
@@ -581,5 +588,10 @@ abstract class FieldInjectionPointLogic {
         MemberBindingFilter<T> filter = MemberBindingFilter.get( clazz );
         filter.init( bindingAnnotations, impl );
         filter.filter( elementsWithBindings );
+    }
+    
+    private void filterBeans( Set<Element> result ) {
+        BeansFilter filter = BeansFilter.get();
+        filter.filter( result );
     }
 }

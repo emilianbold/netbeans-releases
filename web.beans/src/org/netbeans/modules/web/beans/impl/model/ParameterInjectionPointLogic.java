@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -68,7 +69,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
             WebBeansModelImplementation model) 
     {
         ExecutableElement parent = (ExecutableElement)element.getEnclosingElement();
-        List<Element> injectables = null;
+        Set<Element> injectables = null;
         boolean disposes = AnnotationObjectProvider.hasAnnotation( element, 
                 DISPOSES_ANNOTATION, model.getHelper());
         if ( AnnotationObjectProvider.hasAnnotation( parent, 
@@ -120,6 +121,6 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
             injectables = findVariableInjectable(element, model , true );
         }
         return (injectables== null || injectables.size() ==0 )? null: 
-            injectables.get(0);
+            injectables.iterator().next();
     }
 }

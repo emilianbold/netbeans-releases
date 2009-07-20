@@ -79,6 +79,10 @@ public class CommonTestCase extends JavaSourceTestCase {
         return WebBeansModelFactory.createMetaModel(modelUnit);
     }
     
+    protected void inform( String message ){
+        System.out.println(message);
+    }
+    
     /**
      * This method should be changed to loading jar which injection annotations
      * into classpath.   
