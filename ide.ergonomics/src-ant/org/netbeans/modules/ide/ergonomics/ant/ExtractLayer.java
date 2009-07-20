@@ -231,8 +231,9 @@ implements FileNameMapper {
                             JarEntry je = en.nextElement();
                             if (concatPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);
-                                int index = je.getName().indexOf("_");
-                                String suffix = index == -1 ? "" : je.getName().substring(index + 1);
+                                String noExt = je.getName().replaceFirst("\\.[^\\.]*$", "");
+                                int index = noExt.indexOf("_");
+                                String suffix = index == -1 ? "" : noExt.substring(index + 1);
                                 ResArray ra = bundles.get(suffix);
                                 if (ra == null) {
                                     ra = new ResArray();
