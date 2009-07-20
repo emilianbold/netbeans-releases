@@ -36,19 +36,77 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.storage.types;
+package org.netbeans.modules.dlight.spi.support;
 
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 
-public class TimeDuration {
+public final class TimerBasedVisualizerSupport implements ComponentListener {
 
-    private final long value;
+    private final Visualizer visualizer;
+    private final TimeDuration refreshInterval;
+    private Future future;
+    private boolean isShown = true;
 
-    public TimeDuration(TimeUnit timeUnit, long value) {
-        this.value = timeUnit.toNanos(value);
+    public TimerBasedVisualizerSupport(final Visualizer visualizer, final TimeDuration refreshInterval) {
+        this.visualizer = visualizer;
+        this.refreshInterval = refreshInterval;
     }
 
-    public long getValueIn(TimeUnit unit) {
-        return unit.convert(value, TimeUnit.NANOSECONDS);
+    private final void startTimer() {
+        if (future != null && !future.isCancelled()) {
+            return;
+        }
+
+        future = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
+
+            public void run() {
+                visualizer.refresh();
+            }
+        }, refreshInterval.getValueIn(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS,
+                "TimerBasedVisualizerSupport: timer for " + visualizer.toString()); // NOI18N
+    }
+
+    private final void stopTimer() {
+        if (future != null) {
+            future.cancel(false);
+        }
+    }
+
+    public void componentResized(ComponentEvent e) {
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentShown(ComponentEvent e) {
+        if (isShown) {
+            return;
+        }
+
+        isShown = visualizer.getComponent().isShowing();
+
+        if (isShown) {
+            //we should change explorerManager
+            startTimer();
+        }
+    }
+
+    public void componentHidden(ComponentEvent e) {
+        stopTimer();
+        isShown = false;
+    }
+
+    public void start() {
+        startTimer();
+    }
+
+    public void stop() {
+        stopTimer();
     }
 }

@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
@@ -52,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
 public class ThreadMapVisualizerFactory implements VisualizerFactory<ThreadMapVisualizerConfiguration> {
 
     public String getID() {
@@ -63,6 +62,11 @@ public class ThreadMapVisualizerFactory implements VisualizerFactory<ThreadMapVi
         if (!(provider instanceof ThreadMapDataProvider)) {
             return null;
         }
-        return new ThreadMapVisualizer((ThreadMapDataProvider)provider, configuration);
+
+        ThreadMapVisualizer result = new ThreadMapVisualizer((ThreadMapDataProvider) provider, configuration);
+
+        result.init();
+
+        return result;
     }
 }
