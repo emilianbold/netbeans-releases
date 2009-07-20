@@ -63,17 +63,17 @@ public final class RunCommandAction extends BaseAction {
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
-        FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
-        CommandDescriptor commandDescriptor = commandSupport.selectCommand();
-        if (commandDescriptor == null) {
-            return;
-        }
+        final FrameworkCommandSupport commandSupport = FrameworkCommandSupport.forPhpModule(phpModule);
+        commandSupport.runCommand(new FrameworkCommandSupport.RunCommandListener() {
+            public void runCommand(CommandDescriptor commandDescriptor) {
+                Callable<Process> callable = commandSupport.createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+                ExecutionDescriptor descriptor = commandSupport.getDescriptor();
+                String displayName = commandSupport.getOutputTitle(commandDescriptor);
+                ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
+                service.run();
+            }
+        });
 
-        Callable<Process> callable = commandSupport.createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
-        ExecutionDescriptor descriptor = commandSupport.getDescriptor();
-        String displayName = commandSupport.getOutputTitle(commandDescriptor);
-        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-        service.run();
     }
 
     @Override

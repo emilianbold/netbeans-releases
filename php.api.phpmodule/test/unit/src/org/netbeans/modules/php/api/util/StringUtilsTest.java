@@ -41,6 +41,7 @@ package org.netbeans.modules.php.api.util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 
@@ -76,5 +77,49 @@ public class StringUtilsTest extends NbTestCase {
         // test for empty string (relative path ".")
         string = "one" + TESTING_SEPARATOR + "" + TESTING_SEPARATOR + "two";
         assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, TESTING_SEPARATOR).toArray(new String[0]));
+    }
+
+    public void testPattern() {
+        assertNull(StringUtils.getPattern(""));
+        assertNull(StringUtils.getPattern("abc"));
+
+        Pattern pattern = StringUtils.getPattern("a*b?c");
+        assertNotNull(pattern);
+        assertTrue(pattern.matcher("andhtbXc__").matches());
+        assertTrue(pattern.matcher("__abXc").matches());
+        assertTrue(pattern.matcher("__ABXC").matches());
+        assertTrue(pattern.matcher("andhtbXc__").matches());
+        assertFalse(pattern.matcher("andhtbc__").matches());
+    }
+
+    public void testExactPattern() {
+        assertNull(StringUtils.getPattern(""));
+        assertNull(StringUtils.getPattern("abc"));
+
+        Pattern pattern = StringUtils.getExactPattern("a*b?c");
+        assertNotNull(pattern);
+        assertFalse(pattern.matcher("andhtbXc__").matches());
+        assertFalse(pattern.matcher("__abXc").matches());
+        assertFalse(pattern.matcher("andhtbXc__").matches());
+        assertTrue(pattern.matcher("andhtbXc").matches());
+        assertTrue(pattern.matcher("AnGGhtbXC").matches());
+
+        pattern = StringUtils.getExactPattern("*.php");
+        assertNotNull(pattern);
+        assertTrue(pattern.matcher("test.php").matches());
+        assertTrue(pattern.matcher("a.php").matches());
+        assertTrue(pattern.matcher("A.PHP").matches());
+        assertFalse(pattern.matcher("test.phps").matches());
+        assertFalse(pattern.matcher("test.php5").matches());
+        assertFalse(pattern.matcher("php").matches());
+
+        pattern = StringUtils.getExactPattern("*.php?");
+        assertNotNull(pattern);
+        assertFalse(pattern.matcher("test.php").matches());
+        assertFalse(pattern.matcher("A.PHP").matches());
+        assertTrue(pattern.matcher("test.phps").matches());
+        assertTrue(pattern.matcher("test.php5").matches());
+        assertTrue(pattern.matcher("TEST.PHP5").matches());
+        assertFalse(pattern.matcher("php").matches());
     }
 }
