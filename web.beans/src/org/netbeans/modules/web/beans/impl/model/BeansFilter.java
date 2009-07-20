@@ -38,29 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 
 /**
  * @author ads
  *
  */
-public class AmbiguousDependencyException extends WebBeansModelException {
-
-    private static final long serialVersionUID = 5833956523263809658L;
-
-    public AmbiguousDependencyException(Collection<Element> elements){
-        myElements = elements;
-    }
+class BeansFilter extends Filter<Element> {
     
-    public Collection<Element> getElements(){
-        return Collections.unmodifiableCollection( myElements );
+    static BeansFilter get() {
+        return new BeansFilter();
     }
-    
-    private Collection<Element> myElements;
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
+     */
+    @Override
+    void filter( Set<Element> set ) {
+        super.filter(set);
+        for (Iterator<Element> iterator = set.iterator(); iterator.hasNext(); ) {
+            Element element = iterator.next();
+            if ( element instanceof TypeElement ){
+                String name = ((TypeElement)element).getQualifiedName().toString();
+                if ( name.startsWith("java.lang")) { // NOI18N
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
 }

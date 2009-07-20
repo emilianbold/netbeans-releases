@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +53,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.management.RuntimeErrorException;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -509,12 +509,14 @@ public class ModelTest extends CommonTestCase {
     }
 
     private void checkA( VariableElement element, WebBeansModel model ) {
+        boolean exception = false;
         try {
             inform("test field myFieldA");
             model.getInjectable(element);
         }
         catch (AmbiguousDependencyException e) {
-            List<Element> elements = e.getElements();
+            exception = true;
+            Collection<Element> elements = e.getElements();
             assertEquals( 2 ,  elements.size() );
             Set<String> set = new HashSet<String>();
             for (Element injactable : elements) {
@@ -529,6 +531,7 @@ public class ModelTest extends CommonTestCase {
         catch(WebBeansModelException e ){
             assert false : "Unexpected exception " +e.getClass()+ " appears"; 
         }
+        assert exception;
     }
     
     private void checkGen( VariableElement element, WebBeansModel model ){
@@ -563,8 +566,4 @@ public class ModelTest extends CommonTestCase {
         }
     }
     
-    private void inform( String message ){
-        System.out.println(message);
-    }
-
 }
