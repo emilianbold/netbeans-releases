@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.derby.support;
+package org.netbeans.modules.dlight.db.derby;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
