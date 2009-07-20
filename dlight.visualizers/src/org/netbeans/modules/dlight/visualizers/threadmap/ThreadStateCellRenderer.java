@@ -196,7 +196,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return null;
     }
 
-    private int getStateIndex(Point point){
+    public int getStateIndex(Point point){
         if (threadData != null) {
             int index = getFirstVisibleDataUnit();
             if (index != -1) {

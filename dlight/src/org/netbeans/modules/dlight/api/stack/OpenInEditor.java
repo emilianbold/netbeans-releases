@@ -36,31 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.storage.threadmap;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+package org.netbeans.modules.dlight.api.stack;
+
+import org.openide.util.Lookup;
 
 /**
- *
+ * Default implementation of Open In Editor Provider
  * @author Alexander Simon
  */
-public interface ThreadData {
+public final class OpenInEditor {
 
-    /**
-     * @return thread information.
-     */
-    ThreadInfo getThreadInfo();
+    private static OpenInEditorProvider DEFAULT = new Default();
 
-    /**
-     * @return list of thread states.
-     */
-    List<ThreadState> getThreadState();
+    public static boolean open(Function function) {
+        return getDefault().open(function);
+    }
 
-    /**
-     * @param timeStamp
-     * @return thread stack by time stamp
-     */
-    StackTrace getStackTrace(long timeStamp);
+    public static boolean open(FunctionCall call) {
+        return getDefault().open(call);
+    }
 
+    private OpenInEditor() {
+    }
+
+    private static OpenInEditorProvider getDefault() {
+        return DEFAULT;
+    }
+
+    private static final class Default implements OpenInEditorProvider {
+        private final Lookup.Result<OpenInEditorProvider> res;
+
+        Default() {
+            res = Lookup.getDefault().lookupResult(OpenInEditorProvider.class);
+        }
+
+        public boolean open(Function function) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(function)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean open(FunctionCall call) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(call)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }

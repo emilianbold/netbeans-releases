@@ -36,31 +36,24 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.storage.threadmap;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+package org.netbeans.modules.dlight.api.stack;
 
 /**
- *
+ * Open in editor provider.
  * @author Alexander Simon
  */
-public interface ThreadData {
+public interface OpenInEditorProvider {
 
     /**
-     * @return thread information.
+     * @param function
+     * @return true if provider is going to open function in text editor
      */
-    ThreadInfo getThreadInfo();
+    boolean open(Function function);
 
     /**
-     * @return list of thread states.
+     * @param call
+     * @return true if provider is going to open function call in text editor
      */
-    List<ThreadState> getThreadState();
-
-    /**
-     * @param timeStamp
-     * @return thread stack by time stamp
-     */
-    StackTrace getStackTrace(long timeStamp);
-
+    boolean open(FunctionCall call);
 }
