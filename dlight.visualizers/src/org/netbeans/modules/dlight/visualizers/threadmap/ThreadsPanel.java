@@ -100,6 +100,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -166,6 +167,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JLabel enableThreadsMonitoringLabel2;
     private JLabel enableThreadsMonitoringLabel3;
     private JPanel legendPanel;
+    private JCheckBox modeMSA;
+    private JCheckBox fullMSA;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showThreadsDetails;
     private JPanel contentPanel; // panel with CardLayout containing threadsTable & enable threads profiling notification and button
@@ -362,8 +365,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         rest.add(scrollBar, BorderLayout.EAST);
 
         legendPanel = new JPanel();
+        legendPanel.setLayout(new BorderLayout());
         legendPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-        this.initLegend(false);
+        initLegend(false);
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
@@ -373,15 +377,16 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         JPanel MSAPanel = new JPanel();
         MSAPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         MSAPanel.setLayout(new BorderLayout());
-        JCheckBox modeMSA = new JCheckBox(MODE_MSA_TEXT);
+        modeMSA = new JCheckBox(MODE_MSA_TEXT);
         modeMSA.setSelected(true);
         modeMSA.setToolTipText(MODE_MSA_TOOLTIP);
-        JCheckBox fullMSA = new JCheckBox(FULL_MSA_TEXT);
+        fullMSA = new JCheckBox(FULL_MSA_TEXT);
         fullMSA.setSelected(false);
         fullMSA.setToolTipText(FULL_MSA_TOOLTIP);
         MSAPanel.add(modeMSA, BorderLayout.NORTH);
         MSAPanel.add(fullMSA, BorderLayout.SOUTH);
         bottomPanel.add(MSAPanel, BorderLayout.WEST);
+        fullMSA.addActionListener(this);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
         JPanel dataPanel = new JPanel();
@@ -555,24 +560,36 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private void initLegend(boolean isFull){
         legendPanel.removeAll();
         if (!isFull) {
-            ThreadStateIcon runningIcon = new ThreadStateIcon(ThreadState.MSAState.Running, 10, 10);// 18, 9);
-            ThreadStateIcon monitorIcon = new ThreadStateIcon(ThreadState.MSAState.Blocked, 10, 10);// 18, 9);
-            ThreadStateIcon waitIcon = new ThreadStateIcon(ThreadState.MSAState.Waiting, 10, 10);// 18, 9);
-            ThreadStateIcon sleepingIcon = new ThreadStateIcon(ThreadState.MSAState.Sleeping, 10, 10);// 18, 9);
-
-            JLabel runningLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_RUNNING_STRING, runningIcon, SwingConstants.LEADING);
-            runningLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel monitorLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_BLOCKED_STRING, monitorIcon, SwingConstants.LEADING);
-            monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel waitLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_WAITING_STRING, waitIcon, SwingConstants.LEADING);
-            waitLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            JLabel sleepingLegend = new JLabel(ThreadStateColumnImpl.THREAD_STATUS_SLEEPING_STRING, sleepingIcon, SwingConstants.LEADING);
-            sleepingLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            legendPanel.add(runningLegend);
-            legendPanel.add(monitorLegend);
-            legendPanel.add(waitLegend);
-            legendPanel.add(sleepingLegend);
+            JPanel container = new JPanel();
+            container.add(createLegendLabel(ThreadState.MSAState.Running, ThreadStateColumnImpl.THREAD_RUNNING));
+            container.add(createLegendLabel(ThreadState.MSAState.Blocked, ThreadStateColumnImpl.THREAD_BLOCKED));
+            container.add(createLegendLabel(ThreadState.MSAState.Waiting, ThreadStateColumnImpl.THREAD_WAITING));
+            container.add(createLegendLabel(ThreadState.MSAState.Sleeping, ThreadStateColumnImpl.THREAD_SLEEPING));
+            legendPanel.add(container, BorderLayout.CENTER);
+        } else {
+            JPanel container = new JPanel();
+            container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateColumnImpl.THREAD_RUNNING_USER));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING_SYSTEM));
+            container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateColumnImpl.THREAD_RUNNING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.WaitingCPU, ThreadStateColumnImpl.THREAD_WAITING_CPU));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateColumnImpl.THREAD_SLEEP_USE_LOCK));
+            legendPanel.add(container, BorderLayout.NORTH);
+            container = new JPanel();
+            container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateColumnImpl.THREAD_THREAD_STOPPED));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingOther, ThreadStateColumnImpl.THREAD_SLEEPING_OTHER));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingUserTextPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_TEXT_PAGE_FAULT));
+            container.add(createLegendLabel(ThreadState.MSAState.SleepingKernelPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_KERNEL_PAGE_FAULT));
+            legendPanel.add(container, BorderLayout.SOUTH);
         }
+    }
+
+    private JLabel createLegendLabel(ThreadState.MSAState state, StateResources resources){
+        ThreadStateIcon icon = new ThreadStateIcon(state, 10, 10);
+        JLabel label = new JLabel(resources.name, icon, SwingConstants.LEADING);
+        label.setToolTipText(resources.tooltip);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        return label;
     }
 
     private void sortByColumn(int column){
@@ -702,7 +719,20 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             table.clearSelection();
         } else if (e.getSource() == showThreadsDetails) {
             performDefaultAction();
+        } else if (e.getSource() == fullMSA) {
+            initLegend(isFullMode());
+            refreshViewData();
+        } else if (e.getSource() == modeMSA) {
+            refreshViewData();
         }
+    }
+
+    boolean isFullMode(){
+        return fullMSA.isSelected();
+    }
+
+    boolean isMSAMode(){
+        return modeMSA.isSelected();
     }
 
     // --- Save Current View action support --------------------------------------
@@ -842,79 +872,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     }
 
     private JTable createViewTable() {
-        return new JExtendedTable(new ThreadsTableModel()) {
-
-            @Override
-            public void mouseMoved(MouseEvent event) {
-                // Identify table row and column at cursor
-                int row = rowAtPoint(event.getPoint());
-                int column = columnAtPoint(event.getPoint());
-
-                // Only celltip for thread name is supported
-                if (getColumnClass(column) != ThreadNameCellRenderer.class) {
-                    CellTipManager.sharedInstance().setEnabled(false);
-
-                    return;
-                }
-
-                // Return if table cell is the same as in previous event
-                if ((row == lastRow) && (column == lastColumn)) {
-                    return;
-                }
-
-                lastRow = row;
-                lastColumn = column;
-
-                if ((row < 0) || (column < 0)) {
-                    CellTipManager.sharedInstance().setEnabled(false);
-
-                    return;
-                }
-
-                Component cellRenderer = ((ThreadNameCellRenderer) (getCellRenderer(row, column))).getTableCellRendererComponentPersistent(this,
-                        getValueAt(row,
-                        column),
-                        false,
-                        false,
-                        row,
-                        column);
-                Rectangle cellRect = getCellRect(row, column, false);
-
-                // Return if celltip is not supported for the cell
-                if (cellRenderer == null) {
-                    CellTipManager.sharedInstance().setEnabled(false);
-
-                    return;
-                }
-
-                int horizontalAlignment = ((ThreadNameCellRenderer) cellRenderer).getHorizontalAlignment();
-
-                if ((horizontalAlignment == SwingConstants.TRAILING) || (horizontalAlignment == SwingConstants.RIGHT)) {
-                    rendererRect = new Rectangle((cellRect.x + cellRect.width) - cellRenderer.getPreferredSize().width,
-                            cellRect.y, cellRenderer.getPreferredSize().width,
-                            cellRenderer.getPreferredSize().height);
-                } else {
-                    rendererRect = new Rectangle(cellRect.x, cellRect.y, cellRenderer.getPreferredSize().width,
-                            cellRenderer.getPreferredSize().height);
-                }
-
-                // Return if cell contents is fully visible
-                if ((rendererRect.x >= cellRect.x) && ((rendererRect.x + rendererRect.width) <= (cellRect.x + cellRect.width))) {
-                    CellTipManager.sharedInstance().setEnabled(false);
-
-                    return;
-                }
-
-                while (cellTip.getComponentCount() > 0) {
-                    cellTip.remove(0);
-                }
-
-                cellTip.add(cellRenderer, BorderLayout.CENTER);
-                cellTip.setPreferredSize(new Dimension(rendererRect.width + 2, getRowHeight(row) + 2));
-
-                CellTipManager.sharedInstance().setEnabled(true);
-            }
-        };
+        return new JExtendedTable(new ThreadsTableModel());
     }
 
     private JPopupMenu initPopupMenu() {

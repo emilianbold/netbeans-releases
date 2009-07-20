@@ -46,6 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
@@ -129,14 +131,14 @@ public class ThreadsDataManager {
      * Returns the timestamp representing end time of collecting threadData (timestamp of last valid threadData record).
      */
     public synchronized long getEndTime() {
-        return endTime;
+        return ThreadStateColumnImpl.timeStampToMilliSeconds(endTime);
     }
 
     /**
      * Returns the timestamp representing start time of collecting threadData (timestamp of first threadData record).
      */
     public synchronized long getStartTime() {
-        return startTime;
+        return ThreadStateColumnImpl.timeStampToMilliSeconds(startTime);
     }
 
     public synchronized ThreadStateColumnImpl getThreadData(int index) {
@@ -218,34 +220,24 @@ public class ThreadsDataManager {
             Integer number = IdToNumber.get(col.getThreadID());
             if (number == null) {
                 // this is dead thread
-                if (col.isAlive()) {
-                    final long endTimeStump = col.getThreadStateAt(col.size()-1).getTimeStamp() + monitoredData.getInterval();
-                    col.add(new ThreadState(){
-                        public int size() {
-                            return 1;
-                        }
-                        public MSAState getMSAState(int index, boolean full) {
-                            return ThreadState.MSAState.ThreadFinished;
-                        }
-                        public byte getState(int index) {
-                            return ThreadState.POINTS;
-                        }
-                        public long getTimeStamp(int index) {
-                            return endTimeStump;
-                        }
-                        public long getTimeStamp() {
-                            return endTimeStump;
-                        }
-                    });
+                if (col.isAlive()){
+                   closeThread(col, monitoredData.getTimeStampInterval());
                 }
             } else {
                 ThreadState lastState = col.getThreadStateAt(col.size()-1);
                 int newData = number.intValue();
                 List<ThreadState> states = monitoredData.getThreadStates(newData);
+                long lastTimeStamp = -1;
                 for (int j = 0; j < states.size(); j++) {
                     ThreadState newState = states.get(j);
-                    if (newState.getTimeStamp()> lastState.getTimeStamp()) {
+                    if (newState.getTimeStamp() > lastState.getTimeStamp()) {
                         col.add(newState);
+                        lastTimeStamp = newState.getTimeStamp();
+                    }
+                }
+                if (lastTimeStamp == -1) {
+                    if (col.isAlive()){
+                        closeThread(col, monitoredData.getTimeStampInterval());
                     }
                 }
                 IdToNumber.remove(col.getThreadID());
@@ -265,6 +257,44 @@ public class ThreadsDataManager {
                 }
             }
         }
+    }
+
+    void closeThread(ThreadStateColumnImpl col, int interval){
+        final long endTimeStamp = col.getThreadStateAt(col.size()-1).getTimeStamp() + interval;
+        col.add(new ThreadState(){
+            public int size() {
+                return 1;
+            }
+            public MSAState getMSAState(int index, boolean full) {
+                return ThreadState.MSAState.ThreadFinished;
+            }
+            public byte getState(int index) {
+                return ThreadState.POINTS;
+            }
+            public long getTimeStamp(int index) {
+                return endTimeStamp;
+            }
+            public long getTimeStamp() {
+                return endTimeStamp;
+            }
+
+            @Override
+            public String toString() {
+                return "MSA "+getTimeStamp()+" "+getMSAState(0, false).name(); // NOI18N
+            }
+
+            public MSAState getSamplingMSAState(boolean full) {
+                return ThreadState.MSAState.ThreadFinished;
+            }
+
+            public StackTrace getStackTrace(int index) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public StackTrace getSamplingStackTrace() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });
     }
 
     /**

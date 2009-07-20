@@ -97,13 +97,13 @@ public class DwarfSource implements SourceFileProperties{
     private CompilerSettings normilizeProvider;
     private Map<String,GrepEntry> grepBase;
     
-    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase){
+    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
         initCompilerSettings(compilerSettings, isCPP);
         this.grepBase = grepBase;
         initSourceSettings(cu, isCPP);
     }
 
-    private void countFileName(CompilationUnit cu) {
+    private void countFileName(CompilationUnit cu) throws IOException {
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
         File file = new File(fullName);
@@ -291,7 +291,7 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     
-    private void initSourceSettings(CompilationUnit cu, boolean isCPP){
+    private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
@@ -323,7 +323,7 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
     
-    public void process(CompilationUnit cu){
+    public void process(CompilationUnit cu) throws IOException{
         String line = cu.getCommandLine();
         if (line != null && line.length()>0){
             gatherLine(line);
@@ -464,7 +464,7 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     
-    private void gatherIncludes(final CompilationUnit cu) {
+    private void gatherIncludes(final CompilationUnit cu) throws IOException {
         if (!ourGatherIncludes) {
             return;
         }
@@ -562,7 +562,7 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
     
-    private void gatherIncludedFiles(final CompilationUnit cu) {
+    private void gatherIncludedFiles(final CompilationUnit cu) throws IOException {
         if (!ourGatherIncludes) {
             return;
         }
@@ -582,7 +582,7 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
     
-    private void gatherMacros(final CompilationUnit cu) {
+    private void gatherMacros(final CompilationUnit cu) throws IOException {
         if (!ourGatherMacros){
             return;
         }

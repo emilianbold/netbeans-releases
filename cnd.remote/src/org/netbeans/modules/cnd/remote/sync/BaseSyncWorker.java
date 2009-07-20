@@ -60,13 +60,15 @@ import org.openide.util.NbBundle;
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
     protected final File localDir;
+    protected final File privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
     protected final Logger logger = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
         this.localDir = localDir;
+        this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;
         this.err = err;
@@ -142,7 +144,7 @@ import org.openide.util.NbBundle;
         } catch (IOException ex) {
             logger.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s asdasd \n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         }

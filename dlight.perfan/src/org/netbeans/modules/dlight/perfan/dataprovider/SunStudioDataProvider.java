@@ -44,7 +44,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
@@ -80,7 +80,7 @@ final class SunStudioDataProvider extends SSStackDataProvider
                 super.getTableView(columns, null, Integer.MAX_VALUE);
 
         for (FunctionCallTreeTableNode node : nodes) {
-            FunctionCall call = node.getDeligator();
+            FunctionCallWithMetric call = node.getDeligator();
             List<Object> data = new ArrayList<Object>();
             for (Column c : columns) {
                 if (c.getColumnName().equals("name")) { // NOI18N
@@ -95,10 +95,10 @@ final class SunStudioDataProvider extends SSStackDataProvider
         return result;
     }
 
-    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
+    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
             FunctionDatatableDescription functionDecsr, List<Column> metricsColumn) {
         //if we have CPU table here we should call functions command, not lines
-        List<FunctionCall> result = new ArrayList<FunctionCall>();
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
         if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)) {
             List<Column> oldMetrics = metricsColumn;
             metricsColumn = new ArrayList<Column>();
@@ -110,7 +110,7 @@ final class SunStudioDataProvider extends SSStackDataProvider
         }
         List<FunctionCallTreeTableNode> nodes = super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
         for (FunctionCallTreeTableNode node : nodes) {
-            FunctionCall call = node.getDeligator();
+            FunctionCallWithMetric call = node.getDeligator();
             result.add(call);
         }
 
