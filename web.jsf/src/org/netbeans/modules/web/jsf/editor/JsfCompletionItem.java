@@ -54,6 +54,9 @@ public class JsfCompletionItem {
 
     public static class JsfTag extends HtmlCompletionItem.Tag {
 
+        private static final String BOLD_OPEN_TAG = "<b>"; //NOI18N
+        private static final String BOLD_END_TAG = "</b>"; //NOI18N
+
         private String uri;
         private boolean autoimport; //autoimport (declare) the tag namespace if set to true
 
@@ -66,6 +69,16 @@ public class JsfCompletionItem {
         @Override
         protected String getRightHtmlText() {
             return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + uri + "</font>";
+        }
+
+        //use bold font
+        @Override
+        protected String getLeftHtmlText() {
+            StringBuffer buff = new StringBuffer();
+            buff.append(BOLD_OPEN_TAG);
+            buff.append(super.getLeftHtmlText());
+            buff.append(BOLD_END_TAG);
+            return buff.toString();
         }
 
         @Override

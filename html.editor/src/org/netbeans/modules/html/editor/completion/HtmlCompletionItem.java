@@ -339,7 +339,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return super.getSortPriority() + (possible ? -1 : 0);
+            return super.getSortPriority() + (possible ? -10 : 0);
         }
 
         @Override
@@ -358,9 +358,9 @@ public class HtmlCompletionItem implements CompletionItem {
         public enum Type {
             DEFAULT(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
             OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
-            OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
+            OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
             REQUIRED_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
-            REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 1); //NOI18N
+            REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
                     
             private String colorCode;
             private boolean bold;
