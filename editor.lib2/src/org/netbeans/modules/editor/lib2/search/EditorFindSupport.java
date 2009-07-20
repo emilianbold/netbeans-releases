@@ -677,7 +677,6 @@ public final class EditorFindSupport {
 
     boolean replaceImpl(Map<String, Object> props, boolean oppositeDir, JTextComponent c) throws BadLocationException {
         props = getValidFindProperties(props);
-        props = getValidFindProperties(props);
         Boolean b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
         boolean back = (b != null && b.booleanValue());
         if (oppositeDir) {
@@ -736,12 +735,6 @@ public final class EditorFindSupport {
     public void replaceAll(Map<String, Object> props) {
         incSearchReset();
         JTextComponent c = EditorRegistry.lastFocusedComponent();
-        props = getValidFindProperties(props);
-        props = new HashMap<String, Object>(props);
-        // I was persuaded by the team that the following should be here
-        // when doing replace all -- putting this to our private copy or props
-        // feel free to remove the following line if you think otherwise
-        props.put(FIND_WRAP_SEARCH, Boolean.TRUE);
         replaceAllImpl(props, c);
     }
 
@@ -751,12 +744,15 @@ public final class EditorFindSupport {
      * @param c
      */
     void replaceAllImpl(Map<String, Object> props, JTextComponent c) {
-        String replaceWith1 = (String)props.get(FIND_REPLACE_WITH);
+        props = getValidFindProperties(props);
+        props = new HashMap<String, Object>(props);
+        String replaceWithOriginal = (String)props.get(FIND_REPLACE_WITH);
+
         Object findWhat = props.get(FIND_WHAT);
         if (findWhat == null) { // nothing to search for
             return;
         }
-        if (findWhat.equals(replaceWith1)) {
+        if (findWhat.equals(replaceWithOriginal)) {
             return;
         }
 
@@ -764,10 +760,6 @@ public final class EditorFindSupport {
         int maxCnt = doc.getLength();
         int replacedCnt = 0;
         int totalCnt = 0;
-
-        props = getValidFindProperties(props);
-        props = new HashMap<String, Object>(props);
-        String replaceWithOriginal = (String)props.get(FIND_REPLACE_WITH);
 
         Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
         boolean blockSearch = (b != null && b.booleanValue());
