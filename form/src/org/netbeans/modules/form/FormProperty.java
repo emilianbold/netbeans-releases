@@ -142,7 +142,7 @@ public abstract class FormProperty extends Node.Property {
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setName(name);
         setDisplayName(displayName);
-        setShortDescription(getDescriptionWithType(shortDescription));
+        setShortDescription(getDescriptionWithType(shortDescription, getValueType()));
 
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
         setPropertyContext(propertyContext);
@@ -165,7 +165,7 @@ public abstract class FormProperty extends Node.Property {
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
         setName(name);
         setDisplayName(displayName);
-        setShortDescription(getDescriptionWithType(shortDescription));
+        setShortDescription(getDescriptionWithType(shortDescription, getValueType()));
 
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
     }
@@ -180,8 +180,8 @@ public abstract class FormProperty extends Node.Property {
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
     }
 
-    private String getDescriptionWithType(String description) {
-        String type = org.openide.util.Utilities.getClassName(getValueType());
+    static String getDescriptionWithType(String description, Class valueType) {
+        String type = org.openide.util.Utilities.getClassName(valueType);
         return description == null ?
             FormUtils.getFormattedBundleString("HINT_PropertyType", // NOI18N
                                                new Object[] { type }) :
