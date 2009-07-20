@@ -418,6 +418,7 @@ public final class CompletionSupport implements DocumentListener {
             // completion is disabled in some tokens
             switch (ts.token().id()) {
                 case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                 case CHAR_LITERAL:
                 case STRING_LITERAL:
                 case PREPROCESSOR_USER_INCLUDE:

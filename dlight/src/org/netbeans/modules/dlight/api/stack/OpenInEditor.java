@@ -36,25 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.spi.impl;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
+package org.netbeans.modules.dlight.api.stack;
+
+import org.openide.util.Lookup;
 
 /**
- *
+ * Default implementation of Open In Editor Provider
  * @author Alexander Simon
  */
-public interface ThreadMapDataProvider extends VisualizerDataProvider {
+public final class OpenInEditor {
 
-    /**
-     * @param metadata define needed time selection and aggregation.
-     * @return list threads data about all threads that alive in selected time period.
-     */
-    ThreadMapData queryData(ThreadMapDataQuery query);
+    private static OpenInEditorProvider DEFAULT = new Default();
 
-    StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
+    public static boolean open(Function function) {
+        return getDefault().open(function);
+    }
+
+    public static boolean open(FunctionCall call) {
+        return getDefault().open(call);
+    }
+
+    private OpenInEditor() {
+    }
+
+    private static OpenInEditorProvider getDefault() {
+        return DEFAULT;
+    }
+
+    private static final class Default implements OpenInEditorProvider {
+        private final Lookup.Result<OpenInEditorProvider> res;
+
+        Default() {
+            res = Lookup.getDefault().lookupResult(OpenInEditorProvider.class);
+        }
+
+        public boolean open(Function function) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(function)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean open(FunctionCall call) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(call)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }

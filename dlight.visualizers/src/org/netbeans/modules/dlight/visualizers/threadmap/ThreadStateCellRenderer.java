@@ -196,7 +196,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return null;
     }
 
-    private int getStateIndex(Point point){
+    public int getStateIndex(Point point){
         if (threadData != null) {
             int index = getFirstVisibleDataUnit();
             if (index != -1) {
@@ -370,7 +370,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 }
             }
         } else {
-            Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor.getSamplingMSAState(viewManager.isFullMode()));
+            Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor.getMSAState(threadStateColor.getSamplingStateIndex(viewManager.isFullMode()), viewManager.isFullMode()));
             g.setColor(c);
             g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, xx - x, delta);
         }
