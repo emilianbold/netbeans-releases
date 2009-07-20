@@ -9,3 +9,9 @@ end
 class Corge < Bar
   attr_accessor :thud
 end
+
+b = Bar.new
+b.baz
+
+c = Corge.new
+c.thud
