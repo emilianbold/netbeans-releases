@@ -13,6 +13,8 @@
 // @codeCoverageIgnoreStart - seems to be broken - a PHPUnit bug?
 
 /**
+ * <b>WARNING: User changes to this file should be avoided.</b>
+ *
  * To regenerate this file, simply delete it and run all PHPUnit tests.
  * @author ${user}
  */
@@ -25,6 +27,10 @@
  * added and executed.
  *
  * To run this suite from CLI: phpunit NetBeansSuite.php
+ *
+ * <b>WARNING: User changes to this file should be avoided.</b>
+ *
+ * To regenerate this file, simply delete it and run all PHPUnit tests.
  *
  * @package NetBeans
  */
