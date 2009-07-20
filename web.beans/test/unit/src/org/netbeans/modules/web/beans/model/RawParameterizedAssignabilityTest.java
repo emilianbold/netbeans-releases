@@ -38,34 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
-
-import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+package org.netbeans.modules.web.beans.model;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
+public class RawParameterizedAssignabilityTest extends CommonTestCase {
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
-    
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element );
-    
-    boolean isInjectionPoint( VariableElement element );
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
+    public RawParameterizedAssignabilityTest( String testName ) {
+        super(testName);
+    }
+
+    public void testGeneric(){
+        
+    }
 }

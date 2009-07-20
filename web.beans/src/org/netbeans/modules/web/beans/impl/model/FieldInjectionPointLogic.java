@@ -565,11 +565,11 @@ abstract class FieldInjectionPointLogic {
             return Collections.emptySet();
         }
         else {
-            Set<TypeElement> list = new HashSet<TypeElement>( result.size());
+            Set<TypeElement> set = new HashSet<TypeElement>();
             for (Binding binding : result) {
-                list.add( binding.getTypeElement() );
+                set.add( binding.getTypeElement() );
             }
-            return list;
+            return set;
         }
     }
 
