@@ -49,6 +49,6 @@ public class TimeDuration {
     }
 
     public long getValueIn(TimeUnit unit) {
-        return TimeUnit.NANOSECONDS.convert(value, unit);
+        return unit.convert(value, TimeUnit.NANOSECONDS);
     }
 }

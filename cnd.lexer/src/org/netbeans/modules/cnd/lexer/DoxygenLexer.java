@@ -89,7 +89,7 @@ public class DoxygenLexer implements Lexer<DoxygenTokenId> {
         }
     }
     
-    private final static String DOXYGEN_CONTROL_SYMBOLS = "@<.#"; // NOI18N
+    private final static String DOXYGEN_CONTROL_SYMBOLS = "@\\<.#"; // NOI18N
     
     public Token<DoxygenTokenId> nextToken() {
         int ch = input.read();
@@ -116,24 +116,36 @@ public class DoxygenLexer implements Lexer<DoxygenTokenId> {
             //TODO: EOF
             ch = input.read();
             
-            while (!CndLexerUtilities.isCppIdentifierStart(ch) && DOXYGEN_CONTROL_SYMBOLS.indexOf(ch) == (-1) && ch != EOF)
+            while (!CndLexerUtilities.isCppIdentifierStart(ch) && DOXYGEN_CONTROL_SYMBOLS.indexOf(ch) == (-1) && ch != EOF) {
                 ch = input.read();
+            }
             
-            if (ch != EOF)
+            if (ch != EOF) {
                 input.backup(1);
+            }
             return token(DoxygenTokenId.OTHER_TEXT);
         }
         
         switch (ch) {
             case '@':
+            case '\\':
+            {
+                boolean first = true;
                 while (true) {
                     ch = input.read();
-                    
-                    if (!Character.isLetter(ch)) {
+                    boolean wasFirst = first;
+                    first = false;
+                    if ((wasFirst && !CndLexerUtilities.isCppIdentifierStart(ch)) || (!CndLexerUtilities.isCppIdentifierPart(ch))) {
                         input.backup(1);
-                        return tokenFactory.createToken(DoxygenTokenId.TAG, input.readLength());
+                        if (input.readLength() > 1) {
+                            return tokenFactory.createToken(DoxygenTokenId.TAG, input.readLength());
+                        } else {
+                            // no identifier after control symbol => control symbol is not tag-start
+                            return tokenFactory.createToken(DoxygenTokenId.OTHER_TEXT, input.readLength());
+                        }
                     }
                 }
+            }
             case '<':
                 while (true) {
                     ch = input.read();

@@ -915,7 +915,7 @@ public class AstUtilities {
         return getDefName(method).equals(getCallName(call)) &&
         Arity.matches(callArity, Arity.getDefArity(method));
     }
-    
+
     // TODO: use the structure analyzer data for more accurate traversal?
     /** For the given signature, locating the corresponding Node within the tree that
      * it corresponds to */
@@ -1045,7 +1045,17 @@ public class AstUtilities {
                 }
             }
             break;
-            
+
+        case FCALLNODE:
+            if (isAttr(node)) {
+                SymbolNode[] symbols = getAttrSymbols(node);
+                for (SymbolNode sym : symbols) {
+                    if (name.equals(sym.getName())) {
+                        return sym;
+                    }
+                }
+            }
+            break;
         case CONSTDECLNODE:
             if (name.equals(getName(node))) {
                 return node;
