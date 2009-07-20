@@ -179,6 +179,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Test
     public void testHelloQtWorld() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs);
+        }
         if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs);
         }
