@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.html;
 
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -64,6 +65,7 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
         setShortDescription(NbBundle.getMessage(HtmlDataNode.class, "LBL_htmlNodeShortDesc"));
     }
     
+    @Override
     public Node.PropertySet[] getPropertySets() {
         if(sheet == null) {
             sheet = new Sheet();
@@ -91,7 +93,7 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
                     NbBundle.getBundle(HtmlDataNode.class).getString("HINT_fileEncoding") //NOI18N
                     ) {
                 public Object getValue() {
-                    return ((HtmlDataObject)getDataObject()).getFileEncoding();
+                    return FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
                 }
             });
             sheet.put(set);
