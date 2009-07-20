@@ -110,7 +110,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     private void printStack(StringBuilder buf, ThreadState aState) {
         StackTrace stack; // = state.getSamplingStackTrace();
         buf.append("<p>"); // NOI18N
-        StateResources res = ThreadStateColumnImpl.getThreadStateResources(aState.getSamplingMSAState(isFullMode));
+        StateResources res = ThreadStateColumnImpl.getThreadStateResources(aState.getMSAState(aState.getSamplingStateIndex(isFullMode), isFullMode));
         if (res != null) {
             buf.append("<font bgcolor=#"); // NOI18N
             buf.append(Integer.toHexString(res.color.getRed()));
@@ -120,7 +120,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
             buf.append("</font>"); // NOI18N
         }
         buf.append(" "); // NOI18N
-        buf.append(aState.getSamplingMSAState(isFullMode).name());
+        buf.append(aState.getMSAState(aState.getSamplingStateIndex(isFullMode), isFullMode).name());
         buf.append(" "); // NOI18N
         buf.append(threadName);
         for (int i = 0; i < 5; i++) {
