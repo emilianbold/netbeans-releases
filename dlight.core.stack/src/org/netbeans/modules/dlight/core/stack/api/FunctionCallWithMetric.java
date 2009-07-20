@@ -38,20 +38,23 @@
  */
 package org.netbeans.modules.dlight.core.stack.api;
 
+import org.netbeans.modules.dlight.api.stack.Function;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
+
 /**
  * Function Call with metrics for function.
  * As an example: you have the following
  */
-public abstract class FunctionCall {
+public abstract class FunctionCallWithMetric implements FunctionCall {
 
     private final Function function;
     private final long offset;
 
-    protected FunctionCall(Function function) {
+    protected FunctionCallWithMetric(Function function) {
         this(function, -1);
     }
 
-    protected FunctionCall(Function function, long offset) {
+    protected FunctionCallWithMetric(Function function, long offset) {
         this.function = function;
         this.offset = offset;
     }

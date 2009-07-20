@@ -55,7 +55,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -83,7 +83,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private JToggleButton calls;
     private boolean isCalls = true;
     private List<? extends FunctionMetric> metricsList = null;
-    private Future<List<FunctionCall>> syncFillDataTask;
+    private Future<List<FunctionCallWithMetric>> syncFillDataTask;
     private DefaultMutableTreeNode focusedTreeNode = null;
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
@@ -196,7 +196,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         }
         Node selectedNode = selectedNodes[0];
         focusedTreeNode = selectedNode.getLookup().lookup(DefaultMutableTreeNode.class);
-        FunctionCall focusedFunction = focusedTreeNode == null ? null : ((FunctionCallTreeTableNode) focusedTreeNode.getUserObject()).getDeligator();
+        FunctionCallWithMetric focusedFunction = focusedTreeNode == null ? null : ((FunctionCallTreeTableNode) focusedTreeNode.getUserObject()).getDeligator();
         setNodes(Arrays.asList(focusedTreeNode));
 
         loadTree(focusedTreeNode, Arrays.asList(new FunctionCallTreeTableNode(focusedFunction)));
@@ -241,8 +241,8 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
 
             public void run() {
 
-                final List<FunctionCall> result;
-                FunctionCall[] path = new FunctionCall[ppath.size()];
+                final List<FunctionCallWithMetric> result;
+                FunctionCallWithMetric[] path = new FunctionCallWithMetric[ppath.size()];
                 for (int i = 0, size = ppath.size(); i < size; i++) {
                     path[i] = ppath.get(i).getDeligator();
                 }
@@ -284,11 +284,11 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         fireTreeModelChanged(rootNode);
     }
 
-    private void update(final DefaultMutableTreeNode rootNode, List<FunctionCall> result) {
+    private void update(final DefaultMutableTreeNode rootNode, List<FunctionCallWithMetric> result) {
         //add them all as a children to rootNode
         rootNode.removeAllChildren();
         if (result != null) {
-            for (FunctionCall call : result) {
+            for (FunctionCallWithMetric call : result) {
                 rootNode.add(new DefaultMutableTreeNode(new FunctionCallTreeTableNode(call)));
             }
         }
@@ -299,20 +299,20 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
 
     @Override
     protected void syncFillModel(final List<Column> columns) {
-        List<FunctionCall> flist =
+        List<FunctionCallWithMetric> flist =
                 dataProvider.getHotSpotFunctions(columns, null, TOP_FUNCTIONS_COUNT);
 
         update(flist);
     }
 
-    private void update(List<FunctionCall> list) {
+    private void update(List<FunctionCallWithMetric> list) {
         final boolean isEmptyConent = list == null || list.isEmpty();
         setContent(isEmptyConent);
 
         if (!isEmptyConent) {
             List<FunctionCallTreeTableNode> res = new ArrayList<FunctionCallTreeTableNode>();
 
-            for (FunctionCall c : list) {
+            for (FunctionCallWithMetric c : list) {
                 res.add(new FunctionCallTreeTableNode(c));
             }
 
@@ -393,7 +393,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
                 return;
             }
 
-            FunctionCall functionCall = ((FunctionCallTreeTableNode) nodeObject).getDeligator();
+            FunctionCallWithMetric functionCall = ((FunctionCallTreeTableNode) nodeObject).getDeligator();
             GoToSourceAction action = new GoToSourceAction(functionCall);
             action.actionPerformed(null);
         }
@@ -414,12 +414,12 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
 
     private class GoToSourceAction extends AbstractAction {
 
-        private final FunctionCall functionCall;
+        private final FunctionCallWithMetric functionCall;
         private final Future<SourceFileInfo> sourceFileInfoTask;
         private boolean isEnabled = true;
         private boolean gotTheInfo = false;
 
-        public GoToSourceAction(FunctionCall funcCall) {
+        public GoToSourceAction(FunctionCallWithMetric funcCall) {
             super(NbBundle.getMessage(CallersCalleesVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCall = funcCall;
             sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {

@@ -120,7 +120,14 @@ class TypeProductionFilter extends Filter<Element> {
             iterator.hasNext();)
         {
             Element productionElement = iterator.next();
-            TypeMirror mirror = productionElement.asType();
+            TypeMirror mirror = null;
+            if ( productionElement.getKind() == ElementKind.FIELD){
+                mirror = productionElement.asType();
+            }
+            else if ( productionElement.getKind() == ElementKind.METHOD){
+                mirror = ((ExecutableElement)productionElement).
+                    getReturnType();
+            }
             Element typeElement = getImplementation().getHelper().
                 getCompilationController().getTypes().asElement( mirror );
             if ( !types.contains( typeElement)){

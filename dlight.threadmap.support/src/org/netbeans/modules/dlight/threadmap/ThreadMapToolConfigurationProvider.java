@@ -79,16 +79,16 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         PlotIndicatorConfiguration indicatorConfig = new PlotIndicatorConfiguration(
                 new IndicatorMetadata(msaTableMetadata.getColumns()), INDICATOR_POSITION, loc("ThreadMapTool.Indicator.Title"), 100, // NOI18N
                 Arrays.asList(
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.RunUser"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.RunSystem"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.RunOther"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.SleepUserTextPageFault"), GraphDescriptor.Kind.REL_SURFACE),
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.SleepUserDataPageFault"), GraphDescriptor.Kind.REL_SURFACE),
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.SleepKernelPageFault"), GraphDescriptor.Kind.REL_SURFACE),
-                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.SleepUserLock"), GraphDescriptor.Kind.REL_SURFACE),
-                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.SleepOther"), GraphDescriptor.Kind.REL_SURFACE),
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.WaitCPU"), GraphDescriptor.Kind.REL_SURFACE),
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.ThreadStopped"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_USER"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_SYSTEM"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_TRAP"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_TFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_DFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_KFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_USER_LOCK"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_SLEEP"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_WAIT_CPU"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_STOPPED"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
                 new DataRowToMSAPlot(msaTableMetadata.getColumns()));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
 

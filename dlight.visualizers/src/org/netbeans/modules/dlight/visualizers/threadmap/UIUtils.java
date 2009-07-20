@@ -75,9 +75,13 @@ public class UIUtils {
         if (c.equals(Color.WHITE)) {
             return new Color(244, 244, 244);
         }
-        return getSafeColor((int) (c.getRed() * ALTERNATE_ROW_DARKER_FACTOR),
-                (int) (c.getGreen() * ALTERNATE_ROW_DARKER_FACTOR),
-                (int) (c.getBlue() * ALTERNATE_ROW_DARKER_FACTOR));
+        return getDarker(c, ALTERNATE_ROW_DARKER_FACTOR);
+    }
+
+    public static Color getDarker(Color c, float ratio) {
+        return getSafeColor((int) (c.getRed() * ratio),
+                (int) (c.getGreen() * ratio),
+                (int) (c.getBlue() * ratio));
     }
 
     public static Color getDarkerLine(Color c) {

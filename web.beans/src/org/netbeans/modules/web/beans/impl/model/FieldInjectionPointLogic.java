@@ -323,6 +323,7 @@ abstract class FieldInjectionPointLogic {
             inspectHierarchy( productionElement , implementor , specializeElements
                     , model );
         }
+        specializeElements.remove( productionElement );
         return specializeElements;
     }
     
@@ -504,7 +505,7 @@ abstract class FieldInjectionPointLogic {
             try {
                 model.getHelper().getAnnotationScanner().findAnnotations( 
                         annotationFQN, 
-                        EnumSet.of( ElementKind.FIELD, ElementKind.PARAMETER), 
+                        EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                         new AnnotationHandler() {
                             public void handleAnnotation( TypeElement type, 
                                     Element element,AnnotationMirror annotation )
