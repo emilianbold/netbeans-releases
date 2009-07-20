@@ -448,7 +448,6 @@ public final class RubyIndex {
         //    public void searchByCriteria(final String name, final ClassIndex.QuerySupport.Kind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> file) throws IOException {
         final Set<IndexResult> result = new HashSet<IndexResult>();
 
-        String field = FIELD_METHOD_NAME;
         QuerySupport.Kind originalKind = kind;
         if (kind == QuerySupport.Kind.EXACT) {
             // I can't do exact searches on methods because the method
@@ -464,7 +463,9 @@ public final class RubyIndex {
         //                field = FIELD_CASE_INSENSITIVE_METHOD_NAME;
         //                break;
 
-        search(field, name, kind, result);
+        search(FIELD_METHOD_NAME, name, kind, result);
+        // include also for attr methods that create accessors (e.g attr, attr_accessor)
+        search(FIELD_ATTRIBUTE_NAME, name, kind, result);
 
         //return Collections.unmodifiableSet(file);
 

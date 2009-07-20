@@ -79,6 +79,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -993,7 +994,7 @@ out:                    for (URL e : roots) {
      * and should not be reused, to avoid creating uncompilable code
      * @return A programmer-friendly parameter name (i.e. not arg0, arg1...)
      */
-    static String generateReadableParameterName (String typeName, Set<String> used) {
+    static @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used) {
         boolean arr = typeName.indexOf ("[") > 0 || typeName.endsWith("..."); //NOI18N
         typeName = trimToSimpleName (typeName);
         String result = typeName.toLowerCase();

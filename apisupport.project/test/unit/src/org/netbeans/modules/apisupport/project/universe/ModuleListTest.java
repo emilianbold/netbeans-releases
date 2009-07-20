@@ -152,6 +152,7 @@ public class ModuleListTest extends TestBase {
         t.join();
     }
 
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testParseProperties() throws Exception {
         File basedir = file("ant.browsetask");
         PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), false, false, "org.netbeans.modules.ant.browsetask");
@@ -377,7 +378,8 @@ public class ModuleListTest extends TestBase {
 //        assertTrue("There are some provided tokens", e.getProvidedTokens().length > 0);
 //        // XXX test that getAllEntries() also includes nonstandard modules, and so does getKnownEntries() if necessary
 //    }
-    
+
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testExternalEntries() throws Exception {
         // Start with suite1 - should find also nb_all.
         long start = System.currentTimeMillis();
