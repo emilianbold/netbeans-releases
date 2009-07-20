@@ -126,6 +126,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         this.list = this;
         //this.transfer = this;
         this.cookie = cookie;
+        suffix = "";
         try {
             doc = cookie.openDocumentRoot();
         } catch (TreeException e) {
@@ -282,7 +283,11 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         TreeAttribute urlAttr = el.getAttribute("url"); // NOI18N
         if (urlAttr != null) {
             try {
-                URL[] u = LayerUtils.currentify(new URL(location, new URI(null, urlAttr.getValue(), null).getRawPath()), suffix, classpath);
+                String sURL = urlAttr.getValue();
+                URI uri = new URI(null, sURL, null);
+                boolean nbmRelative = sURL.startsWith("nbres:") || sURL.startsWith("nbresloc:");
+                URL url = nbmRelative ? uri.toURL() : new URL(location, uri.getRawPath());
+                URL[] u = LayerUtils.currentify(url, suffix, classpath);
                 URLConnection conn = u[0].openConnection();
                 conn.connect();
                 InputStream is = conn.getInputStream();
