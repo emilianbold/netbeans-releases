@@ -123,7 +123,7 @@ class AnnotationObjectProvider implements ObjectProvider<Binding> {
                         }
                     }
 
-        }, true );
+        } );
         return new ArrayList<Binding>( result );
     }
 
