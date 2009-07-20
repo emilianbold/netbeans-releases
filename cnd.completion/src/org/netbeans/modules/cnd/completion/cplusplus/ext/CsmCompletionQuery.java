@@ -273,6 +273,7 @@ abstract public class CsmCompletionQuery {
                         break;
 
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                         errState = true;
                         break;
                     default:

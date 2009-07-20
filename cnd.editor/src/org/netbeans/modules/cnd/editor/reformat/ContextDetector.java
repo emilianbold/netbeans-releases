@@ -140,6 +140,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
@@ -254,6 +255,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         case ESCAPED_WHITESPACE:
                         case NEW_LINE:
                         case LINE_COMMENT:
+                        case DOXYGEN_LINE_COMMENT:
                         case BLOCK_COMMENT:
                         case DOXYGEN_COMMENT:
                         case PREPROCESSOR_DIRECTIVE:
@@ -299,6 +301,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         case ESCAPED_WHITESPACE:
                         case NEW_LINE:
                         case LINE_COMMENT:
+                        case DOXYGEN_LINE_COMMENT:
                         case BLOCK_COMMENT:
                         case DOXYGEN_COMMENT:
                         case PREPROCESSOR_DIRECTIVE:
@@ -604,6 +607,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
@@ -681,6 +685,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                                                 case ESCAPED_WHITESPACE:
                                                 case NEW_LINE:
                                                 case LINE_COMMENT:
+                                                case DOXYGEN_LINE_COMMENT:
                                                 case BLOCK_COMMENT:
                                                 case DOXYGEN_COMMENT:
                                                 case PREPROCESSOR_DIRECTIVE:
@@ -715,6 +720,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:

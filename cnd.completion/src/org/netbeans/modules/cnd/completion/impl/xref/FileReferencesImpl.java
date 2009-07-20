@@ -376,6 +376,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                 case NEW_LINE:
                 case BLOCK_COMMENT:
                 case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                 case TEMPLATE:
                     // OK, do nothing
                     break;
@@ -394,6 +395,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                 case NEW_LINE:
                 case BLOCK_COMMENT:
                 case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                     break;
                 default:
                     afterParen = false;
