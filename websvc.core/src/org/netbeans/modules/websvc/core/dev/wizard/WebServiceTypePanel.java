@@ -55,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
@@ -267,7 +268,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         Children.Array children = new Children.Array();
         children.add(ejbProjectNodes.<Node>toArray(new Node[ejbProjectNodes.size()]));
         Node root = new AbstractNode(children);
-        EjbChooser chooser = new EjbChooser(root);
+        EjbChooser chooser = new EjbChooser(root, J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported());
         final DialogDescriptor dd = new DialogDescriptor(chooser, org.openide.util.NbBundle.getMessage(WebServiceTypePanel.class, "LBL_BrowseBean_Title"));
         
         dd.setValid(false);
