@@ -183,7 +183,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         while(clz != null) {
             Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
             for (IndexedFunction indexedFunction : indexedFunctions) {
-                allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
+                allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction));
             }
             interfaces.addAll(clz.getSuperInterfaces());
             ClassScope clzz = ModelUtils.getFirst(clz.getSuperClasses());

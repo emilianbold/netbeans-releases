@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -157,10 +158,12 @@ public class PHPTypeSearcher implements IndexSearcher {
                 for (IndexedFunction func : index.getMethods(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(func, clz, helper));
                 }
-                for (IndexedConstant constanst : index.getAllFields(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
+                for (IndexedClassMember<IndexedConstant> classMember  : index.getAllFields(null, clz.getName(), query, kind, PHPIndex.ANY_ATTR)) {
+                    IndexedConstant constanst = classMember.getMember();
                     result.add(new PHPTypeDescriptor(constanst, clz, helper));
                 }
-                for (IndexedConstant constanst : index.getAllClassConstants(null, clz.getName(), query, kind)) {
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllClassConstants(null, clz.getName(), query, kind)) {
+                    IndexedConstant constanst = classMember.getMember();
                     result.add(new PHPTypeDescriptor(constanst, clz, helper));
                 }
             }

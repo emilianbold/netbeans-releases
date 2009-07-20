@@ -218,8 +218,8 @@ public class IntroduceHint implements AstRule {
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedFunction> allMethods = index.getAllMethods(null, type.getName(),
-                                methName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                        Collection<IndexedFunction> allMethods = PHPIndex.toMembers(index.getAllMethods(null, type.getName(),
+                                methName, Kind.EXACT, PHPIndex.ANY_ATTR));
                         if (allMethods.isEmpty()) {
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
@@ -243,8 +243,8 @@ public class IntroduceHint implements AstRule {
                     IndexedClass clz = getIndexedClass(clzName);
                     if (clz != null && methName != null) {
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedFunction> allMethods = index.getAllMethods(null, clz.getName(),
-                                methName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                        Collection<IndexedFunction> allMethods = PHPIndex.toMembers(index.getAllMethods(null, clz.getName(),
+                                methName, Kind.EXACT, PHPIndex.ANY_ATTR));
                         if (allMethods.isEmpty()) {
                             FileObject fileObject = clz.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
@@ -267,7 +267,7 @@ public class IntroduceHint implements AstRule {
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedConstant> allFields = index.getAllFields(null, type.getName(), fieldName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                        Collection<IndexedConstant> allFields = PHPIndex.toMembers(index.getAllFields(null, type.getName(), fieldName, Kind.EXACT, PHPIndex.ANY_ATTR));
                         if (allFields.isEmpty()) {
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
@@ -295,7 +295,7 @@ public class IntroduceHint implements AstRule {
                             fieldName = fieldName.substring(1);
                         }
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedConstant> allConstants = index.getAllFields(null, clz.getName(), fieldName, Kind.EXACT, Modifier.STATIC);
+                        Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllFields(null, clz.getName(), fieldName, Kind.EXACT, Modifier.STATIC));
                         if (allConstants.isEmpty()) {
                             FileObject fileObject = clz.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
@@ -319,7 +319,7 @@ public class IntroduceHint implements AstRule {
                     IndexedClass clz = getIndexedClass(clzName);
                     if (clz != null && constName != null) {
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedConstant> allConstants = index.getAllClassConstants(null, clz.getName(), constName, Kind.EXACT);
+                        Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllClassConstants(null, clz.getName(), constName, Kind.EXACT));
                         if (allConstants.isEmpty()) {
                             FileObject fileObject = clz.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;

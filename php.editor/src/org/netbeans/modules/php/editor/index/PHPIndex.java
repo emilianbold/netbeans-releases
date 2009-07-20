@@ -171,9 +171,9 @@ public class PHPIndex {
                 boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
                 List<String> ifaces = Collections.emptyList();
                 if (sig.string(5) != null) {
-                     ifaces = Arrays.asList(sig.string(5).split(","));//NOI18N
+                    ifaces = Arrays.asList(sig.string(5).split(","));//NOI18N
                 }
-                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass,ifaces, offset, 0);
+                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, ifaces, offset, 0);
                 //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 classes.add(clazz);
             }
@@ -395,22 +395,22 @@ public class PHPIndex {
     }
 
     /** returns constnats of a class. */
-    public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
-        Map<String, IndexedConstant> constants = new TreeMap<String, IndexedConstant>();
+    public Collection<IndexedClassMember<IndexedConstant>> getAllClassConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
+        Map<String, IndexedClassMember<IndexedConstant>> constants = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
        
         // #147730 - prefer the current file
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
-        for (String className : getClassAncestors(context, typeName)) {
+        for (IndexedElement clz : getClassAncestors(context, typeName)) {
             //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedConstant const0 : getClassConstants(context, className, name, kind)) {
+            for (IndexedConstant const0 : getClassConstants(context, clz.getName(), name, kind)) {
                 String constantName = const0.getName();
-                if (!constants.containsKey(constantName) || className.equals(typeName)){
-                    constants.put(constantName, const0);
+                if (!constants.containsKey(constantName) || clz.getName().equals(typeName)){
+                    constants.put(constantName, new IndexedClassMember(clz, const0));
                     
                     if (currentFile != null && currentFile.equals(const0.getFileObject())) {
-                        currentFileClasses.add(className);
+                        currentFileClasses.add(clz.getName());
                     }
                 }
             }
@@ -424,37 +424,37 @@ public class PHPIndex {
                     String constantName = constant.getName();
                     
                     if (!constants.containsKey(constantName) || iface.getName().equals(typeName)){
-                        constants.put( constantName,constant);
+                        constants.put( constantName,new IndexedClassMember(iface, constant));
                     }
                 }
             }
         }
 
-        Collection<IndexedConstant> result = constants.values();
+        Collection<IndexedClassMember<IndexedConstant>> result = constants.values();
         filterClassMembers(result, currentFileClasses, currentFile);
         return result;
     }
 
     /** returns all methods of a class or an interface. */
-    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Map<String, IndexedFunction> methods = new TreeMap<String, IndexedFunction>();
+    public Collection<IndexedClassMember<IndexedFunction>> getAllMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
+        Map<String, IndexedClassMember<IndexedFunction>> methods = new TreeMap<String, IndexedClassMember<IndexedFunction>>();
         
         // #147730 - prefer the current file
         FileObject currentFile = (context != null) ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
-        for (String className : getClassAncestors(context, typeName)) {
-            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+        for (IndexedElement clz : getClassAncestors(context, typeName)) {
+            int mask = clz.getName().equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
             
-            for (IndexedFunction method : getMethods(context, className, name, kind, mask)){
+            for (IndexedFunction method : getMethods(context, clz.getName(), name, kind, mask)){
                 String methodName = method.getName();
                 
-                if (!methods.containsKey(methodName) || className.equals(typeName)){
-                    methods.put(methodName, method);
+                if (!methods.containsKey(methodName) || clz.getName().equals(typeName)){
+                    methods.put(methodName, new IndexedClassMember(clz, method));
                     try {                        
                         URI sourceURI = currentFile != null ? currentFile.getURL().toURI() : null;
                         if (sourceURI != null && sourceURI.equals(URI.create(method.getFilenameUrl()))) {
-                            currentFileClasses.add(className);
+                            currentFileClasses.add(clz.getName());
                         }
                     } catch (FileStateInvalidException fileStateInvalidException) {
                         Exceptions.printStackTrace(fileStateInvalidException);
@@ -475,41 +475,41 @@ public class PHPIndex {
                     String methodName = method.getName();
 
                     if (!methods.containsKey(methodName) || ifaceName.equals(typeName)) {
-                        methods.put(methodName, method);
+                        methods.put(methodName, new IndexedClassMember(iface, method));
                     }
                 }
             }
         }
 
-        Collection<IndexedFunction> result = methods.values();
+        Collection<IndexedClassMember<IndexedFunction>> result = methods.values();
         filterClassMembers(result, currentFileClasses, currentFile);
         return result;
     }
 
     /** returns all fields of a class or an interface. */
-    public Collection<IndexedConstant> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Map<String, IndexedConstant> fields = new TreeMap<String, IndexedConstant>();
+    public Collection<IndexedClassMember<IndexedConstant>> getAllFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
+        Map<String, IndexedClassMember<IndexedConstant>> fields = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
         
         // #147730 - prefer the current file
         FileObject currentFile = context != null ? context.getSnapshot().getSource().getFileObject() : null;
         Set<String> currentFileClasses = new HashSet<String>();
 
-        for (String className : getClassAncestors(context, typeName)) {
-            int mask = className.equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
-            for (IndexedConstant field : getFields(context, className, name, kind, mask)) {
+        for (IndexedElement clz : getClassAncestors(context, typeName)) {
+            int mask = clz.getName().equals(typeName) ? attrMask : (attrMask & (~Modifier.PRIVATE));
+            for (IndexedConstant field : getFields(context, clz.getName(), name, kind, mask)) {
                 String fieldName = field.getName();
                 
-                if (!fields.containsKey(fieldName) || className.equals(typeName)){
-                    fields.put(fieldName, field);
+                if (!fields.containsKey(fieldName) || clz.getName().equals(typeName)){
+                    fields.put(fieldName, new IndexedClassMember(clz, field));
                 }
                 
                 if (currentFile != null && field != null && currentFile.equals(field.getFileObject())) {
-                    currentFileClasses.add(className);
+                    currentFileClasses.add(clz.getName());
                 }
             }
         }
 
-        Collection<IndexedConstant> result = fields.values();
+        Collection<IndexedClassMember<IndexedConstant>> result = fields.values();
         filterClassMembers(result, currentFileClasses, currentFile);
         return result;
     }
@@ -524,33 +524,40 @@ public class PHPIndex {
 //    }
 
     // #147730 - prefer the current file
-    private void filterClassMembers(Collection<? extends IndexedElement> elements, Set<String> currentFileClasses, FileObject currentFile) {
+    private void filterClassMembers(Collection<? extends IndexedClassMember> elements, Set<String> currentFileClasses, FileObject currentFile) {
         if (elements.size() > 0 && currentFileClasses.size() > 0) {
-            for (Iterator<? extends IndexedElement> it = elements.iterator(); it.hasNext();) {
-                IndexedElement method = it.next();
-                if (currentFileClasses.contains(method.getIn())
-                        && !currentFile.equals(method.getFileObject())) {
+            for (Iterator<? extends IndexedClassMember> it = elements.iterator(); it.hasNext();) {
+                IndexedElement member = it.next().getMember();
+                if (currentFileClasses.contains(member.getIn())
+                        && !currentFile.equals(member.getFileObject())) {
                     it.remove();
                 }
             }
         }
+    }
+    public static <T extends IndexedElement> Collection<T> toMembers(final Collection<? extends IndexedClassMember<T>> classMembers) {
+        List<T> retval = new ArrayList<T>();
+        for (IndexedClassMember<T> classMember : classMembers) {
+            retval.add(classMember.getMember());
+        }
+        return retval;
     }
 
     /** return a list of all superclasses of the given class.
      *  The head item will be the queried class, otherwise it not safe to rely on the element order
      */
     @NonNull
-    public Collection<String>getClassAncestors(PHPParseResult context, String className){
+    public Collection<IndexedElement>getClassAncestors(PHPParseResult context, String className){
         return getClassAncestors(context, className, new TreeSet<String>());
     }
 
     @NonNull
-    private Collection<String>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
-        Collection<String> ancestors = new TreeSet<String>();
+    private Collection<IndexedElement>getClassAncestors(PHPParseResult context, String className, Collection<String> processedClasses){
+        Collection<IndexedElement> ancestors = new HashSet<IndexedElement>();
         List<String> interfaces = Collections.emptyList();
 
         if (processedClasses.contains(className)) {
-            return Collections.<String>emptyList(); //TODO: circular reference, warn the user
+            return Collections.<IndexedElement>emptyList(); //TODO: circular reference, warn the user
         }
 
         processedClasses.add(className);
@@ -559,7 +566,7 @@ public class PHPIndex {
         
         if (classes != null) {
             for (IndexedClass clazz : classes) {
-                ancestors.add(clazz.getName());
+                ancestors.add(clazz);
                 String parent = clazz.getSuperClass();
                 interfaces = clazz.getInterfaces();
                 if (parent != null) {
@@ -574,7 +581,7 @@ public class PHPIndex {
         for (String ifaceName : interfaces) {
             Collection<IndexedInterface> interfaceTree = getInterfaceTree(context, ifaceName);
             for (IndexedInterface indexedInterface : interfaceTree) {
-                ancestors.add(indexedInterface.getName());
+                ancestors.add(indexedInterface);
             }
         }
         return ancestors;

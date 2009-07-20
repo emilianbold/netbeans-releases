@@ -218,7 +218,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
             methods = getIndex().getMethods(null, type.getName(), queryName, nameKind, modifiers.length == 0 ? PHPIndex.ANY_ATTR : attribs.toBitmask());
         }
         for (IndexedFunction idxFunc : methods) {
-            MethodScopeImpl msi = new MethodScopeImpl((TypeScopeImpl) type, idxFunc, PhpKind.METHOD);
+            MethodScopeImpl msi = new MethodScopeImpl((TypeScopeImpl) type, idxFunc);
             retval.add(msi);
         }
         return retval;
@@ -231,7 +231,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         //assert cls.getName().equals(className);
         Collection<IndexedFunction> methods = getIndex().getMethods(null, typeScope.getName(), methodName, QuerySupport.Kind.EXACT, Modifier.PUBLIC | Modifier.PROTECTED);
         for (IndexedFunction idxFunc : methods) {
-            MethodScopeImpl msi = new MethodScopeImpl(typeScope, idxFunc, PhpKind.METHOD);
+            MethodScopeImpl msi = new MethodScopeImpl(typeScope, idxFunc);
             retval.add(msi);
         }
         return retval;

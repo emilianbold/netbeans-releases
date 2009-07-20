@@ -76,6 +76,7 @@ import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.PredefinedSymbols.VariableKind;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
@@ -592,10 +593,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Expression superClass = enclosingClass.getSuperClass();
             if (superClass != null) {
                 String superClsName = CodeUtils.extractUnqualifiedSuperClassName(enclosingClass);
-                Collection<IndexedFunction> superMethods = request.index.getAllMethods(
+                Collection<IndexedClassMember<IndexedFunction>> superMethods = request.index.getAllMethods(
                         request.result, superClsName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-                for (IndexedFunction superMeth : superMethods) {
+                for (IndexedClassMember<IndexedFunction> classMember: superMethods) {
+                    IndexedFunction superMeth = classMember.getMember();
                     if (superMeth.getName().startsWith(request.prefix) &&
                             !superMeth.isFinal() &&
                             !insideNames.contains(superMeth.getName()) &&
@@ -610,10 +612,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             List<Expression> interfaces = enclosingClass.getInterfaes();
             for (Expression identifier : interfaces) {
                 String ifaceName = CodeUtils.extractUnqualifiedName(identifier);
-                Collection<IndexedFunction> superMethods = request.index.getAllMethods(
+                Collection<IndexedClassMember<IndexedFunction>> superMethods = request.index.getAllMethods(
                         request.result, ifaceName, request.prefix,
                         QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-                for (IndexedFunction ifaceMeth : superMethods) {
+                for (IndexedClassMember<IndexedFunction> classMember : superMethods) {
+                    IndexedFunction ifaceMeth = classMember.getMember();
                     if (ifaceMeth.getName().startsWith(request.prefix) && !ifaceMeth.isFinal() && !methodNames.contains(ifaceMeth.getName())) {
                         for (int i = 0; i <= ifaceMeth.getOptionalArgs().length; i++) {
                             methodNames.add(ifaceMeth.getName());
@@ -739,7 +742,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         continue;
                     }
                     Collection<IndexedFunction> methods = includeInherited ?
-                        request.index.getAllMethods(request.result, tokenType, request.prefix, nameKind, attrMask) :
+                        PHPIndex.toMembers(request.index.getAllMethods(request.result, tokenType, request.prefix, nameKind, attrMask)) :
                         request.index.getMethods(request.result, tokenType, request.prefix, nameKind, attrMask);
 
                     for (IndexedFunction method : methods){
@@ -755,7 +758,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
                             ? request.prefix.substring(1) : request.prefix;
                     Collection<IndexedConstant> properties = includeInherited ?
-                        request.index.getAllFields(request.result, tokenType, prefix, nameKind, attrMask) :
+                        PHPIndex.toMembers(request.index.getAllFields(request.result, tokenType, prefix, nameKind, attrMask)) :
                         request.index.getFields(request.result, tokenType, prefix, nameKind, attrMask);
 
                     for (IndexedConstant prop : properties){
@@ -771,9 +774,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
 
                     if (staticContext) {
-                        Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
-                                request.result, tokenType, request.prefix, nameKind);
-                        for (IndexedConstant constant : classConstants) {
+                        Collection<IndexedClassMember<IndexedConstant>> allClassConstants = request.index.getAllClassConstants(request.result, tokenType, request.prefix, nameKind);
+                        for (IndexedClassMember<IndexedConstant> indexedClassMember : allClassConstants) {
+                            IndexedConstant constant = indexedClassMember.getMember();
                             proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));
                         }
                     }
