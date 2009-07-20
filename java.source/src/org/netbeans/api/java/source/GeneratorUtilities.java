@@ -67,6 +67,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -300,14 +301,21 @@ public final class GeneratorUtilities {
         Iterator<? extends VariableElement> formArgNames = method.getParameters().iterator();
         Iterator<? extends TypeMirror> formArgTypes = et.getParameterTypes().iterator();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        Set<String> used = null;
         while (formArgNames.hasNext() && formArgTypes.hasNext()) {
             VariableElement formArgName = formArgNames.next();
             TypeMirror formArgType = formArgTypes.next();
+            String paramName = formArgName.getSimpleName().toString();
+            if (paramName.startsWith("arg")) {
+                if (used == null) used = new HashSet<String>();
+                String typeName = formArgType.toString();
+                paramName = SourceUtils.generateReadableParameterName(typeName, used);
+            }
             if (isVarArgs && !formArgNames.hasNext()) {
                 parameterModifiers = make.Modifiers(1L << 34,
                         Collections.<AnnotationTree>emptyList());
             }
-            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
+            params.add(make.Variable(parameterModifiers, paramName, make.Type(formArgType), null));
         }
 
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
@@ -536,8 +544,18 @@ public final class GeneratorUtilities {
             body = make.Block(blockStatements, false);
         } else {
             List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+            Set<String> used = null;
             for (VariableElement ve : element.getParameters()) {
-                arguments.add(make.Identifier(ve.getSimpleName()));
+                String name;
+                if (ve.getSimpleName().toString().startsWith("arg")) { //NOI18N
+                    if (used == null) {
+                        used = new HashSet<String>();
+                    }
+                    name = SourceUtils.generateReadableParameterName(ve.asType().toString(), used);
+                } else {
+                    name = ve.getSimpleName().toString();
+                }
+                arguments.add(make.Identifier(name));
             }
             MethodInvocationTree inv = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("super"), element.getSimpleName()), arguments); //NOI18N
             StatementTree statement = copy.getTypes().getNoType(TypeKind.VOID) == element.getReturnType() ?
