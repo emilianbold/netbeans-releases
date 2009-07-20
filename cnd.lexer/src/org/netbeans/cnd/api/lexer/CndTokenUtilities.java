@@ -212,6 +212,7 @@ public class CndTokenUtilities {
                 case WHITESPACE:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                 case LINE_COMMENT:
                 case ESCAPED_LINE:
                 case ESCAPED_WHITESPACE:
