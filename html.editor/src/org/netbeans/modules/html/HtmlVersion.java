@@ -37,34 +37,68 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.dtd;
+package org.netbeans.modules.html;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 /**
  *
  * @author marekfukala
  */
-public class Utils {
+public enum HtmlVersion {
 
-    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
+    UNKNOWN(new String[]{}),
 
-    public static final String XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
-        
-    private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        XHTML_STRINCT_PUBLIC_ID,
-        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-        "-//W3C//DTD XHTML 1.0 Frameset//EN"});
+    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}),
 
-     public static boolean isXHTMLPublicId(String publicId) {
-        return XHTML_PUBLIC_IDS.contains(publicId);
+    HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN",
+                        "-//W3C//DTD HTML 4.0 Transitional//EN",
+                        "-//W3C//DTD HTML 4.0 Frameset//EN"}),
+
+    HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN",
+                        "-//W3C//DTD HTML 4.01 Transitional//EN",
+                        "-//W3C//DTD HTML 4.01 Frameset//EN"}),
+
+    XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN",
+                        "-//W3C//DTD XHTML 1.0 Transitional//EN",
+                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "http://www.w3.org/1999/xhtml", true);
+
+    //TODO Add XHTML1.1, XHTML 2.0 and HTML 5 support
+
+    public static HtmlVersion findHtmlVersion(String publicId) {
+        for(HtmlVersion version : HtmlVersion.values()) {
+            if(version.getPublicIDs().contains(publicId)) {
+                return version;
+            }
+        }
+        return UNKNOWN;
     }
 
-     //XXX hack - resolve the namespaces propertly!
-    public static boolean isXhtmlNs(String namespace) {
-        return namespace == null ? true : namespace.equals(XHTML_NAMESPACE);
+    private final Collection<String> publicIDs;
+    private final String defaultNamespace;
+    private boolean isXhtml;
+
+    private HtmlVersion(String[] publicIDs) {
+        this(publicIDs, null, false);
     }
 
+    private HtmlVersion(String[] publicIDs, String defaultNamespace, boolean isXhtml) {
+        this.publicIDs = Arrays.asList(publicIDs);
+        this.defaultNamespace = defaultNamespace;
+        this.isXhtml = isXhtml;
+    }
+
+    public Collection<String> getPublicIDs() {
+        return this.publicIDs;
+    }
+
+    public String getDefaultNamespace() {
+        return this.defaultNamespace;
+    }
+
+    public boolean isXhtml() {
+        return this.isXhtml;
+    }
 
 }
