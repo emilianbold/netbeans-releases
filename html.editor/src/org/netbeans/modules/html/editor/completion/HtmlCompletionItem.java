@@ -339,14 +339,14 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return super.getSortPriority() + (possible ? -1 : 0);
+            return super.getSortPriority() + (possible ? -10 : 0);
         }
 
         @Override
         protected String getLeftHtmlText() {
             return possible ? 
-                "<b><font color=#0000ff>&lt;" + getItemText() + "&gt;</font></b>" :
-                "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>";
+                "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" : //NOI18N
+                "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
         }
     }
 
@@ -356,11 +356,11 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class EndTag extends HtmlCompletionItem {
  
         public enum Type {
-            DEFAULT("0000ff", false, DEFAULT_SORT_PRIORITY),
+            DEFAULT(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
             OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
-            OPTIONAL_MISSING(hexColorCode(Color.GRAY), true, DEFAULT_SORT_PRIORITY),
-            REQUIRED_EXISTING("0000ff", false, DEFAULT_SORT_PRIORITY),
-            REQUIRED_MISSING("0000ff", true, DEFAULT_SORT_PRIORITY - 1); //NOI18N
+            OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
+            REQUIRED_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
+            REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
                     
             private String colorCode;
             private boolean bold;
@@ -391,7 +391,7 @@ public class HtmlCompletionItem implements CompletionItem {
                 int zeros = orderIndex > 100 ? 0 : orderIndex > 10 ? 1 : 2;
                 StringBuffer sb = new StringBuffer();
                 for (int i = 0; i < zeros; i++) {
-                    sb.append('0');
+                    sb.append('0'); //NOI18N
                 }
                 sb.append("" + orderIndex);
                 return sb;
@@ -400,7 +400,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return "</" + getItemText() + ">";
+            return "</" + getItemText() + ">"; //NOI18N
         }
 
         @Override
@@ -410,9 +410,9 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return (type.bold ? "<b>" : "") +
-                    "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" +
-                    (type.bold ? "</b>" : "");
+            return (type.bold ? "<b>" : "") + //NOI18N
+                    "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" + //NOI18N
+                    (type.bold ? "</b>" : ""); //NOI18N
         }
     }
 
@@ -448,25 +448,25 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return "&" + getItemText() + ";";
+            return "&" + getItemText() + ";"; //NOI18N
         }
 
         @Override
         protected String getLeftHtmlText() {
-            return "<b>&amp;" + escape(getItemText()) + ";</b>";
+            return "<b>&amp;" + escape(getItemText()) + ";</b>"; //NOI18N
         }
 
         @Override
         protected String getRightHtmlText() {
             String strVal;
-            if (value == '>') {
-                strVal = "&gt;";
-            } else if (value == '<') {
-                strVal = "&lt;";
+            if (value == '>') { //NOI18N
+                strVal = "&gt;"; //NOI18N
+            } else if (value == '<') { //NOI18N
+                strVal = "&lt;"; //NOI18N
             } else {
                 strVal = Character.toString(value);
             }
-            return "<b><font color=#990000>" + strVal + "</font></b>";
+            return "<b><font color=#990000>" + strVal + "</font></b>"; //NOI18N
         }
     }
 
@@ -482,6 +482,8 @@ public class HtmlCompletionItem implements CompletionItem {
 
         private boolean required;
 
+        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+
         public Attribute(String value, int offset, boolean required, String helpId) {
             super(value, offset, helpId);
             this.required = required;
@@ -489,7 +491,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return getItemText() + "=\"\"";
+            return getItemText() + "=\"\""; //NOI18N
         }
 
         @Override
@@ -499,15 +501,17 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return (required ? "<b>" : "") +
-                    "<font color=#" + hexColorCode(Color.green.darker()) + ">" + getItemText() + "</font>" +
-                    (required ? "</b>" : "");
+            return (required ? "<b>" : "") + //NOI18N
+                    "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
+                    (required ? "</b>" : ""); //NOI18N
         }
     }
 
     public static class BooleanAttribute extends HtmlCompletionItem {
 
         private boolean required;
+
+        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
 
         public BooleanAttribute(String value, int offset, boolean required, String helpId) {
             super(value, offset, helpId);
@@ -516,9 +520,9 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return (required ? "<b>" : "") +
-                    "<font color=#" + hexColorCode(Color.green.darker()) + ">" + getItemText() + "</font>" +
-                    (required ? "</b>" : "");
+            return (required ? "<b>" : "") + //NOI18N
+                    "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
+                    (required ? "</b>" : ""); //NOI18N
         }
     }
 
