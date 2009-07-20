@@ -67,6 +67,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.omg.CORBA.INITIALIZE;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -77,6 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -93,14 +95,22 @@ public class ImportManager extends java.awt.Panel {
     private List<UpdateElement> toImport = Collections.emptyList ();
     private Notification currentNotification = null;
     private JButton bImport;
-    private JButton bNo;
+    private JButton bNo;    
 
     /** Creates new form ImportManager */
     public ImportManager (File src, File dest, PluginImporter importer) {
         this.srcCluster = src;
         this.dest = dest;
         this.importer = importer;
+        initialize();
+        INSTANCE = this;
+    }
 
+    public PluginImporter getPluginImporter() {
+        return importer;
+    }
+
+    private void initialize() {
         toInstall = new ArrayList<UpdateElement> (importer.getPluginsAvailableToInstall ());
         Collections.sort (toInstall, new Comparator<UpdateElement> () {
             public int compare (UpdateElement o1, UpdateElement o2) {
@@ -115,7 +125,7 @@ public class ImportManager extends java.awt.Panel {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
         });
-        checkedToImport = new ArrayList<Boolean> (Collections.nCopies (importer.getPluginsToImport ().size (), Boolean.FALSE));
+        checkedToImport = new ArrayList<Boolean> (Collections.nCopies (toImport.size (), Boolean.FALSE));
 
         initComponents();
 
@@ -123,14 +133,12 @@ public class ImportManager extends java.awt.Panel {
         lBroken.setEnabled (!importer.getBrokenPlugins ().isEmpty ());
         if (! importer.getBrokenPlugins ().isEmpty ()) {
             tpBroken.setText (importer.getBrokenPlugins ().toString ());
-        }
-
-        refreshUI ();
-        INSTANCE = this;
+        }        
+        refreshUI ();        
     }
 
     public static ImportManager getInstance () {
-        return INSTANCE;
+       return INSTANCE;
     }
 
     public void notifyAvailable () {
@@ -169,6 +177,9 @@ public class ImportManager extends java.awt.Panel {
 
         public void actionPerformed(ActionEvent e) {
             ImportManager ui = ImportManager.getInstance ();
+            ui.getPluginImporter().reinspect();
+            ui.initialize();
+            
             ui.attachButtons (bImportButton, bNoButton);
             DialogDescriptor dd = new DialogDescriptor (
                     ui,
@@ -259,7 +270,11 @@ public class ImportManager extends java.awt.Panel {
                     if (checkedToInstall.get (toInstall.indexOf (el))) {
                         OperationContainer.OperationInfo<InstallSupport> info = oc.add (el);
                         if (info != null) {
-                            oc.add (info.getRequiredElements ());
+                            for(UpdateElement required : info.getRequiredElements ()) {
+                                if(!required.getUpdateUnit().isPending()) {
+                                    oc.add (required);
+                                }
+                            }
                         }
                     }
                 }
@@ -469,11 +484,11 @@ public class ImportManager extends java.awt.Panel {
     // End of variables declaration//GEN-END:variables
 
     private void refreshUI () {
-        lToImport.setEnabled (importer.getPluginsToImport ().size () > 0);
-        tToImport.setEnabled (importer.getPluginsToImport ().size () > 0);
+        lToImport.setEnabled (toImport.size () > 0);
+        tToImport.setEnabled (toImport.size () > 0);
 
-        lToInstall.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
-        tToInstall.setEnabled (importer.getPluginsAvailableToInstall ().size () > 0);
+        lToInstall.setEnabled (toInstall.size () > 0);
+        tToInstall.setEnabled (toInstall.size () > 0);
 
         TableColumn activeColumn = tToImport.getColumnModel ().getColumn (0);
         activeColumn.setMaxWidth (tToImport.getTableHeader ().getHeaderRect (0).width);
