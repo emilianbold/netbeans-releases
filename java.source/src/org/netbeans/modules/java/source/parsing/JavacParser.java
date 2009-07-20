@@ -493,9 +493,15 @@ public class JavacParser extends Parser {
                 long start = System.currentTimeMillis();
                 // XXX - this might be with wrong encoding
                 Iterable<? extends CompilationUnitTree> trees = currentInfo.getJavacTask().parse(new JavaFileObject[] {currentInfo.jfo});
-                assert trees != null : "Did not parse anything";        //NOI18N
+                if (trees == null) {
+                    LOGGER.info( "Did not parse anything for: " + currentInfo.jfo.toUri()); //NOI18N
+                    return Phase.MODIFIED;
+                }
                 Iterator<? extends CompilationUnitTree> it = trees.iterator();
-                assert it.hasNext();
+                if (!it.hasNext()) {
+                    LOGGER.info( "Did not parse anything for: " + currentInfo.jfo.toUri()); //NOI18N
+                    return Phase.MODIFIED;
+                }
                 CompilationUnitTree unit = it.next();
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
