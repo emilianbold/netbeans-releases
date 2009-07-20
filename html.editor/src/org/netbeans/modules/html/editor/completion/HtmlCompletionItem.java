@@ -345,7 +345,7 @@ public class HtmlCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return possible ? 
-                "<b><font color=#0000ff>&lt;" + getItemText() + "&gt;</font></b>" :
+                "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" :
                 "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>";
         }
     }
@@ -356,11 +356,11 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class EndTag extends HtmlCompletionItem {
  
         public enum Type {
-            DEFAULT("0000ff", false, DEFAULT_SORT_PRIORITY),
+            DEFAULT(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
             OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
-            OPTIONAL_MISSING(hexColorCode(Color.GRAY), true, DEFAULT_SORT_PRIORITY),
-            REQUIRED_EXISTING("0000ff", false, DEFAULT_SORT_PRIORITY),
-            REQUIRED_MISSING("0000ff", true, DEFAULT_SORT_PRIORITY - 1); //NOI18N
+            OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
+            REQUIRED_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
+            REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 1); //NOI18N
                     
             private String colorCode;
             private boolean bold;
