@@ -49,11 +49,11 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -73,7 +73,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     private WizardDescriptor.Panel<WizardDescriptor>[] wizardPanels;
     private int index;
 
-    public Set instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         FileObject dir = Templates.getTargetFolder(wizard);
         FileObject template = Templates.getTemplate(wizard);
 
@@ -84,22 +84,28 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         String fname = Templates.getTargetName(wizard);
         String ext = FileUtil.getExtension(fname);
 
-        FileObject foo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(),fname);
+        FileObject foo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), fname);
         if (foo == null || !CommandUtils.isPhpFile(foo)) {
-            if (ext == null || ext.length() == 0) {
-                Templates.setTargetName(this.wizard, fname+".php");//NOI18N
+            if (!StringUtils.hasText(ext)) {
+                Templates.setTargetName(wizard, fname + ".php"); // NOI18N
                 fname = Templates.getTargetName(wizard);
                 ext = FileUtil.getExtension(fname);
-            } 
+            }
         }
-        if (ext != null && ext.length() > 0) {
-            String name = fname.substring(0, fname.length() - ext.length()-1);
-            name = name.replaceAll("\\W", "");//NOI18N
-            wizardProps.put("name", name);//NOI18N
-        }        
+        if (StringUtils.hasText(ext)) {
+            String name = fname.substring(0, fname.length() - ext.length() - 1);
+            name = name.replaceAll("\\W", ""); // NOI18N
+            wizardProps.put("name", name); // NOI18N
+
+            // #168723
+            String templateExt = FileUtil.getExtension(template.getNameExt());
+            if (StringUtils.hasText(templateExt)) {
+                Templates.setTargetName(wizard, name);
+            }
+        }
         DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
 
-        return Collections.<FileObject>singleton(createdFile.getPrimaryFile());
+        return Collections.singleton(createdFile.getPrimaryFile());
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -109,17 +115,15 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             Project project = Templates.getProject(wizard);
             assert project instanceof PhpProject;
             PhpProject phpProject = (PhpProject) project;
-            // XXX - sources directory is remembered in project
-            FileObject srcDir = getFileObject(phpProject.getHelper(), PhpProjectProperties.SRC_DIR);
+            FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
             if (srcDir != null) {
                 targetFolder = srcDir;
                 Templates.setTargetFolder(wizard, srcDir);
             }
         }
-        FileObject template = Templates.getTemplate(this.wizard);
-        String targetName = (targetFolder != null) ?
-            FileUtil.findFreeFileName(targetFolder, template.getName(), "php") : template.getName();//NOI18N 
-        Templates.setTargetName(this.wizard, targetName+".php");//NOI18N
+        FileObject template = Templates.getTemplate(wizard);
+        String targetName = targetFolder != null ? FileUtil.findFreeFileName(targetFolder, template.getName(), "php") : template.getName(); // NOI18N
+        Templates.setTargetName(wizard, targetName + ".php"); // NOI18N
         wizardPanels = getPanels();
 
         // Make sure list of steps is accurate.
@@ -206,23 +210,15 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     public void removeChangeListener(ChangeListener l) {
     }
 
-    @SuppressWarnings("unchecked") // Generic Array Creation
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project p = Templates.getProject(wizard);
         final SourceGroup[] groups = PhpProjectUtils.getSourceGroups(p);
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.createSimpleTargetChooser(p, groups);
-        FileObject template = Templates.getTemplate(wizard);
-       
-        return new WizardDescriptor.Panel[]{
+
+        @SuppressWarnings("unchecked") // Generic Array Creation
+        WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                     simpleTargetChooserPanel
                 };
-    }
-
-    private FileObject getFileObject(AntProjectHelper helper, String propname) {
-        String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
-        if (prop != null) {
-            return helper.resolveFileObject(prop);
-        }
-        return null;
+        return panels;
     }
 }

@@ -39,7 +39,10 @@
 package org.netbeans.modules.dlight.threadmap.storage;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateMapper;
 
@@ -119,7 +122,7 @@ public final class ThreadStateImpl implements ThreadState {
     }
 
     public long getTimeStamp() {
-        return TimeUnit.NANOSECONDS.toMillis(timestamp);
+        return timestamp;
     }
 
     @Override
@@ -132,5 +135,40 @@ public final class ThreadStateImpl implements ThreadState {
         buf.append("\n\tValues:"); // NOI18N
         buf.append(Arrays.toString(statePercentage));
         return buf.toString();
+    }
+
+    public MSAState getSamplingMSAState(boolean full) {
+        EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+        for (int i = 0; i < size; i++) {
+            MSAState msa = getMSAState(i, full);
+            if (msa != null) {
+                AtomicInteger value = map.get(msa);
+                if (value == null) {
+                    value = new AtomicInteger();
+                    map.put(msa, value);
+                }
+                value.addAndGet(getState(i));
+            }
+        }
+        MSAState res = null;
+        int max = 0;
+        for(Map.Entry<MSAState, AtomicInteger> entry : map.entrySet()){
+            if (entry.getValue().get() > max) {
+                max = entry.getValue().get();
+                res = entry.getKey();
+            }
+        }
+        if (res != null) {
+            return res;
+        }
+        return getMSAState(0, full);
+    }
+
+    public StackTrace getStackTrace(int index) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public StackTrace getSamplingStackTrace() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

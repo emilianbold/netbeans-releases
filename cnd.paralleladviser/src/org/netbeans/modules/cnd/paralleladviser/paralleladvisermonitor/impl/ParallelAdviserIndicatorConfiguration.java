@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
-package org.netbeans.modules.cnd.remote.sync;
-
-import java.io.File;
-import java.io.PrintWriter;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 
 /**
- * Test for ScpSyncWorker
- * @author Vladimir Kvashin
+ * Configuration for Parallel Adviser indicator.
+ *
+ * @author Nick Krasilnikov
  */
-public class ScpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public final class ParallelAdviserIndicatorConfiguration extends IndicatorConfiguration {
 
-    public ScpSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    /*package*/ static final String ID = "ParallelAdvisertIndicatorConfiguration_ID"; // NOI18N
+
+    public ParallelAdviserIndicatorConfiguration(IndicatorMetadata metadata, int position) {
+        super(metadata, position);
     }
 
     @Override
-    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, PrintWriter out, PrintWriter err) {
-        return new ScpSyncWorker(src, execEnv, out, err);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(ScpSyncWorkerTestCase.class);
+    public String getID() {
+        return ID;
     }
 }

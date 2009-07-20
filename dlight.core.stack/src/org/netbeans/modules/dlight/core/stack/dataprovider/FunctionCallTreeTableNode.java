@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.core.stack.dataprovider;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.impl.TreeTableNode;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 
 /**
  *
@@ -49,18 +49,18 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
  */
 public final class FunctionCallTreeTableNode implements TreeTableNode {
 
-  private final FunctionCall deligator;
+  private final FunctionCallWithMetric deligator;
 
-  public static List<FunctionCallTreeTableNode> getFunctionCallTreeTableNodes(List<FunctionCall> list) {
+  public static List<FunctionCallTreeTableNode> getFunctionCallTreeTableNodes(List<FunctionCallWithMetric> list) {
     List<FunctionCallTreeTableNode> result = new ArrayList<FunctionCallTreeTableNode>();
-    for (FunctionCall fc : list) {
+    for (FunctionCallWithMetric fc : list) {
       result.add(new FunctionCallTreeTableNode(fc));
     }
     return result;
   }
 
-  public static List<FunctionCall> getFunctionCalls(List<FunctionCallTreeTableNode> list) {
-    List<FunctionCall> result = new ArrayList<FunctionCall>();
+  public static List<FunctionCallWithMetric> getFunctionCalls(List<FunctionCallTreeTableNode> list) {
+    List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
     for (FunctionCallTreeTableNode fcNode : list) {
       result.add(fcNode.getDeligator());
     }
@@ -68,27 +68,27 @@ public final class FunctionCallTreeTableNode implements TreeTableNode {
   }
 
 
-  public static FunctionCallTreeTableNode[] getFunctionCallTreeTableNodes(FunctionCall[] list) {
+  public static FunctionCallTreeTableNode[] getFunctionCallTreeTableNodes(FunctionCallWithMetric[] list) {
     List<FunctionCallTreeTableNode> result = new ArrayList<FunctionCallTreeTableNode>();
-    for (FunctionCall fc : list) {
+    for (FunctionCallWithMetric fc : list) {
       result.add(new FunctionCallTreeTableNode(fc));
     }
     return result.toArray(new FunctionCallTreeTableNode[0]);
   }
 
- public static FunctionCall[] getFunctionCalls(FunctionCallTreeTableNode[] list) {
-    List<FunctionCall> result = new ArrayList<FunctionCall>();
+ public static FunctionCallWithMetric[] getFunctionCalls(FunctionCallTreeTableNode[] list) {
+    List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
     for (FunctionCallTreeTableNode fcNode : list) {
       result.add(fcNode.getDeligator());
     }
-    return result.toArray(new FunctionCall[0]);
+    return result.toArray(new FunctionCallWithMetric[0]);
   }
 
-  public FunctionCallTreeTableNode(FunctionCall functionCall) {
+  public FunctionCallTreeTableNode(FunctionCallWithMetric functionCall) {
     deligator = functionCall;
   }
 
-  public FunctionCall getDeligator() {
+  public FunctionCallWithMetric getDeligator() {
     return deligator;
   }
 

@@ -357,7 +357,7 @@ public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTest
         String createdFolder = dataPath+"/"+packageName;
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
-            public void executionStarted() {
+            public void executionStarted(int pid) {
             }
             public void executionFinished(int rc) {
                 finish.set(true);

@@ -42,6 +42,6 @@ package org.netbeans.modules.dlight.perfan.dataprovider;
 import org.netbeans.modules.dlight.core.stack.api.*;
 import java.util.Comparator;
 
-public interface FunctionCallComparator extends Comparator<FunctionCall> {
+public interface FunctionCallComparator extends Comparator<FunctionCallWithMetric> {
 
 }

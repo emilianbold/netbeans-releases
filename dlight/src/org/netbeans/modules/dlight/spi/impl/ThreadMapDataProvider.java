@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.spi.impl;
 
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
@@ -51,5 +52,8 @@ public interface ThreadMapDataProvider extends VisualizerDataProvider {
      * @param metadata define needed time selection and aggregation.
      * @return list threads data about all threads that alive in selected time period.
      */
-    public ThreadMapData queryData(ThreadMapDataQuery query);
+    ThreadMapData queryData(ThreadMapDataQuery query);
+
+    void addListener(DLightTargetListener l);
+
 }

@@ -284,10 +284,12 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Show the panel with framework commands with possibility to run any.
-     * @return {@link CommandDescriptor} that describes the selected task or <code>null</code> if none task is selected.
+     * @param runCommandListener {@link RunCommandListener listener} that is run when command is invoked.
+     * @since 1.5
      */
-    public CommandDescriptor selectCommand() {
-        return FrameworkCommandChooser.select(phpModule, getFrameworkName());
+    public void runCommand(RunCommandListener runCommandListener) {
+        Parameters.notNull("runCommandListener", runCommandListener);
+        FrameworkCommandChooser.open(phpModule, getFrameworkName(), runCommandListener);
     }
 
     private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
@@ -383,7 +385,7 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Descriptor for the selected framework command.
-     * @see FrameworkCommandChooser#select(PhpModule)
+     * @see FrameworkCommandChooser#open(PhpModule, String, FrameworkCommandSupport.RunCommandListener)
      */
     public static final class CommandDescriptor {
 
@@ -411,5 +413,20 @@ public abstract class FrameworkCommandSupport {
         public boolean isDebug() {
             return debug;
         }
+    }
+
+    /**
+     * Listener that is run when a command is invoked.
+     * @since 1.5
+     */
+    public static interface RunCommandListener {
+
+        /**
+         * Called when a command is to be run.
+         * <p>
+         * This method is run in AWT thread.
+         * @param commandDescriptor {@link CommandDescriptor descriptor} of a command to be run.
+         */
+        void runCommand(CommandDescriptor commandDescriptor);
     }
 }

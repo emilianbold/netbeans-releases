@@ -281,9 +281,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
-    public void executionStarted() {
+    public void executionStarted(int pid) {
         for (ExecutionListener l : listeners) {
-            l.executionStarted();
+            l.executionStarted(pid);
         }
     }
 

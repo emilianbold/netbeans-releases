@@ -66,7 +66,6 @@ public final class MSAParser extends DtraceParser {
             MSAState.SleepingOther.toString(),
             MSAState.WaitingCPU.toString(),
             MSAState.ThreadStopped.toString());
-
     private static final TimeUnit dtraceTimeUnits = TimeUnit.NANOSECONDS;
     // Thread ID to states map
     private final HashMap<Integer, int[]> accumulatedData = new HashMap<Integer, int[]>();
@@ -108,16 +107,23 @@ public final class MSAParser extends DtraceParser {
         int[] threadStates = accumulatedData.get(threadID);
 
         int total = 0;
+        //                     r_u    r_s  r_o  utf  udf   kf  wcpu st ulock sleep sobjs...
+        // 0 1 2                3      4    5    6    7    8    9   10   11   12   13   14   15  16    17   18   19
+        // 2 2 540636781605515  999    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
+        // 2 1 540636800605980    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0    0    0
+        // 2 3 540636802604857    0    0    0    0    0    0    0    0    0    0    0    0 1000    0    0    0    0
 
         for (int i = 3; i < chunks.length; i++) {
             int state = Integer.parseInt(chunks[i]);
-            if (i > 13 && state > 0) {
-                // Add all locks to collectedStates collectedStates.SleepingUserLock
-                // TODO: index
+
+            if (i == 13 && state > 0) {
                 threadStates[11] += state;
+            } else if (i > 13 && state > 0) {
+                threadStates[12] += state;
             } else {
                 threadStates[i] += state;
             }
+
             total += state;
         }
 
