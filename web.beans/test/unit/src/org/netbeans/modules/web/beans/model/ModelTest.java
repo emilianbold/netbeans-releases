@@ -105,6 +105,7 @@ public class ModelTest extends CommonTestCase {
                 " foo.Generic<? extends Thread> myThread; "+
                 "@foo.CustomBinding(value=\"c\")" +
                 " foo.Generic<MyThread> myGen; "+
+                " @foo.CustomBinding(value=\"e\") Thread myFieldB; "+
                 " void method( Object param ){}"+
                 "}");
         
@@ -128,8 +129,12 @@ public class ModelTest extends CommonTestCase {
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
                 "package foo; " +
+                "import javax.enterprise.inject.*; "+
                 "@foo.CustomBinding(\"c\") "+
-                "public class Generic<T extends foo.MyThread>  {}" );
+                "public class Generic<T extends foo.MyThread>  {" +
+                " @Produces @foo.CustomBinding(value=\"e\") foo.MyThread getThread(){" +
+                " return null; } "+
+                "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyThread.java",
                 "package foo; " +
@@ -172,11 +177,15 @@ public class ModelTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myIndex")){
                         checkIndex( element , model);
                     }
+                    else if ( element.getSimpleName().contentEquals("myFieldB")){
+                        checkB( element , model);
+                    }
                 }
                 
                 assert names.contains("myFieldA");
                 assert names.contains("myGen");
                 assert names.contains("myIndex");
+                assert names.contains("myFieldB");
                 
                 return null;
             }
@@ -184,6 +193,22 @@ public class ModelTest extends CommonTestCase {
         });
     }
     
+    protected void checkB( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myFieldB");
+            Element produce = model.getInjectable(element);
+            
+            assertNotNull( produce );
+            assertTrue( "Found injectable should be a method, but found " +
+                    produce.getKind(), 
+                    produce instanceof ExecutableElement);
+            assertEquals( "getThread", ((ExecutableElement)produce).getSimpleName().toString());
+        }   
+        catch(WebBeansModelException e ){
+            assert false : "Unexpected exception " +e.getClass()+ " appears"; 
+        }
+    }
+
     private void checkA( VariableElement element, WebBeansModel model ) {
         try {
             inform("test field myFieldA");
@@ -212,7 +237,8 @@ public class ModelTest extends CommonTestCase {
             inform("test field myGen");
             Element injectable = model.getInjectable(element);
             assertNotNull( injectable );
-            assertTrue ( "Found injectable should be a class definition" , 
+            assertTrue ( "Found injectable should be a class definition, " +
+            		"but found :"  +injectable.getKind(), 
                     injectable instanceof TypeElement );
             assertEquals( "foo.Generic", ((TypeElement)injectable).
                     getQualifiedName().toString());
@@ -227,7 +253,8 @@ public class ModelTest extends CommonTestCase {
             inform("test field myIndex");
             Element injectable = model.getInjectable(element);
             assertNotNull( injectable );
-            assertTrue ( "Found injectable should be a producer field" , 
+            assertTrue ( "Found injectable should be a producer field, " +
+            		"but found: " +injectable.getKind() , 
                     injectable instanceof VariableElement );
             
             assertEquals( "productionField", injectable.getSimpleName().toString());

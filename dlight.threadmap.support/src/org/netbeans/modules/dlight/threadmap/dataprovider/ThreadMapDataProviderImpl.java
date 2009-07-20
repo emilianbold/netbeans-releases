@@ -38,15 +38,22 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
+import org.openide.util.WeakSet;
 
-public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
+public class ThreadMapDataProviderImpl implements ThreadMapDataProvider, DLightTargetListener {
 
     private final ThreadMapDataStorage storage = ThreadMapDataStorage.getInstance();
+    private final Set<DLightTargetListener> listeners = new WeakSet<DLightTargetListener>();
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
     }
@@ -57,5 +64,21 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         }
 
         return storage.queryThreadMapData(query);
+    }
+
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        List<DLightTargetListener> copy;
+        synchronized (listeners) {
+            copy = new ArrayList<DLightTargetListener>(listeners);
+        }
+        for (DLightTargetListener l : copy) {
+            l.targetStateChanged(event);
+        }
+    }
+
+    public void addListener(DLightTargetListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 }

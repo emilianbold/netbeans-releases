@@ -89,7 +89,9 @@ final class RemoteOperationFactory extends FileOperationFactory {
                     try {
                         if (transferFiles.size() > 0) {
                             TransferInfo transferInfo = client.upload(sourceRoot, transferFiles);
-                            return transferInfo.hasAnyTransfered();
+                            return !transferInfo.hasAnyFailed()
+                                    && !transferInfo.hasAnyPartiallyFailed()
+                                    && !transferInfo.hasAnyIgnored();
                         }
                     } finally {
                         client.disconnect();
