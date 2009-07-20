@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -795,6 +796,11 @@ public final class JavaSource {
         public CompilationInfoImpl getCompilationInfoImpl(CompilationInfo info) {
             assert info != null;
             return info.impl;
+        }
+
+        @Override
+        public @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used) {
+            return SourceUtils.generateReadableParameterName(typeName, used);
         }
     }                                                
 }

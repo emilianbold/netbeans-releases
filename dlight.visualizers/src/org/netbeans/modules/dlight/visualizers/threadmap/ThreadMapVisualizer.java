@@ -39,23 +39,22 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
+import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 
@@ -64,9 +63,8 @@ import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfigurat
  * @author Alexander Simon
  */
 public class ThreadMapVisualizer extends JPanel implements
-        Visualizer<ThreadMapVisualizerConfiguration>, ComponentListener, ActionListener, DLightTargetListener {
+        Visualizer<ThreadMapVisualizerConfiguration>, ActionListener, SessionStateListener {
 
-    private boolean isShown = true;
     private boolean isEmptyContent;
 
     private static final class QueryLock {
@@ -83,14 +81,14 @@ public class ThreadMapVisualizer extends JPanel implements
     private final JPanel threadsTimelinePanelContainer;
     private final ThreadsPanel threadsPanel;
     private final ThreadsDataManager dataManager;
-    private Future future;
     private long startTimeStamp;
+    private TimerBasedVisualizerSupport timerSupport;
+    private DLightSession session;
 
     public ThreadMapVisualizer(ThreadMapDataProvider provider, ThreadMapVisualizerConfiguration configuration) {
 
         this.provider = provider;
         this.configuration = configuration;
-        provider.addListener(this);
 
         //for (Column col : configuration.getMetadata().getColumns()) {
         //    columnNames.add(col.getColumnUName());
@@ -112,6 +110,7 @@ public class ThreadMapVisualizer extends JPanel implements
                 threadsPanel.requestFocus();
             }
         };
+
         threadsTimelinePanelContainer.setLayout(new BorderLayout());
         threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
         threadsPanel.addThreadsMonitoringActionListener(this);
@@ -120,41 +119,30 @@ public class ThreadMapVisualizer extends JPanel implements
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
         JPanel callStack = new JPanel();
         add(callStack, BorderLayout.SOUTH);
-        startup();
+    }
 
+    public void init() {
+        timerSupport = new TimerBasedVisualizerSupport(this, new TimeDuration(TimeUnit.SECONDS, 1));
+        startup();
     }
 
     public void startup() {
-        if (future != null && !future.isCancelled()) {
-            return;
-        }
-        future = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
-
-            public void run() {
-                refresh();
+        if (session != null) {
+            switch (session.getState()) {
+                case RUNNING:
+                case STARTING:
+                    timerSupport.start();
+                    break;
+                default:
+                    timerSupport.stop();
             }
-        }, 1, TimeUnit.SECONDS, "ThreadMapVisualizer Async data from provider load for " + configuration.getID()); // NOI18N
+        }
     }
 
     public void shutdown() {
-        future.cancel(false);
+        timerSupport.stop();
         dataManager.reset();
         startTimeStamp = 0;
-    }
-
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case FAILED:
-            case DONE:
-            case STOPPED:
-            case TERMINATED:
-                shutdown();
-                break;
-            case INIT:
-            case RUNNING:
-            case STARTING:
-                break;
-        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -193,28 +181,6 @@ public class ThreadMapVisualizer extends JPanel implements
                 t.printStackTrace();
             }
         }
-    }
-
-    //implements ComponentListener
-    public void componentResized(ComponentEvent e) {
-    }
-
-    public void componentMoved(ComponentEvent e) {
-    }
-
-    public void componentShown(ComponentEvent e) {
-        if (isShown) {
-            return;
-        }
-        isShown = isShowing();
-        if (isShown) {
-            //we should change explorerManager
-            refresh();
-        }
-    }
-
-    public void componentHidden(ComponentEvent e) {
-        isShown = false;
     }
 
     private void setContent(boolean isEmpty) {
@@ -258,6 +224,22 @@ public class ThreadMapVisualizer extends JPanel implements
             dataManager.processData(MonitoredData.getMonitoredData(mapData));
             startTimeStamp = dataManager.getEndTime();
             setNonEmptyContent();
+        }
+    }
+
+    public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
+        this.session = session;
+
+        switch (newState) {
+            case CLOSED:
+            case PAUSED:
+            case ANALYZE:
+                timerSupport.stop();
+                break;
+            case RUNNING:
+            case STARTING:
+                timerSupport.start();
+                break;
         }
     }
 }

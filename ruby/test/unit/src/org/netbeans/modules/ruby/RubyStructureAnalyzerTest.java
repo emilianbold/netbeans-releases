@@ -139,6 +139,10 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         checkAttributes("testfiles/resolv.rb");
     }
 
+    public void testAttributes2() throws Exception {
+        checkAttributes("testfiles/attr_declaration.rb");
+    }
+
     public void testFolds1() throws Exception {
         checkFolds("testfiles/resolv.rb");
     }
