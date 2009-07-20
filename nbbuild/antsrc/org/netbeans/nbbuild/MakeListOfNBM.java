@@ -154,6 +154,9 @@ public class MakeListOfNBM extends Task {
         if (codename == null) {
             codename = attr.getValue("Bundle-SymbolicName"); // NOI18N
             versionTag = "Bundle-Version"; // NOI18N
+            if (codename != null) {
+                codename = codename.replace('-', '_');
+            }
         }
         if (codename == null) {
             throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());

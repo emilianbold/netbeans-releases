@@ -55,12 +55,12 @@ final class NetigsoModule extends Module {
 
     @Override
     public String getCodeName() {
-        return bundle.getSymbolicName();
+        return getCodeNameBase();
     }
 
     @Override
     public String getCodeNameBase() {
-        return bundle.getSymbolicName();
+        return bundle.getSymbolicName().replace('-', '_');
     }
 
     @Override

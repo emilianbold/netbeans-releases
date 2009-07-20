@@ -1782,7 +1782,7 @@ final class ModuleList implements Stamps.Updater {
                             is.close();
                         }
                     }
-                    if (!name.equals(props.get("name").toString().replace('-', '.'))) {
+                    if (!name.equals(props.get("name"))) {
                         throw new IOException("Code name mismatch: " + name + " vs. " + props.get("name")); // NOI18N
                     }
                     Boolean enabledB = (Boolean) props.get("enabled"); // NOI18N
