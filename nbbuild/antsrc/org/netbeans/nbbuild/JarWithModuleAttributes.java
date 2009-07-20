@@ -90,6 +90,7 @@ public class JarWithModuleAttributes extends Jar {
         if (codename == null) {
             return null;
         }
+        codename = codename.replace('-', '_');
         if (osgi != null) {
             osgi[0] = true;
         }
