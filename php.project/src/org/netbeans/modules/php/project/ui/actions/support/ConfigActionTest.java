@@ -265,7 +265,8 @@ class ConfigActionTest extends ConfigAction {
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
-            List<String> generatedFiles = new ArrayList<String>(2);
+            String testName = info.testName;
+            List<String> generatedFiles = new ArrayList<String>(3);
             File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
             if (bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
@@ -278,6 +279,13 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.PARAM_CONFIGURATION)
                         .addArgument(configuration.getAbsolutePath());
             }
+            if (testName == CWD) {
+                // provide NetBeans suite
+                File suite = phpUnit.getSuiteFile(project, generatedFiles);
+                if (suite != null) {
+                    testName = suite.getAbsolutePath();
+                }
+            }
             PhpUnit.informAboutGeneratedFiles(generatedFiles);
 
             if (isCoverageEnabled()) {
@@ -286,7 +294,7 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(info.testName);
+                    .addArgument(testName);
             return externalProcessBuilder;
         }
 
