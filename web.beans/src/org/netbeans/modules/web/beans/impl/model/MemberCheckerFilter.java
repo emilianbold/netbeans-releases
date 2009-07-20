@@ -108,7 +108,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
     }
     
     private void checkMember( ExecutableElement exec, AnnotationValue value,
-                Set<? extends Element> elementsWithBindings )
+                Set<T> elementsWithBindings )
     {
         Element annotationElement = exec.getEnclosingElement();
         if ( !(  annotationElement instanceof TypeElement ) ){
@@ -135,7 +135,13 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                                 annotationName);
                     }
                 }
-                // TODO : care about specializes for method ( probably fields )
+                /*
+                 * If element is method or field then it could specialize
+                 * other production element. But in this case original invoke
+                 * logic will add specialize elements after typesafe resolution
+                 * filtering. So there is no need to care here about 
+                 * check overridden method which could be specialized by the element.  
+                 */
             }
         }
     }
