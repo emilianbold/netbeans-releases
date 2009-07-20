@@ -43,11 +43,10 @@ package org.netbeans.api.java.source;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,22 +60,15 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -452,6 +444,68 @@ public class SourceUtilsTest extends NbTestCase {
                 instance = new SFBQImpl ();
             }
             return instance;
+        }
+    }
+
+    public void testGenerateReadableParameterName() throws Exception {
+        System.out.println("testGenerateReadableParameterName");
+        Match m = new Match("java.lang.Object", "o");
+        m.match("java.lang.Runnable", "r")
+        .match("java.awt.event.ActionListener,java.awt.event.ActionListener","al,al1")
+        .match("java.io.InputStream", "in")
+        .match("java.io.OutputStream","out")
+        .match("java.io.ByteArrayOutputStream","stream")
+        .match("missingthing.Foodbar", "fdbr")
+        .match("somepackage.FillUpNoKnownMessageEverywhere", "funkme")
+        .match("java.lang.Class","type")
+        .match("java.lang.Class<T>", "type")
+        .match("org.openide.util.Lookup","lkp")
+        .match("sun.awt.KeyboardFocusManagerPeerImpl", "kfmpi")
+        .match("com.foo.BigInterface", "bi")
+        .match("java.util.concurrent.Callable<Runnable>", "clbl")
+        .match("int[]", "ints")
+        .match("short", "s")
+        .match("java.lang.Integer...", "intgrs")
+        .match("java.awt.Component[]", "cmpnts")
+        .match("int,java.lang.Runnable", "i,r")
+        .match("java.lang.Runnable[]", "rs")
+        .match("com.foo.Classwithanannoyinglylongname", "c")
+        .match("com.foo.Classwithanannoyinglylongname,foo.bar.Classwithanotherannoyinglylongname", "c,c1")
+        .match("com.foo.Classwithanannoyinglylongname,foo.bar.ClasswithLongnameButshortAcronym", "c,clba")
+        .match("com.foo.ClassWithAnAnnoyinglyLongNameThatGoesOnForever", "c");
+        m.assertMatch();
+    }
+
+    private static final class Match {
+        private String[] fqns;
+        private String[] names;
+        private final Set<String> used = new HashSet<String>();
+        Match(String fqns, String names) {
+            this.fqns = fqns.split(",");
+            this.names = names.split(",");
+            assertEquals ("Test is broken: " + fqns + " vs " + names + " do " +
+                    "not have same number of elements", this.fqns.length, this.names.length);
+        }
+
+        public void assertMatch() {
+            assertTrue (this.fqns.length > 0);
+            assertTrue (this.names.length > 0);
+            for (int i = 0; i < fqns.length; i++) {
+                String fqn = fqns[i];
+                String expected = names[i];
+                String got = SourceUtils.generateReadableParameterName(fqn, used);
+                String msg = "For " + Arrays.asList(fqns) + " expected " + Arrays.asList(names);
+                assertEquals (msg, expected, got);
+            }
+            if (next != null) {
+                next.assertMatch();
+            }
+        }
+
+        private Match next;
+        public Match match(String fqns, String names) {
+            next = new Match (fqns, names);
+            return next;
         }
     }
     
