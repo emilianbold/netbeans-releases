@@ -38,34 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.xml.impl;
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
-
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
+import org.netbeans.modules.web.beans.xml.WebBeansModel;
 import org.netbeans.modules.xml.xam.AbstractModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 
+
 /**
+ * @author ads
  *
- * @author Petr Pisl, ads
  */
-public class JSFConfigModelFactory extends AbstractModelFactory<JSFConfigModel>{
+public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
     
-    /** Creates a new instance of JSFConfigModelFactory */
-    private JSFConfigModelFactory() {
+    private WebBeansModelFactory(){
     }
     
-    public static JSFConfigModelFactory getInstance(){
+    public WebBeansModelFactory getInstance(){
         return INSTANCE;
     }
-    
-    protected JSFConfigModel createModel(ModelSource source) {
-        return new JSFConfigModelImpl(source);
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.AbstractModelFactory#createModel(org.netbeans.modules.xml.xam.ModelSource)
+     */
+    @Override
+    public WebBeansModel createModel( ModelSource modelSource ) {
+        return new WebBeansModelImpl( modelSource );
     }
     
-    public JSFConfigModel getModel(ModelSource source) {
-        return (JSFConfigModel) super.getModel(source);
+    public WebBeansModel getModel(ModelSource source) {
+        return (WebBeansModel) super.getModel(source);
     }
     
-    private static final JSFConfigModelFactory INSTANCE = new JSFConfigModelFactory();
+    private static final WebBeansModelFactory INSTANCE = new WebBeansModelFactory();
+
 }

@@ -6,20 +6,20 @@
             <code-name-base>org.netbeans.modules.web.beans</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>0.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.20</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -32,11 +32,38 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>0.45</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -55,17 +82,8 @@
                         <specification-version>7.22</specification-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
-		    <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
-		    <build-prerequisite/>
-		    <compile-dependency/>
-		    <run-dependency>
-			<release-version>1</release-version>
-			<specification-version>1.4</specification-version>
-		    </run-dependency>
-		</dependency>
             </module-dependencies>
-	    <test-dependencies>
+            <test-dependencies>
                 <!-- Dependencies for a source root with tests: -->
                 <test-type>
                     <name>unit</name>
@@ -110,7 +128,7 @@
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
                 </test-type>
-	    </test-dependencies>
+            </test-dependencies>
             <public-packages/>
         </data>
     </configuration>

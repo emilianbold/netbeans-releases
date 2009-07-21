@@ -38,34 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.xml;
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
+ * @author ads
  *
- * @author Petr Pisl, ads
  */
-public class JSFConfigModelFactory extends AbstractModelFactory<JSFConfigModel>{
-    
-    /** Creates a new instance of JSFConfigModelFactory */
-    private JSFConfigModelFactory() {
-    }
-    
-    public static JSFConfigModelFactory getInstance(){
-        return INSTANCE;
-    }
-    
-    protected JSFConfigModel createModel(ModelSource source) {
-        return new JSFConfigModelImpl(source);
-    }
-    
-    public JSFConfigModel getModel(ModelSource source) {
-        return (JSFConfigModel) super.getModel(source);
-    }
-    
-    private static final JSFConfigModelFactory INSTANCE = new JSFConfigModelFactory();
+public interface WebBeansComponent extends DocumentComponent<WebBeansComponent> {
+
 }
