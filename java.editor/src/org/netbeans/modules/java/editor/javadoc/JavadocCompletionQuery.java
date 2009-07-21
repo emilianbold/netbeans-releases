@@ -1008,7 +1008,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
-            LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false);
+            LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false);
             // XXX item.isAnnonInner() is package private :-(
 //            if (item.isAnnonInner())
 //                continue;
