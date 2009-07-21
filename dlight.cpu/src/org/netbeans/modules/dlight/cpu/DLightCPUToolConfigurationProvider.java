@@ -300,8 +300,8 @@ public final class DLightCPUToolConfigurationProvider
             ++seconds;
         }
 
-        public int[] getGraphData() {
-            return new int[]{sys, usr};
+        public float[] getGraphData() {
+            return new float[]{sys, usr};
         }
 
         public Map<String, String> getDetails() {

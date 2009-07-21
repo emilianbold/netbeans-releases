@@ -181,6 +181,7 @@ abstract class FieldInjectionPointLogic {
         boolean newBindingType = false; 
         String annotationName = null; 
         Set<Element> result = new HashSet<Element>();
+        Set<TypeElement> types = new HashSet<TypeElement>();
         if ( bindingAnnotations.size() == 1 ){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
             DeclaredType type = annotationMirror.getAnnotationType();
@@ -188,6 +189,8 @@ abstract class FieldInjectionPointLogic {
             annotationName = annotationElement.getQualifiedName().toString();
             currentBindingType = annotationElement.getQualifiedName().contentEquals( 
                     CURRENT_BINDING_ANNOTATION);
+            newBindingType = annotationElement.getQualifiedName().contentEquals( 
+                    NEW_BINDING_ANNOTATION );
         }
         if ( (bindingAnnotations.size() == 0 && anyBindingType) || 
                 currentBindingType )
@@ -204,26 +207,28 @@ abstract class FieldInjectionPointLogic {
                  */
                 filterBindnigsByCurrent( assignableTypes, modelImpl );
             }
-            result.addAll( assignableTypes );
+            types.addAll( assignableTypes );
         }
         else if (newBindingType){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
             AnnotationParser parser = AnnotationParser.create( modelImpl.getHelper());
-            parser.expectClass( "value",                                // NOI18N
-                    AnnotationParser.defaultValue(Object.class.getCanonicalName()));
+            parser.expectClass( "value", null);                         // NOI18N 
             ParseResult parseResult = parser.parse(annotationMirror);
             String clazz = parseResult.get( "value" , String.class );   // NOI18N 
             TypeMirror typeMirror;
-            if ( clazz.equals( Object.class.getCanonicalName()) || clazz == null ){
+            if ( clazz == null ){
                 typeMirror = element.asType();
             }
             else {
                 typeMirror = resolveType( clazz, modelImpl.getHelper());
             }
-            Element typeElement = modelImpl.getHelper().getCompilationController().
+            Element typeElement = null;
+            if ( typeMirror != null ) {
+                typeElement = modelImpl.getHelper().getCompilationController().
                 getTypes().asElement(typeMirror);
-            if ( element!= null ){
-                result.addAll(getImplementors(modelImpl, typeElement ));
+            }
+            if ( typeElement!= null ){
+                types.addAll(getImplementors(modelImpl, typeElement ));
             }
         }
         else {
@@ -242,8 +247,15 @@ abstract class FieldInjectionPointLogic {
              * Next step is filter types via typesafe resolution.
              */
             filterBindingsByType( element , typesWithBindings , modelImpl );
-            result.addAll( typesWithBindings );
+            types.addAll( typesWithBindings );
         }
+        
+        result.addAll( types );
+        
+        DeploymentTypeFilter<TypeElement> filter = DeploymentTypeFilter.get( 
+                TypeElement.class);
+        filter.init( modelImpl );
+        filter.filter( types );
         
         /*
          * This is list with production fields or methods ( they have @Produces annotation )
@@ -267,6 +279,12 @@ abstract class FieldInjectionPointLogic {
         }
         filterProductionByType( element, productionElements, modelImpl );
         addSpecializes( productionElements , modelImpl );
+        
+        DeploymentTypeFilter<Element> deploymentFilter = DeploymentTypeFilter.get( 
+                Element.class);
+        deploymentFilter.init( modelImpl );
+        deploymentFilter.filter( productionElements );
+        
         result.addAll( productionElements );
         return result;
     }

@@ -324,7 +324,7 @@ class WebActionProvider implements ActionProvider {
                     if ((htmlFiles != null) && (htmlFiles.length > 0)) {
                         String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
                         if (url != null) {
-                            url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+                            url = url.replace(" ", "%20");
                             p.setProperty("client.urlPart", url); //NOI18N
                         } else {
                             return null;
@@ -469,7 +469,7 @@ class WebActionProvider implements ActionProvider {
                     if ((htmlFiles != null) && (htmlFiles.length > 0)) {
                         String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
                         if (url != null) {
-                            url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+                            url = url.replace(" ", "%20");
                             p.setProperty("client.urlPart", url); //NOI18N
                         } else {
                             return null;
