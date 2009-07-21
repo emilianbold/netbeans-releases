@@ -138,6 +138,9 @@
         <taskdef name="extractlayer"
              classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
              classpath="${ergonomicsdir}/build/antclasses/:${src-ant.cp}"/>
+        <taskdef name="l10nreplace"
+             classname="org.netbeans.modules.ide.ergonomics.ant.L10NReplace"
+             classpath="${ergonomicsdir}/build/antclasses/:${src-ant.cp}"/>
 
         <mkdir dir="${proxytmp}/layers"/>
         <copy todir="${proxytmp}/layers">
@@ -209,17 +212,18 @@
                 <concatfilter prepend="${proxyprop}"/>
             </bundlefilter>
          </extractlayer>
-         <replace dir="${proxydir}">
+         <l10nreplace
+            dir="${proxydir}"
+            bundle="${ergonomicsdir}/src/org/netbeans/modules/ide/ergonomics/Bundle.properties"
+         >
              <replacefilter
-                token="&lt;body&gt;"
-                value="&lt;body &gt;&lt;em&gt;This feature is not yet enabled. Press Next to activate it.&lt;/em&gt;&lt;p&gt;"
+                token="&lt;body&gt;" property="MSG_NotEnabled"
              />
              <replacefilter
-                token="&lt;BODY&gt;"
-                value="&lt;BODY &gt;&lt;em&gt;This feature is not yet enabled. Press Next to activate it.&lt;/em&gt;&lt;p&gt;"
+                token="&lt;BODY&gt;" property="MSG_NotEnabled"
              />
              <include name="*.html"/>
-         </replace>
+         </l10nreplace>
     </target>
 
     
