@@ -99,7 +99,7 @@ public class Graph extends JComponent {
         graph.paint(g, upperLimit, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
-    public void addData(int... newData) {
+    public void addData(float... newData) {
         graph.addData(newData);
         if (isShowing()) {
             repaint();
