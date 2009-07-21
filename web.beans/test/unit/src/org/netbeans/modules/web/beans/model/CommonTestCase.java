@@ -123,7 +123,7 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({FIELD, PARAMETER}) "+          
                 "public @interface New  { " +
-                " Class<?> value() default Object.class; "+
+                " Class<?> value() ; "+
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Current.java",

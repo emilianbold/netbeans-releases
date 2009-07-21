@@ -38,34 +38,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.impl.model;
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
+import java.util.Set;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+
 
 /**
+ * @author ads
  *
- * @author Petr Pisl, ads
  */
-public class JSFConfigModelFactory extends AbstractModelFactory<JSFConfigModel>{
+class DeploymentTypeFilter<T extends Element> extends Filter<T> {
     
-    /** Creates a new instance of JSFConfigModelFactory */
-    private JSFConfigModelFactory() {
+    static <T extends Element> DeploymentTypeFilter<T> get(Class<T> clazz )
+    {
+        assertElement(clazz);
+        if ( clazz.equals(TypeElement.class )){
+            return (DeploymentTypeFilter<T>) 
+                new DeploymentTypeFilter<TypeElement>( TypeElement.class );
+        }
+        else if ( clazz.equals(Element.class )){
+            return (DeploymentTypeFilter<T>) 
+            new DeploymentTypeFilter<Element>( Element.class );
+        }
+        return null;
     }
     
-    public static JSFConfigModelFactory getInstance(){
-        return INSTANCE;
+    private DeploymentTypeFilter( Class<T> clazz ){
+        myClass = clazz;
     }
     
-    protected JSFConfigModel createModel(ModelSource source) {
-        return new JSFConfigModelImpl(source);
+    void init( WebBeansModelImplementation model ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
+     */
+    @Override
+    void filter( Set<T> set ) {
+        super.filter(set);
     }
     
-    public JSFConfigModel getModel(ModelSource source) {
-        return (JSFConfigModel) super.getModel(source);
+    private WebBeansModelImplementation getImplementation(){
+        return myModel;
     }
     
-    private static final JSFConfigModelFactory INSTANCE = new JSFConfigModelFactory();
+    private Class<T> myClass;
+    private WebBeansModelImplementation myModel;
+
 }
