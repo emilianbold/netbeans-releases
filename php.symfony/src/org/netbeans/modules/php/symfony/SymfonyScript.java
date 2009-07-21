@@ -121,10 +121,16 @@ public class SymfonyScript extends PhpProgram {
         return new SymfonyScript(symfony);
     }
 
+    /**
+     * @return full IDE options Symfony path
+     */
     public static String getOptionsPath() {
         return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
     }
 
+    /**
+     * @return IDE options Symfony subpath
+     */
     public static String getOptionsSubPath() {
         return OPTIONS_SUB_PATH;
     }
