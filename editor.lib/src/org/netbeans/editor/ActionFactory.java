@@ -2329,27 +2329,29 @@ public class ActionFactory {
             final BaseDocument doc = (BaseDocument)target.getDocument();
             final Formatter formatter = doc.getFormatter();
             formatter.indentLock();
-            doc.runAtomicAsUser (new Runnable () {
-                public void run () {
-                    try {
-                        //target.replaceSelection(""); //NOI18N -fix of issue #52485
-                        Caret caret = target.getCaret();
+            try {
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                        try {
+                            //target.replaceSelection(""); //NOI18N -fix of issue #52485
+                            Caret caret = target.getCaret();
 
-                        // insert and remove '-' to remember caret
-                        // position
-                        int dotpos = caret.getDot();
-                        doc.insertString(dotpos,"-",null); //NOI18N
-                        doc.remove(dotpos,1);
-                        int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        int newDotPos = formatter.indentNewLine(doc,eolDot);
-                        caret.setDot(newDotPos);
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace();
-                    } finally{
-                        formatter.indentUnlock();
+                            // insert and remove '-' to remember caret
+                            // position
+                            int dotpos = caret.getDot();
+                            doc.insertString(dotpos,"-",null); //NOI18N
+                            doc.remove(dotpos,1);
+                            int eolDot = Utilities.getRowEnd(target, caret.getDot());
+                            int newDotPos = formatter.indentNewLine(doc,eolDot);
+                            caret.setDot(newDotPos);
+                        } catch (BadLocationException ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                }
-            });
+                });
+            } finally {
+                formatter.indentUnlock();
+            }
         }
     }
     

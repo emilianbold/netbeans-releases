@@ -70,12 +70,11 @@ public final class InsertSemicolonAction extends BaseAction {
             return;
         }
         final BaseDocument doc = (BaseDocument) target.getDocument();
+        final Formatter formatter = doc.getFormatter();
         final class R implements Runnable {
             public void run() {
                 Caret caret = target.getCaret();
                 int dotpos = caret.getDot();
-                Formatter formatter = doc.getFormatter();
-                formatter.indentLock();
                 try {
                     int eoloffset = Utilities.getRowEnd(target, dotpos);
                     doc.insertString(eoloffset, "" + what, null); //NOI18N
@@ -90,11 +89,14 @@ public final class InsertSemicolonAction extends BaseAction {
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
-                } finally {
-                    formatter.indentUnlock();
                 }
             }
         }
-        doc.runAtomicAsUser(new R());
+        formatter.indentLock();
+        try {
+            doc.runAtomicAsUser(new R());
+        } finally {
+            formatter.indentUnlock();
+        }
     }
 }
