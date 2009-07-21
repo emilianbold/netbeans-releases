@@ -43,8 +43,15 @@ function volumeCheckTiger() {
 /* js:pkmk:start */
 function checkSystemversion() {
 	var result = false;
+	var version;	
 	try {
-		result = my.target.systemVersion.ProductVersion >= '10.4';
+		version = my.target.systemVersion.ProductVersion;
+		if(version == 'undefined') {
+			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.4'));
+		} else {
+			result = ( -1 != system.compareVersions(version, '10.4'));
+		}
+	
 	} catch (e) {}
 	
 	if(!result) {
