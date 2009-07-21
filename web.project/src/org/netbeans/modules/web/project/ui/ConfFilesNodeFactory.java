@@ -97,6 +97,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfo;
+import org.openidex.search.SearchInfoFactory;
 
 /**
  *
@@ -169,8 +172,15 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     private static Lookup createLookup(Project project) {
         if (project.getProjectDirectory().isValid()) {
             DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
+            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(
+                                rootFolder.getPrimaryFile(), true,
+                                new FileObjectFilter[] {
+                                        SearchInfoFactory.VISIBILITY_FILTER,
+                                        SearchInfoFactory.SHARABILITY_FILTER}
+            );
+
             // XXX Remove root folder after FindAction rewrite
-            return Lookups.fixed(new Object[]{project, rootFolder});
+            return Lookups.fixed(new Object[]{project, rootFolder, searchInfo});
         } else {
             return Lookups.fixed(new Object[0]);
         }

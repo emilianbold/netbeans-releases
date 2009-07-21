@@ -129,7 +129,7 @@ public final class Parameter extends Field {
 	}
         loadAnnotations();
 	if (annotations.size() > 0) {
-	    Iterator iter = annotations.values().iterator();
+	    Iterator<Annotation> iter = annotations.values().iterator();
 	    sb.append(", annotations={ ");
 	    while (iter.hasNext()) {
 		sb.append(iter.next().toString());
