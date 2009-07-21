@@ -805,7 +805,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if (r == null) {
                 originalContentBuffer = null;
                 return;
-            }
+        }
 
             StringWriter w = new StringWriter(2048);
             try {
@@ -813,7 +813,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 originalContentBuffer = w.toString();
             } catch (IOException e) {
                 // ignore, we will show no diff
-            }
+    }
         }
     }
 
@@ -828,51 +828,96 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         if (vs == null) {
             return null;
         }
-        File mainFile = FileUtil.toFile(fileObject);
-        if (mainFile == null) {
+
+        Collection<File> filesToCheckout = getFiles(fileObject);
+        if (filesToCheckout.isEmpty()) {
             return null;
         }
 
         File tempFolder = Utils.getTempFolder();
         tempFolder.deleteOnExit();
 
-        Set<File> filesToCheckout = new HashSet<File>(2);
-        filesToCheckout.add(mainFile);
-        DataObject dao = null;
-        try {
-            dao = DataObject.find(fileObject);
-            Set<FileObject> fileObjects = dao.files();
-            for (FileObject fileObj : fileObjects) {
-                File file = FileUtil.toFile(fileObj);
-                filesToCheckout.add(file);
-            }
-        } catch (DataObjectNotFoundException e) {
-            // no dataobject, never mind
-        }
-
-        DiffFileEncodingQueryImpl encodinqQuery = Lookup.getDefault().lookup(DiffFileEncodingQueryImpl.class);
-        List<File> originalFiles = new ArrayList<File>();
+        Collection<File> originalFiles = null;
+        DiffFileEncodingQueryImpl encodinqQuery = null;
         try {            
-            for (File file : filesToCheckout) {
-                File originalFile = new File(tempFolder, file.getName());
-                originalFile.deleteOnExit();
-                vs.getOriginalFile(file, originalFile);
-                originalFiles.add(originalFile);
-            }         
+            originalFiles = checkoutOriginalFiles(filesToCheckout, tempFolder, vs);
+
+            encodinqQuery = Lookup.getDefault().lookup(DiffFileEncodingQueryImpl.class);
             if(encodinqQuery != null) {
-                encodinqQuery.associateEncoding(mainFile, originalFiles);
+                encodinqQuery.associateEncoding(fileObject, originalFiles);
             }
             return createReader(new File(tempFolder, fileObject.getNameExt()));
         } catch (Exception e) {
             // let providers raise errors when they feel appropriate
             return null;
         } finally {
-            if(encodinqQuery != null) {
+            if ((originalFiles != null) && (encodinqQuery != null)) {
                 encodinqQuery.resetEncodingForFiles(originalFiles);
             }
         }
     }
-    
+
+    /**
+     * Returns files that belong to the same {@code DataObject} as the given
+     * file.
+     * @param  fileObj  file whose siblings are to be found
+     * @return  list of files that belong to the {@code DataObject} determined
+     *              by the given {@code FileObject},
+     *          or a singleton collection containing just the {@code File}
+     *              corresponding to the given {@code FileObject},
+     *          or an empty collection if the given {@code FileObject} could
+     *              not be translated to a {@code File}
+     */
+    private static Collection<File> getFiles(FileObject fileObj) {
+        File file = FileUtil.toFile(fileObj);
+        if (file == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<File> files;
+        try {
+            Set<FileObject> fileObjects = DataObject.find(fileObj).files();
+            assert fileObjects.contains(fileObj);
+            if (fileObjects.size() == 1) {
+                files = Collections.singleton(file);
+            } else {
+                files = new ArrayList<File>(fileObjects.size());
+                for (FileObject fo : fileObjects) {
+                    files.add(FileUtil.toFile(fo));
+                }
+            }
+        } catch (DataObjectNotFoundException e) {
+            // no dataobject, never mind
+            files = Collections.singleton(file);
+        }
+        assert files.contains(file);
+        return files;
+    }
+
+    /**
+     * Checks out original (unmodified) content of the given files to the given
+     * target folder.
+     * @param  filesToCheckout  files whose original content is to be checked out
+     * @param  targetFolder  target folder where unmodified files should be stored
+     * @param  vs  versioning system to be used for the checkout
+     * @return  collection of files containing unmodified content of the given
+     *          files; these files are named after the given files
+     */
+    private Collection<File> checkoutOriginalFiles(Collection<File> filesToCheckout,
+                                                   File targetFolder,
+                                                   VersioningSystem vs) {
+        Collection<File> originalFiles = new ArrayList<File>(filesToCheckout.size());
+
+        for (File file : filesToCheckout) {
+            File originalFile = new File(targetFolder, file.getName());
+            originalFile.deleteOnExit();
+            vs.getOriginalFile(file, originalFile);
+            originalFiles.add(originalFile);
+        }
+
+        return originalFiles;
+    }
+
     private Reader createReader(File file) {
         try {
             /*
@@ -888,7 +933,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
              */
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             DataObject dao = DataObject.find(fo);
-            Document doc = null;            
+            Document doc = null;
             if (dao instanceof MultiDataObject) {
                 MultiDataObject mdao = (MultiDataObject) dao;
                 for (MultiDataObject.Entry entry : mdao.secondaryEntries()) {
@@ -912,8 +957,8 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         } catch (FileNotFoundException e) {
             return null;
         }
-    }    
-    
+    }
+
     private class SidebarStreamSource extends StreamSource {
 
         private final boolean isFirst;
