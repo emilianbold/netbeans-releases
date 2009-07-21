@@ -24,9 +24,11 @@
         <file name="ThreadMapTopComponent.wstcref" url="ThreadMapTopComponentWstcref.xml"/>
       </folder>
       <folder name="output">
-        <file name="CallStackTopComponent.wstcref" url="CallStackTopComponentWstcref.xml"/>
-                <file name="VisualizerTopComponentTopComponent.wstcref" url="VisualizerTopComponentTopComponentWstcref.xml">
+        <file name="VisualizerTopComponentTopComponent.wstcref" url="VisualizerTopComponentTopComponentWstcref.xml">
           <attr name="position" intvalue="4100"/>
+        </file>
+        <file name="CallStackTopComponent.wstcref" url="CallStackTopComponentWstcref.xml">
+          <attr name="position" intvalue="4200"/>
         </file>
       </folder>
     </folder>
