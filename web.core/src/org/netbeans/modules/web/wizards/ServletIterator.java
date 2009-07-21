@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -219,6 +220,15 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         // deployment descriptor, return
         if (!deployData.makeEntry()) {
             return Collections.singleton(dobj);
+        }
+
+        if (!deployData.hasDD()) {
+            // Create web.xml
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            if (wm != null) {
+                FileObject webXml = DDHelper.createWebXml(wm.getJ2eeProfile(), true, wm.getWebInf());
+                deployData.setWebApp(webXml);
+            }
         }
 
         // needed to be able to finish ServletWizard from the second panel

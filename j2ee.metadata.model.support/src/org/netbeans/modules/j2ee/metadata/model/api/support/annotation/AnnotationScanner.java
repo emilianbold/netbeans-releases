@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.lang.annotation.Inherited;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -218,8 +219,8 @@ public class AnnotationScanner {
                 if ( kinds.contains( element.getKind())){
                     handler.handleAnnotation(typeElement, element, annotationMirror);
                 }
-                if ( includeDerived ){
-                    discoverHierarchy( typeElement , element , annotationMirror , 
+                if ( includeDerived && element.getKind() == ElementKind.CLASS ){
+                    discoverHierarchy( typeElement , annotationMirror , 
                             handler, kinds);
                 }
             } else {
@@ -230,11 +231,43 @@ public class AnnotationScanner {
             }
         }
     }
-
-    private void discoverHierarchy( TypeElement typeElement, Element element,
+    
+    private void discoverHierarchy( TypeElement typeElement, 
             AnnotationMirror annotationMirror, AnnotationHandler handler,
             Set<ElementKind> kinds) throws InterruptedException
     {
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        result.add( (TypeElement) typeElement );
+        
+        Set<TypeElement> toProcess = new HashSet<TypeElement>();
+        toProcess.add((TypeElement) typeElement );
+        while ( toProcess.size() >0 ){
+            TypeElement element = toProcess.iterator().next();
+            toProcess.remove( element );
+            Set<TypeElement> set = doDiscoverHierarchy(element, annotationMirror,
+                    handler , kinds );
+            if ( set.size() == 0 ){
+                continue;
+            }
+            result.addAll( set );
+            for (TypeElement impl : set) {
+                toProcess.add(impl);
+            }
+        }
+        result.remove( typeElement );
+        for (TypeElement derivedElement : result) {
+            if ( kinds.contains( derivedElement.getKind())){
+                handler.handleAnnotation(derivedElement, derivedElement, 
+                        annotationMirror);
+            }
+        }
+    }
+
+    private Set<TypeElement> doDiscoverHierarchy( TypeElement typeElement,
+            AnnotationMirror annotationMirror, AnnotationHandler handler,
+            Set<ElementKind> kinds) throws InterruptedException
+    {
+        Set<TypeElement> result = new HashSet<TypeElement>();
         ElementHandle<TypeElement> handle = ElementHandle.create(
                 typeElement);
         final Set<ElementHandle<TypeElement>> handles = getHelper().
@@ -253,11 +286,9 @@ public class AnnotationScanner {
             if (derivedElement == null) {
                 continue;
             }
-            if ( kinds.contains( derivedElement.getKind())){
-                handler.handleAnnotation(derivedElement, derivedElement, 
-                        annotationMirror);
-            }
+            result.add( derivedElement );
         }
+        return result;
     }
     
     private boolean checkInheritance( TypeElement annotationType ) {
