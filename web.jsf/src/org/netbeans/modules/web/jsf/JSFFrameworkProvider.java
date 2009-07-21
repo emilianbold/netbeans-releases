@@ -163,11 +163,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-                isMyFaces = Util.containsClass(content, JSFUtils.MYFACES_SPAECIFIC_CLASS); 
+                isMyFaces = Util.containsClass(content, JSFUtils.MYFACES_SPECIFIC_CLASS); 
             } else {
                 // find out whether the target server has myfaces jsf implementation on the classpath
                 ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
-                isMyFaces = cp.findResource(JSFUtils.MYFACES_SPAECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+                isMyFaces = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
             }            
             
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
@@ -203,6 +203,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
+        assert wm != null;
         FileObject dd = wm.getDeploymentDescriptor();
         if (dd != null){
             FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);

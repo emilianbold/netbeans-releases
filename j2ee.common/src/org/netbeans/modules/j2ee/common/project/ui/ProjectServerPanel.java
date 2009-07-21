@@ -423,6 +423,17 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 if (Profile.J2EE_13.equals(profile)) {
                     continue;
                 }
+                if (j2eeModuleType ==J2eeModule.Type.WAR) {
+                    if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+                        // for web apps always offer only JAVA_EE_6_WEB profile and skip full one
+                        continue;
+                    }
+                } else {
+                    if (Profile.JAVA_EE_6_WEB.equals(profile)) {
+                        // for EE apps always skip web profile
+                        continue;
+                    }
+                }
 
                 j2eeSpecComboBox.addItem(new ProfileItem(profile));
             }

@@ -155,6 +155,9 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                 .getAllAnnotationMirrors(elementWithBinding);
         AnnotationMirror annotationMirror = getImplementation().getHelper()
                 .getAnnotationsByType(allAnnotationMirrors).get(annotationName);
+        if ( annotationMirror == null ){
+            return false;
+        }
         Map<? extends ExecutableElement, ? extends AnnotationValue> 
                 elementValues = annotationMirror.getElementValues();
         AnnotationValue valueForType = elementValues.get(exec);

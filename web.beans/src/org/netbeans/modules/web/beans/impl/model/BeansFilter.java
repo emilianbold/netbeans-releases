@@ -38,34 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
+package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.List;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import javax.lang.model.element.TypeElement;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
+class BeansFilter extends Filter<Element> {
+    
+    static BeansFilter get() {
+        return new BeansFilter();
+    }
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
-    
-    List<Element> getInjectables( VariableElement element , 
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element );
-    
-    boolean isInjectionPoint( VariableElement element );
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
+     */
+    @Override
+    void filter( Set<Element> set ) {
+        super.filter(set);
+        for (Iterator<Element> iterator = set.iterator(); iterator.hasNext(); ) {
+            Element element = iterator.next();
+            if ( element instanceof TypeElement ){
+                String name = ((TypeElement)element).getQualifiedName().toString();
+                if ( name.startsWith("java.lang")) { // NOI18N
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
 }

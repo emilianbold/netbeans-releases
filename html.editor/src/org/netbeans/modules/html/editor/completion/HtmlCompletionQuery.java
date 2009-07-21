@@ -114,7 +114,7 @@ public class HtmlCompletionQuery extends UserTask {
         Snapshot snapshot = parserResult.getSnapshot();
         int astOffset = snapshot.getEmbeddedOffset(offset);
         lowerCase = usesLowerCase(parserResult, astOffset);
-        isXHtml = org.netbeans.editor.ext.html.dtd.Utils.isXHTMLPublicId(dtd.getIdentifier());
+        isXHtml = parserResult.getHtmlVersion().isXhtml();
 
         TokenHierarchy hi = snapshot.getTokenHierarchy();
         TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
@@ -157,21 +157,14 @@ public class HtmlCompletionQuery extends UserTask {
         //adjust the astOffset if at the end of the file
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
-//        AstNode root = parserResult.root();
-//        AstNode node = AstNodeUtils.findDescendant(root, searchAstOffset);
-
         AstNode node = parserResult.findLeaf(searchAstOffset);
         if(node == null) {
             return null;
         }
         AstNode root = node.getRootNode();
-        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
 
-//        //debug>>>
-//        System.out.println("node = " + node);
-//        System.out.println("root = " + root);
-//        System.out.println("namepace = " + namespace);
-//        //<<<debug
+        //namespace is null for html content
+        String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
@@ -195,7 +188,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             result = new ArrayList<CompletionItem>();
 
-            if (Utils.isXhtmlNs(namespace)) {
+            if (namespace == null) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
 
                 result.addAll(translateTags(documentItemOffset - 1,
@@ -216,7 +209,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = offset;
             result = new ArrayList<CompletionItem>();
 
-            if (Utils.isXhtmlNs(namespace)) {
+            if (namespace == null) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
             }
@@ -249,8 +242,7 @@ public class HtmlCompletionQuery extends UserTask {
             len = prefix.length();
             anchor = offset - len;
 
-            //TODO fix this later, the default namespace can be assigned to the xhtml
-            if (!Utils.isXhtmlNs(namespace)) {
+            if (namespace != null) {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, node);

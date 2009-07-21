@@ -38,25 +38,21 @@
  */
 package org.netbeans.modules.html.editor.gsf.api;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.gsf.HtmlGSFParser;
+import org.netbeans.modules.html.HtmlVersion;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -67,13 +63,40 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class HtmlParserResult extends ParserResult {
 
-    private static final String ID_ATTR_NAME = "id"; //NOI18N
     private SyntaxParserResult result;
     private List<Error> errors;
+    private boolean isValid = true;
 
     private HtmlParserResult(Snapshot snapshot, SyntaxParserResult result) {
         super(snapshot);
         this.result = result;
+    }
+
+    /** The parser result may be invalidated by the parsing infrastructure.
+     * In such case the method returns false.
+     * @return true for valid result, false otherwise.
+     */
+    public boolean isValid() {
+        return this.isValid;
+    }
+
+    /**
+     * Returns an html version for the specified parser result input.
+     * The return value depends on doctype declaration content.
+     */
+    public HtmlVersion getHtmlVersion() {
+        String publicId = result.getPublicID();
+        if(publicId == null) {
+            return HtmlVersion.UNKNOWN;
+        } else {
+            return HtmlVersion.findHtmlVersion(publicId);
+        }
+
+    }
+
+    /** @return an instance of DTD for the parser input. */
+    public DTD dtd() {
+        return result.getDTD();
     }
 
     /** @return a root node of the hierarchical parse tree of the document.
@@ -86,12 +109,30 @@ public class HtmlParserResult extends ParserResult {
         return root(null);
     }
 
+    /** returns a parse tree for non-html content */
     public AstNode root(String namespace) {
-        return result.getASTRoot(namespace);
+        //handle default html namespace
+        if(namespace == null || namespace.equals(getHtmlVersion().getDefaultNamespace())) {
+            return result.getASTRoot();
+        } else {
+            return result.getASTRoot(namespace);
+        }
     }
 
+    /**declared uri to prefix map */
+    public Map<String, String> getNamespaces() {
+        return result.getDeclaredNamespaces();
+    }
+
+    /** Returns a leaf most AstNode from the parse tree to which range the given
+     * offset belongs.
+     *
+     * @param offset of the searched node
+     */
     public AstNode findLeaf(int offset) {
-        AstNode mostLeaf = null;
+        //first try to find the leaf in html content
+        AstNode mostLeaf = AstNodeUtils.findDescendant(root(), offset);
+        //now search the non html trees
         for(String uri : getNamespaces().keySet()) {
             AstNode root = root(uri);
             AstNode leaf = AstNodeUtils.findDescendant(root, offset);
@@ -112,30 +153,6 @@ public class HtmlParserResult extends ParserResult {
         return result.getElements();
     }
 
-    /** @return an instance of DTD bound to the html document. */
-    public DTD dtd() {
-        return result.getDTD();
-    }
-
-    /** @return a set of html document element's ids. */
-    public Set<TagAttribute> elementsIds() {
-        HashSet ids = new HashSet(elementsList().size() / 10);
-        for (SyntaxElement element : elementsList()) {
-            if (element.type() == SyntaxElement.TYPE_TAG) {
-                TagAttribute attr = ((SyntaxElement.Tag) element).getAttribute(ID_ATTR_NAME);
-                if (attr != null) {
-                    ids.add(attr);
-                }
-            }
-        }
-        return ids;
-    }
-
-    /**uri to prefix map */
-    public Map<String, String> getNamespaces() {
-        return result.getDeclaredNamespaces();
-    }
-
     @Override
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {
@@ -146,7 +163,7 @@ public class HtmlParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        //todo
+        this.isValid = false;
     }
 
     private List<Error> findErrors() {

@@ -74,22 +74,6 @@ public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
         HtmlParserResult htmlResult = (HtmlParserResult) result;
 
-        //highlight all tags' ids
-        Set<TagAttribute> ids = htmlResult.elementsIds();
-        for (TagAttribute ta : ids) {
-            int start = ta.getValueOffset();
-            start = result.getSnapshot().getOriginalOffset(start);
-            if (start == -1) {
-                start = 0;
-            }
-            // We assume that the start and end are always mapped to the same delta,
-            // e.g. tags don't span embedding regions
-            int end = start + ta.getValueLength();
-
-            OffsetRange range = new OffsetRange(start, end);
-            highlights.put(range, ColoringAttributes.METHOD_SET);
-        }
-
         //process extensions
         for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions()) {
             if (cancelled) {
