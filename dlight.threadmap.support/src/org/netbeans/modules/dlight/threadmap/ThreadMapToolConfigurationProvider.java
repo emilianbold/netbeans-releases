@@ -137,11 +137,11 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     private static class DataRowToMSAPlot implements DataRowToPlot {
 
         private final List<Column> columns;
-        private final int[] states;
+        private final float[] states;
 
         public DataRowToMSAPlot(List<Column> columns) {
             this.columns = new ArrayList<Column>(columns);
-            this.states = new int[columns.size()];
+            this.states = new float[columns.size()];
         }
 
         public void addDataRow(DataRow row) {
@@ -157,7 +157,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         public void tick() {
         }
 
-        public int[] getGraphData() {
+        public float[] getGraphData() {
             return states;
         }
 

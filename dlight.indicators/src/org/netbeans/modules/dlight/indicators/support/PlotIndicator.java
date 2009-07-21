@@ -141,7 +141,7 @@ public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
     @Override
     protected void tick() {
         dataRowHandler.tick();
-        int[] plotData = dataRowHandler.getGraphData();
+        float[] plotData = dataRowHandler.getGraphData();
         if (plotData != null) {
             int limit = graph.getUpperLimit();
             while (limit < plotData[0]) {
