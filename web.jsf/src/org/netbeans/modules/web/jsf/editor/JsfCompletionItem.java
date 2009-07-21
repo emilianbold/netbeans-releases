@@ -40,6 +40,7 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.awt.Color;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
+import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 
 /**
  *
@@ -48,8 +49,12 @@ import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
 public class JsfCompletionItem {
 
     //----------- Factory methods --------------
-    public static JsfTag createTag(String name, int substitutionOffset, String helpId, String uri, boolean autoimport) {
-        return new JsfTag(name, substitutionOffset, helpId, uri, autoimport);
+    public static JsfTag createTag(String name, int substitutionOffset, TldLibrary.Tag tag, TldLibrary library, boolean autoimport) {
+        return new JsfTag(name, substitutionOffset, tag, library, autoimport);
+    }
+
+    public static JsfTagAttribute createAttribute(String name, int substitutionOffset, TldLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
+        return new JsfTagAttribute(name, substitutionOffset, library, tag, attr );
     }
 
     public static class JsfTag extends HtmlCompletionItem.Tag {
@@ -57,18 +62,21 @@ public class JsfCompletionItem {
         private static final String BOLD_OPEN_TAG = "<b>"; //NOI18N
         private static final String BOLD_END_TAG = "</b>"; //NOI18N
 
-        private String uri;
+        private TldLibrary library;
+        private TldLibrary.Tag tag;
+
         private boolean autoimport; //autoimport (declare) the tag namespace if set to true
 
-        public JsfTag(String text, int substitutionOffset, String helpId, String uri, boolean autoimport) {
-            super(text, substitutionOffset, helpId, true);
-            this.uri = uri;
+        public JsfTag(String text, int substitutionOffset, TldLibrary.Tag tag, TldLibrary library, boolean autoimport) {
+            super(text, substitutionOffset, null, true);
+            this.library = library;
+            this.tag = tag;
             this.autoimport = autoimport;
         }
 
         @Override
         protected String getRightHtmlText() {
-            return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + uri + "</font>";
+            return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + library.getDisplayName() + "</font>";
         }
 
         //use bold font
@@ -85,5 +93,70 @@ public class JsfCompletionItem {
         public int getSortPriority() {
             return DEFAULT_SORT_PRIORITY - 5;
         }
+
+        @Override
+        public String getHelp() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(getLibraryHelpHeader(library));
+            sb.append("<h1>");
+            sb.append(tag.getName());
+            sb.append("</h1>");
+            sb.append(tag.getDescription());
+            return sb.toString();
+        }
+
+        @Override
+        public boolean hasHelp() {
+            return this.tag.getDescription() != null;
+        }
+
     }
+
+
+     public static class JsfTagAttribute extends HtmlCompletionItem.Attribute {
+
+        private TldLibrary library;
+        private TldLibrary.Tag tag;
+        private TldLibrary.Attribute attr;
+
+        public JsfTagAttribute(String value, int offset, TldLibrary library, TldLibrary.Tag tag, TldLibrary.Attribute attr) {
+            super(value, offset, attr.isRequired(), null);
+            this.library = library;
+            this.tag = tag;
+            this.attr = attr;
+        }
+
+        @Override
+        public String getHelp() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(getLibraryHelpHeader(library));
+            sb.append("<div><b>Tag:</b> ");
+            sb.append(tag.getName());
+            sb.append("</div>");
+            sb.append("<h1>"); //NOI18N
+            sb.append(attr.getName());
+            sb.append("</h1>"); //NOI18N
+            sb.append(attr.getDescription());
+            return sb.toString();
+        }
+
+        @Override
+        public boolean hasHelp() {
+            return attr.getDescription() != null;
+        }
+
+    }
+
+
+     private static String getLibraryHelpHeader(TldLibrary library) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("<div><b>Library:</b> "); //NOI18N
+            sb.append(library.getDisplayName());
+            sb.append(" ("); //NOI18N
+            sb.append(library.getURI());
+            sb.append(")</div>"); //NOI18N
+            return sb.toString();
+
+     }
+
 }
