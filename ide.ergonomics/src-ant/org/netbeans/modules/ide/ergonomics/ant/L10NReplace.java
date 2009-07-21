@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Replace;
 import org.apache.tools.ant.types.selectors.FilenameSelector;
@@ -91,7 +92,7 @@ public final class L10NReplace extends MatchingTask {
             String noExt = srcs[i].replaceFirst("\\.[^\\.]*$", "");
             int index = noExt.indexOf("_");
             String suffix = index == -1 ? "" : noExt.substring(index + 1);
-            System.err.println("suffix: " + suffix + " name: " + srcs[i]);
+            log("suffix: " + suffix + " name: " + srcs[i], Project.MSG_VERBOSE);
             OrSelector or = l10n.get(suffix);
             if (or == null) {
                 or = new OrSelector();
