@@ -307,10 +307,11 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         StringBuilder ifaceSb = new StringBuilder();
         for (String iface : superInterfaceNames) {
             if (ifaceSb.length() > 0) {
-                sb.append(",");//NOI18N
+                ifaceSb.append(",");//NOI18N
             }
-            sb.append(iface);//NOI18N
+            ifaceSb.append(iface);//NOI18N
         }
+        sb.append(ifaceSb);
         sb.append(";");//NOI18N
         //TODO: add ifaces
         return sb.toString();
