@@ -410,8 +410,8 @@ public class LogReader {
                 }
             } else if (pkg.startsWith(ECHO_PATTERN)) {
                 pkg = pkg.substring(ECHO_PATTERN.length());
-                if (pkg.startsWith("'") && pkg.endsWith("'")) {
-                    out.append(pkg.substring(1, pkg.length()-1)); //NOI18N
+                if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
+                    out.append(pkg.substring(1, pkg.length()-1));
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
                     boolean first = true;
@@ -420,12 +420,12 @@ public class LogReader {
                             out.append(" "); //NOI18N
                         }
                         first = false;
-                        out.append(st.nextToken()); //NOI18N
+                        out.append(st.nextToken());
                     }
                 }
             } else if (pkg.contains(ECHO_PATTERN)) {
                 pkg = pkg.substring(pkg.indexOf(ECHO_PATTERN)+ECHO_PATTERN.length());
-                if (pkg.startsWith("'") && pkg.endsWith("'")) {
+                if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
                     out.append(pkg.substring(1, pkg.length()-1)); //NOI18N
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
@@ -435,7 +435,7 @@ public class LogReader {
                             out.append(" "); //NOI18N
                         }
                         first = false;
-                        out.append(st.nextToken()); //NOI18N
+                        out.append(st.nextToken());
                     }
                 }
             }
@@ -481,7 +481,7 @@ public class LogReader {
             result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
             return true;
         }
-        if (guessWorkingDir != null && !what.startsWith("/")) {
+        if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
             f = new File(guessWorkingDir+"/"+what);  //NOI18N
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha guess: " + file);}

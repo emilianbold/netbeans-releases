@@ -40,8 +40,11 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -141,6 +144,107 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
 
     static long timeStampToMilliSeconds(long timeStamp) {
         return TimeUnit.NANOSECONDS.toMillis(timeStamp);
+    }
+
+    static MSAState point2MSA(ThreadsPanel panel, ThreadState state, Point point){
+        int delta = ThreadsPanel.TABLE_ROW_HEIGHT - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
+        EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+
+        if (panel.isMSAMode()){
+            for (AtomicInteger i : map.values()) {
+                i.set(0);
+            }
+            fillMap(panel, state, map);
+            int y = 0;
+            int rest = ThreadState.POINTS/2;
+            int oldRest = 0;
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(map); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
+                int v = entry.getValue().get();
+                oldRest = rest;
+                rest = (v*delta+oldRest)%ThreadState.POINTS;
+                int d = (v*delta+oldRest)/ThreadState.POINTS;
+                y += d;
+                if (d > 0) {
+                    if (ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y <= point.y && point.y <= ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y +d){
+                        return entry.getKey();
+                    }
+                }
+            }
+        } else {
+            return state.getMSAState(state.getSamplingStateIndex(panel.isFullMode()), panel.isFullMode());
+        }
+        return null;
+    }
+
+    static void fillMap(ThreadsPanel panel, ThreadState threadStateColor, EnumMap<MSAState, AtomicInteger> aMap) {
+        int size = threadStateColor.size();
+        for (int i = 0; i < size; i++) {
+            MSAState msa = threadStateColor.getMSAState(i, panel.isFullMode());
+            if (msa != null) {
+                AtomicInteger value = aMap.get(msa);
+                if (value == null) {
+                    value = new AtomicInteger();
+                    aMap.put(msa, value);
+                }
+                value.addAndGet(threadStateColor.getState(i));
+            } else {
+                System.err.println("Wrong MSA at index " + i + " MSA=" + threadStateColor); // NOI18N
+            }
+        }
+    }
+
+    static int point2index(ThreadsDataManager manager, ThreadsPanel panel, ThreadStateColumnImpl threadData, Point point, int width){
+        long dataEnd = manager.getEndTime();
+        if (threadData != null) {
+            int index = getFirstVisibleDataUnit(threadData, panel);
+            if (index != -1) {
+                width = Math.abs(width);
+                if ((panel.getViewEnd() - panel.getViewStart()) > 0) {
+                    float factor = (float) width / (float) (panel.getViewEnd() - panel.getViewStart());
+                    while ((index < threadData.size()) &&
+                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= panel.getViewEnd())) {
+                        // Thread alive
+                        if (threadData.isAlive(index)) {
+                            int x; // Begin of rectangle
+                            int xx; // End of rectangle
+
+                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - panel.getViewStart()) * factor), 0);
+
+                            if (index < (threadData.size() - 1)) {
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - panel.getViewStart()) * factor), width);
+                            } else {
+                                xx = Math.min((int) ((dataEnd - panel.getViewStart()) * factor), width + 1);
+                            }
+                            if (x <= point.x && point.x < xx) {
+                                return index;
+                            }
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    static int getFirstVisibleDataUnit(ThreadStateColumnImpl threadData, ThreadsPanel panel) {
+        for (int i = 0; i < threadData.size(); i++) {
+            long timestamp = ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i).getTimeStamp());
+            if ((timestamp <= panel.getViewEnd()) && (i == (threadData.size() - 1))) {
+                return i; // last data unit before viewEnd
+            }
+            if (timestamp <= panel.getViewStart()) {
+                if (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i + 1).getTimeStamp()) > panel.getViewStart()) {
+                    return i; // data unit ends between viewStart and viewEnd
+                }
+            } else {
+                if (timestamp <= panel.getViewEnd()) {
+                    return i; // data unit begins between viewStart and viewEnd
+                }
+            }
+        }
+        return -1;
     }
 
     private final MergedThreadInfo info;

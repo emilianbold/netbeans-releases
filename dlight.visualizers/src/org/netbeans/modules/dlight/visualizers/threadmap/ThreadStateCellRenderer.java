@@ -164,7 +164,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             buf.append("Time ");// NOI18N
             buf.append(TimeLineUtils.getMillisValue(ms));
             EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
-            fillMap(state, aMap);
+            ThreadStateColumnImpl.fillMap(viewManager, state, aMap);
             buf.append("<table>");// NOI18N
             for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
                 Map.Entry<MSAState, AtomicInteger> entry = it.next();
@@ -196,7 +196,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return null;
     }
 
-    public int getStateIndex(Point point){
+    private int getStateIndex(Point point){
         if (threadData != null) {
             int index = getFirstVisibleDataUnit();
             if (index != -1) {
@@ -351,7 +351,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 i.set(0);
             }
 
-            fillMap(threadStateColor, map);
+            ThreadStateColumnImpl.fillMap(viewManager, threadStateColor, map);
 
             int y = 0;
             int rest = ThreadState.POINTS/2;
@@ -373,23 +373,6 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor.getMSAState(threadStateColor.getSamplingStateIndex(viewManager.isFullMode()), viewManager.isFullMode()));
             g.setColor(c);
             g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, xx - x, delta);
-        }
-    }
-
-    private void fillMap(ThreadState threadStateColor, EnumMap<MSAState, AtomicInteger> aMap) {
-        int size = threadStateColor.size();
-        for (int i = 0; i < size; i++) {
-            MSAState msa = threadStateColor.getMSAState(i, viewManager.isFullMode());
-            if (msa != null) {
-                AtomicInteger value = aMap.get(msa);
-                if (value == null) {
-                    value = new AtomicInteger();
-                    aMap.put(msa, value);
-                }
-                value.addAndGet(threadStateColor.getState(i));
-            } else {
-                System.err.println("Wrong MSA at index " + i + " MSA=" + threadStateColor); // NOI18N
-            }
         }
     }
 

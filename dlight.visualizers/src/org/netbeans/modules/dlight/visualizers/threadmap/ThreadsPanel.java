@@ -63,6 +63,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -102,6 +103,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
 import org.openide.util.NbBundle;
 
@@ -153,7 +155,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final int NAME_COLUMN_WIDTH = 100;
     private static final int MIN_NAME_COLUMN_WIDTH = 55;
     static final int MIN_SUMMARY_COLUMN_WIDTH = 72;
-    private static final int TABLE_ROW_HEIGHT = 18;
+    static final int TABLE_ROW_HEIGHT = 18;
     static final int THREAD_LINE_TOP_BOTTOM_MARGIN = 3;
 
     private ArrayList<Integer> filteredDataToDataIndex = new ArrayList<Integer>();
@@ -927,68 +929,26 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 ThreadStateColumnImpl threadData = manager.getThreadData(row);
                 Rectangle rect = table.getCellRect(rowIndex, viewColumn, false);
                 Point point = new Point(e.getPoint().x - rect.x, e.getPoint().y - rect.y);
-                int index = point2index(threadData, point, rect.width);
+                int index = ThreadStateColumnImpl.point2index(manager, this, threadData, point, rect.width);
                 if (index >= 0) {
-                    List<Integer> filteredThreads = new ArrayList<Integer>(filteredDataToDataIndex);
-                    ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(manager, row, index, filteredThreads, isFullMode(), -1);
-                    ThreadsPanel.this.detailsCallback.showStack(visualizer);
-                }
-            }
-        }
-    }
-
-
-    private int point2index(ThreadStateColumnImpl threadData, Point point, int width){
-        long dataEnd = getDataEnd();
-        if (threadData != null) {
-            int index = getFirstVisibleDataUnit(threadData);
-            if (index != -1) {
-                width = Math.abs(width);
-                if ((viewEnd - viewStart) > 0) {
-                    float factor = (float) width / (float) (viewEnd - viewStart);
-                    while ((index < threadData.size()) &&
-                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= viewEnd)) {
-                        // Thread alive
-                        if (threadData.isAlive(index)) {
-                            int x; // Begin of rectangle
-                            int xx; // End of rectangle
-
-                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
-
-                            if (index < (threadData.size() - 1)) {
-                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
-                            } else {
-                                xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
-                            }
-                            if (x <= point.x && point.x < xx) {
-                                return index;
+                    MSAState prefferedState = ThreadStateColumnImpl.point2MSA(this, threadData.getThreadStateAt(index), point);
+                    if (prefferedState != null) {
+                        List<Integer> showThreadsID = new ArrayList<Integer>();
+                        showThreadsID.add(manager.getThreadData(row).getThreadID());
+                        for(Integer i : filteredDataToDataIndex) {
+                            if (i.intValue() != row) {
+                                showThreadsID.add(manager.getThreadData(i.intValue()).getThreadID());
                             }
                         }
-                        index++;
+                        ThreadState state = threadData.getThreadStateAt(index);
+                        StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
+                                                                                   isMSAMode(), isFullMode(), manager.getStartTime());
+                        ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
+                        ThreadsPanel.this.detailsCallback.showStack(visualizer);
                     }
                 }
             }
         }
-        return -1;
-    }
-
-    private int getFirstVisibleDataUnit(ThreadStateColumnImpl threadData) {
-        for (int i = 0; i < threadData.size(); i++) {
-            long timestamp = ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i).getTimeStamp());
-            if ((timestamp <= viewEnd) && (i == (threadData.size() - 1))) {
-                return i; // last data unit before viewEnd
-            }
-            if (timestamp <= viewStart) {
-                if (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i + 1).getTimeStamp()) > viewStart) {
-                    return i; // data unit ends between viewStart and viewEnd
-                }
-            } else {
-                if (timestamp <= viewEnd) {
-                    return i; // data unit begins between viewStart and viewEnd
-                }
-            }
-        }
-        return -1;
     }
 
     // @AWTBound
