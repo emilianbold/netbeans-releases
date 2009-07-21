@@ -39,8 +39,23 @@
 package org.netbeans.modules.web.jsf.editor;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -77,6 +92,55 @@ public class JsfCompletionItem {
         @Override
         protected String getRightHtmlText() {
             return "<font color=#" + (autoimport ? hexColorCode(Color.RED.darker().darker()) : hexColorCode(Color.GRAY)) + ">" + library.getDisplayName() + "</font>";
+        }
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            super.defaultAction(component);
+            if(autoimport) {
+                autoimportLibrary(component);
+            }
+        }
+
+        //XXX document vs parser infr. locking - how to modify document from a usertask???????????
+        //now I just feel lucky and do not lock the document. 
+        private void autoimportLibrary(JTextComponent component) {
+            try {
+                final BaseDocument doc = (BaseDocument) component.getDocument();
+                Source source = Source.create(doc);
+                final AstNode[] htmlRootNode = new AstNode[1];
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        //suppose we are always top level
+                        if(resultIterator.getSnapshot().getMimeType().equals("text/html")) {
+                            HtmlParserResult result = (HtmlParserResult)resultIterator.getParserResult();
+                            htmlRootNode[0] = AstNodeUtils.query(result.root(), "html");
+                        }
+                    }
+                });
+                //TODO reformat
+                //TODO decide whether to add a new line before or not based on other attrs - could be handled by the formatter!?!?!
+                if(htmlRootNode[0] != null) {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            try {
+                                int insertPosition = htmlRootNode[0].endOffset() - 1; //just before the closing symbol
+                                String text = " xmlns:" + JsfTag.this.library.getDefaultPrefix() +
+                                        "=\"" + JsfTag.this.library.getURI() + "\"";
+                                doc.insertString(insertPosition, text, null);
+                            } catch (BadLocationException ex) {
+                                Logger.global.log(Level.INFO, null, ex);
+                            }
+
+                        }
+                    });
+                } else {
+                    //TODO create the root node???
+                }
+            } catch (ParseException ex) {
+                Logger.global.log(Level.INFO, null, ex);
+            }
         }
 
         //use bold font
