@@ -185,7 +185,7 @@ public class AddJspWatchAction extends CallableSystemAction {
 
 //        // if EL expression
 //        if ((watch.startsWith("$")) && (watch.endsWith("}"))) {
-//            watch = org.openide.util.Utilities.replaceString(watch, "\"", "\\\"");
+//            watch = watch.replace("\"", "\\\"");
 //            watch = "pageContext.getExpressionEvaluator().evaluate(\"" + watch +
 //                                "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
 //            Utils.log("Watch: watch = " + watch);

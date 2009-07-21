@@ -90,7 +90,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
         this.url = url;
         this.lineNumber = lineNumber;
         String pt = NbBundle.getMessage(GroovyLineBreakpoint.class, "CTL_Default_Print_Text");
-        this.printText = org.openide.util.Utilities.replaceString(pt, "{jspName}", DebugUtils.getJspName(url));  
+        this.printText = pt.replace("{jspName}", DebugUtils.getJspName(url));
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         
