@@ -75,6 +75,8 @@ import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -421,6 +423,30 @@ public class CommitAction extends ContextAction {
             boolean commitAfterMerge = false;
             try {
                 HgCommand.doCommit(repository, commitCandidates, message, logger);
+            } catch (HgException.HgTooLongArgListException e) {
+                Mercurial.LOG.log(Level.INFO, null, e);
+                List<File> reducedCommitCandidates;
+                String offeredFileNames = "";                           //NOI18N
+                if (ctx.getRootFiles().size() < 5) {
+                    reducedCommitCandidates = new LinkedList<File>(ctx.getRootFiles());
+                    for (File f : reducedCommitCandidates) {
+                        offeredFileNames += "\n" + f.getName();         //NOI18N
+                    }
+                } else {
+                    reducedCommitCandidates = Collections.EMPTY_LIST;
+                    offeredFileNames = "\n" + repository.getName();     //NOI18N
+                }
+                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_QUERY", offeredFileNames)); // NOI18N
+                descriptor.setTitle(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
+                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                Object res = DialogDisplayer.getDefault().notify(descriptor);
+                if (res == NotifyDescriptor.NO_OPTION) {
+                    return;
+                }
+                Mercurial.LOG.info("CommitAction: committing with a reduced set of files: " + commitCandidates.toString()); //NOI18N
+                HgCommand.doCommit(repository, reducedCommitCandidates, message, logger);
             } catch (HgException ex) {
                 if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
                     // committing after a merge, all modified files have to be committed, even excluded files
