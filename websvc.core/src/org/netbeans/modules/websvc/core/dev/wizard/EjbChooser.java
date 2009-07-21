@@ -59,10 +59,10 @@ public class EjbChooser extends javax.swing.JPanel {
     private NodeDisplayPanel nodeDisplayPanel;
     
     /** Creates new form EjbChooser */
-    public EjbChooser(Node root) {
+    public EjbChooser(Node root, boolean localInterfaceOptional) {
         initComponents();
 
-        this.nodeAcceptor = new NodeAcceptorImpl();
+        this.nodeAcceptor = new NodeAcceptorImpl(localInterfaceOptional);
 
         nodeDisplayPanel = new NodeDisplayPanel(root);
         nodeDisplayPanel.setBorder(new EtchedBorder());
@@ -153,6 +153,12 @@ public class EjbChooser extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private class NodeAcceptorImpl implements NodeAcceptor {
+        private boolean localInterfaceOptional;
+
+        public NodeAcceptorImpl(boolean localInterfaceOptional) {
+            this.localInterfaceOptional = localInterfaceOptional;
+        }
+    
         public boolean acceptNodes(Node[] nodes) {
             setErrorMessage(" "); //NOI18N
 
@@ -169,7 +175,7 @@ public class EjbChooser extends javax.swing.JPanel {
                 return false;                
             }
             
-            if (ejbRef.getLocal() == null && ejbRef.getRemote() == null) {
+            if (ejbRef.getLocal() == null && ejbRef.getRemote() == null && !localInterfaceOptional) {
                 setErrorMessage(NbBundle.getMessage(EjbChooser.class,"MSG_MISSING_INTERFACE")); 
                 return false;
             }
