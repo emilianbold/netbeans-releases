@@ -188,6 +188,8 @@ abstract class FieldInjectionPointLogic {
             annotationName = annotationElement.getQualifiedName().toString();
             currentBindingType = annotationElement.getQualifiedName().contentEquals( 
                     CURRENT_BINDING_ANNOTATION);
+            newBindingType = annotationElement.getQualifiedName().contentEquals( 
+                    NEW_BINDING_ANNOTATION );
         }
         if ( (bindingAnnotations.size() == 0 && anyBindingType) || 
                 currentBindingType )
@@ -209,20 +211,22 @@ abstract class FieldInjectionPointLogic {
         else if (newBindingType){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
             AnnotationParser parser = AnnotationParser.create( modelImpl.getHelper());
-            parser.expectClass( "value",                                // NOI18N
-                    AnnotationParser.defaultValue(Object.class.getCanonicalName()));
+            parser.expectClass( "value", null);                         // NOI18N 
             ParseResult parseResult = parser.parse(annotationMirror);
             String clazz = parseResult.get( "value" , String.class );   // NOI18N 
             TypeMirror typeMirror;
-            if ( clazz.equals( Object.class.getCanonicalName()) || clazz == null ){
+            if ( clazz == null ){
                 typeMirror = element.asType();
             }
             else {
                 typeMirror = resolveType( clazz, modelImpl.getHelper());
             }
-            Element typeElement = modelImpl.getHelper().getCompilationController().
+            Element typeElement = null;
+            if ( typeMirror != null ) {
+                typeElement = modelImpl.getHelper().getCompilationController().
                 getTypes().asElement(typeMirror);
-            if ( element!= null ){
+            }
+            if ( typeElement!= null ){
                 result.addAll(getImplementors(modelImpl, typeElement ));
             }
         }
