@@ -137,7 +137,7 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@BindingType " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+          
-                "public @interface Current  {}");
+                "public @interface Current  {} ");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Produces.java",
                 "package javax.enterprise.inject; " +
