@@ -48,6 +48,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,6 +66,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -150,7 +152,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final int LEFT_DISPLAY_MARGIN = 20;
     private static final int NAME_COLUMN_WIDTH = 100;
     private static final int MIN_NAME_COLUMN_WIDTH = 55;
-    static final int MIN_SUMMARY_COLUMN_WIDTH = 62;
+    static final int MIN_SUMMARY_COLUMN_WIDTH = 72;
     private static final int TABLE_ROW_HEIGHT = 18;
     static final int THREAD_LINE_TOP_BOTTOM_MARGIN = 3;
 
@@ -386,6 +388,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         MSAPanel.add(modeMSA, BorderLayout.NORTH);
         MSAPanel.add(fullMSA, BorderLayout.SOUTH);
         bottomPanel.add(MSAPanel, BorderLayout.WEST);
+        modeMSA.addActionListener(this);
         fullMSA.addActionListener(this);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -514,8 +517,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (clickedLine != -1) {
                     if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
-                    } else if ((e.getModifiers() == InputEvent.BUTTON1_MASK) && (e.getClickCount() == 2)) {
-                        performDefaultAction();
+                    } else if ((e.getModifiers() == InputEvent.BUTTON1_MASK)){
+                        if (e.getClickCount() == 1){
+                            onClickAction(e);
+                        } else if (e.getClickCount() == 2) {
+                            performDefaultAction();
+                        }
                     }
                 }
             }
@@ -721,9 +728,15 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             performDefaultAction();
         } else if (e.getSource() == fullMSA) {
             initLegend(isFullMode());
-            refreshViewData();
+            refreshUI();
+            viewPort.repaint();
+            //refreshViewData();
+            //repaint();
         } else if (e.getSource() == modeMSA) {
-            refreshViewData();
+            refreshUI();
+            viewPort.repaint();
+            //refreshViewData();
+            //repaint();
         }
     }
 
@@ -901,6 +914,81 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         }
 
         ThreadsPanel.this.detailsCallback.showDetails(array);
+    }
+
+    private void onClickAction(MouseEvent e) {
+        int rowIndex = table.rowAtPoint(e.getPoint());
+        if (rowIndex >= 0) {
+            int row = filteredDataToDataIndex.get(rowIndex).intValue();
+            TableColumnModel columnModel = table.getColumnModel();
+            int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+            int col = table.convertColumnIndexToModel(viewColumn);
+            if (col == 1){
+                ThreadStateColumnImpl threadData = manager.getThreadData(row);
+                Rectangle rect = table.getCellRect(rowIndex, viewColumn, false);
+                Point point = new Point(e.getPoint().x - rect.x, e.getPoint().y - rect.y);
+                int index = point2index(threadData, point, rect.width);
+                if (index >= 0) {
+                    List<Integer> filteredThreads = new ArrayList<Integer>(filteredDataToDataIndex);
+                    ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(manager, row, index, filteredThreads, isFullMode(), -1);
+                    ThreadsPanel.this.detailsCallback.showStack(visualizer);
+                }
+            }
+        }
+    }
+
+
+    private int point2index(ThreadStateColumnImpl threadData, Point point, int width){
+        long dataEnd = getDataEnd();
+        if (threadData != null) {
+            int index = getFirstVisibleDataUnit(threadData);
+            if (index != -1) {
+                width = Math.abs(width);
+                if ((viewEnd - viewStart) > 0) {
+                    float factor = (float) width / (float) (viewEnd - viewStart);
+                    while ((index < threadData.size()) &&
+                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= viewEnd)) {
+                        // Thread alive
+                        if (threadData.isAlive(index)) {
+                            int x; // Begin of rectangle
+                            int xx; // End of rectangle
+
+                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
+
+                            if (index < (threadData.size() - 1)) {
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
+                            } else {
+                                xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
+                            }
+                            if (x <= point.x && point.x < xx) {
+                                return index;
+                            }
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    private int getFirstVisibleDataUnit(ThreadStateColumnImpl threadData) {
+        for (int i = 0; i < threadData.size(); i++) {
+            long timestamp = ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i).getTimeStamp());
+            if ((timestamp <= viewEnd) && (i == (threadData.size() - 1))) {
+                return i; // last data unit before viewEnd
+            }
+            if (timestamp <= viewStart) {
+                if (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i + 1).getTimeStamp()) > viewStart) {
+                    return i; // data unit ends between viewStart and viewEnd
+                }
+            } else {
+                if (timestamp <= viewEnd) {
+                    return i; // data unit begins between viewStart and viewEnd
+                }
+            }
+        }
+        return -1;
     }
 
     // @AWTBound
@@ -1093,6 +1181,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
          * @param indexes array of int indexes for threads to display
          */
         public void showDetails(int[] indexes);
+
+        public void showStack(ThreadStackVisualizer visualizer);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

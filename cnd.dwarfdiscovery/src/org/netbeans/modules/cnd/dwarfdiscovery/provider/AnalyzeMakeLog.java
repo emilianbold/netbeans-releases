@@ -226,19 +226,19 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
 
     }
     
-    /* package-local */ static List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress){
+    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress){
         LogReader clrf = new LogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults(progress);
+        List<SourceFileProperties> list = clrf.getResults(progress, isStoped);
         return list;
     }
     
     private Progress progress;
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
-        isStoped = false;
+        isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
         this.progress = progress;
-        if (!isStoped){
+        if (!isStoped.get()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
@@ -267,7 +267,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped) {
+                            if (isStoped.get()) {
                                 break;
                             }
                             if (source instanceof DwarfSource) {
@@ -277,7 +277,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped) {
+                            if (isStoped.get()) {
                                 break;
                             }
                             File file = new File(path);

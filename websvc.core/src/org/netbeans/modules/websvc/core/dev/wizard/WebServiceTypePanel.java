@@ -55,8 +55,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -266,7 +268,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         Children.Array children = new Children.Array();
         children.add(ejbProjectNodes.<Node>toArray(new Node[ejbProjectNodes.size()]));
         Node root = new AbstractNode(children);
-        EjbChooser chooser = new EjbChooser(root);
+        EjbChooser chooser = new EjbChooser(root, J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported());
         final DialogDescriptor dd = new DialogDescriptor(chooser, org.openide.util.NbBundle.getMessage(WebServiceTypePanel.class, "LBL_BrowseBean_Title"));
         
         dd.setValid(false);
@@ -423,7 +425,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
+            EjbJarProvider ejbJarProvider = allProjects[i].getLookup().lookup(EjbJarProvider.class);
+            if (j2eeModuleProvider != null && ejbJarProvider != null) {
                 isEJBModule = true;
             }
             if ((isEJBModule && !isCallerFreeform) ||

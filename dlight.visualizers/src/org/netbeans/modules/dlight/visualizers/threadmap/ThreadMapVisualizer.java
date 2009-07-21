@@ -99,7 +99,13 @@ public class ThreadMapVisualizer extends JPanel implements
         threadsPanel = new ThreadsPanel(dataManager, new ThreadsPanel.ThreadsDetailsCallback() {
 
             public void showDetails(int[] indexes) {
-                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            public void showStack(ThreadStackVisualizer visualizer) {
+                CallStackTopComponent tc = CallStackTopComponent.findInstance();
+                tc.addVisualizer(visualizer.getName(), visualizer);
+                tc.open();
+                tc.requestActive();
             }
         });
 

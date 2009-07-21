@@ -102,7 +102,10 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
         for(String uri : namespaces.keySet()) {
             if(JsfSupport.isJSFLibrary(uri)) {
-                JsfSupport.findFor(source).face(result);
+                JsfSupport jsfs = JsfSupport.findFor(source);
+                if(jsfs != null) {
+                    jsfs.face(result);
+                }
             }
         }
         

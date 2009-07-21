@@ -675,8 +675,7 @@ public final class NbMavenProjectImpl implements Project {
         URI[] uris = new URI[srcs.size() + 2];
         int count = 0;
         for (String str : srcs) {
-            File fil = FileUtil.normalizeFile(new File(str));
-            uris[count] = fil.toURI();
+            uris[count] = FileUtilities.convertStringToUri(str);
             count = count + 1;
         }
         uris[uris.length - 2 ] = getScalaDirectory(test);

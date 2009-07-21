@@ -75,4 +75,10 @@ public interface ReaderProvider {
      * is able to provide Readers for.
      */
     public Collection getIdentifiers();
+
+    /**
+     * @param public identifiers
+     * @return true if the content to parse is xml content, false if sgml content
+     */
+    public boolean isXMLContent(String identifier);
 }

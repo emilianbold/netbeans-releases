@@ -84,12 +84,14 @@ class TypeBindingFilter extends Filter<TypeElement> {
                     getElement().getSimpleName()+ " " +
                     "couldn't have type as eligible for inection becuase its " +
                     "type is primitive. It is unproxyable bean types"); // NOI18N
+            set.clear();
         }
         else if ( kind == TypeKind.ARRAY ){
             WebBeansModelProviderImpl.LOGGER.fine("Variable element " +
                     getElement().getSimpleName()+ " " +
                     "couldn't have type as eligible for inection becuase its " +
                     "type has array type. It is unproxyable bean types");// NOI18N
+            set.clear();
         }
     }
 

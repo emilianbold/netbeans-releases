@@ -36,35 +36,31 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.db.derby;
 
-package org.netbeans.editor.ext.html.dtd;
-
-import java.util.Arrays;
-import java.util.List;
+import java.sql.SQLException;
+import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 
 /**
- *
- * @author marekfukala
+ * @author Alexey Vladykin
  */
-public class Utils {
+public class DerbyStackStorageTest extends CommonStackDataStorageTests {
 
-    public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
-
-    public static final String XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
-        
-    private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
-        XHTML_STRINCT_PUBLIC_ID,
-        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-        "-//W3C//DTD XHTML 1.0 Frameset//EN"});
-
-     public static boolean isXHTMLPublicId(String publicId) {
-        return XHTML_PUBLIC_IDS.contains(publicId);
+    protected StackDataStorage createStorage() {
+        try {
+            return new DerbyDataStorage();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
-     //XXX hack - resolve the namespaces propertly!
-    public static boolean isXhtmlNs(String namespace) {
-        return namespace == null ? true : namespace.equals(XHTML_NAMESPACE);
+    protected boolean shutdownStorage(StackDataStorage db) {
+        return ((DerbyDataStorage) db).shutdown();
     }
 
-
+    protected void flush(StackDataStorage db) {
+        ((DerbyDataStorage) db).flush();
+    }
 }
