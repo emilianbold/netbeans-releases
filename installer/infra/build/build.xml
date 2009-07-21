@@ -1032,6 +1032,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-base">
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-base"/>
+	    <param name="use.custom.package.data.mapping" value="1"/>
         </antcall>
     </target>
 
