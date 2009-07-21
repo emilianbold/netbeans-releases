@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html;
+package org.netbeans.modules.html.editor;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,19 +50,19 @@ public enum HtmlVersion {
 
     UNKNOWN(new String[]{}),
 
-    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}),
+    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}), //NOI18N
 
-    HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN",
-                        "-//W3C//DTD HTML 4.0 Transitional//EN",
-                        "-//W3C//DTD HTML 4.0 Frameset//EN"}),
+    HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN", //NOI18N
+                        "-//W3C//DTD HTML 4.0 Transitional//EN", //NOI18N
+                        "-//W3C//DTD HTML 4.0 Frameset//EN"}), //NOI18N
 
-    HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN",
-                        "-//W3C//DTD HTML 4.01 Transitional//EN",
-                        "-//W3C//DTD HTML 4.01 Frameset//EN"}),
+    HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN", //NOI18N
+                        "-//W3C//DTD HTML 4.01 Transitional//EN", //NOI18N
+                        "-//W3C//DTD HTML 4.01 Frameset//EN"}), //NOI18N
 
-    XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN",
-                        "-//W3C//DTD XHTML 1.0 Transitional//EN",
-                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "http://www.w3.org/1999/xhtml", true);
+    XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN", //NOI18N
+                        "-//W3C//DTD XHTML 1.0 Transitional//EN", //NOI18N
+                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "http://www.w3.org/1999/xhtml", true); //NOI18N
 
     //TODO Add XHTML1.1, XHTML 2.0 and HTML 5 support
 
