@@ -262,7 +262,7 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
-        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+        if (!Boolean.getBoolean("netbeans.full.hack") && !Boolean.getBoolean("netbeans.close")) {
             usageStatisticsReminder();
         }
         
