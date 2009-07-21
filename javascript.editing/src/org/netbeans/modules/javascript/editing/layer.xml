@@ -344,17 +344,5 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/json.html"/>
             </file>
         </folder>
-        <folder name="JSP_Servlet">
-            <file name="javascript.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/javascript.js"/>
-                <attr name="position" intvalue="700"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
-            </file>
-            <file name="json.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/json.json"/>
-                <attr name="position" intvalue="750"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
-            </file>
-        </folder>
     </folder>
 </filesystem>
