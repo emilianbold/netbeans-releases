@@ -36,49 +36,67 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.storage;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
-public final class ThreadDataImpl implements ThreadData {
+/**
+ *
+ * @author Alexander Simon
+ */
+public final class StackTraceDescriptor {
 
-    private final ThreadInfoImpl threadInfo;
-    private final List<ThreadStateImpl> states;
-    private final List<ThreadState> pstates;
+    private StackTrace stackTrace;
+    private final List<Integer> showThreads;
+    private final long startTime;
+    private long stackTimeStamp;
 
-    public ThreadDataImpl(ThreadInfoImpl threadInfo) {
-        this.threadInfo = threadInfo;
-        this.states = new ArrayList<ThreadStateImpl>();
-        pstates = Collections.<ThreadState>unmodifiableList(states);
-    }
-
-    public ThreadInfoImpl getThreadInfo() {
-        return threadInfo;
-    }
-
-    public List<ThreadState> getThreadState() {
-        return pstates;
-    }
-
-    void addState(ThreadStateImpl state) {
-        states.add(state);
-    }
-
-    public StackTrace getStackTrace(final long timeStamp) {
-        //TODO implement me!
-        return new StackTrace(){
-            public List<Stack> getStackTrace() {
-                return Collections.<Stack>emptyList();
+    public StackTraceDescriptor(ThreadState state, ThreadData stackProvider, List<Integer> showThreads, MSAState prefferedState, boolean isMSAMode, boolean isFullMode, long startTime) {
+        this.startTime = startTime;
+        this.showThreads = showThreads;
+        int msaIndex = -1;
+        if (isMSAMode) {
+            for (int i = 0; i < state.size(); i++) {
+                if (prefferedState.equals(state.getMSAState(i, isFullMode))) {
+                    msaIndex = i;
+                    break;
+                }
             }
-            public long getTimeStamp() {
-                return timeStamp;
+        } else {
+            msaIndex = state.getSamplingStateIndex(isFullMode);
+        }
+        if (msaIndex >= 0) {
+            stackTimeStamp = state.getTimeStamp(msaIndex);
+            if (stackTimeStamp >= 0) {
+                stackTrace = stackProvider.getStackTrace(stackTimeStamp);
+            } else {
+                stackTimeStamp = state.getTimeStamp();
             }
-        };
+        }
+    }
+
+    public List<Stack> getStacks() {
+        List<Stack> selectesStacks = new ArrayList<Stack>();
+        if (stackTrace != null) {
+            for (Integer info : showThreads) {
+                for (Stack stack : stackTrace.getStackTrace()) {
+                    if (info.intValue() == stack.getThreadInfo().getThreadId()) {
+                        selectesStacks.add(stack);
+                        break;
+                    }
+                }
+            }
+        }
+        return selectesStacks;
+    }
+
+    public long getTime(){
+        return ThreadStateColumnImpl.timeStampToMilliSeconds(stackTimeStamp) - startTime;
     }
 }

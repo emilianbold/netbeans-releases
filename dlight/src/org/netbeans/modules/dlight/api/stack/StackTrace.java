@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.api.stack;
 
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 
 public interface StackTrace {
 
@@ -52,5 +53,7 @@ public interface StackTrace {
         List<FunctionCall> getStack();
 
         ThreadInfo getThreadInfo();
+
+        MSAState getState();
     }
 }
