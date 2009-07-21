@@ -473,7 +473,7 @@ public final class IOWindow implements IOContainer.Provider {
             if (name != null) {
                 String newName = NbBundle.getMessage(IOWindowImpl.class, "FMT_IO_WINDOW", new Object[]{winName, name}); //NOI18N
                 if (newName.indexOf("<html>") != -1) {
-                    newName = "<html>" + Utilities.replaceString(newName, "<html>", ""); //NOI18N
+                    newName = "<html>" + newName.replace("<html>", ""); //NOI18N
                     setHtmlDisplayName(newName); //NOI18N
                     setToolTipText(newName);
                 } else {

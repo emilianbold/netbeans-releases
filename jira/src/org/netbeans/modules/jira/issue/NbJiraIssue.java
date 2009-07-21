@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -1012,13 +1013,26 @@ public class NbJiraIssue extends Issue {
                 return project != null ? project.getName() : "";                // NOI18N
             case COMPONENT:
                 String projectId = getFieldValue(IssueField.PROJECT);
-                Component comp = config != null ? config.getComponentById(projectId, value) : null;
-                return comp != null ? comp.getName() : "";                      // NOI18N
+                // Component and version are multi-value fields, cannot use directly getFieldValue()
+                List<String> values = new LinkedList<String>();
+                for (String v : getFieldValues(f)) {
+                    Component version = config != null ? config.getComponentById(projectId, v) : null;
+                    if (version != null) {
+                        values.add(version.getName());
+                    }
+                }
+                return values.toString();
             case AFFECTSVERSIONS:
             case FIXVERSIONS:
                 projectId = getFieldValue(IssueField.PROJECT);
-                Version version = config != null ? config.getVersionById(projectId, value) : null;
-                return version != null ? version.getName() : "";                // NOI18N
+                values = new LinkedList<String>();
+                for (String v : getFieldValues(f)) {
+                    Version version = config != null ? config.getVersionById(projectId, v) : null;
+                    if (version != null) {
+                        values.add(version.getName());
+                    }
+                }
+                return values.toString();
             case TYPE:
                 IssueType type = config != null ? config.getIssueTypeById(value) : null;
                 return type != null ? type.getName() : "";                      // NOI18N
@@ -1029,16 +1043,20 @@ public class NbJiraIssue extends Issue {
 
 
     static String getFieldValue(TaskData taskData, IssueField f) {
+        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
         if(f.isSingleAttribute()) {
-            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
             return a != null ? a.getValue() : ""; // NOI18N
         } else {
-            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.key);
-            // returning 0 would set status MODIFIED instead of NEW
-            return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
+            String value = "";                                          //NOI18N
+            if (a != null) {
+                ArrayList<String> attrs = new ArrayList(a.getValues());
+                Collections.sort(attrs);
+                value += "" + attrs.size() + attrs.toString();          //NOI18N
+            }
+            return value;
         }
     }
 

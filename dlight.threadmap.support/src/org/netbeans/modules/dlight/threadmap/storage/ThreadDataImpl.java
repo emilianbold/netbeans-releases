@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
@@ -69,8 +70,15 @@ public final class ThreadDataImpl implements ThreadData {
         states.add(state);
     }
 
-    public StackTrace getStackTrace(long timeStamp) {
+    public StackTrace getStackTrace(final long timeStamp) {
         //TODO implement me!
-        return null;
+        return new StackTrace(){
+            public List<Stack> getStackTrace() {
+                return Collections.<Stack>emptyList();
+            }
+            public long getTimeStamp() {
+                return timeStamp;
+            }
+        };
     }
 }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -94,6 +95,7 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -215,7 +217,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
             }
         } else {
-            pathRegistryListener = new PathRegistryListener();
+            RequestProcessor rp = contextProvider.lookupFirst(null, RequestProcessor.class);
+            pathRegistryListener = new PathRegistryListener(rp);
             GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(
                     WeakListeners.create(GlobalPathRegistryListener.class,
                                          pathRegistryListener,
@@ -942,8 +945,23 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     }
 
     private class PathRegistryListener implements GlobalPathRegistryListener, PropertyChangeListener {
+
+        private RequestProcessor rp;
+
+        public PathRegistryListener(RequestProcessor rp) {
+            this.rp = rp;
+        }
         
-        public void pathsAdded(GlobalPathRegistryEvent event) {
+        public void pathsAdded(final GlobalPathRegistryEvent event) {
+            // Work with class path is expensive. Move it off AWT.
+            if (EventQueue.isDispatchThread()) {
+                rp.post(new Runnable() {
+                    public void run() {
+                        pathsAdded(event);
+                    }
+                });
+                return ;
+            }
             List<FileObject> addedRoots = new ArrayList<FileObject>();
             for (ClassPath cp : event.getChangedPaths()) {
                 for (FileObject fo : cp.getRoots()) {
@@ -971,7 +989,16 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         
-        public void pathsRemoved(GlobalPathRegistryEvent event) {
+        public void pathsRemoved(final GlobalPathRegistryEvent event) {
+            // Work with class path is expensive. Move it off AWT.
+            if (EventQueue.isDispatchThread()) {
+                rp.post(new Runnable() {
+                    public void run() {
+                        pathsRemoved(event);
+                    }
+                });
+                return ;
+            }
             List<FileObject> removedRoots = new ArrayList<FileObject>();
             for (ClassPath cp : event.getChangedPaths()) {
                 for (FileObject fo : cp.getRoots()) {
@@ -999,8 +1026,17 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             // JDK sources changed
+            // Work with class path is expensive. Move it off AWT.
+            if (EventQueue.isDispatchThread()) {
+                rp.post(new Runnable() {
+                    public void run() {
+                        propertyChange(evt);
+                    }
+                });
+                return ;
+            }
             JavaPlatform[] platforms = JavaPlatformManager.getDefault ().
                 getInstalledPlatforms ();
             boolean changed = false;

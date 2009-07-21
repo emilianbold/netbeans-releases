@@ -57,6 +57,7 @@ import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.dbschema.UniqueKeyElement;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel.ColumnData;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 
 /**
  * This class provides an algorithm to produce a set of cmp beans and relations
@@ -71,6 +72,7 @@ public class DbSchemaEjbGenerator {
     private List relations = new ArrayList();
     private SchemaElement schemaElement;
     private Set<String> tablesReferecedByOtherTables;
+    private final CollectionType colectionType;
     
     /**
      * Creates a generator for a set of beans.
@@ -79,13 +81,24 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      */
     public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement) {
+        this(genTables, schemaElement, CollectionType.COLLECTION);
+    }
+
+    /**
+     * Creates a generator for a set of beans.
+     *
+     * @param genTables contains the tables to generate and their respective locations.
+     * @param schemaElement the dbschema containing the tables to generate beans for.
+     * @param collectionType collection type is used in some names generation
+     */
+    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType) {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
-    
+        this.colectionType = collectionType;
+
         tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
         buildCMPSet();
     }
-    
     /**
      * 
      * @param schemaElement The schema
@@ -143,7 +156,7 @@ public class DbSchemaEjbGenerator {
         
         return true;
     }
-    
+
     private boolean isForeignKey(ForeignKeyElement[] fks,
             ColumnElement col) {
         if (fks == null) {
@@ -251,8 +264,8 @@ public class DbSchemaEjbGenerator {
         String roleAname = getRoleName(foreignKeys[0], roleAHelper.getClassName());
         String roleBname = getRoleName(foreignKeys[1], roleBHelper.getClassName());
         
-        String roleACmr = EntityMember.makeRelationshipFieldName(roleBHelper.getClassName(), true);
-        String roleBCmr = EntityMember.makeRelationshipFieldName(roleAHelper.getClassName(), true);
+        String roleACmr = EntityMember.makeRelationshipFieldName(roleBHelper.getClassName(), colectionType, true);
+        String roleBCmr = EntityMember.makeRelationshipFieldName(roleAHelper.getClassName(), colectionType, true);
         
         roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
         List roleBFieldNames = getFieldNames(roleBHelper);
@@ -418,7 +431,7 @@ public class DbSchemaEjbGenerator {
 
         // create role B (it's the table which contains the foreign key)
         String roleBCmr = EntityMember.makeRelationshipFieldName(
-                roleAHelper.getClassName(), !oneToOne);
+                roleAHelper.getClassName(), colectionType, !oneToOne);
         roleBCmr = uniqueAlgorithm(getFieldNames(roleBHelper), roleBCmr, null);
         RelationshipRole roleB = new RelationshipRole(
                 //TODO ask generator for default role name, do not assume it is EJB name
@@ -434,7 +447,7 @@ public class DbSchemaEjbGenerator {
         
         // role A
         String roleACmr = EntityMember.makeRelationshipFieldName(
-                roleBHelper.getClassName(), false);
+                roleBHelper.getClassName(), colectionType, false);
         
         /* only use database column name if a column is not required by the
            primary key. If a column is already required by the primary key
@@ -443,7 +456,7 @@ public class DbSchemaEjbGenerator {
            name and instead use the name of the other ejb (default).
          */
         if (!containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
-            roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), false);
+            roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), colectionType, false);
         }
         
         roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
