@@ -109,10 +109,13 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
 
         // validate frameworks
         String error = null;
+        String warning = null;
         PhpModuleExtender visibleExtender = frameworksPanel.getSelectedVisibleExtender();
-        if (visibleExtender != null
-                && !visibleExtender.isValid()) {
-            error = visibleExtender.getErrorMessage();
+        if (visibleExtender != null) {
+            if (!visibleExtender.isValid()) {
+                error = visibleExtender.getErrorMessage();
+            }
+            warning = visibleExtender.getWarningMessage();
         }
         Set<PhpFrameworkProvider> invalidFrameworks = new HashSet<PhpFrameworkProvider>();
         for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworksPanel.getSelectedExtenders().entrySet()) {
@@ -132,6 +135,8 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
             descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
             descriptor.putProperty(VALID, false);
             return false;
+        } else if (warning != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
         }
 
         descriptor.putProperty(VALID, true);

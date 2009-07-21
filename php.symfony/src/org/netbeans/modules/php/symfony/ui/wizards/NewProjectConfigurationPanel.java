@@ -120,20 +120,7 @@ public class NewProjectConfigurationPanel extends JPanel {
         return apps;
     }
 
-    public String validateData() {
-        String err = null;
-        if (frontendCheckBox.isSelected()) {
-            err = validateParams(APP_FRONTEND, frontendParamsTextField);
-            if (err != null) {
-                return err;
-            }
-        }
-        if (backendCheckBox.isSelected()) {
-            err = validateParams(APP_BACKEND, backendParamsTextField);
-            if (err != null) {
-                return err;
-            }
-        }
+    public String getErrorMessage() {
         if (otherCheckBox.isSelected()) {
             String otherAppName = getOtherAppName();
             if (!StringUtils.hasText(otherAppName)) {
@@ -141,9 +128,29 @@ public class NewProjectConfigurationPanel extends JPanel {
             } else if (!APP_NAME_PATTERN.matcher(otherAppName).matches()) {
                 return NbBundle.getMessage(NewProjectConfigurationPanel.class, "MSG_InvalidAppName", otherAppName);
             }
-            err = validateParams(otherAppName, otherParamsTextField);
-            if (err != null) {
-                return err;
+        }
+        return null;
+    }
+
+    public String getWarningMessage() {
+        String warn = null;
+        if (frontendCheckBox.isSelected()) {
+            warn = validateParams(APP_FRONTEND, frontendParamsTextField);
+            if (warn != null) {
+                return warn;
+            }
+        }
+        if (backendCheckBox.isSelected()) {
+            warn = validateParams(APP_BACKEND, backendParamsTextField);
+            if (warn != null) {
+                return warn;
+            }
+        }
+        if (otherCheckBox.isSelected()) {
+            String otherAppName = getOtherAppName();
+            warn = validateParams(otherAppName, otherParamsTextField);
+            if (warn != null) {
+                return warn;
             }
         }
         return null;
