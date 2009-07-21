@@ -107,7 +107,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private static final String ID = "evaluator"; //NOI18N
     private static final String PROP_RESULT_CHANGED = "resultChanged"; // NOI18N
 
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    final private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private static WeakReference<CodeEvaluator> instanceRef;
 
     private JEditorPane codePane;
@@ -301,22 +301,34 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return defaultInstance != null ? defaultInstance.getExpression() : ""; // NOI18N
     }
 
-    public static synchronized void addResultListener(PropertyChangeListener listener) {
-        CodeEvaluator defaultInstance = getDefaultInstance();
-        defaultInstance.pcs.addPropertyChangeListener(listener);
+    public static void addResultListener(final PropertyChangeListener listener) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                CodeEvaluator defaultInstance = getDefaultInstance();
+                synchronized(defaultInstance.pcs) {
+                    defaultInstance.pcs.addPropertyChangeListener(listener);
+                }
+            }
+        });
     }
 
-    public static synchronized void removeResultListener(PropertyChangeListener listener) {
-        CodeEvaluator defaultInstance = getDefaultInstance();
-        defaultInstance.pcs.removePropertyChangeListener(listener);
+    public static void removeResultListener(final PropertyChangeListener listener) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                CodeEvaluator defaultInstance = getDefaultInstance();
+                synchronized(defaultInstance.pcs) {
+                    defaultInstance.pcs.removePropertyChangeListener(listener);
+                }
+            }
+        });
     }
 
     private static void fireResultChange() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
-                synchronized(CodeEvaluator.class) {
-                    if (defaultInstance != null) {
+                if (defaultInstance != null) {
+                    synchronized (defaultInstance.pcs) {
                         defaultInstance.pcs.firePropertyChange(PROP_RESULT_CHANGED, null, null);
                     }
                 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.schema.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,8 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.dom.SyncUnit;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -77,12 +80,12 @@ import org.netbeans.modules.xml.xam.dom.SyncUnit;
  */
 public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> implements SchemaModel {
     
-    private SchemaImpl schema;
+    private SchemaImpl mSchema;
     private SchemaComponentFactory csef;
     private RefCacheSupport mRefCacheSupport;
     
     public SchemaModelImpl(ModelSource modelSource) {
-        super(modelSource);	
+        super(modelSource);
         csef = new SchemaComponentFactoryImpl(this);
         //getAccess().setAutoSync(true);
         mRefCacheSupport = new RefCacheSupport(this);
@@ -121,16 +124,15 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     public SchemaComponent createRootComponent(org.w3c.dom.Element root) {
         SchemaImpl newSchema = (SchemaImpl)csef.create(root, null);
         if (newSchema != null) {
-            schema = newSchema;
+            mSchema = newSchema;
         } else {
             return null;
         }
         return getSchema();
     }
 
-
     public SchemaComponent getRootComponent() {
-        return schema;
+        return mSchema;
     }
 
     public <T extends NamedReferenceable>
@@ -138,7 +140,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace) &&
             XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(getSchema().getTargetNamespace())) {
-            return resolve(namespace, localName, type, null, new ArrayList<SchemaModel>());
+            return resolve(namespace, localName, type, null, new HashSet<SchemaModel>());
         }
         
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
@@ -146,11 +148,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             return sm.findByNameAndType(localName, type);
         }
         
-        return resolve(namespace, localName, type, null, new ArrayList<SchemaModel>());
+        return resolve(namespace, localName, type, null, new HashSet<SchemaModel>());
     }
     
-    <T extends NamedReferenceable>
-            T resolve(String namespace, String localName, Class<T> type, SchemaModelReference refToMe, Collection<SchemaModel> checked) 
+    <T extends NamedReferenceable> T resolve(
+            String namespace, String localName, Class<T> type,
+            SchemaModelReference refToMe, Collection<SchemaModel> checked)
     {
         if (getState() != State.VALID) {
             return null;
@@ -166,15 +169,16 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             //Non-conservative approach to same namespace resolution.
             //See http://www.netbeans.org/issues/show_bug.cgi?id=122836
             if (found == null && refToMe == null) {
-                Collection<SchemaModelReference> modelRefs = getMegaIncludedModelsRefs();
-                for (SchemaModelReference r : modelRefs) {
-                    SchemaModelImpl sm = mRefCacheSupport == null ? resolve(r) :
-                       mRefCacheSupport.optimizedResolve(r);
-                    if (sm == null)
+                Collection<SchemaModelImpl> models = getMegaIncludedModels(namespace);
+                for (SchemaModelImpl sm : models) {
+                    if (sm == null || checked.contains(sm)) {
                         continue;
-                    found = sm.resolve(namespace, localName, type, r, checked);
-                    if (found != null)
+                    }
+                    //
+                    found = sm.findByNameAndType(localName, type);
+                    if (found != null) {
                         break;
+                    }
                 }
             }            
         }
@@ -184,19 +188,17 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             checked.add(this);
             
             Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();
-            for (SchemaModelReference r : modelRefs) {
+            for (SchemaModelReference ref : modelRefs) {
                 // import should not have null namespace
-                if (r instanceof Import) {
-                    if (namespace == null || ! namespace.equals(((Import)r).getNamespace())) {
+                if (ref instanceof Import) {
+                    if (namespace == null || ! namespace.equals(((Import)ref).getNamespace())) {
                         continue;
                     }
                 }
 
-                SchemaModelImpl sm = mRefCacheSupport == null ? resolve(r) :
-                    mRefCacheSupport.optimizedResolve(r);
-                
-                if (sm != null && ! checked.contains(sm)) {
-                    found = sm.resolve(namespace, localName, type, r, checked);
+                SchemaModelImpl resolvedRef = this.resolve(ref);
+                if (resolvedRef != null && ! checked.contains(resolvedRef)) {
+                    found = resolvedRef.resolve(namespace, localName, type, ref, checked);
                 }
                 if (found != null) {
                     break;
@@ -207,11 +209,16 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return found;
     }
     
-    public SchemaModelImpl resolve(SchemaModelReference ref) {
-        try {
-            return (SchemaModelImpl) ref.resolveReferencedModel();
-        } catch (CatalogModelException ex) {
-            return null;
+    protected SchemaModelImpl resolve(SchemaModelReference ref) {
+        if (mRefCacheSupport == null) {
+            try {
+                return (SchemaModelImpl) ref.resolveReferencedModel();
+            } catch (CatalogModelException ex) {
+                // Do nothing here. Exception means that the reference can't be resolved
+                return null;
+            }
+        } else {
+            return mRefCacheSupport.optimizedResolve(ref);
         }
     }
 
@@ -224,32 +231,100 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     }
     
     /**
-     * See http://www.netbeans.org/issues/show_bug.cgi?id=122836
-     * B.xsd includes C and D. B uses types defined in  and C uses types defined
-     * in D. C & D do not know about each other.
-     * Returns all model references of the same namespace.
-     * Look for a mega model that includes this one. We may want to use all the
-     * includes from the mega model.
+     * It looks for a set of schema models, which can be visible to each others.
+     * The matter is, if model A includes B, then model B model's definitions
+     * is visible to A. But the oposite assertion is also correct because B
+     * logically becomes a part of A after inclusion.
+     *
+     * The problem is described in the issue http://www.netbeans.org/issues/show_bug.cgi?id=122836
+     *
+     * The task of the method is to find a set of schema models, which
+     * can be visible to the current model. The parameter is used as a hint
+     * to exclude the models from other namespace.
+     *
+     * @param soughtNs
+     * @return
      */
-    private Collection<SchemaModelReference> getMegaIncludedModelsRefs() {
-        Collection<SchemaModelReference> modelRefs = new ArrayList<SchemaModelReference>();
-        for(SchemaModel m: SchemaModelFactory.getDefault().getModels()) {
-            if(m == null || m.getSchema() == null || m == this)
-                continue;
-            //if this is one of the included schemas in some model then we must
-            //try to resolve in all the includes found.
-            Collection<Include> refs = m.getSchema().getIncludes();
-            for(SchemaModelReference ref: refs) {
-                SchemaModelImpl sm = mRefCacheSupport == null ? resolve(ref) :
-                    mRefCacheSupport.optimizedResolve(ref);
-                if(sm == this) {
-                    modelRefs.addAll(refs);
-                    break;
-                }
-            }            
+    private Set<SchemaModelImpl> getMegaIncludedModels(String soughtNs) {
+        //
+        Schema mySchema = this.getSchema();
+        if (mySchema == null) {
+            return Collections.EMPTY_SET; 
         }
-        
-        return modelRefs;        
+        //
+        // If the current model has empty target namespace, then it can be included anywhere
+        // If the current model has not empty target namespace, then it can be included only
+        // to models with the same target namespace.
+        String myTargetNs = this.getSchema().getTargetNamespace();
+        if (myTargetNs != null && !soughtNs.equals(myTargetNs)) {
+            return Collections.EMPTY_SET;
+        }
+        //
+        // The map collects all inclusion between schema models
+        // Key is including schema, value is the list of included schema
+        MultivalueMap.Graph<SchemaModelImpl> inclusionGraph =
+                new MultivalueMap.Graph<SchemaModelImpl>();
+        //
+        // Key is included schema, value is the list of including schema
+        MultivalueMap.Graph<SchemaModelImpl> backInclusionMap =
+                new MultivalueMap.Graph<SchemaModelImpl>();
+        //
+        // Populates inclusion map from all schema models, which have already loaded.
+        List<SchemaModel> modelsList = SchemaModelFactory.getDefault().getModels();
+        for(SchemaModel sModel: modelsList) {
+            if(sModel == null || sModel.getSchema() == null || sModel == this) {
+                continue;
+            }
+            //
+            Schema otherSchema = sModel.getSchema();
+            if (otherSchema == null) {
+                continue;
+            }
+            //
+            if (soughtNs != null) {
+                String otherTargetNs = otherSchema.getTargetNamespace();
+                if (otherTargetNs != null && !soughtNs.equals(otherTargetNs)) {
+                    // Skip all other models with different targetNamespace.
+                    continue;
+                }
+            }
+            //
+            assert sModel instanceof SchemaModelImpl;
+            SchemaModelImpl otherSModel = SchemaModelImpl.class.cast(sModel);
+            //
+            Collection<Include> includes = otherSchema.getIncludes();
+            for(Include ref: includes) {
+                SchemaModelImpl includedSm = otherSModel.resolve(ref);
+                if (includedSm != null) {
+                    inclusionGraph.put(otherSModel, includedSm);
+                    backInclusionMap.put(includedSm, otherSModel);
+                }
+            }
+        }
+        //
+        // Now there is forward and back inclusion graphs.
+        if (inclusionGraph.isEmpty()) {
+            return Collections.EMPTY_SET;
+        }
+        //
+        // Look for the roots of inclusion.
+        // Root s the top schema model, which includes current schema recursively,
+        // but isn't included anywhere itself.
+        Set<SchemaModelImpl> inclusionRoots = 
+                MultivalueMap.Utils.getTreeLeafs(backInclusionMap, this);
+        //
+        HashSet<SchemaModelImpl> result = new HashSet<SchemaModelImpl>();
+        for (SchemaModelImpl root : inclusionRoots) {
+            // The namespace of the inclusion root has to be exectly the same
+            // as required.
+            if (Util.equal(root.getSchema().getTargetNamespace(), soughtNs)) {
+                MultivalueMap.Utils.populateAllSubItems(inclusionGraph, root, result);
+            }
+        }
+        //
+        result.remove(this);
+        //
+        return result;
     }
             
     public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
@@ -404,10 +479,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return new SyncUpdateVisitor();
     }
 
+    @Override
     public Set<QName> getQNames() {
         return SchemaElements.allQNames();
     }
     
+    @Override
     public SyncUnit prepareSyncUnit(ChangeInfo changes, SyncUnit unit) {
         unit = super.prepareSyncUnit(changes, unit);
         if (unit != null) {
@@ -416,6 +493,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return null;
     }
     
+    @Override
     public DocumentModelAccess getAccess() {
         if (access == null) {
             super.getAccess().setAutoSync(true);  // default autosync true
@@ -423,12 +501,28 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return super.getAccess();
     }
     
+    @Override
     public Map<QName,List<QName>> getQNameValuedAttributes() {
         return SchemaAttributes.getQNameValuedAttributes();
     }
 
     public boolean isEmbedded() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        ModelSource source = getModelSource();
+        if (source != null) {
+            Lookup lookup = source.getLookup();
+            if (lookup != null) {
+                FileObject fileObject = lookup.lookup(FileObject.class);
+                if (fileObject != null) {
+                    return fileObject.getNameExt();
+                }
+            }
+        }
+        return super.toString();
     }
 
 }

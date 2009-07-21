@@ -91,7 +91,8 @@ public final class TextProvider extends ComponentProvider {
         if (Config.getDefault().isSelection()) {
             start = component.getSelectionStart();
             end = component.getSelectionEnd();
-        } else {
+        }
+        else {
             start = 0;
             end = document.getLength();
         }
@@ -108,7 +109,8 @@ public final class TextProvider extends ComponentProvider {
         }
         try {
             return new ComponentDocument(component.getText(start, length));
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             return null;
         }
     }

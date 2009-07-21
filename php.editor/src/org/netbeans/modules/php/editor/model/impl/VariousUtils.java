@@ -311,7 +311,7 @@ public class VariousUtils {
         return recentTypes;
     }
 
-    public static Stack<? extends ModelElement> getElemenst(FileScope topScope, VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
+    public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
         Stack<ModelElement> emptyStack = new Stack<ModelElement>();
         Stack<ModelElement> retval = new Stack<ModelElement>();
         Stack<String> stack = new Stack<String>();
@@ -453,8 +453,28 @@ public class VariousUtils {
                             }
                         }
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
-                        //TODO: not implemented yet
-                        return emptyStack;
+                        String clsName = stack.isEmpty() ? null : stack.pop();
+                        if (clsName == null) {
+                            return emptyStack;
+                        }
+                        ClassScope cls = ModelUtils.getFirst(CachingSupport.getClasses(clsName,topScope));
+                        if (cls == null) {
+                            return emptyStack;
+                        }
+                        FieldElement fieldElement = ModelUtils.getFirst(CachingSupport.getInheritedFields(cls, 
+                                !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PHPIndex.ANY_ATTR));//NOI18N
+                        if (fieldElement == null) {
+                            return emptyStack;
+                        } else {
+                            retval.push(fieldElement);
+                        }
+                        type = ModelUtils.getFirst(fieldElement.getTypes(offset));
+                        if (type == null) {
+                            semiTypeName = null;
+                            break;
+                        }
+                        stack.push(type.getName());
+                        operation = null;
                     } else {
                         throw new UnsupportedOperationException(operation);
                     }
@@ -494,7 +514,7 @@ public class VariousUtils {
             return "@" + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
-            String className = CodeUtils.extractClassName(staticMethodInvocation);
+            String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
@@ -669,7 +689,10 @@ public class VariousUtils {
                         break;
                 }
             } else {
-                if (state.equals(State.METHOD)) {
+                if (state.equals(State.CLASSNAME)) {
+                    state = State.STOP;
+                    break;
+                } else if (state.equals(State.METHOD)) {
                     state = State.STOP;
                     PHPTokenId id = token.id();
                     if (id != null && PHPTokenId.PHP_NEW.equals(id)) {

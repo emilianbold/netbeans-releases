@@ -150,4 +150,16 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return retval;
     }
 
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().substring(1)).append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getPhpModifiers().toBitmask()).append(";");
+        if (returnType != null) {
+            sb.append(returnType);
+        }
+        sb.append(";");//NOI18N
+        return sb.toString();
+    }
 }

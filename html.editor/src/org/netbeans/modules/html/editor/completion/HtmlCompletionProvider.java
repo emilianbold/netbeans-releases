@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -195,8 +196,8 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
-    public static boolean checkOpenCompletion(Document document, int dotPos, String typedText) {
-        BaseDocument doc = (BaseDocument)document;
+    public static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {
+        final BaseDocument doc = (BaseDocument)document;
         switch( typedText.charAt( typedText.length()-1 ) ) {
             case '/':
                 if (dotPos >= 2) { // last char before inserted slash
@@ -231,6 +232,29 @@ public class HtmlCompletionProvider implements CompletionProvider {
             case '<':
             case '&':
                 return true;
+            case '>':
+                //handle tag autocomplete
+                final boolean[] ret = new boolean[1];
+                doc.runAtomic(new Runnable() {
+                    public void run() {
+                        TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+                        if (ts == null) {
+                            //no suitable token sequence found
+                            ret[0] = false;
+                        } else {
+                            ts.move(dotPos - 1);
+                            if (ts.moveNext() || ts.movePrevious()) {
+                                if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL
+                                        && !CharSequenceUtilities.equals("/>", ts.token().text())) {
+                                    ret[0] = true;
+                                }
+                            }
+                        }
+                    }
+                });
+                return ret[0];
+
+
 //            case ';':
 //                return COMPLETION_HIDE;
 

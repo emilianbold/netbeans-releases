@@ -76,6 +76,7 @@ import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -112,6 +113,8 @@ public class CompletionTestBase extends NbTestCase {
         JavaCompletionProviderBasicTest.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+
+        TreeLoader.DISABLE_ARTIFICAL_PARAMETER_NAMES = true;
     }
 
     static final int FINISH_OUTTIME = 5 * 60 * 1000;

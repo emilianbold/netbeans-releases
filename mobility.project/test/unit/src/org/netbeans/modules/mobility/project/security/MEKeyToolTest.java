@@ -106,7 +106,7 @@ public class MEKeyToolTest extends NbTestCase {
         //just for coverage
         new MEKeyTool();
         ///////////////////
-        assertNull(MEKeyTool.getMEKeyToolPath(null));
+        assertNull(MEKeyTool.getMEKeyToolPath((Object)null));
         assertNull(MEKeyTool.getMEKeyToolPath(new J2MEPlatform("n1","fakepath","t1","d1",null,null,null,null,null,devices)));
         
         String result = MEKeyTool.getMEKeyToolPath(plat);
@@ -121,7 +121,7 @@ public class MEKeyToolTest extends NbTestCase {
         final int ORDER=1;
         System.out.println("listKeys");
         
-        assertNull(MEKeyTool.listKeys(null));
+        assertNull(MEKeyTool.listKeys((Object)null));
         MEKeyTool.KeyDetail[] result = MEKeyTool.listKeys(plat);
         assertNotNull(result);
         assertTrue(result.length>1);

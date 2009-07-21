@@ -113,7 +113,7 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
     @Override
     public void visit(StaticFieldAccess staticFieldAccess) {
         Variable field = staticFieldAccess.getField();        
-        String className = CodeUtils.extractClassName(staticFieldAccess);
+        String className = CodeUtils.extractUnqualifiedClassName(staticFieldAccess);
         if (className.equals("self")) {//NOI18N
             className = insideClsName;
         }

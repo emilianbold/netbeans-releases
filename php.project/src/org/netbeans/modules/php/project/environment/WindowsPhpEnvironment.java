@@ -44,6 +44,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
 
@@ -113,7 +114,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
 
     @Override
     public List<String> getAllPhpUnits() {
-        return findFileOnUsersPath("phpunit.bat"); // NOI18N
+        return FileUtils.findFileOnUsersPath("phpunit.bat"); // NOI18N
     }
 
     private static boolean isFloppy(File root) {

@@ -51,6 +51,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
@@ -68,6 +70,7 @@ public class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
     private boolean realLastModifiedCached;
+    private static final Logger LOGGER = Logger.getLogger(FileObj.class.getName());
 
 
     FileObj(final File file, final FileNaming name) {
@@ -103,15 +106,17 @@ public class FileObj extends BaseFileObj {
         FileOutputStream retVal = null;
         try {
             retVal = new FileOutputStream(f) {
-                                public void close() throws IOException {
-                                    if (!closable.isClosed()) {
-                                        super.close();
-                                        closable.close();
-                                        setLastModified(f.lastModified());
-                                        fireFileChangedEvent(false);
-                                    }
-                                }
-                            };
+
+                @Override
+                public void close() throws IOException {
+                    if (!closable.isClosed()) {
+                        super.close();
+                        closable.close();
+                        setLastModified(f.lastModified());
+                        fireFileChangedEvent(false);
+                    }
+                }
+            };
         } catch (FileNotFoundException e) {
             if (closable != null) {
                 closable.close();
@@ -144,8 +149,8 @@ public class FileObj extends BaseFileObj {
         
         try {
             if (Utilities.isWindows()) {
-                // #157056 - don't try to open locked windows files
-                if (getName().toLowerCase().contains("ntuser")) {  //NOI18N
+                // #157056 - don't try to open locked windows files (ntuser.dat, ntuser.dat.log1, ...)
+                if (getNameExt().toLowerCase().startsWith("ntuser.dat")) {  //NOI18N
                     return new ByteArrayInputStream(new byte[] {});
                 }
             } else if (!f.isFile()) {
@@ -154,6 +159,8 @@ public class FileObj extends BaseFileObj {
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
             closeableReference = closable;            
             inputStream = new FileInputStream(f) {
+
+                @Override
                 public void close() throws IOException {
                     super.close();
                     closable.close();
@@ -213,6 +220,9 @@ public class FileObj extends BaseFileObj {
             if (this.lastModified != -1 && !realLastModifiedCached) {
                 realLastModifiedCached = true;
             }
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ")", new Exception("Stack trace"));  //NOI18N
+            }
             this.lastModified = lastModified;
         }
     }
@@ -243,6 +253,9 @@ public class FileObj extends BaseFileObj {
     }
 
     protected void setValid(boolean valid) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "setValid: " + valid + " (" + this + ")", new Exception("Stack trace"));  //NOI18N
+        }
         if (valid) {
             //I can't make valid fileobject when it was one invalidated
             assert isValid() : this.toString();
@@ -270,6 +283,7 @@ public class FileObj extends BaseFileObj {
         }
     }
     
+    @Override
     public final void refresh(final boolean expected) {
         refresh(expected, true);
     }
@@ -277,15 +291,18 @@ public class FileObj extends BaseFileObj {
 
     
 
-    public final Enumeration getChildren(final boolean rec) {
+    @Override
+    public final Enumeration<FileObject> getChildren(final boolean rec) {
         return Enumerations.empty();
     }
 
-    public final Enumeration getFolders(final boolean rec) {
+    @Override
+    public final Enumeration<FileObject> getFolders(final boolean rec) {
         return Enumerations.empty();
     }
 
-    public final Enumeration getData(final boolean rec) {
+    @Override
+    public final Enumeration<FileObject> getData(final boolean rec) {
         return Enumerations.empty();
     }
 
@@ -319,6 +336,7 @@ public class FileObj extends BaseFileObj {
         return ((lock instanceof LockForFile) && (((LockForFile) lock).getFile().equals(f)));
     }
 
+    @Override
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
         setLastModified(getFileName().getFile().lastModified());

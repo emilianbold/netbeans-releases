@@ -46,7 +46,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -66,7 +66,7 @@ import java.util.logging.Level;
  */
 public class CreateJ2EEProjectTest extends PerformanceTestCase {
     
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewWebProjectNameLocationStepOperator wizard_location;
     
     private String category, project, project_name;
     private boolean createSubProjects = false;
@@ -167,7 +167,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location = new NewWebProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().setText(System.getProperty("nbjunit.workdir")+java.io.File.separator+"tmpdir");
         project_name += CommonUtilities.getTimeIndex();
         wizard_location.txtProjectName().setText(project_name);

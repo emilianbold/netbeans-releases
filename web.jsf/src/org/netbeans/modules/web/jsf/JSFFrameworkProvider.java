@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -71,6 +72,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -282,7 +284,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         private static final String VALIDATEXML_PARAM_NAME = "com.sun.faces.validateXml";     //NOI18N  
         private static final String VERIFYOBJECTS_PARAM_NAME = "com.sun.faces.verifyObjects"; //NOI18N
 
-        private static final String FACELETS_SERVLET_MAPPING="*.jsf"; //NOI18N
+//        private static final String FACELETS_SERVLET_MAPPING="*.jsf"; //NOI18N
         WebModule webModule;
         boolean isMyFaces;
         
@@ -294,6 +296,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         public void run() throws IOException {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
+            //we need deployment descriptor, create if null
+            if(dd==null)
+            {
+                dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), true, webModule.getWebInf());
+            }
             //faces servlet mapping
             String facesMapping = panel == null ? "faces/*" : panel.getURLPattern();
             
@@ -322,7 +329,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     
                     if (!servletDefined) {
                         servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
-                        String servletName = panel == null ? FACES_SERVLET_NAME : panel.getServletName();
+                        String servletName = (panel == null) ? FACES_SERVLET_NAME : panel.getServletName();
                         servlet.setServletName(servletName); 
                         servlet.setServletClass(FACES_SERVLET_CLASS); 
                         servlet.setLoadOnStartup(new BigInteger("1"));//NOI18N
@@ -330,12 +337,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         
                         ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
                         mapping.setServletName(servletName);//NOI18N
-                        if (panel.isEnableFacelets()) {
-                            mapping.setUrlPattern(FACELETS_SERVLET_MAPPING);//NOI18N
-                        } else {
-                            mapping.setUrlPattern(panel == null ? "/faces/*" : panel.getURLPattern());//NOI18N
-                        }
-
+                        mapping.setUrlPattern(panel == null? "/faces/*" : panel.getFacesMapping()); //NOI18N
                         ddRoot.addServletMapping(mapping);
                     }
                     
@@ -493,7 +495,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 // it's better the framework don't replace user's original one if exist.
                 String facesConfigTemplate = "faces-config.xml"; //NOI18N
                 if (ddRoot != null) {
-                    if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
+                    Profile profile = webModule.getJ2eeProfile();
+                    if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
                         if (isJSF20)
                             facesConfigTemplate = "faces-config_2_0.xml"; //NOI18N
                         else

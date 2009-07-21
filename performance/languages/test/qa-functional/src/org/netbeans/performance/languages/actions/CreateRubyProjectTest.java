@@ -53,7 +53,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Level;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewRubyProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -66,7 +66,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreateRubyProjectTest extends PerformanceTestCase {
 
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewRubyProjectNameLocationStepOperator wizard_location;
     
     public String category, project, project_name, project_type;
     
@@ -147,7 +147,7 @@ public class CreateRubyProjectTest extends PerformanceTestCase {
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location = new NewRubyProjectNameLocationStepOperator();
         String directory = CommonUtilities.getTempDir() + "createdProjects";
         wizard_location.txtProjectLocation().setText("");
         wizard_location.txtProjectLocation().setText(directory);

@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
@@ -88,6 +89,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private volatile Integer status = null;
     private final Object stateLock = new String(NativeExecutableTarget.class.getName() + " - state lock"); // NOI18N
     private volatile State state;
+    private LineConvertorFactory outConvertorFactory;
+    private LineConvertorFactory errConvertorFactory;
 
     public NativeExecutableTarget(NativeExecutableTargetConfiguration configuration) {
         super(new NativeExecutableTargetExecutionService());
@@ -111,6 +114,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
 
         this.externalTerminal = term;
+
+        if (externalTerminal == null) {
+            this.outConvertorFactory = configuration.getOutConvertorFactory();
+            this.errConvertorFactory = configuration.getErrConvertorFactory();
+        }
+
         this.templateCMD = this.cmd;
         Map<String, String> info = configuration.getInfo();
 
@@ -202,7 +211,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         // a runnable passed to an execution service as a postExecution parameter.
 
         if (doNotify) {
-            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, status));
+            Integer notificationValue = (newState == DLightTarget.State.RUNNING) ? Integer.valueOf(pid) : status;
+            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, notificationValue));
         }
     }
 
@@ -265,13 +275,22 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     descr = descr.inputOutput(io);
                     io.setInputVisible(false);
                 }
-
             } else {
                 pb = pb.unbufferOutput(true);
                 descr = descr.inputVisible(true);
                 if (io != null) {
                     descr = descr.inputOutput(io);
                     io.setInputVisible(true);
+                }
+            }
+
+            if (externalTerminal == null) {
+                if (outConvertorFactory != null) {
+                    descr = descr.outConvertorFactory(outConvertorFactory);
+                }
+
+                if (errConvertorFactory != null) {
+                    descr = descr.outConvertorFactory(errConvertorFactory);
                 }
             }
 

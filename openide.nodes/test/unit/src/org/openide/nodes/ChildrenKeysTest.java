@@ -2069,6 +2069,84 @@ public class ChildrenKeysTest extends NbTestCase {
         ch.keys("a1", "a2", "-a3");
     }
 
+    public void testGetSnapshotWhileAddNotify() {
+        final CountDownLatch l1 = new CountDownLatch(1);
+        final CountDownLatch l2 = new CountDownLatch(1);
+        class K extends Keys {
+
+            public K(boolean lazy, String... args) {
+                super(lazy(), args);
+            }
+
+            @Override
+            protected void addNotify() {
+                try {
+                    l1.countDown();
+                    l2.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                super.addNotify();
+            }
+        }
+
+        Keys ch = new K(lazy(), "a1", "a2");
+        final Node root = createNode(ch);
+
+        class Listener extends NodeAdapter {
+
+            List<Node> snapshot;
+
+            public Listener(List<Node> snapshot) {
+                this.snapshot = snapshot;
+            }
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                snapshot = ev.getSnapshot();
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                List<Node> prevSnapshot = ev.getPrevSnapshot();
+                if (lazy()) {
+                    EntrySupport.Lazy.LazySnapshot ls = (EntrySupport.Lazy.LazySnapshot) snapshot;
+                    EntrySupport.Lazy.LazySnapshot pls = (EntrySupport.Lazy.LazySnapshot) prevSnapshot;
+                    assertEquals(ls.entries, pls.entries);
+                } else {
+                    assertEquals(snapshot, prevSnapshot);
+                }
+                snapshot = ev.getSnapshot();
+            }
+        }
+        Thread t1 = new Thread() {
+            @Override
+            public void run() {
+                root.getChildren().getNodes();
+            }
+        };
+        t1.start();
+        try {
+            l1.await();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        try {
+            Children.PR.enterReadAccess();
+            Listener l = new Listener(root.getChildren().snapshot());
+            root.addNodeListener(l);
+        } finally {
+            Children.PR.exitReadAccess();
+        }
+        l2.countDown();
+        try {
+            t1.join();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        ch.keys("a3", "a4");
+    }
+
     public void testEventSnapshotConsistencyAfterSetChildrenToSameLaziness() {
         doTestEventSnapshotConsistencyAfterSetChildren(lazy(), lazy());
     }

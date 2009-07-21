@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -84,6 +85,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation2;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -205,7 +208,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 new String[] {"debug.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"run.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
         appClient = new AppClientProvider(this, helper, cpProvider);
-        apiJar = CarFactory.createCar(appClient);
+        apiJar = CarFactory.createCar(new CarImpl2(appClient));
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
@@ -328,6 +331,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
             
             new ProjectAppClientProvider(this),
             appClient,
+            // FIXME this is just fallback for code searching for the old SPI in lookup
+            // remove in next release
+            new CarImpl(apiJar),
             new AppClientPersistenceProvider(this, evaluator(), cpProvider),
             enterpriseResourceSupport,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -1036,7 +1042,60 @@ public final class AppClientProject implements Project, AntProjectListener, File
         }
     
     }
-    
+
+    // FIXME this is just fallback for code searching for the old SPI in lookup
+    // remove in next release
+    @SuppressWarnings("deprecation")
+    private class CarImpl implements CarImplementation {
+
+        private final Car apiCar;
+
+        public CarImpl(Car apiCar) {
+            this.apiCar = apiCar;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return apiCar.getDeploymentDescriptor();
+        }
+
+        public String getJ2eePlatformVersion() {
+            return apiCar.getJ2eePlatformVersion();
+        }
+
+        public FileObject[] getJavaSources() {
+            return apiCar.getJavaSources();
+        }
+
+        public FileObject getMetaInf() {
+            return apiCar.getMetaInf();
+        }
+    }
+
+    private class CarImpl2 implements CarImplementation2 {
+
+        private final AppClientProvider provider;
+
+        public CarImpl2(AppClientProvider provider) {
+            this.provider = provider;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return provider.getDeploymentDescriptor();
+        }
+
+        public Profile getJ2eeProfile() {
+            return provider.getJ2eeProfile();
+        }
+
+        public FileObject[] getJavaSources() {
+            return provider.getJavaSources();
+        }
+
+        public FileObject getMetaInf() {
+            return provider.getMetaInf();
+        }
+    }
+
     private class AppClientExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {

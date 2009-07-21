@@ -202,7 +202,7 @@ public class ModelTest extends ModelTestBase {
 
 
         assertEquals("fnca", fnca.getName());
-        assertEquals("", fnca.getCamelCaseName());
+        assertEquals("", ModelUtils.getCamelCaseName(fnca));
         assertNotNull(fnca.getFileObject());
         assertSame(topScope.getFileObject(), fnca.getFileObject());
 
@@ -239,7 +239,7 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(mySuperClass);
         assertSame(ModelUtils.getFirst(myClass.getSuperClasses()), mySuperClass);
 
-        assertEquals("MC", myClass.getCamelCaseName());
+        assertEquals("MC", ModelUtils.getCamelCaseName(myClass));
         assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth")));
         assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.STATIC)));
         assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.PUBLIC)));

@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -55,18 +56,23 @@ public class DtraceParser {
 
     private static final Logger log =
             DLightLogger.getLogger(DtraceParser.class);
-    private DataTableMetadata metadata;
-    private List<String> colnames;
+    private final DataTableMetadata metadata;
+    private final List<String> colnames;
 
     public DtraceParser(DataTableMetadata metadata) {
         this.metadata = metadata;
-        colnames = new ArrayList<String>(metadata.getColumnsCount());
-        for (Column c : metadata.getColumns()) {
-            colnames.add(c.getColumnName());
+        if (metadata != null) {
+            colnames = new ArrayList<String>(metadata.getColumnsCount());
+            for (Column c : metadata.getColumns()) {
+                colnames.add(c.getColumnName());
+            }
+        } else {
+            colnames = Collections.<String>emptyList();
         }
     }
 
     private List<String> parse(String line) {
+        assert metadata != null;
         return parse(line, metadata.getColumnsCount());
     }
 

@@ -64,6 +64,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -232,11 +233,15 @@ public final class SingleModuleProperties extends ModuleProperties {
         implementationVersion = manifestManager.getImplementationVersion();
         provTokensString = manifestManager.getProvidedTokensString();
         autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
+        Logger LOG = Logger.getLogger(SingleModuleProperties.class.getName());
+
         String nbDestDirS = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        LOG.log(Level.FINE, "Setting NBPlatform for module. '" + getCodeNameBase() + "' in dir '" + nbDestDirS + "'");
         if (nbDestDirS != null) {
             NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS));
             if (!plaf.isValid()) { // #134492
                 NbPlatform def = NbPlatform.getDefaultPlatform();
+                LOG.log(Level.FINE, "Platform not found, switching to default (" + def.getDestDir() + ")");
                 if (def != null) {
                     plaf = def;
                 }

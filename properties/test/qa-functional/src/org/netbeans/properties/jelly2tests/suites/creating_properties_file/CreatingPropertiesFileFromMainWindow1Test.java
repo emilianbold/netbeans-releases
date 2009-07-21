@@ -116,7 +116,7 @@ public class CreatingPropertiesFileFromMainWindow1Test extends PropertiesEditorT
          * systems witch are don't have deterministic order
          */
         // it must be selected a Folder to place the file ( is this a bug ? )
-        NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         JTextFieldOperator jtfo = new JTextFieldOperator(nameStepOper, 2);
         jtfo.setText("src");
 

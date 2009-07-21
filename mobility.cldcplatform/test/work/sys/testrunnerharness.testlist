@@ -1,9 +1,0 @@
-#JUnitTestRunner properties
-#Wed Jul 12 15:43:42 CEST 2006
-xtest.junit-test-runner.test-filter.include/0/0=*
-xtest.junit-test-runner.result-dir=E\:\\Projects\\NetBeans\\samson\\f4j_me\\mobility\\cldcplatform\\test\\work\\xmlresults\\suites
-xtest.junit-test-runner.test-filter.include/2/0=*
-xtest.junit-test-runner.test/2=org.netbeans.modules.mobility.SampleUnitTest
-xtest.junit-test-runner.test-filter.include/1/0=*
-xtest.junit-test-runner.test/1=org.netbeans.modules.mobility.cldcplatform.PlatformConvertorTest
-xtest.junit-test-runner.test/0=org.netbeans.modules.mobility.cldcplatform.J2MEPlatformTest

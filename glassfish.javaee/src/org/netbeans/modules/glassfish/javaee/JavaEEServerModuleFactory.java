@@ -165,14 +165,15 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String JAVADOC_VOLUME = "javadoc"; // NOI18N
     
     private static final String ECLIPSE_LINK_LIB = "EclipseLink-GlassFish-v3-Prelude"; // NOI18N
+    private static final String ECLIPSE_LINK_LIB_2 = "EclipseLink-GlassFish-v3"; // NOI18N
     private static final String EL_CORE_JAR_MATCHER = "eclipselink-wrapper" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
 
     private static final String PERSISTENCE_API_JAR_MATCHER_1 = "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String PERSISTENCE_API_JAR_MATCHER_2 = "javax.persistence" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
         
-    private static final String PERSISTENCE_JAVADOC = "javaee5-doc-api.zip"; // NOI18N
+    private static final String PERSISTENCE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
     
-    public synchronized boolean ensureEclipseLinkSupport(String installRoot) {
+    private static synchronized boolean ensureEclipseLinkSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         List<URL> docList = new ArrayList<URL>();
         try {
@@ -208,17 +209,29 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
             return false;
         }
-        return addLibrary(ECLIPSE_LINK_LIB, libraryList, docList);
+        String name = ECLIPSE_LINK_LIB;
+        File f = ServerUtilities.getJarName(installRoot, "gmbal" + ServerUtilities.GFV3_VERSION_MATCHER);
+        if (f != null && f.exists()) {
+            name = ECLIPSE_LINK_LIB_2;
+        }
+        return addLibrary(name, libraryList, docList);
     }
     private static final String COMET_LIB = "Comet-GlassFish-v3-Prelude"; // NOI18N
+    private static final String COMET_LIB_2 = "Comet-GlassFish-v3"; // NOI18N
     private static final String COMET_JAR_MATCHER = "grizzly-module" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
+    private static final String COMET_JAR_2_MATCHER = "grizzly-comet" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String GRIZZLY_OPTIONAL_JAR_MATCHER = "grizzly-optional" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
 
-    public synchronized boolean ensureCometSupport(String installRoot) {
+    private static synchronized boolean ensureCometSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
+        String name = COMET_LIB;
         File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_MATCHER);
         if (f == null || !f.exists()) {
             f = ServerUtilities.getJarName(installRoot, COMET_JAR_MATCHER);
+        }
+        if (f == null || !f.exists()) {
+            name = COMET_LIB_2;
+            f = ServerUtilities.getJarName(installRoot, COMET_JAR_2_MATCHER);
         }
         if (f != null && f.exists()) {
             try {
@@ -229,10 +242,10 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
 
-        return addLibrary(COMET_LIB, libraryList, null);
+        return addLibrary(name, libraryList, null);
     }
 
-    private synchronized boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
+    private static synchronized boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
 
         Library lib = lmgr.getLibrary(name);
@@ -278,7 +291,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     Logger.getLogger("glassfish-javaee").log(Level.FINE, "schedule to create library " + name);
                 }
             } catch (IOException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                // Someone must have created the library in a parallel thread, try again otherwise fail.
+                lib = lmgr.getLibrary(name);
+                if (lib == null) {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                }
             } catch (IllegalArgumentException ex) {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);

@@ -84,7 +84,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
 
-    private class UpdateFiledsState {
+    private class FieldValues {
         private boolean addComment = false;
         private boolean addRevisionInfo = false;
         private boolean addIssueInfo = false;
@@ -99,6 +99,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
 
             addCommentCheckBox.setSelected(false);
             addRevisionCheckBox.setSelected(false);
+            addIssueCheckBox.setSelected(false);
             resolveCheckBox.setSelected(false);
             commitRadioButton.setSelected(false);
         }
@@ -110,10 +111,11 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
             commitRadioButton.setSelected(commit);
         }
     }
-    private UpdateFiledsState updateFiledsState = null;
+    private FieldValues fieldValues = null;
     
     public HookPanel() {
         initComponents();
+        this.fieldValues = new FieldValues();
 
         qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
@@ -254,13 +256,10 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         boolean repoSelected = isRepositorySelected();
         boolean enableUpdateFields = repoSelected && (getIssue() != null);
 
-        if(updateFiledsState == null) {
-            updateFiledsState = new UpdateFiledsState();
-        }
         if(!enableUpdateFields) {            
-            updateFiledsState.store();
+            fieldValues.store();
         } else {
-            updateFiledsState.restore();
+            fieldValues.restore();
         }
 
         addCommentCheckBox.setEnabled(enableUpdateFields);

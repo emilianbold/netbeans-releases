@@ -53,6 +53,7 @@ public interface Session extends EntityAndSession {
     public static final String TRANSACTION_TYPE = "TransactionType";	// NOI18N
     public static final String SESSION_TYPE_STATEFUL = "Stateful"; // NOI18N
     public static final String SESSION_TYPE_STATELESS = "Stateless"; // NOI18N
+    public static final String SESSION_TYPE_SINGLETON = "Singleton"; // NOI18N
     public static final String TRANSACTION_TYPE_BEAN = "Bean"; // NOI18N
     public static final String TRANSACTION_TYPE_CONTAINER = "Container"; // NOI18N
     public static final String BUSINESS_LOCAL = "BusinessLocal";	// NOI18N

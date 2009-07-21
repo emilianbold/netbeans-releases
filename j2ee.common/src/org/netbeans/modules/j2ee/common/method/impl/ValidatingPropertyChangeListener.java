@@ -103,7 +103,8 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
         if (checkInterfaces) {
             boolean local = panel.hasLocal();
             boolean remote = panel.hasRemote();
-            if (!local && !remote) {
+            boolean allowsNoInterface = panel.allowsNoInterface();
+            if (!allowsNoInterface && !local && !remote) {
                 statusLine.setErrorMessage(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_selectSomeInterface"));  // NOI18N
                 return false;
             }

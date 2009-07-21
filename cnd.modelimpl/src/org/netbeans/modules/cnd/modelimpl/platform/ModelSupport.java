@@ -92,7 +92,7 @@ import org.openide.windows.WindowManager;
  */
 public class ModelSupport implements PropertyChangeListener {
 
-    private static ModelSupport instance = new ModelSupport();
+    private static final ModelSupport instance = new ModelSupport();
     private ModelImpl theModel;
     private final Set<Project> openedProjects = new HashSet<Project>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();

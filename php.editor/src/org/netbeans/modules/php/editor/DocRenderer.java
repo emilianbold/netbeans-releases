@@ -201,7 +201,7 @@ class DocRenderer {
             for (int i = 0; i < paramCount; i++) {
                 FormalParameter param = functionDeclaration.getFormalParameters().get(i);                
                 if (param.getParameterType() != null) {
-                    Identifier paramId = CodeUtils.extractIdentifier(param.getParameterType());
+                    Identifier paramId = CodeUtils.extractUnqualifiedIdentifier(param.getParameterType());
                     if (paramId != null) {
                         header.type(true);
                         header.appendText(paramId.getName() + " "); //NOI18N

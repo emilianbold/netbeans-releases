@@ -46,8 +46,8 @@ import java.util.zip.CRC32;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -107,7 +107,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         opNewFileWizard.selectFileType("XML Schema");
         opNewFileWizard.next();
         
-        NewFileNameLocationStepOperator opNewFileNameLocationStep = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator opNewFileNameLocationStep = new NewJavaFileNameLocationStepOperator();
         opNewFileNameLocationStep.setObjectName(TEST_SCHEMA_NAME);
         opNewFileWizard.finish();
         

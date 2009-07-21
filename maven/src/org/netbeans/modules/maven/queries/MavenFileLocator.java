@@ -54,7 +54,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
@@ -65,7 +64,7 @@ import org.openide.filesystems.FileObject;
 public class MavenFileLocator implements LineConvertors.FileLocator {
 
     private ClassPath classpath;
-    private Project project;
+    private final Project project;
     private static final Object LOCK = new Object();
 
     public MavenFileLocator(Project project) {
@@ -80,6 +79,9 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
     }
 
     public FileObject find(String filename) {
+        if (filename == null) {
+            return null;
+        }
         ClassPath cp;
         synchronized (LOCK) {
             if (classpath == null) {

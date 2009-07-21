@@ -1,0 +1,3 @@
+1: |>acnstrs<| = String.ancestors
+2: |>acnstrs<|.delete(String)
+3: puts "Ancestors of String class:\n  * #{|>acnstrs<|.join("\n  * ")}"

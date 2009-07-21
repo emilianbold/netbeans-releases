@@ -69,7 +69,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_WEB = 5;
     private static final int TYPE_UNKNOWN = -1;
     
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private ClassPath[] cache = new ClassPath[8];
     
     public ClassPathProviderImpl(NbMavenProjectImpl proj) {

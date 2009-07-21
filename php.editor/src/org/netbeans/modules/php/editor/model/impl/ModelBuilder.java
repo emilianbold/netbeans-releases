@@ -84,7 +84,7 @@ class ModelBuilder {
     NamespaceScope build(NamespaceDeclaration node, OccurenceBuilder occurencesBuilder) {
         final NamespaceDeclarationInfo info = NamespaceDeclarationInfo.create(node);
 
-        NamespaceScopeImpl nScope = (info.getName().equals("default"))? defaultNamespaceScope://NOI18N
+        NamespaceScopeImpl nScope = (info.isDefaultNamespace())? defaultNamespaceScope://NOI18N
             ModelElementFactory.create( info, this);
         if (!nScope.isDefaultNamespace()) {
             setCurrentScope(nScope);
@@ -131,10 +131,10 @@ class ModelBuilder {
 
     void reset() {
         if (!currentScope.empty()) {
-            ScopeImpl removed = currentScope.pop();
-            if (removed instanceof NamespaceScopeImpl) {
+            ScopeImpl createdScope = currentScope.pop();
+            if (createdScope instanceof NamespaceScopeImpl) {
                 namespaceScope = defaultNamespaceScope;
-            }
+            } 
         }
     }
 

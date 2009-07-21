@@ -83,6 +83,7 @@ protected:
     virtual const char * getDefOptionsOptName();
     virtual const char * getExtraClustersOptName();
     virtual const char * getJdkHomeOptName();
+    virtual const char * getCurrentDir();
 
 private:
     NbLauncher(const NbLauncher& orig);

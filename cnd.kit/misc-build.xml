@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         cnd.antlr,cnd.api.project,cnd.modelimpl,cnd.classview,cnd.completion,cnd.debugger.gdb,cnd.modelutil,
         cnd.modelui,cnd.highlight,cnd.gotodeclaration,cnd.apt,cnd.folding,cnd.dwarfdump,
         cnd.repository,cnd.discovery,cnd.dwarfdiscovery,cnd.modeldiscovery,cnd.navigation,
-        cnd.qnavigator,cnd.remote,cnd.repository.api,cnd.utils"/>
+        cnd.qnavigator,cnd.remote,cnd.repository.api,cnd.utils,cnd.paralleladviser"/>
     <pathconvert property="modules.fullpath">
         <path>
             <dirset dir="${nbroot}" includes="${submodules}"/>
@@ -151,6 +151,7 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.gotodeclaration" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.debugger.gdb" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.gizmo" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.paralleladviser" inheritrefs="false" inheritall="false" failonerror="false"/>
     </target>
 
     <target name="test-build" description="Compile all tests">
@@ -175,6 +176,7 @@ made subject to such option by the copyright holder.
         <subant target="test-build" buildpath="../cnd.gotodeclaration"/>
         <subant target="test-build" buildpath="../cnd.debugger.gdb"/>
         <subant target="test-build" buildpath="../cnd.gizmo"/>
+        <subant target="test-build" buildpath="../cnd.paralleladviser"/>
         <!-- not included in tests -->
         <subant target="test-build" buildpath="../cnd.utils"/>
     </target>

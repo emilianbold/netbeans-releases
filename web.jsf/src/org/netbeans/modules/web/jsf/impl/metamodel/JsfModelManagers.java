@@ -54,15 +54,21 @@ abstract class JsfModelManagers extends AbstractJsfModel {
     JsfModelManagers( AnnotationModelHelper helper ) {
         myHelper = helper;
         myBehaviorManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.BehaviorProvider() );
+                new ObjectProviders.BehaviorProvider( helper) );
         myComponentManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ComponentProvider() );
+                new ObjectProviders.ComponentProvider( helper) );
         myConverterManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ConverterProvider() );
+                new ObjectProviders.ConverterProvider( helper) );
         myManagedBeanManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ManagedBeanProvider() );
+                new ObjectProviders.ManagedBeanProvider( helper) );
         myValidatorManager = helper.createPersistentObjectManager( 
-                new ObjectProviders.ValidatorProvider() );
+                new ObjectProviders.ValidatorProvider( helper) );
+        myRendererManager = helper.createPersistentObjectManager( 
+                new ObjectProviders.RendererProvider( helper));
+        myClientBehaviorManager = helper.createPersistentObjectManager(
+                new ObjectProviders.ClientBehaviorProvider(helper));
+        mySystemEventManager = helper.createPersistentObjectManager(
+                new ObjectProviders.SystemEventListenerProvider(helper));
     }
     
     PersistentObjectManager<BehaviorImpl> getBeahviorManager(){
@@ -85,6 +91,18 @@ abstract class JsfModelManagers extends AbstractJsfModel {
         return myValidatorManager;
     }
     
+    PersistentObjectManager<RendererImpl> getRendererManager(){
+        return myRendererManager;
+    }
+    
+    PersistentObjectManager<ClientBehaviorRendererImpl> getClientBehaviorManager(){
+        return myClientBehaviorManager;
+    }
+    
+    PersistentObjectManager<SystemEventListenerImpl> getSystemEventManager(){
+        return mySystemEventManager;
+    }
+    
     AnnotationModelHelper getHelper(){
         return myHelper;
     }
@@ -94,5 +112,10 @@ abstract class JsfModelManagers extends AbstractJsfModel {
     private final PersistentObjectManager<ConverterImpl> myConverterManager;
     private final PersistentObjectManager<ManagedBeanImpl> myManagedBeanManager;
     private final PersistentObjectManager<ValidatorImpl> myValidatorManager;
+    private final PersistentObjectManager<RendererImpl> myRendererManager;
+    private final PersistentObjectManager<ClientBehaviorRendererImpl> 
+                                                        myClientBehaviorManager;
+    private final PersistentObjectManager<SystemEventListenerImpl>
+                                                        mySystemEventManager;
     private AnnotationModelHelper myHelper;
 }

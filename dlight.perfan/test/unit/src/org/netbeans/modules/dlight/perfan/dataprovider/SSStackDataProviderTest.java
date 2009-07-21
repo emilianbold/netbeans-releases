@@ -48,7 +48,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
@@ -88,11 +88,11 @@ public class SSStackDataProviderTest {
 //    @Test
     public void testGetCallers() {
         System.out.println("getCallers");
-        FunctionCall[] path = null;
+        FunctionCallWithMetric[] path = null;
         boolean aggregate = false;
         SSStackDataProvider instance = new SSStackDataProvider();
-        List<FunctionCall> expResult = null;
-        List<FunctionCall> result = instance.getCallers(path, aggregate);
+        List<FunctionCallWithMetric> expResult = null;
+        List<FunctionCallWithMetric> result = instance.getCallers(path, aggregate);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -104,11 +104,11 @@ public class SSStackDataProviderTest {
 //    @Test
     public void testGetCallees() {
         System.out.println("getCallees");
-        FunctionCall[] path = null;
+        FunctionCallWithMetric[] path = null;
         boolean aggregate = false;
         SSStackDataProvider instance = new SSStackDataProvider();
-        List<FunctionCall> expResult = null;
-        List<FunctionCall> result = instance.getCallees(path, aggregate);
+        List<FunctionCallWithMetric> expResult = null;
+        List<FunctionCallWithMetric> result = instance.getCallees(path, aggregate);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -221,10 +221,10 @@ public class SSStackDataProviderTest {
                         }
 
                         System.out.println("-------------------- " + prefix + " --------------------");
-                        List<FunctionCall> result = provider.getHotSpotFunctions(columns, orderBy, limit);
+                        List<FunctionCallWithMetric> result = provider.getHotSpotFunctions(columns, orderBy, limit);
                         int idx = 1;
 
-                        for (FunctionCall fc : result) {
+                        for (FunctionCallWithMetric fc : result) {
                             System.out.println(prefix + (idx++) + " " + fc.toString());
                         }
                     } finally {

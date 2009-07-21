@@ -51,6 +51,7 @@ import org.openide.util.test.MockLookup;
 /** Test of ProjectSupport class.
  * @author Jiri Skrivanek 
  */
+@RandomlyFails
 public class ProjectSupportTest extends NbTestCase {
     
     /** Creates a new test. 
@@ -90,7 +91,6 @@ public class ProjectSupportTest extends NbTestCase {
     
     /** Test openProject method. */
     @SuppressWarnings("deprecation")
-    @RandomlyFails
     public void testOpenProject() throws Exception {
         Project project = (Project)ProjectSupport.openProject(new File(projectParentDir, PROJECT_NAME));
         Project[] projects = OpenProjectList.getDefault().getOpenProjects();

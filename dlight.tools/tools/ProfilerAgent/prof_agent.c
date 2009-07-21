@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <dlfcn.h>
 #include <malloc.h>
 #include <sched.h>
@@ -129,6 +130,17 @@ int func (void * p param) { \
     return ret; \
 }
 
+#define INSTRUMENT2(func, suffix, version, param, actual) \
+int func##suffix (void * p param) { \
+    static int (* ORIG(func))(void* p param) = NULL; \
+    INIT2(func, suffix, version); \
+    LOG(QUOTE(func) "@" version " called\n"); \
+    thlock++; \
+    int ret = ORIG(func) (p actual); \
+    thlock--; \
+    return ret; \
+}
+
 static __thread int thlock = 0;
 
 #define INIT(func) \
@@ -140,8 +152,36 @@ static __thread int thlock = 0;
             ORIG(func) = dlsym((void*)0 /*RTLD_DEFAULT*/, QUOTE(func)); \
     }
 
-INSTRUMENT(pthread_cond_wait, VOID1P, ACTUAL1)
-INSTRUMENT(pthread_cond_timedwait, VOID2P, ACTUAL2)
+#define INIT2(func, suffix, version) \
+    if(!ORIG(func)) { \
+        ORIG(func) = dlvsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func), version); \
+        if(ORIG(func) && ORIG(func)==func ## suffix) \
+            ORIG(func) = dlvsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func), version); \
+        if(!ORIG(func)) \
+            ORIG(func) = dlvsym((void*)0 /*RTLD_DEFAULT*/, QUOTE(func), version); \
+    }
+
+// See IZ 167660 for discussion of the problem and solution
+__asm__(".symver pthread_cond_wait_2_0,pthread_cond_wait@GLIBC_2.0");
+INSTRUMENT2(pthread_cond_wait, _2_0, "GLIBC_2.0", VOID1P, ACTUAL1)
+
+__asm__(".symver pthread_cond_timedwait_2_0,pthread_cond_timedwait@GLIBC_2.0");
+INSTRUMENT2(pthread_cond_timedwait, _2_0, "GLIBC_2.0", VOID2P, ACTUAL2)
+
+__asm__(".symver pthread_cond_wait_2_2_5,pthread_cond_wait@GLIBC_2.2.5");
+INSTRUMENT2(pthread_cond_wait, _2_2_5, "GLIBC_2.2.5", VOID1P, ACTUAL1)
+
+__asm__(".symver pthread_cond_timedwait_2_2_5,pthread_cond_timedwait@GLIBC_2.2.5");
+INSTRUMENT2(pthread_cond_timedwait, _2_2_5, "GLIBC_2.2.5", VOID2P, ACTUAL2)
+
+__asm__(".symver pthread_cond_wait_2_3_2,pthread_cond_wait@@GLIBC_2.3.2");
+INSTRUMENT2(pthread_cond_wait, _2_3_2, "GLIBC_2.3.2", VOID1P, ACTUAL1)
+
+__asm__(".symver pthread_cond_timedwait_2_3_2,pthread_cond_timedwait@@GLIBC_2.3.2");
+INSTRUMENT2(pthread_cond_timedwait, _2_3_2, "GLIBC_2.3.2", VOID2P, ACTUAL2)
+
+//INSTRUMENT(pthread_cond_wait, VOID1P, ACTUAL1)
+//INSTRUMENT(pthread_cond_timedwait, VOID2P, ACTUAL2)
 INSTRUMENT(pthread_mutex_lock, , )
 INSTRUMENT(pthread_mutex_setprioceiling, INT2P, ACTUAL2)
 INSTRUMENT(pthread_rwlock_rdlock, , )

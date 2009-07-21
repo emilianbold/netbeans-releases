@@ -41,12 +41,16 @@ package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -60,6 +64,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleTypeVisitor6;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -73,10 +78,11 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
-import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -87,6 +93,8 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.symbol.SymbolProvider.class)
 public class JavaSymbolProvider implements SymbolProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(JavaSymbolProvider.class.getName());
     
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String UNKNOWN = "<unknown>"; //NOI18N
@@ -149,12 +157,33 @@ public class JavaSymbolProvider implements SymbolProvider {
             try {
                 final ClassIndexManager manager = ClassIndexManager.getDefault();
 
-                // XXX: rootUrls will in fact contain not only java related roots, but also roots
-                // defined by other languages. Ideally PathRegistry should allow filtering roots by their ID.
-                final Set<URL> rootUrls = new HashSet<URL>();
-                rootUrls.addAll(PathRegistry.getDefault().getSources()); // ClassPath.SOURCE
-                rootUrls.addAll(PathRegistry.getDefault().getLibraries()); // Translated ClassPath.COMPILE & ClassPath.BOOT
+                Collection<FileObject> roots = QuerySupport.findRoots(
+                        (Project)null,
+                        Collections.singleton(ClassPath.SOURCE),
+                        Collections.<String>emptySet(),
+                        Collections.<String>emptySet());
 
+                final Set<URL> rootUrls = new HashSet<URL>();
+                for(FileObject root : roots) {
+                    if (canceled) {
+                        return;
+                    }
+                    URL rootUrl;
+                    try {
+                        rootUrl = root.getURL();
+                        rootUrls.add(rootUrl);
+                    } catch (FileStateInvalidException fsie) {
+                    }
+                }
+
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Querying following roots:"); //NOI18N
+                    for (URL url : rootUrls) {
+                        LOGGER.log(Level.FINE, "  {0}", url); //NOI18N
+                    }
+                    LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
+                }
+                
                 for (URL url : rootUrls) {
                     if (canceled) {
                         return;

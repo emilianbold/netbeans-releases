@@ -1,9 +1,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -11,11 +9,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -23,8 +18,11 @@ import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.HostInfoFetcher;
+import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchTask;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
 
 /**
@@ -40,8 +38,8 @@ public final class HostInfoUtils {
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final Map<String, Boolean> filesExistenceHash =
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
-    private static final Map<ExecutionEnvironment, HostInfoFetcher> hostInfoProviders =
-            new HashMap<ExecutionEnvironment, HostInfoFetcher>();
+    private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
+            new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
 
 
     static {
@@ -80,6 +78,7 @@ public final class HostInfoUtils {
             stream.println("CPU #         : " + hostinfo.getCpuNum()); // NOI18N
             stream.println("shell to use  : " + hostinfo.getShell()); // NOI18N
             stream.println("tmpdir to use : " + hostinfo.getTempDir()); // NOI18N
+            stream.println("tmpdir (file) to use : " + hostinfo.getTempDirFile().toString()); // NOI18N
         }
         stream.println("------------"); // NOI18N
     }
@@ -156,69 +155,18 @@ public final class HostInfoUtils {
 
     public static String searchFile(ExecutionEnvironment execEnv,
             List<String> searchPaths, String file, boolean searchInUserPaths) {
-        NativeProcessBuilder npb;
-        BufferedReader br;
-        String line;
-        Process p;
+
+        FileSearchParams fileSearchParams = new FileSearchParams(execEnv,
+                searchPaths, file, searchInUserPaths);
+
+        String result = null;
 
         try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-
-            if (hostInfo == null) {
-                return null;
-            }
-
-            String shell = hostInfo.getShell();
-
-            if (shell == null) {
-                return null;
-            }
-
-            List<String> sp = new ArrayList<String>(searchPaths);
-
-            if (searchInUserPaths) {
-                npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-                npb.setExecutable(shell).setArguments("-c", "echo $PATH"); // NOI18N
-
-                p = npb.call();
-                p.waitFor();
-
-                br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                line = br.readLine();
-
-                if (line != null) {
-                    sp.addAll(Arrays.asList(line.split("[;:]"))); // NOI18N
-                }
-            }
-
-            StringBuilder cmd = new StringBuilder();
-
-            for (Iterator<String> i = sp.iterator(); i.hasNext();) {
-                cmd.append("/bin/ls " + i.next() + "/" + file); // NOI18N
-                if (i.hasNext()) {
-                    cmd.append(" || "); // NOI18N
-                }
-            }
-
-            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(shell).setArguments("-c", cmd.toString()); // NOI18N
-
-            p = npb.call();
-            p.waitFor();
-
-            br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            line = br.readLine();
-
-            return (line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
-        } catch (IOException ex) {
-            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
+            result = new FileSearchTask().compute(fileSearchParams);
         } catch (InterruptedException ex) {
-            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
         }
 
-        log.finest("File " + file + " not found"); // NOI18N
-
-        return null;
+        return result;
     }
 
     /**
@@ -249,25 +197,7 @@ public final class HostInfoUtils {
      * <tt>false</tt> otherwise.
      */
     public static boolean isHostInfoAvailable(final ExecutionEnvironment execEnv) {
-        HostInfoFetcher infoFetcher;
-
-        synchronized (hostInfoProviders) {
-            infoFetcher = hostInfoProviders.get(execEnv);
-        }
-
-        if (infoFetcher == null) {
-            return false;
-        }
-
-        HostInfo hostInfo = null;
-
-        try {
-            hostInfo = infoFetcher.getInfo(false);
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-
-        return hostInfo != null;
+        return hostInfoCachedProcessor.isResultAvailable(execEnv);
     }
 
     /**
@@ -285,19 +215,25 @@ public final class HostInfoUtils {
      * @param execEnv execution environment to get information about
      * @return information about the host represented by execEnv. <tt>null</tt>
      * if interrupted of connection initiation is cancelled by user.
+     * Also returns null if execEnv parameter is null.
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
-        HostInfoFetcher infoFetcher;
-
-        synchronized (hostInfoProviders) {
-            infoFetcher = hostInfoProviders.get(execEnv);
-            if (infoFetcher == null) {
-                infoFetcher = new HostInfoFetcher(execEnv);
-                hostInfoProviders.put(execEnv, infoFetcher);
-            }
+        if (execEnv == null) {
+            return null;
         }
 
-        return infoFetcher.getInfo(true);
+        try {
+            return hostInfoCachedProcessor.compute(execEnv);
+        } catch (InterruptedException ex) {
+            throw new CancellationException("getHostInfo interrupted"); // NOI18N
+        }
+    }
+
+    /**
+     * For testing purposes only!
+     */
+    protected static void resetHostsData() {
+        hostInfoCachedProcessor.resetCache();
     }
 }

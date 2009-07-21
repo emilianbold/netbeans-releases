@@ -41,12 +41,14 @@ package org.netbeans.modules.jira.issue;
 
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Marian Petras
  */
-@ServiceProvider(service=IssueFinder.class)
+@ServiceProviders({@ServiceProvider(service=IssueFinder.class),
+                   @ServiceProvider(service=JiraIssueFinder.class)})
 public class JiraIssueFinder extends IssueFinder {
 
     private static final int[] EMPTY_INT_ARR = new int[0];

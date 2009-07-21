@@ -46,8 +46,8 @@ import javax.swing.JComponent;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
-import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -98,7 +98,7 @@ public class MIDletViewsSwitchTest extends PerformanceTestCase {
         targetProject = "MobileApplicationVisualMIDlet";
         midletName = "VisualMIDletMIDP20.java";
 
-        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
+        String documentPath = CommonUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
         openNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject), documentPath);
 
         if (this.openNode == null) {

@@ -890,7 +890,15 @@ public class FileStatusCache {
         
         if(interestingFiles == null){
             try {
+                long startTime = 0;
+                if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+                    startTime = System.currentTimeMillis();
+                    Mercurial.STATUS_LOG.fine("scanFolder: start for " + dir.getAbsolutePath());
+                }
                 interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
+                if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
+                    Mercurial.STATUS_LOG.fine("scanFolder: finishes for " + dir.getAbsolutePath() + " after " + (System.currentTimeMillis() - startTime));
+                }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "scanFolder() getInterestingStatus Exception: dir: {0} {1}", new Object[]{dir.getAbsolutePath(), ex.toString()}); // NOI18N
                 return folderFiles;

@@ -62,7 +62,6 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
@@ -80,8 +79,6 @@ import org.openide.util.Exceptions;
 
 public final class DDProvider {
     private static final String EJB_21_DOCTYPE = "http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"; //NOI18N
-    private static final String EJB_20_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"; //NOI18N
-    private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     private final Map ddMap;
 
@@ -225,8 +222,6 @@ public final class DDProvider {
             return new org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.EjbJar(document, Common.USE_DEFAULT_VALUES);
         } else if (EjbJar.VERSION_2_1.equals(version)) {
             return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar(document, Common.USE_DEFAULT_VALUES);
-        } else if (EjbJar.VERSION_2_0.equals(version)) {
-            return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar(document, Common.USE_DEFAULT_VALUES);
         } else {
             return null;
         }
@@ -253,12 +248,6 @@ public final class DDProvider {
         if (id != null) {
             if (EJB_21_DOCTYPE.equals(id)) {
                 return EjbJar.VERSION_2_1;
-            }
-            if (EJB_20_DOCTYPE.equals(id)) {
-                return EjbJar.VERSION_2_0;
-            }
-            if (EJB_11_DOCTYPE.equals(id)){
-                return EjbJar.VERSION_1_1;
             }
         }
         return EjbJar.VERSION_3_0;
@@ -290,11 +279,7 @@ public final class DDProvider {
         public InputSource resolveEntity(String publicId, String systemId) {
             // return a proper input source
             String resource;
-            if (EJB_11_DOCTYPE.equals(publicId)) {
-                resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_1_1.dtd"; //NOI18N
-            } else if (EJB_20_DOCTYPE.equals(publicId)) {
-                resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_0.dtd"; //NOI18N
-            } else if ("http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd".equals(systemId)) {
+            if ("http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd".equals(systemId)) {
                 resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_1.xsd"; //NOI18N
             } else if ("http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd".equals(systemId)) {
                 resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_3_0.xsd"; //NOI18N

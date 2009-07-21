@@ -118,7 +118,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     new String[0],
-                    true, new String[]{"docs/javadocee6.jar"}); // NOI18N
+                    true, new String[]{"docs/javaee6-doc-api.zip"}); // NOI18N
         }
         return ee6Provider;
     }
@@ -141,7 +141,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     new String[0],
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     false,
-                    new String[]{"docs/javaee5-doc-api.zip"}); // NOI18N
+                    new String[]{"docs/javaee6-doc-api.zip"}); // NOI18N
         }
         return preludeProvider;
     }
@@ -634,7 +634,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         } else {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
-                            String domainNameValue = "Glassfishv3PreludeDomain";    // NOI18N
+                            String domainNameValue = defaultInstallName;    // NOI18N
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
                             

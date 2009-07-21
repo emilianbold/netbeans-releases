@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyBindingSettingsImpl;
 import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
 import org.netbeans.modules.editor.settings.storage.fontscolors.FontColorSettingsImpl;
@@ -61,7 +62,6 @@ import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -110,6 +110,10 @@ public class EditorSettingsImpl extends EditorSettings {
     // ------------------------------------------------------
     // Mime types
     // ------------------------------------------------------
+
+    public void notifyMimeTypesChange(Object old, Object nue) {
+        pcs.firePropertyChange(new PropertyChangeEvent(this, PROP_MIME_TYPES, old, nue));
+    }
 
     public Set<String> getAllMimeTypes () {
         return MimeTypesTracker.get(null, EDITORS_FOLDER).getMimeTypes();

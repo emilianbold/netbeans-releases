@@ -49,7 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

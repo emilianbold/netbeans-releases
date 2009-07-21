@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     private static final int MAX_KEY_SIZE = 1000;
     private static int stateCacheAttempt = 0;
     private static int stateCacheSuccessAttempt = 0;
-    private Map<StateKey, Value> stateCache = new LinkedHashMap<StateKey, Value>();
+    private final Map<StateKey, Value> stateCache = new LinkedHashMap<StateKey, Value>();
     private final ReadWriteLock stateCacheLock = new ReentrantReadWriteLock();
     private final FileImpl file;
 

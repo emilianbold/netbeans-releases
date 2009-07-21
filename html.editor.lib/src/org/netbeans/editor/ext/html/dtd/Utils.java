@@ -49,6 +49,8 @@ import java.util.List;
 public class Utils {
 
     public static final String XHTML_STRINCT_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
+
+    public static final String XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
         
     private static final List<String> XHTML_PUBLIC_IDS = Arrays.asList(new String[]{
         XHTML_STRINCT_PUBLIC_ID,
@@ -57,6 +59,11 @@ public class Utils {
 
      public static boolean isXHTMLPublicId(String publicId) {
         return XHTML_PUBLIC_IDS.contains(publicId);
+    }
+
+     //XXX hack - resolve the namespaces propertly!
+    public static boolean isXhtmlNs(String namespace) {
+        return namespace == null ? true : namespace.equals(XHTML_NAMESPACE);
     }
 
 

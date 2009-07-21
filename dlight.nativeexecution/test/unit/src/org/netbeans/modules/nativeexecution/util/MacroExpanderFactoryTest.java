@@ -38,26 +38,22 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
-import org.netbeans.modules.nativeexecution.support.*;
-import java.io.StringWriter;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -65,8 +61,16 @@ import org.openide.windows.InputOutput;
  */
 public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(MacroExpanderFactoryTest.class);
+    }
+
     public MacroExpanderFactoryTest(String name) {
         super(name);
+    }
+
+    public MacroExpanderFactoryTest(String name, ExecutionEnvironment env) {
+        super(name, env);
     }
 
     @BeforeClass
@@ -90,7 +94,6 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     /**
      * Test of getExpander method, of class MacroExpanderFactory.
      */
-    @Test
     public void testGetExpander_ExecutionEnvironment_String() {
         System.out.println("getExpander"); // NOI18N
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
@@ -122,22 +125,16 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         npb.addEnvironmentVariable("PATH", "$PATH:/secondPath"); // NOI18N
         npb.addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N
 
-        StringWriter result = new StringWriter();
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "test"); // NOI18N
-
-        Future<Integer> res = execService.run();
-
         try {
-            res.get();
+            Process p = npb.call();
+            String pout = ProcessUtils.readProcessOutputLine(p);
+            System.out.println("Output is: " + pout); // NOI18N
+            int result = p.waitFor();
+            assertEquals(0, result);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        System.out.println("Output is " + result.toString()); // NOI18N
-
     }
 }

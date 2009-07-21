@@ -56,8 +56,11 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -303,6 +306,52 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class NamespaceItem extends PHPCompletionItem {
+        private String name;
+        private boolean resolved;
+
+        NamespaceItem(String name, boolean resolved, CompletionRequest request) {
+            super(null, request);
+            this.name = name;
+            this.resolved = resolved;
+        }
+
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
+
+            if (resolved){
+                formatter.emphasis(true);
+                formatter.appendText(getName());
+                formatter.emphasis(false);
+            } else {
+                formatter.appendText(getName());
+            }
+
+            formatter.name(getKind(), false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.PACKAGE;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        @Override
+        public boolean isSmart() {
+            return resolved;
+        }
+    }
+
     static class ConstantItem extends PHPCompletionItem {
         private IndexedConstant constant = null;
 
@@ -351,14 +400,25 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
-                builder.append(getName());
+                ElementHandle element = getElement();
+                if (element instanceof IndexedClass) {
+                    String namespaceName = ((IndexedClass) element).getNamespaceName();
+                    if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                        QualifiedName qn = QualifiedName.create(namespaceName);
+                        qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
+                        builder.append(qn.toString());
+
+                    } else {
+                        builder.append(getName());
+                    }
+                } else {
+                    builder.append(getName());
+                }
                 builder.append("::${cursor}"); //NOI18N
                 return builder.toString();
             }
             return super.getCustomInsertTemplate();
         }
-
-
     }
 
     public static ImageIcon getInterfaceIcon() {
@@ -382,6 +442,27 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
             return INTERFACE_ICON;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            ElementHandle element = getElement();
+            if (element instanceof IndexedInterface) {
+                String namespaceName = ((IndexedInterface) element).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    QualifiedName qn = QualifiedName.create(namespaceName);
+                    qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
+                    builder.append(qn.toString());
+
+                } else {
+                    builder.append(getName());
+                }
+            } else {
+                builder.append(getName());
+            }
+            return builder.toString();
+        }
+    
 
         @Override
         public ImageIcon getIcon() {
@@ -544,6 +625,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (getElement() instanceof IndexedFunction && getElement().getIn() != null) {
+                String namespaceName = ((IndexedFunction)getElement()).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    QualifiedName qn = QualifiedName.create(namespaceName);
+                    qn = qn.append(QualifiedName.createUnqualifiedName(getElement().getIn())).toFullyQualified();
+                    formatter.appendText(qn.toString());
+                    return formatter.getText();
+                }
+            } 
+            return super.getRhsHtml(formatter);
+        }
+
+
+        @Override
         public String getName() {
             String in = getElement().getIn();
             return (in != null) ? in : super.getName();
@@ -573,7 +669,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            template.append(getName());
+            ElementHandle element = getElement();
+            if (element instanceof IndexedFunction) {
+                String namespaceName = ((IndexedFunction)element).getNamespaceName();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    QualifiedName qn = QualifiedName.create(namespaceName);
+                    qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
+                    template.append(qn.toString());
+
+                } else {
+                    template.append(getName());
+                }
+            } else {
+                template.append(getName());
+            }
             template.append("("); //NOI18N
 
             List<String> params = getInsertParams();

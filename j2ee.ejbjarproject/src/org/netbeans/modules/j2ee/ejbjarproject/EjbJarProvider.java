@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -57,7 +58,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -72,7 +72,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -84,6 +83,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
@@ -93,7 +93,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  * @author  Pavel Buzek
  */
 public final class EjbJarProvider extends J2eeModuleProvider
-        implements EjbJarImplementation, J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+        implements J2eeModuleImplementation2, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
     public static final String FILE_DD = "ejb-jar.xml";//NOI18N
     
@@ -121,7 +121,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         if (metaInfFo != null) {
             ddFO = metaInfFo.getFileObject(FILE_DD);
         }
-        if (ddFO == null && !EjbProjectConstants.JAVA_EE_5_LEVEL.equals(getJ2eePlatformVersion())) {
+        if (ddFO == null && !Profile.JAVA_EE_5.equals(getJ2eeProfile())) {
             // ...generate the DD from template...
         }
         return ddFO;
@@ -149,7 +149,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
     FileObject resolveMetaInf(String value) {
         FileObject metaInf = value != null ? helper.resolveFileObject(value) : null;
         if (metaInf == null) {
-            String version = project.getAPIEjbJar().getJ2eePlatformVersion();
+            Profile version = project.getAPIEjbJar().getJ2eeProfile();
             if (needConfigurationFolder(version)) {
                 String path = (value != null ? helper.resolvePath(value) : "");
                 showErrorMessage(NbBundle.getMessage(EjbJarProvider.class,"MSG_MetaInfCorrupted", project.getName(), path));
@@ -159,9 +159,9 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
 
     /** Package-private for unit test only. */
-    static boolean needConfigurationFolder(final String version) {
-        return EjbProjectConstants.J2EE_13_LEVEL.equals(version) ||
-                EjbProjectConstants.J2EE_14_LEVEL.equals(version);
+    static boolean needConfigurationFolder(final Profile version) {
+        return Profile.J2EE_13.equals(version) ||
+                Profile.J2EE_14.equals(version);
     }
     
     public File getMetaInfAsFile() {
@@ -299,8 +299,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
             Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
         }
         if (version == null) {
-            // XXX should return a version based on the Java EE version
-            version = EjbJar.VERSION_3_0;
+            version = Profile.JAVA_EE_5.equals(getJ2eeProfile()) ? EjbJar.VERSION_3_0 : EjbJar.VERSION_3_1;
         }
         return version;
     }
@@ -346,9 +345,9 @@ public final class EjbJarProvider extends J2eeModuleProvider
     public String[] getChangedEjbs() {
         return new String[] {};
     }
-    
-    public String getJ2eePlatformVersion() {
-        return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
+
+    public Profile getJ2eeProfile() {
+        return Profile.fromPropertiesString(helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
     }
 
     public synchronized MetadataModel<EjbJarMetadata> getMetadataModel() {

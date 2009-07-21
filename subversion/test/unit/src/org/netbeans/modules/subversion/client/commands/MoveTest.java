@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -60,12 +60,45 @@ public class MoveTest extends AbstractCommandTest {
         super(testName);
     }
     
-    public void testMoveURL2URL() throws Exception {                                        
-        File file = createFile("file");
+    public void testMoveURL2URL() throws Exception {
+        testMoveURL2URL("file", "filemove");
+    }
+
+    public void testMoveURL2URLWithAtSign() throws Exception {
+        testMoveURL2URL("file1", "@filemove");
+        testMoveURL2URL("file2", "file@move");
+        testMoveURL2URL("file3", "filemove@");
+    }
+
+    public void testMoveURLWithAtSign2URL() throws Exception {
+        testMoveURL2URL("@file", "filemove1");
+        testMoveURL2URL("fi@le", "filemove2");
+        testMoveURL2URL("file@", "filemove3");
+    }
+
+    public void testMoveURL2URLInDir() throws Exception {
+        testMoveURL2URL("folder/file", "filemove");
+    }
+
+    public void testMoveURL2URLWithAtSignInDir() throws Exception {
+        testMoveURL2URL("folder/file1", "@filemove");
+        testMoveURL2URL("folder/file2", "file@move");
+        testMoveURL2URL("folder/file3", "filemove@");
+    }
+
+    public void testMoveURLWithAtSign2URLInDir() throws Exception {
+        testMoveURL2URL("folder/@file", "filemove1");
+        testMoveURL2URL("folder/fi@le", "filemove2");
+        testMoveURL2URL("folder/file@", "filemove3");
+    }
+
+    private void testMoveURL2URL(String srcPath, String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         add(file);
         commit(file);
                 
-        File filemove = createFile("filemove");
+        File filemove = createFile(renameFile(srcPath, targetFileName));
         
         ISVNClientAdapter c = getNbClient();
         c.move(getFileUrl(file), getFileUrl(filemove), "move", SVNRevision.HEAD);
@@ -87,8 +120,26 @@ public class MoveTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {});        
     }        
     
-    public void testMoveURL2URLPrevRevision() throws Exception {                                        
-        File file = createFile("file");
+    public void testMoveURL2URLPrevRevision() throws Exception {
+        testMoveURL2URLPrevRevision("file", "filemove");
+    }
+
+    public void testMoveURL2URLWithAtSignPrevRevision() throws Exception {
+        testMoveURL2URLPrevRevision("file1", "@filemove");
+        testMoveURL2URLPrevRevision("file2", "file@move");
+        testMoveURL2URLPrevRevision("file3", "filemove@");
+    }
+
+    public void testMoveURLWithAtSign2URLPrevRevision() throws Exception {
+        testMoveURL2URLPrevRevision("@file", "filemove1");
+        testMoveURL2URLPrevRevision("fi@le", "filemove2");
+        testMoveURL2URLPrevRevision("file@", "filemove3");
+    }
+
+    private void testMoveURL2URLPrevRevision(String srcPath,
+                                             String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         write(file, 1);
         add(file);
         commit(file);
@@ -96,7 +147,7 @@ public class MoveTest extends AbstractCommandTest {
         write(file, 2);
         commit(getWC());        
         
-        File filemove = createFile("filemove");
+        File filemove = createFile(renameFile(srcPath, targetFileName));
         
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(file), getFileUrl(filemove), "move", prevRev);
@@ -109,12 +160,45 @@ public class MoveTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {});        
     }           
     
-    public void testMoveFile2File() throws Exception {                                        
-        File file = createFile("file");
+    public void testMoveFile2File() throws Exception {
+        testMoveFile2File("file", "filemove");
+    }
+
+    public void testMoveFileWithAtSign2File() throws Exception {
+        testMoveFile2File("@file", "filemove1");
+        testMoveFile2File("fi@le", "filemove2");
+        testMoveFile2File("file@", "filemove3");
+    }
+
+    public void testMoveFile2FileWithAtSign() throws Exception {
+        testMoveFile2File("file1", "@filemove");
+        testMoveFile2File("file2", "file@move");
+        testMoveFile2File("file3", "filemove@");
+    }
+
+    public void testMoveFile2FileInDir() throws Exception {
+        testMoveFile2File("folder/file", "filemove");
+    }
+
+    public void testMoveFileWithAtSign2FileInDir() throws Exception {
+        testMoveFile2File("folder/@file", "filemove1");
+        testMoveFile2File("folder/fi@le", "filemove2");
+        testMoveFile2File("folder/file@", "filemove3");
+    }
+
+    public void testMoveFile2FileWithAtSignInDir() throws Exception {
+        testMoveFile2File("folder/file1", "@filemove");
+        testMoveFile2File("folder/file2", "file@move");
+        testMoveFile2File("folder/file3", "filemove@");
+    }
+
+    private void testMoveFile2File(String srcPath, String targetFileName) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
         add(file);
         commit(file);
                 
-        File filemove = new File(getWC(), "filemove");
+        File filemove = new File(getWC(), renameFile(srcPath, targetFileName));
         
         ISVNClientAdapter c = getNbClient();
         c.move(file, filemove, true);

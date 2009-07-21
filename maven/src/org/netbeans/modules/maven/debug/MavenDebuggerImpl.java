@@ -54,7 +54,7 @@ import org.openide.windows.InputOutput;
  * @author mkleint
  */
 public class MavenDebuggerImpl implements MavenDebugger {
-    private Project nbproject;
+    private final Project nbproject;
     
     /** Creates a new instance of MavenDebuggerImpl */
     public MavenDebuggerImpl(Project prj) {

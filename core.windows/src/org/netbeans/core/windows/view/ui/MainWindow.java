@@ -56,6 +56,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
@@ -102,6 +103,13 @@ public final class MainWindow extends JFrame {
 
     /** Constructs main window. */
     public MainWindow() {
+        //make all menu heavyweight by default
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+        //make all popups heavyweight
+        PopupFactory pf = PopupFactory.getSharedInstance();
+        if( !(pf instanceof HeavyWeightPopupFactory) ) {
+            PopupFactory.setSharedInstance(new HeavyWeightPopupFactory());
+        }
         if( "Aqua".equals(UIManager.getLookAndFeel().getID())
                 && null == System.getProperty("apple.awt.brushMetalLook") ) //NOI18N
             getRootPane().putClientProperty("apple.awt.brushMetalLook", Boolean.TRUE); //NOI18N
@@ -710,6 +718,20 @@ public final class MainWindow extends JFrame {
     
     public boolean isFullScreenMode() {
         return isFullScreenMode;
+    }
+
+    private static class HeavyWeightPopupFactory extends PopupFactory {
+
+        @Override
+        public Popup getPopup(Component owner, Component contents, int x, int y) throws IllegalArgumentException {
+            return new HeavyWeightPopup(owner, contents, x, y);
+        }
+    }
+
+    private static class HeavyWeightPopup extends Popup {
+        public HeavyWeightPopup(Component owner, Component contents, int x, int y) {
+            super( owner, contents, x, y);
+        }
     }
 }
 

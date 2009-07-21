@@ -233,6 +233,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      */
     public synchronized VersioningSystem getOwner(File file) {
         LOG.log(Level.FINE, "looking for owner of " + file);
+        /**
+         * minor speed optimization, file.isFile may last a while
+         * if file is a folder then the owner may be acquired from folderOwners directly before file.isFile call
+         * otherwise the owner will be acquired after file.isFile call
+         */
+        VersioningSystem owner = folderOwners.get(file);
+        if (owner == NULL_OWNER) {
+            LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
+            return null;
+        }
+        if (owner != null) {
+            LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
+            return owner;
+        }
         File folder = file;
         if (file.isFile()) {
             folder = file.getParentFile();
@@ -242,7 +256,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
         
-        VersioningSystem owner = folderOwners.get(folder);
+        owner = folderOwners.get(folder);
         if (owner == NULL_OWNER) {
             LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
             return null;

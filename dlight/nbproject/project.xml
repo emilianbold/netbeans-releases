@@ -78,6 +78,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
                 <friend>org.netbeans.modules.dlight.core.stack</friend>
                 <friend>org.netbeans.modules.dlight.core.ui</friend>
@@ -91,6 +92,7 @@
                 <friend>org.netbeans.modules.dlight.memory</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.sync</friend>
+                <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
@@ -100,6 +102,7 @@
                 <package>org.netbeans.modules.dlight.api.execution</package>
                 <package>org.netbeans.modules.dlight.api.indicator</package>
                 <package>org.netbeans.modules.dlight.api.storage</package>
+                <package>org.netbeans.modules.dlight.api.storage.threadmap</package>
                 <package>org.netbeans.modules.dlight.api.storage.types</package>
                 <package>org.netbeans.modules.dlight.api.support</package>
                 <package>org.netbeans.modules.dlight.api.tool</package>

@@ -101,7 +101,14 @@ public class KenaiServiceTest extends NbTestCase {
      */
     @Test
     public void testNumberOfServices() {
-        if (services.size() != servicesChecker.serviceDescriptions.size()) {
+        // Services returned from the server but unsupported in the IDE, currently those:
+        // - WIKIHome
+        // - WebSite
+        int UNKNOWN_SERVICES = 2;
+        if (services.size() + UNKNOWN_SERVICES != servicesChecker.serviceDescriptions.size()) {
+            System.out.println("UNKNOWN SERVICES: " + UNKNOWN_SERVICES);
+            System.out.println("SERVER RETURNED SERVICES: " + services.size());
+            System.out.println("GOLDEN SERVICES: " + servicesChecker.serviceDescriptions.size());
             fail("The list of service returned from the server has different length than a list in the golden file.");
         }
     }

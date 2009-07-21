@@ -53,22 +53,20 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
+        JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        renderer.setIcon(null);
         if(!query.isSaved()) {
             TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
-            JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setRowColors(style, l);
-            return l;
+            setRowColors(style, renderer);
+            return renderer;
         }
         
         TableCellStyle style = null;
-        JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         if(value instanceof IssueNode.SeenProperty) {
             IssueNode.SeenProperty ps = (IssueNode.SeenProperty) value;
             renderer.setIcon(!ps.getValue() ? seenValueIcon : null);
             renderer.setText("");                                               // NOI18N
-        } else {
-            renderer.setIcon(null);
-        }
+        } 
 
         if(value instanceof IssueNode.IssueProperty) {
             style = getCellStyle(table, query, (IssueProperty)value, isSelected, row);

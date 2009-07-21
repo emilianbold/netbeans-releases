@@ -73,6 +73,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -768,6 +769,42 @@ public class ProjectsRootNode extends AbstractNode {
             });
         }
 
+        @Override
+        public Object getValue(String attributeName) {
+            if ("customDelete".equals(attributeName)) {
+                return true;
+            }
+            return super.getValue(attributeName);
+        }
+
+        @Override
+        public boolean canDestroy() {
+            Project p = getLookup().lookup(Project.class);
+            if (p == null) {
+                return false;
+            }
+            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+
+            String[] sa = ap != null ? ap.getSupportedActions() : new String[0];
+            int k = sa.length;
+
+            for (int i = 0; i < k; i++) {
+                if (ActionProvider.COMMAND_DELETE.equals(sa[i])) {
+                    return ap.isActionEnabled(ActionProvider.COMMAND_DELETE, getLookup());
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            Project p = getLookup().lookup(Project.class);
+            if (p == null) {
+                return;
+            }
+            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+            ap.invokeAction(ActionProvider.COMMAND_DELETE, getLookup());
+        }
     } // end of BadgingNode
     private static final class BadgingLookup extends ProxyLookup {
         public BadgingLookup(Lookup... lkps) {

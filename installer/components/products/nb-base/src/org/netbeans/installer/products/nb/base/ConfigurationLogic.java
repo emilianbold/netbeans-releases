@@ -731,11 +731,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "{ide-cluster}"; // NOI18N
     public static final String WEBSVCCOMMON_CLUSTER =
             "{websvccommon-cluster}"; // NOI18N
+    public static final String EXTRA_CLUSTER =
+            "{extra-cluster}"; // NOI18N
     public static final String [] CLUSTERS = new String [] {
         PLATFORM_CLUSTER,
         NB_CLUSTER,
         IDE_CLUSTER,
-        WEBSVCCOMMON_CLUSTER};
+        WEBSVCCOMMON_CLUSTER,
+        EXTRA_CLUSTER};
     
     public static final String EXECUTABLE_WINDOWS =
             BIN_SUBDIR + "/netbeans.exe"; // NOI18N
@@ -762,7 +765,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
     public static final String GLASSFISH_MOD_JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3.installRoot"; //NOI18N
+            "-Dorg.glassfish.v3ee6.installRoot"; //NOI18N
     
     public static final String TOMCAT_JVM_OPTION_NAME_TOKEN =
             "-Dorg.netbeans.modules.tomcat.autoregister.token"; // NOI18N

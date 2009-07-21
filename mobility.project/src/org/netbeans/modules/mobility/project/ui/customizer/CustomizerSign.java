@@ -301,6 +301,13 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
     
     public void initValues(ProjectProperties props, String configuration) {
         this.props = props;
+        String keystorePath = (String)props.get(DefaultPropertiesDescriptor.SIGN_KEYSTORE);
+        if (keystorePath.startsWith("${") && keystorePath.endsWith("}")) {
+            String propName = keystorePath.substring(2, keystorePath.length() - 1);
+            keystorePath = System.getProperty(propName);
+            props.put(DefaultPropertiesDescriptor.SIGN_KEYSTORE, keystorePath);
+        }
+
         this.configuration = configuration;
         vps = VisualPropertySupport.getDefault(props);
         vps.register(cDefault, configuration, this);

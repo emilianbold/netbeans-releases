@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.netbeans.modules.hudson.maven" default="netbeans" basedir=".">
+<project name="hudson.maven" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>

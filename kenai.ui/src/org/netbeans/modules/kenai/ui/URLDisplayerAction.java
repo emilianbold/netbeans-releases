@@ -42,7 +42,9 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -55,6 +57,8 @@ public class URLDisplayerAction extends AbstractAction {
     public URLDisplayerAction(String name, URL url) {
         super(name);
         this.url = url;
+        putValue(Action.SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/link.png")));
+        putValue(Action.SHORT_DESCRIPTION, url.toString());
     }
 
     public void actionPerformed(ActionEvent arg0) {

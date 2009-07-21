@@ -56,13 +56,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -181,7 +181,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     }
 
     private boolean validateFile(String path, String label) {
-        if (!PhpProjectUtils.hasText(path)) {
+        if (!StringUtils.hasText(path)) {
             return true;
         }
         File file = new File(path);

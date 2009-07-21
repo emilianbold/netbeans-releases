@@ -39,13 +39,13 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
-public final class GetSourcesFromKenaiAction implements ActionListener {
+public final class GetSourcesFromKenaiAction extends AbstractAction {
 
     private ProjectAndFeature prjAndFeature;
     private SourceHandleImpl srcHandle;

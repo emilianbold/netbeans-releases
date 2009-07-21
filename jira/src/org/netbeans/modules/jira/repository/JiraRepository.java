@@ -77,6 +77,7 @@ import org.netbeans.modules.jira.commands.NamedFiltersCommand;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
@@ -438,14 +439,13 @@ public class JiraRepository extends Repository {
         }
         ConfigurationCommand cmd = new ConfigurationCommand();
 
-        getExecutor().execute(cmd, true, false);
+        getExecutor().execute(cmd, true, false, false);
         if(!cmd.hasFailed()) {
             return cmd.configuration;
         }
         return null;
     }
 
-    // XXX spi
     private void setupIssueRefreshTask() {
         if(refreshIssuesTask == null) {
             refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
@@ -484,9 +484,8 @@ public class JiraRepository extends Repository {
                     }
                     for (JiraQuery q : queries) {
                         Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-                        // XXX
-//                        QueryController qc = q.getController();
-//                        qc.autoRefresh();
+                        QueryController qc = q.getController();
+                        qc.autoRefresh();
                     }
 
                     scheduleQueryRefresh();
@@ -542,9 +541,8 @@ public class JiraRepository extends Repository {
         Query[] qs = getQueries();
         for (Query q : qs) {
             Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-            // XXX
-//            QueryController qc = ((JiraQuery) q).getController();
-//            qc.onRefresh();
+            QueryController qc = ((JiraQuery) q).getController();
+            qc.onRefresh();
         }
     }
 

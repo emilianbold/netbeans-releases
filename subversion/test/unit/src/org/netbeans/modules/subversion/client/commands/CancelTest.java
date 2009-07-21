@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -43,9 +43,9 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -59,22 +59,56 @@ public class CancelTest extends AbstractCommandTest {
     }
             
     public void testCancel() throws Exception {                                                
-        final ISVNClientAdapter c = getNbClient();        
-        Blocker blocker = new Blocker("cli: process created");
-        
-        Logger.getLogger("").addHandler(blocker);
-        RequestProcessor rp = new RequestProcessor("clitest");
-        rp.post(new Runnable() {
+        final SvnClient c = getNbClient();
+
+        abstract class TimeFormatter {
+            public String getCurrTime() {
+                return Long.toString(System.currentTimeMillis());
+            }
+        }
+        class CommandRunner extends TimeFormatter implements Runnable {
             public void run() {
                 try {
-                    c.getInfo(getRepoUrl());
+                    System.out.println("CommandRunner.run() - started at    " + getCurrTime());
+                    c.getInfo(getRepoUrl(), null, null);
                 } catch (SVNClientException ex) {
-                    System.out.println("");
+                    System.out.println("CommandRunner.run() - exception thrown: " + ex.getClass() + ": " + ex.getMessage());
+                } finally {
+                    System.out.println("CommandRunner.run() - finished at   " + getCurrTime());
                 }
             }
-        }); 
-        Thread.sleep(1000);
-        c.cancelOperation();
+        } 
+        class TaskInterrupter extends TimeFormatter implements Runnable {
+            Boolean cancellationSuccess;
+            TaskInterrupter() { }
+            public void run() {
+                try {
+                    System.out.println("TaskInterrupter.run() - started at  " + getCurrTime());
+                    c.cancel();
+                    cancellationSuccess = Boolean.TRUE;
+                } catch (Exception ex) {
+                    System.out.println("TaskInterrupter.run() - exception thrown " + ex.getClass() + ": " + ex.getMessage());
+                    Exceptions.printStackTrace(ex);
+                    cancellationSuccess = Boolean.FALSE;
+                } finally {
+                    System.out.println("TaskInterrupter.run() - finished at " + getCurrTime());
+                }
+            }
+        }
+
+        Blocker blocker;
+
+        final CommandRunner cmdRunner = new CommandRunner();
+        final TaskInterrupter interrupter = new TaskInterrupter();
+
+        Logger.getLogger("").addHandler(blocker = new Blocker("cli: process created"));
+
+        RequestProcessor rp = new RequestProcessor("clitest", 2);
+        rp.post(cmdRunner);
+        boolean interrupted = rp.post(interrupter).waitFinished(60000);
+
+        assertTrue(interrupted);
+        assertTrue(interrupter.cancellationSuccess.booleanValue());
         assertTrue(blocker.destroyed);
     }            
     

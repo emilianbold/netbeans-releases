@@ -6,6 +6,7 @@
 package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.event.ActionListener;
+import javax.swing.Action;
 import org.openide.util.Lookup;
 
 /**
@@ -34,20 +35,20 @@ public abstract class MessagingAccessor {
      * @param project
      * @return Show messages for given project
      */
-    public abstract ActionListener getOpenMessagesAction( ProjectHandle project );
+    public abstract Action getOpenMessagesAction( ProjectHandle project );
 
     /**
      * Action, which creates chat room on server
      * @param project
      * @return
      */
-    public abstract ActionListener getCreateChatAction(ProjectHandle project);
+    public abstract Action getCreateChatAction(ProjectHandle project);
 
     /**
      * Action, which retries connecting to server
      * @param project
      * @return
      */
-    public abstract ActionListener getReconnectAction(ProjectHandle project);
+    public abstract Action getReconnectAction(ProjectHandle project);
 
 }
