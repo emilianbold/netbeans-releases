@@ -94,6 +94,10 @@ public class Graph extends JComponent {
         return upperLimit;
     }
 
+    public int calculateUpperLimit(float... data) {
+        return graph.calculateUpperLimit(data);
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         graph.paint(g, upperLimit, 0, 0, getWidth(), getHeight(), isEnabled());

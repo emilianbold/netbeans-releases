@@ -106,6 +106,25 @@ class GraphPainter {
         }
      }
 
+    public int calculateUpperLimit(float... data) {
+        float absLimit = 0;
+        float relLimit = 0;
+        for (int i = 0; i < data.length; ++i) {
+            float value = data[i];
+            GraphDescriptor descriptor = descriptors.get(i);
+            switch (descriptor.getKind()) {
+                case ABS_SURFACE:
+                case LINE:
+                    absLimit = Math.max(absLimit, value);
+                    break;
+                case REL_SURFACE:
+                    relLimit += value;
+                    break;
+            }
+        }
+        return (int)Math.max(absLimit, relLimit);
+    }
+
 //    public GraphDescriptor[] getDescriptors() {
 //        return descriptors.clone();
 //    }
