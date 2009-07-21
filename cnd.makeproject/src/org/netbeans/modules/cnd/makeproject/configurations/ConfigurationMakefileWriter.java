@@ -390,7 +390,7 @@ public class ConfigurationMakefileWriter {
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
-        bw.write("\t${MAKE} " + MakeOptions.getInstance().getMakeOptions() // NOI18N
+        bw.write("\t${MAKE} " // NOI18N
                 + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
                 + output + "\n\n"); // NOI18N
     }
