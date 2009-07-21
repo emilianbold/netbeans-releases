@@ -87,17 +87,13 @@ public class DwarfAbbriviationTableSection extends ElfSection {
         return st.toString();
     }
 
-    public DwarfAbbriviationTable getAbbriviationTable(long offset) {
+    public DwarfAbbriviationTable getAbbriviationTable(long offset) throws IOException {
         Long lOffset = Long.valueOf(offset);
         DwarfAbbriviationTable table = tables.get(lOffset);
         
         if (table == null) {
-            try {
-                table = readTable(offset);
-                tables.put(lOffset, table);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            table = readTable(offset);
+            tables.put(lOffset, table);
         }
         
         return table;

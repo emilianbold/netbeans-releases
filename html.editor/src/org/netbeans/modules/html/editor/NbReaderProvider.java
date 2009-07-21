@@ -45,6 +45,7 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.editor.ext.html.dtd.ReaderProvider;
 import org.netbeans.editor.ext.html.dtd.Registry;
+import org.netbeans.modules.html.HtmlVersion;
 import org.openide.filesystems.*;
 
 public class NbReaderProvider implements ReaderProvider {
@@ -100,6 +101,10 @@ public class NbReaderProvider implements ReaderProvider {
         }
     }
 
+    public boolean isXMLContent(String identifier) {
+        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+    }
+    
     private void invalidate() {
         if( valid ) {
             valid = false;

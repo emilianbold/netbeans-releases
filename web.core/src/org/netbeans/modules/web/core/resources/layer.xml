@@ -195,6 +195,16 @@ made subject to such option by the copyright holder.
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="position" intvalue="0"/>
       </file>
+    <file name="javascript.shadow">
+        <attr name="originalFile" stringvalue="Templates/Other/javascript.js"/>
+        <attr name="position" intvalue="700"/>
+        <attr name="templateCategory" stringvalue="web-types"/>
+    </file>
+    <file name="json.shadow">
+        <attr name="originalFile" stringvalue="Templates/Other/json.json"/>
+        <attr name="position" intvalue="750"/>
+        <attr name="templateCategory" stringvalue="web-types"/>
+    </file>
       <file name="web.xml">
         <attr name="template" boolvalue="true"/>
         <attr name="position" intvalue="9797"/>

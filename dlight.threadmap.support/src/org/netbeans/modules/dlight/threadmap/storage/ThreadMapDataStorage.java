@@ -109,7 +109,7 @@ public class ThreadMapDataStorage {
     public ThreadMapData queryThreadMapData(ThreadMapDataQuery query) {
         final List<ThreadData> threadsData = new ArrayList<ThreadData>();
 
-        System.out.println("Query: " + TimeUnit.MILLISECONDS.toSeconds(query.getTimeFrom()) + " - " + TimeUnit.MILLISECONDS.toSeconds(query.getTimeTo()));
+        System.out.println("Query: " + TimeUnit.MILLISECONDS.toSeconds(query.getTimeFrom()) + " - " + TimeUnit.MILLISECONDS.toSeconds(query.getTimeTo())); // NOI18N
 
         for (ThreadDataImpl td : data) {
             threadsData.add(td);

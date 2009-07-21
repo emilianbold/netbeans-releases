@@ -43,6 +43,7 @@ function main() {
 	local clean="n"
 	local all="n"
 	local cluster="cnd"
+	local quiet="n"
 
 	if [ -d "../nbbuild" ]; then
 		nbbuild="../nbbuild"
@@ -71,6 +72,9 @@ function main() {
 				;;
 			-a|--all)
 				all="y"
+				;;
+			-q|--quiet)
+				quiet="y"
 				;;
 			*)
 				cluster="$1"
@@ -115,14 +119,29 @@ function main() {
 		fi
 	fi
 
+	local log="/tmp/${USER}-netbeans-build.log"	
 	if [ ${clean} == "y" ]; then
 		echo ""; echo "========== Cleaning and building cluster ${cluster} =========="; echo ""; 
-		sleep 2 # allow user pressing ^C before we clean :)
-		ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip
+		sleep 2 # allow user pressing ^C before we clean :)		
+		if [ ${quiet} == "y" ]; then
+			echo "Quiet mode: redirecting output to ${log}"
+			ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip 2>&1 > ${log}
+		else
+			ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip
+		fi
 	else
 		echo ""; echo "========== Rebuilding cluster ${cluster} =========="; echo ""; 
 		for D in `ls -1d ${nbbuild}/../cnd* ${nbbuild}/../dlight*`; do rm -rf  $D/build/* 2> /dev/null; done
-		ant -f ${nbbuild}/build.xml ${rebuild_cluster} rebuild-cluster
+		if [ ${quiet} == "y" ]; then
+			echo "Quiet mode: redirecting output to ${log}"
+			ant -f ${nbbuild}/build.xml ${rebuild_cluster} rebuild-cluster 2>&1 > ${log}
+		else
+			ant -f ${nbbuild}/build.xml ${rebuild_cluster} rebuild-cluster
+		fi
+	fi
+	if [ ${quiet} == "y" ]; then 
+		tail -3 ${log}
+		echo "See full log in ${log}"; 
 	fi
 }
 

@@ -44,6 +44,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.openide.util.ImageUtilities;
@@ -53,30 +57,31 @@ import org.openide.util.NbBundle;
  *
  * @author Egor Ushakov
  */
-// TODO: register it when implemented actionPerformed
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.class)
 public class AttachOutputActionProvider extends BuildActionsProvider {
     @Override
     public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
         if (events != null && events.length > 0 && events[events.length-1].getType() == ProjectActionEvent.Type.RUN) {
-            return Collections.<BuildAction>singletonList(new AttachAction(ioTabName, events.length-1));
+            return Collections.<BuildAction>singletonList(new AttachAction(events));
         }
         return Collections.emptyList();
     }
 
     private static final class AttachAction extends AbstractAction implements BuildAction {
-        private final int runStep;
+        ProjectActionEvent[] events;
         private int step = -1;
+        private long pid = ExecutionListener.UNKNOWN_PID;
 
-        public AttachAction(String ioTabName, int runStep) {
-            this.runStep = runStep;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImage("org/netbeans/modules/debugger/resources/actions/Attach.gif")); // NOI18N
+        public AttachAction(ProjectActionEvent[] events) {
+            this.events = events;
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/actions/Attach.gif", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, NbBundle.getBundle(AttachOutputActionProvider.class).getString("OUTPUT_ATTACH_ACTION_TEXT")); // NOI18N
             setEnabled(false);
         }
 
-        public void executionStarted() {
-            if (step == runStep) {
+        public void executionStarted(int pid) {
+            if (step == events.length-1 && pid != ExecutionListener.UNKNOWN_PID) {
+                this.pid = pid;
                 setEnabled(true);
             }
         }
@@ -90,7 +95,25 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (!isEnabled()) {
+                return;
+            }
             //do the real attach
+            if (pid == ExecutionListener.UNKNOWN_PID) {
+                return;
+            }
+            
+            ProjectActionEvent event = events[step];
+            ProjectInformation info = ProjectUtils.getInformation(event.getProject());
+            if (info == null) {
+                return;
+            }
+
+            try {
+                GdbDebugger.attach(pid, info);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }

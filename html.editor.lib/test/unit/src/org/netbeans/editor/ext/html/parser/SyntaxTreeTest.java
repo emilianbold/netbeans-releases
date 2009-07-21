@@ -48,7 +48,6 @@ import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
-import org.netbeans.editor.ext.html.dtd.Utils;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.modules.html.editor.NbReaderProvider;
@@ -287,7 +286,7 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>", Utils.XHTML_STRINCT_PUBLIC_ID);
+        assertAST("<html><head><meta content=''></meta><title></title></head><body></body></html>", "-//W3C//DTD XHTML 1.0 Strict//EN");
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -369,7 +368,7 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
                 "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
                 "<title></title></head><body></body></html>",
-                Utils.XHTML_STRINCT_PUBLIC_ID);
+                "-//W3C//DTD XHTML 1.0 Strict//EN");
     }
 
     public void testMissingRequiredAttribute() throws Exception{

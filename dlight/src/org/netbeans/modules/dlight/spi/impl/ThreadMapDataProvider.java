@@ -51,5 +51,5 @@ public interface ThreadMapDataProvider extends VisualizerDataProvider {
      * @param metadata define needed time selection and aggregation.
      * @return list threads data about all threads that alive in selected time period.
      */
-    public ThreadMapData queryData(ThreadMapDataQuery query);
+    ThreadMapData queryData(ThreadMapDataQuery query);
 }
