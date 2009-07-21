@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -170,7 +171,7 @@ public class PHPIndex {
                 String namespaceName = sig.string(4);
                 boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
                 List<String> ifaces = Collections.emptyList();
-                if (sig.string(5) != null) {
+                if (sig.string(5) != null && sig.string(5).trim().length() > 0) {
                     ifaces = Arrays.asList(sig.string(5).split(","));//NOI18N
                 }
                 IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, ifaces, offset, 0);
@@ -958,7 +959,8 @@ public class PHPIndex {
                 //TODO: handle search kind
 
                 int offset = sig.integer(2);
-                String interfaces[] = sig.string(3).split(","); //NOI18N
+                String interfaces[] = sig.string(3).trim().length() == 0 ?
+                    new String[0] : sig.string(3).split(","); //NOI18N
 
                 String namespaceName = sig.string(4);
                 boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
@@ -975,32 +977,20 @@ public class PHPIndex {
         return ifaces;
     }
 
-    private Collection<IndexedInterface> getInterfaceTree(PHPParseResult context, String ifaceName) {
-        Collection<IndexedInterface> ifacesByName = new ArrayList<IndexedInterface>();
-        Collection<String> alreadyProcessed = new ArrayList<String>();
-        Collection<String> unprocessedIfaces = new TreeSet<String>(Collections.singleton(ifaceName));
-
-        while (!unprocessedIfaces.isEmpty()){
-            Collection<String> newInterfaces = new TreeSet<String>();
-
-            for (String rawIface: unprocessedIfaces) {
-                for (IndexedInterface iface : getInterfaces(context, rawIface, QuerySupport.Kind.EXACT)){
-                    ifacesByName.add(iface);
-                    alreadyProcessed.add(iface.getName());
-
-                    for (String inheritedIfaceName : iface.getInterfaces()){
-                        if (!alreadyProcessed.contains(inheritedIfaceName)){
-                            newInterfaces.add(inheritedIfaceName);
-                        }
-                    }
+    private Collection<IndexedInterface> getInterfaceTree(PHPParseResult context, String ifaceName, Map<String, IndexedInterface> result) {
+        for (IndexedInterface iface : getInterfaces(context, ifaceName, QuerySupport.Kind.EXACT)){
+            IndexedInterface oldValue = result.put(iface.getName(), iface);
+            if (oldValue == null) {
+                for (String inheritedIfaceName : iface.getInterfaces()) {
+                    getInterfaceTree(context, inheritedIfaceName, result);
                 }
             }
-
-            unprocessedIfaces.clear();
-            unprocessedIfaces.addAll(newInterfaces);
         }
+        return result.values();
+    }
 
-        return ifacesByName;
+    private Collection<IndexedInterface> getInterfaceTree(PHPParseResult context, String ifaceName) {
+        return getInterfaceTree(context, ifaceName, new LinkedHashMap<String, IndexedInterface>());
     }
 
     public Collection<String>getDirectIncludes(PHPParseResult context, String filePath){
