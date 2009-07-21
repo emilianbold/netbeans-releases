@@ -42,13 +42,9 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-
-import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -70,8 +66,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
 
     private WebBeansModelImplementation( ModelUnit unit ){
         super( unit );
-        myBindings = new HashMap<TypeElement, Set<Binding>>();
-        myAnnotatedTypes = new HashMap<String, Set<TypeElement>>();
         myManagers = new HashMap<String, PersistentObjectManager<Binding>>();
     }
     
@@ -131,14 +125,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return super.getModel();
     }
     
-    Map<TypeElement,Set<Binding>> getBindings(){
-        return myBindings;
-    }
-    
-    Map<String,Set<TypeElement>> getAnnotatedTypes(){
-        return myAnnotatedTypes;
-    }
-    
     Map<String,PersistentObjectManager<Binding>> getManagers(){
         return myManagers;
     }
@@ -153,34 +139,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return result;
     }
     
-    void addAnnotatedType( String annotationFQN, TypeElement element ){
-        Set<TypeElement> set = getAnnotatedTypes().get( annotationFQN );
-        if (set == null ){
-            set = new HashSet<TypeElement>();
-            getAnnotatedTypes().put( annotationFQN , set );
-        }
-        set.add(element);
-    }
-    
-    Set<TypeElement> getaddAnnotatedTypes( String annotationFQN){
-        return getaddAnnotatedTypes(annotationFQN);
-    }
-    
-    void addBinding( TypeElement element , Binding binding ){
-        Set<Binding> set = getBindings().get( element );
-        if ( set == null ){
-            set = new HashSet<Binding>();
-            getBindings().put( element ,  set);
-        }
-        set.add( binding );
-    }
-    
-    Set<Binding> getBindings(TypeElement element ){
-        return getBindings().get(element);
-    }
-    
-    private Map<TypeElement,Set<Binding>> myBindings;
-    private Map<String,Set<TypeElement>> myAnnotatedTypes;
     private Map<String,PersistentObjectManager<Binding>> myManagers;
     
 }

@@ -46,8 +46,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
@@ -283,16 +281,8 @@ public class ThreadsDataManager {
                 return "MSA "+getTimeStamp()+" "+getMSAState(0, false).name(); // NOI18N
             }
 
-            public MSAState getSamplingMSAState(boolean full) {
-                return ThreadState.MSAState.ThreadFinished;
-            }
-
-            public StackTrace getStackTrace(int index) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public StackTrace getSamplingStackTrace() {
-                throw new UnsupportedOperationException("Not supported yet.");
+            public int getSamplingStateIndex(boolean full) {
+                return 0;
             }
         });
     }

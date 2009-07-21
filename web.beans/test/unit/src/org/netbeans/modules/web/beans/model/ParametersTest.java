@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,36 +37,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.derby.support;
+package org.netbeans.modules.web.beans.model;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 
 /**
- * @author Alexey Vladykin
+ * @author ads
+ *
  */
-public class DerbyStackStorageTest extends CommonStackDataStorageTests {
+public class ParametersTest extends CommonTestCase {
 
-    protected StackDataStorage createStorage() {
-        try {
-            return new DerbyDataStorage();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    public ParametersTest( String testName ) {
+        super(testName);
+    }
+    
+    public void testParameter(){
+        
     }
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((DerbyDataStorage) db).shutdown();
-    }
-
-    protected void flush(StackDataStorage db) {
-        ((DerbyDataStorage) db).flush();
-    }
 }

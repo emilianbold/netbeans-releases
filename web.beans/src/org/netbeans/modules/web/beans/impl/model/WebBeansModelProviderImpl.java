@@ -97,10 +97,30 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         return null;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectables(javax.lang.model.element.VariableElement, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     */
     public List<Element> getInjectables( VariableElement element ,
             AbstractModelImplementation impl )
     {
+        // TODO Auto-generated method stub
         return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isDynamicInjectionPoint(javax.lang.model.element.VariableElement)
+     */
+    public boolean isDynamicInjectionPoint( VariableElement element ) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isInjectionPoint(javax.lang.model.element.VariableElement)
+     */
+    public boolean isInjectionPoint( VariableElement element ) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

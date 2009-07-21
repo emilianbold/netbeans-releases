@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class ModelTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA() throws MetadataModelException, IOException, 
+    public void testCommon() throws MetadataModelException, IOException,
         InterruptedException 
     {
         
@@ -144,6 +145,8 @@ public class ModelTest extends CommonTestCase {
                 "package foo; " +
                 "public class MyClass extends Class<String>  {}" );
         
+        inform("start common test");
+        
         createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
             public Void run( WebBeansModel model ) throws Exception {
@@ -193,6 +196,302 @@ public class ModelTest extends CommonTestCase {
         });
     }
     
+    public void testMixedBindings() throws MetadataModelException, IOException, 
+        InterruptedException 
+    {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding1  {" +
+                "    String value(); "+
+                "    @NonBinding String comment() default \"\"; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding2  {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding3.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding3  {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding4.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding4  {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface1.java",
+                "package foo; " +
+                "public interface Iface1 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface2.java",
+                "package foo; " +
+                "public interface Iface2 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface3.java",
+                "package foo; " +
+                "public interface Iface3 extends Iface1 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class Clazz1 {" +
+                " @Produces @foo.Binding1(\"b\") int productionField1 = 1; " +
+                " @Produces @foo.Binding3 @foo.Binding2 String[] productionField2 = new String[0]; " +
+                " @Produces @foo.Binding1(\"c\") @foo.Binding4 Clazz3 productionMethod() " +
+                "{ return null; } " +
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "@foo.Binding1(\"a\") "+
+                "public class Clazz2 extends Clazz1 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "@foo.Binding3 @foo.Binding2 "+
+                "public class Clazz3 extends Clazz2 implements Iface1 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                "@foo.Binding3 @foo.Binding1(\"a\") "+
+                "public class Clazz4 implements Iface2, Iface3 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz5.java",
+                "package foo; " +
+                "@foo.Binding3 @foo.Binding1(\"b\") "+
+                "public class Clazz5 implements Iface3 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz6.java",
+                "package foo; " +
+                "@foo.Binding1(\"a\") @foo.Binding2 @foo.Binding4 "+
+                "public class Clazz6 extends Clazz2 {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "public class TestClass  { " +
+                " @foo.Binding3 @foo.Binding1(\"a\") Iface1 myFieldA; "+
+                " @foo.Binding2 Iface1 myFieldB; "+
+                " @foo.Binding3 Clazz1 myFieldC; "+
+                " @foo.Binding2 @foo.Binding4  Clazz2 myFieldD; "+
+                " @foo.Binding1(\"b\") Integer myFieldE; "+
+                " @foo.Binding3 @foo.Binding2 String[] myFieldF; "+
+                " @foo.Binding1(\"c\") @foo.Binding4 Clazz1 myFieldG; "+
+                "} ");
+        
+        inform("start mixed binding test");
+        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myFieldA")){
+                        checkMixedA( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myFieldB")){
+                        checkMixedB( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myFieldC")){
+                        checkMixedC( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myFieldD")){
+                        checkMixedD( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myFieldE")){
+                        checkMixedE( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myFieldF")){
+                        checkMixedF( element , model);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myFieldG")){
+                        checkMixedG( element , model);
+                    }
+                }
+                
+                assert names.contains("myFieldA");
+                assert names.contains("myFieldB");
+                assert names.contains("myFieldC");
+                assert names.contains("myFieldD");
+                assert names.contains("myFieldE");
+                assert names.contains("myFieldF");
+                assert names.contains("myFieldG");
+                return null;
+            }
+        });
+        
+    }
+    
+    protected void checkMixedG( VariableElement element, WebBeansModel model ) {
+        inform("test field myFieldG");
+        Element injectable;
+        try {
+            injectable = model.getInjectable(element);
+        
+            assertTrue( "Expect production method as injectable for 'myFieldG' " +
+                "field, but found :" +injectable.getKind(), 
+                injectable instanceof ExecutableElement );
+            assertEquals( "productionMethod", injectable.getSimpleName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+
+    protected void checkMixedF( VariableElement element, WebBeansModel model ) {
+        inform("test field myFieldF");
+        Element injectable;
+        try {
+            injectable = model.getInjectable(element);
+        
+            assertTrue( "Expect production field as injectable for 'myFieldF' " +
+                "field, but found :" +injectable.getKind(), 
+                injectable instanceof VariableElement);
+            assertEquals( "productionField2", injectable.getSimpleName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false;
+        }     
+    }
+
+    protected void checkMixedE( VariableElement element, WebBeansModel model ) {
+        inform("test field myFieldE");
+        Element injectable;
+        try {
+            injectable = model.getInjectable(element);
+        
+            assertTrue( "Expect production field as injectable for 'myFieldE' " +
+                "field, but found :" +injectable.getKind(), 
+                injectable instanceof VariableElement);
+            assertEquals( "productionField1", injectable.getSimpleName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+
+    protected void checkMixedD( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myFieldD");
+            Element injectable = model.getInjectable(element);
+            
+            assertTrue( "Expect class definition as injectable for 'myFieldD' " +
+            		"field, but found :" +injectable.getKind(), injectable instanceof TypeElement);
+            TypeElement typeElement = (TypeElement)injectable;
+            assertEquals("foo.Clazz6", typeElement.getQualifiedName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false ;
+        }
+    }
+
+    protected void checkMixedC( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myFieldC");
+            model.getInjectable(element);
+            
+            Element injectable = model.getInjectable(element);
+            
+            assertTrue( "Expect class definition as injectable for 'myFieldC' " +
+                    "field, but found :" +injectable.getKind(), injectable instanceof TypeElement);
+            TypeElement typeElement = (TypeElement)injectable;
+            assertEquals("foo.Clazz3", typeElement.getQualifiedName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false ;
+        }        
+    }
+
+    protected void checkMixedB( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myFieldB");
+            model.getInjectable(element);
+            
+            Element injectable = model.getInjectable(element);
+            
+            assertTrue( "Expect class definition as injectable for 'myFieldB' " +
+                    "field, but found :" +injectable.getKind(), injectable instanceof TypeElement);
+            TypeElement typeElement = (TypeElement)injectable;
+            assertEquals("foo.Clazz3", typeElement.getQualifiedName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false ;
+        }        
+    }
+
+    protected void checkMixedA( VariableElement element, WebBeansModel model ) {
+        try {
+            inform("test field myFieldA");
+            model.getInjectable(element);
+            
+            Element injectable = model.getInjectable(element);
+            
+            assertTrue( "Expect class definition as injectable for 'myFieldA' " +
+                    "field, but found :" +injectable.getKind(), injectable instanceof TypeElement);
+            TypeElement typeElement = (TypeElement)injectable;
+            assertEquals("foo.Clazz4", typeElement.getQualifiedName().toString());
+        }
+        catch (WebBeansModelException e) {
+            e.printStackTrace();
+            assert false ;
+        }        
+    }
+
     protected void checkB( VariableElement element, WebBeansModel model ) {
         try {
             inform("test field myFieldB");
@@ -210,12 +509,14 @@ public class ModelTest extends CommonTestCase {
     }
 
     private void checkA( VariableElement element, WebBeansModel model ) {
+        boolean exception = false;
         try {
             inform("test field myFieldA");
             model.getInjectable(element);
         }
         catch (AmbiguousDependencyException e) {
-            List<Element> elements = e.getElements();
+            exception = true;
+            Collection<Element> elements = e.getElements();
             assertEquals( 2 ,  elements.size() );
             Set<String> set = new HashSet<String>();
             for (Element injactable : elements) {
@@ -230,6 +531,7 @@ public class ModelTest extends CommonTestCase {
         catch(WebBeansModelException e ){
             assert false : "Unexpected exception " +e.getClass()+ " appears"; 
         }
+        assert exception;
     }
     
     private void checkGen( VariableElement element, WebBeansModel model ){
@@ -264,8 +566,4 @@ public class ModelTest extends CommonTestCase {
         }
     }
     
-    private void inform( String message ){
-        System.out.println(message);
-    }
-
 }

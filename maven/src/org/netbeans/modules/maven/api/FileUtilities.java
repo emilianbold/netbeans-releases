@@ -62,7 +62,7 @@ public final class FileUtilities {
         if (uri == null) {
             return null;
         }
-        File fil = new File(uri);
+        File fil = FileUtil.normalizeFile(new File(uri));
         return FileUtil.toFileObject(fil);
     }
     

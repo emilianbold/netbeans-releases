@@ -52,9 +52,9 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="removeFileButton" linkSize="1" alignment="1" pref="128" max="32767" attributes="1"/>
-                          <Component id="detectFilesButton" linkSize="1" alignment="1" pref="128" max="32767" attributes="1"/>
-                          <Component id="addFileButton" linkSize="1" alignment="1" pref="128" max="32767" attributes="1"/>
+                          <Component id="removeFileButton" linkSize="1" alignment="1" max="32767" attributes="1"/>
+                          <Component id="detectFilesButton" linkSize="1" alignment="1" max="32767" attributes="1"/>
+                          <Component id="addFileButton" linkSize="1" alignment="1" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -162,8 +162,8 @@
                                   <Component id="removeGroupButton" linkSize="2" alignment="0" min="0" max="32767" attributes="1"/>
                                   <Component id="editGroupButton" linkSize="2" alignment="0" max="32767" attributes="1"/>
                                   <Component id="addGroupButton" linkSize="2" alignment="1" max="32767" attributes="1"/>
-                                  <Component id="addGroupFilesButton" linkSize="2" alignment="1" pref="134" max="32767" attributes="1"/>
-                                  <Component id="removeGroupFileButton" linkSize="2" alignment="0" min="-2" pref="134" max="-2" attributes="0"/>
+                                  <Component id="addGroupFilesButton" linkSize="2" alignment="1" max="32767" attributes="1"/>
+                                  <Component id="removeGroupFileButton" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>

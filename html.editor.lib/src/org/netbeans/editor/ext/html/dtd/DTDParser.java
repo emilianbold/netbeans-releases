@@ -95,16 +95,11 @@ class DTDParser extends Object {
      */
     private Map entityMap = new HashMap();
 
-    public boolean xmlDTD = false; //if true we parse XML DTD, not SGML!
+    public boolean xmlDTD; //if true we parse XML DTD, not SGML!
     
     public DTD createDTD( ReaderProvider provider, String identifier, String fileName ) throws WrongDTDException {
-
-        if(Utils.isXHTMLPublicId(identifier)) {
-            xmlDTD = true;
-        }
-
         this.provider = provider;
-        
+        xmlDTD = provider.isXMLContent(identifier);
         Reader reader = getReader( identifier, fileName );
         if( reader == null ) throw new WrongDTDException( "Can't open Reader for public identifier " + identifier ); // NOI18N
 

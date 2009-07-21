@@ -172,6 +172,7 @@ public class AddOverrideAnnotation extends AbstractHint {
         return null;
     }
     
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }    
@@ -199,6 +200,8 @@ public class AddOverrideAnnotation extends AbstractHint {
                 public void run(WorkingCopy copy) throws IOException {
                     copy.toPhase(Phase.RESOLVED); //XXX: performance
                     TreePath path = handle.resolve(copy);
+
+                    assert path != null;
 
                     while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
                         path = path.getParentPath();
