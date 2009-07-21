@@ -222,6 +222,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
                 testConvertor.refreshSession();
             }
         });
+        TestRunnerUtilities.addProperties(taskDescriptor, project);
         TestExecutionManager.getInstance().init(taskDescriptor);
         session.setRerunHandler(TestExecutionManager.getInstance());
   }
