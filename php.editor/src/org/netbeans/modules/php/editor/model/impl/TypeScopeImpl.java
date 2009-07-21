@@ -257,7 +257,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         retval.addAll(findDeclaredMethods(queryName));
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScope.getIndex();
-        Collection<IndexedClassMember<IndexedFunction>> allMethods = index.getAllMethods(null, getName(), queryName, QuerySupport.Kind.EXACT, Modifier.PUBLIC | Modifier.PROTECTED);
+        QuerySupport.Kind kind = "".equals(queryName) ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;
+        Collection<IndexedClassMember<IndexedFunction>> allMethods = index.getAllMethods(null, getName(), queryName, kind, Modifier.PUBLIC | Modifier.PROTECTED);
         for (IndexedClassMember<IndexedFunction> indexedClassMember : allMethods) {
             IndexedFunction indexedFunction = indexedClassMember.getMember();
             String in = indexedFunction.getIn();
