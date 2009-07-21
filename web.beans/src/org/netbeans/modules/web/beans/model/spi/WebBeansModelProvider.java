@@ -63,5 +63,9 @@ public interface WebBeansModelProvider {
     List<Element> getInjectables( VariableElement element , 
             AbstractModelImplementation modelImpl  );
     
+    boolean isDynamicInjectionPoint( VariableElement element );
+    
+    boolean isInjectionPoint( VariableElement element );
+    
     TypeMirror resolveType(String fqn, AnnotationModelHelper helper );
 }

@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import javax.lang.model.element.Element;
 
@@ -54,13 +54,13 @@ public class AmbiguousDependencyException extends WebBeansModelException {
 
     private static final long serialVersionUID = 5833956523263809658L;
 
-    public AmbiguousDependencyException(List<Element> elements){
+    public AmbiguousDependencyException(Collection<Element> elements){
         myElements = elements;
     }
     
-    public List<Element> getElements(){
-        return Collections.unmodifiableList( myElements );
+    public Collection<Element> getElements(){
+        return Collections.unmodifiableCollection( myElements );
     }
     
-    private List<Element> myElements;
+    private Collection<Element> myElements;
 }

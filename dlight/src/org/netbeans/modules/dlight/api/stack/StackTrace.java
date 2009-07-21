@@ -39,10 +39,18 @@
 package org.netbeans.modules.dlight.api.stack;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 
 public interface StackTrace {
 
-    List<FunctionCall> getStackTrace();
+    List<Stack> getStackTrace();
 
     long getTimeStamp();
+
+    public interface Stack {
+
+        List<FunctionCall> getStack();
+
+        ThreadInfo getThreadInfo();
+    }
 }

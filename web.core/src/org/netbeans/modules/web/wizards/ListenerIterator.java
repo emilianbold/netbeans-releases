@@ -64,10 +64,12 @@ import org.openide.DialogDisplayer;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -135,6 +137,12 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
             String className = classPath.getResourceName(result.getPrimaryFile(),'.',false);
             if (result!=null && panel.createElementInDD()){
                 FileObject webAppFo=DeployData.getWebAppFor(folder);
+                if (webAppFo == null) {
+                    WebModule wm = WebModule.getWebModule(folder);
+                    if (wm != null) {
+                        webAppFo = DDHelper.createWebXml(wm.getJ2eeProfile(), true, wm.getWebInf());
+                    }
+                }
                 WebApp webApp=null;
                 if (webAppFo!=null) {
                     webApp = DDProvider.getDefault().getDDRoot(webAppFo);

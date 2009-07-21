@@ -102,11 +102,14 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 hostNameField.setEnabled(!registerLocalRB.isSelected());
                 portValueField.setEnabled(!registerLocalRB.isSelected());
+                domainField.setEnabled(!registerRemoteRB.isSelected());
                 fireChangeEvent();
             }
         });
         registerRemoteRB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                hostNameField.setEnabled(!registerLocalRB.isSelected());
+                portValueField.setEnabled(!registerLocalRB.isSelected());
                 domainField.setEnabled(!registerRemoteRB.isSelected());
                 fireChangeEvent();
             }

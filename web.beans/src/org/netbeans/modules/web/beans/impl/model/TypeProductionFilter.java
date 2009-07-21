@@ -158,6 +158,7 @@ class TypeProductionFilter extends Filter<Element> {
                 }
                 if ( productionType.getKind() != TypeKind.ARRAY ){
                     iterator.remove();
+                    continue;
                 }
                 if ( !getImplementation().getHelper().getCompilationController().
                         getTypes().isSameType( arrayComponentType,

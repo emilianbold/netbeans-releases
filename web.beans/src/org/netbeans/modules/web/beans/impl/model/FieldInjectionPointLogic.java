@@ -94,10 +94,22 @@ abstract class FieldInjectionPointLogic {
     protected Element findVariableInjectable( VariableElement element,
             WebBeansModelImplementation modelImpl ) throws WebBeansModelException
     {
-        List<Element> injectables = findVariableInjectable(element, 
+        Set<Element> injectables = findVariableInjectable(element, 
                 modelImpl, false);
+        /*
+         *  TODO : need to compare set before filtering and after.
+         *  If after filtering there is only one element then 
+         *  it could be safely return as result.
+         *  Otherwise there is two cases:
+         *  1) Empty set after filtering means unsatisfied dependency : 
+         *  there was discovered elements (if original set was not empty ) 
+         *  but they are not eligible for injection for various reasons
+         * ( unproxyables, etc. ).
+         * 2) Several elements set means ambiguous dependency.    
+         */
+        filterBeans( injectables );
         if ( injectables.size() ==1 ){
-            return injectables.get(0);
+            return injectables.iterator().next();
         }
         else if ( injectables.size() == 0 ){
             return null;
@@ -107,7 +119,7 @@ abstract class FieldInjectionPointLogic {
         }
     }
     
-    protected List<Element> findVariableInjectable( VariableElement element,
+    protected Set<Element> findVariableInjectable( VariableElement element,
             WebBeansModelImplementation modelImpl , boolean currentByDefault )
     {
         // Probably injected field.
@@ -168,7 +180,7 @@ abstract class FieldInjectionPointLogic {
          */
         boolean newBindingType = false; 
         String annotationName = null; 
-        List<Element> result = new LinkedList<Element>();
+        Set<Element> result = new HashSet<Element>();
         if ( bindingAnnotations.size() == 1 ){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
             DeclaredType type = annotationMirror.getAnnotationType();
@@ -187,7 +199,8 @@ abstract class FieldInjectionPointLogic {
                         " of varaible type");                      // NOI18N
                 /*
                  *  Filter all appropriate types for presence binding type.
-                 *  It should be absent at all or just single @Current.  
+                 *  It should be either absent at all or binding types 
+                 *  should contain @Current.  
                  */
                 filterBindnigsByCurrent( assignableTypes, modelImpl );
             }
@@ -281,7 +294,7 @@ abstract class FieldInjectionPointLogic {
         try {
             model.getHelper().getAnnotationScanner().findAnnotations( 
                     PRODUCER_ANNOTATION, 
-                    EnumSet.of( ElementKind.FIELD, ElementKind.PARAMETER), 
+                    EnumSet.of( ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
                         public void handleAnnotation( TypeElement type, 
                                 Element element,AnnotationMirror annotation )
@@ -316,7 +329,7 @@ abstract class FieldInjectionPointLogic {
         TypeElement typeElement = model.getHelper().
             getCompilationController().getElementUtilities().
                 enclosingTypeElement( productionElement );
-        Set<TypeElement> implementors = getImplementors(model, typeElement);
+        Set<TypeElement> implementors = doGetImplementors(model, typeElement);
         Set<Element> specializeElements = new HashSet<Element>( );
         specializeElements.add( productionElement );
         for (TypeElement implementor : implementors) {
@@ -450,9 +463,35 @@ abstract class FieldInjectionPointLogic {
         filter.filter( result );
         return result;
     }
-
+    
     private Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
             Element typeElement )
+    {
+        if (! (typeElement instanceof TypeElement )){
+            return Collections.emptySet();
+        }
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        result.add( (TypeElement) typeElement );
+        
+        Set<TypeElement> toProcess = new HashSet<TypeElement>();
+        toProcess.add((TypeElement) typeElement );
+        while ( toProcess.size() >0 ){
+            TypeElement element = toProcess.iterator().next();
+            toProcess.remove( element );
+            Set<TypeElement> set = doGetImplementors(modelImpl, element );
+            if ( set.size() == 0 ){
+                continue;
+            }
+            result.addAll( set );
+            for (TypeElement impl : set) {
+                toProcess.add(impl);
+            }
+        }
+        return result;
+    }
+
+    private Set<TypeElement> doGetImplementors( WebBeansModelImplementation modelImpl,
+            TypeElement typeElement )
     {
         Set<TypeElement> result = new HashSet<TypeElement>();
         ElementHandle<TypeElement> handle = ElementHandle
@@ -565,11 +604,11 @@ abstract class FieldInjectionPointLogic {
             return Collections.emptySet();
         }
         else {
-            Set<TypeElement> list = new HashSet<TypeElement>( result.size());
+            Set<TypeElement> set = new HashSet<TypeElement>();
             for (Binding binding : result) {
-                list.add( binding.getTypeElement() );
+                set.add( binding.getTypeElement() );
             }
-            return list;
+            return set;
         }
     }
 
@@ -581,5 +620,10 @@ abstract class FieldInjectionPointLogic {
         MemberBindingFilter<T> filter = MemberBindingFilter.get( clazz );
         filter.init( bindingAnnotations, impl );
         filter.filter( elementsWithBindings );
+    }
+    
+    private void filterBeans( Set<Element> result ) {
+        BeansFilter filter = BeansFilter.get();
+        filter.filter( result );
     }
 }

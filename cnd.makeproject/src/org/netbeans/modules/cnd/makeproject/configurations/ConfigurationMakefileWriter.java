@@ -352,8 +352,9 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
             bw.write(".build-conf:\n"); // NOI18N
-            bw.write("\t@echo Tool collection not found.\n"); // NOI18N
-            bw.write("\t@echo Please specify existing tool collection in project properties\n"); // NOI18N
+            bw.write("\t@echo 'Tool collection " + conf.getCompilerSet().getCompilerSetName().getValue() // NOI18N
+                    + " was missing when this makefile was generated'\n"); // NOI18N
+            bw.write("\t@echo 'Please specify existing tool collection in project properties'\n"); // NOI18N
             bw.write("\t@exit 1\n\n"); // NOI18N
             return;
         }
@@ -658,7 +659,9 @@ public class ConfigurationMakefileWriter {
     }
 
     public static void writeDependencyChecking(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && !conf.isQmakeConfiguration()) {
+        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && !conf.isQmakeConfiguration() && conf.getCompilerSet().getCompilerSet() != null) {
+            // if conf.getCompilerSet().getCompilerSet() == null and we write this to makefile,
+            // make would give confusing error message (see IZ#168540)
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
             bw.write(".dep.inc: .depcheck-impl\n"); // NOI18N
