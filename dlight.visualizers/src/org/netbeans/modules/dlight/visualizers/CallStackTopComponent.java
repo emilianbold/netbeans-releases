@@ -48,33 +48,32 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.ImageUtilities;
+//import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadMapVisualizer;
 
 /**
  * Top component which displays something.
  */
 @ConvertAsProperties(
-    dtd="-//org.netbeans.modules.dlight.visualizers//ThreadMap//EN",
+    dtd="-//org.netbeans.modules.dlight.visualizers//CallStack//EN",
     autostore=false
 )
-public final class ThreadMapTopComponent extends TopComponent implements VisualizerContainer {
+public final class CallStackTopComponent extends TopComponent implements VisualizerContainer {
 
-    private static ThreadMapTopComponent instance;
+    private static CallStackTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/dlight/visualizers/resources/threadsWindow.png"; //NOI18N
+//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "ThreadMapTopComponent"; //NOI18N
+    private static final String PREFERRED_ID = "CallStackTopComponent"; //NOI18N
     private String currentToolName;
     private JComponent viewComponent;
 
-    public ThreadMapTopComponent() {
+    public CallStackTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(ThreadMapTopComponent.class, "CTL_ThreadMapTopComponent")); //NOI18N
-        setToolTipText(NbBundle.getMessage(ThreadMapTopComponent.class, "HINT_ThreadMapTopComponent")); //NOI18N
-        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        setName(NbBundle.getMessage(CallStackTopComponent.class, "CTL_CallStackTopComponent")); //NOI18N
+        setToolTipText(NbBundle.getMessage(CallStackTopComponent.class, "HINT_CallStackTopComponent")); //NOI18N
+//        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
     }
 
@@ -105,27 +104,27 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
      * To obtain the singleton instance, use {@link #findInstance}.
      */
-    public static synchronized ThreadMapTopComponent getDefault() {
+    public static synchronized CallStackTopComponent getDefault() {
         if (instance == null) {
-            instance = new ThreadMapTopComponent();
+            instance = new CallStackTopComponent();
         }
         return instance;
     }
 
     /**
-     * Obtain the ThreadMapTopComponent instance. Never call {@link #getDefault} directly!
+     * Obtain the CallStackTopComponent instance. Never call {@link #getDefault} directly!
      */
-    public static synchronized ThreadMapTopComponent findInstance() {
+    public static synchronized CallStackTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Logger.getLogger(ThreadMapTopComponent.class.getName()).warning(
+            Logger.getLogger(CallStackTopComponent.class.getName()).warning(
                     "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
-        if (win instanceof ThreadMapTopComponent) {
-            return (ThreadMapTopComponent) win;
+        if (win instanceof CallStackTopComponent) {
+            return (CallStackTopComponent) win;
         }
-        Logger.getLogger(ThreadMapTopComponent.class.getName()).warning(
+        Logger.getLogger(CallStackTopComponent.class.getName()).warning(
                 "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
                 "' ID. That is a potential source of errors and unexpected behavior."); //NOI18N
         return getDefault();
@@ -133,18 +132,17 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override
     public void componentOpened() {
+        // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        if (viewComponent instanceof ThreadMapVisualizer) {
-            ((ThreadMapVisualizer)viewComponent).shutdown();
-        }
+        // TODO add custom code on component closing
     }
 
     void writeProperties(java.util.Properties p) {
@@ -155,7 +153,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     }
 
     Object readProperties(java.util.Properties p) {
-        ThreadMapTopComponent singleton = ThreadMapTopComponent.getDefault();
+        CallStackTopComponent singleton = CallStackTopComponent.getDefault();
         singleton.readPropertiesImpl(p);
         return singleton;
     }
@@ -170,15 +168,14 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolName, Visualizer view) {
-        setContent(toolName, view.getComponent());
-        view.refresh();
+    public void addVisualizer(String toolName, Visualizer v) {
+        setContent(toolName, v.getComponent());
     }
 
     public void setContent(String toolName, JComponent component) {
         if (currentToolName != null && currentToolName.equals(toolName) &&
             viewComponent == component) {
-            return;//DO NOTHING
+            return;
         }
         currentToolName = toolName;
         removeAll();
@@ -192,27 +189,16 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     }
 
     public void addContent(String toolName, JComponent component) {
-        if (currentToolName == null || !currentToolName.equals(toolName) ||
-            viewComponent != component) {
-            currentToolName = toolName;
-            removeAll();
-            setLayout(new BorderLayout());
-        }
-        viewComponent = component;
-        add(viewComponent);
-        setName(toolName);
-        setToolTipText(toolName);
-        validate();
-        repaint();
+        setContent(toolName, component);
     }
 
     public void removeVisualizer(final Visualizer view) {
         if (EventQueue.isDispatchThread()){
-            closePerformanceMonitor(view);
+            closeCallStack(view);
         }else{
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    closePerformanceMonitor(view);
+                    closeCallStack(view);
                 }
             });
         }
@@ -221,21 +207,14 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     public void showup() {
         open();
         requestActive();
-        if (viewComponent instanceof ThreadMapVisualizer) {
-            ThreadMapVisualizer view = (ThreadMapVisualizer) viewComponent;
-            view.startup();
-        }
     }
 
-    private void closePerformanceMonitor(Visualizer view) {
+    private void closeCallStack(Visualizer view) {
         if (viewComponent != view.getComponent()) {
             return;
         }
-        if (viewComponent instanceof ThreadMapVisualizer) {
-            ((ThreadMapVisualizer)view).shutdown();
-        }
         remove(view.getComponent());
-        setName(NbBundle.getMessage(ThreadMapTopComponent.class, "ThreadMapDetailes")); //NOI18N
+        setName(NbBundle.getMessage(CallStackTopComponent.class, "CallStackDetailes")); //NOI18N
         repaint();
     }
 }

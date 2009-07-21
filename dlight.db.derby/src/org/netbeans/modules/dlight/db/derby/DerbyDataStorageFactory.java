@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.dataprovider;
+package org.netbeans.modules.dlight.db.derby;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
-import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.logging.Level;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
+import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.lookup.ServiceProvider;
 
-public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
+/**
+ *
+ * @author masha
+ */
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 100)
+public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage> {
 
-    private final ThreadMapDataStorage storage = ThreadMapDataStorage.getInstance();
+    static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby"; // NOI18N
+    private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+    public DerbyDataStorageFactory() {
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DERBY_DATA_STORAGE_TYPE));
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
-    public ThreadMapData queryData(ThreadMapDataQuery query) {
-        if (storage == null) {
-            throw new NullPointerException("No STORAGE"); // NOI18N
+    @Override
+    public Collection<DataStorageType> getStorageTypes() {
+        return supportedStorageTypes;
+    }
+
+    @Override
+    public DerbyDataStorage createStorage() {
+        try {
+            return new DerbyDataStorage();
+        } catch (SQLException ex) {
+            DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
+            return null;
         }
-
-        return storage.queryThreadMapData(query);
-    }
-
-    public StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

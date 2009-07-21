@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateMapper;
 
@@ -128,8 +127,8 @@ public final class ThreadStateImpl implements ThreadState {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append("MSA "+timestamp); // NOI18N
-        buf.append(" has "+size); // NOI18N
+        buf.append("MSA " + timestamp); // NOI18N
+        buf.append(" has " + size); // NOI18N
         buf.append(" states\n\tMSA:"); // NOI18N
         buf.append(Arrays.toString(stateIDs));
         buf.append("\n\tValues:"); // NOI18N
@@ -137,38 +136,37 @@ public final class ThreadStateImpl implements ThreadState {
         return buf.toString();
     }
 
-    public MSAState getSamplingMSAState(boolean full) {
+    public int getSamplingStateIndex(boolean full) {
         EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
         for (int i = 0; i < size; i++) {
             MSAState msa = getMSAState(i, full);
             if (msa != null) {
                 AtomicInteger value = map.get(msa);
                 if (value == null) {
-                    value = new AtomicInteger();
+                    value = new AtomicInteger(getState(i));
                     map.put(msa, value);
+                } else {
+                    value.addAndGet(getState(i));
                 }
-                value.addAndGet(getState(i));
             }
         }
         MSAState res = null;
         int max = 0;
-        for(Map.Entry<MSAState, AtomicInteger> entry : map.entrySet()){
+        for (Map.Entry<MSAState, AtomicInteger> entry : map.entrySet()) {
             if (entry.getValue().get() > max) {
                 max = entry.getValue().get();
                 res = entry.getKey();
             }
         }
         if (res != null) {
-            return res;
+            for (int i = 0; i < size; i++) {
+                MSAState msa = getMSAState(i, full);
+                if (res.equals(msa)) {
+                    return i;
+                }
+            }
         }
-        return getMSAState(0, full);
-    }
 
-    public StackTrace getStackTrace(int index) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public StackTrace getSamplingStackTrace() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return 0;
     }
 }

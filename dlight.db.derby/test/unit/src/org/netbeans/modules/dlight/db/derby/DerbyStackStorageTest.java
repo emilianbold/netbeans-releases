@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.derby.support;
+package org.netbeans.modules.dlight.db.derby;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.logging.Level;
+import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
-import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author masha
+ * @author Alexey Vladykin
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 100)
-public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage> {
+public class DerbyStackStorageTest extends CommonStackDataStorageTests {
 
-    static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby"; // NOI18N
-    private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-
-    public DerbyDataStorageFactory() {
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DERBY_DATA_STORAGE_TYPE));
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-        supportedStorageTypes.addAll(super.getStorageTypes());
-    }
-
-    @Override
-    public Collection<DataStorageType> getStorageTypes() {
-        return supportedStorageTypes;
-    }
-
-    @Override
-    public DerbyDataStorage createStorage() {
+    protected StackDataStorage createStorage() {
         try {
             return new DerbyDataStorage();
         } catch (SQLException ex) {
-            DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
             return null;
         }
+    }
+
+    protected boolean shutdownStorage(StackDataStorage db) {
+        return ((DerbyDataStorage) db).shutdown();
+    }
+
+    protected void flush(StackDataStorage db) {
+        ((DerbyDataStorage) db).flush();
     }
 }

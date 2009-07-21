@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-
 /**
  *
  * @author Alexander Simon
@@ -107,8 +105,6 @@ public interface ThreadState {
      */
     long getTimeStamp(int index);
 
-    StackTrace getStackTrace(int index);
-
     /**
      *
      * @return beginning time in natural unit of state.
@@ -116,11 +112,9 @@ public interface ThreadState {
     long getTimeStamp();
 
     /**
-     * returns MSAState.
+     * returns index of state that represents "sampling" one.
      *
      * @return state ID by index.
      */
-    MSAState getSamplingMSAState(boolean full);
-
-    StackTrace getSamplingStackTrace();
+    int getSamplingStateIndex(boolean full);
 }

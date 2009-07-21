@@ -5,8 +5,8 @@
 
     <target name="test-all" description="Run all tests in dlight cluster">
         <subant target="test" buildpath="../dlight.core.stack" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../dlight.db.derby" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../dlight.db.h2" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../dlight.derby.support" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../dlight.dtrace" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../dlight.indicators" inheritrefs="false" inheritall="false" failonerror="false"/>
         <!--<subant target="test" buildpath="../dlight.nativeexecution" inheritrefs="false" inheritall="false" failonerror="false"/>-->

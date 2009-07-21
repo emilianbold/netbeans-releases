@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 import java.util.List;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 
 /**
  *
@@ -55,4 +56,11 @@ public interface ThreadData {
      * @return list of thread states.
      */
     List<ThreadState> getThreadState();
+
+    /**
+     * @param timeStamp
+     * @return thread stack by time stamp
+     */
+    StackTrace getStackTrace(long timeStamp);
+
 }

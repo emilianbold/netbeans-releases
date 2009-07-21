@@ -36,33 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.threadmap.dataprovider;
 
-import org.netbeans.modules.dlight.api.stack.StackTrace;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
-import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
+package org.netbeans.modules.dlight.api.stack;
 
-public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
+import org.openide.util.Lookup;
 
-    private final ThreadMapDataStorage storage = ThreadMapDataStorage.getInstance();
+/**
+ * Default implementation of Open In Editor Provider
+ * @author Alexander Simon
+ */
+public final class OpenInEditor {
 
-    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+    private static OpenInEditorProvider DEFAULT = new Default();
+
+    public static boolean open(Function function) {
+        return getDefault().open(function);
     }
 
-    public ThreadMapData queryData(ThreadMapDataQuery query) {
-        if (storage == null) {
-            throw new NullPointerException("No STORAGE"); // NOI18N
+    public static boolean open(FunctionCall call) {
+        return getDefault().open(call);
+    }
+
+    private OpenInEditor() {
+    }
+
+    private static OpenInEditorProvider getDefault() {
+        return DEFAULT;
+    }
+
+    private static final class Default implements OpenInEditorProvider {
+        private final Lookup.Result<OpenInEditorProvider> res;
+
+        Default() {
+            res = Lookup.getDefault().lookupResult(OpenInEditorProvider.class);
         }
 
-        return storage.queryThreadMapData(query);
-    }
+        public boolean open(Function function) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(function)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-    public StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        public boolean open(FunctionCall call) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(call)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

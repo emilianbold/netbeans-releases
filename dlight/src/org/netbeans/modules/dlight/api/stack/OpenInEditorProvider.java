@@ -36,31 +36,24 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.derby.support;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+package org.netbeans.modules.dlight.api.stack;
 
 /**
- * @author Alexey Vladykin
+ * Open in editor provider.
+ * @author Alexander Simon
  */
-public class DerbyStackStorageTest extends CommonStackDataStorageTests {
+public interface OpenInEditorProvider {
 
-    protected StackDataStorage createStorage() {
-        try {
-            return new DerbyDataStorage();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
+    /**
+     * @param function
+     * @return true if provider is going to open function in text editor
+     */
+    boolean open(Function function);
 
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((DerbyDataStorage) db).shutdown();
-    }
-
-    protected void flush(StackDataStorage db) {
-        ((DerbyDataStorage) db).flush();
-    }
+    /**
+     * @param call
+     * @return true if provider is going to open function call in text editor
+     */
+    boolean open(FunctionCall call);
 }
