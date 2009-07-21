@@ -38,34 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.beans.xml.impl;
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
-
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansModel;
+import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.w3c.dom.Element;
+
 
 /**
+ * @author ads
  *
- * @author Petr Pisl, ads
  */
-public class JSFConfigModelFactory extends AbstractModelFactory<JSFConfigModel>{
-    
-    /** Creates a new instance of JSFConfigModelFactory */
-    private JSFConfigModelFactory() {
+class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> implements WebBeansModel {
+
+    WebBeansModelImpl( ModelSource source ) {
+        super(source);
     }
-    
-    public static JSFConfigModelFactory getInstance(){
-        return INSTANCE;
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#createRootComponent(org.w3c.dom.Element)
+     */
+    @Override
+    public WebBeansComponent createRootComponent( Element root ) {
+        // TODO Auto-generated method stub
+        return null;
     }
-    
-    protected JSFConfigModel createModel(ModelSource source) {
-        return new JSFConfigModelImpl(source);
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#getComponentUpdater()
+     */
+    @Override
+    public ComponentUpdater<WebBeansComponent> getComponentUpdater() {
+        // TODO Auto-generated method stub
+        return null;
     }
-    
-    public JSFConfigModel getModel(ModelSource source) {
-        return (JSFConfigModel) super.getModel(source);
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.DocumentModel#createComponent(org.netbeans.modules.xml.xam.dom.DocumentComponent, org.w3c.dom.Element)
+     */
+    public WebBeansComponent createComponent( WebBeansComponent parent,
+            Element element )
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
-    
-    private static final JSFConfigModelFactory INSTANCE = new JSFConfigModelFactory();
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.DocumentModel#getRootComponent()
+     */
+    public WebBeansComponent getRootComponent() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -181,6 +181,7 @@ abstract class FieldInjectionPointLogic {
         boolean newBindingType = false; 
         String annotationName = null; 
         Set<Element> result = new HashSet<Element>();
+        Set<TypeElement> types = new HashSet<TypeElement>();
         if ( bindingAnnotations.size() == 1 ){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
             DeclaredType type = annotationMirror.getAnnotationType();
@@ -206,7 +207,7 @@ abstract class FieldInjectionPointLogic {
                  */
                 filterBindnigsByCurrent( assignableTypes, modelImpl );
             }
-            result.addAll( assignableTypes );
+            types.addAll( assignableTypes );
         }
         else if (newBindingType){
             AnnotationMirror annotationMirror = bindingAnnotations.get( 0 );
@@ -227,7 +228,7 @@ abstract class FieldInjectionPointLogic {
                 getTypes().asElement(typeMirror);
             }
             if ( typeElement!= null ){
-                result.addAll(getImplementors(modelImpl, typeElement ));
+                types.addAll(getImplementors(modelImpl, typeElement ));
             }
         }
         else {
@@ -246,8 +247,15 @@ abstract class FieldInjectionPointLogic {
              * Next step is filter types via typesafe resolution.
              */
             filterBindingsByType( element , typesWithBindings , modelImpl );
-            result.addAll( typesWithBindings );
+            types.addAll( typesWithBindings );
         }
+        
+        result.addAll( types );
+        
+        DeploymentTypeFilter<TypeElement> filter = DeploymentTypeFilter.get( 
+                TypeElement.class);
+        filter.init( modelImpl );
+        filter.filter( types );
         
         /*
          * This is list with production fields or methods ( they have @Produces annotation )
@@ -271,6 +279,12 @@ abstract class FieldInjectionPointLogic {
         }
         filterProductionByType( element, productionElements, modelImpl );
         addSpecializes( productionElements , modelImpl );
+        
+        DeploymentTypeFilter<Element> deploymentFilter = DeploymentTypeFilter.get( 
+                Element.class);
+        deploymentFilter.init( modelImpl );
+        deploymentFilter.filter( productionElements );
+        
         result.addAll( productionElements );
         return result;
     }
