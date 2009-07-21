@@ -439,9 +439,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else if (leftHandSide instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) leftHandSide;
             VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
-            if (varN != null) {
+            //TODO: varN.representsThis() is hotfix for #166982 but this code 
+            //deserves review, the same like type inference for fields like $v->a = new a();$v->a->|
+            if (varN != null && varN.representsThis()) {
                 Collection<? extends TypeScope> types = varN.getTypes(fieldAccess.getStartOffset());
-                //TODO: getFirst must be reviewed
                 TypeScope type = ModelUtils.getFirst(types);
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
@@ -475,9 +476,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression parameterType = node.getParameterType();
         String typeName = parameterType != null ? CodeUtils.extractUnqualifiedTypeName(node) : null;
         Scope scp = modelBuilder.getCurrentScope();
-        if (scp instanceof NamespaceScope) {
-            System.out.println("");
-        }
         FunctionScopeImpl fncScope =  (FunctionScopeImpl)scp;
         while(parameterName instanceof Reference) {
             Reference ref = (Reference)parameterName;
