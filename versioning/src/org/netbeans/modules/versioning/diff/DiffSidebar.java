@@ -40,6 +40,11 @@
  */
 package org.netbeans.modules.versioning.diff;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -77,8 +82,12 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 /**
  * Left editor sidebar showing changes in the file against the base version.
@@ -538,16 +547,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return markProvider;
     }
 
-    private static void copyStreamsCloseAll(Writer writer, Reader reader) throws IOException {
-        char [] buffer = new char[2048];
-        int n;
-        while ((n = reader.read(buffer)) != -1) {
-            writer.write(buffer, 0, n);
-        }
-        writer.close();
-        reader.close();
-    }
-
     static void copyStreamsCloseAll(OutputStream writer, InputStream reader) throws IOException {
         byte [] buffer = new byte[2048];
         int n;
@@ -801,19 +800,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             }
             originalContentBufferSerial = serial;
 
-            Reader r = getText(ownerVersioningSystem);
-            if (r == null) {
-                originalContentBuffer = null;
-                return;
-            }
-
-            StringWriter w = new StringWriter(2048);
-            try {
-                copyStreamsCloseAll(w, r);
-                originalContentBuffer = w.toString();
-            } catch (IOException e) {
-                // ignore, we will show no diff
-            }
+            originalContentBuffer = getText(ownerVersioningSystem);
         }
     }
 
@@ -824,7 +811,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
      * @param oc current OriginalContent
      * @return Reader original content of the working copy or null if the original content is not available
      */ 
-    private Reader getText(VersioningSystem vs) {
+    private String getText(VersioningSystem vs) {
         if (vs == null) {
             return null;
         }
@@ -835,7 +822,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         File tempFolder = Utils.getTempFolder();
-        tempFolder.deleteOnExit();
 
         Collection<File> originalFiles = null;
         DiffFileEncodingQueryImpl encodinqQuery = null;
@@ -843,10 +829,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             originalFiles = checkoutOriginalFiles(filesToCheckout, tempFolder, vs);
 
             encodinqQuery = Lookup.getDefault().lookup(DiffFileEncodingQueryImpl.class);
+            Charset encoding = FileEncodingQuery.getEncoding(fileObject);
             if(encodinqQuery != null) {
-                encodinqQuery.associateEncoding(fileObject, originalFiles);
+                encodinqQuery.associateEncoding(encoding, originalFiles);
             }
-            return createReader(new File(tempFolder, fileObject.getNameExt()));
+            return getText(new File(tempFolder, fileObject.getNameExt()),
+                           encoding);
         } catch (Exception e) {
             // let providers raise errors when they feel appropriate
             return null;
@@ -854,6 +842,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if ((originalFiles != null) && (encodinqQuery != null)) {
                 encodinqQuery.resetEncodingForFiles(originalFiles);
             }
+            Utils.deleteRecursively(tempFolder);
         }
     }
 
@@ -910,7 +899,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         for (File file : filesToCheckout) {
             File originalFile = new File(targetFolder, file.getName());
-            originalFile.deleteOnExit();
             vs.getOriginalFile(file, originalFile);
             originalFiles.add(originalFile);
         }
@@ -918,7 +906,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return originalFiles;
     }
 
-    private Reader createReader(File file) {
+    private String getText(File file, Charset charset) throws IOException {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             try {
@@ -935,18 +923,18 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                  */
                 Document doc = getDocument(fo);
                 if (doc != null) {
-                    return new StringReader(doc.getText(0, doc.getLength()));
+                    return doc.getText(0, doc.getLength());
+                } else {
+                    return getRawText(fo, charset);
                 }
+            } catch (IOException ex) {
+                throw ex;
             } catch (Exception e) {
                 // something's wrong, read the file from disk
             }
         }
 
-        try {
-            return new FileReader(file);
-        } catch (FileNotFoundException e) {
-            return null;
-        }
+        return getRawText(file, charset);
     }
 
     /**
@@ -1007,6 +995,102 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         return null;
+    }
+
+    private static String getRawText(FileObject fileObj, Charset charset) throws IOException {
+        //return fileObj.asText(charset);
+
+        char[] chars = new StringDecoder(charset).decode(fileObj.asBytes());
+        return new String(chars);
+    }
+
+    private static String getRawText(File file, Charset charset) throws IOException {
+        final long size = file.length();
+        if (size == 0L) {
+            return file.exists() ? "" : null;                           //NOI18N
+        }
+
+        FileInputStream inputStream = new FileInputStream(file);
+        FileChannel inputChannel = inputStream.getChannel();
+
+        try {
+            int inputSize = (int) inputChannel.size();
+            ByteBuffer inBuf = ByteBuffer.allocate(inputSize);
+            inputChannel.read(inBuf);
+            char[] chars = new StringDecoder(charset).decode(inBuf);
+            return new String(chars);
+        } finally {
+            inputChannel.close();
+        }
+    }
+
+    private static final class StringDecoder {
+
+        private final CharsetDecoder charsetDecoder;
+
+        StringDecoder(Charset charset) {
+	    charsetDecoder = charset.newDecoder()
+                             .onMalformedInput(CodingErrorAction.REPLACE)
+                             .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        }
+
+        char[] decode(byte[] bytes) {
+            if (bytes.length == 0) {
+                return new char[0];
+            }
+
+           return decode(ByteBuffer.wrap(bytes));
+        }
+
+        char[] decode(ByteBuffer inBuf) {
+	    char[] chars = new char[computeOutBufSize(inBuf.limit())];
+
+	    CharBuffer outBuf = CharBuffer.wrap(chars);
+
+	    charsetDecoder.reset();
+	    try {
+		CoderResult result;
+
+		result = charsetDecoder.decode(inBuf, outBuf, true);
+		if (!result.isUnderflow()) {
+		    result.throwException();
+                }
+
+		result = charsetDecoder.flush(outBuf);
+		if (!result.isUnderflow()) {
+		    result.throwException();
+                }
+
+	    } catch (CharacterCodingException x) {
+                assert false;                       //should not happen
+		throw new Error(x);
+	    }
+
+            if (chars.length != outBuf.position()) {
+                chars = trimToSize(chars, outBuf.position());
+            }
+            return chars;
+        }
+
+        private int computeOutBufSize(int inBufSize) {
+            float ratio = charsetDecoder.maxCharsPerByte();
+            return (int) Math.ceil(inBufSize * (double) ratio);
+        }
+
+        private static char[] trimToSize(char[] chars, int requestedLength) {
+            if (requestedLength > chars.length) {
+                throw new IllegalArgumentException();
+            }
+
+            if (requestedLength == chars.length) {
+                return chars;
+            }
+
+            char[] result = new char[requestedLength];
+            System.arraycopy(chars, 0, result, 0, requestedLength);
+            return result;
+        }
+
     }
 
     private class SidebarStreamSource extends StreamSource {

@@ -44,7 +44,6 @@ package org.netbeans.modules.versioning.diff;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -97,19 +96,31 @@ public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {
         if (referenceFile.isFolder()) {
             return;
         }
-        Charset c = FileEncodingQuery.getEncoding(referenceFile);
-        if(c == null) {
+        associateEncoding(FileEncodingQuery.getEncoding(referenceFile), files);
+    }   
+
+    /**
+     * Associates the given encoding with all files from the given list.
+     * A following getEncoding() call for any file from the list will then
+     * return the given Charset.
+     *
+     * @param charset charset that is to be used when encoding the files from the given list
+     * @param files files to be encoded with the given charset
+     *
+     */
+    void associateEncoding(Charset charset, Collection<File> files) {
+        if (charset == null) {
             return;
         }
         if(fileToCharset == null) {
             fileToCharset = new WeakHashMap<File, Charset>();
-        }        
+        }
         synchronized(fileToCharset) {
             for(File file : files) {
-                fileToCharset.put(file, c);    
-            }            
+                fileToCharset.put(file, charset);
+            }
         }
-    }   
+    }
 
     /**
      * Resets the asociation to a charset for every given file
