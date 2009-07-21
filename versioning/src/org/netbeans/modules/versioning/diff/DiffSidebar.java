@@ -805,7 +805,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             if (r == null) {
                 originalContentBuffer = null;
                 return;
-        }
+            }
 
             StringWriter w = new StringWriter(2048);
             try {
@@ -813,7 +813,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 originalContentBuffer = w.toString();
             } catch (IOException e) {
                 // ignore, we will show no diff
-    }
+            }
         }
     }
 
@@ -919,44 +919,94 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private Reader createReader(File file) {
-        try {
-            /*
-             * Text returned by EditorCookie.openDocument.getText(...)
-             * may differ from the raw text contained in the file.
-             * For example, this is the case of FormDataObject, which trims
-             * some special comments (tags) while the Java source file is
-             * being loaded to the editor. When the file is being saved,
-             * the special comments are written to the raw file.
-             * This is the reason why text for the diff is read using
-             * the EditorCookie, instead of reading it directly from the
-             * File or FileObject.
-             */
-            FileObject fo = FileUtil.toFileObject(file);
-            DataObject dao = DataObject.find(fo);
-            Document doc = null;
-            if (dao instanceof MultiDataObject) {
-                MultiDataObject mdao = (MultiDataObject) dao;
-                for (MultiDataObject.Entry entry : mdao.secondaryEntries()) {
-                    if (fo.equals(entry.getFile()) && entry instanceof CookieSet.Factory) {
-                        CookieSet.Factory factory = (CookieSet.Factory) entry;
-                        EditorCookie ec = factory.createCookie(EditorCookie.class);
-                        doc = ec.openDocument();
-                    }
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                /*
+                 * Text returned by EditorCookie.openDocument.getText(...)
+                 * may differ from the raw text contained in the file.
+                 * For example, this is the case of FormDataObject, which trims
+                 * some special comments (tags) while the Java source file is
+                 * being loaded to the editor. When the file is being saved,
+                 * the special comments are written to the raw file.
+                 * This is the reason why text for the diff is read using
+                 * the EditorCookie, instead of reading it directly from the
+                 * File or FileObject.
+                 */
+                Document doc = getDocument(fo);
+                if (doc != null) {
+                    return new StringReader(doc.getText(0, doc.getLength()));
                 }
+            } catch (Exception e) {
+                // something's wrong, read the file from disk
             }
-            if (doc == null) {
-                EditorCookie ec = dao.getCookie(EditorCookie.class);
-                doc = ec.openDocument();
-            }
-            return new StringReader(doc.getText(0, doc.getLength()));
-        } catch (Exception e) {
-            // something's wrong, read the file from disk
         }
+
         try {
             return new FileReader(file);
         } catch (FileNotFoundException e) {
             return null;
         }
+    }
+
+    /**
+     * Tries to obtain a {@code Document} representing the given file.
+     * @param  fileObj  file to get a document from 
+     * @return  {@code Document} representing the file, or {@code null}
+     * @throws  java.io.IOException
+     *          if there was some I/O error while reading the file's content
+     */
+    private Document getDocument(FileObject fileObj) throws IOException {
+        DataObject dao;
+        try {
+            dao = DataObject.find(fileObj);
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+
+        if (dao instanceof MultiDataObject) {
+            MultiDataObject.Entry entry = findEntryForFile((MultiDataObject) dao, fileObj);
+            if ((entry != null) && (entry instanceof CookieSet.Factory)) {
+                CookieSet.Factory factory = (CookieSet.Factory) entry;
+                EditorCookie ec = factory.createCookie(EditorCookie.class);
+                if (ec != null) {
+                    return ec.openDocument();
+                }
+            }
+        }
+
+        EditorCookie ec = dao.getCookie(EditorCookie.class);
+        if (ec != null) {
+            return ec.openDocument();
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds entry of the given {@code MultiDataObject} that corresponds to the
+     * to the given {@code FileObject}.
+     * @param  dataObj  {@code MultiDataObject} to search for the corresponding
+     *                  entry
+     * @param  fileObj  file for which the entry is to be found
+     * @return  found entry, or {@code null} if not found
+     */
+    private static MultiDataObject.Entry findEntryForFile(MultiDataObject dataObj,
+                                                          FileObject fileObj) {
+        MultiDataObject.Entry primaryEntry;
+
+        primaryEntry = dataObj.getPrimaryEntry();
+        if (fileObj.equals(primaryEntry.getFile())) {
+            return primaryEntry;
+        }
+
+        for (MultiDataObject.Entry entry : dataObj.secondaryEntries()) {
+            if (fileObj.equals(entry.getFile())) {
+                return primaryEntry;
+            }
+        }
+
+        return null;
     }
 
     private class SidebarStreamSource extends StreamSource {
