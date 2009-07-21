@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -820,6 +820,17 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     
     private Reader createReader(File file) {
         try {
+            /*
+             * Text returned by EditorCookie.openDocument.getText(...)
+             * may differ from the raw text contained in the file.
+             * For example, this is the case of FormDataObject, which trims
+             * some special comments (tags) while the Java source file is
+             * being loaded to the editor. When the file is being saved,
+             * the special comments are written to the raw file.
+             * This is the reason why text for the diff is read using
+             * the EditorCookie, instead of reading it directly from the
+             * File or FileObject.
+             */
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             DataObject dao = DataObject.find(fo);
             Document doc = null;            
