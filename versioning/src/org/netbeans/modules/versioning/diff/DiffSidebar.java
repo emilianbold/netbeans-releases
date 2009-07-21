@@ -931,7 +931,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
              * the EditorCookie, instead of reading it directly from the
              * File or FileObject.
              */
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            FileObject fo = FileUtil.toFileObject(file);
             DataObject dao = DataObject.find(fo);
             Document doc = null;
             if (dao instanceof MultiDataObject) {
