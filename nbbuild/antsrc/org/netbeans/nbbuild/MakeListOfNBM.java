@@ -150,13 +150,21 @@ public class MakeListOfNBM extends Task {
             }
 
         String codename = attr.getValue("OpenIDE-Module"); //NOI18N
+        String versionTag = "OpenIDE-Module-Specification-Version"; // NOI18N
+        if (codename == null) {
+            codename = attr.getValue("Bundle-SymbolicName"); // NOI18N
+            versionTag = "Bundle-Version"; // NOI18N
+            if (codename != null) {
+                codename = codename.replace('-', '_');
+            }
+        }
         if (codename == null) {
             throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());
         }
 
-        String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version"); //NOI18N
+        String versionSpecNum = attr.getValue(versionTag);
         if (versionSpecNum == null) {
-            log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag OpenIDE-Module-Specification-Version");
+            log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag " + versionTag);
             versionSpecNum = "0";
         }
 

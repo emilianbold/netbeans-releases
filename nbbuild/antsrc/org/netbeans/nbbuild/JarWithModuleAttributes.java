@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.jar.Attributes;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
@@ -76,17 +77,89 @@ public class JarWithModuleAttributes extends Jar {
         this.stamp = stamp;
     }
 
+
+    static String extractCodeName(Attributes attr) {
+        return extractCodeName(attr, null);
+    }
+    static String extractCodeName(Attributes attr, boolean[] osgi) {
+        String codename = attr.getValue("OpenIDE-Module");
+        if (codename != null) {
+            return codename;
+        }
+        codename = attr.getValue("Bundle-SymbolicName");
+        if (codename == null) {
+            return null;
+        }
+        codename = codename.replace('-', '_');
+        if (osgi != null) {
+            osgi[0] = true;
+        }
+        int params = codename.indexOf(';');
+        if (params >= 0) {
+            return codename.substring(0, params);
+        } else {
+            return codename;
+        }
+    }
+
     @Override
     public void setManifest(File manifestFile) throws BuildException {
         Manifest added = new Manifest();
         try {
+            // Check to see if OpenIDE-Module-Implementation-Version is already defined.
+            String implVers;
+            String specVer;
+            String ownCnb;
+            Manifest staticManifest;
+            InputStream is = new FileInputStream(manifestFile);
+            boolean isOSGiMode = false;
+            try {
+                staticManifest = new Manifest(new InputStreamReader(is, "UTF-8"));
+                Manifest.Section mainSection = staticManifest.getMainSection();
+                implVers = mainSection.getAttributeValue("OpenIDE-Module-Implementation-Version");
+                specVer = mainSection.getAttributeValue("OpenIDE-Module-Specification-Version");
+                String myself = mainSection.getAttributeValue("OpenIDE-Module");
+                if (myself == null) {
+                    myself = mainSection.getAttributeValue("Bundle-SymbolicName");
+                    isOSGiMode = myself != null;
+                }
+                int slash = myself.indexOf('/');
+                if (slash == -1) {
+                    ownCnb = myself;
+                } else {
+                    ownCnb = myself.substring(0, slash);
+                }
+                String cnbs = getProject().getProperty("code.name.base.slashes");
+                String cnbDots = (cnbs != null) ? cnbs.replace('/', '.') : null;
+                if (!ownCnb.equals(cnbDots)) {
+                    // #58248: make sure these stay in synch.
+                    throw new BuildException("Mismatch in module code name base: manifest says " + ownCnb +
+                            " but project.xml says " + cnbDots, getLocation());
+                }
+            } finally {
+                is.close();
+            }
+
+            if (isOSGiMode) {
+                added.addConfiguredAttribute(new Manifest.Attribute("Bundle-ManifestVersion", "2")); // NOI18N
+            }
+
             String pubPkgs = getProject().getProperty("public.packages");
             if (pubPkgs == null) {
                 throw new BuildException("Must have defined 'public.packages'", getLocation());
             }
-            added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Public-Packages", pubPkgs));
+            if (isOSGiMode) {
+                if (pubPkgs != null && !pubPkgs.equals("-")) {
+                    added.addConfiguredAttribute(new Manifest.Attribute("Export-Package", pubPkgs.replaceAll("\\.\\*", ""))); // NOI18N
+                }
+            } else {
+                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Public-Packages", pubPkgs));
+            }
             String friends = getProject().getProperty("friends");
             if (friends != null) {
+                if (isOSGiMode) {
+                    throw new BuildException("friends defined, yet OSGi does not support that " + friends);
+                }
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Friends", friends));
             }
             // #52354: define Class-Path in the manifest automatically.
@@ -111,37 +184,50 @@ public class JarWithModuleAttributes extends Jar {
             }
             String moduleDeps = getProject().getProperty("module.dependencies");
             if (moduleDeps != null) {
-                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Module-Dependencies", moduleDeps));
+                if (isOSGiMode) {
+                    StringBuilder sb = new StringBuilder();
+                    String sep = "";
+                    for (String one : moduleDeps.split(",")) {
+                        int great = one.indexOf('>');
+                        sb.append(sep);
+                        sep = ",";
+                        if (great == -1) {
+                            int equals = one.indexOf('=');
+                            if (equals == -1) {
+                                sb.append(one.trim());
+                            } else {
+                                throw new BuildException("Implementation dependencies not supported in Netigso mode: " + one);
+                            }
+                        } else {
+                            int[] version = parseDecimal(one.substring(great + 1).trim(), 3);
+                            int nextMajor = version[0] + 1;
+                            sb.append(one.substring(0, great).trim()).append(";bundle-version=\"[");
+                            String conditionalDot = "";
+                            for (int i = 0; i < version.length; i++) {
+                                sb.append(conditionalDot);
+                                sb.append(version[i]);
+                                conditionalDot = ".";
+                            }
+                            sb.append(", ").append(nextMajor).append(")\"");
+                        }
+                    }
+
+                    added.addConfiguredAttribute(new Manifest.Attribute("Require-Bundle", sb.toString())); // NOI18N
+                } else {
+                    added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Module-Dependencies", moduleDeps));
+                }
             }
             String javaDep = getProject().getProperty("javac.target");
             if (javaDep != null && javaDep.matches("[0-9]+(\\.[0-9]+)*")) {
-                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Java-Dependencies", "Java > " + javaDep));
-            }
-            // Check to see if OpenIDE-Module-Implementation-Version is already defined.
-            String implVers;
-            String ownCnb;
-            Manifest staticManifest;
-            InputStream is = new FileInputStream(manifestFile);
-            try {
-                staticManifest = new Manifest(new InputStreamReader(is, "UTF-8"));
-                Manifest.Section mainSection = staticManifest.getMainSection();
-                implVers = mainSection.getAttributeValue("OpenIDE-Module-Implementation-Version");
-                String myself = mainSection.getAttributeValue("OpenIDE-Module");
-                int slash = myself.indexOf('/');
-                if (slash == -1) {
-                    ownCnb = myself;
+                if (isOSGiMode) {
+                    if (javaDep.matches("1\\.[0-5]")) {
+                        added.addConfiguredAttribute(new Manifest.Attribute("Bundle-RequiredExecutionEnvironment", "J2SE-" + javaDep));
+                    } else {
+                        added.addConfiguredAttribute(new Manifest.Attribute("Bundle-RequiredExecutionEnvironment", "JavaSE-" + javaDep));
+                    }
                 } else {
-                    ownCnb = myself.substring(0, slash);
+                    added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Java-Dependencies", "Java > " + javaDep));
                 }
-                String cnbs = getProject().getProperty("code.name.base.slashes");
-                String cnbDots = (cnbs != null) ? cnbs.replace('/', '.') : null;
-                if (!ownCnb.equals(cnbDots)) {
-                    // #58248: make sure these stay in synch.
-                    throw new BuildException("Mismatch in module code name base: manifest says " + ownCnb +
-                            " but project.xml says " + cnbDots, getLocation());
-                }
-            } finally {
-                is.close();
             }
             String buildNumber = getProject().getProperty("buildnumber");
             if (buildNumber == null) {
@@ -191,17 +277,20 @@ public class JarWithModuleAttributes extends Jar {
                     specVersBase += "." + version;
                     edited = true;
                 }
+
+                String versionTag = isOSGiMode ? "Bundle-Version" : "OpenIDE-Module-Specification-Version";
+
                 if (edited) {
-                    log("Computed OpenIDE-Module-Specification-Version: " + specVersBase);
+                    log("Computed " + versionTag + ": " + specVersBase);
                 } else {
                     specVersBaseWarning(manifestFile,
-                            "using spec.version.base for no reason; could just use OpenIDE-Module-Specification-Version statically in the manifest");
+                            "using spec.version.base for no reason; could just use " + versionTag + " statically in the manifest");
                 }
-                if (staticManifest.getMainSection().getAttributeValue("OpenIDE-Module-Specification-Version") != null) {
+                if (staticManifest.getMainSection().getAttributeValue(versionTag) != null) {
                     specVersBaseWarning(manifestFile,
-            "attempting to use spec.version.base while some OpenIDE-Module-Specification-Version is statically defined in manifest.mf; this cannot work");
+            "attempting to use spec.version.base while some " + versionTag + " is statically defined in manifest.mf; this cannot work");
                 } else {
-                    added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Specification-Version", specVersBase));
+                    added.addConfiguredAttribute(new Manifest.Attribute(versionTag, specVersBase));
                 }
             } else if (moduleDeps != null && moduleDeps.indexOf('=') != -1) {
                 specVersBaseWarning(manifestFile,
@@ -219,6 +308,10 @@ public class JarWithModuleAttributes extends Jar {
                     }
                 }
             }
+            if (isOSGiMode && added.getMainSection().getAttribute("Bundle-Version") == null && specVer != null) {
+                added.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", specVer));
+            }
+
             boolean old = false; // #110661
             String destDir = getProject().getProperty("netbeans.dest.dir");
             if (destDir != null) {
@@ -236,7 +329,7 @@ public class JarWithModuleAttributes extends Jar {
             }
             // Now ask the regular <jar> task to add all this stuff to the regular manifest.mf.
             added.merge(staticManifest);
-            if (!"lib".equals (getProject().getProperty("module.jar.dir"))) {
+            if (!"lib".equals (getProject().getProperty("module.jar.dir")) && !isOSGiMode) {
                 // modules in lib cannot request this token
                 String key = "OpenIDE-Module-Requires";
                 String token = "org.openide.modules.ModuleFormat1";
@@ -255,6 +348,15 @@ public class JarWithModuleAttributes extends Jar {
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }
+    }
+
+    private int[] parseDecimal(String trim, int max) {
+        String[] segments = trim.split("\\.");
+        int[] arr = new int[segments.length > max ? max : segments.length];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = Integer.parseInt(segments[i]);
+        }
+        return arr;
     }
 
     private void specVersBaseWarning(File manifestFile, String message) throws BuildException {

@@ -358,7 +358,7 @@ org.netbeans.editor.ActionFactory$ScrollUpAction
 org.netbeans.editor.ActionFactory$ScrollDownAction
 org.netbeans.editor.ActionFactory$InsertDateTimeAction
 org.netbeans.editor.ActionFactory$GenerateGutterPopupAction
-org.netbeans.editor.ActionFactory$ToggleLineNumbersAction
+#org.netbeans.editor.ActionFactory$ToggleLineNumbersAction
 org.netbeans.editor.ActionFactory$AnnotationsCyclingAction
 org.netbeans.editor.ActionFactory$CollapseFold
 org.netbeans.editor.ActionFactory$ExpandFold
@@ -381,7 +381,7 @@ org.netbeans.editor.ext.ExtKit$CompletionTooltipShowAction
 org.netbeans.modules.editor.NbEditorKit$NbBuildPopupMenuAction
 org.netbeans.modules.editor.NbEditorKit$NbBuildToolTipAction
 #org.netbeans.modules.editor.NbEditorKit$NbToggleLineNumbersAction
-org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction
+#org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction
 #org.netbeans.modules.editor.NbEditorKit$NbGenerateGoToPopupAction
 org.netbeans.modules.editor.NbEditorKit$NbGenerateCodeAction
 org.netbeans.modules.editor.NbEditorKit$NavigationHistoryLastEditAction
