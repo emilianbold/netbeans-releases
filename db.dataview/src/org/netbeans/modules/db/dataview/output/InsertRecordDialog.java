@@ -64,6 +64,7 @@ import javax.swing.JOptionPane;
 
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -326,7 +327,15 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     public class TableListener implements TableModelListener {
 
         public void tableChanged(TableModelEvent e) {
-            refreshSQL();
+            if (SwingUtilities.isEventDispatchThread()) {
+                refreshSQL();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        refreshSQL();
+                    }
+                });
+            }
         }
     }
 
