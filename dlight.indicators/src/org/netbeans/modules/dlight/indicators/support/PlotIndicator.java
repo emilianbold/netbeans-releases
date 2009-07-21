@@ -143,11 +143,12 @@ public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
         dataRowHandler.tick();
         float[] plotData = dataRowHandler.getGraphData();
         if (plotData != null) {
-            int limit = graph.getUpperLimit();
-            while (limit < plotData[0]) {
-                limit *= 2;
+            int oldLimit = graph.getUpperLimit();
+            int newLimit = graph.calculateUpperLimit(plotData);
+            while (oldLimit < newLimit) {
+                oldLimit *= 2;
             }
-            graph.setUpperLimit(limit);
+            graph.setUpperLimit(oldLimit);
             graph.addData(plotData);
         }
         for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
