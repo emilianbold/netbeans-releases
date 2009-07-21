@@ -697,7 +697,7 @@ class SQLExecutionHelper {
     }
 
     private boolean isSelectStatement(String queryString) {
-        return queryString.trim().toUpperCase().startsWith("SELECT"); // NOI18N
+        return queryString.trim().toUpperCase().startsWith("SELECT") && queryString.trim().toUpperCase().indexOf("INTO") == -1; // NOI18N
     }
 
     private boolean isLimitUsedInSelect(String sql) {

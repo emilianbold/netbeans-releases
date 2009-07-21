@@ -41,8 +41,10 @@ package org.netbeans.modules.dlight.threadmap.collector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -56,19 +58,22 @@ import org.netbeans.modules.dlight.threadmap.storage.ThreadStateImpl;
 public final class MSAParser extends DtraceParser {
 
     private static final List<String> COLUMN_NAMES = Arrays.asList(
+            "threads", // NOI18N
             MSAState.RunningUser.toString(),
             MSAState.RunningSystemCall.toString(),
             MSAState.RunningOther.toString(),
             MSAState.SleepingUserTextPageFault.toString(),
             MSAState.SleepingUserDataPageFault.toString(),
             MSAState.SleepingKernelPageFault.toString(),
-            MSAState.SleepingUserLock.toString(),
-            MSAState.SleepingOther.toString(),
             MSAState.WaitingCPU.toString(),
-            MSAState.ThreadStopped.toString());
+            MSAState.ThreadStopped.toString(),
+            MSAState.SleepingUserLock.toString(),
+            MSAState.SleepingOther.toString());
+
     private static final TimeUnit dtraceTimeUnits = TimeUnit.NANOSECONDS;
     // Thread ID to states map
     private final HashMap<Integer, int[]> accumulatedData = new HashMap<Integer, int[]>();
+    private final Set<Integer> lastReportedThreadIDs = new HashSet<Integer>();
     private final ThreadMapDataStorage storage;
     private final long deltaTime;
     long lastTimestamp = 0;
@@ -106,7 +111,6 @@ public final class MSAParser extends DtraceParser {
 
         int[] threadStates = accumulatedData.get(threadID);
 
-        int total = 0;
         //                     r_u    r_s  r_o  utf  udf   kf  wcpu st ulock sleep sobjs...
         // 0 1 2                3      4    5    6    7    8    9   10   11   12   13   14   15  16    17   18   19
         // 2 2 540636781605515  999    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
@@ -124,14 +128,9 @@ public final class MSAParser extends DtraceParser {
                 threadStates[i] += state;
             }
 
-            total += state;
         }
 
-        if (total == 0) {
-            threadInfo.setFinishTime(timestamp);
-        } else {
-            threadStates[0]++;
-        }
+        threadStates[0]++;
 
         if ((timestamp - lastTimestamp) > deltaTime) {
             lastTimestamp = timestamp;
@@ -139,22 +138,30 @@ public final class MSAParser extends DtraceParser {
 //            System.out.println("Adding info about " + accumulatedData.size() + " threads");
 
             int aggregatedStates[] = new int[10];
-            int sum = 0;
             for (Map.Entry<Integer, int[]> entry : accumulatedData.entrySet()) {
                 int[] states = entry.getValue();
                 ThreadStateImpl state = new ThreadStateImpl(timestamp, states);
                 storage.addThreadState(storage.getThreadInfo(entry.getKey()), state);
-                for (int i = 4; i < 14; ++i) {
-                    aggregatedStates[i - 4] += states[i];
-                    sum += states[i];
+                for (int i = 3; i < 13; ++i) {
+                    aggregatedStates[i - 3] += states[i];
                 }
             }
+
+            lastReportedThreadIDs.removeAll(accumulatedData.keySet());
+
+            for (Integer notReportedThreadID : lastReportedThreadIDs) {
+                storage.getThreadInfo(notReportedThreadID.intValue()).setFinishTime(timestamp);
+            }
+
+            lastReportedThreadIDs.clear();
+            lastReportedThreadIDs.addAll(accumulatedData.keySet());
 
             accumulatedData.clear();
 
             List<Object> values = new ArrayList<Object>();
+            values.add(lastReportedThreadIDs.size());
             for (int i = 0; i < aggregatedStates.length; ++i) {
-                values.add(100.0 * aggregatedStates[i] / sum);
+                values.add(aggregatedStates[i]);
             }
             return new DataRow(COLUMN_NAMES, values);
         } else {

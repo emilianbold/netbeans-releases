@@ -965,7 +965,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if (d.isDirectory()) {
                 File[] children = d.listFiles();
                 if(children != null) {
-                    Vector list = buildList(name, children);
+                    Vector list = buildList(name, children, 20);
                     
                     if(completionPopup == null) {
                         completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
@@ -985,7 +985,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    public Vector<File> buildList(String text, File[] children) {
+    public Vector<File> buildList(String text, File[] children, int max) {
         Vector<File> files = new Vector<File>(children.length);
         
         for(int i = children.length - 1; i >= 0; i--) {
@@ -1008,6 +1008,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         files.add(completion);
                     }
                 }
+            }
+
+            if (files.size() >= max) {
+                break;
             }
         }
         

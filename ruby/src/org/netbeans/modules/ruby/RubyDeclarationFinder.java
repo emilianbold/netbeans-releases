@@ -465,6 +465,15 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     }
                 }
 
+                // methods
+                if (location == DeclarationLocation.NONE) {
+                    location = findInstanceMethodsFromIndex(parserResult, name, path, index);
+                }
+                // fields
+                if (location == DeclarationLocation.NONE) {
+                    location = findInstanceFromIndex(parserResult, name, path, index, true);
+                }
+
                 return fix(location, parserResult);
             } else if (closest instanceof AliasNode) {
                 AliasNode an = (AliasNode)closest;
@@ -1878,7 +1887,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
         return DeclarationLocation.NONE;
     }
-    
+
+    private DeclarationLocation findInstanceMethodsFromIndex(ParserResult info, String name, AstPath path, RubyIndex index) {
+        String fqn = AstUtilities.getFqnName(path);
+        Set<IndexedMethod> methods = index.getInheritedMethods(fqn, name, QuerySupport.Kind.EXACT);
+        return getLocation(methods);
+    }
+
     private DeclarationLocation findGlobal(ParserResult info, Node node, String name) {
         if (node instanceof GlobalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {

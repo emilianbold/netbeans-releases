@@ -46,8 +46,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -67,6 +69,7 @@ public class ThreadsDataManager {
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
     private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
+    private ThreadMapData stackProvider;
 
     /**
      * Creates a new instance of ThreadsDataManager
@@ -147,6 +150,10 @@ public class ThreadsDataManager {
         return threadData.get(index).getName();
     }
 
+    public synchronized ThreadData getStackProvider(int index) {
+        return stackProvider.getThreadsData().get(index);
+    }
+
     /**
      * Returns the number of currently monitored threads
      */
@@ -206,6 +213,7 @@ public class ThreadsDataManager {
         if (updateThreadSize == 0) {
             return;
         }
+        stackProvider = monitoredData.getStackProvider();
         Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
         for(int i = 0; i < updateThreadSize; i++){
             ThreadInfo info = monitoredData.getThreadInfo(i);

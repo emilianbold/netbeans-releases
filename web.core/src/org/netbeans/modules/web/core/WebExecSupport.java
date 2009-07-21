@@ -104,7 +104,7 @@ public class WebExecSupport implements RequestParametersQueryImplementation {
         if (url == null)
             url = JspCompileUtil.findRelativeContextPath(WebModule.getWebModule (f).getDocumentBase (), f);
         url = url + getQueryString(f);
-        url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+        url = url.replace(" ", "%20");
         return url;
     }
 }

@@ -343,8 +343,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         public void tick() {
         }
 
-        public int[] getGraphData() {
-            return new int[]{threads, Math.round(threads * Math.min(locks, 100) / 100)};
+        public float[] getGraphData() {
+            return new float[]{threads, threads * Math.min(locks, 100) / 100.0f};
         }
 
         public Map<String, String> getDetails() {

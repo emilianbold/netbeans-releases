@@ -41,17 +41,13 @@
 
 package org.netbeans.modules.xml.schema.refactoring.ui;
 
-import java.awt.Component;
 import org.openide.util.ImageUtilities;
-import org.openide.windows.TopComponent;
-import org.openide.util.Utilities;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
@@ -139,7 +135,7 @@ final public class CloseButtonTabbedPane extends JTabbedPane implements ChangeLi
 
     public void setTitleAt(int idx, String title) {
         String nue = title.indexOf("</html>") != -1 ? //NOI18N
-            Utilities.replaceString(title, "</html>", "&nbsp;&nbsp;</html>") //NOI18N
+            title.replace("</html>", "&nbsp;&nbsp;</html>") //NOI18N
             : title + "  "; // NOI18N
         if (!title.equals(getTitleAt(idx))) {
             super.setTitleAt(idx, nue);

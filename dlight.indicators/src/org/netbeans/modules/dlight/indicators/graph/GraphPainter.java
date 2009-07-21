@@ -72,7 +72,7 @@ class GraphPainter {
     private final List<GraphDescriptor> descriptors;
     private final int seriesCount;
 
-    private CyclicArray<int[]> data;
+    private CyclicArray<float[]> data;
     private final Object dataLock = new Object();
 
 //    private BufferedImage cachedImage;
@@ -81,7 +81,7 @@ class GraphPainter {
         this.descriptors = descriptors;
         this.renderer = renderer;
         seriesCount = descriptors.size();
-        data = new CyclicArray<int[]>(1000);
+        data = new CyclicArray<float[]>(1000);
 //        initCacheImage();
     }
 
@@ -95,7 +95,7 @@ class GraphPainter {
 //        cachedImage = newImage;
 //    }
 
-    public void addData(int... newData) {
+    public void addData(float... newData) {
         synchronized (dataLock) {
             if (newData.length != seriesCount) {
                 throw new IllegalArgumentException(
@@ -105,6 +105,25 @@ class GraphPainter {
             data.add(newData.clone());
         }
      }
+
+    public int calculateUpperLimit(float... data) {
+        float absLimit = 0;
+        float relLimit = 0;
+        for (int i = 0; i < data.length; ++i) {
+            float value = data[i];
+            GraphDescriptor descriptor = descriptors.get(i);
+            switch (descriptor.getKind()) {
+                case ABS_SURFACE:
+                case LINE:
+                    absLimit = Math.max(absLimit, value);
+                    break;
+                case REL_SURFACE:
+                    relLimit += value;
+                    break;
+            }
+        }
+        return (int)Math.max(absLimit, relLimit);
+    }
 
 //    public GraphDescriptor[] getDescriptors() {
 //        return descriptors.clone();
@@ -227,8 +246,8 @@ class GraphPainter {
                 int lastx = 0;
                 int lasty = 0;
                 for (int i = 0; i < sampleCount; ++i) {
-                    int[] values = data.get(firstSample + i);
-                    int value = values[ser];
+                    float[] values = data.get(firstSample + i);
+                    float value = values[ser];
                     int bonus = 0;
                     if (descriptors.get(ser).getKind() == GraphDescriptor.Kind.REL_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
@@ -244,7 +263,7 @@ class GraphPainter {
                         }
                     }
                     xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
-                    yy[i] = lasty = (int)(y + h - 2 - (long)value * effectiveHeight / scale) - bonus; // int can overflow in multiplication
+                    yy[i] = lasty = (int)(y + h - 2 - value * effectiveHeight / scale) - bonus;
                 }
                 g2.setColor(descriptors.get(ser).getColor());
                 switch (descriptors.get(ser).getKind()) {

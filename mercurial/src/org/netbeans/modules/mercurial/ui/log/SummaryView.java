@@ -173,7 +173,6 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
-            System.out.println("ExportDiffs: " + idx); // DEBUG
             exportDiffs(idx);
         }
         Linker l = (Linker) resultsList.getClientProperty(HLINK_ISSUE_PROPERTY + idx);// NOI18N

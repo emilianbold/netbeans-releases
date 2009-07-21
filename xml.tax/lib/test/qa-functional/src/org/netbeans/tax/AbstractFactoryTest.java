@@ -637,7 +637,7 @@ abstract class AbstractFactoryTest extends XTest {
     }
     
     private static void assertEquals(TreeNode node, String view) throws TreeException{
-        String str = Utilities.replaceString(TestUtil.nodeToString(node), "\n", "");
+        String str = TestUtil.nodeToString(node).replace("\n", "");
         if (!!! str.equals(view)) {
             fail("Invalid node view \n is       : \"" + str + "\"\n should be: \"" + view + "\"");
         }
