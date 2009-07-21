@@ -181,10 +181,10 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     public List<Configuration> analyze(ProjectProxy project, final Progress progress) {
-        isStoped = false;
+        isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
-        if (!isStoped){
+        if (!isStoped.get()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
@@ -218,7 +218,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped) {
+                            if (isStoped.get()) {
                                 break;
                             }
                             set.addAll( ((DwarfSource)source).getIncludedFiles() );
@@ -226,7 +226,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped) {
+                            if (isStoped.get()) {
                                 break;
                             }
                             File file = new File(path);
@@ -249,7 +249,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         gatherSubFolders(new File(root), set);
         HashSet<String> map = new HashSet<String>();
         for (Iterator it = set.iterator(); it.hasNext();){
-            if (isStoped) {
+            if (isStoped.get()) {
                 break;
             }
             File d = new File((String)it.next());
@@ -293,7 +293,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     private void gatherSubFolders(File d, HashSet<String> set){
-        if (isStoped) {
+        if (isStoped.get()) {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
