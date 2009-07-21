@@ -59,7 +59,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.*;
 import org.openide.awt.UndoRedo;
-import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -149,13 +148,16 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return currentDiff;
     }
 
+    @Override
     public String getToolTipText(MouseEvent event) {
         Difference diff = getDifferenceAt(event);
         return getShortDescription(diff);
     }
 
     static String getShortDescription(Difference diff) {
-        if (diff == null) return null;
+        if (diff == null) {
+            return null;
+        }
         int n;
         switch (diff.getType()) {
             case Difference.ADD:
@@ -172,10 +174,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
     }
 
+    @Override
     protected void processMouseEvent(MouseEvent event) {
         if (event.getID() == MouseEvent.MOUSE_CLICKED || event.isPopupTrigger()) {
             Difference diff = getDifferenceAt(event);
-            if (diff == null) return;
+            if (diff == null) {
+                return;
+            }
             onClick(event, diff);
         } else {
             super.processMouseEvent(event);
@@ -196,14 +201,20 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
     
     private Difference getDifferenceAt(MouseEvent event) {
-        if (currentDiff == null) return null;
+        if (currentDiff == null) {
+            return null;
+        }
         int line = getLineFromMouseEvent(event);
-        if (line == -1) return null;
+        if (line == -1) {
+            return null;
+        }
         Difference diff = getDifference(line + 1);
         if (diff == null) {
             // delete annotations (arrows) are rendered between lines
             diff = getDifference(line);
-            if (diff != null && diff.getType() != Difference.DELETE) diff = null;
+            if ((diff != null) && (diff.getType() != Difference.DELETE)) {
+                diff = null;
+            }
         } else if (diff.getType() == Difference.DELETE) {
             Difference diffPrev = getDifference(line);
             if (diffPrev != null && diffPrev.getType() == Difference.DELETE) {
@@ -255,7 +266,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private int getDiffIndex(Difference diff) {
         for (int i = 0; i < currentDiff.length; i++) {
-            if (diff == currentDiff[i]) return i;
+            if (diff == currentDiff[i]) {
+                return i;
+            }
         }
         return -1;
     }
@@ -292,7 +305,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     boolean canRollback(Difference diff) {
-        if (!(document instanceof GuardedDocument)) return true;
+        if (!(document instanceof GuardedDocument)) {
+            return true;
+        }
         int start, end;
         if (diff.getType() == Difference.DELETE) {
             start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
@@ -411,19 +426,23 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 //            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
 
+        @Override
         public UndoRedo getUndoRedo() {
             UndoRedo undoredo = (UndoRedo) diffView.getClientProperty(UndoRedo.class);
             return undoredo == null ? UndoRedo.NONE : undoredo;
         }
         
+        @Override
         public int getPersistenceType(){
             return TopComponent.PERSISTENCE_NEVER;
         }
 
+        @Override
         protected String preferredID(){
             return "DiffSidebarTopComponent";    // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(getClass());
         }
@@ -447,7 +466,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     void refresh() {
-        if (!sidebarInComponentHierarchy) return;
+        if (!sidebarInComponentHierarchy) {
+            return;
+        }
         shutdown();
         initialize();
         refreshDiff();
@@ -455,18 +476,22 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
         
     public void setSidebarVisible(boolean visible) {
-        if (sidebarVisible == visible) return;
+        if (sidebarVisible == visible) {
+            return;
+        }
         sidebarVisible = visible;
         refreshDiff();
         revalidate();  // resize the component
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         sidebarInComponentHierarchy = true;
         initialize();
     }
 
+    @Override
     public void removeNotify() {
         shutdown();
         sidebarInComponentHierarchy = false;
@@ -498,7 +523,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private Reader getDocumentReader() {
         JTextComponent component = editorUI.getComponent();
-        if (component == null) return null;
+        if (component == null) {
+            return null;
+        }
 
         return Utils.getDocumentReader(component.getDocument());
     }
@@ -531,12 +558,14 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         reader.close();
     }
     
+    @Override
     public Dimension getPreferredSize() {
         Dimension dim = textComponent.getSize();
         dim.width = sidebarVisible ? BAR_WIDTH : 0;
         return dim;
     }
     
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -548,17 +577,23 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         JTextComponent component = editorUI.getComponent();
-        if (component == null) return;
+        if (component == null) {
+            return;
+        }
 
         BaseTextUI textUI = (BaseTextUI)component.getUI();
         View rootView = Utilities.getDocumentView(component);
-        if (rootView == null) return;
+        if (rootView == null) {
+            return;
+        }
 
         g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
         Difference [] paintDiff = currentDiff;        
-        if (paintDiff == null || paintDiff.length == 0) return;
+        if (paintDiff == null || paintDiff.length == 0) {
+            return;
+        }
         
         try{
             int startPos = textUI.getPosFromY(clip.y);
@@ -622,18 +657,30 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private Color getColor(Difference ad) {
-        if (ad.getType() == Difference.ADD) return colorAdded;
-        if (ad.getType() == Difference.CHANGE) return colorChanged;
+        if (ad.getType() == Difference.ADD) {
+            return colorAdded;
+        }
+        if (ad.getType() == Difference.CHANGE) {
+            return colorChanged;
+        }
         return colorRemoved;
     }
 
     private Difference getDifference(int line) {
-        if (line < 0) return null;
+        if (line < 0) {
+            return null;
+        }
         for (int i = 0; i < currentDiff.length; i++) {
             Difference difference = currentDiff[i];
-            if (line < difference.getSecondStart()) return null;
-            if (difference.getType() == Difference.DELETE && line == difference.getSecondStart()) return difference;
-            if (line <= difference.getSecondEnd()) return difference;
+            if (line < difference.getSecondStart()) {
+                return null;
+            }
+            if ((difference.getType() == Difference.DELETE) && (line == difference.getSecondStart())) {
+                return difference;
+            }
+            if (line <= difference.getSecondEnd()) {
+                return difference;
+            }
         }
         return null;
     }
@@ -697,13 +744,15 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private List<DiffMark> getMarksForDifferences() {
-            if (currentDiff == null || !isVisible() || getWidth() <= 0) return Collections.emptyList();
-            List<DiffMark> marks = new ArrayList<DiffMark>(currentDiff.length);
+            if ((currentDiff == null) || !isVisible() || (getWidth() <= 0)) {
+                return Collections.emptyList();
+            }
+            List<DiffMark> marksList = new ArrayList<DiffMark>(currentDiff.length);
             for (int i = 0; i < currentDiff.length; i++) {
                 Difference difference = currentDiff[i];
-                marks.add(new DiffMark(difference, getColor(difference)));
+                marksList.add(new DiffMark(difference, getColor(difference)));
             }
-            return marks;
+            return marksList;
         }
     }
 
@@ -747,7 +796,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         private void fetchOriginalContent() {
             int serial = originalContentSerial;
-            if (originalContentBuffer != null && originalContentBufferSerial == serial) return;
+            if ((originalContentBuffer != null) && (originalContentBufferSerial == serial)) {
+                return;
+            }
             originalContentBufferSerial = serial;
 
             Reader r = getText(ownerVersioningSystem);
@@ -774,9 +825,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
      * @return Reader original content of the working copy or null if the original content is not available
      */ 
     private Reader getText(VersioningSystem vs) {
-        if (vs == null) return null;
+        if (vs == null) {
+            return null;
+        }
         File mainFile = FileUtil.toFile(fileObject);
-        if (mainFile == null) return null;
+        if (mainFile == null) {
+            return null;
+        }
 
         File tempFolder = Utils.getTempFolder();
         tempFolder.deleteOnExit();
@@ -787,8 +842,8 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         try {
             dao = DataObject.find(fileObject);
             Set<FileObject> fileObjects = dao.files();
-            for (FileObject fileObject : fileObjects) {
-                File file = FileUtil.toFile(fileObject);
+            for (FileObject fileObj : fileObjects) {
+                File file = FileUtil.toFile(fileObj);
                 filesToCheckout.add(file);
             }
         } catch (DataObjectNotFoundException e) {
@@ -867,12 +922,16 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             this.isFirst = isFirst;
         }
 
+        @Override
         public boolean isEditable() {
             return !isFirst;
         }
 
+        @Override
         public Lookup getLookup() {
-            if (isFirst) return super.getLookup();
+            if (isFirst) {
+                return super.getLookup();
+            }
             return Lookups.fixed(document);
         }
 
