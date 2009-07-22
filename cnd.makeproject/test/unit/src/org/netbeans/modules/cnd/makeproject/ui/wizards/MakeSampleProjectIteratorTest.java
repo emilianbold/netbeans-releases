@@ -60,6 +60,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
@@ -110,87 +111,87 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Test
     public void testArguments() throws IOException {
-        testSample(allAvailableCompilerSets, "Arguments", defaultConfs);
+        testSample(allAvailableCompilerSets, "Arguments", defaultConfs, "");
     }
 
     @Test
     public void testInputOutput() throws IOException {
-        testSample(allAvailableCompilerSets, "InputOutput", defaultConfs);
+        testSample(allAvailableCompilerSets, "InputOutput", defaultConfs, "");
     }
 
     @Test
     public void testWelcome() throws IOException {
-        testSample(allAvailableCompilerSets, "Welcome", defaultConfs);
+        testSample(allAvailableCompilerSets, "Welcome", defaultConfs, "");
     }
 
     @Test
     public void testQuote() throws IOException {
-        testSample(allAvailableCompilerSets, "Quote", defaultConfs);
+        testSample(allAvailableCompilerSets, "Quote", defaultConfs, "");
     }
 
     @Test
     public void testSubProjects() throws IOException {
-        testSample(allAvailableCompilerSets, "SubProjects", defaultConfs);
+        testSample(allAvailableCompilerSets, "SubProjects", defaultConfs, "");
     }
 
     @Test
     public void testPi() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"});
-            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"});
+            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"}, "");
+            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"}, "");
         }
         else {
-            testSample(allAvailableCompilerSets, "Pi", new String[] {"Serial"});
+            testSample(allAvailableCompilerSets, "Pi", new String[] {"Serial"}, "");
         }
     }
 
     @Test
     public void testFreeway() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(allAvailableCompilerSets, "Freeway", defaultConfs);
+            testSample(allAvailableCompilerSets, "Freeway", defaultConfs, "");
         }
     }
 
     @Test
     public void testFractal() throws IOException {
-        testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"});
+        testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"}, "");
     }
 
     @Test
     public void testLexYacc() throws IOException {
         if (!Utilities.isWindows()) {
-            testSample(allAvailableCompilerSets, "LexYacc", defaultConfs);
+            testSample(allAvailableCompilerSets, "LexYacc", defaultConfs, "");
         }
     }
 
     @Test
     public void testMP() throws IOException {
         if (!Utilities.isWindows()) {
-            testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"});
+            testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"}, "");
         }
     }
 
     @Test
     public void testHello() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "Hello", defaultConfs);
+            testSample(SunStudioCompilerSet, "Hello", defaultConfs, "");
         }
     }
 
     @Test
     public void testHelloQtWorld() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "HelloQtWorld", new String[] {"Debug"});
+            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
         }
         if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs);
+            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs, "");
         }
     }
 
     @Test
     public void testProfilingDemo() throws IOException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs);
+            testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs, "");
         }
     }
 
@@ -216,21 +217,22 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         return projectCreator.instantiate(wiz);
     }
 
-    public void testSample(List<CompilerSet> sets, String sample, String[] confs) throws IOException {
+    public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions) throws IOException {
         for (CompilerSet set : sets) {
             if (set != null) {
                 for (String conf : confs) {
-                    testSample(set, sample, conf);
+                    testSample(set, sample, conf, makeOptions);
                 }
             }
         }
     }
 
-    public void testSample(CompilerSet set, String sample, String conf) throws IOException {
+    public void testSample(CompilerSet set, String sample, String conf, String makeOptions) throws IOException {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
         CompilerSetManager.getDefault().setDefault(set);
+        MakeOptions.setDefaultMakeOptions(makeOptions);
 
         File workDir = getWorkDir();//new File("/tmp");
         File projectDir = new File(workDir, sample + set.getName() + conf);
