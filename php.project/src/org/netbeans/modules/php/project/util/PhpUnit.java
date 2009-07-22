@@ -70,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -96,11 +97,15 @@ public final class PhpUnit extends PhpProgram {
     public static final String BOOTSTRAP_FILE = "bootstrap.php"; // NOI18N
     public static final String PARAM_CONFIGURATION = "--configuration"; // NOI18N
     public static final String CONFIGURATION_FILE = "configuration.xml"; // NOI18N
-    public static final String SUITE_FILE = "NetBeansSuite.php"; // NOI18N
 
     // output files
     public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
+
+    // suite file
+    public static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
+    public static final String SUITE_RUN = "run="; // NOI18N
+    public static final File SUITE;
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -120,6 +125,13 @@ public final class PhpUnit extends PhpProgram {
      *  - we don't change array values but only the array itself (local variable created and then assigned to 'version')
      */
     static volatile int[] version = null;
+
+    static {
+        SUITE = InstalledFileLocator.getDefault().locate(SUITE_NAME, "org.netbeans.modules.php.project", false);  // NOI18N
+        if (SUITE == null || !SUITE.isFile()) {
+            throw new IllegalStateException("Could not locate file " + SUITE_NAME);
+        }
+    }
 
     /**
      * {@inheritDoc}
@@ -344,48 +356,8 @@ public final class PhpUnit extends PhpProgram {
             return null;
         }
 
-        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_FILE);
+        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_NAME);
         return suite.getAbsolutePath();
-    }
-
-    public File getSuiteFile(PhpProject project, List<String> generatedFiles) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-        assert testDirectory != null : "Test directory must already be set";
-
-        File suite = new File(FileUtil.toFile(testDirectory), PhpUnit.SUITE_FILE);
-        if (!suite.isFile()) {
-            if (createSuiteFile(testDirectory)) {
-                assert suite.isFile() : "suite file for phpunit must exist";
-                generatedFiles.add(PhpUnit.SUITE_FILE);
-            }
-        }
-        if (suite.isFile()) {
-            return suite;
-        }
-        return null;
-    }
-
-    private boolean createSuiteFile(FileObject testDirectory) {
-        final FileObject suiteFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitSuite"); // NOI18N
-        final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
-        DataObject suite = null;
-        try {
-            DataObject dataTemplate = DataObject.find(suiteFile);
-            suite = dataTemplate.createFromTemplate(dataFolder, PhpUnit.SUITE_FILE);
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Cannot create PHPUnit suite file", ex);
-            return false;
-        }
-
-        assert suite != null;
-        // reformat the file
-        File file = FileUtil.toFile(suite.getPrimaryFile());
-        try {
-            PhpProjectUtils.reformatFile(file);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
-        }
-        return true;
     }
 
     public static void informAboutGeneratedFiles(List<String> generatedFiles) {

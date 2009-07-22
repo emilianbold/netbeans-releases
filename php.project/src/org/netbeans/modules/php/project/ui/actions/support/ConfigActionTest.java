@@ -79,7 +79,6 @@ import org.openide.util.NbBundle;
  */
 class ConfigActionTest extends ConfigAction {
     static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_LINE_CONVERTOR_FACTORY = new PhpUnitLineConvertorFactory();
-    private static final String CWD = "."; // NOI18N
     final PhpCoverageProvider coverageProvider;
 
     protected ConfigActionTest(PhpProject project) {
@@ -187,7 +186,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
-        return new PhpUnitInfo(testDirectory, null, CWD);
+        return new PhpUnitInfo(testDirectory, testDirectory, null);
     }
 
     private PhpUnitInfo getFilePhpUnitInfo(FileObject testDirectory, Lookup context) {
@@ -265,8 +264,7 @@ class ConfigActionTest extends ConfigAction {
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
-            String testName = info.testName;
-            List<String> generatedFiles = new ArrayList<String>(3);
+            List<String> generatedFiles = new ArrayList<String>(2);
             File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
             if (bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
@@ -279,13 +277,6 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.PARAM_CONFIGURATION)
                         .addArgument(configuration.getAbsolutePath());
             }
-            if (testName == CWD) {
-                // provide NetBeans suite
-                File suite = phpUnit.getSuiteFile(project, generatedFiles);
-                if (suite != null) {
-                    testName = suite.getAbsolutePath();
-                }
-            }
             PhpUnit.informAboutGeneratedFiles(generatedFiles);
 
             if (isCoverageEnabled()) {
@@ -294,13 +285,14 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(testName);
+                    .addArgument(PhpUnit.SUITE.getAbsolutePath())
+                    .addArgument(PhpUnit.SUITE_RUN + FileUtil.toFile(info.startFile).getAbsolutePath());
             return externalProcessBuilder;
         }
 
         public String getOutputTabTitle() {
             String title = null;
-            if (info.testName == CWD) {
+            if (info.testName == null) {
                 title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
             } else {
                 title = info.testName;
@@ -309,7 +301,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public boolean isValid() {
-            return phpUnit.isValid() && info.workingDirectory != null && info.testName != null;
+            return phpUnit.isValid() && info.workingDirectory != null && info.startFile != null;
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
@@ -322,7 +314,7 @@ class ConfigActionTest extends ConfigAction {
 
         void handleCodeCoverage() {
             if (!isCoverageEnabled()
-                    || info.testName != CWD) {
+                    || info.testName != null) {
                 // XXX not enabled or just one test case (could be handled later)
                 return;
             }
@@ -348,12 +340,10 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public PhpProject getProject() {
-            assert info.startFile != null : "Only particular test files can be debugged";
             return project;
         }
 
         public FileObject getStartFile() {
-            assert info.startFile != null : "Only particular test files can be debugged";
             return info.startFile;
         }
 
