@@ -214,7 +214,7 @@ public final class XMLUtil extends Object {
      *
      * @return XMLReader configured according to passed parameters
      */
-    public static XMLReader createXMLReader(boolean validate, boolean namespaceAware)
+    public static synchronized XMLReader createXMLReader(boolean validate, boolean namespaceAware)
     throws SAXException {
         SAXParserFactory factory = saxes[validate ? 0 : 1][namespaceAware ? 0 : 1];
         if (factory == null) {
@@ -296,7 +296,7 @@ public final class XMLUtil extends Object {
     }
 
     private static DocumentBuilderFactory[][] doms = new DocumentBuilderFactory[2][2];
-    private static DocumentBuilderFactory getFactory(boolean validate, boolean namespaceAware) {
+    private static synchronized DocumentBuilderFactory getFactory(boolean validate, boolean namespaceAware) {
         DocumentBuilderFactory factory = doms[validate ? 0 : 1][namespaceAware ? 0 : 1];
         if (factory == null) {
             factory = DocumentBuilderFactory.newInstance();
