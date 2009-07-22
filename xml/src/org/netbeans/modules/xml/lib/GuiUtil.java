@@ -48,35 +48,27 @@ import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.actions.ActionManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
-import org.openide.util.actions.SystemAction;
 
 /**
  * @author  Libor Kramolis
  */
 public final class GuiUtil {
-    
+
     private GuiUtil() {}
 
     /**
      * Perform default action on specified data object.
      */
     public static void performDefaultAction (DataObject dataObject) {
-
         Node node = dataObject.getNodeDelegate();
-        SystemAction action = node.getDefaultAction();
-
-        if (action != null) {
-            ActionManager manager = (ActionManager) Lookup.getDefault().lookup(ActionManager.class);
-            manager.invokeAction(action, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-        }
+        callAction(node.getPreferredAction(), node, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
     }
     
     /**
@@ -101,11 +93,19 @@ public final class GuiUtil {
             public void run() {
                 Node node = obj.getNodeDelegate();
                 Action a = node.getPreferredAction();
-                if (a != null) {
-                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                }
+                callAction(a, node, new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
             }
         });
+    }
+
+    private static void callAction(Action a, Node node, ActionEvent actionEvent) {
+        if (a instanceof ContextAwareAction) {
+            a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup());
+        }
+        if (a == null) {
+            return;
+        }
+        a.actionPerformed(actionEvent);
     }
 
     public static boolean confirmAction (String message) {
