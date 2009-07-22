@@ -306,10 +306,6 @@ public class Subversion {
         }
     }
 
-    public FilesystemHandler getFileSystemHandler() {
-        return filesystemHandler;
-    }
-
     public void versionedFilesChanged() {
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
