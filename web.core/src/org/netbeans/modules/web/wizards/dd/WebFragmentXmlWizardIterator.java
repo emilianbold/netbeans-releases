@@ -105,10 +105,11 @@ public final class WebFragmentXmlWizardIterator implements WizardDescriptor.Inst
         WebFragmentXmlWizardPanel1 panel = (WebFragmentXmlWizardPanel1)panels[0];
         FileObject dir = panel.getSelectedLocation();
         WebModule wm = panel.getWebModule();
-        if (dir != null && wm != null) {
+        // for Java Library projects, we suppose that JEE 6 is used
+        Profile profile = wm != null ? wm.getJ2eeProfile() : Profile.JAVA_EE_6_FULL;
+        if (dir != null) {
             try {
-                FileObject dd = DDHelper.createWebFragmentXml(
-                        wm.getJ2eeProfile(), dir);
+                FileObject dd = DDHelper.createWebFragmentXml(profile, dir);
                 if (dd != null) {
                     DataObject dObj = DataObject.find(dd);
                     return Collections.singleton(dObj);

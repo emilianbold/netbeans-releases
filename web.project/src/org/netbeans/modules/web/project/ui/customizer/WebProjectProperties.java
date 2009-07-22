@@ -458,7 +458,7 @@ final public class WebProjectProperties {
             
             Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
             if (shouldCreateWebXml()) {
-                DDHelper.createWebXml(j2eeProfile, true, project.getAPIWebModule().getWebInf());
+                DDHelper.createWebXml(j2eeProfile, project.getAPIWebModule().getWebInf());
             }
 
             // extend project with selected frameworks
