@@ -42,8 +42,6 @@ package org.netbeans.modules.xml;
 
 import java.beans.*;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.transform.Source;
 import org.xml.sax.*;
 import org.openide.awt.HtmlBrowser;
@@ -59,7 +57,6 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
-import org.openide.nodes.Node.Cookie;
 
 /** Object that provides main functionality for xml document.
  * Instance holds all synchronization related state information.
@@ -157,19 +154,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
      */
     Node createDefaultNodeDelegate () {
         return super.createNodeDelegate();  //it is a FilterNode
-    }
-
-    // it is called by super class constructor
-    @Override
-    protected EditorCookie createEditorCookie () {
-        try {
-            Cookie editorCookie = getCookieSet().getCookie(EditCookie.class);
-            return (editorCookie instanceof EditCookie ? (EditorCookie) editorCookie :
-                    null);
-        } catch (Exception e) {
-            Logger.getLogger(XMLDataObject.class.getName()).log(Level.WARNING, "", e);
-            return null;
-        }
     }
 
     /** Delegate to super with possible debug messages. */

@@ -214,12 +214,6 @@ public class JsfHtmlExtension extends HtmlExtension {
         return items;
     }
 
-
-    @Override
-    public List<CompletionItem> completeCloseTags(CompletionContext context) {
-        return Collections.EMPTY_LIST;
-    }
-
     @Override
     public List<CompletionItem> completeAttributes(CompletionContext context) {
         HtmlParserResult result = context.getResult();
