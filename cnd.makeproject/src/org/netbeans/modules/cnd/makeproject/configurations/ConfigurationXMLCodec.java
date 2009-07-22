@@ -711,7 +711,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(OUTPUT_ELEMENT)) {
             String output = currentText;
             if (descriptorVersion <= 51 && output.indexOf("{PLATFORM}") >= 0) { // NOI18N
-                output = output.replace("PLATFORM", "CND_PLATFORM"); // NOI18N
+                output = output.replace("PLATFORM", "CND_PLATFORM"); // See IZ 167305 // NOI18N
             }
             if (currentLinkerConfiguration != null) {
                 currentLinkerConfiguration.getOutput().setValue(getString(output));
