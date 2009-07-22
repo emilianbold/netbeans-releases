@@ -192,7 +192,9 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
         try {
             addProperty(NULL, NULLDESC, Boolean.class, false, column.getNullable() == Nullable.NULLABLE);
-            addProperty(DATATYPE, DATATYPEDESC, String.class, false, column.getType().toString());
+            if (column.getType() != null) {
+                addProperty(DATATYPE, DATATYPEDESC, String.class, false, column.getType().toString());
+            }
 
             int len = column.getLength();
             if (len == 0) {

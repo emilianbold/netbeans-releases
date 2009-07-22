@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.openide.filesystems.FileObject;
 
 /**
  * Interface for access metadata for web application.
@@ -68,6 +69,8 @@ public interface WebAppMetadata {
      * Never returns null.
      */
     List<WebFragment> getFragments();
+
+    List<FileObject> getFragmentFiles();
 
     /**
      * @return list of objects that hold information about servlets (information

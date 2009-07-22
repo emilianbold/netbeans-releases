@@ -48,6 +48,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
@@ -143,15 +144,14 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
         public void addDataRow(DataRow row) {
             String threadsColumn = columns.get(0).getColumnName();
-            Object threadsValue = row.getData(threadsColumn);
-            int threads = threadsValue == null? 1 : toInt(threadsValue);
+            int threads = DataUtil.toInt(row.getData(threadsColumn), 1);
             float[] newData = new float[4];
             int sum = 0;
             for (int i = 1; i < columns.size(); ++i) {
                 String columnName = columns.get(i).getColumnName();
                 Object value = row.getData(columnName);
                 if (value != null) {
-                    int intValue = toInt(value);
+                    int intValue = DataUtil.toInt(value);
                     newData[MSA_TO_SIMPLE[i - 1]] += intValue;
                     sum += intValue;
                 }
@@ -174,16 +174,5 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         public Map<String, String> getDetails() {
             return Collections.emptyMap();
         }
-    }
-
-    private static int toInt(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number)obj).intValue();
-        } else if (obj instanceof String) {
-            try {
-                return Integer.parseInt((String)obj);
-            } catch (NumberFormatException ex) {}
-        }
-        return 0;
     }
 }
