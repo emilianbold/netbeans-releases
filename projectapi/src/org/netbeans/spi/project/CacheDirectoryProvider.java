@@ -42,12 +42,15 @@
 package org.netbeans.spi.project;
 
 import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
  * Ability for a project to permit other modules to store arbitrary cache
  * data associated with the project.
- * @see org.netbeans.api.project.Project#getLookup
+ * <p>Implementors should place an instance in {@link Project#getLookup}.
+ * Callers should use {@link ProjectUtils#getCacheDirectory} rather than looking for this interface.
  * @author Jesse Glick
  */
 public interface CacheDirectoryProvider {

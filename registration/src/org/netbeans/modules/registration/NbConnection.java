@@ -100,7 +100,7 @@ class NbConnection {
     }
     
     static void init () {
-        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+        if (!Boolean.getBoolean("netbeans.full.hack") && !Boolean.getBoolean("netbeans.close")) {
             WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 public void run() {
                     RP.post(new Runnable() {
