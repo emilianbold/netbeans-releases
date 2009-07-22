@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
@@ -64,8 +65,9 @@ public class TldLibraryGlobalCache {
         return INSTANCE;
     }
     //classpath entry -> libraries map
-    private final WeakHashMap<FileObject, Collection<TldLibrary>> LIBRARIES = new WeakHashMap<FileObject, Collection<TldLibrary>>();
-   
+    private final Map<FileObject, Collection<TldLibrary>> LIBRARIES = new WeakHashMap<FileObject, Collection<TldLibrary>>();
+    private Collection<TldLibrary> DEFAULT_LIBRARIES;
+
     public Collection<TldLibrary> getLibraries(FileObject classpathRoot) {
         synchronized (LIBRARIES) {
             Collection<TldLibrary> cached = LIBRARIES.get(classpathRoot);
@@ -101,4 +103,19 @@ public class TldLibraryGlobalCache {
         return libs;
     }
 
+    public synchronized Collection<TldLibrary> getDefaultLibraries() {
+        if (DEFAULT_LIBRARIES == null) {
+            DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
+            try {
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/tld/resources/composite.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/tld/resources/ui.tld"))); //NOI18N
+            } catch (TldLibraryException ex) {
+                //warn user, this should not happen
+                Logger.global.warning(ex.getMessage());
+            }
+        }
+        return DEFAULT_LIBRARIES;
+    }
 }
