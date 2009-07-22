@@ -104,6 +104,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectUtils.getCacheDirectory">
+            <api name="general"/>
+            <summary>API complement to <code>CacheDirectoryProvider</code></summary>
+            <version major="1" minor="26"/>
+            <date day="21" month="7" year="2009"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ProjectUtils.getCacheDirectory</code> to complement
+                    the SPI interface <code>CacheDirectoryProvider</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project" name="ProjectUtils"/>
+            <issue number="168414"/>
+        </change>
+
         <change id="source-group-modifier">
             <api name="general"/>
             <summary>introduction of SourceGroupModifier, a way to create SourceGroup if missing</summary>
