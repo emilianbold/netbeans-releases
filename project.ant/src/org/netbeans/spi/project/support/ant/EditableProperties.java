@@ -397,13 +397,6 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
         }
     }
     
-    private void removeItem(Item item) {
-        items.remove(item);
-        if (item.getKey() != null) {
-            itemIndex.remove(item.getKey());
-        }
-    }
-    
     // does property declaration continue on next line?
     private boolean isContinue(String line) {
         int index = line.length() - 1;
