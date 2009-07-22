@@ -3538,6 +3538,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (types.size() > 0) {
             return types.get(0);
         }
+        // DO NOT TRY TO LOAD CLASSES AT ALL! See http://www.netbeans.org/issues/show_bug.cgi?id=168949
+        return null;
+        /*
         // DO NOT TRY TO LOAD THE CLASS ON JDK 5 AND OLDER!
         // See http://www.netbeans.org/issues/show_bug.cgi?id=50315
         if (!JPDAUtils.IS_JDK_16) {
@@ -3579,6 +3582,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new IllegalStateException(ieex);
             }
         }
+         */
     }
 
     private static StringReference createStringMirrorWithDisabledCollection(String s, VirtualMachine vm, EvaluationContext evaluationContext) {
