@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
@@ -108,9 +109,14 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         handle.progress(1);
         Project prj = ProjectManager.getDefault().findProject(dir);
         if (prj != null) {
-            NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
+            final NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
             if (mvn != null) {
-                mvn.downloadDependencyAndJavadocSource();
+                //see #163529 for reasoning
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        mvn.downloadDependencyAndJavadocSource();
+                    }
+                });
             }
         }
         handle.progress(3);
