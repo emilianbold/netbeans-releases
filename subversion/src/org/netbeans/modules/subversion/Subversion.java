@@ -503,11 +503,15 @@ public class Subversion {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
+            return;
+        }
 
         try {
             File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-            if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
+            if (original == null) {
+                throw new IOException("Unable to get BASE revision of " + workingCopy);
+            }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
