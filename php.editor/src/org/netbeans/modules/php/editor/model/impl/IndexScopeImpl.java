@@ -244,7 +244,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     public List<? extends ClassConstantElement> findClassConstants(final QuerySupport.Kind nameKind, TypeScope type, final String... queryName) {
         List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
         for (String name : queryName) {
-            Collection<IndexedConstant> constants = getIndex().getClassConstants(null, type.getName(), name, nameKind);
+            Collection<IndexedConstant> constants = getIndex().getTypeConstants(null, type.getName(), name, nameKind);
             for (IndexedConstant idxConst : constants) {
                 ClassConstantElementImpl elementImpl = new ClassConstantElementImpl(type, idxConst);
                 retval.add(elementImpl);
@@ -256,7 +256,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     public List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName) {
         List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
-        Collection<IndexedConstant> flds = getIndex().getClassConstants(null, clsScope.getName(), constName, QuerySupport.Kind.EXACT);
+        Collection<IndexedConstant> flds = getIndex().getTypeConstants(null, clsScope.getName(), constName, QuerySupport.Kind.EXACT);
         for (IndexedConstant idxConst : flds) {
             ClassConstantElementImpl elementImpl = new ClassConstantElementImpl(clsScope, idxConst);
             retval.add(elementImpl);

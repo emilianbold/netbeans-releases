@@ -659,15 +659,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (tokenSequence.movePrevious())
         {
             boolean instanceContext = !staticContext;
-            boolean includeInherited = true;
-            boolean moreTokens = true;
             int attrMask = Modifier.PUBLIC;
 
             if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
-                moreTokens = tokenSequence.movePrevious();
+                tokenSequence.movePrevious();
             }
-
-            moreTokens = tokenSequence.movePrevious();
+            tokenSequence.movePrevious();
 
             String varName = tokenSequence.token().text().toString();
             String typeName = null;
@@ -678,7 +675,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
                     staticContext = true;
-                    includeInherited = true;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
@@ -741,11 +737,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (PHPDocTypeTag.ORDINAL_TYPES.contains(tokenType.toUpperCase())) {
                         continue;
                     }
-                    Collection<IndexedFunction> methods = includeInherited ?
-                        PHPIndex.toMembers(request.index.getAllMethods(request.result, tokenType, request.prefix, nameKind, attrMask)) :
-                        request.index.getMethods(request.result, tokenType, request.prefix, nameKind, attrMask);
+                    Collection<IndexedClassMember<IndexedFunction>> methods =
+                            request.index.getAllMethods(request.result, tokenType, request.prefix, nameKind, attrMask);
 
-                    for (IndexedFunction method : methods){
+                    for (IndexedClassMember<IndexedFunction> classMember: methods){
+                        IndexedFunction method = classMember.getMember();
                         if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext) {
                             for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                                 if (!invalidProposalsForClsMembers.contains(method.getName())) {
@@ -757,11 +753,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                     String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
                             ? request.prefix.substring(1) : request.prefix;
-                    Collection<IndexedConstant> properties = includeInherited ?
-                        PHPIndex.toMembers(request.index.getAllFields(request.result, tokenType, prefix, nameKind, attrMask)) :
-                        request.index.getFields(request.result, tokenType, prefix, nameKind, attrMask);
+                    Collection<IndexedClassMember<IndexedConstant>> properties = request.index.getAllFields(request.result, tokenType, prefix, nameKind, attrMask);
 
-                    for (IndexedConstant prop : properties){
+                    for (IndexedClassMember<IndexedConstant> classMember : properties){
+                        IndexedConstant prop = classMember.getMember();
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
                             PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
 
@@ -774,7 +769,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
 
                     if (staticContext) {
-                        Collection<IndexedClassMember<IndexedConstant>> allClassConstants = request.index.getAllClassConstants(request.result, tokenType, request.prefix, nameKind);
+                        Collection<IndexedClassMember<IndexedConstant>> allClassConstants = request.index.getAllTypeConstants(request.result, tokenType, request.prefix, nameKind);
                         for (IndexedClassMember<IndexedConstant> indexedClassMember : allClassConstants) {
                             IndexedConstant constant = indexedClassMember.getMember();
                             proposals.add(new PHPCompletionItem.ClassConstantItem(constant, request));

@@ -245,7 +245,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         List<ClassConstantElement> allConstants = new ArrayList<ClassConstantElement>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScope.getIndex();
-        Collection<IndexedConstant> allClassConstants = PHPIndex.toMembers(index.getAllClassConstants(null, getName(), queryName, QuerySupport.Kind.PREFIX));
+        Collection<IndexedConstant> allClassConstants = PHPIndex.toMembers(index.getAllTypeConstants(null, getName(), queryName, QuerySupport.Kind.PREFIX));
         for (IndexedConstant indexedConstant : allClassConstants) {
             allConstants.add(new ClassConstantElementImpl(this, indexedConstant));
         }

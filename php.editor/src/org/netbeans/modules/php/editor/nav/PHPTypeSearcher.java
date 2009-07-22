@@ -162,7 +162,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                     IndexedConstant constanst = classMember.getMember();
                     result.add(new PHPTypeDescriptor(constanst, clz, helper));
                 }
-                for (IndexedClassMember<IndexedConstant> classMember : index.getAllClassConstants(null, clz.getName(), query, kind)) {
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllTypeConstants(null, clz.getName(), query, kind)) {
                     IndexedConstant constanst = classMember.getMember();
                     result.add(new PHPTypeDescriptor(constanst, clz, helper));
                 }

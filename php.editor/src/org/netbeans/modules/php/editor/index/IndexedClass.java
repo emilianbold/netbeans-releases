@@ -49,7 +49,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  *
  * @author tomslot
  */
-public class IndexedClass extends IndexedElement {
+public class IndexedClass extends IndexedType {
     private String superClass;
     private final List<String> ifaces;
 

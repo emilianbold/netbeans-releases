@@ -1168,7 +1168,7 @@ public class SemiAttribute extends DefaultVisitor {
             switch(k) {
                 case CONST:
                     
-                for (IndexedClassMember<IndexedConstant> classMember : index.getAllClassConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
+                for (IndexedClassMember<IndexedConstant> classMember : index.getAllTypeConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
                     IndexedConstant m = classMember.getMember();
                     String idxName = m.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;

@@ -46,7 +46,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class IndexedInterface extends IndexedElement {
+public class IndexedInterface extends IndexedType {
     private String interfaces[];
 
     public IndexedInterface(String name, String in, PHPIndex index, String fileUrl,

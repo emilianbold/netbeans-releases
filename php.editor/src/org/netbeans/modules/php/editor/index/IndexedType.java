@@ -39,23 +39,14 @@
 
 package org.netbeans.modules.php.editor.index;
 
+import org.netbeans.modules.csl.api.ElementKind;
+
 /**
  *
  * @author Radek Matous
  */
-public class IndexedClassMember<E extends IndexedElement>  {
-    private final IndexedType type;
-    private final E member;
-    public IndexedClassMember(IndexedType type, E member) {
-        this.type = type;
-        this.member = member;
-    }
-
-    public IndexedType getType() {
-        return type;
-    }
-
-    public E getMember() {
-        return member;
+public class IndexedType extends IndexedElement {
+    IndexedType(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
+        super(name,in,index,fileUrl,offset,flags,kind);
     }
 }

@@ -319,7 +319,7 @@ public class IntroduceHint implements AstRule {
                     IndexedClass clz = getIndexedClass(clzName);
                     if (clz != null && constName != null) {
                         PHPIndex index = model.getIndexScope().getIndex();
-                        Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllClassConstants(null, clz.getName(), constName, Kind.EXACT));
+                        Collection<IndexedConstant> allConstants = PHPIndex.toMembers(index.getAllTypeConstants(null, clz.getName(), constName, Kind.EXACT));
                         if (allConstants.isEmpty()) {
                             FileObject fileObject = clz.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
