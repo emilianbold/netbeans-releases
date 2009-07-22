@@ -38,18 +38,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.netbeans.modules.web.beans.xml.Beans;
+import org.netbeans.modules.web.beans.xml.Deploy;
+import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansComponentFactory;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
-
-    Beans getBeans();
+class WebBeansComponentFactoryImpl implements WebBeansComponentFactory {
     
-    WebBeansComponentFactory getFactory();
+    WebBeansComponentFactoryImpl( WebBeansModelImpl model ){
+        myModel = model;
+        myBuilder = new ThreadLocal<WebBeansComponentBuildVisitor>();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createBeans()
+     */
+    public Beans createBeans() {
+        return new BeansImpl( getModel());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createComponent(org.w3c.dom.Element, org.netbeans.modules.web.beans.xml.WebBeansComponent)
+     */
+    public WebBeansComponent createComponent( Element element,
+            WebBeansComponent context )
+    {
+        WebBeansComponentBuildVisitor visitor = getBuilder();
+        return visitor.create( context , element );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createDeploy()
+     */
+    public Deploy createDeploy() {
+        return new DeployImpl( getModel());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createType()
+     */
+    public Type createType() {
+        return new TypeImpl( getModel() );
+    }
+    
+    private WebBeansModelImpl getModel(){
+        return myModel;
+    }
+    
+    private WebBeansComponentBuildVisitor getBuilder(){
+        WebBeansComponentBuildVisitor visitor = myBuilder.get();
+        if ( visitor == null ){
+            visitor = new WebBeansComponentBuildVisitor( getModel() );
+            myBuilder.set( visitor );
+        }
+        visitor.init();
+        return visitor;
+    }
+    
+    private WebBeansModelImpl myModel;
+    
+    private ThreadLocal<WebBeansComponentBuildVisitor> myBuilder;
+
 }

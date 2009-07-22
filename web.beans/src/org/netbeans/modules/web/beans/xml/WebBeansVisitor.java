@@ -40,16 +40,14 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
-
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+public interface WebBeansVisitor {
 
-    Beans getBeans();
-    
-    WebBeansComponentFactory getFactory();
+    void visit( Beans beans );
+    void visit( Deploy deploy );
+    void visit( Type type );
 }
