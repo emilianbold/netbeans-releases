@@ -690,7 +690,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
         
         public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
-            if (path.equals(getContent(volumeType))) {
+            if (path.equals(contents.get(volumeType))) {
                 return;
             }
             contents.put(volumeType, new ArrayList<URI>(path));
@@ -808,11 +808,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             }
         }
 
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             return obj instanceof ProjectLibraryArea && ((ProjectLibraryArea) obj).mainPropertiesFile.equals(mainPropertiesFile);
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return mainPropertiesFile.hashCode();
         }
 
