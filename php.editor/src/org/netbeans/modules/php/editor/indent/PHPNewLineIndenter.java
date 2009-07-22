@@ -85,7 +85,8 @@ public class PHPNewLineIndenter {
             new ScopeDelimiter(PHPTokenId.PHP_WHILE, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_DO, indentSize),
             new ScopeDelimiter(PHPTokenId.PHP_FOR, indentSize),
-            new ScopeDelimiter(PHPTokenId.PHP_FOREACH, indentSize)
+            new ScopeDelimiter(PHPTokenId.PHP_FOREACH, indentSize),
+            new ScopeDelimiter(PHPTokenId.PHP_DEFAULT, indentSize)
         );
     }
 
@@ -204,7 +205,6 @@ public class PHPNewLineIndenter {
                     }
                 }
             }
-        } else {
         }
 
         ts.move(origOffset);
