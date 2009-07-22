@@ -52,6 +52,7 @@ import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -77,6 +78,7 @@ public class SrcNode extends FilterNode {
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
     static final Image WEB_ROOT_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"); // NOI18N
+    private final PhpProject project;
     private final boolean isTest;
 
     /**
@@ -89,9 +91,12 @@ public class SrcNode extends FilterNode {
 
     private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
         super(node, new FolderChildren(project, node, isTest));
+
+        this.project = project;
+        this.isTest = isTest;
+
         disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_GET_ACTIONS);
         setDisplayName(name);
-        this.isTest = isTest;
     }
 
     @Override
@@ -142,7 +147,14 @@ public class SrcNode extends FilterNode {
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
+        // customizer - open sources for source node, phpunit for test node
+        Action customizeAction = null;
+        if (isTest) {
+            customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, CompositePanelProviderImpl.PHP_UNIT);
+        } else {
+            customizeAction = CommonProjectActions.customizeProjectAction();
+        }
+        actions.add(customizeAction);
         return actions.toArray(new Action[actions.size()]);
     }
 
