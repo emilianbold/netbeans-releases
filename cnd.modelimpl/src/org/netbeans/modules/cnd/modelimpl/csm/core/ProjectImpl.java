@@ -344,7 +344,7 @@ public final class ProjectImpl extends ProjectBase {
     protected void clearNativeFileContainer() {
         nativeFiles.clear();
     }
-    private NativeFileContainer nativeFiles = new NativeFileContainer();
+    private final NativeFileContainer nativeFiles = new NativeFileContainer();
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent

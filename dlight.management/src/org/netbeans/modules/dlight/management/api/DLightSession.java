@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -431,7 +432,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                     subscribedIndicators.add(i);
                                 }
                                 target.addTargetListener(idp);
-                                log.fine("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
+                                if (log.isLoggable(Level.FINE)) {
+                                    log.fine("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
+                                }
                             }
                         }
                     }

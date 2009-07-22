@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class AstRenderer {
 
-    private FileImpl file;
+    private final FileImpl file;
 
     public AstRenderer(FileImpl fileImpl) {
         this.file = fileImpl;
@@ -1723,7 +1723,7 @@ public class AstRenderer {
     }
 
     public static List<CsmExpression> renderConstructorInitializersList(AST ast, CsmScope scope, CsmFile file) {
-        List<CsmExpression> initializers = null;
+        ArrayList<CsmExpression> initializers = null;
         for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
             if (token.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER_LIST) {
                 for (AST initializerToken = token.getFirstChild(); initializerToken != null; initializerToken = initializerToken.getNextSibling()) {
@@ -1736,6 +1736,9 @@ public class AstRenderer {
                     }
                 }
             }
+        }
+        if (initializers != null) {
+            initializers.trimToSize();
         }
         return initializers;
     }

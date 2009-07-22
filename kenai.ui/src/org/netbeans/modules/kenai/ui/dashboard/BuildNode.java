@@ -43,9 +43,9 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -114,7 +114,7 @@ public class BuildNode extends LeafNode implements PropertyChangeListener {
     }
 
     @Override
-    public ActionListener getDefaultAction() {
+    public Action getDefaultAction() {
         return build.getDefaultAction();
     }
 }

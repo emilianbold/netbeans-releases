@@ -56,7 +56,6 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -154,7 +153,6 @@ class WebActionProvider implements ActionProvider {
     Map<String,String[]> commands;
 
     public WebActionProvider(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator) {
-
         commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
@@ -276,16 +274,10 @@ class WebActionProvider implements ActionProvider {
             FileObject[] files = findTestSources(context, false);
             FileObject[] rootz = project.getTestSourceRoots().getRoots();
 
-            if((files != null) && (files.length > 0))
-            {
+            if((files != null) && (files.length > 0)) {
                 FileObject file = files[0];
-                if(SourceUtils.getMainClasses(file).isEmpty() == true)
-                {
-                    String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
+                if(SourceUtils.getMainClasses(file).isEmpty()) {
+                    return setupTestSingle(p, files);
                 }
             }
 
@@ -332,7 +324,7 @@ class WebActionProvider implements ActionProvider {
                     if ((htmlFiles != null) && (htmlFiles.length > 0)) {
                         String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
                         if (url != null) {
-                            url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+                            url = url.replace(" ", "%20");
                             p.setProperty("client.urlPart", url); //NOI18N
                         } else {
                             return null;
@@ -426,16 +418,10 @@ class WebActionProvider implements ActionProvider {
             FileObject[] files = findTestSources(context, false);
             FileObject[] rootz = project.getTestSourceRoots().getRoots();
             
-            if((files != null) && (files.length > 0))
-            {
+            if((files != null) && (files.length > 0)) {
                 FileObject file = files[0];
-                if(SourceUtils.getMainClasses(files[0]).isEmpty() == true)
-                {
-                    String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
+                if(SourceUtils.getMainClasses(files[0]).isEmpty()) {
+                    return setupDebugTestSingle(p, files);
                 }
             }
             
@@ -483,7 +469,7 @@ class WebActionProvider implements ActionProvider {
                     if ((htmlFiles != null) && (htmlFiles.length > 0)) {
                         String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
                         if (url != null) {
-                            url = org.openide.util.Utilities.replaceString(url, " ", "%20");
+                            url = url.replace(" ", "%20");
                             p.setProperty("client.urlPart", url); //NOI18N
                         } else {
                             return null;
@@ -553,7 +539,6 @@ class WebActionProvider implements ActionProvider {
                         }
                     }
                 }
-
             }
 
         //DEBUG
@@ -572,9 +557,6 @@ class WebActionProvider implements ActionProvider {
                 nd =
                         new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
-
-
-
                 return null;
             }
 
@@ -620,10 +602,7 @@ class WebActionProvider implements ActionProvider {
                                 if (scNames.contains(serviceName)) { //matching ws name found
                                     match = true;
                                     break; //no need to continue
-
                                 }
-
-
                             }
                             if (match) { //matching ws name found in project
                                 //we need to add project's source folders onto a debugger's search path
@@ -637,10 +616,8 @@ class WebActionProvider implements ActionProvider {
                                         if (!f.isAbsolute()) {
                                             pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
                                         }
-
                                         clientDCP.append(pathTokens[i] + ":");
                                     }
-
                                 }
 
                                 String wdd = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
@@ -652,10 +629,8 @@ class WebActionProvider implements ActionProvider {
                                         if (!f.isAbsolute()) {
                                             pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
                                         }
-
                                         clientWDD.append(pathTokens[i] + ":");
                                     }
-
                                 }
                             }
                         }
@@ -668,7 +643,6 @@ class WebActionProvider implements ActionProvider {
                     p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
                 }
             }
-
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             setDirectoryDeploymentProperty(p);
             FileObject[] files = findJavaSources(context);
@@ -676,13 +650,11 @@ class WebActionProvider implements ActionProvider {
             final String[] classes = {""            };
             if (files != null) {
                 path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), files[0]), files[0]);
-                targetNames =
-                        new String[]{"debug-fix"}; // NOI18N
+                targetNames = new String[]{"debug-fix"}; // NOI18N
                 JavaSource js = JavaSource.forFileObject(files[0]);
                 if (js != null) {
                     try {
                         js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-
                             public void run(CompilationController ci) throws Exception {
                                 if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
                                     ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -690,9 +662,7 @@ class WebActionProvider implements ActionProvider {
                                             "\nDiagnostics = " + ci.getDiagnostics() +
                                             "\nFree memory = " + Runtime.getRuntime().freeMemory());
                                     return;
-
                                 }
-
 
                                 List<? extends TypeElement> types = ci.getTopLevelElements();
                                 if (types.size() > 0) {
@@ -700,17 +670,14 @@ class WebActionProvider implements ActionProvider {
                                         if (classes[0].length() > 0) {
                                             classes[0] = classes[0] + " ";            // NOI18N
                                         }
-
                                         classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
                                     }
-
                                 }
                             }
                         }, true);
                     } catch (java.io.IOException ioex) {
                         Exceptions.printStackTrace(ioex);
                     }
-
                 }
             } else {
                 return null;
@@ -728,10 +695,6 @@ class WebActionProvider implements ActionProvider {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findJavaSourcesAndPackages(context, sourceRoots);
             boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
-
-
-
-
 
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]), recursive)); // NOI18N
@@ -775,7 +738,6 @@ class WebActionProvider implements ActionProvider {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
-
         }
         return targetNames;
     }
@@ -786,7 +748,6 @@ class WebActionProvider implements ActionProvider {
             p.setProperty("debug.client", "false"); // NOI18N
             p.setProperty("debug.server", "true"); // NOI18N
             return true;
-
         } else {
             // display Debug Project Dialog
             boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
@@ -804,16 +765,14 @@ class WebActionProvider implements ActionProvider {
         }
     }
 
-    private String[] setupRunSingle(Properties p, FileObject[] files)
-    {
+    private String[] setupRunSingle(Properties p, FileObject[] files) {
         FileObject[] rootz = project.getTestSourceRoots().getRoots();
         FileObject file = files[0];
         String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
 
-        if (clazz.endsWith(".java")) // NOI18N
-        {
+        if (clazz.endsWith(".java")) { // NOI18N
             clazz = clazz.substring(0, clazz.length() - 5);
         }
 
@@ -823,16 +782,14 @@ class WebActionProvider implements ActionProvider {
         return new String[] { "run-test-with-main" }; // NOI18N
     }
 
-    private String[] setupDeubgRunSingle(Properties p, FileObject[] files)
-    {
+    private String[] setupDeubgRunSingle(Properties p, FileObject[] files) {
         FileObject[] rootz = project.getTestSourceRoots().getRoots();
         FileObject file = files[0];
         String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
 
-        if (clazz.endsWith(".java")) // NOI18N
-        {
+        if (clazz.endsWith(".java")) { // NOI18N
             clazz = clazz.substring(0, clazz.length() - 5);
         }
 
@@ -893,11 +850,9 @@ class WebActionProvider implements ActionProvider {
             if ((fC != null) && (fC.isValid())) {
                 fC.delete();
             }
-
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-
     }
 
     /* checks if timestamp of any of the included pages is higher than the top page
@@ -924,10 +879,7 @@ class WebActionProvider implements ActionProvider {
                     if (incTS > jspTS) {
                         modified = true;
                         break;
-
                     }
-
-
                 }
             }
         }
@@ -945,9 +897,7 @@ class WebActionProvider implements ActionProvider {
             {
                 return true;
             }
-
         }
-
         return false;
     }
 
@@ -959,19 +909,15 @@ class WebActionProvider implements ActionProvider {
 
     }
 
-    public String getCommaSeparatedGeneratedJavaFiles(
-            FileObject[] jspFiles) {
+    public String getCommaSeparatedGeneratedJavaFiles(FileObject[] jspFiles) {
         StringBuffer b = new StringBuffer();
-        for (int i = 0; i <
-                jspFiles.length; i++) {
+        for (int i = 0; i < jspFiles.length; i++) {
             String jspRes = getJspResource(jspFiles[i]);
             if (i > 0) {
                 b.append(',');
             }
-
             b.append(Utils.getGeneratedJavaResource(jspRes));
         }
-
         return b.toString();
     }
 
@@ -983,8 +929,7 @@ class WebActionProvider implements ActionProvider {
         return FileUtil.getRelativePath(webDir, jsp);
     }
 
-    public File getBuiltJsp(
-            FileObject jsp) {
+    public File getBuiltJsp(FileObject jsp) {
         ProjectWebModule pwm = project.getWebModule();
         FileObject webDir = pwm.getDocumentBase();
         String relFile = FileUtil.getRelativePath(webDir, jsp).replace('/', File.separatorChar);
@@ -992,19 +937,15 @@ class WebActionProvider implements ActionProvider {
         return new File(webBuildDir, relFile);
     }
 
-    public String getBuiltJspFileNamesAsPath(
-            FileObject[] files) {
+    public String getBuiltJspFileNamesAsPath(FileObject[] files) {
         StringBuffer b = new StringBuffer();
-        for (int i = 0; i <
-                files.length; i++) {
+        for (int i = 0; i < files.length; i++) {
             String path = getBuiltJsp(files[i]).getAbsolutePath();
             if (i > 0) {
                 b.append(File.pathSeparator);
             }
-
             b.append(path);
         }
-
         return b.toString();
     }
 
@@ -1056,14 +997,11 @@ class WebActionProvider implements ActionProvider {
                 } else {
                     return true;
                 } /* because of java main classes, otherwise we would return false */
-
-
             }
             javaFiles = findTestSources(context, false);
             if ((javaFiles != null) && (javaFiles.length > 0)) {
                 return true;
             }
-
             return false;
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
             //return findTestSourcesForSources(context) != null;
@@ -1076,8 +1014,8 @@ class WebActionProvider implements ActionProvider {
             // other actions are global
             return true;
         }
-
     }
+
     // Private methods -----------------------------------------------------
     private static final String SUBST = "Test.java"; // NOI18N
 
@@ -1114,8 +1052,7 @@ class WebActionProvider implements ActionProvider {
         if (files.isEmpty()) {
             return null;
         }
-        return files.toArray(
-                new FileObject[files.size()]);
+        return files.toArray(new FileObject[files.size()]);
     }
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
 
@@ -1123,13 +1060,11 @@ class WebActionProvider implements ActionProvider {
      */
     private FileObject[] findJavaSources(Lookup context) {
         FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i = 0; i <
-                srcPath.length; i++) {
+        for (int i = 0; i < srcPath.length; i++) {
             FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
             if (files != null) {
                 return files;
             }
-
         }
         return null;
     }
@@ -1139,29 +1074,24 @@ class WebActionProvider implements ActionProvider {
             FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
             //Check if files are either packages of java files
             if (files != null) {
-                for (int i = 0; i <
-                        files.length; i++) {
+                for (int i = 0; i < files.length; i++) {
                     if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
                         return null;
                     }
-
                 }
             }
             return files;
         } else {
             return null;
         }
-
     }
 
     private FileObject[] findJavaSourcesAndPackages(Lookup context, FileObject[] srcRoots) {
-        for (int i = 0; i <
-                srcRoots.length; i++) {
+        for (int i = 0; i < srcRoots.length; i++) {
             FileObject[] result = findJavaSourcesAndPackages(context, srcRoots[i]);
             if (result != null) {
                 return result;
             }
-
         }
         return null;
     }
@@ -1172,7 +1102,6 @@ class WebActionProvider implements ActionProvider {
         if (webDir != null) {
             files = findSelectedFilesByMimeType(context, webDir, "text/html", null, true);
         }
-
         return files;
     }
 
@@ -1184,7 +1113,6 @@ class WebActionProvider implements ActionProvider {
         if (webDir != null) {
             files = findSelectedFilesByMimeType(context, webDir, "text/x-jsp", ".jspf", true);
         }
-
         return files;
     }
 
@@ -1193,26 +1121,22 @@ class WebActionProvider implements ActionProvider {
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
         //XXX: Ugly, should be rewritten
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        for (int i = 0; i <
-                testSrcPath.length; i++) {
+        for (int i = 0; i < testSrcPath.length; i++) {
             FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
             if (files != null) {
                 return files;
             }
-
         }
         if (checkInSrcDir && testSrcPath.length > 0) {
             FileObject[] files = findSources(context);
             if (files != null) {
                 //Try to find the test under the test roots
                 FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(), files[0]);
-                for (int i = 0; i <
-                        testSrcPath.length; i++) {
+                for (int i = 0; i < testSrcPath.length; i++) {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
                     if (files2 != null) {
                         return files2;
                     }
-
                 }
             }
         }
@@ -1220,18 +1144,14 @@ class WebActionProvider implements ActionProvider {
     }
 
     private boolean isEjbRefAndNoJ2eeApp(Project p) {
-
         WebModule wmod = WebModule.getWebModule(p.getProjectDirectory());
         if (wmod != null) {
             boolean hasEjbLocalRefs = false;
             try {
                 wmod.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Boolean>() {
-
-                    public Boolean run(
-                            WebAppMetadata metadata) {
+                    public Boolean run(WebAppMetadata metadata) {
                         // return true if there is an ejb reference in this module
-                        EjbLocalRef[] ejbLocalRefs = metadata.getRoot().getEjbLocalRef();
-                        return ejbLocalRefs != null && ejbLocalRefs.length > 0;
+                        return !metadata.getEjbLocalRefs().isEmpty();
                     }
                 });
             } catch (IOException e) {
@@ -1240,7 +1160,6 @@ class WebActionProvider implements ActionProvider {
             if (hasEjbLocalRefs && !isInJ2eeApp(p)) {
                 return true;
             }
-
         }
         return false;
     }
@@ -1253,13 +1172,6 @@ class WebActionProvider implements ActionProvider {
             Project project = FileOwnerQuery.getOwner(sourceRoot);
             if (project != null) {
                 Object j2eeApplicationProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
-
-
-
-
-
-
-
                 if (j2eeApplicationProvider != null) { // == it is j2ee app
                     J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider) j2eeApplicationProvider;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
@@ -1274,10 +1186,7 @@ class WebActionProvider implements ActionProvider {
                     }
                 }
             }
-
         }
-
-
         return false;
     }
 
@@ -1329,12 +1238,6 @@ class WebActionProvider implements ActionProvider {
         if (instance != null) {
             J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
-
-
-
-
-
-
             if (sdi != null) {
                 String id = Deployment.getDefault().getServerID(sdi);
                 if (id != null) {
@@ -1391,11 +1294,9 @@ class WebActionProvider implements ActionProvider {
             } else {
                 return false;
             }
-
         } catch (IOException ex) {
             return false;
         }
-
     }
 
     /** Find tests corresponding to selected sources.
@@ -1413,28 +1314,22 @@ class WebActionProvider implements ActionProvider {
 
         FileObject[] srcPath = project.getSourceRoots().getRoots();
         FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
-        for (int i = 0; i <
-                testSrcPath.length; i++) {
+        for (int i = 0; i < testSrcPath.length; i++) {
             FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
             if (files2 != null) {
                 return files2;
             }
-
         }
         return null;
     }
 
     private FileObject getRoot(FileObject[] roots, FileObject file) {
         FileObject srcDir = null;
-        for (int i = 0; i <
-                roots.length; i++) {
+        for (int i = 0; i < roots.length; i++) {
             if (FileUtil.isParentOf(roots[i], file) || roots[i].equals(file)) {
                 srcDir = roots[i];
                 break;
-
             }
-
-
         }
         return srcDir;
     }
@@ -1444,13 +1339,11 @@ class WebActionProvider implements ActionProvider {
      */
     private FileObject[] findSources(Lookup context) {
         FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i = 0; i <
-                srcPath.length; i++) {
+        for (int i = 0; i < srcPath.length; i++) {
             FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
             if (files != null) {
                 return files;
             }
-
         }
         return null;
     }
@@ -1466,7 +1359,6 @@ class WebActionProvider implements ActionProvider {
                 p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, "" + cFD); // NOI18N
             }
         }
-
     }
 
     private boolean isWebService(JavaSource js) {
@@ -1474,7 +1366,6 @@ class WebActionProvider implements ActionProvider {
         if (js != null) {
             try {
                 js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-
                     public void run(CompilationController ci) throws Exception {
                         ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TypeElement classEl = org.netbeans.modules.j2ee.core.api.support.java.SourceUtils.getPublicTopLevelElement(ci);
@@ -1486,7 +1377,6 @@ class WebActionProvider implements ActionProvider {
                                     if (ci.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
                                         foundWebServiceAnnotation[0] = true;
                                         break;
-
                                     }
                                 }
                             }
@@ -1496,7 +1386,6 @@ class WebActionProvider implements ActionProvider {
             } catch (java.io.IOException ioex) {
                 Exceptions.printStackTrace(ioex);
             }
-
         }
         return foundWebServiceAnnotation[0];
     }

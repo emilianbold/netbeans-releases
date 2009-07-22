@@ -97,7 +97,7 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
                 }
             }
         }
-        return CoverageType.INFERRED;
+        return CoverageType.UNKNOWN;
     }
 
     public int getHitCount(int lineNo) {

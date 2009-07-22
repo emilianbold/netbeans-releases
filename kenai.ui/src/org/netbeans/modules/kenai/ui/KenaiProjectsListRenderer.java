@@ -50,8 +50,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.URL;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -115,7 +115,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         
     }
 
-    private class URLDisplayer implements ActionListener {
+    private class URLDisplayer extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             new URLDisplayerAction("", url).actionPerformed(e); // NOI18N
         }

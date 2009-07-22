@@ -711,6 +711,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     private void ConfigurationProjectXMLWriter() {
         // And save the project
+        if (getProject() == null) {
+            // See http://www.netbeans.org/issues/show_bug.cgi?id=167577
+            // This method uses AntProjectHelper and Project but they are not created (correctly?) under junit tests so this will fail.
+            // It means make dependen project and encoding is not correctly stored in project.xml when running tests.
+            // Fix is to rewrite this method to not use Project and Ant Helper and use DocumentFactory.createInstance().parse instead to open the document.
+            return;
+        }
         try {
             AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
             Element data = helper.getPrimaryConfigurationData(true);

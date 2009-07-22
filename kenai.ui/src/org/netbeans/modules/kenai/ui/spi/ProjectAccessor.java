@@ -45,13 +45,13 @@ public abstract class ProjectAccessor {
     /**
      * @return Adds a Kenai project into given Dashboard window.
      */
-    public abstract ActionListener getOpenNonMemberProjectAction();
+    public abstract Action getOpenNonMemberProjectAction();
 
     /**
      * @param project
      * @return Show details of given project
      */
-    public abstract ActionListener getDetailsAction( ProjectHandle project );
+    public abstract Action getDetailsAction( ProjectHandle project );
     /**
      *
      * @param project 
@@ -59,7 +59,7 @@ public abstract class ProjectAccessor {
      * for given project.
      */
     //maybe same as 'details'?
-    public abstract ActionListener getDefaultAction( ProjectHandle project );
+    public abstract Action getDefaultAction( ProjectHandle project );
     /**
      *
      * @param project
@@ -67,7 +67,7 @@ public abstract class ProjectAccessor {
      */
     public abstract Action[] getPopupActions( ProjectHandle project );
 
-    public abstract ActionListener getOpenWikiAction( ProjectHandle project );
+    public abstract Action getOpenWikiAction( ProjectHandle project );
 
-    public abstract ActionListener getOpenDownloadsAction( ProjectHandle project );
+    public abstract Action getOpenDownloadsAction( ProjectHandle project );
 }

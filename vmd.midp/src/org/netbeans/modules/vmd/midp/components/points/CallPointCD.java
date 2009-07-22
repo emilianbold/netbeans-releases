@@ -56,6 +56,8 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 
 /**
  * @author David Kaspar
@@ -102,6 +104,7 @@ public class CallPointCD extends ComponentDescriptor {
 
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, false, false, true, true);
         super.gatherPresenters (presenters);
     }

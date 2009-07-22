@@ -54,4 +54,6 @@ public interface Renderer {
     String getRendererType();
     
     String getRendererClass();
+    
+    String getComponentFamily();
 }

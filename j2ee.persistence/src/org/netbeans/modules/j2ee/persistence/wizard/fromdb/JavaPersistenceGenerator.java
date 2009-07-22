@@ -923,11 +923,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             protected void generateRelationship(RelationshipRole role) throws IOException {
                 String memberName = role.getFieldName();
-                
-                // Make the many relationship field name a little bit nicer - see issue 151977
-                if(role.isToMany()) { 
-                    memberName = EntityMember.fixRelationshipFieldName(memberName, collectionType);
-                }
 
                 // XXX getRelationshipFieldType() does not work well when entity classes
                 // are not all generated to the same package - fixed in issue 139804

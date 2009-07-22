@@ -228,8 +228,12 @@ public class AstNodeUtils {
             }
             if (sibling.type() == AstNode.NodeType.OPEN_TAG) {
                 DTD.Content subcontent = content.reduce(sibling.getDTDElement().getName());
-                assert subcontent != null : "content is null after sibling '" + sibling.name() + "'; known to happen after meta tag in head - see HtmlCompletionQueryTest.testOpenTagAtMetaTagEnd()"; //NOI18N
-                content = subcontent;
+                if(subcontent != null) {
+                    //sibling reduced - update the content to the resolved one
+                    content = subcontent;
+                } else {
+                    //the siblibg doesn't reduce the content - it is unallowed there - ignore it
+                }
             }
         }
 
@@ -251,10 +255,7 @@ public class AstNodeUtils {
     }
 
     public static boolean hasForbiddenEndTag(AstNode node) {
-        DTD.Element e = node.getDTDElement();
-        assert e != null;
-
-        return e.isEmpty();
+        return node.getDTDElement() != null ? node.getDTDElement().isEmpty() : false;
     }
    
     public static void visitChildren(AstNode node, AstNodeVisitor visitor) {

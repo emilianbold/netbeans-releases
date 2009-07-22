@@ -39,9 +39,12 @@
 
 package org.netbeans.test.ide;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
@@ -49,6 +52,7 @@ import java.security.Permission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -72,6 +76,24 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     private static Set<String> allowed = Collections.emptySet();
     private static SecurityManager man;
     private static Mode mode;
+
+    static void initWrites() throws IOException {
+        Set<String> allowedFiles = new HashSet<String>();
+        InputStream is = CountingSecurityManager.class.getResourceAsStream("allowed-file-writes.txt");
+        Assert.assertNotNull("file found", is);
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        for (;;) {
+            String line = r.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("#")) {
+                continue;
+            }
+            allowedFiles.add(line);
+        }
+        CountingSecurityManager.initialize(null, Mode.CHECK_WRITE, allowedFiles);
+    }
 
     public enum Mode {
         CHECK_READ, CHECK_WRITE
@@ -432,6 +454,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 return false;
             }
         }
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            if (e.getClassName().contains("junit.JUnitTestRunner")) {
+                return false;
+            }
+        }
 
         return prefix == null || file.startsWith(prefix);
     }
@@ -461,7 +488,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
             }
         }
-        if (file.endsWith("harness/modules/org-netbeans-modules-nbjunit.jar")) {
+        if (file.endsWith("harness" + File.separator + "modules" + File.separator + "org-netbeans-modules-nbjunit.jar")) {
             return false;
         }
 

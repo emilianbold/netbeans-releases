@@ -114,17 +114,17 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ActionListener getOpenNonMemberProjectAction() {
+    public Action getOpenNonMemberProjectAction() {
         return new OpenKenaiProjectAction();
     }
 
     @Override
-    public ActionListener getDetailsAction(final ProjectHandle project) {
+    public Action getDetailsAction(final ProjectHandle project) {
         return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
     }
 
     @Override
-    public ActionListener getDefaultAction(ProjectHandle project) {
+    public Action getDefaultAction(ProjectHandle project) {
         return getDetailsAction(project);
     }
 
@@ -153,7 +153,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ActionListener getOpenWikiAction(ProjectHandle project) {
+    public Action getOpenWikiAction(ProjectHandle project) {
         try {
             KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.WIKI);
             if (wiki.length == 1) {
@@ -166,7 +166,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ActionListener getOpenDownloadsAction(ProjectHandle project) {
+    public Action getOpenDownloadsAction(ProjectHandle project) {
         try {
             KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.DOWNLOADS);
             if (wiki.length == 1) {

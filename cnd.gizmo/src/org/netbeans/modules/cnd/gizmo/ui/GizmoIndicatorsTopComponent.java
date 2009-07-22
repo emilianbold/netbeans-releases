@@ -223,6 +223,15 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
             JSplitPane prevSplit = null;
             indicatorPanels = new Vector<JComponent>(indicators.size());
             indicatorPanels.setSize(indicators.size());
+            // We will resize only components without MaximumSize.
+            // Implemented for Parallel Adviser indicator.
+            int freeSizeComponentsNumber = 0;
+            for (int i = 0; i < indicators.size(); ++i) {
+                JComponent component = indicators.get(i).getComponent();
+                if(!component.isMaximumSizeSet()) {
+                    freeSizeComponentsNumber++;
+                }
+            }
             for (int i = 0; i < indicators.size(); ++i) {
                 JComponent component = indicators.get(i).getComponent();
                 indicatorPanels.set(i, component);
@@ -231,7 +240,9 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
                     splitPane.setBorder(BorderFactory.createEmptyBorder());
                     splitPane.setContinuousLayout(true);
                     splitPane.setDividerSize(5);
-                    splitPane.setResizeWeight(1.0 / (indicators.size() - i));
+                    if(!component.isMaximumSizeSet()) {
+                        splitPane.setResizeWeight(1.0 / (freeSizeComponentsNumber - i));
+                    }
                     splitPane.setTopComponent(component);
                     component = splitPane;
                 }

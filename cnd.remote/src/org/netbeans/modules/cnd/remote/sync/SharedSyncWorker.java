@@ -50,10 +50,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Vladimir Kvashin
  */
-/*package-local*/ class SharedSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
+/*package-local*/ class SharedSyncWorker implements RemoteSyncWorker {
+
+    private final File localDir;
+    private final ExecutionEnvironment executionEnvironment;
 
     public SharedSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        super(localDir, executionEnvironment, out, err);
+        this.localDir = localDir;
+        this.executionEnvironment = executionEnvironment;
     }
     
     public boolean synchronize() {

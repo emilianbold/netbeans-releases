@@ -105,7 +105,7 @@ public class JspElWatch implements PropertyChangeListener {
     
     private synchronized void evaluate() {
         String text = watch.getExpression ();
-        text = org.openide.util.Utilities.replaceString(text, "\"", "\\\"");
+        text = text.replace("\"", "\\\"");
         text = "pageContext.getExpressionEvaluator().evaluate(\"" + text +
                             "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
         try {

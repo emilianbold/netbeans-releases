@@ -40,10 +40,7 @@
  */
 package org.netbeans.qa.form.databinding;
 
-import org.netbeans.qa.form.*;
-import org.netbeans.qa.form.visualDevelopment.*;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import java.util.*;
@@ -99,7 +96,7 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
         nfwo.selectFileType("Master/Detail Sample Form"); // NOI18N
         nfwo.next();
         
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(_newFormName);
         nfnlso.setPackage(getTestPackageName());

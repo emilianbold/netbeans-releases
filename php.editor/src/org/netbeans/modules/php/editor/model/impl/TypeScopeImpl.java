@@ -71,7 +71,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
-            ifaces.put(CodeUtils.extractTypeName(identifier), null);
+            ifaces.put(CodeUtils.extractUnqualifiedName(identifier), null);
         }
     }
 
@@ -79,7 +79,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, nodeInfo, new PhpModifiers(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
-            ifaces.put(CodeUtils.extractTypeName(identifier), null);
+            ifaces.put(CodeUtils.extractUnqualifiedName(identifier), null);
         }
     }
 
@@ -93,6 +93,9 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, element, PhpKind.IFACE);
     }
 
+    public List<? extends String> getSuperInterfaceNames() {
+        return new ArrayList<String>(ifaces.keySet());
+    }
 
     public List<? extends InterfaceScope> getSuperInterfaces() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();

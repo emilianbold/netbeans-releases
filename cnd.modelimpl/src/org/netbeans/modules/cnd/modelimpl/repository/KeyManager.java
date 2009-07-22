@@ -39,7 +39,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
 /**
@@ -50,8 +54,18 @@ import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 public class KeyManager {
 
     private final KeyStorage storage;
-    private static final int KEY_MANAGER_DEFAULT_CAPACITY = 1024;
-    private static final int KEY_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int KEY_MANAGER_DEFAULT_CAPACITY;
+    private static final int KEY_MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = CndUtils.getConcurrencyLevel();
+        if (nrProc <= 4) {
+            KEY_MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            KEY_MANAGER_DEFAULT_CAPACITY = 512;
+        } else {
+            KEY_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            KEY_MANAGER_DEFAULT_CAPACITY = 128;
+        }
+    }
     private static final KeyManager instance = new KeyManager();
 
     /** Creates a new instance of KeyManager */
@@ -62,7 +76,8 @@ public class KeyManager {
     public static KeyManager instance() {
         return instance;
     }
-    private final String lock = new String("lock in KeyManager"); // NOI18N
+    private static final class Lock {}
+    private final Object lock = new Lock();
 
     /**
      * returns shared uid instance equal to input one.
@@ -92,14 +107,19 @@ public class KeyManager {
     private static final class KeyStorage {
 
         private final WeakSharedSet<Key>[] instances;
-        private final int sliceNumber; // primary number for better distribution
+        private final int segmentMask; // mask
         private final int initialCapacity;
 
         private KeyStorage(int sliceNumber, int initialCapacity) {
-            this.sliceNumber = sliceNumber;
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
             this.initialCapacity = initialCapacity;
             @SuppressWarnings("unchecked")
-            WeakSharedSet<Key>[] ar = new WeakSharedSet[sliceNumber];
+            WeakSharedSet<Key>[] ar = new WeakSharedSet[ssize];
             for (int i = 0; i < ar.length; i++) {
                 ar[i] = new WeakSharedSet<Key>(initialCapacity);
             }
@@ -107,10 +127,7 @@ public class KeyManager {
         }
 
         private WeakSharedSet<Key> getDelegate(Key key) {
-            int index = key.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
+            int index = key.hashCode() & segmentMask;
             return instances[index];
         }
 
@@ -121,6 +138,25 @@ public class KeyManager {
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i].size() > 0) {
+                    if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
+                        Object[] arr = instances[i].toArray();
+                        System.out.println("Key cache " + instances[i].size()); // NOI18N
+                        Map<Class, Integer> classes = new HashMap<Class, Integer>();
+                        for (Object o : arr) {
+                            if (o != null) {
+                                Integer num = classes.get(o.getClass());
+                                if (num != null) {
+                                    num = new Integer(num.intValue() + 1);
+                                } else {
+                                    num = new Integer(1);
+                                }
+                                classes.put(o.getClass(), num);
+                            }
+                        }
+                        for (Map.Entry<Class, Integer> e : classes.entrySet()) {
+                            System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
+                        }
+                    }
                     instances[i].clear();
                     instances[i].resize(initialCapacity);
                 }

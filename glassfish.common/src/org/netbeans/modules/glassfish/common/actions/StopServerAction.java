@@ -89,7 +89,8 @@ public class StopServerAction extends NodeAction {
     }
 
     private static final boolean enableImpl(GlassfishModule commonSupport) {
-        return commonSupport.getServerState() == ServerState.RUNNING;
+        return commonSupport.getServerState() == ServerState.RUNNING &&
+                null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ;
     }
     
     @Override

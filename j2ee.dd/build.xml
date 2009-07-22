@@ -44,19 +44,16 @@ made subject to such option by the copyright holder.
 
   <import file="../nbbuild/templates/projectized.xml"/>
 
-  <property name="s2b_root_web_2_3" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_3"/>
   <property name="s2b_root_web_2_4" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_4"/>
   <property name="s2b_root_web_2_5" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_5"/>
   <property name="s2b_root_web_3_0" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_3_0"/>
-  <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_1_1"/>
-  <property name="s2b_root_2_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_0"/>
+  <property name="s2b_root_web_3_0_frag" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_3_0_frag"/>
   <property name="s2b_root_2_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_1"/>
   <property name="s2b_root_3_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_3_0"/>
-  <property name="s2b_root_app_1_3" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_3"/>
+  <property name="s2b_root_3_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_3_1"/>
   <property name="s2b_root_app_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_4"/>
   <property name="s2b_root_app_5" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_5"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
-  <property name="s2b_root_client_1_3" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_1_3"/>
   <property name="s2b_root_client_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_1_4"/>
   <property name="s2b_root_client_5_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_5_0"/>
 
@@ -75,13 +72,6 @@ made subject to such option by the copyright holder.
    <target name="dd2beansgen" depends="s2binit">
      <echo message="generating code generation input file information" />
 
-	<schema2beans schema="${s2b_res_root}/web-app_2_3.dtd"
-	  mddFile="${s2b_res_root}/web-app_2_3.mdd"
-	  package="org.netbeans.modules.j2ee.dd.impl.web.model_2_3"
-	  useInterfaces="true"
-	  validate="true"
-	  attrProp="true"
-	  rootDir="src"/>
 	<schema2beans schema="${s2b_res_root}/web-app_2_4.xsd"
 	  mddFile="${s2b_res_root}/web-app_2_4.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.web.model_2_4"
@@ -111,7 +101,7 @@ made subject to such option by the copyright holder.
 	  rootDir="src"/>
 	<schema2beans schema="${s2b_res_root}/web-fragment_3_0.xsd"
 	  mddFile="${s2b_res_root}/web-fragment_3_0.mdd"
-	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0_frag"
 	  schemaType="xmlschema"
 	  useInterfaces="true"
 	  validate="true"
@@ -179,25 +169,103 @@ made subject to such option by the copyright holder.
         <replacevalue>public void setServletNames(java.lang.String[] value) {</replacevalue>
     </replace>
 
-    <replace file="${s2b_root_web_3_0}/WebFragment.java" summary="true">
+    <replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true">
         <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
         <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
     </replace>
 
-	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
- 	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"
-	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_1_1"
-	  useInterfaces="true"
-	  validate="true"
-	  attrProp="true"
-	  rootDir="src"/>
-	<schema2beans schema="${s2b_res_root}/ejb-jar_2_0.dtd"
- 	  mddFile="${s2b_res_root}/ejb-jar_2_0.mdd"
-	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0"
-	  useInterfaces="true"
-	  validate="true"
-	  attrProp="true"
-	  rootDir="src"/>
+    <replace file="${s2b_root_web_3_0_frag}/ServletMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0_frag}/ServletMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+
+    <replace file="${s2b_root_web_3_0_frag}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0_frag}/FilterMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0_frag}/FilterMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getServletName() {</replacetoken>
+        <replacevalue>public java.lang.String[] getServletNames() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_web_3_0_frag}/FilterMapping.java" summary="true">
+        <replacetoken>public void setServletName(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setServletNames(java.lang.String[] value) {</replacevalue>
+    </replace>
+
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setDescription(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setDisplayName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setIcon(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setContextParam(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setFilter(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setFilterMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setListener(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setServlet(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setServletMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setSessionConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setMimeMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setWelcomeFileList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setErrorPage(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setJspConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setSecurityConstraint(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setLoginConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setSecurityRole(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setEnvEntry(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setEjbRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setEjbLocalRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setServiceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setResourceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setResourceEnvRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setMessageDestinationRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPersistenceContextRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPersistenceUnitRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPostConstruct(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setPreDestroy(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setMessageDestination(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setLocaleEncodingMappingList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0}/WebApp.java" summary="true"><replacetoken>setDistributable(null);</replacetoken><replacevalue></replacevalue></replace>
+
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setDescription(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setDisplayName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setIcon(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setName(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setContextParam(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setFilter(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setFilterMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setListener(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setServlet(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setServletMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setSessionConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setMimeMapping(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setWelcomeFileList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setErrorPage(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setJspConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setSecurityConstraint(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setLoginConfig(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setSecurityRole(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setEnvEntry(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setEjbRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setEjbLocalRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setServiceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setResourceRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setResourceEnvRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setMessageDestinationRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setPersistenceContextRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setPersistenceUnitRef(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setPostConstruct(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setPreDestroy(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setMessageDestination(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setLocaleEncodingMappingList(null);</replacetoken><replacevalue></replacevalue></replace>
+<replace file="${s2b_root_web_3_0_frag}/WebFragment.java" summary="true"><replacetoken>setDistributable(null);</replacetoken><replacevalue></replacevalue></replace>
+
 	<schema2beans schema="${s2b_res_root}/ejb-jar_2_1.xsd"
  	  mddFile="${s2b_res_root}/ejb-jar_2_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1"
@@ -216,13 +284,15 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/> 
-        <schema2beans schema="${s2b_res_root}/application_1_3.dtd"
- 	  mddFile="${s2b_res_root}/application_1_3.mdd"
-	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_3"
+	<schema2beans schema="${s2b_res_root}/ejb-jar_3_1.xsd"
+ 	  mddFile="${s2b_res_root}/ejb-jar_3_1.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_3_1"
+	  schemaType="xmlschema"
 	  useInterfaces="true"
 	  validate="true"
 	  attrProp="true"
-	  rootDir="src"/> 
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
         <schema2beans schema="${s2b_res_root}/application_1_4.xsd"
  	  mddFile="${s2b_res_root}/application_1_4.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_4"
@@ -241,15 +311,6 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>  
-	  <!--<delete file="${s2b_root_2_4}/WebAppType.java"/>-->
-        <schema2beans schema="${s2b_res_root}/application-client_1_3.dtd"
- 	  mddFile="${s2b_res_root}/application-client_1_3.mdd"
-	  package="org.netbeans.modules.j2ee.dd.impl.client.model_1_3"
-	  useInterfaces="true"
-	  validate="true"
-	  attrProp="true"
-	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
         <schema2beans schema="${s2b_res_root}/application-client_1_4.xsd"
  	  mddFile="${s2b_res_root}/application-client_1_4.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.client.model_1_4"
@@ -275,26 +336,17 @@ made subject to such option by the copyright holder.
   <target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
 
   <target name="clean-ddgen-src">
-        <mkdir dir="${s2b_root_web_2_3}"/>
         <mkdir dir="${s2b_root_web_2_4}"/>
         <mkdir dir="${s2b_root_web_2_5}"/>
         <mkdir dir="${s2b_root_web_3_0}"/>
-        <mkdir dir="${s2b_root_1_1}"/>
-        <mkdir dir="${s2b_root_2_0}"/>
+        <mkdir dir="${s2b_root_web_3_0_frag}"/>
         <mkdir dir="${s2b_root_2_1}"/>
         <mkdir dir="${s2b_root_3_0}"/>
-        <mkdir dir="${s2b_root_app_1_3}"/>
+        <mkdir dir="${s2b_root_3_1}"/>
         <mkdir dir="${s2b_root_app_1_4}"/>
         <mkdir dir="${s2b_root_app_5}"/>
-        <mkdir dir="${s2b_root_client_1_3}"/>
         <mkdir dir="${s2b_root_client_1_4}"/>
         <mkdir dir="${s2b_root_client_5_0}"/>
-        <delete>
-            <fileset dir="${s2b_root_web_2_3}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_web_2_3}"/>
         <delete>
             <fileset dir="${s2b_root_web_2_4}">
                 <include name="*.java"/>
@@ -314,17 +366,11 @@ made subject to such option by the copyright holder.
         </delete>
         <delete dir="${s2b_root_web_3_0}"/>
         <delete>
-            <fileset dir="${s2b_root_1_1}">
+            <fileset dir="${s2b_root_web_3_0_frag}">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${s2b_root_1_1}"/>
-        <delete>
-            <fileset dir="${s2b_root_2_0}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_2_0}"/>
+        <delete dir="${s2b_root_web_3_0_frag}"/>
         <delete>
             <fileset dir="${s2b_root_2_1}">
                 <include name="*.java"/>
@@ -338,11 +384,11 @@ made subject to such option by the copyright holder.
         </delete>
         <delete dir="${s2b_root_3_0}"/>
         <delete>
-            <fileset dir="${s2b_root_app_1_3}">
+            <fileset dir="${s2b_root_3_1}">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${s2b_root_app_1_3}"/>
+        <delete dir="${s2b_root_3_1}"/>
         <delete>
             <fileset dir="${s2b_root_app_1_4}">
                 <include name="*.java"/>
@@ -355,12 +401,6 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete dir="${s2b_root_app_5}"/>
-        <delete>
-            <fileset dir="${s2b_root_client_1_3}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_client_1_3}"/>
         <delete>
             <fileset dir="${s2b_root_client_1_4}">
                 <include name="*.java"/>

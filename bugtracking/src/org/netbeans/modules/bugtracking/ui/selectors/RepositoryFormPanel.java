@@ -84,11 +84,10 @@ public class RepositoryFormPanel extends JPanel {
         initComponents();
     }
 
-    public RepositoryFormPanel(Repository repository, String message) {
+    public RepositoryFormPanel(Repository repository, String initialErrorMessage) {
         this();
 
-        displayForm(repository);
-        displayErrorMessage(message);
+        displayForm(repository, initialErrorMessage);
     }
 
     private void initComponents() {
@@ -114,7 +113,7 @@ public class RepositoryFormPanel extends JPanel {
         layout.setHonorsVisibility(false);  //keep space for errorLabel
     }
 
-    public boolean displayForm(Repository repository) {
+    public boolean displayForm(Repository repository, String initialErrMsg) {
         if (repository == selectedRepository) {
             return false;
         }
@@ -122,7 +121,7 @@ public class RepositoryFormPanel extends JPanel {
         boolean firstTimeUse;
 
         boolean wasValid = isValidData;
-        firstTimeUse = displayFormPanel(repository);
+        firstTimeUse = displayFormPanel(repository, initialErrMsg);
         if (isValidData != wasValid) {
             fireValidityChanged();
         }
@@ -141,10 +140,15 @@ public class RepositoryFormPanel extends JPanel {
     private void checkDataValidity() {
         assert selectedFormController != null;
 
-        boolean wasValid = isValidData;
-        isValidData = selectedFormController.isValid();
+        boolean valid = selectedFormController.isValid();
+
         updateErrorMessage(selectedFormController.getErrorMessage());
-        if (isValidData != wasValid) {
+        setDataValid(valid);
+    }
+
+    private void setDataValid(boolean valid) {
+        if (valid != isValidData) {
+            isValidData = valid;
             fireValidityChanged();
         }
     }
@@ -173,7 +177,7 @@ public class RepositoryFormPanel extends JPanel {
 
     }
 
-    private boolean displayFormPanel(Repository repository) {
+    private boolean displayFormPanel(Repository repository, String initialErrMsg) {
         if (repository == selectedRepository) {
             return false;
         }
@@ -194,7 +198,13 @@ public class RepositoryFormPanel extends JPanel {
         selectedRepository = repository;
 
         startListeningOnController();
-        checkDataValidity();
+
+        if ((initialErrMsg != null) && (initialErrMsg.trim().length() != 0)) {
+            updateErrorMessage(initialErrMsg);
+            setDataValid(false);
+        } else {
+            checkDataValidity();
+        }
 
         return firstTimeUse;
     }

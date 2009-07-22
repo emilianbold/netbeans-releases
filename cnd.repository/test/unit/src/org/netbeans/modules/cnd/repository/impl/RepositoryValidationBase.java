@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -80,15 +81,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     @Override
     protected void postTest(String[] args, Object... params) {
         if (!getTraceModel().getProject().isStable(null)) {
-            System.err.println("-----Start Thread Dump-----");
-            for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
-                System.err.println(entry.getKey().getName());
-                for (StackTraceElement element : entry.getValue()) {
-                    System.err.println("\tat " + element.toString());
-                }
-                System.err.println();
-            }
-            System.err.println("-----End Thread Dump-----");
+            CndUtils.threadsDump();
             while (!getTraceModel().getProject().isStable(null)) {
                 try {
                     Thread.sleep(100);
@@ -101,15 +94,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         for (CsmFile f : getTraceModel().getProject().getAllFiles()){
             map.put(f.getAbsolutePath(), (FileImpl)f);
             if (!f.isParsed()){
-                System.err.println("-----Start Thread Dump-----");
-                for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
-                    System.err.println(entry.getKey().getName());
-                    for (StackTraceElement element : entry.getValue()) {
-                        System.err.println("\tat " + element.toString());
-                    }
-                    System.err.println();
-                }
-                System.err.println("-----End Thread Dump-----");
+                CndUtils.threadsDump();
             }
         }
         for (FileImpl file : map.values()){
@@ -167,7 +152,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         String dataPath = fileDataPath.getAbsolutePath();
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
-            public void executionStarted() {
+            public void executionStarted(int pid) {
             }
             public void executionFinished(int rc) {
                 finish.set(true);

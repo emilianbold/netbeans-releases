@@ -83,14 +83,14 @@ public final class RepositoryUtil {
             art = online.createArtifactWithClassifier(info.getGroupId(),
                     info.getArtifactId(),
                     info.getVersion(),
-                    info.getType(),
+                    info.getType() != null ? info.getType() : "jar", //NOI18N
                     classifier == null ? info.getClassifier() : classifier);
         } else {
             art = online.createArtifact(info.getGroupId(),
                     info.getArtifactId(),
                     info.getVersion(),
                     null,
-                    info.getType());
+                    info.getType() != null ? info.getType() : "jar"); //NOI18N
         }
         ArtifactRepository repo = online.getLocalRepository();
         String localPath = repo.pathOf(art);

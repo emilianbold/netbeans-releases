@@ -324,9 +324,9 @@ public class PhpStructureScanner implements StructureScanner {
             return null;
         }
 
-        protected void appendInterfeas(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
+        protected void appendInterfeas(Collection<? extends String> interfaes, HtmlFormatter formatter) {
             boolean first = true;
-            for (InterfaceScope identifier : interfaes) {
+            for (String identifier : interfaes) {
                 if (identifier != null) {
                     if (!first) {
                         formatter.appendText(", ");  //NOI18N
@@ -334,7 +334,7 @@ public class PhpStructureScanner implements StructureScanner {
                     } else {
                         first = false;
                     }
-                    formatter.appendText(identifier.getName());
+                    formatter.appendText(identifier);
                 }
 
             }
@@ -448,7 +448,7 @@ public class PhpStructureScanner implements StructureScanner {
                 formatter.appendText(superCls.getName());
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends InterfaceScope> interfaes = getClassScope().getSuperInterfaces();
+            Collection<? extends String> interfaes = getClassScope().getSuperInterfaceNames();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
                 appendInterfeas(interfaes, formatter);
@@ -518,7 +518,7 @@ public class PhpStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
-            Collection<? extends InterfaceScope> interfaes = getInterfaceScope().getSuperInterfaces();
+            Collection<? extends String> interfaes = getInterfaceScope().getSuperInterfaceNames();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
                 appendInterfeas(interfaes, formatter);

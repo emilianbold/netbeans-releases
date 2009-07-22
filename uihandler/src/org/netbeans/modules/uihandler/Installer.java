@@ -97,6 +97,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -123,18 +124,23 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
 
@@ -142,6 +148,7 @@ import org.xml.sax.SAXException;
  * Registers and unregisters loggers.
  */
 public class Installer extends ModuleInstall implements Runnable {
+    static final String IDE_STARTUP = "IDE_STARTUP";
     static final long serialVersionUID = 1L;
 
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
@@ -255,7 +262,7 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
-        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+        if (!Boolean.getBoolean("netbeans.full.hack") && !Boolean.getBoolean("netbeans.close")) {
             usageStatisticsReminder();
         }
         
@@ -290,7 +297,9 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         EarlyHandler.disable();
+        CPUInfo.logCPUInfo();
         ScreenSize.logScreenSize();
+        logIdeStartup();
 
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
@@ -301,6 +310,10 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
     
+    private void logIdeStartup() {
+        Logger.getLogger("org.netbeans.ui").log(new LogRecord(Level.CONFIG, IDE_STARTUP));
+    }
+
     private void usageStatisticsReminder () {
         //Increment number of IDE starts, stop at 4 because we are interested at second start
         long nbOfIdeStarts = corePref.getLong(USAGE_STATISTICS_NB_OF_IDE_STARTS, 0);
@@ -540,7 +553,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 //Task to upload metrics data
                 class Auto implements Runnable {
                     public void run() {
-                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS);
+                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS, null);
                     }
                 }
                 //Must be performed out of lock because it calls getLogsMetrics
@@ -908,7 +921,7 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
 
-    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType) {
+    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType, SlownessData slownData) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
@@ -923,7 +936,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
 
-            v = doDisplaySummary(msg, auto, connectDialog, dataType);
+            Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType) : new SubmitInteractive(msg, connectDialog, dataType, slownData);
+            submit.doShow(dataType);
+            v = submit.okToExit;
         } finally {
             DISPLAYING.set(null);
         }
@@ -931,7 +946,11 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     public static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog) {
-        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE);
+        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null);
+    }
+
+    static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, SlownessData slownessData) {
+        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, slownessData);
     }
 
     static Throwable getThrown() {
@@ -992,13 +1011,6 @@ public class Installer extends ModuleInstall implements Runnable {
     protected static void setSelectedExcParams(Object[] params){
         selectedExcParams = params;
     }
-
-    private static boolean doDisplaySummary(String msg, boolean auto, boolean connectDialog, DataType dataType) {
-        Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType) : new SubmitInteractive(msg, connectDialog, dataType);
-        submit.doShow(dataType);
-        return submit.okToExit;
-    }
-
 
     /** Tries to parse a list of buttons provided by given page.
      * @param u the url to read the page from
@@ -1061,14 +1073,14 @@ public class Installer extends ModuleInstall implements Runnable {
         return res instanceof String ? (String)res : null;
     }
 
-    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport) throws IOException {
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport, SlownessData slownData) throws IOException {
         ProgressHandle h = null;
         //Do not show progress UI for metrics upload
         if (dataType != DataType.DATA_METRICS) {
             h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
         }
         try {
-            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport);
+            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport, slownData);
         } finally {
             if (h != null) {
                 h.finish();
@@ -1077,11 +1089,12 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, boolean isErrorReport) throws IOException {
-        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport);
+        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport, null);
     }
 
     private static URL uLogs
-    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport) throws IOException {
+    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs,
+            DataType dataType, boolean isErrorReport, SlownessData slownData) throws IOException {
         if (dataType != DataType.DATA_METRICS) {
             h.start(100 + recs.size());
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
@@ -1138,6 +1151,15 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Type: x-application/log");
             os.println();
             uploadMessagesLog(os);
+            os.println();
+            os.println("\n----------konec<>bloku");
+        }
+
+        if (slownData != null){
+            os.println("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\"");
+            os.println("Content-Type: x-application/nps");
+            os.println();
+            os.write(slownData.getNpsContent());
             os.println();
             os.println("\n----------konec<>bloku");
         }
@@ -1316,7 +1338,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
         final protected List<LogRecord> recs;
-
+        
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
         }
@@ -1341,11 +1363,11 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract Object showDialogAndGetValue(DialogDescriptor dd);
         protected abstract void closeDialog();
         protected abstract void alterMessage(DialogDescriptor dd);
-        protected abstract boolean viewData();
+        protected abstract void viewData();
         protected abstract void assignInternalURL(URL u);
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL, boolean inIDE);
-
+        protected abstract SlownessData getSlownessData();
 
         public void doShow(DataType dataType) {
             if (dataType == DataType.DATA_UIGESTURE) {
@@ -1556,8 +1578,13 @@ public class Installer extends ModuleInstall implements Runnable {
                             if (thrownLog != null) {
                                 recs.add(thrownLog);//exception selected by user
                             }
-                            recs.add(TimeToFailure.logFailure());
                             recs.add(BuildInfo.logBuildInfoRec());
+                            SlownessData sd = getSlownessData();
+                            if (sd != null){
+                                recs.add(sd.getLogRec());
+                            } else {
+                                recs.add(TimeToFailure.logFailure());
+                            }
                             recs.add(userData);
                             if ((report) && (!reportPanel.asAGuest())) {
                                 if (!checkUserName(reportPanel)) {
@@ -1578,7 +1605,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         final List<LogRecord> recsFinal = recs;
                         RP_SUBMIT.post(new Runnable() {
                             public void run() {
-                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
+                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType, getSlownessData());
                             }
                         });
                         okToExit = false;
@@ -1623,16 +1650,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
-                if (viewData() && (e.getSource() instanceof AbstractButton)) {
-                    AbstractButton abut = (AbstractButton)e.getSource();
-                    String alt = (String) abut.getClientProperty("alt"); // NOI18N
-                    if (alt != null) {
-                        String now = (String)abut.getClientProperty("now"); // NOI18N
-                        Mnemonics.setLocalizedText(abut, alt);
-                        abut.putClientProperty("alt", now); // NOI18N
-                        abut.putClientProperty("now", alt); // NOI18N
-                    }
-                }
+                viewData();
                 return;
             }
 
@@ -1673,7 +1691,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return checkingResult;
         }
 
-        private void uploadAndPost(List<LogRecord> recs, URL u, DataType dataType) {
+        private void uploadAndPost(List<LogRecord> recs, URL u, DataType dataType, SlownessData slownData) {
             URL nextURL = null;
 
             if(preferencesWritable) {
@@ -1684,7 +1702,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType == DataType.DATA_METRICS) {
                     logMetricsUploadFailed = false;
                 }
-                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType, report);
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType, report, slownData);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
                 if (dataType == DataType.DATA_METRICS) {
@@ -1791,14 +1809,20 @@ public class Installer extends ModuleInstall implements Runnable {
         private SubmitPanel panel;
         private JEditorPane browser;
         private boolean urlAssigned;
+        private SlownessData slownData = null;
         
-        public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
-            super(msg,dataType);
-            this.connectDialog = connectDialog;
+        public SubmitInteractive(String msg, boolean connectDialog) {
+            this(msg, connectDialog, DataType.DATA_UIGESTURE);
         }
 
-        public SubmitInteractive(String msg, boolean connectDialog) {
-            this(msg,connectDialog,DataType.DATA_UIGESTURE);
+        public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
+            this(msg, connectDialog, dataType, null);
+        }
+
+        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType, SlownessData slownData) {
+            super(msg, dataType);
+            this.connectDialog = connectDialog;
+            this.slownData = slownData;
         }
 
         protected void createDialog() {
@@ -1807,9 +1831,19 @@ public class Installer extends ModuleInstall implements Runnable {
             if (reportPanel==null) {
                 reportPanel = new ReportPanel();
             }
-            Throwable t = getThrown(recs);
-            if (t != null){
-                reportPanel.setSummary(createMessage(t));
+            if (slownData != null) {
+                String message;
+                if (slownData.getLatestActionName() == null) {
+                    message = NbBundle.getMessage(Installer.class, "Summary_MSG_No_Action", slownData.getTime());
+                } else {
+                    message = NbBundle.getMessage(Installer.class, "Summary_MSG", slownData.getLatestActionName(), slownData.getTime());
+                }
+                reportPanel.setSummary(message);
+            } else {
+                Throwable t = getThrown(recs);
+                if (t != null) {
+                    reportPanel.setSummary(createMessage(t));
+                }
             }
             if ("ERROR_URL".equals(msg)) {
                 dim = new Dimension(470, 450);
@@ -1871,7 +1905,7 @@ public class Installer extends ModuleInstall implements Runnable {
             d = null;
         }
 
-        protected boolean  viewData() {
+        protected void viewData() {
             if (panel == null) {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
@@ -1907,12 +1941,43 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 viewDD = new DialogDescriptor(tabs, NbBundle.getMessage(Installer.class, "VIEW_DATA_TILTE"));
             }
-            viewDD.setModal(true);
-            viewDD.setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION  });
+            viewDD.setModal(false);
+            Object[] closingOption = new Object[] { DialogDescriptor.CANCEL_OPTION  };
+            viewDD.setOptions(closingOption);
+            viewDD.setClosingOptions(closingOption);
+            if (slownData != null){
+                JButton slownButton = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(slownButton, 
+                        NbBundle.getMessage(Installer.class, "SubmitPanel.profileData.text"));
+                slownButton.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        showProfilerSnapshot(e);
+                    }
+                });
+                viewDD.setAdditionalOptions(new Object[]{slownButton});
+            }
             Dialog view = DialogDisplayer.getDefault().createDialog(viewDD);
             view.setVisible(true);
-            return false;
         }
+
+        private void showProfilerSnapshot(ActionEvent e){
+             try {
+                FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("slow.nps");
+                OutputStream os = fo.getOutputStream();
+                os.write(slownData.getNpsContent());
+                os.close();
+                final Node obj = DataObject.find(fo).getNodeDelegate();
+                Action a = obj.getPreferredAction();
+                if (a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
+                }
+                 a.actionPerformed(e);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         protected void assignInternalURL(URL u) {
             if (browser != null) {
                 try {
@@ -1939,15 +2004,13 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
-            if ((reportPanel != null)&&(report)){
+            if ((reportPanel != null) && (report)){
                 params.add(reportPanel.getSummary());
                 params.add(reportPanel.getComment());
                 try {
-                    if (openPasswd) {
-                        String passwd = reportPanel.getPasswd();
-                        if ((passwd.length() != 0) && (!reportPanel.asAGuest())){
-                            passwd = PasswdEncryption.encrypt(passwd);
-                        }
+                    String passwd = reportPanel.getPasswd();
+                    if ((openPasswd) && (passwd.length() != 0) && (!reportPanel.asAGuest())){
+                        passwd = PasswdEncryption.encrypt(passwd);
                         params.add(passwd);
                     } else {
                         params.add("*********");// NOI18N
@@ -2009,6 +2072,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
         }
+
+        protected SlownessData getSlownessData() {
+            return slownData;
+        }
     } // end SubmitInteractive
 
     private static final class SubmitAutomatic extends Submit {
@@ -2030,9 +2097,8 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void closeDialog() {
         }
 
-        protected boolean viewData() {
+        protected void viewData() {
             assert false;
-            return false;
         }
         protected synchronized void assignInternalURL(URL u) {
             urlComputed = true;
@@ -2067,8 +2133,11 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         protected void alterMessage(DialogDescriptor dd) {
         }
-    } // end SubmitAutomatic
 
+        protected SlownessData getSlownessData() {
+            return null;
+        }
+    } // end SubmitAutomatic
     private static final class PrefChangeListener implements PreferenceChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {

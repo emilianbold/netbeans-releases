@@ -41,12 +41,16 @@
 
 package org.netbeans.api.project;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -209,10 +213,62 @@ public class ProjectUtilsTest extends NbTestCase {
         
         public void removeChangeListener(ChangeListener l) {}
         
-        public String toString() {
+        public @Override String toString() {
             return name;
         }
 
+    }
+
+    public void testGetCacheDirectory() throws Exception {
+        final FileObject pdir = FileUtil.createMemoryFileSystem().getRoot().createFolder("foo");
+        final ProjectInformation info = new ProjectInformation() {
+            public String getName() {
+                return "/foo/project";
+            }
+            public String getDisplayName() {
+                return getName();
+            }
+            public Icon getIcon() {
+                return null;
+            }
+            public Project getProject() {
+                return null;
+            }
+            public void addPropertyChangeListener(PropertyChangeListener listener) {}
+            public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        };
+        Project p = new Project() {
+            public FileObject getProjectDirectory() {
+                return pdir;
+            }
+            public Lookup getLookup() {
+                return Lookups.fixed(info);
+            }
+        };
+        FileObject d = ProjectUtils.getCacheDirectory(p, Object.class);
+        assertEquals(FileUtil.getConfigRoot().getFileSystem(), d.getFileSystem());
+        assertEquals("Projects/extra/_foo_project-00018cc6/java-lang", d.getPath());
+        d = ProjectUtils.getCacheDirectory(p, Object.class);
+        assertEquals("Projects/extra/_foo_project-00018cc6/java-lang", d.getPath());
+        final FileObject cache = FileUtil.createMemoryFileSystem().getRoot();
+        p = new Project() {
+            public FileObject getProjectDirectory() {
+                return pdir;
+            }
+            public Lookup getLookup() {
+                return Lookups.fixed(info, new CacheDirectoryProvider() {
+                    public FileObject getCacheDirectory() throws IOException {
+                        return cache;
+                    }
+                });
+            }
+        };
+        d = ProjectUtils.getCacheDirectory(p, Object.class);
+        assertEquals("java-lang", d.getNameExt());
+        assertEquals(cache, d.getParent());
+        d = ProjectUtils.getCacheDirectory(p, Object.class);
+        assertEquals("java-lang", d.getNameExt());
+        assertEquals(cache, d.getParent());
     }
     
 }

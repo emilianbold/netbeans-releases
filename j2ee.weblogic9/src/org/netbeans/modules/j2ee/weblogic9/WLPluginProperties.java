@@ -67,15 +67,12 @@ public class WLPluginProperties {
     
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
     
-    private static final boolean verboseRegistration =
-            System.getProperty("netbeans.weblogic.registration") != null;
-    
     private static final String CONFIG_XML = "config/config.xml";
     
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
     public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
-    public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
+    //public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
     public static final String HOST_ATTR = "host";                     // NOI18N
     public static final String PORT_ATTR = "port";                     // NOI18N
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N

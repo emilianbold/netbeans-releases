@@ -65,7 +65,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -105,6 +105,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
@@ -136,12 +137,12 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Capabilities;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -151,6 +152,8 @@ import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImp
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -170,6 +173,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Represents one plain Web project.
@@ -351,7 +355,7 @@ public final class WebProject implements Project, AntProjectListener {
         updateProject.setUpdateHelper(updateHelper);
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
-        apiWebModule = WebModuleFactory.createWebModule (webModule);
+        apiWebModule = WebModuleFactory.createWebModule(new WebModuleImpl2(webModule));
         webEjbJarProvider = new EjbJarProvider(webModule, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarProvider);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
@@ -479,7 +483,7 @@ public final class WebProject implements Project, AntProjectListener {
         WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
-        List base = new ArrayList(Arrays.asList(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
@@ -488,6 +492,9 @@ public final class WebProject implements Project, AntProjectListener {
             new ProjectWebModuleProvider (),
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
+            // FIXME this is just fallback for code searching for the old SPI in lookup
+            // remove in next release
+            new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
             new WebActionProvider( this, this.updateHelper, this.eval ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
@@ -530,15 +537,16 @@ public final class WebProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
-        }));
+        });
 
-        Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
-        if (profile == Profile.JAVA_EE_6_FULL){
-            base.add(EjbJarSupport.createEjbJarProvider(this, apiEjbJar));
-            base.add(EjbJarSupport.createEjbJarsInProject(apiEjbJar));
-        }
+        Lookup ee6 = Lookups.fixed(new Object[]{
+            EjbJarSupport.createEjbJarProvider(this, apiEjbJar),
+            EjbJarSupport.createEjbJarsInProject(apiEjbJar)
+        });
 
-        lookup = Lookups.fixed(base.toArray());
+        WebProjectLookup wpl = new WebProjectLookup(this, base, ee6);
+        eval.addPropertyChangeListener(wpl);
+        lookup = wpl;
         return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     
@@ -1188,28 +1196,17 @@ public final class WebProject implements Project, AntProjectListener {
         "simple-files"          // NOI18N
     };
 
-    private static final String[] JAVAEE6_TYPES = new String[] {
-        "java-classes",         // NOI18N
-        "java-main-class",      // NOI18N
-        "java-forms",           // NOI18N
-        "java-beans",           // NOI18N
-        "persistence",          // NOI18N
-        "oasis-XML-catalogs",   // NOI18N
-        "XML",                  // NOI18N
-        "ant-script",           // NOI18N
-        "ant-task",             // NOI18N
-        "servlet-types",        // NOI18N
-        "web-types",            // NOI18N
-        "web-types-server",     // NOI18N
-        "web-services",         // NOI18N
-        "web-service-clients",  // NOI18N
-        "wsdl",                 // NOI18N
-        "junit",                // NOI18N
-        "simple-files",         // NOI18N
-        
+    private static final String[] TYPES_EJB = new String[] {
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
-        "ejb-types_3_0"         // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
+    };
+
+    private static final String[] TYPES_EJB_LITE = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1"         // NOI18N
     };
 
     private static final String[] TYPES_ARCHIVE = new String[] { 
@@ -1242,30 +1239,39 @@ public final class WebProject implements Project, AntProjectListener {
         "Templates/WebServices/WebServiceClient",   // NOI18N  
         "Templates/WebServices/RestServicesFromEntities", // NOI18N
         "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
-        "Templates/Other/Folder",                   // NOI18N
+        "Templates/Other/Folder"                   // NOI18N
+    };
+
+    private static final String[] PRIVILEGED_NAMES_EE6_FULL = new String[] {
+        "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/Message"  // NOI18N
+    };
+
+    private static final String[] PRIVILEGED_NAMES_EE6_WEB = new String[] {
+        "Templates/J2EE/Session"  // NOI18N
     };
 
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
-        "Templates/JSP_Servlet/webXml",     // NOI18N  --- 
+        "Templates/JSP_Servlet/webXml"     // NOI18N  --- 
     };
     
     // guarded by this, #115809
-    private String[] privilegedTemplatesEE5 = null;
-    private String[] privilegedTemplates = null;
+    private List<String> privilegedTemplatesEE5 = null;
+    private List<String> privilegedTemplates = null;
 
     // Path where instances of privileged templates are registered
     private static final String WEBTEMPLATE_PATH = "j2ee/webtier/templates"; //NOI18N
     
-    synchronized String[] getPrivilegedTemplates() {
+    synchronized List<String> getPrivilegedTemplates() {
         ensureTemplatesInitialized();
         return privilegedTemplates;
     }
 
-    synchronized String[] getPrivilegedTemplatesEE5() {
+    synchronized List<String> getPrivilegedTemplatesEE5() {
         ensureTemplatesInitialized();
         return privilegedTemplatesEE5;
     }
-    
+
     public synchronized void resetTemplates() {
         privilegedTemplates = null;
         privilegedTemplatesEE5 = null;
@@ -1274,77 +1280,75 @@ public final class WebProject implements Project, AntProjectListener {
     private void ensureTemplatesInitialized() {
         assert Thread.holdsLock(this);
         if (privilegedTemplates != null
-                && privilegedTemplatesEE5 != null) {
+                && privilegedTemplatesEE5 != null
+                ) {
             return;
         }
         
-        ArrayList<String>templatesEE5 = new ArrayList<String>(PRIVILEGED_NAMES_EE5.length + 1);
-        ArrayList<String>templates = new ArrayList<String>(PRIVILEGED_NAMES.length + 1);
+        privilegedTemplatesEE5 = new ArrayList<String>();
+        privilegedTemplates = new ArrayList<String>();
 
-        // how many templates are added
-        int countTemplate = 0;
-        
         for (WebPrivilegedTemplates webPrivililegedTemplates : Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class)) {
             String[] addedTemplates = webPrivililegedTemplates.getPrivilegedTemplates(apiWebModule);
             if (addedTemplates != null && addedTemplates.length > 0){
-                countTemplate = countTemplate + addedTemplates.length;
                 List<String> addedList = Arrays.asList(addedTemplates);
-                templatesEE5.addAll(addedList);
-                templates.addAll(addedList);
+                privilegedTemplatesEE5.addAll(addedList);
+                privilegedTemplates.addAll(addedList);
             }
         }
 
-        if(countTemplate > 0){
-            templatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
-            privilegedTemplatesEE5 = templatesEE5.toArray(new String[templatesEE5.size()]);
-            templates.addAll(Arrays.asList(PRIVILEGED_NAMES));
-            privilegedTemplates = templates.toArray(new String[templates.size()]);
-        }
-        else {
-            privilegedTemplatesEE5 = PRIVILEGED_NAMES_EE5;
-            privilegedTemplates = PRIVILEGED_NAMES;
-        }
+        privilegedTemplatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+        privilegedTemplates.addAll(Arrays.asList(PRIVILEGED_NAMES));
     }
     
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         private WebProject project;
+        private J2eeProjectCapabilities projectCap;
         
         RecommendedTemplatesImpl (WebProject project) {
             this.project = project;
         }
         
-        private boolean isEjb30Supported = false;
-        private boolean isEJB31Supported = false;
         private boolean checked = false;
         private boolean isArchive = false;
+        private boolean isEE5 = false;
 
         public String[] getRecommendedTypes() {
-            String[] retVal = null;
             checkEnvironment();
             if (isArchive) {
-                retVal = TYPES_ARCHIVE;
-            } else if (isEJB31Supported){
-                retVal = JAVAEE6_TYPES;
+                return TYPES_ARCHIVE;
+            } else if (projectCap.isEjb31Supported()){
+                List<String> list = new ArrayList(Arrays.asList(TYPES));
+                list.addAll(Arrays.asList(TYPES_EJB));
+                return list.toArray(new String[list.size()]);
+            }else if(projectCap.isEjb31LiteSupported()){
+                List<String> list = new ArrayList(Arrays.asList(TYPES));
+                list.addAll(Arrays.asList(TYPES_EJB_LITE));
+                return list.toArray(new String[list.size()]);
             }else{
-                retVal = TYPES;
+                return TYPES;
             }
-           
-            return retVal;
         }
         
         public String[] getPrivilegedTemplates() {
-            String[] retVal = null;
             checkEnvironment();
             if (isArchive) {
-                retVal = PRIVILEGED_NAMES_ARCHIVE;
+                return PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                if (isEjb30Supported) {
-                    retVal = getPrivilegedTemplatesEE5();
+                List<String> list;
+                if (projectCap.isEjb31Supported()) {
+                    list = getPrivilegedTemplatesEE5();
+                    list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
+                } else if (projectCap.isEjb31LiteSupported()){
+                    list = getPrivilegedTemplatesEE5();
+                    list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
+                } else if (isEE5){
+                    list = getPrivilegedTemplatesEE5();
                 } else {
-                    retVal = WebProject.this.getPrivilegedTemplates();
+                    list = WebProject.this.getPrivilegedTemplates();
                 }
+                return list.toArray(new String[list.size()]);
             }
-            return retVal;
         }
         
         private void checkEnvironment() {
@@ -1354,9 +1358,9 @@ public final class WebProject implements Project, AntProjectListener {
                 if ("false".equals(srcType)) {
                     isArchive = true;
                 }
-                Capabilities projectCap = Capabilities.forProject(project);
-                isEjb30Supported = projectCap.isEJB30Supported();
-                isEJB31Supported = projectCap.isEJB31Supported();
+                projectCap = J2eeProjectCapabilities.forProject(project);
+                Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
+                isEE5 = profile == Profile.JAVA_EE_5;
                 checked = true;
             }
         }
@@ -1768,7 +1772,7 @@ public final class WebProject implements Project, AntProjectListener {
     }
 
     public boolean isJavaEE5(Project project) {
-        return J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
+        return Profile.JAVA_EE_5.equals(getAPIWebModule().getJ2eeProfile());
     }
 
     private static final class WebPropertyEvaluatorImpl implements WebPropertyEvaluator {
@@ -1919,6 +1923,112 @@ public final class WebProject implements Project, AntProjectListener {
 
                 cs.fireChange();
 
+            }
+        }
+    }
+
+    // FIXME this is just fallback for code searching for the old SPI in lookup
+    // remove in next release
+    @SuppressWarnings("deprecation")
+    private class WebModuleImpl implements WebModuleImplementation {
+
+        private final WebModule apiModule;
+
+        public WebModuleImpl(WebModule apiModule) {
+            this.apiModule = apiModule;
+        }
+
+        public FileObject getWebInf() {
+            return apiModule.getWebInf();
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            return apiModule.getMetadataModel();
+        }
+
+        public FileObject[] getJavaSources() {
+            return apiModule.getJavaSources();
+        }
+
+        public String getJ2eePlatformVersion() {
+            return apiModule.getJ2eePlatformVersion();
+        }
+
+        public FileObject getDocumentBase() {
+            return apiModule.getDocumentBase();
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return apiModule.getDeploymentDescriptor();
+        }
+
+        public String getContextPath() {
+            return apiModule.getContextPath();
+        }
+    }
+
+    private class WebModuleImpl2 implements WebModuleImplementation2 {
+
+        private final ProjectWebModule webModule;
+
+        public WebModuleImpl2(ProjectWebModule webModule) {
+            this.webModule = webModule;
+        }
+
+        public String getContextPath() {
+            return webModule.getContextPath();
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return webModule.getDeploymentDescriptor();
+        }
+
+        public FileObject getDocumentBase() {
+            return webModule.getDocumentBase();
+        }
+
+        public Profile getJ2eeProfile() {
+            return webModule.getJ2eeProfile();
+        }
+
+        public FileObject[] getJavaSources() {
+            return webModule.getJavaSources();
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            return webModule.getMetadataModel();
+        }
+
+        public FileObject getWebInf() {
+            return webModule.getWebInf();
+        }
+
+    }
+
+    private class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
+        Lookup base, ee6;
+        WebProject project;
+
+        public WebProjectLookup(WebProject project, Lookup base, Lookup ee6) {
+            super(base);
+            this.project = project;
+            this.base = base;
+            this.ee6 = ee6;
+            updateLookup();
+        }
+
+        private void updateLookup(){
+            Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
+            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
+                setLookups(base, ee6);
+            }else{
+                setLookups(base);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(WebProjectProperties.J2EE_PLATFORM)){
+                updateLookup();
             }
         }
     }

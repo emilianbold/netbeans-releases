@@ -19,5 +19,10 @@ public class HgException extends Exception {
     public HgException(String msg) {
         super(msg);
     }
-    
+
+    public static class HgTooLongArgListException extends HgException {
+        public HgTooLongArgListException (String message) {
+            super(message);
+        }
+    }
 }

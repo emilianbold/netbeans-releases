@@ -56,7 +56,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
 import org.netbeans.jellytools.modules.debugger.SessionsOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
-import org.netbeans.jellytools.modules.debugger.actions.DebugAction;
+import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.actions.RefreshAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
@@ -409,7 +409,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         new OpenAction().performAPI(beanNode); // NOI18N
         EditorOperator eoBean = new EditorOperator("MyBean.java"); // NOI18N
         final int lineJavaSource = Utils.setBreakpoint(eoBean, "System.out.println"); // NOI18N
-        new DebugAction().perform(beanNode);
+        new DebugJavaFileAction().perform(beanNode);
         stt.waitText("MyBean.java:"+lineJavaSource); //NOI18N
         
         Node pageNode = new Node(new WebPagesNode(SAMPLE_WEB_PROJECT_NAME), "incl|simpleInclude.jsp"); //NOI18N
@@ -417,7 +417,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         EditorOperator eoPage = new EditorOperator("simpleInclude.jsp"); // NOI18N
         final int lineJSP = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
         // "Debug File"
-        new Action(null, new DebugAction().getPopupPath()).perform(pageNode);
+        new Action(null, new DebugJavaFileAction().getPopupPath()).perform(pageNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
         stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N

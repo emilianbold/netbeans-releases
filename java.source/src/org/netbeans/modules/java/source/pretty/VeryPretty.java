@@ -1791,55 +1791,7 @@ public final class VeryPretty extends JCTree.Visitor {
         if (!commentSet.getPrecedingComments().isEmpty()) {
             for (Comment c : commentSet.getPrecedingComments())
                 printComment(c, true, printWhitespace);
-            return;
         }
-        LinkedList<Comment> comments = new LinkedList<Comment>();
-        if (cInfo != null) {
-            int startPos = TreeInfo.getStartPos(tree);
-            int endPos = TreeInfo.getEndPos(tree, origUnit.endPositions);
-            if (startPos >= 0 && endPos >= 0) {
-                if (pendingComments != null) {
-                    comments.addAll(pendingComments);
-                    pendingComments = null;
-                }
-                TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                if (tokens.move(startPos) != 0) return;
-                if (moveToSrcRelevant(tokens, Direction.BACKWARD) == null) return; //we can't locate relevant token we just skip processing.
-                int indent = NOPOS;
-                while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
-                    if (tokens.index() > lastReadCommentIdx) {
-                        switch (tokens.token().id()) {
-                            case LINE_COMMENT:
-                                comments.add(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = 0;
-                                break;
-                            case BLOCK_COMMENT:
-                                comments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = NOPOS;
-                                break;
-                            case JAVADOC_COMMENT:
-                                comments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = NOPOS;
-                                break;
-                            case WHITESPACE:
-                                String tokenText = tokens.token().toString();
-                                comments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
-                                int newLinePos = tokenText.lastIndexOf('\n');
-                                if (newLinePos < 0) {
-                                    if (indent >= 0)
-                                        indent += tokenText.length();
-                                } else {
-                                    indent = tokenText.length() - newLinePos - 1;
-                                }
-                                break;
-                        }
-                        lastReadCommentIdx = tokens.index();
-                    }
-                }
-            }
-        }
-        for (Comment c : comments)
-            printComment(c, true, printWhitespace);
     }
 
     private void printTrailingComments(JCTree tree, boolean printWhitespace) {
@@ -1847,82 +1799,11 @@ public final class VeryPretty extends JCTree.Visitor {
         if (!commentSet.getTrailingComments().isEmpty()) {
             for (Comment c : commentSet.getTrailingComments())
                 printComment(c, false, printWhitespace);
-            return;
         }
-        LinkedList<Comment> comments = new LinkedList<Comment>();
-        if (cInfo != null) {
-            int pos = TreeInfo.getEndPos(tree, origUnit.endPositions);
-            if (pos >= 0) {
-                if (pendingComments == null)
-                    pendingComments = new LinkedList<Comment>();
-                TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                tokens.move(pos);
-                boolean afterNewline = false;
-                boolean afterEmptyline = false;
-                int indent = NOPOS;
-                outer:
-                while (tokens.moveNext() && (nonRelevant.contains(tokens.token().id()) || isSeparator(tokens.token().id()))) {
-                    if (tokens.index() > lastReadCommentIdx) {
-                        switch (tokens.token().id()) {
-                            case LINE_COMMENT:
-                                pendingComments.add(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                if (!afterNewline) {
-                                    comments.addAll(pendingComments);
-                                    pendingComments = new LinkedList<Comment>();
-                                    afterNewline = true;
-                                }
-                                indent = 0;
-                                break;
-                            case BLOCK_COMMENT:
-                                pendingComments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = NOPOS;
-                                break;
-                            case JAVADOC_COMMENT:
-                                pendingComments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = NOPOS;
-                                break;
-                            case WHITESPACE:
-                                String tokenText = tokens.token().toString();
-                                pendingComments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
-                                int newLinePos = tokenText.lastIndexOf('\n');
-                                if (newLinePos >= 0) {
-                                    if (indent == 0) {
-                                        if (!afterEmptyline) {
-                                            comments.addAll(pendingComments);
-                                            pendingComments = new LinkedList<Comment>();
-                                        }
-                                        afterEmptyline = true;
-                                    } else if (!afterNewline) {
-                                        comments.addAll(pendingComments);
-                                        pendingComments = new LinkedList<Comment>();
-                                    }
-                                    afterNewline = true;
-                                }
-                                if (newLinePos < 0) {
-                                    if (indent >= 0)
-                                        indent += tokenText.length();
-                                } else {
-                                    indent = tokenText.length() - newLinePos - 1;
-                                }
-                                break;
-                            case LBRACE:
-                            case RBRACE:
-                            case SEMICOLON:
-                                comments.addAll(pendingComments);
-                                pendingComments = null;
-                                indent = NOPOS;
-                                break outer;
-                        }
-                        lastReadCommentIdx = tokens.index();
-                    }
-                }
-            }
-        }
-        for (Comment c : comments)
-            printComment(c, false, printWhitespace);
     }
 
     private void printEmptyBlockComments(JCTree tree, boolean printWhitespace) {
+        //TODO: [RKo] Implement comments printing by new API
         LinkedList<Comment> comments = new LinkedList<Comment>();
         if (cInfo != null) {
             int pos = TreeInfo.getEndPos(tree, origUnit.endPositions) - 1;
@@ -1986,13 +1867,13 @@ public final class VeryPretty extends JCTree.Visitor {
             }
             return;
         }
-	String body = comment.getText();
-        boolean rawBody = body.length()==0 || body.charAt(0) != '/';
+        String body = comment.getText();
+        boolean rawBody = body.length() == 0 || body.charAt(0) != '/';
         LinkedList<CommentLine> lines = new LinkedList<CommentLine>();
-	int stpos = -1;
-	int limit = body.length();
-	for (int i = 0; i<limit; i++) {
-	    char c = body.charAt(i);
+        int stpos = -1;
+        int limit = body.length();
+        for (int i = 0; i < limit; i++) {
+            char c = body.charAt(i);
             if (c == '\n') {
                 lines.add(new CommentLine(stpos, stpos < 0 ? 0 : i - stpos, body));
                 stpos = -1;
@@ -2001,9 +1882,9 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
         if (stpos >= 0 && stpos < limit)
-	    lines.add(new CommentLine(stpos, limit - stpos, body));
+            lines.add(new CommentLine(stpos, limit - stpos, body));
         if (comment.indent() == 0) {
-            if (!preceding &&  out.lastBlankLines == 0)
+            if (!preceding && out.lastBlankLines == 0)
                 newline();
             out.toLineStart();
         } else if (comment.indent() > 0 && !preceding) {
@@ -2014,19 +1895,19 @@ public final class VeryPretty extends JCTree.Visitor {
             needSpace();
         }
         if (rawBody) {
-            switch(comment.style()) {
-            case LINE:
-                print("// ");
-                break;
-            case BLOCK:
-                print("/* ");
-                break;
-            case JAVADOC:
-                toLeftMargin();
-                print("/**");
-                newline();
-                toLeftMargin();
-                print(" * ");
+            switch (comment.style()) {
+                case LINE:
+                    print("// ");
+                    break;
+                case BLOCK:
+                    print("/* ");
+                    break;
+                case JAVADOC:
+                    toLeftMargin();
+                    print("/**");
+                    newline();
+                    toLeftMargin();
+                    print(" * ");
             }
         }
         if (!lines.isEmpty())
@@ -2042,15 +1923,15 @@ public final class VeryPretty extends JCTree.Visitor {
             line.print(out.col);
         }
         if (rawBody) {
-            switch(comment.style()) {
-            case BLOCK:
-                print(" */");
-                break;
-            case JAVADOC:
-                newline();
-                toLeftMargin();
-                print(" */");
-                break;
+            switch (comment.style()) {
+                case BLOCK:
+                    print(" */");
+                    break;
+                case JAVADOC:
+                    newline();
+                    toLeftMargin();
+                    print(" */");
+                    break;
             }
         }
         if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK || comment.style() != Comment.Style.JAVADOC) {

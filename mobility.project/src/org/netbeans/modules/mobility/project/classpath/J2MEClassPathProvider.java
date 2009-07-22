@@ -53,7 +53,6 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -66,11 +65,9 @@ public class J2MEClassPathProvider implements ClassPathProvider {
     private FileObject srcDir;
     
     protected final AntProjectHelper helper;
-    private final RequestProcessor requestProcessor;
 
-    public J2MEClassPathProvider(AntProjectHelper helper, RequestProcessor requestProcessor) {
-        this.helper = helper;
-        this.requestProcessor = requestProcessor;
+    public J2MEClassPathProvider(AntProjectHelper helpers) {
+        this.helper = helpers;
     }
     
     public ClassPath findClassPath(final FileObject file, final String type) {
@@ -97,7 +94,7 @@ public class J2MEClassPathProvider implements ClassPathProvider {
         ClassPath cp = null;
         if (ctcp == null || (cp = ctcp.get()) == null) {
             cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, requestProcessor) {
+                    new ProjectClassPathImplementation(helper) {
                 protected String evaluatePath() {
                     String cp = J2MEProjectUtils.evaluateProperty(helper, "libs.classpath"); //NOI18N
                     if (cp != null) cp = helper.resolvePath(cp);
@@ -114,7 +111,7 @@ public class J2MEClassPathProvider implements ClassPathProvider {
         ClassPath cp = null;
         if (rtcp == null || (cp = rtcp.get())== null) {
             cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, requestProcessor) {
+                    new ProjectClassPathImplementation(helper) {
                 protected String evaluatePath() {
                     String cp = helper.getStandardPropertyEvaluator().getProperty("build.classes.dir"); //NOI18N
                     if (cp != null) cp = helper.resolvePath(cp);
@@ -130,7 +127,7 @@ public class J2MEClassPathProvider implements ClassPathProvider {
         ClassPath cp = null;
         if (sp == null || (cp = sp.get()) == null) {
             cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, requestProcessor) {
+                    new ProjectClassPathImplementation(helper) {
                 protected String evaluatePath() {
                     String cp = helper.getStandardPropertyEvaluator().getProperty("src.dir"); //NOI18N
                     if (cp != null) cp = helper.resolvePath(cp);
@@ -154,7 +151,7 @@ public class J2MEClassPathProvider implements ClassPathProvider {
     private class ProjectBootClassPathImplementation extends ProjectClassPathImplementation implements ChangeListener {
         
         public ProjectBootClassPathImplementation() {
-            super(helper, requestProcessor);
+            super(helper);
             PropertyProvider provider = PropertyUtils.globalPropertyProvider();
             provider.addChangeListener(WeakListeners.change(this, provider));
         }

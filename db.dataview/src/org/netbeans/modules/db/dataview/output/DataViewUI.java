@@ -65,6 +65,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
@@ -140,6 +141,8 @@ class DataViewUI extends JXPanel {
     };
 
     DataViewUI(DataView dataView, boolean nbOutputComponent) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         this.dataView = dataView;
 
         //do not show tab view if there is only one tab
@@ -184,6 +187,7 @@ class DataViewUI extends JXPanel {
     }
 
     void setTotalCount(int count) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         if (count < 0) {
             int pageSize = dataView.getDataViewPageContext().getPageSize();
             int totalRows = dataView.getDataViewPageContext().getCurrentRows().size();
@@ -234,6 +238,8 @@ class DataViewUI extends JXPanel {
     }
 
     void disableButtons() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         truncateButton.setEnabled(false);
         refreshButton.setEnabled(false);
         refreshField.setEnabled(false);
@@ -268,6 +274,8 @@ class DataViewUI extends JXPanel {
     }
 
     void resetToolbar(boolean wasError) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
         matchBoxField.setEditable(true);

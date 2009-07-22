@@ -54,4 +54,9 @@ public class PythonInstantRenameTest extends PythonTestBase {
         String caretLine = "x^y.s1";
         checkRenameSections("testfiles/typevars.py", caretLine);
     }
+
+    public void testRename9() throws Exception {
+        String caretLine = "print self.not^okay";
+        checkRenameSections("testfiles/attributes.py", caretLine);
+    }
 }

@@ -810,31 +810,31 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             });
         } else if (component instanceof RADVisualComponent) {
-            propList.add(new PropertySupport.ReadOnly(
+            propList.add(new PropertySupport.ReadWrite<Dimension>(
                 FormDesigner.PROP_DESIGNER_SIZE,
                 Dimension.class,
                 bundle.getString("MSG_DesignerSize"), // NOI18N
                 bundle.getString("HINT_DesignerSize")) // NOI18N
             {
                 @Override
-                public void setValue(Object value) {
-                    if (!(value instanceof Dimension))
-                        throw new IllegalArgumentException();
+                public void setValue(Dimension value) {
                     if (!getDefaultValue().equals(value))
                         component.setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
                     else if (component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE) != null) {
                         component.getAuxValues().remove(FormDesigner.PROP_DESIGNER_SIZE);
                     }
+                    formModel.fireSyntheticPropertyChanged(component,
+                        FormDesigner.PROP_DESIGNER_SIZE, null, null);
                 }
 
-                public Object getValue() {
-                    Object value = component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+                public Dimension getValue() {
+                    Dimension value = (Dimension)component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
                     if (value == null)
                         value = getDefaultValue();
                     return value;
                 }
 
-                private Object getDefaultValue() {
+                private Dimension getDefaultValue() {
                     return new Dimension(400, 300);
                 }
             });
@@ -970,13 +970,39 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    private FoldHierarchyListener listener;
+    private boolean expandFold;
     private void expandInitComponentsInAWT(int initComponentsOffset) {
         javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
         if (editorPane != null) {
-            FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
+            final String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
+            final FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
             Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
             if (fold != null) {
-                foldHierarchy.expand(fold);
+                if (foldDescription.equals(fold.getDescription())) {
+                    // The fold exists and we found it => expand it
+                    FoldUtilities.expand(foldHierarchy, fold.getType());
+                    expandFold = false;
+                } else {
+                    // The fold doesn't exist yet => expand it once it is created
+                    expandFold = true;
+                }
+                if (listener == null) {
+                    listener = new FoldHierarchyListener() {
+                        public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+                            if (expandFold) {
+                                for (int i=0; i<evt.getAddedFoldCount(); i++) {
+                                    Fold candidate = evt.getAddedFold(i);
+                                    if (foldDescription.equals(candidate.getDescription())) {
+                                        FoldUtilities.expand(foldHierarchy, candidate.getType());
+                                        expandFold = false;
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    foldHierarchy.addFoldHierarchyListener(listener);
+                }
             }
         }
     }
@@ -1731,7 +1757,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            FormProperty[] props = comp.getAccessibilityProperties();
+            FormProperty[] props = comp.getKnownAccessibilityProperties();
 
             for (int i=0; i < props.length; i++) {
                 boolean gen = generateProperty(props[i], comp, null, initCodeWriter, codeData);

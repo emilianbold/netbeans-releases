@@ -343,6 +343,8 @@ public final class CompilationInfoImpl {
             JavaSource.Phase currentPhase = getPhase();
             if (currentPhase.compareTo(phase)<0) {
                 setPhase(phase);
+                if (currentPhase == JavaSource.Phase.MODIFIED)
+                    getJavacTask().parse(); // Ensure proper javac initialization
                 currentPhase = phase;
             }
             return currentPhase;

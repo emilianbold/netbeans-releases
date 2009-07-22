@@ -16,7 +16,6 @@ Subversion Repository
 https://testkenai.com/svn/golden-project-1~subversion
 subversion
 http://testkenai.com/projects/golden-project-1/sources/subversion/show
-===
 commits
 LISTS
 Commits Mailing List
@@ -34,13 +33,7 @@ ISSUES
 Bugzilla
 http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
 bugzilla
-http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
-golden-project-1
-CHAT
-golden-project-1 chat room
-null
-instant_messenger
-http://testkenai.com/instant_messenger/chat_details/golden-project-1
+http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1&order=Importance&limit=25
 source-code-repository
 SOURCE
 Source Code Repository
@@ -59,3 +52,9 @@ Downloads
 http://testkenai.com/projects/golden-project-1/downloads
 downloads
 http://testkenai.com/projects/golden-project-1/downloads
+golden-project-1
+CHAT
+golden-project-1 chat room
+null
+instant_messenger
+http://testkenai.com/projects/golden-project-1/instant_messenger/golden-project-1

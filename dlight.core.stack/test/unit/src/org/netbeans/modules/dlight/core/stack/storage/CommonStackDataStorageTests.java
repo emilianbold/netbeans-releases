@@ -43,9 +43,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import static org.junit.Assert.*;
@@ -59,12 +60,19 @@ public abstract class CommonStackDataStorageTests {
 
     protected abstract StackDataStorage createStorage();
 
+    protected abstract boolean shutdownStorage(StackDataStorage db);
+
     protected abstract void flush(StackDataStorage db);
 
     @Before
     public void setUp() {
         db = createStorage();
         assertNotNull(db);
+    }
+
+    @After
+    public void tearDown() {
+        assertTrue(shutdownStorage(db));
     }
 
     @Test
@@ -75,7 +83,7 @@ public abstract class CommonStackDataStorageTests {
         db.putStack(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 10l);
         flush(db);
 
-        List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(4, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
@@ -94,11 +102,11 @@ public abstract class CommonStackDataStorageTests {
         assertTimeEquals(10, hotSpots.get(3).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
         assertTimeEquals(10, hotSpots.get(3).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
-        List<FunctionCall> callees = db.getCallees(new FunctionCall[] {hotSpots.get(0)}, true);
+        List<FunctionCallWithMetric> callees = db.getCallees(new FunctionCallWithMetric[] {hotSpots.get(0)}, true);
         assertEquals(1, callees.size());
         assertEquals("func2", callees.get(0).getFunction().getName());
 
-        List<FunctionCall> callers = db.getCallers(new FunctionCall[] {hotSpots.get(3)}, true);
+        List<FunctionCallWithMetric> callers = db.getCallers(new FunctionCallWithMetric[] {hotSpots.get(3)}, true);
         assertEquals(1, callers.size());
         assertEquals("func3", callers.get(0).getFunction().getName());
     }
@@ -111,7 +119,7 @@ public abstract class CommonStackDataStorageTests {
         db.putStack(Arrays.<CharSequence>asList("func3", "func2", "func1"), 10l);
         flush(db);
 
-        List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(3, hotSpots.size());
 
         assertEquals("func1", hotSpots.get(0).getFunction().getName());
@@ -126,7 +134,7 @@ public abstract class CommonStackDataStorageTests {
         assertTimeEquals(20, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
         assertTimeEquals(10, hotSpots.get(2).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
-        List<FunctionCall> callees = db.getCallees(new FunctionCall[] {hotSpots.get(0)}, true);
+        List<FunctionCallWithMetric> callees = db.getCallees(new FunctionCallWithMetric[] {hotSpots.get(0)}, true);
         assertEquals(2, callees.size());
         Collections.sort(callees, new FunctionCallComparator());
 
@@ -138,7 +146,7 @@ public abstract class CommonStackDataStorageTests {
         assertTimeEquals(10, callees.get(1).getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
         assertTimeEquals(0, callees.get(1).getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
 
-        List<FunctionCall> callers = db.getCallers(new FunctionCall[] {hotSpots.get(0)}, true);
+        List<FunctionCallWithMetric> callers = db.getCallers(new FunctionCallWithMetric[] {hotSpots.get(0)}, true);
         assertEquals(2, callers.size());
         Collections.sort(callers, new FunctionCallComparator());
 
@@ -160,28 +168,28 @@ public abstract class CommonStackDataStorageTests {
         db.putStack(Arrays.<CharSequence>asList("x", "b", "c"), 10l);
         flush(db);
 
-        List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(4, hotSpots.size());
 
-        FunctionCall c = find(hotSpots, "c");
-        List<FunctionCall> cCallers = db.getCallers(new FunctionCall[] {c}, true);
+        FunctionCallWithMetric c = find(hotSpots, "c");
+        List<FunctionCallWithMetric> cCallers = db.getCallers(new FunctionCallWithMetric[] {c}, true);
         assertEquals(1, cCallers.size());
 
-        FunctionCall b = cCallers.get(0);
+        FunctionCallWithMetric b = cCallers.get(0);
         assertEquals("b", b.getFunction().getName());
         assertTimeEquals(50, b.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
         assertTimeEquals(0, b.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
-        List<FunctionCall> bCallers = db.getCallers(new FunctionCall[] {b, c}, true);
+        List<FunctionCallWithMetric> bCallers = db.getCallers(new FunctionCallWithMetric[] {b, c}, true);
         assertEquals(2, bCallers.size());
 
-        FunctionCall a = find(bCallers, "a");
+        FunctionCallWithMetric a = find(bCallers, "a");
         assertNotNull(a);
         assertTimeEquals(40, a.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
         assertTimeEquals(0, a.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
-        List<FunctionCall> aCallers = db.getCallers(new FunctionCall[] {a, b, c}, true);
+        List<FunctionCallWithMetric> aCallers = db.getCallers(new FunctionCallWithMetric[] {a, b, c}, true);
         assertEquals(1, aCallers.size());
 
-        FunctionCall x = aCallers.get(0);
+        FunctionCallWithMetric x = aCallers.get(0);
         assertTimeEquals(50, x.getMetricValue(FunctionMetric.CpuTimeInclusiveMetric));
         assertTimeEquals(0, x.getMetricValue(FunctionMetric.CpuTimeExclusiveMetric));
     }
@@ -196,22 +204,22 @@ public abstract class CommonStackDataStorageTests {
         db.putStack(Arrays.<CharSequence>asList("c", "d", "f"), 10l);
         flush(db);
 
-        List<FunctionCall> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
+        List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, 10);
         assertEquals(6, hotSpots.size());
 
-        FunctionCall b = find(hotSpots, "b");
+        FunctionCallWithMetric b = find(hotSpots, "b");
         assertNotNull(b);
-        List<FunctionCall> bCallees = db.getCallees(new FunctionCall[] {b}, true);
+        List<FunctionCallWithMetric> bCallees = db.getCallees(new FunctionCallWithMetric[] {b}, true);
         assertEquals(1, bCallees.size());
         assertEquals("c", bCallees.get(0).getFunction().getName());
 
-        FunctionCall c = bCallees.get(0);
-        List<FunctionCall> cCallees = db.getCallees(new FunctionCall[] {b, c}, true);
+        FunctionCallWithMetric c = bCallees.get(0);
+        List<FunctionCallWithMetric> cCallees = db.getCallees(new FunctionCallWithMetric[] {b, c}, true);
         assertEquals(1, cCallees.size());
         assertEquals("d", cCallees.get(0).getFunction().getName());
 
-        FunctionCall d = cCallees.get(0);
-        List<FunctionCall> dCallees = db.getCallees(new FunctionCall[] {b, c, d}, true);
+        FunctionCallWithMetric d = cCallees.get(0);
+        List<FunctionCallWithMetric> dCallees = db.getCallees(new FunctionCallWithMetric[] {b, c, d}, true);
         assertEquals(2, dCallees.size());
         Collections.sort(dCallees, new FunctionCallComparator());
 
@@ -229,8 +237,8 @@ public abstract class CommonStackDataStorageTests {
         assertEquals(nanos, ((Time)obj).getNanos());
     }
 
-    private static FunctionCall find(List<FunctionCall> list, String name) {
-        for (FunctionCall call : list) {
+    private static FunctionCallWithMetric find(List<FunctionCallWithMetric> list, String name) {
+        for (FunctionCallWithMetric call : list) {
             if (call.getFunction().getName().equals(name)) {
                 return call;
             }
@@ -238,8 +246,8 @@ public abstract class CommonStackDataStorageTests {
         return null;
     }
 
-    private static class FunctionCallComparator implements Comparator<FunctionCall> {
-        public int compare(FunctionCall c1, FunctionCall c2) {
+    private static class FunctionCallComparator implements Comparator<FunctionCallWithMetric> {
+        public int compare(FunctionCallWithMetric c1, FunctionCallWithMetric c2) {
             return c1.getFunction().getName().compareTo(c2.getFunction().getName());
         }
     }

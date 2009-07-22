@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
     private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
     private final Map<CharSequence, CsmUID<CsmClassifier>> typedefs;
-    private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
 
     // empty stub
     private static final ClassifierContainer EMPTY = new ClassifierContainer() {
@@ -161,13 +161,13 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
         boolean put = false;
         CharSequence qn = decl.getQualifiedName();
         Map<CharSequence, CsmUID<CsmClassifier>> map;
+        if (isTypedef(decl)) {
+            map = typedefs;
+        } else {
+            map = classifiers;
+        }
         try {
             declarationsLock.writeLock().lock();
-            if (isTypedef(decl)) {
-                map = typedefs;
-            } else {
-                map = classifiers;
-            }
             if (!map.containsKey(qn)) {
                 CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
                 assert uid != null;
@@ -186,14 +186,14 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
     public void removeClassifier(CsmDeclaration decl) {
         Map<CharSequence, CsmUID<CsmClassifier>> map;
+        if (isTypedef(decl)) {
+            map = typedefs;
+        } else {
+            map = classifiers;
+        }
         CsmUID<CsmClassifier> uid;
         try {
             declarationsLock.writeLock().lock();
-            if (isTypedef(decl)) {
-                map = typedefs;
-            } else {
-                map = classifiers;
-            }
             uid = map.remove(decl.getQualifiedName());
         } finally {
             declarationsLock.writeLock().unlock();

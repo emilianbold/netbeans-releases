@@ -191,7 +191,8 @@ public class TaskCache {
                 return new File(url.getPath());
             }
         }
-
+        if (LOG.isLoggable(Level.SEVERE))
+            LOG.log(Level.SEVERE, "Url is not a file: " + url);
         throw new IllegalStateException();
     }
 

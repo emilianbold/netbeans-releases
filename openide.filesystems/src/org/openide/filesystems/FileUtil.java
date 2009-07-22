@@ -239,7 +239,10 @@ public final class FileUtil extends Object {
                 holders.put(listener, f2H);
             }
             if (f2H.containsKey(path)) {
-                throw new IllegalArgumentException("Already listening to " + path); // NOI18N
+                for (File f : f2H.keySet ())
+                    if (f.equals (path))
+                        throw new IllegalArgumentException("Already listening to " + path + " (" + f + ", " + path.hashCode () + ", " + f.hashCode () + ")"); // NOI18N
+                throw new IllegalArgumentException("Already listening to " + path + " (???)"); // NOI18N
             }
             f2H.put(path, new Holder(listener, path));
         }

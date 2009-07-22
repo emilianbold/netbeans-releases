@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -310,11 +309,7 @@ public class ConnectionNode extends BaseNode {
         
         Connection conn = connection.getJDBCConnection();
         if (conn != null) {
-            try {
-                result = conn.isClosed();
-            } catch (SQLException e) {
-                Exceptions.printStackTrace(e);
-            }
+            result = ! DatabaseConnection.isVitalConnection(conn, connection);
         }
         
         return result;
@@ -345,17 +340,8 @@ public class ConnectionNode extends BaseNode {
     }
  
     public String getIconBase() {
-        boolean disconnected = true;
-        
-        Connection c = connection.getConnection();
-        if (c != null) {
-            try {
-                disconnected = c.isClosed();
-            } catch (SQLException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        
+        boolean disconnected = ! DatabaseConnection.isVitalConnection(connection.getConnection(), null);
+
         if (disconnected) {
             return DISCONNECTEDICONBASE;
         }

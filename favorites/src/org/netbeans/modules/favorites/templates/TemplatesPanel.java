@@ -64,6 +64,8 @@ import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -833,7 +835,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         if (JFileChooser.APPROVE_OPTION == result) {
             File f = chooser.getSelectedFile ();
             assert f != null;
-            createTemplateFromFile (f, getTargetFolder (nodes));
+            if (! f.isFile()) {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(TemplatesPanel.class, "MSG_TemplatesPanel_Nonexistent_File", f.toString()));
+                DialogDisplayer.getDefault().notify(msg);
+            } else {
+                createTemplateFromFile (f, getTargetFolder (nodes));
+            }
         }    
     }
     

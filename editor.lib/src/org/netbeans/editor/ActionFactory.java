@@ -65,13 +65,16 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import javax.swing.JFrame;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
@@ -82,7 +85,6 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -1599,6 +1601,26 @@ public class ActionFactory {
             //#54893 putValue ("helpID", FormatAction.class.getName ()); // NOI18N
         }
 
+        private void showWaitCursor (Component target) {
+            Window w = SwingUtilities.getWindowAncestor(target);
+
+            if (w instanceof JFrame) {
+                Component c = ((JFrame) w).getGlassPane();
+                c.setVisible(true);
+                c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+        }
+
+        private void showNormalCursor (Component target) {
+            Window w = SwingUtilities.getWindowAncestor(target);
+
+             if (w instanceof JFrame) {
+                Component c = ((JFrame) w).getGlassPane();
+                c.setCursor(null);
+                c.setVisible(false);
+             }
+         }
+
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -1613,14 +1635,12 @@ public class ActionFactory {
                 final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                        ? (GuardedDocument)doc : null;
                 
-                // Set hourglass cursor
-                final Cursor origCursor = target.getCursor();
-                target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
                 final Formatter formatter = doc.getFormatter();
                 formatter.reformatLock();
                 Formatter.pushFormattingContextDocument(doc);
                 try {
+                    // Set hourglass cursor
+                    showWaitCursor(target);
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             try {
@@ -1665,12 +1685,11 @@ public class ActionFactory {
                                 target.getToolkit().beep();
                             } catch (BadLocationException e) {
                                 Utilities.annotateLoggable(e);
-                            } finally {
-                                target.setCursor(origCursor);
                             }
                         }
                     });
                 } finally {
+                    showNormalCursor(target);
                     Formatter.popFormattingContextDocument(doc);
                     formatter.reformatUnlock();
                 }
@@ -2310,27 +2329,29 @@ public class ActionFactory {
             final BaseDocument doc = (BaseDocument)target.getDocument();
             final Formatter formatter = doc.getFormatter();
             formatter.indentLock();
-            doc.runAtomicAsUser (new Runnable () {
-                public void run () {
-                    try {
-                        //target.replaceSelection(""); //NOI18N -fix of issue #52485
-                        Caret caret = target.getCaret();
+            try {
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                        try {
+                            //target.replaceSelection(""); //NOI18N -fix of issue #52485
+                            Caret caret = target.getCaret();
 
-                        // insert and remove '-' to remember caret
-                        // position
-                        int dotpos = caret.getDot();
-                        doc.insertString(dotpos,"-",null); //NOI18N
-                        doc.remove(dotpos,1);
-                        int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        int newDotPos = formatter.indentNewLine(doc,eolDot);
-                        caret.setDot(newDotPos);
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace();
-                    } finally{
-                        formatter.indentUnlock();
+                            // insert and remove '-' to remember caret
+                            // position
+                            int dotpos = caret.getDot();
+                            doc.insertString(dotpos,"-",null); //NOI18N
+                            doc.remove(dotpos,1);
+                            int eolDot = Utilities.getRowEnd(target, caret.getDot());
+                            int newDotPos = formatter.indentNewLine(doc,eolDot);
+                            caret.setDot(newDotPos);
+                        } catch (BadLocationException ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                }
-            });
+                });
+            } finally {
+                formatter.indentUnlock();
+            }
         }
     }
     

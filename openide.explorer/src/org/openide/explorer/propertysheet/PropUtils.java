@@ -223,6 +223,8 @@ final class PropUtils {
     /** Foreground color for expando sets when selected */
     private static Color selectedSetForegroundColor = null;
 
+    private static final Logger LOG = Logger.getLogger(PropUtils.class.getName());
+
     /** Painting the custom editor button is the most expensive thing
      * we do on XP and Aqua; if this flag is set, the button panel
      * will build a bitmap and blit it (this isn't appropriate for
@@ -299,7 +301,7 @@ final class PropUtils {
      * are displayed. */
     static boolean useOptimizedCustomButtonPainting() {
         if (useOptimizedCustomButtonPainting == null) {
-            if ("com.sun.java.swing.plaf.WindowsLookAndFeel".equals(UIManager.getLookAndFeel())) { //NOI18N
+            if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 useOptimizedCustomButtonPainting = Boolean.valueOf(isXPTheme());
             } else {
                 useOptimizedCustomButtonPainting = Boolean.valueOf("Aqua".equals(UIManager.getLookAndFeel().getID()));
@@ -1107,8 +1109,9 @@ final class PropUtils {
 
         Icon collapsedIcon = getCollapsedIcon();
             
-        int iconSize = collapsedIcon.getIconWidth();
+        int iconSize = 9;
         if (collapsedIcon != null) {
+            iconSize = collapsedIcon.getIconWidth();
             marginWidth = Math.max(14, iconSize - 2);
         } else {
             //on the off chance a L&F doesn't provide this
@@ -1144,7 +1147,9 @@ final class PropUtils {
      * same icon the look and feel supplies for trees */
     static Icon getExpandedIcon() {
         Icon expandedIcon = UIManager.getIcon(isGtk ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
-        assert expandedIcon != null: "no Tree.expandedIcon found";
+        if (expandedIcon == null) {
+            LOG.info("no Tree.expandedIcon found");
+        }
         return expandedIcon;
     }
     
@@ -1152,7 +1157,9 @@ final class PropUtils {
      * icon the look and feel supplies for trees */
     static Icon getCollapsedIcon() {
         Icon collapsedIcon = UIManager.getIcon(isGtk ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon"); //NOI18N
-        assert collapsedIcon != null: "no Tree.collapsedIcon found";
+        if (collapsedIcon == null) {
+            LOG.info("no Tree.collapsedIcon found");
+        }
         return collapsedIcon;
     }
 
@@ -1393,9 +1400,9 @@ final class PropUtils {
             if (!wasHtml) {
                 // HTML-ize only non-html values. HTML values should already
                 // contain correct HTML strings.
-                a = Utilities.replaceString(a, "&", "&amp;"); //NOI18N
-                a = Utilities.replaceString(a, "<", "&lt;"); //NOI18N
-                a = Utilities.replaceString(a, ">", "&gt;"); //NOI18N
+                a = a.replace("&", "&amp;"); //NOI18N
+                a = a.replace("<", "&lt;"); //NOI18N
+                a = a.replace(">", "&gt;"); //NOI18N
             }
 
             charCount += a.length();

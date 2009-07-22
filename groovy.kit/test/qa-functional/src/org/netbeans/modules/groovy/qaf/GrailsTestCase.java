@@ -42,7 +42,7 @@ import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
@@ -103,7 +103,7 @@ public abstract class GrailsTestCase extends GroovyTestCase {
     protected void createNewGrailsFile(Project p, String type, String name) {
         String label = Bundle.getStringTrimmed("org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle", type);
         createNewGroovyFile(p, label);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name);
         String createdFile = op.txtCreatedFile().getText();
         op.btFinish().pushNoBlock();

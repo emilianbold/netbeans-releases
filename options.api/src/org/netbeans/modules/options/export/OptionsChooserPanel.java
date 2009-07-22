@@ -208,11 +208,7 @@ public final class OptionsChooserPanel extends JPanel {
             LOGGER.fine("Import finished.");  //NOI18N
             // restart IDE
             if (confirmationPanel.restartNow()) {
-                try {
-                    new File(targetUserdir, "var/restart").createNewFile();  //NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                LifecycleManager.getDefault().markForRestart();
                 LifecycleManager.getDefault().exit();
             }
         }

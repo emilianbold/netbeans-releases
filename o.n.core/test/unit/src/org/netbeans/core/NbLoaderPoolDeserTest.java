@@ -42,9 +42,8 @@
 package org.netbeans.core;
 
 import java.io.*;
-import java.util.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
-import org.openide.actions.*;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.ExtensionList;
@@ -57,7 +56,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Jaroslav Tulach
  */
-public class NbLoaderPoolDeserTest extends org.netbeans.junit.NbTestCase {
+public class NbLoaderPoolDeserTest extends NbTestCase {
     private OldStyleLoader oldL;
     private FileObject fo;
 
@@ -65,14 +64,14 @@ public class NbLoaderPoolDeserTest extends org.netbeans.junit.NbTestCase {
         super (testName);
     }
 
-    protected void setUp () throws java.lang.Exception {
+    protected @Override void setUp() throws Exception {
         oldL = DataLoader.getLoader(OldStyleLoader.class);
         NbLoaderPool.doAdd(oldL, null);
         
         fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "x.prop");
     }
 
-    protected void tearDown () throws java.lang.Exception {
+    protected @Override void tearDown() throws Exception {
         NbLoaderPool.remove(oldL);
     }
 
@@ -111,7 +110,8 @@ public class NbLoaderPoolDeserTest extends org.netbeans.junit.NbTestCase {
             return new MultiDataObject(fo, this);
         }
 
-        protected SystemAction[] defaultActions () {
+        @SuppressWarnings("deprecation")
+        protected @Override SystemAction[] defaultActions () {
             defaultActionsCalled = true;
             SystemAction[] retValue;
             

@@ -52,7 +52,7 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  */
 public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
     
-    private Project project;
+    private final Project project;
     
     J2eeRecoPrivTemplates(Project proj) {
         project = proj;

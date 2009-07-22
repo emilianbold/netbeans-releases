@@ -50,6 +50,8 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.CancellableTask;
@@ -213,7 +215,7 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
     }
     
     private void generateWsFromWsdl(ProgressHandle handle) throws Exception {
-        FileObject pkg = Templates.getTargetFolder(wiz);
+        final FileObject pkg = Templates.getTargetFolder(wiz);
         WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(pkg);
         wsName = getUniqueJaxrpcName(wsSupport, Templates.getTargetName(wiz));
         assert wsSupport != null;
@@ -399,9 +401,8 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
             throw new Exception(mes);
         }
         handle.progress(80);
-        String implClassName = servantClassName.substring(servantClassName.lastIndexOf(".") + 1); //NOI18N
-        FileObject clz = pkg.getFileObject(implClassName,"java"); //NOI18N
-        DataObject dobj = DataObject.find(clz);
+        final String implClassName = servantClassName.substring(servantClassName.lastIndexOf(".") + 1); //NOI18N
+
         //commented due to Retouche Bug
         //addHeaderComments(wsName, dobj);
         wsSupport.addInfrastructure(implClassName, pkg);
@@ -417,9 +418,25 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
         
         generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
         
-        //open the class in the editor
-        EditorCookie ec = dobj.getCookie(EditorCookie.class);
-        ec.open();
+        //open the implementation class in editor
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                // refresh folder due to issue 167543
+                pkg.refresh();
+                FileObject clz = pkg.getFileObject(implClassName,"java"); //NOI18N
+                if (clz != null) {
+                    try {
+                        DataObject dobj = DataObject.find(clz);
+                        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                        ec.open();
+                    } catch (Throwable ex) {
+                        Logger.getLogger(JaxRpcServiceCreator.class.getName()).log(Level.WARNING,
+                                "Cannot open implementation class in editor.", ex); //NOI18N
+                    }
+                }
+            }
+        });
         
         handle.finish();
     }

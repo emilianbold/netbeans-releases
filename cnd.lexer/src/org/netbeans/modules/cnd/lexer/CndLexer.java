@@ -169,21 +169,17 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
                     case '/':
                         switch (read(true)) {
-                            case '/': // in single-line comment
-                                while (true) {
-                                    switch (read(true)) {
-                                        case '\r':
-                                        case '\n':
-                                        case EOF:
-                                            backup(1);
-                                            return token(CppTokenId.LINE_COMMENT);
-                                    }
-                                }
+                            case '/': // in single-line or doxygen comment
+                            {
+                                Token<CppTokenId> out = finishLineComment(true);
+                                assert out != null : "not handled //";
+                                return out;
+                            }
                             case '=': // found /=
                                 return token(CppTokenId.SLASHEQ);
                             case '*': // in multi-line or doxygen comment
                             {
-                                Token<CppTokenId> out = finishComment(true);
+                                Token<CppTokenId> out = finishBlockComment(true);
                                 assert out != null : "not handled /*";
                                 return out;
                             }
@@ -500,7 +496,26 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
     protected abstract CppTokenId getKeywordOrIdentifierID(CharSequence text);
 
-    protected final Token<CppTokenId> finishComment(boolean createToken) {
+    protected final Token<CppTokenId> finishLineComment(boolean createToken) {
+        int c = read(true);
+        boolean startOfDoxygen = (c == '/');// in doxygen comment
+        while (true) {
+            switch (c) {
+                case '\r':
+                case '\n':
+                case EOF:
+                    backup(1);
+                    if (createToken) {
+                        return startOfDoxygen ? token(CppTokenId.DOXYGEN_LINE_COMMENT) : token(CppTokenId.LINE_COMMENT);
+                    } else {
+                        return null;
+                    }
+            }
+            c = read(true);
+        }
+    }
+    
+    protected final Token<CppTokenId> finishBlockComment(boolean createToken) {
         int c = read(true);
         int firstChar = c;
         if (firstChar == '*' || firstChar == '!') { // either doxygen comment or empty multi-line comment /**/

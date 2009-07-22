@@ -150,7 +150,7 @@ public class LibrariesTest extends JellyTestCase {
         set.add("jar:nbinst://org.netbeans.modules.websvc.jaxrpc16/modules/ext/jaxrpc16/xsdlib.jar!/");
         librariesUrls.put("jaxrpc16", set);
         set = new TreeSet<String>();
-        set.add("jar:nbinst:///docs/javaee5-doc-api.zip!/");
+        set.add("jar:nbinst:///docs/javaee6-doc-api.zip!/");
         set.add("jar:nbinst:///modules/ext/toplink/toplink-essentials-agent.jar!/");
         set.add("jar:nbinst:///modules/ext/toplink/toplink-essentials.jar!/");
         librariesUrls.put("toplink", set);
@@ -181,7 +181,7 @@ public class LibrariesTest extends JellyTestCase {
         set.add("jar:nbinst:///modules/ext/javac-api-nb-7.0-b07.jar!/");
         librariesUrls.put("javac-api", set);
         set = new TreeSet<String>();
-        set.add("jar:nbinst:///docs/javaee5-doc-api.zip!/");
+        set.add("jar:nbinst:///docs/javaee6-doc-api.zip!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/jstl.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/standard.jar!/");
         librariesUrls.put("jstl11", set);
@@ -225,7 +225,7 @@ public class LibrariesTest extends JellyTestCase {
         set.add("jar:nbinst:///modules/ext/beansbinding-0.5.jar!/");
         librariesUrls.put("beans-binding", set);
         set = new TreeSet<String>();
-        set.add("jar:nbinst:///docs/javaee5-doc-api.zip!/");
+        set.add("jar:nbinst:///docs/javaee6-doc-api.zip!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-beanutils.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-collections.jar!/");
         set.add("jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf/commons-digester.jar!/");

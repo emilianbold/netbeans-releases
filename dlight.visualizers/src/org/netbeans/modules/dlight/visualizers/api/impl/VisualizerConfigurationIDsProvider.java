@@ -13,4 +13,5 @@ public interface VisualizerConfigurationIDsProvider {
     String TREE_TABLE_VISUALIZER = "treeTable"; // NOI18N
     String TABLE_VISUALIZER = "tableVisualizer"; // NOI18N
     String ADVANCED_TABLE_VISUALIZER = "advancedTableVisualizer"; // NOI18N
+    String THREAD_MAP_VISUALIZER = "threadMapVisualizer"; // NOI18N
 }

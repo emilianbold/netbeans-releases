@@ -2,6 +2,7 @@
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"            
             elementFormDefault="qualified">
+    <xsd:include schemaLocation="F.xsd"/>
     <xsd:complexType name="D1">
         <xsd:sequence>
             <xsd:element name="D11"/>

@@ -81,7 +81,7 @@ public abstract class ExternalTerminalAccessor {
     public abstract String getPrompt(final ExternalTerminal terminal);
 
     public abstract List<String> wrapCommand(final ExecutionEnvironment execEnv,
-            final ExternalTerminal terminal, String... args);
+            final ExternalTerminal terminal, List<String> args);
 
     public abstract String getTitle(final ExternalTerminal terminal);
 }

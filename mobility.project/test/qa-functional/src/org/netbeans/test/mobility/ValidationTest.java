@@ -50,7 +50,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.operators.DialogOperator;
@@ -62,8 +61,9 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
@@ -289,7 +289,7 @@ public class ValidationTest extends JellyTestCase {
         newFile.selectCategory(category);
         newFile.selectFileType(template);
         newFile.next();
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(name); //TODO doesn't work with New > MIDP Canvas. It doesn;t change the name
         if (packageName != null) {
             op.setPackage(packageName);
@@ -324,7 +324,7 @@ public class ValidationTest extends JellyTestCase {
         wizard.next();
 
 
-        NewProjectNameLocationStepOperator step = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator step = new NewJavaProjectNameLocationStepOperator();
         step.txtProjectLocation().setText(getWorkDirPath());
         step.txtProjectName().setText(PROJECT_TO_BE_CREATED);//NOI18N
 //        String projectLocation = step.txtProjectFolder().getText();

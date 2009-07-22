@@ -110,6 +110,9 @@ public final class UnitTestRunner {
         }
         TestSessionVO session = new TestSessionVO();
         PhpUnitLogParser.parse(reader, session);
+        if (!PhpUnit.KEEP_LOGS) {
+            PhpUnit.XML_LOG.delete();
+        }
 
         for (TestSuiteVO suite : session.getTestSuites()) {
             MANAGER.displaySuiteRunning(testSession, suite.getName());

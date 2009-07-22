@@ -114,7 +114,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             //for html
                 String url = FileUtil.getRelativePath(WebModule.getWebModule(fo).getDocumentBase(), fo); 
                 if (url != null) {
-                    url = org.openide.util.Utilities.replaceString(url, " ", "%20"); //NOI18N
+                    url = url.replace(" ", "%20"); //NOI18N
                     relPath =  "/" + url; //NOI18N
                 }
             }

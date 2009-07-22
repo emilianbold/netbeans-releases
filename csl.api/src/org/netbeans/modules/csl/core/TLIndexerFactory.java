@@ -41,7 +41,6 @@ package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -92,7 +91,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     @Override
     public void filesDeleted (
-        Collection<? extends Indexable>
+        Iterable<? extends Indexable>
                                 deleted,
         Context                 context
     ) {
@@ -107,7 +106,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
     @Override
     public void filesDirty (
-        Collection<? extends Indexable>
+        Iterable<? extends Indexable>
                                 dirty,
         Context                 context
     ) {

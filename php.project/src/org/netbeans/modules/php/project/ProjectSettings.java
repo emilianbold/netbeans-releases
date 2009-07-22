@@ -43,17 +43,17 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
  * Helper class to get miscellaneous properties related to single PHP project
- * (like timestamp when a project has been uploaded last time etc.)
+ * (like timestamp when a project has been uploaded last time etc.).
  * @author Tomas Mysik
  */
 public final class ProjectSettings {
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
-    private static final String PROJECT_PREFERENCES_PATH = "projects";//NOI18N
+    private static final String PROJECT_PREFERENCES_PATH = "projects"; // NOI18N
 
     private static final String LAST_UPLOAD = "lastUpload"; // NOI18N
     private static final String DEBUG_URLS = "debugUrls"; // NOI18N
@@ -84,13 +84,13 @@ public final class ProjectSettings {
     }
 
     public static List<String> getDebugUrls(Project project) {
-        return PhpProjectUtils.explode(getPreferences(project).get(DEBUG_URLS, null), DEBUG_URLS_DELIMITER);
+        return StringUtils.explode(getPreferences(project).get(DEBUG_URLS, null), DEBUG_URLS_DELIMITER);
     }
 
     public static void setDebugUrls(Project project, List<String> debugUrls) {
         if (debugUrls.size() > DEBUG_URLS_LIMIT) {
             debugUrls = debugUrls.subList(0, DEBUG_URLS_LIMIT);
         }
-        getPreferences(project).put(DEBUG_URLS, PhpProjectUtils.implode(debugUrls, DEBUG_URLS_DELIMITER));
+        getPreferences(project).put(DEBUG_URLS, StringUtils.implode(debugUrls, DEBUG_URLS_DELIMITER));
     }
 }

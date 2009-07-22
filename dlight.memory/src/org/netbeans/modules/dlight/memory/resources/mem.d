@@ -25,7 +25,6 @@ BEGIN {
 #define PRINT_STACK() 
 #else
 #define PRINT_STACK() \
-	printf("%d %d %d", cpu, tid, timestamp); \
 	ustack(); \
 	printf("\n");
 #endif
@@ -39,7 +38,7 @@ BEGIN {
 	heap[_addr] = self->size; \
 	total += self->size; \
 	/*printf("## alloc timestamp %d size %d address %x total %d", timestamp, self->size, _addr, total); */\
-	printf("%d 1 %d %d %d\n", timestamp, self->size, _addr, total); \
+	printf("%d 1 %d %d %d", timestamp, self->size, _addr, total); \
 	/*printf("\nAlloc size=%d addr=%x", self->size, _addr);*/ \
 	PRINT_STACK(); \
 	self->size = 0;
@@ -49,7 +48,7 @@ BEGIN {
 	heap[_addr] = 0; \
 	total -= this->freed; \
 	/*printf("## free timestamp %d size %d  address %x total %d", timestamp, this->freed, _addr, total);*/ \
-	printf("%d -1 %d %d %d\n", timestamp, this->freed, _addr, total); \
+	printf("%d -1 %d %d %d", timestamp, this->freed, _addr, total); \
 	/*printf("\nFree size=%d addr=%x", this->freed, _addr);*/ \
 	PRINT_STACK();
 

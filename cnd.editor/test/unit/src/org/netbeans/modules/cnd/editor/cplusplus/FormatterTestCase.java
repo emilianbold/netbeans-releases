@@ -3158,7 +3158,7 @@ public class FormatterTestCase extends EditorBase {
     public void testArrayAsParameter() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "class ClassA : InterfaceA, InterfaceB, InterfaceC\n" +
                 "{\n" +
                 "public:\n" +
                 "    int number;\n" +
@@ -3170,7 +3170,7 @@ public class FormatterTestCase extends EditorBase {
                 );
         reformat();
         assertDocumentText("Incorrect formatting of array as parameter",
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "class ClassA : InterfaceA, InterfaceB, InterfaceC\n" +
                 "{\n" +
                 "public:\n" +
                 "    int number;\n" +
@@ -3190,7 +3190,7 @@ public class FormatterTestCase extends EditorBase {
         setLoadDocumentText(
                 "namespace AC\n" +
                 "{\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "class ClassA : InterfaceA, InterfaceB, InterfaceC\n" +
                 "{\n" +
                 "public:\n" +
                 "    int number;\n" +
@@ -3206,7 +3206,7 @@ public class FormatterTestCase extends EditorBase {
                 "namespace AC\n" +
                 "{\n" +
                 "\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "class ClassA : InterfaceA, InterfaceB, InterfaceC\n" +
                 "{\n" +
                 "public:\n" +
                 "    int number;\n" +

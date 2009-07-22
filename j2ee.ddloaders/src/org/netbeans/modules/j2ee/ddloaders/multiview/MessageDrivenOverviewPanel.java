@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDrivenDestination;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MessageDrivenOverviewForm;
 import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
@@ -63,12 +62,12 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
     private ActivationConfig config;
     private static final String PROPERTY_MESSAGE_SELECTOR = "messageSelector";  //NOI18N
     private static final String PROPERTY_ACKNOWLEDGE_NAME = "acknowledgeMode";  //NOI18N
-    private static final String PROPERTY_SUBSCRIPTION_DURABILITY = "subscriptionDurability";    //NOI18N
-    private static final String DESTINATION_TYPE_TOPIC = MessageDrivenDestination.DESTINATION_TYPE_TOPIC;
-    private static final String DESTINATION_TYPE_QUEUE = MessageDrivenDestination.DESTINATION_TYPE_QUEUE;
-    private static final String SUBSCRIPTION_DURABILITY_NONDURABLE = MessageDrivenDestination.SUBSCRIPTION_DURABILITY_NONDURABLE;
-    private static final String SUBSCRIPTION_DURABILITY_DURABLE = MessageDrivenDestination.SUBSCRIPTION_DURABILITY_DURABLE;
-    private static final String DESTINATION_TYPE = MessageDrivenDestination.DESTINATION_TYPE;
+    private static final String PROPERTY_SUBSCRIPTION_DURABILITY = "subscriptionDurability";  //NOI18N
+    private static final String DESTINATION_TYPE_TOPIC = "javax.jms.Topic";  //NOI18N
+    private static final String DESTINATION_TYPE_QUEUE = "javax.jms.Queue";  //NOI18N
+    private static final String SUBSCRIPTION_DURABILITY_NONDURABLE = "NonDurable";  //NOI18N
+    private static final String SUBSCRIPTION_DURABILITY_DURABLE = "Durable";  //NOI18N
+    private static final String DESTINATION_TYPE = "DestinationType";  //NOI18N
 
     /**
      * @param sectionNodeView enclosing SectionNodeView object
@@ -147,7 +146,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
 
                 public String getItemValue() {
-                    return getConfigProperty(MessageDrivenDestination.DESTINATION_TYPE);
+                    return getConfigProperty(DESTINATION_TYPE);
                 }
 
                 public void setItemValue(String value) {

@@ -129,8 +129,19 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
     
     public Set instantiate() throws java.io.IOException {
         PersistenceUnit punit = null;
+        PUDataObject pud = null;
         LOG.fine("Instantiating...");
-        String version=PersistenceUtils.getJPAVersion(project);
+        try{
+            LOG.fine("Retrieving PUDataObject");
+            pud = ProviderUtil.getPUDataObject(project);
+        } catch (InvalidPersistenceXmlException ipx){
+            // just log for debugging purposes, at this point the user has
+            // already been warned about an invalid persistence.xml
+            LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
+            return Collections.emptySet();
+       }
+        String version=pud.getPersistence().getVersion();
+        //
         if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
             if(Persistence.VERSION_2_0.equals(version))
@@ -181,20 +192,11 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         
         punit.setName(descriptor.getPersistenceUnitName());
         ProviderUtil.setTableGeneration(punit, descriptor.getTableGeneration(), project);
-        try{
-            LOG.fine("Retrieving PUDataObject");
-            PUDataObject pud = ProviderUtil.getPUDataObject(project);
-            pud.addPersistenceUnit(punit);
-            LOG.fine("Saving PUDataObject");
-            pud.save();
-            LOG.fine("Saved");
-            return Collections.singleton(pud.getPrimaryFile());
-        } catch (InvalidPersistenceXmlException ipx){
-            // just log for debugging purposes, at this point the user has
-            // already been warned about an invalid persistence.xml
-            LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-            return Collections.emptySet();
-        }
+        pud.addPersistenceUnit(punit);
+        LOG.fine("Saving PUDataObject");
+        pud.save();
+        LOG.fine("Saved");
+        return Collections.singleton(pud.getPrimaryFile());
     }
     
 }

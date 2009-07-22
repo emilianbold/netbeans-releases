@@ -505,6 +505,11 @@ class TaskListTable extends JTable {
             }
             super.setResizingColumn( col );
         }
+
+        @Override
+        public JTable getTable() {
+            return TaskListTable.this;
+        }
     }
     
     
@@ -699,6 +704,9 @@ class TaskListTable extends JTable {
 
         /** Overrides superclass method. */
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
+            if( null == table ) {
+                return new JLabel();
+            }
             Component comp = origRenderer.getTableCellRendererComponent( table, value, isSelected, hasFocus, row, column );
 
             if( comp instanceof JLabel ) {

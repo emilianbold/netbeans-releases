@@ -60,7 +60,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -242,7 +242,7 @@ public class ProjectsBasicsTest extends JellyTestCase {
         npwo.selectCategory(category);
         npwo.selectProject(project);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         npnlso.txtProjectLocation().setText(location); // NOI18N
         npnlso.txtProjectName().setText(name);
         if(sharable) new JCheckBoxOperator(npnlso).push();
@@ -299,6 +299,7 @@ public class ProjectsBasicsTest extends JellyTestCase {
 
     }
 
+    @SuppressWarnings("deprecation")
     private void waitScanFinished() {
         try {
             SourceUtils.waitScanFinished();

@@ -41,27 +41,42 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
+import org.netbeans.modules.php.project.ui.actions.RemoteCommand.DefaultOperationMonitor;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -70,6 +85,8 @@ import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
+ * Minor note to frameworks - the 1st framework "wins", it means that e.g. web root sets
+ * the 1st framework from the list, other frameworks are ignored.
  * @author Tomas Mysik
  */
 public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -127,14 +144,16 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        PhpProjectGenerator.ProjectProperties projectProperties = new PhpProjectGenerator.ProjectProperties(
+        Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
+
+        PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties(
                 getProjectDirectory(),
                 getSources(),
                 (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME),
                 wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType(),
                 (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING),
                 getUrl(),
-                wizardType == WizardType.REMOTE ? null : getIndexFile(), // no index file for remote needed
+                wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders),
                 descriptor,
                 isCopyFiles(),
                 getCopySrcTarget(),
@@ -146,7 +165,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         switch (wizardType) {
             case NEW:
             case EXISTING:
-                monitor = new LocalProgressMonitor(handle);
+                monitor = new LocalProgressMonitor(handle, frameworkExtenders);
                 break;
             case REMOTE:
                 monitor = new RemoteProgressMonitor(handle);
@@ -155,32 +174,40 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
 
-        AntProjectHelper helper = PhpProjectGenerator.createProject(projectProperties, monitor);
+        AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
         resultSet.add(helper.getProjectDirectory());
 
-        FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
+        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        PhpModule phpModule = project.getLookup().lookup(PhpModule.class);
+        assert phpModule != null : "PHP module must exist!";
+        FileObject sources = FileUtil.toFileObject(createProperties.getSourcesDirectory());
         resultSet.add(sources);
 
-        String indexFile = projectProperties.getIndexFile();
+        // post process
         switch (wizardType) {
+            case NEW:
+                extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
+                break;
             case REMOTE:
-                downloadRemoteFiles(projectProperties, monitor);
-                // try to find index file for downloaded files
-                indexFile = getIndexFile();
+                downloadRemoteFiles(createProperties, monitor);
                 break;
         }
 
-        if (indexFile != null) {
-            FileObject fo = sources.getFileObject(indexFile);
-            if (fo != null && fo.isValid()) {
-                resultSet.add(fo);
-                switch (wizardType) {
-                    case REMOTE:
-                        saveIndexFile(helper, indexFile);
-                        break;
-                }
-            }
+        // update project properties
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        List<PhpModuleProperties> phpModuleProperties = getPhpModuleProperties(phpModule, frameworkExtenders);
+
+        FileObject indexFile = setIndexFile(createProperties, projectProperties, privateProperties, phpModuleProperties);
+        if (indexFile != null && indexFile.isValid()) {
+            resultSet.add(indexFile);
         }
+        setWebRoot(createProperties, projectProperties, privateProperties, phpModuleProperties);
+        setTests(createProperties, projectProperties, privateProperties, phpModuleProperties);
+
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+        ProjectManager.getDefault().saveProject(project);
 
         return resultSet;
     }
@@ -244,8 +271,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
         String step2 = null;
+        String step3 = null;
         switch (wizardType) {
             case NEW:
+                step2 = "LBL_RunConfiguration"; // NOI18N
+                step3 = "LBL_Frameworks"; // NOI18N
+                break;
             case EXISTING:
                 step2 = "LBL_RunConfiguration"; // NOI18N
                 break;
@@ -255,19 +286,36 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             default:
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
+        List<String> steps = new ArrayList<String>(3);
+        steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"));
+        steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2));
+        if (step3 != null) {
+            steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step3));
+        }
+        String[] stepsArray = steps.toArray(new String[steps.size()]);
 
-        String[] steps = new String[] {
-            NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"),
-            NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2),
-        };
+        WizardDescriptor.Panel<WizardDescriptor> panel3 = null;
+        switch (wizardType) {
+            case NEW:
+                panel3 = new PhpFrameworksPanel(stepsArray);
+                break;
+            case EXISTING:
+            case REMOTE:
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+        }
+        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(stepsArray, wizardType);
 
-        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps, wizardType);
+        List<WizardDescriptor.Panel<WizardDescriptor>> pnls = new ArrayList<Panel<WizardDescriptor>>(3);
+        pnls.add(configureProjectPanel);
+        pnls.add(new RunConfigurationPanel(stepsArray, configureProjectPanel, wizardType));
+        if (panel3 != null) {
+            pnls.add(panel3);
+        }
         @SuppressWarnings("unchecked")
-        WizardDescriptor.Panel<WizardDescriptor>[] pnls = new WizardDescriptor.Panel[] {
-            configureProjectPanel,
-            new RunConfigurationPanel(steps, configureProjectPanel, wizardType),
-        };
-        return pnls;
+        WizardDescriptor.Panel<WizardDescriptor>[] pnlsArray = (WizardDescriptor.Panel<WizardDescriptor>[]) Array.newInstance(WizardDescriptor.Panel.class, pnls.size());
+        return pnls.toArray(pnlsArray);
     }
 
     // prevent incorrect default values (empty project => back => existing project)
@@ -278,6 +326,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
         settings.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
         settings.putProperty(ConfigureProjectPanel.ENCODING, null);
+        settings.putProperty(RunConfigurationPanel.VALID, null);
         settings.putProperty(RunConfigurationPanel.RUN_AS, null);
         settings.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
         settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
@@ -287,6 +336,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
+        settings.putProperty(PhpFrameworksPanel.VALID, null);
+        settings.putProperty(PhpFrameworksPanel.EXTENDERS, null);
     }
 
     private File getProjectDirectory() {
@@ -314,7 +365,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return url;
     }
 
-    private String getIndexFile() {
+    private String getIndexFile(Map<PhpFrameworkProvider, PhpModuleExtender> frameworkProviders) {
+        if (frameworkProviders != null && !frameworkProviders.isEmpty()) {
+            // no index for php framework
+            return null;
+        }
         String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
         if (indexName == null) {
             // run configuration panel not shown at all
@@ -348,10 +403,44 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return null;
         }
         LocalServer localServer = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
-        if (PhpProjectUtils.hasText(localServer.getSrcRoot())) {
+        if (StringUtils.hasText(localServer.getSrcRoot())) {
             return new File(localServer.getSrcRoot());
         }
         return null;
+    }
+
+    private void extendPhpModule(PhpModule phpModule, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders,
+            PhpProjectGenerator.Monitor monitor, Set<FileObject> filesToOpen) {
+        assert wizardType == WizardType.NEW : "Extending not allowed for: " + wizardType;
+        assert monitor instanceof LocalProgressMonitor;
+
+        LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
+        if (!frameworkExtenders.isEmpty()) {
+            localMonitor.startingExtending();
+
+            for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworkExtenders.entrySet()) {
+                PhpFrameworkProvider frameworkProvider = entry.getKey();
+                assert frameworkProvider != null;
+
+                localMonitor.extending(frameworkProvider.getName());
+                PhpModuleExtender phpModuleExtender = entry.getValue();
+                if (phpModuleExtender != null) {
+                    try {
+                        Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
+                        assert newFiles != null;
+                        filesToOpen.addAll(newFiles);
+                    } catch (ExtendingException ex) {
+                        warnUser(ex.getFailureMessage());
+                    }
+                }
+            }
+        }
+
+        localMonitor.finishingExtending();
+    }
+
+    private void warnUser(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private void downloadRemoteFiles(ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
@@ -364,34 +453,123 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
         RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, RemoteClient.AdvancedProperties.create(
-                    remoteLog,
-                    projectProperties.getRemoteDirectory(),
-                    false,
-                    false));
-        DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), false, sources, sources);
+        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
+        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
+                    .setInputOutput(remoteLog)
+                    .setOperationMonitor(downloadOperationMonitor)
+                    .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
+                    .setPreservePermissions(false));
+        DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), false, sources, sources);
 
         remoteMonitor.finishingDownload();
     }
 
-    private void saveIndexFile(AntProjectHelper helper, String indexFile) throws IOException {
-        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+    private Map<PhpFrameworkProvider, PhpModuleExtender> getFrameworkExtenders() {
+        @SuppressWarnings("unchecked")
+        Map<PhpFrameworkProvider, PhpModuleExtender> frameworkProviders = (Map<PhpFrameworkProvider, PhpModuleExtender>) descriptor.getProperty(PhpFrameworksPanel.EXTENDERS);
+        if (frameworkProviders == null) {
+            frameworkProviders = Collections.emptyMap();
+        }
+        return frameworkProviders;
+    }
+
+    private List<PhpModuleProperties> getPhpModuleProperties(PhpModule phpModule, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders) {
+        if (frameworkExtenders.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<PhpModuleProperties> phpModuleProperties = new ArrayList<PhpModuleProperties>(frameworkExtenders.size());
+        for (PhpFrameworkProvider frameworkProvider : frameworkExtenders.keySet()) {
+            phpModuleProperties.add(frameworkProvider.getPhpModuleProperties(phpModule));
+        }
+        return phpModuleProperties;
+    }
+
+    private FileObject setIndexFile(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
+        String indexFile = createProperties.getIndexFile();
+        switch (wizardType) {
+            case NEW:
+                if (indexFile == null) {
+                    for (PhpModuleProperties properties : phpModuleProperties) {
+                        FileObject frameworkIndex = properties.getIndexFile();
+                        if (frameworkIndex != null) {
+                            indexFile = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(frameworkIndex));
+                            assert !indexFile.startsWith("../");
+                            break; // 1st wins
+                        }
+                    }
+                }
+                break;
+            case REMOTE:
+                // try to find index file for downloaded files
+                indexFile = getIndexFile(null);
+                break;
+        }
+
+        if (indexFile == null) {
+            return null;
+        }
+
         privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
-        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-        ProjectManager.getDefault().saveProject(project);
+        return FileUtil.toFileObject(createProperties.getSourcesDirectory()).getFileObject(indexFile);
+    }
+
+    private void setWebRoot(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
+        for (PhpModuleProperties properties : phpModuleProperties) {
+            FileObject webRoot = properties.getWebRoot();
+            if (webRoot != null) {
+                String relPath = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(webRoot));
+                assert relPath != null && !relPath.startsWith("../") : "WebRoot must be underneath Sources";
+                projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, relPath);
+                break; // 1st wins
+            }
+        }
+    }
+
+    private void setTests(PhpProjectGenerator.ProjectProperties createProperties, EditableProperties projectProperties,
+            EditableProperties privateProperties, List<PhpModuleProperties> phpModuleProperties) {
+        if (phpModuleProperties.isEmpty()) {
+            return;
+        }
+
+        File projectDir = createProperties.getProjectDirectory();
+        if (projectDir == null) {
+            projectDir = createProperties.getSourcesDirectory();
+        }
+        assert projectDir != null;
+
+        for (PhpModuleProperties properties : phpModuleProperties) {
+            FileObject tests = properties.getTests();
+            if (tests != null) {
+                File testDir = FileUtil.toFile(tests);
+                // relativize path
+                String testPath = PropertyUtils.relativizeFile(projectDir, testDir);
+                if (testPath == null) {
+                    // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+                    testPath = testDir.getAbsolutePath();
+                }
+                projectProperties.setProperty(PhpProjectProperties.TEST_SRC_DIR, testPath);
+                break; // 1st wins
+            }
+        }
     }
 
     private static final class LocalProgressMonitor implements PhpProjectGenerator.Monitor {
         private final ProgressHandle handle;
+        private final int units;
+        private int unit = 0;
 
-        public LocalProgressMonitor(ProgressHandle handle) {
+        private LocalProgressMonitor(ProgressHandle handle, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders) {
             assert handle != null;
+            assert frameworkExtenders != null;
+
             this.handle = handle;
+            units = 5 + 2 * frameworkExtenders.size();
         }
 
         public void starting() {
-            handle.start(5);
+            handle.start(units);
 
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingProject");
@@ -405,9 +583,26 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         public void finishing() {
+        }
+
+        public void startingExtending() {
+            unit = 5;
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_StartingExtending");
+            handle.progress(msg, unit);
+        }
+
+        public void extending(String framework) {
+            unit += 2;
+            String msg = NbBundle.getMessage(
+                    NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_Extending", framework);
+            handle.progress(msg, unit);
+        }
+
+        public void finishingExtending() {
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_PreparingToOpen");
-            handle.progress(msg, 5);
+            handle.progress(msg, units);
         }
     }
 

@@ -812,6 +812,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     if (node instanceof Product) {
                         final Product product = (Product) node;
                         if(product.getUid().equals("glassfish") ||
+                                product.getUid().equals("glassfish-mod") ||
                                 product.getUid().equals("glassfish-mod-sun") ||
                                 product.getUid().equals("tomcat") ||
 				product.getUid().equals("mysql")) {

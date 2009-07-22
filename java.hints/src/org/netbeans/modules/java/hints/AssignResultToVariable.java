@@ -109,7 +109,7 @@ public class AssignResultToVariable extends AbstractHint {
             if (kind == Kind.METHOD_INVOCATION) {
                 exprTree = ((MethodInvocationTree)tree).getMethodSelect();
             } else if (kind == Kind.NEW_CLASS) {
-                exprTree = ((NewClassTree)tree).getIdentifier();
+                exprTree = tree;
             }
             
             long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), exprTree);

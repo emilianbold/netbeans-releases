@@ -114,7 +114,8 @@ final class ComponentDocument extends JComponent {
 
         if (myWrapLines) {
             prepareWrapLines();
-        } else {
+        }
+        else {
             prepareNoWrapLines();
         }
         calculateMetrics();
@@ -128,7 +129,8 @@ final class ComponentDocument extends JComponent {
 
             if (line.isEmpty()) {
                 myLines.remove(line);
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -178,7 +180,8 @@ final class ComponentDocument extends JComponent {
 //out("  see: " + line.getWidth() + " " + line);
             if (line.getWidth() + myMinOffset <= myWidth) {
                 lines.add(line);
-            } else {
+            }
+            else {
                 addWordWrappedLine(lines, line);
             }
         }
@@ -212,7 +215,8 @@ final class ComponentDocument extends JComponent {
 //out("   -- '" + part + "' " + k);
                 if (part.isEmpty()) {
                     addCharWrappedLine(lines, line);
-                } else {
+                }
+                else {
                     lines.add(part);
                     part = line.substring(k + 1);
                     checkOffset(part);

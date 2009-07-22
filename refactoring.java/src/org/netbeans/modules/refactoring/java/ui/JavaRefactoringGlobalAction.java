@@ -90,8 +90,8 @@ public abstract class JavaRefactoringGlobalAction extends NodeAction {
     }
     
     private static String trim(String arg) {
-        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
-        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+        arg = arg.replace("&", ""); // NOI18N
+        return arg.replace("...", ""); // NOI18N
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

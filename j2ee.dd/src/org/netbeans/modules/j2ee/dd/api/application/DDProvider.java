@@ -248,8 +248,6 @@ public final class DDProvider {
           String version = parse.getVersion();
           if (Application.VERSION_1_4.equals(version)) {
               return new org.netbeans.modules.j2ee.dd.impl.application.model_1_4.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
-          } else if (Application.VERSION_1_3.equals(version)) {
-              return new org.netbeans.modules.j2ee.dd.impl.application.model_1_3.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } else if (Application.VERSION_5.equals(version)) {
               return new org.netbeans.modules.j2ee.dd.impl.application.model_5.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } 
@@ -266,10 +264,7 @@ public final class DDProvider {
             return resolver;
         }        
         public InputSource resolveEntity (String publicId, String systemId) {
-            if (APP_13_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application_1_3.dtd"); //NOI18N
-            } else if ("http://java.sun.com/xml/ns/j2ee/application_1_4.xsd".equals(systemId)) {
+            if ("http://java.sun.com/xml/ns/j2ee/application_1_4.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application_1_4.xsd"); //NOI18N
             } else if ("http://java.sun.com/xml/ns/javaee/application_5.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_5.xsd"); //NOI18N
@@ -386,16 +381,10 @@ public final class DDProvider {
                         String versionValue = vNode.getNodeValue();
                         if(Application.VERSION_1_4.equals(versionValue)) {
                             version = Application.VERSION_1_4;
-                        } else if(Application.VERSION_1_3.equals(versionValue)) {
-                            version = Application.VERSION_1_3;
                         } else {
                             version = Application.VERSION_5; //default
                         }
                     }
-                }
-            } else {
-                if (APP_13_DOCTYPE.equals(dt.getPublicId())) {
-                    version = Application.VERSION_1_3;
                 }
             }
         }

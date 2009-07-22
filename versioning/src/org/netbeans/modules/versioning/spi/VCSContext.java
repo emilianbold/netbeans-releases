@@ -77,7 +77,7 @@ public final class VCSContext {
     /**
      * VCSContext that contains no files.
      */
-    public static final VCSContext EMPTY = new VCSContext(null, emptySet(), emptySet() );
+    public static final VCSContext EMPTY = new VCSContext((Node[]) null, emptySet(), emptySet() );
 
     /**
      * Caching of current context for performance reasons, also see #72006.
@@ -102,10 +102,11 @@ public final class VCSContext {
      * Constructs a VCSContext out of a set of files. These files are later available via getRootFiles().
      * 
      * @param rootFiles set of Files
+     * @param originalFiles set of original files for which the context shall be created
      * @return VCSContext a context representing supplied set of Files
      */ 
-    static VCSContext forFiles(Set<File> rootFiles) {
-        return new VCSContext(null, rootFiles, emptySet());
+    static VCSContext forFiles(Set<File> rootFiles, Set<? extends FileObject> originalFiles) {
+        return new VCSContext(originalFiles, rootFiles, emptySet());
     }
 
     /**
@@ -358,14 +359,22 @@ public final class VCSContext {
         return files;
     }    
 
-    private VCSContext(Node [] nodes, Set<File> rootFiles, Set<File> exclusions) {
-        this.elements = nodes != null ? Lookups.fixed(nodes) : Lookups.fixed(new Node[0]);
+    private VCSContext(Set<File> rootFiles, Set<File> exclusions, Object... elements) {
         Set<File> tempRootFiles = new HashSet<File>(rootFiles);
         Set<File> tempExclusions = new HashSet<File>(exclusions);
         this.unfilteredRootFiles = Collections.unmodifiableSet(new HashSet<File>(tempRootFiles));
         while (normalize(tempRootFiles, tempExclusions));
         this.rootFiles = Collections.unmodifiableSet(tempRootFiles);
         this.exclusions = Collections.unmodifiableSet(tempExclusions);
+        this.elements = Lookups.fixed(elements);
+    }
+
+    private VCSContext(Node [] nodes, Set<File> rootFiles, Set<File> exclusions) {
+        this(rootFiles, exclusions, nodes != null ? (Object[]) nodes : new Node[0]);
+    }
+
+    private VCSContext(Set<? extends FileObject> elements, Set<File> rootFiles, Set<File> exclusions) {
+        this(rootFiles, exclusions, elements != null ? elements : Collections.EMPTY_SET);
     }
 
     private boolean normalize(Set<File> rootFiles, Set<File> exclusions) {

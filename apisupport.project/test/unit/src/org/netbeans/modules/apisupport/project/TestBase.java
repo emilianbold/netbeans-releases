@@ -131,7 +131,7 @@ import org.openide.util.Lookup;
                 assertNotNull("have a file object for extexamples", FileUtil.toFileObject(extexamplesF));
             }
         } else {
-            destDirF = getXTestNBDestDir();
+            destDirF = getTestNBDestDir();
         }
 
         assertTrue("Directory really exists: " + destDirF, destDirF.isDirectory());
@@ -191,7 +191,7 @@ import org.openide.util.Lookup;
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
         File userPropertiesFile = new File(workDir, "build.properties");
         Properties p = new Properties();
-        File defaultPlatform = sourceAvailable ? file(nbrootF, "nbbuild/netbeans") : getXTestNBDestDir();
+        File defaultPlatform = sourceAvailable ? file(nbrootF, "nbbuild/netbeans") : getTestNBDestDir();
         assertTrue("default platform available (" + defaultPlatform + ')', defaultPlatform.isDirectory());
         p.setProperty("nbplatform.default.netbeans.dest.dir", defaultPlatform.getAbsolutePath());
         p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
@@ -566,9 +566,10 @@ import org.openide.util.Lookup;
         return new File(nbroot);
     }
     
-    private static File getXTestNBDestDir() {
-        String destDir = System.getProperty("xtest.netbeans.dest.dir");
-        assertNotNull("xtest.netbeans.dest.dir property has to be set when running within binary distribution", destDir);
+    private static File getTestNBDestDir() {
+        String destDir = System.getProperty("test.netbeans.dest.dir");
+        // set in project.properties as test-unit-sys-prop.test.netbeans.dest.dir
+        assertNotNull("test.netbeans.dest.dir property has to be set when running within binary distribution", destDir);
         return new File(destDir);
     }
 

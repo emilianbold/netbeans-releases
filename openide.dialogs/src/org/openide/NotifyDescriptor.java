@@ -687,6 +687,9 @@ public class NotifyDescriptor extends Object {
         if (notificationLineSupport == null) {
             throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
         }
+        infoMsg = null;
+        warnMsg = null;
+        errMsg = null;
         firePropertyChange (PROP_INFO_NOTIFICATION, null, null);
     }
 

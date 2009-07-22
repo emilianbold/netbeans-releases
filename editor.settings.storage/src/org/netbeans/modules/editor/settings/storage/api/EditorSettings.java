@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
 import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
+import org.netbeans.modules.editor.settings.storage.MimeTypesTracker;
 
 
 /**
@@ -116,7 +117,11 @@ public abstract class EditorSettings {
      */
     public static final String PROP_EDITOR_FONT_COLORS = EditorSettingsImpl.PROP_EDITOR_FONT_COLORS;
 
-
+    /**
+     * @since 1.21
+     */
+    public static final String PROP_MIME_TYPES = MimeTypesTracker.PROP_MIME_TYPES;
+    
     /**
      * Returns set of font & colors profiles.
      *

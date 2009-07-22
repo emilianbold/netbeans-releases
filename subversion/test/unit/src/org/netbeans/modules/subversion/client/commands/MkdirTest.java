@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -57,11 +57,21 @@ public class MkdirTest extends AbstractCommandTest {
         super(testName);
     }
             
-    public void testMkdirUrl() throws Exception {                                                
+    public void testMkdirUrl() throws Exception {
+        testMkdirUrl("mrkvadir");
+    }
+
+    public void testMkdirUrlWithAtSign() throws Exception {
+        testMkdirUrl("@mrkvadir");
+        testMkdirUrl("mrkv@adir");
+        testMkdirUrl("mrkvadir@");
+    }
+
+    private void testMkdirUrl(String urlLastPathSegment) throws Exception {
                         
         ISVNClientAdapter c = getNbClient();        
-        SVNUrl url = getRepoUrl().appendPath("mrkvadir");
-        c.mkdir(url, "trkvadir");       
+        SVNUrl url = getRepoUrl().appendPath(urlLastPathSegment);
+        c.mkdir(url, "trkvadir");
 
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
@@ -69,9 +79,19 @@ public class MkdirTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {});        
     }
     
-    public void testMkdirFile() throws Exception {                                                
+    public void testMkdirFile() throws Exception {
+        testMkdirFile("folder");
+    }
+
+    public void testMkdirFileWithAtSign() throws Exception {
+        testMkdirFile("@folder");
+        testMkdirFile("fol@der");
+        testMkdirFile("folder@");
+    }
+
+    private void testMkdirFile(String folderName) throws Exception {
                         
-        File folder = new File(getWC(), "folder");
+        File folder = new File(getWC(), folderName);
         
         ISVNClientAdapter c = getNbClient();                
         c.mkdir(folder);       
@@ -82,9 +102,24 @@ public class MkdirTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {folder});        
     }
     
-    public void testMkdirUrlParents() throws Exception {                                                                        
+    public void testMkdirUrlParents() throws Exception {
+        testMkdirUrlParents("mrkvadira", "mrkvadirb", "mrkvadirc", "mrkvadird");
+    }
+
+    public void testMkdirUrlParentsWithAtSigns1() throws Exception {
+        testMkdirUrlParents("@mrkvadira", "mrk@vadirb", "mrkvad@irc", "mrkvadird@");
+    }
+
+    public void testMkdirUrlParentsWithAtSigns2() throws Exception {
+        testMkdirUrlParents("mrkvadira@", "mrkvad@irb", "mrk@vadirc", "@mrkvadird");
+    }
+
+    private void testMkdirUrlParents(String... urlPathSegments) throws Exception {
         ISVNClientAdapter c = getNbClient();        
-        SVNUrl url = getRepoUrl().appendPath("mrkvadira").appendPath("mrkvadirb").appendPath("mrkvadirc").appendPath("mrkvadird");
+        SVNUrl url = getRepoUrl();
+        for (String pathSegment : urlPathSegments) {
+            url = url.appendPath(pathSegment);
+        }
         c.mkdir(url, true, "trkvadir");       
 
         ISVNInfo info = getInfo(url);

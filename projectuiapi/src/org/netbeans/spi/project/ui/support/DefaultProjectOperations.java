@@ -79,7 +79,7 @@ public final class DefaultProjectOperations {
         }
         
         if (!ProjectOperations.isDeleteOperationSupported(p)) {
-            throw new IllegalStateException("Attempt to delete project that does not support deletion.");
+            throw new IllegalArgumentException("Attempt to delete project that does not support deletion.");
         }
         
         DefaultProjectOperationsImplementation.deleteProject(p);
@@ -102,7 +102,7 @@ public final class DefaultProjectOperations {
         }
         
         if (!ProjectOperations.isCopyOperationSupported(p)) {
-            throw new IllegalStateException("Attempt to delete project that does not support copy.");
+            throw new IllegalArgumentException("Attempt to copy project that does not support copy.");
         }
         
         DefaultProjectOperationsImplementation.copyProject(p);
@@ -125,7 +125,7 @@ public final class DefaultProjectOperations {
         }
         
         if (!ProjectOperations.isMoveOperationSupported(p)) {
-            throw new IllegalArgumentException("Attempt to delete project that does not support move.");
+            throw new IllegalArgumentException("Attempt to move project that does not support move.");
         }
         
         DefaultProjectOperationsImplementation.moveProject(p);
@@ -149,7 +149,7 @@ public final class DefaultProjectOperations {
         }
         
         if (!ProjectOperations.isMoveOperationSupported(p)) {
-            throw new IllegalArgumentException("Attempt to delete project that does not support move.");
+            throw new IllegalArgumentException("Attempt to rename project that does not support move.");
         }
         
         DefaultProjectOperationsImplementation.renameProject(p, newName);

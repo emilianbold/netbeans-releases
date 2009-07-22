@@ -125,7 +125,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
                 return;
             }
             textForTooltip = text;
-            String textEscaped = org.openide.util.Utilities.replaceString(text, "\"", "\\\"");
+            String textEscaped = text.replace("\"", "\\\"");
             text = "pageContext.getExpressionEvaluator().evaluate(\"" + textEscaped +
                                 "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
         }

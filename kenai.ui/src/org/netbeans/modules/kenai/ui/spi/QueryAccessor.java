@@ -5,8 +5,8 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
-import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.Action;
 import org.openide.util.Lookup;
 
 /**
@@ -44,28 +44,28 @@ public abstract class QueryAccessor {
      * @param project
      * @return Action to invoke when user clicks 'Find Issue...' button.
      */
-    public abstract ActionListener getFindIssueAction( ProjectHandle project );
+    public abstract Action getFindIssueAction( ProjectHandle project );
 
     /**
      *
      * @param project
      * @return Action to invoke when user clicks 'Create Issue...' button.
      */
-    public abstract ActionListener getCreateIssueAction( ProjectHandle project );
+    public abstract Action getCreateIssueAction( ProjectHandle project );
 
     /**
      *
      * @param result
      * @return Action to invoke when user clicks given query result link.
      */
-    public abstract ActionListener getOpenQueryResultAction( QueryResultHandle result );
+    public abstract Action getOpenQueryResultAction( QueryResultHandle result );
 
     /**
      *
      * @param query
      * @return Action to invoke when user pressed Enter key on given query line.
      */
-    public abstract ActionListener getDefaultAction( QueryHandle query );
+    public abstract Action getDefaultAction( QueryHandle query );
 
     /**
      * Notify listeners registered in given Project that the list of project queries
