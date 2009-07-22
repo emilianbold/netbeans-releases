@@ -316,7 +316,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         modified = true;
     }
     
-    private static String findCNBForClass(Class cls) {
+    public static String findCNBForClass(Class cls) {
         String absolutePath = null;
         ClassLoader cl = cls.getClassLoader();
         for (ModuleInfo module : Lookup.getDefault().lookupAll(ModuleInfo.class)) {

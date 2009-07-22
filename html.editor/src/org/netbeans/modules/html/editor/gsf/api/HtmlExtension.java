@@ -83,8 +83,6 @@ public abstract class HtmlExtension {
     //completion
     public abstract List<CompletionItem> completeOpenTags(CompletionContext context);
 
-    public abstract List<CompletionItem> completeCloseTags(CompletionContext context);
-
     public abstract List<CompletionItem> completeAttributes(CompletionContext context);
 
     public abstract List<CompletionItem> completeAttributeValue(CompletionContext context);

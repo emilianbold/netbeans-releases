@@ -69,14 +69,17 @@ public class CatalogRepoProvider implements ArchetypeProvider {
     private static final String EL_REPOSITORY = "repository"; //NOI18N
     private static final String EL_VERSION = "version"; //NOI18N
 
-    private final File catalogFile;
+    private final FileObject fo;
 
     public CatalogRepoProvider(File path) {
-        this.catalogFile = path;
+        fo = FileUtil.toFileObject(path);
+    }
+
+    public CatalogRepoProvider(FileObject path) {
+        fo = path;
     }
 
     public List<Archetype> getArchetypes() {
-        FileObject fo = FileUtil.toFileObject(catalogFile);
         if (fo == null) {
             return Collections.<Archetype>emptyList();
         }
