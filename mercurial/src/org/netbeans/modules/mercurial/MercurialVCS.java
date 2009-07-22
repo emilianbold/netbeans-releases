@@ -45,29 +45,35 @@ import java.util.Set;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Extends framework <code>VersioningSystem</code> to Mercurial module functionality.
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
+@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=MercurialVCS.class)})
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
 
+    private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_DisplayName")); // NOI18N
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
-
-        Mercurial.getInstance().addPropertyChangeListener(this);
-        Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        Mercurial.getInstance().getMercurialAnnotator().addPropertyChangeListener(this);
     }
 
     @Override
@@ -100,8 +106,71 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
      * @return File the file itself or one of its ancestors or null if the 
      *  supplied file is NOT managed by this versioning system
      */
+    @Override
     public File getTopmostManagedAncestor(File file) {
-        return Mercurial.getInstance().getTopmostManagedParent(file);
+        long t = System.currentTimeMillis();
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            Mercurial.LOG.fine(" cached as unversioned");
+            return null;
+        }
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        File parent = getKnownParent(file);
+        if(parent != null) {
+            Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
+            return parent;
+        }
+
+        if (HgUtils.isPartOfMercurialMetadata(file)) {
+            for (;file != null; file = file.getParentFile()) {
+                if (HgUtils.isAdministrative(file)) {
+                    file = file.getParentFile();
+                    break;
+                }
+            }
+        }
+        Set<File> done = new HashSet<File>();
+        File topmost = null;
+        for (;file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) {
+                Mercurial.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (HgUtils.hgExistsFor(file)){
+                Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
+                topmost =  file;
+            } else {
+                Mercurial.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
+            }
+        }
+        if(done.size() > 0) {
+            Mercurial.LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        if(Mercurial.LOG.isLoggable(Level.FINE)) {
+            Mercurial.LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
+        }
+        if(topmost != null) {
+            knownRoots.add(topmost);
+        }
+
+        return topmost;
+    }
+
+    private File getKnownParent(File file) {
+        File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
+        File knownParent = null;
+        for (File r : roots) {
+            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+                knownParent = r;
+            }
+        }
+        return knownParent;
     }
     
     /**
@@ -130,6 +199,8 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         } else if (event.getPropertyName().equals(Mercurial.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) event.getNewValue());
         } else if (event.getPropertyName().equals(Mercurial.PROP_VERSIONED_FILES_CHANGED)) {
+            Mercurial.LOG.fine("cleaning unversioned parents cache");   //NOI18N
+            unversionedParents.clear();
             fireVersionedFilesChanged();
         } else if (event.getPropertyName().equals(MercurialAnnotator.PROP_ICON_BADGE_CHANGED)) {
             fireStatusChanged((Set<File>) event.getNewValue());
