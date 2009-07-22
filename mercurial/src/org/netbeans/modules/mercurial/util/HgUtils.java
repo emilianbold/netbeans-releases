@@ -930,8 +930,7 @@ itor tabs #66700).
      * @return void
      */
     public static void forceStatusRefresh(File file) {
-        if (Mercurial.getInstance().isAdministrative(file)) return;
-        
+        if (isAdministrative(file)) return;
         try {
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
 
@@ -1328,4 +1327,19 @@ itor tabs #66700).
         return retval;
     }
 
+    /**
+     * Tests <tt>.hg</tt> directory itself.
+     */
+    public static boolean isAdministrative(File file) {
+        String name = file.getName();
+        return isAdministrative(name) && file.isDirectory();
+    }
+
+    public static boolean isAdministrative(String fileName) {
+        return fileName.equals(".hg"); // NOI18N
+    }
+
+    public static boolean hgExistsFor(File file) {
+        return new File(file, ".hg").exists();
+    }
 }
