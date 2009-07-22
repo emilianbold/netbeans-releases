@@ -369,7 +369,7 @@ if [ $ML_BUILD == 1 ]; then
 
     if [ ! -z $UC_NBMS_DIR ]; then
        for UC_CLUSTER in $UC_EXTRA_CLUSTERS; do
-          cp -rp ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/ml/uc
+          cp -r ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/ml/uc
        done
     fi
 
@@ -408,13 +408,12 @@ cd $NB_ALL/nbbuild
 
 if [ ! -z $UC_NBMS_DIR ]; then
    for UC_CLUSTER in $UC_EXTRA_CLUSTERS; do
-      cp -rp ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/uc
+      cp -r ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/uc
    done
 fi
 
 #Build catalog for FU NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatal
-og.base.url="."
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url="."
 ERROR_CODE=$?
 
 create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE
