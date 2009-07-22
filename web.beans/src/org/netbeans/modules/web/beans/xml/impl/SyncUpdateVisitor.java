@@ -38,18 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.netbeans.modules.web.beans.xml.Beans;
+import org.netbeans.modules.web.beans.xml.Deploy;
+import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.netbeans.modules.xml.xam.ComponentUpdater;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeansVisitor {
 
-    Beans getBeans();
-    
-    WebBeansComponentFactory getFactory();
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Beans)
+     */
+    public void visit( Beans beans ) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
+     */
+    public void visit( Deploy deploy ) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
+     */
+    public void visit( Type type ) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.ComponentUpdater#update(org.netbeans.modules.xml.xam.Component, org.netbeans.modules.xml.xam.Component, org.netbeans.modules.xml.xam.ComponentUpdater.Operation)
+     */
+    public void update( WebBeansComponent target, WebBeansComponent child,
+            Operation operation )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.ComponentUpdater#update(org.netbeans.modules.xml.xam.Component, org.netbeans.modules.xml.xam.Component, int, org.netbeans.modules.xml.xam.ComponentUpdater.Operation)
+     */
+    public void update( WebBeansComponent target, WebBeansComponent child,
+            int index, Operation operation )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

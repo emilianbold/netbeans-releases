@@ -38,18 +38,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.navigation.actions;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.awt.event.ActionEvent;
+
+import javax.swing.text.JTextComponent;
+
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.ext.ExtKit;
+import org.openide.util.NbBundle;
+
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+public final class InspectInjectablesAtCaretAction extends BaseAction {
 
-    Beans getBeans();
+    private static final long serialVersionUID = 1857528107859448216L;
     
-    WebBeansComponentFactory getFactory();
+    private static final String INSPECT_INJACTABLES_AT_CARET =
+        "LBL_InspectInjactablesAtCaret";                     // NOI18N
+    
+    private static final String INSPECT_INJACTABLES_AT_CARET_POPUP =
+        "LBL_PopupInspectInjactablesAtCaret";                // NOI18N
+
+    public InspectInjectablesAtCaretAction() {
+        super(NbBundle.getMessage(InspectInjectablesAtCaretAction.class, 
+                INSPECT_INJACTABLES_AT_CARET), 0);
+        
+        putValue(SHORT_DESCRIPTION, getValue(NAME));
+        putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
+        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
+                InspectInjectablesAtCaretAction.class,
+                INSPECT_INJACTABLES_AT_CARET_POPUP));
+
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N*/
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
+     */
+    @Override
+    public void actionPerformed( ActionEvent event, JTextComponent component ) {
+        
+    }
+    
+    /* (non-Javadoc)
+     * @see javax.swing.AbstractAction#isEnabled()
+     */
+    @Override
+    public boolean isEnabled() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

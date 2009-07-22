@@ -38,18 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+class TypeImpl extends WebBeansComponentImpl implements Type {
 
-    Beans getBeans();
+    TypeImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
     
-    WebBeansComponentFactory getFactory();
+    TypeImpl( WebBeansModelImpl model) {
+        super(model, createNewElement( TYPE, model));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent#getText()
+     */
+    @Override
+    public String getText() {
+        return super.getText();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
+     */
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit( this );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
+     */
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return Type.class;
+    }
+
 }

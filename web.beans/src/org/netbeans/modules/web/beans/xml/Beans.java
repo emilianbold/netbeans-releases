@@ -40,16 +40,21 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.util.List;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
-
-    Beans getBeans();
+public interface Beans extends WebBeansComponent {
     
-    WebBeansComponentFactory getFactory();
+    String BEANS_ELEMENT = "beans-element";         // NOI18N
+    
+    String BEANS = "beans";                         // NOI18N
+
+    List<BeansElement> getElements();
+    void addElement( BeansElement element );
+    void removeElement( BeansElement element );
+    void addElement( int index , BeansElement element );
 }

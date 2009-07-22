@@ -38,18 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.xml.namespace.QName;
+
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
-
-    Beans getBeans();
+public enum WebBeansElements {
     
-    WebBeansComponentFactory getFactory();
+    BEANS("beans"),
+    DEPLOY("deploy"),
+    TYPE("type");
+    
+    WebBeansElements( String name ){
+        myName = name;
+    }
+    
+    public String getName() {
+        return myName;
+    }
+
+    public QName getQName() {
+        return new QName( WebBeansComponent.WEB_BEANS_NAMESPACE, getName() );
+    }
+
+    
+    public static Set<QName> allQNames() {
+        if ( myQNames.get() == null ) {
+            Set<QName> set = new HashSet<QName>( values().length );
+            for (WebBeansElements element : values() ) {
+                set.add( element.getQName() );
+            }
+            myQNames.compareAndSet( null, set );
+        }
+        return myQNames.get();
+    }
+    
+    private String myName;
+
+    private static AtomicReference<Set<QName>> myQNames =
+        new AtomicReference<Set<QName>>();
 }
