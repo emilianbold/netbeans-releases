@@ -63,6 +63,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -193,6 +195,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private long viewStart = -1;
     private int sortedColum = -1;
     private int sortedOrder = 0;
+    private TimeLine timeLine;
 
     /**
      * Creates a new threads panel that displays threads timeline from data provided
@@ -458,6 +461,24 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         add(contentPanel, BorderLayout.CENTER);
 
         scrollBar.addAdjustmentListener(this);
+        scrollBar.addMouseWheelListener(new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                    int unitsToScroll = e.getUnitsToScroll();
+                    if (unitsToScroll != 0) {
+                        int direction = unitsToScroll < 0 ? -1 : 1;
+                        int increment = scrollBar.getUnitIncrement(direction);
+                        int oldValue = scrollBar.getValue();
+                        int newValue = oldValue + increment * unitsToScroll;
+                        newValue = Math.max(Math.min(newValue, scrollBar.getMaximum() -
+                                scrollBar.getVisibleAmount()), scrollBar.getMinimum());
+                        if (oldValue != newValue) {
+                            scrollBar.setValue(newValue);
+                        }
+                    }
+                }
+            }
+        });
         zoomInButton.addActionListener(this);
         zoomOutButton.addActionListener(this);
         scaleToFitButton.addActionListener(this);
@@ -664,6 +685,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     // View controller
     public long getViewStart() {
         return viewStart;
+    }
+
+    public TimeLine getTimeLine() {
+        return timeLine;
     }
 
     /**
@@ -938,10 +963,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                             }
                         }
                         ThreadState state = threadData.getThreadStateAt(index);
+                        timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
                         StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
                                                                                    isMSAMode(), isFullMode(), manager.getStartTime());
                         ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
                         ThreadsPanel.this.detailsCallback.showStack(visualizer);
+                        refreshUI();
                     }
                 }
             }
