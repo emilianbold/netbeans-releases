@@ -137,8 +137,7 @@ public class TldLibrary {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             InputSource is = new InputSource(content); //default encoding?!?!
-
-//            docBuilder.setEntityResolver(new FaceletsCatalog());
+            docBuilder.setEntityResolver(new TldEntityResolver());
             Document doc = docBuilder.parse(is);
 
             //usually the default taglib prefix
@@ -146,9 +145,9 @@ public class TldLibrary {
 
             prefix = getTextContent(tagLib, "short-name"); //NOI18N
             if(prefix == null) {
-                throw new TldLibraryException("Missing short-name entry in " + getDefinitionFile().getPath() + " library.", null);
+                //no default prefix
+                prefix = "";
             }
-
 
             uri = getTextContent(tagLib, "uri"); //NOI18N
             if(uri == null) {
