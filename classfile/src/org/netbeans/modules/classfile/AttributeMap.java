@@ -143,7 +143,7 @@ public final class AttributeMap {
     /**
      * Returns a set of names of all of the attributes in this map.
      */
-    public Set<String> keySet() {
+    public Set keySet() {
 	return map.keySet();
     }
 

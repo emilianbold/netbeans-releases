@@ -59,7 +59,7 @@ import java.util.WeakHashMap;
  *
  * @author Thomas Ball
  */
-public final class ClassName implements Comparable<ClassName>, Comparator<ClassName>, Serializable {
+public final class ClassName implements Comparable, Comparator, Serializable {
 
     static final long serialVersionUID = -8444469778945723553L;
 
@@ -144,8 +144,8 @@ public final class ClassName implements Comparable<ClassName>, Comparator<ClassN
     }
 
     private static ClassName getCacheEntry(String key) {
-	WeakReference<ClassName> ref = cache.get(key);
-	return ref != null ? ref.get() : null;
+	WeakReference ref = cache.get(key);
+	return ref != null ? (ClassName)ref.get() : null;
     }
 
     /**
@@ -284,10 +284,10 @@ public final class ClassName implements Comparable<ClassName>, Comparator<ClassN
      *		less than this string.
      * @see     java.lang.Comparable
      */
-    public int compareTo(ClassName obj) {
+    public int compareTo(Object obj) {
         // If obj isn't a ClassName, the correct ClassCastException
         // will be thrown by the cast.
-        return type.compareTo(obj.type);
+        return type.compareTo(((ClassName)obj).type);
     }
 
     /**
@@ -303,8 +303,8 @@ public final class ClassName implements Comparable<ClassName>, Comparator<ClassN
      * @throws ClassCastException if the arguments' types prevent them from
      * 	       being compared by this Comparator.
      */
-    public int compare(ClassName o1, ClassName o2) {
-        return o1.compareTo(o2);
+    public int compare(Object o1, Object o2) {
+        return ((ClassName)o1).compareTo(o2);
     }
 
     @Override

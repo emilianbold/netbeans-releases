@@ -240,7 +240,7 @@ public abstract class Field {
         sb.append(Access.toString(access));
 	loadAnnotations();
 	if (annotations.size() > 0) {
-	    Iterator<Annotation> iter = annotations.values().iterator();
+	    Iterator iter = annotations.values().iterator();
 	    sb.append(", annotations={ ");
 	    while (iter.hasNext()) {
 		sb.append(iter.next().toString());
