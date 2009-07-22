@@ -171,9 +171,10 @@ public class NodeFactorySupport {
                     NodeList<?> lst = factory.createNodes(project);
                     assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
                     lst.addNotify();
+                    List objects = lst.keys();
                     synchronized (keys) {
                         nodeLists.add(lst);
-                        addKeys(lst);
+                        addKeys(lst, objects);
                     }
                     lst.addChangeListener(this);
                     factories.add(factory);
@@ -205,19 +206,20 @@ public class NodeFactorySupport {
         
         public void stateChanged(ChangeEvent e) {
             NodeList list = (NodeList) e.getSource();
+            List objects = list.keys();
             synchronized (keys) {
                 removeKeys(list);
-                addKeys(list);
+                addKeys(list, objects);
             }
             final Collection<NodeListKeyWrapper> ks = createKeys();
             EventQueue.invokeLater(new RunnableImpl(this, ks));
         }
         
         //to be called under lock.
-        private void addKeys(NodeList list) {
+        private void addKeys(NodeList list, List objects) {
             assert Thread.holdsLock(keys);
             List<NodeListKeyWrapper> wrps = new ArrayList<NodeListKeyWrapper>();
-            for (Object key : list.keys()) {
+            for (Object key : objects) {
                 wrps.add(new NodeListKeyWrapper(key, list));
             }
             keys.put(list, wrps);
@@ -241,9 +243,10 @@ public class NodeFactorySupport {
                         factories.add(index, factory);
                         NodeList<?> lst = factory.createNodes(project);
                         assert lst != null;
+                        List objects = lst.keys();
                         synchronized (keys) {
                             nodeLists.add(index, lst);
-                            addKeys(lst);
+                            addKeys(lst, objects);
                         }
                         lst.addNotify();
                         lst.addChangeListener(this);
