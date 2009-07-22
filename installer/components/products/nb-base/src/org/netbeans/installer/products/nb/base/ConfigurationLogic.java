@@ -112,6 +112,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.netbeans.clusters")); // NOI18N
             for (String clusterName: CLUSTERS) {
+                File lastModified = new File(new File(installLocation, clusterName), 
+                                    NetBeansUtils.LAST_MODIFIED_MARKER);
+                if(!FileUtils.exists(lastModified)) {
+                    filesList.add(lastModified);
+                }
                 NetBeansUtils.addCluster(installLocation, clusterName);
             }
         } catch (IOException e) {

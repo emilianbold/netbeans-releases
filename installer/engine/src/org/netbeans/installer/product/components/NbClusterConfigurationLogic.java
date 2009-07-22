@@ -136,7 +136,11 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
                         NbClusterConfigurationLogic.class,
                         "NCCL.install.netbeans.clusters", // NOI18N
                         clusterName));
-                
+                File lastModified = new File(new File(installLocation, clusterName),
+                                    NetBeansUtils.LAST_MODIFIED_MARKER);
+                if(!FileUtils.exists(lastModified)) {
+                    getProduct().getInstalledFiles().add(lastModified);
+                }
                 NetBeansUtils.addCluster(nbLocation, clusterName);
             } catch (IOException e) {
                 throw new InstallationException(ResourceUtils.getString(
