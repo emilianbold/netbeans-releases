@@ -36,63 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.web.jsf.editor.tld;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.filesystems.FileObject;
 
 /**
- * Per web-module instance
  *
  * @author marekfukala
  */
-public class TldClassPathSupport implements PropertyChangeListener {
+public class TldUtils {
 
-    private final ClassPath cp;
-    //uri -> library map
-    private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
-    private boolean cache_valid = false;
+    private static Map<String, String> JSF_LIBRARY_DISPLAY_NAMES;
 
-    public TldClassPathSupport(ClassPath cp) {
-        this.cp = cp;
-        cp.addPropertyChangeListener(this);
-    }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        cache_valid = false;
-    }
-
-    public synchronized Map<String, TldLibrary> getLibraries() {
-        if (!cache_valid) {
-            LIBRARIES.clear();
-            for (FileObject cpRoot : cp.getRoots()) {
-                Collection<TldLibrary> libs = TldLibraryGlobalCache.getDefault().getLibraries(cpRoot);
-                for(TldLibrary lib : libs) {
-                    LIBRARIES.put(lib.getURI(), lib);
-                }
-            }
-
-            //add default libraries
-            for(TldLibrary lib : TldLibraryGlobalCache.getDefault().getDefaultLibraries()) {
-                LIBRARIES.put(lib.getURI(), lib);
-            }
-
-            cache_valid = true;
-            dumpLibs();
+    /** A workaround for missing <display-name> entry in jsf libraries. */
+    public static synchronized String getLibraryDisplayName(String libraryUri) {
+        if(JSF_LIBRARY_DISPLAY_NAMES == null) {
+            JSF_LIBRARY_DISPLAY_NAMES = new HashMap<String, String>();
+            
+            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/facelets", "Facelets"); //NOI18N
+            JSF_LIBRARY_DISPLAY_NAMES.put("http://mojarra.dev.java.net/mojarra_ext", "Mojarra Extensions"); //NOI18N
+            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/composite", "Composite Components"); //NOI18N
+            JSF_LIBRARY_DISPLAY_NAMES.put("http://java.sun.com/jsf/html", "Html Basic"); //NOI18N
         }
-        return LIBRARIES;
+        
+        return JSF_LIBRARY_DISPLAY_NAMES.get(libraryUri);
     }
 
-    private void dumpLibs() {
-        System.out.println("Available TLD libraries:"); //NOI18N
-        for (TldLibrary l : getLibraries().values()) {
-            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; "+ (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") +")");
-        }
-
-    }
 }

@@ -208,7 +208,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         for(TldLibrary.Tag tag : lib.getTags().values()) {
             String tagName = tag.getName();
             //TODO resolve help!!!
-            items.add(JsfCompletionItem.createTag(nsPrefix + ":" + tagName, context.getCCItemStartOffset(), null, lib.getURI(), undeclared));
+            items.add(JsfCompletionItem.createTag(nsPrefix + ":" + tagName, context.getCCItemStartOffset(), tag, lib, undeclared));
         }
 
         return items;
@@ -247,8 +247,12 @@ public class JsfHtmlExtension extends HtmlExtension {
 
                 for(TldLibrary.Attribute a : attrs) {
                     String attrName = a.getName();
-                    if(!existingAttrNames.contains(attrName)) {
-                        items.add(HtmlCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), a.isRequired(), null));
+                    if(!existingAttrNames.contains(attrName) ||
+                            existingAttrNames.contains(context.getItemText())) {
+                        //show only unused attributes except the one where the caret currently stays
+                        //this is because of we need to show the item in the completion since
+                        //use might want to see javadoc of already used attribute
+                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), lib, tag, a));
                     }
                 }
 
