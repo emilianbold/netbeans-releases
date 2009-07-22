@@ -156,12 +156,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         return super.createNodeDelegate();  //it is a FilterNode
     }
 
-    // it is called by super class constructor
-    @Override
-    protected EditorCookie createEditorCookie() {
-        return getCookieSet().getCookie(EditorCookie.class);
-    }
-
     /** Delegate to super with possible debug messages. */
     @Override
     public void setModified (boolean state) {
