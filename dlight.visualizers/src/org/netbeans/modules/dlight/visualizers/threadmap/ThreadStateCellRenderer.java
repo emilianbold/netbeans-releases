@@ -69,7 +69,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
     private long dataStart;
     private long viewEnd;
     private long viewStart;
-    //private Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
+    private TimeLine timeLine;
     private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
 
     /** Creates a new instance of ThreadStateCellRenderer */
@@ -141,6 +141,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         viewEnd = viewManager.getViewEnd();
         dataStart = viewManager.getDataStart();
         dataEnd = viewManager.getDataEnd();
+        timeLine = viewManager.getTimeLine();
 
         return this;
     }
@@ -263,6 +264,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 }
             }
         }
+        paintTimeLine(g);
     }
 
     /**
@@ -398,6 +400,19 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 }
 
                 currentMark += optimalUnits;
+            }
+        }
+    }
+
+    private void paintTimeLine(Graphics g) {
+        if ((viewEnd - viewStart) > 0) {
+            if (timeLine != null){
+                long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
+                if (viewStart < time && time < viewEnd) {
+                    int x = (int) ((getWidth() * (time - viewStart)) / (viewEnd - viewStart));
+                    g.setColor(TimeLineUtils.TIMELINE_CURSOR_COLOR);
+                    g.drawLine(x, 0, x, getHeight() - 1);
+                }
             }
         }
     }

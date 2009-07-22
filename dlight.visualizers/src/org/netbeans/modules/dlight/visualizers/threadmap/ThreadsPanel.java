@@ -63,6 +63,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -85,7 +87,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -134,7 +135,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
-    private static final String THREAD_DETAILS_ITEM = messages.getString("ThreadsPanel_ThreadDetailsItem"); // NOI18N
+    //private static final String THREAD_DETAILS_ITEM = messages.getString("ThreadsPanel_ThreadDetailsItem"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
     private static final String TABLE_ACCESS_DESCR = messages.getString("ThreadsPanel_TableAccessDescr"); // NOI18N
     private static final String COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ComboAccessName"); // NOI18N
@@ -193,6 +194,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private long viewStart = -1;
     private int sortedColum = -1;
     private int sortedOrder = 0;
+    private TimeLine timeLine;
 
     /**
      * Creates a new threads panel that displays threads timeline from data provided
@@ -458,15 +460,33 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         add(contentPanel, BorderLayout.CENTER);
 
         scrollBar.addAdjustmentListener(this);
+        scrollBar.addMouseWheelListener(new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                    int unitsToScroll = e.getUnitsToScroll();
+                    if (unitsToScroll != 0) {
+                        int direction = unitsToScroll < 0 ? -1 : 1;
+                        int increment = scrollBar.getUnitIncrement(direction);
+                        int oldValue = scrollBar.getValue();
+                        int newValue = oldValue + increment * unitsToScroll;
+                        newValue = Math.max(Math.min(newValue, scrollBar.getMaximum() -
+                                scrollBar.getVisibleAmount()), scrollBar.getMinimum());
+                        if (oldValue != newValue) {
+                            scrollBar.setValue(newValue);
+                        }
+                    }
+                }
+            }
+        });
         zoomInButton.addActionListener(this);
         zoomOutButton.addActionListener(this);
         scaleToFitButton.addActionListener(this);
         threadsSelectionCombo.addActionListener(this);
         showOnlySelectedThreads.addActionListener(this);
 
-        if (detailsCallback != null) {
-            showThreadsDetails.addActionListener(this);
-        }
+        //if (detailsCallback != null) {
+        //    showThreadsDetails.addActionListener(this);
+        //}
 
         table.getColumnModel().addColumnModelListener(this);
         table.addComponentListener(new ComponentAdapter() {
@@ -664,6 +684,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     // View controller
     public long getViewStart() {
         return viewStart;
+    }
+
+    public TimeLine getTimeLine() {
+        return timeLine;
     }
 
     /**
@@ -897,13 +921,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         showOnlySelectedThreads = new JMenuItem(SELECTED_THREADS_ITEM);
 
-        if (detailsCallback != null) {
-            Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-            showThreadsDetails = new JMenuItem(THREAD_DETAILS_ITEM);
-            showThreadsDetails.setFont(boldfont);
-            popup.add(showThreadsDetails);
-            popup.add(new JSeparator());
-        }
+        // not supported detailed action
+        //if (detailsCallback != null) {
+        //    Font boldfont = popup.getFont().deriveFont(Font.BOLD);
+        //    showThreadsDetails = new JMenuItem(THREAD_DETAILS_ITEM);
+        //    showThreadsDetails.setFont(boldfont);
+        //    popup.add(showThreadsDetails);
+        //    popup.add(new JSeparator());
+        //}
 
         popup.add(showOnlySelectedThreads);
 
@@ -938,10 +963,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                             }
                         }
                         ThreadState state = threadData.getThreadStateAt(index);
-                        StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
-                                                                                   isMSAMode(), isFullMode(), manager.getStartTime());
-                        ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
-                        ThreadsPanel.this.detailsCallback.showStack(visualizer);
+                        timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
+                        if (detailsCallback != null) {
+                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
+                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
+                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
+                            detailsCallback.showStack(visualizer);
+                        }
+                        refreshUI();
                     }
                 }
             }

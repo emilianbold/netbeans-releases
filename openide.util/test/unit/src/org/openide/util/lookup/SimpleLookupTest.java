@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,6 +59,10 @@ public class SimpleLookupTest extends NbTestCase {
         super(testName);
     }
 
+    public void testEmptyLookup() {
+        assertSize("Lookup.EMPTY should be small", 8, Lookup.EMPTY);
+    }
+
     /**
      * Simple tests testing singleton lookup.
      */
@@ -77,6 +81,18 @@ public class SimpleLookupTest extends NbTestCase {
         assertNotNull(p2.lookup(java.io.Serializable.class));
     }
     
+    public void testEmptyFixed() {
+        Lookup l = Lookups.fixed();
+        assertSize("Lookups.fixed() for empty list of items should be small", 8, l);
+        assertSame(Lookup.EMPTY, l);
+    }
+
+    public void testSingleItemFixed() {
+        Object o = new Object();
+        Lookup l = Lookups.fixed(o);
+        assertSize("Lookups.fixed(o) for a single item should be small", 24, l);
+    }
+
     /**
      * Simple tests testing fixed lookup.
      */

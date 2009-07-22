@@ -226,7 +226,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
             // Create web.xml
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
             if (wm != null) {
-                FileObject webXml = DDHelper.createWebXml(wm.getJ2eeProfile(), true, wm.getWebInf());
+                FileObject webXml = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
                 deployData.setWebApp(webXml);
             }
         }
