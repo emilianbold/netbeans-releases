@@ -369,7 +369,7 @@ class OccurenceBuilder {
                         classes.add((ClassScope) type);
                     }
                 }
-                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                Collection<ModelElement> allFields = new HashSet<ModelElement>();
                 if (!classes.isEmpty()) {
                     for (ClassScope clz : classes) {
                         Collection<? extends ModelElement> fields = CachingSupport.getInheritedFields(
@@ -418,7 +418,7 @@ class OccurenceBuilder {
             ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
             if (idName.equalsIgnoreCase(nodeInfo.getName())) {
                 Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
-                Collection<ModelElement> allMethods = new ArrayList<ModelElement>();
+                Collection<ModelElement> allMethods = new HashSet<ModelElement>();
                 if (!types.isEmpty()) {
                     for (TypeScope type : types) {
                         Collection<? extends ModelElement> methods = CachingSupport.getInheritedMethods(
@@ -500,7 +500,7 @@ class OccurenceBuilder {
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
                 String originalClzName = CodeUtils.extractUnqualifiedClassName(nodeInfo.getOriginalNode());
                 boolean isParent = originalClzName.equals("parent");//NOI18N
-                List<ModelElement> allMethods = new ArrayList<ModelElement>();
+                Collection<ModelElement> allMethods = new HashSet<ModelElement>();
                 Collection<? extends ClassScope> classes = getStaticClassName(entry.getValue(), originalClzName);
                 for (ClassScope clz : classes) {
                     Collection<? extends ModelElement> methods = null;
@@ -551,7 +551,7 @@ class OccurenceBuilder {
             ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
                 StaticConstantAccess sca = nodeInfo.getOriginalNode();
-                List<ModelElement> allConstants = new ArrayList<ModelElement>();
+                Collection<ModelElement> allConstants = new HashSet<ModelElement>();
                 Collection<? extends TypeScope> types = getStaticTypeName(entry.getValue(), CodeUtils.extractUnqualifiedClassName(sca));
                 for (TypeScope type : types) {
                     Collection<? extends ModelElement> constants = type.findInheritedConstants(idName);
@@ -589,8 +589,8 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
             if (isNameEquality(query, nodeInfo, entry.getValue())) {
-                List<? extends ClassScope> elems = CachingSupport.getClasses(idName, fileScope);
-                List<MethodScope> methods = new ArrayList<MethodScope>();
+                Collection<? extends ClassScope> elems = CachingSupport.getClasses(idName, fileScope);
+                Collection<MethodScope> methods = new HashSet<MethodScope>();
                 for (ClassScope clz : elems) {
                     methods.addAll(CachingSupport.getInheritedMethods(clz, "__construct", fileScope));//NOI18N
                 }
@@ -729,7 +729,7 @@ class OccurenceBuilder {
             if (Kind.FIELD.equals(nodeInfo.getKind()) && scope instanceof ClassScope && idName.equalsIgnoreCase(name)) {
                 List<? extends ClassScope> classes = CachingSupport.getClasses(scope.getName(), scope);
 
-                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                Collection<ModelElement> allFields = new HashSet<ModelElement>();
                 if (!classes.isEmpty()) {
                     for (ClassScope clz : classes) {
                         Collection<? extends ModelElement> fields = CachingSupport.getInheritedFields(
