@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
+import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
@@ -50,7 +51,7 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
  *
  * @author Alexander Simon
  */
-public final class StackTraceDescriptor {
+public final class StackTraceDescriptor implements StackTraceColumn {
 
     private StackTrace stackTrace;
     private final List<Integer> showThreads;

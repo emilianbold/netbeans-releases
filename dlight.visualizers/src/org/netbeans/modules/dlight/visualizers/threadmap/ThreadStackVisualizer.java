@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.api.stack.OpenInEditor;
 import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
+import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -71,9 +72,9 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
-    private final StackTraceDescriptor descriptor;
+    private final StackTraceColumn descriptor;
 
-    ThreadStackVisualizer(StackTraceDescriptor descriptor) {
+    ThreadStackVisualizer(StackTraceColumn descriptor) {
         this.descriptor = descriptor;
         init();
     }

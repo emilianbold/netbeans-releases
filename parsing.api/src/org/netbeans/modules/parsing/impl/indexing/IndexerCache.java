@@ -235,77 +235,92 @@ public abstract class IndexerCache <T> {
         EditorSettings.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(tracker, EditorSettings.getDefault()));
     }
 
-    private Object [] getData() {
-        synchronized (this) {
-            if (infosByName == null) {
-                Map<T, Set<String>> factories = new LinkedHashMap<T, Set<String>>();
+    /**
+     * This method should not be called when holding any lock since it calls
+     * Lookup.Result.allInstances which can block.
+     * @param factories - non null map for collecting results
+     */
+    private void collectIndexerFactoriesRegisteredForAllLanguages(Map<T, Set<String>> factories) {
+        Lookup.Result<T> r = tracker.getLookupData(ALL_MIME_TYPES);
+        for (T factory : r.allInstances()) {
+            Set<String> mimeTypes = factories.get(factory);
+            if (mimeTypes == null) {
+                mimeTypes = new HashSet<String>();
+                mimeTypes.add(ALL_MIME_TYPES);
+                factories.put(factory, mimeTypes);
+            } // else the factory is already in the map (this should not happen unless ill configured in the layer)
+        }
+    }
 
-                { // collect indexer factories registered for all languages
-                    Lookup.Result<T> r = tracker.getLookupData(ALL_MIME_TYPES);
-                    for(T factory : r.allInstances()) {
-                        Set<String> mimeTypes = factories.get(factory);
-                        if (mimeTypes == null) {
-                            mimeTypes = new HashSet<String>();
-                            mimeTypes.add(ALL_MIME_TYPES);
-                            factories.put(factory, mimeTypes);
-                        } // else the factory is already in the map (this should not happen unless ill configured in the layer)
-                    }
+    /**
+     * This method should not be called when holding any lock since it calls
+     * Lookup.Result.allInstances which can block.
+     * @param factories - non null map for collecting results
+     */
+    private void collectIndexerFactoriesRegisteredForEachParticularLanguage(Map<T, Set<String>> factories) {
+        Set<String> mimeTypes = Util.getAllMimeTypes();
+        for (String mimeType : mimeTypes) {
+            Lookup.Result<T> r = tracker.getLookupData(mimeType);
+            for (T factory : r.allInstances()) {
+                Set<String> factoryMimeTypes = factories.get(factory);
+                if (factoryMimeTypes == null) {
+                    factoryMimeTypes = new HashSet<String>();
+                    factoryMimeTypes.add(mimeType);
+                    factories.put(factory, factoryMimeTypes);
+                } else if (!factoryMimeTypes.contains(ALL_MIME_TYPES)) {
+                    factoryMimeTypes.add(mimeType);
                 }
+            }
+        }
+    }
 
-                {// collect indexer factories registered for each particular language
-                    Set<String> mimeTypes = Util.getAllMimeTypes();
-                    for(String mimeType : mimeTypes) {
-                        Lookup.Result<T> r = tracker.getLookupData(mimeType);
-                        for(T factory : r.allInstances()) {
-                            Set<String> factoryMimeTypes = factories.get(factory);
-                            if (factoryMimeTypes == null) {
-                                factoryMimeTypes = new HashSet<String>();
-                                factoryMimeTypes.add(mimeType);
-                                factories.put(factory, factoryMimeTypes);
-                            } else if (!factoryMimeTypes.contains(ALL_MIME_TYPES)) {
-                                factoryMimeTypes.add(mimeType);
-                            }
-                        }
+    private Object[] getData() {
+        if (infosByName == null) {
+            Map<T, Set<String>> factories = new LinkedHashMap<T, Set<String>>();
+            collectIndexerFactoriesRegisteredForAllLanguages(factories);
+            collectIndexerFactoriesRegisteredForEachParticularLanguage(factories);
+
+            Map<String, IndexerInfo<T>> _infosByName = new HashMap<String, IndexerInfo<T>>();
+            Map<String, Set<IndexerInfo<T>>> _infosByMimeType = new HashMap<String, Set<IndexerInfo<T>>>();
+            List<IndexerInfo<T>> _orderedInfos = new ArrayList<IndexerInfo<T>>();
+            for (T factory : factories.keySet()) {
+                Set<String> mimeTypes = factories.get(factory);
+                IndexerInfo<T> info = new IndexerInfo<T>(factory, mimeTypes);
+                _infosByName.put(getIndexerName(factory), info);
+                _orderedInfos.add(info);
+
+                for (String mimeType : mimeTypes) {
+                    Set<IndexerInfo<T>> infos = _infosByMimeType.get(mimeType);
+                    if (infos == null) {
+                        infos = new HashSet<IndexerInfo<T>>();
+                        _infosByMimeType.put(mimeType, infos);
                     }
-                }
-
-                Map<String, IndexerInfo<T>> _infosByName = new HashMap<String, IndexerInfo<T>>();
-                Map<String, Set<IndexerInfo<T>>> _infosByMimeType = new HashMap<String, Set<IndexerInfo<T>>>();
-                List<IndexerInfo<T>> _orderedInfos = new ArrayList<IndexerInfo<T>>();
-                for(T factory : factories.keySet()) {
-                    Set<String> mimeTypes = factories.get(factory);
-                    IndexerInfo<T> info = new IndexerInfo<T>(factory, mimeTypes);
-                    _infosByName.put(getIndexerName(factory), info);
-                    _orderedInfos.add(info);
-
-                    for(String mimeType : mimeTypes) {
-                        Set<IndexerInfo<T>> infos = _infosByMimeType.get(mimeType);
-                        if (infos == null) {
-                            infos = new HashSet<IndexerInfo<T>>();
-                            _infosByMimeType.put(mimeType, infos);
-                        }
-                        infos.add(info);
-                    }
-                }
-
-                // the comparator instance must not be cached, because it uses data
-                // from the default lookup
-                Collections.sort(_orderedInfos, new C());
-
-                infosByName = Collections.unmodifiableMap(_infosByName);
-                infosByMimeType = Collections.unmodifiableMap(_infosByMimeType);
-                orderedInfos = Collections.unmodifiableList(_orderedInfos);
-
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Ordered indexers of {0}: ", type.getName()); //NOI18N
-                    for(IndexerInfo<T> ii : orderedInfos) {
-                        LOG.log(Level.FINE, "  {0}: {1}", new Object [] { ii.getIndexerFactory(), ii.getMimeTypes() }); //NOI18N
-                    }
+                    infos.add(info);
                 }
             }
 
-            return new Object [] { infosByName, infosByMimeType, orderedInfos };
+            // the comparator instance must not be cached, because it uses data
+            // from the default lookup
+            Collections.sort(_orderedInfos, new C());
+            synchronized (this) {
+                // double null check: the first thread that reaches here will
+                // "win" and the results from the second can be safelly discarded
+                if (infosByName == null) {
+                    infosByName = Collections.unmodifiableMap(_infosByName);
+                    infosByMimeType = Collections.unmodifiableMap(_infosByMimeType);
+                    orderedInfos = Collections.unmodifiableList(_orderedInfos);
+                }
+            }
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Ordered indexers of {0}: ", type.getName()); //NOI18N
+                for (IndexerInfo<T> ii : orderedInfos) {
+                    LOG.log(Level.FINE, "  {0}: {1}", new Object[]{ii.getIndexerFactory(), ii.getMimeTypes()}); //NOI18N
+                }
+            }
         }
+
+        return new Object [] { infosByName, infosByMimeType, orderedInfos };
     }
 
 

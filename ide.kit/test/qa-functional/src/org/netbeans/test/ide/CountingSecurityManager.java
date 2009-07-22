@@ -534,14 +534,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (cmd.contains("chmod")) {
             return;
         }
-        if (cmd.equals("hg")) {
-            return;
-        }
-        if (cmd.endsWith("/hg")) {
-            return;
-        }
-        if (cmd.endsWith("hg.exe")) {
-            return;
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            if (e.getMethodName().equals("execEnv") && e.getClassName().equals("org.netbeans.modules.mercurial.util.HgCommand")) {
+                return;
+            }
         }
 
         super.checkExec(cmd);
