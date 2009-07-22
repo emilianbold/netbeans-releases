@@ -116,7 +116,6 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>          
             <line choice="ruby"></line>           
-            <line choice="webcommon"></line>
         </line>            
         <line choice="glassfish-v3"></line>
     </choices-outline>
@@ -127,14 +126,10 @@ function checkChoiceUpgradeAction() {
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
     </choice>
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.webcommon"></pkg-ref>
-    </choice>    
     <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
     </choice>    
     <pkg-ref id="org.netbeans.ide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3.pkg</pkg-ref>
 </installer-gui-script>

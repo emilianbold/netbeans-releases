@@ -81,10 +81,10 @@ public class GroovySources {
      */
     public static List<SourceGroup> getGroovySourceGroups(Sources sources) {
         List<SourceGroup> result = new ArrayList<SourceGroup>();
-        for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+        for (SourceGroup sourceGroup : sources.getSourceGroups(GroovySources.SOURCES_TYPE_GROOVY)) {
             result.add(sourceGroup);
         }
-        for (SourceGroup sourceGroup : sources.getSourceGroups(GroovySources.SOURCES_TYPE_GROOVY)) {
+        for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             result.add(sourceGroup);
         }
         for (SourceGroup sourceGroup : sources.getSourceGroups(GroovySources.SOURCES_TYPE_GRAILS)) {
