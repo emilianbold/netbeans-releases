@@ -107,7 +107,9 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
     
     /**
      * Creates empty instance whose items will not be alphabetized.
+     * @deprecated Use {@link #EditableProperties(boolean)} for clarity instead.
      */
+    @Deprecated
     public EditableProperties() {
         this(/* mentioned in #64174 - documented default */false);
     }

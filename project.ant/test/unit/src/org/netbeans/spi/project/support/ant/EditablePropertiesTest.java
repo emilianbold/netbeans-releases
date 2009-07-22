@@ -252,7 +252,7 @@ public class EditablePropertiesTest extends NbTestCase {
                 System.getProperty("line.separator");
         assertEquals(expected, output);
         
-        ep = new EditableProperties();
+        ep = new EditableProperties(false);
         ep.setProperty("a", "val-a");
         ep.setProperty("c", "val-c");
         ep.put("b", "val-b");
@@ -406,7 +406,7 @@ public class EditablePropertiesTest extends NbTestCase {
     public void testInvalidPropertiesFile() throws Exception {
         String invalidProperty = "key=value without correct end\\";
         ByteArrayInputStream is = new ByteArrayInputStream(invalidProperty.getBytes());
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         ep.load(is);
         assertEquals("Syntax error should be resolved", 1, ep.keySet().size());
         assertEquals("value without correct end", ep.getProperty("key"));
@@ -415,12 +415,12 @@ public class EditablePropertiesTest extends NbTestCase {
     public void testNonLatinComments() throws Exception {
         // #60249.
         String lsep = System.getProperty("line.separator");
-        EditableProperties p = new EditableProperties();
+        EditableProperties p = new EditableProperties(false);
         p.setProperty("k", "v");
         p.setComment("k", new String[] {"# \u0158ekni koment teda!"}, false);
         String expected = "# \\u0158ekni koment teda!" + lsep + "k=v" + lsep;
         assertEquals("Storing non-Latin chars in comments works", expected, getAsString(p));
-        p = new EditableProperties();
+        p = new EditableProperties(false);
         p.load(new ByteArrayInputStream(expected.getBytes("ISO-8859-1")));
         assertEquals("Reading non-Latin chars in comments works", Collections.singletonList("# \u0158ekni koment teda!"), Arrays.asList(p.getComment("k")));
         p.setProperty("k", "v2");
@@ -439,7 +439,7 @@ public class EditablePropertiesTest extends NbTestCase {
     
     private EditableProperties loadTestProperties() throws IOException {
         URL u = EditablePropertiesTest.class.getResource("data/test.properties");
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         InputStream is = u.openStream();
         try {
             ep.load(is);
