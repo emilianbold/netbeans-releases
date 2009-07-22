@@ -261,7 +261,7 @@ public class PropertyUtilsTest extends NbTestCase {
         File ubp = new File(getWorkDir(), "build.properties");
         assertFalse("no build.properties yet", ubp.exists());
         assertEquals("no properties to start", Collections.EMPTY_MAP, PropertyUtils.getGlobalProperties());
-        EditableProperties p = new EditableProperties();
+        EditableProperties p = new EditableProperties(false);
         p.setProperty("key1", "val1");
         p.setProperty("key2", "val2");
         PropertyUtils.putGlobalProperties(p);
