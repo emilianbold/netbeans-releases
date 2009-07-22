@@ -45,6 +45,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -52,8 +53,10 @@ import org.netbeans.junit.NbTestCase;
  */
 public class getTopmostTest extends NbTestCase {
 
+    MercurialVCS mvcs;
     public getTopmostTest(String arg0) {
         super(arg0);
+        mvcs = Lookup.getDefault().lookup(MercurialVCS.class);
     }
 
     @Override
@@ -71,19 +74,19 @@ public class getTopmostTest extends NbTestCase {
         File r2f1 = createFile(r2, "f1");
 
         // test
-        File tm1 = Mercurial.getInstance().getTopmostManagedParent(r1f1);
+        File tm1 = mvcs.getTopmostManagedAncestor(r1f1);
         assertEquals(r1, tm1);
-        File tm2 = Mercurial.getInstance().getTopmostManagedParent(r2f1);
+        File tm2 = mvcs.getTopmostManagedAncestor(r2f1);
         assertEquals(r1, tm2);
 
         // test again - to get cached
-        tm1 = Mercurial.getInstance().getTopmostManagedParent(r1f1);
+        tm1 = mvcs.getTopmostManagedAncestor(r1f1);
         assertEquals(r1, tm1);
-        tm1 = Mercurial.getInstance().getTopmostManagedParent(r1);
+        tm1 = mvcs.getTopmostManagedAncestor(r1);
         assertEquals(r1, tm1);
-        tm2 = Mercurial.getInstance().getTopmostManagedParent(r2f1);
+        tm2 = mvcs.getTopmostManagedAncestor(r2f1);
         assertEquals(r1, tm2);
-        tm2 = Mercurial.getInstance().getTopmostManagedParent(r2);
+        tm2 = mvcs.getTopmostManagedAncestor(r2);
         assertEquals(r1, tm2);
     }
 
@@ -96,17 +99,17 @@ public class getTopmostTest extends NbTestCase {
         File r2f1 = createFile(r2, "f1");
 
         // test
-        File tm2 = Mercurial.getInstance().getTopmostManagedParent(r2f1);
+        File tm2 = mvcs.getTopmostManagedAncestor(r2f1);
         assertEquals(r1, tm2);
-        File tm1 = Mercurial.getInstance().getTopmostManagedParent(r1f1);
+        File tm1 = mvcs.getTopmostManagedAncestor(r1f1);
         assertEquals(r1, tm1);
 
         // test again - to get cached
-        tm2 = Mercurial.getInstance().getTopmostManagedParent(r2f1);
+        tm2 = mvcs.getTopmostManagedAncestor(r2f1);
         assertEquals(r1, tm2);
-        tm2 = Mercurial.getInstance().getTopmostManagedParent(r2);
+        tm2 = mvcs.getTopmostManagedAncestor(r2);
         assertEquals(r1, tm2);
-        tm2 = Mercurial.getInstance().getTopmostManagedParent(r1);
+        tm2 = mvcs.getTopmostManagedAncestor(r1);
         assertEquals(r1, tm2);
     }
 
@@ -219,7 +222,7 @@ public class getTopmostTest extends NbTestCase {
         File r2f1 = createFile(r2, "f1");
 
         // test
-        File tm1 = Mercurial.getInstance().getTopmostManagedParent(getTempDir());
+        File tm1 = mvcs.getTopmostManagedAncestor(getTempDir());
         assertNull(tm1);
     }
 
@@ -271,12 +274,12 @@ public class getTopmostTest extends NbTestCase {
     private Set<File> getKnownRoots() throws SecurityException, IllegalArgumentException, Exception, IllegalAccessException {
         Field f = null;
         try {
-            f = Mercurial.class.getDeclaredField("knownRoots");
+            f = MercurialVCS.class.getDeclaredField("knownRoots");
         } catch (Exception ex) {
             throw ex;
         }
         f.setAccessible(true);
-        Set<File> m = (Set<File>) f.get(Mercurial.getInstance());
+        Set<File> m = (Set<File>) f.get(mvcs);
         return m;
     }
 
