@@ -435,8 +435,7 @@ public class HtmlCompletionQuery extends UserTask {
                 break;
             }
             //if dtd element and doesn't have forbidden end tag
-            //leaf.getDTDElement() == null may happen for text ast node elements for example
-            if (leaf.getDTDElement() != null && !AstNodeUtils.hasForbiddenEndTag(leaf)) {
+            if (leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf)) {
                 String tagName = leaf.name();
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
