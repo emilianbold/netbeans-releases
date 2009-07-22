@@ -194,6 +194,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createIgnorePath"/>
                     <attr name="position" intvalue="310"/>
                 </file>
+                <file name="PhpUnit.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpUnit"/>
+                    <attr name="position" intvalue="320"/>
+                </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>

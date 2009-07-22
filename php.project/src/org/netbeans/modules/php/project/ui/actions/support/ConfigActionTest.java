@@ -44,9 +44,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -64,6 +62,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpUnit.Files;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -264,20 +263,21 @@ class ConfigActionTest extends ConfigAction {
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
-            List<String> generatedFiles = new ArrayList<String>(2);
-            File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
-            if (bootstrap != null) {
+            File startFile = FileUtil.toFile(info.startFile);
+            Files files = phpUnit.getFiles(project, info.testName == null);
+            if (files.bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                        .addArgument(bootstrap.getAbsolutePath());
+                        .addArgument(files.bootstrap.getAbsolutePath());
             }
-            File configuration = phpUnit.getConfigurationFile(project, generatedFiles);
-            if (configuration != null) {
+            if (files.configuration != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                        .addArgument(configuration.getAbsolutePath());
+                        .addArgument(files.configuration.getAbsolutePath());
             }
-            PhpUnit.informAboutGeneratedFiles(generatedFiles);
+            if (files.suite != null) {
+                startFile = files.suite;
+            }
 
             if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
@@ -286,14 +286,19 @@ class ConfigActionTest extends ConfigAction {
             }
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.SUITE.getAbsolutePath())
-                    .addArgument(PhpUnit.SUITE_RUN + FileUtil.toFile(info.startFile).getAbsolutePath());
+                    .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
             return externalProcessBuilder;
         }
 
         public String getOutputTabTitle() {
             String title = null;
             if (info.testName == null) {
-                title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
+                File suite = phpUnit.getCustomSuite(project);
+                if (suite == null) {
+                    title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
+                } else {
+                    title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesWithCustomSuiteSuffix", suite.getName());
+                }
             } else {
                 title = info.testName;
             }
