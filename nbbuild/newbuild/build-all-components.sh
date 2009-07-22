@@ -369,7 +369,7 @@ if [ $ML_BUILD == 1 ]; then
 
     if [ ! -z $UC_NBMS_DIR ]; then
        for UC_CLUSTER in $UC_EXTRA_CLUSTERS; do
-          cp -rp ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/uc
+          cp -rp ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/ml/uc
        done
     fi
 
