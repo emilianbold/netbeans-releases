@@ -64,6 +64,17 @@ public class DDHelper {
     /**
      * Creates web.xml deployment descriptor.
      * @param j2eeProfile Java EE profile to specify which version of web.xml should be created
+     * @param dir Directory where web.xml should be created
+     * @return web.xml file as FileObject
+     * @throws java.io.IOException
+     */
+    public static FileObject createWebXml(Profile j2eeProfile, FileObject dir) throws IOException {
+        return createWebXml(j2eeProfile, true, dir);
+    }
+    
+    /**
+     * Creates web.xml deployment descriptor.
+     * @param j2eeProfile Java EE profile to specify which version of web.xml should be created
      * @param webXmlRequired true if web.xml should be created also for profiles where it is not required
      * @param dir Directory where web.xml should be created
      * @return web.xml file as FileObject

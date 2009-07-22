@@ -70,6 +70,7 @@ public class ThreadsDataManager {
     private long startTime; // Timestamp of threadData start
     private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
     private ThreadMapData stackProvider;
+    private int monitoredDataInterval;
 
     /**
      * Creates a new instance of ThreadsDataManager
@@ -140,6 +141,10 @@ public class ThreadsDataManager {
      */
     public synchronized long getStartTime() {
         return ThreadStateColumnImpl.timeStampToMilliSeconds(startTime);
+    }
+
+    public synchronized int getInterval() {
+        return monitoredDataInterval;
     }
 
     public synchronized ThreadStateColumnImpl getThreadData(int index) {
@@ -214,6 +219,7 @@ public class ThreadsDataManager {
             return;
         }
         stackProvider = monitoredData.getStackProvider();
+        monitoredDataInterval = monitoredData.getTimeStampInterval();
         Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
         for(int i = 0; i < updateThreadSize; i++){
             ThreadInfo info = monitoredData.getThreadInfo(i);
@@ -227,7 +233,7 @@ public class ThreadsDataManager {
             if (number == null) {
                 // this is dead thread
                 if (col.isAlive()){
-                   closeThread(col, monitoredData.getTimeStampInterval());
+                   closeThread(col, monitoredDataInterval);
                 }
             } else {
                 ThreadState lastState = col.getThreadStateAt(col.size()-1);

@@ -36,48 +36,49 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.jsf.editor.tld;
-
-import java.io.IOException;
-import java.net.URL;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+package org.netbeans.modules.dlight.api.storage;
 
 /**
+ * Some functions useful when dealing with {@link DataRow}s.
  *
- * @author marekfukala
+ * @author Alexey Vladykin
  */
-public class TldEntityResolver implements EntityResolver {
+public final class DataUtil {
 
-    public static final String TAGLIB_SCHEMA_21_URI = "http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"; //NOI18N
-    public static final String TAGLIB_SCHEMA_21_RESOURCE = "org/netbeans/modules/web/jsf/editor/tld/resources/web-jsptaglibrary_2_1.xsd"; //NOI18N
+    private DataUtil() {
+    }
 
-    public  static final String TAGLIB_DTD_JSP11_PUBLICID="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN"; // NOI18N
-    public static final String TAGLIB_DTD_JSP11_RESOURCE = "org/netbeans/modules/web/jsf/editor/tld/resources/web-jsptaglibrary_1_1.dtd"; //NOI18N
+    /**
+     * Shortcut for {@link #toInt(java.lang.Object, int)}
+     * with <code>defaultValue = 0</code>.
+     * 
+     * @param obj  converted object
+     * @return conversion result
+     */
+    public static int toInt(Object obj) {
+        return toInt(obj, 0);
+    }
 
-    public  static final String TAGLIB_DTD_JSP12_PUBLICID="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"; // NOI18N
-    public static final String TAGLIB_DTD_JSP12_RESOURCE = "org/netbeans/modules/web/jsf/editor/tld/resources/web-jsptaglibrary_1_2.dtd"; //NOI18N
-
-
-    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-//        System.out.println("resolving publicid = " + publicId + " systemid = " + systemId);
-
-        if(systemId.equals(TAGLIB_SCHEMA_21_URI)){
-            return getResource(TAGLIB_DTD_JSP11_RESOURCE);
-        } else if(publicId.equals(TAGLIB_DTD_JSP11_PUBLICID)) {
-            return getResource(TAGLIB_DTD_JSP11_RESOURCE);
-        } else if(publicId.equals(TAGLIB_DTD_JSP12_PUBLICID)) {
-            return getResource(TAGLIB_DTD_JSP12_RESOURCE);
+    /**
+     * Tries to convert given object to int.
+     * <code>Number</code> subclasses are converted using <code>intValue()</code> method.
+     * <code>String</code>s are parsed with <code>Integer.parseInt()</code>.
+     * In caes string is malformed, or object is of any other class,
+     * or <code>null</code> is given, default value is returned.
+     *
+     * @param obj  converted object
+     * @param defaultValue  what to return if conversion fails
+     * @return coversion result
+     */
+    public static int toInt(Object obj, int defaultValue) {
+        if (obj instanceof Number) {
+            return ((Number) obj).intValue();
+        } else if (obj instanceof String) {
+            try {
+                return Integer.parseInt((String) obj);
+            } catch (NumberFormatException ex) {
+            }
         }
-        
-        return null;
+        return 0;
     }
-
-    private InputSource getResource(String location) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(location);
-        return new InputSource(url.toString());
-    }
-
 }

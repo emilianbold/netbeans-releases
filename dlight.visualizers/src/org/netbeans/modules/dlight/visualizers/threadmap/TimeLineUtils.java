@@ -65,6 +65,7 @@ public class TimeLineUtils {
     public static final Color BASE_TIMELINE_COLOR = new Color(0, 0, 0);
     public static final Color MAIN_TIMELINE_COLOR = new Color(150, 150, 150);
     public static final Color TICK_TIMELINE_COLOR = new Color(230, 230, 230);
+    public static final Color TIMELINE_CURSOR_COLOR = new Color(0, 95, 173);
     private static final int TIME_FORMAT_UNKNOWN = -1;
     private static final int TIME_FORMAT_MILLIS = 10;
     private static final int TIME_FORMAT_SECONDS = 20;

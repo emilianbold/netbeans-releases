@@ -90,6 +90,7 @@ public final class MavenCommandSettings {
                 //when changing this value, consider checking if the new version works with
                 //embedded maven and also update the workaround in MavenJavaExecutor
                 //#156751
+                // also change the default archetype catalog at org/netbeans/modules/maven/archetype-catalog.xml
                 toRet = "org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-4:generate";//NOI18N
             }
             else if (COMMAND_SCM_CHECKOUT.equals(command)) {
