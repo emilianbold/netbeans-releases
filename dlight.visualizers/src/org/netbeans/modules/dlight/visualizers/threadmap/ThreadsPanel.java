@@ -87,7 +87,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -136,7 +135,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
-    private static final String THREAD_DETAILS_ITEM = messages.getString("ThreadsPanel_ThreadDetailsItem"); // NOI18N
+    //private static final String THREAD_DETAILS_ITEM = messages.getString("ThreadsPanel_ThreadDetailsItem"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
     private static final String TABLE_ACCESS_DESCR = messages.getString("ThreadsPanel_TableAccessDescr"); // NOI18N
     private static final String COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ComboAccessName"); // NOI18N
@@ -485,9 +484,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         threadsSelectionCombo.addActionListener(this);
         showOnlySelectedThreads.addActionListener(this);
 
-        if (detailsCallback != null) {
-            showThreadsDetails.addActionListener(this);
-        }
+        //if (detailsCallback != null) {
+        //    showThreadsDetails.addActionListener(this);
+        //}
 
         table.getColumnModel().addColumnModelListener(this);
         table.addComponentListener(new ComponentAdapter() {
@@ -922,13 +921,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         showOnlySelectedThreads = new JMenuItem(SELECTED_THREADS_ITEM);
 
-        if (detailsCallback != null) {
-            Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-            showThreadsDetails = new JMenuItem(THREAD_DETAILS_ITEM);
-            showThreadsDetails.setFont(boldfont);
-            popup.add(showThreadsDetails);
-            popup.add(new JSeparator());
-        }
+        // not supported detailed action
+        //if (detailsCallback != null) {
+        //    Font boldfont = popup.getFont().deriveFont(Font.BOLD);
+        //    showThreadsDetails = new JMenuItem(THREAD_DETAILS_ITEM);
+        //    showThreadsDetails.setFont(boldfont);
+        //    popup.add(showThreadsDetails);
+        //    popup.add(new JSeparator());
+        //}
 
         popup.add(showOnlySelectedThreads);
 
@@ -964,10 +964,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                         }
                         ThreadState state = threadData.getThreadStateAt(index);
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
-                        StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
-                                                                                   isMSAMode(), isFullMode(), manager.getStartTime());
-                        ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
-                        ThreadsPanel.this.detailsCallback.showStack(visualizer);
+                        if (detailsCallback != null) {
+                            StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
+                                                                                       isMSAMode(), isFullMode(), manager.getStartTime());
+                            ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
+                            detailsCallback.showStack(visualizer);
+                        }
                         refreshUI();
                     }
                 }
