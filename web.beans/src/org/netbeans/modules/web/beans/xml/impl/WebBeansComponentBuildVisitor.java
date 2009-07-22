@@ -40,15 +40,14 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
-import java.util.Set;
-
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.web.beans.xml.Beans;
+import org.netbeans.modules.web.beans.xml.Deploy;
+import org.netbeans.modules.web.beans.xml.Type;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
-import org.netbeans.modules.web.beans.xml.WebBeansModel;
-import org.netbeans.modules.xml.xam.ComponentUpdater;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
 
 
@@ -56,79 +55,83 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> 
-    implements WebBeansModel 
-{
+class WebBeansComponentBuildVisitor implements WebBeansVisitor {
 
-    WebBeansModelImpl( ModelSource source ) {
-        super(source);
-        myFactory = new WebBeansComponentFactoryImpl( this );
+    WebBeansComponentBuildVisitor( WebBeansModelImpl model ) {
+        myModel = model;
+    }
+    
+    public void init() {
+        myResult = null;
+        myElement = null;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#createRootComponent(org.w3c.dom.Element)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Beans)
      */
-    @Override
-    public WebBeansComponent createRootComponent( Element root ) {
-        BeansImpl beans = (BeansImpl)getFactory().createComponent( root, null);
-        if ( beans!= null ){
-            myRoot = beans;
+    public void visit( Beans beans ) {
+        if ( isAcceptable( WebBeansElements.DEPLOY)){
+            setResult( new DeployImpl( getModel() , getElement()));
         }
-        else {
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
+     */
+    public void visit( Deploy deploy ) {
+        if ( isAcceptable( WebBeansElements.TYPE)){
+            setResult( new TypeImpl( getModel() , getElement()));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
+     */
+    public void visit( Type type ) {
+        // type doesn't have children
+    }
+
+    WebBeansComponent create( WebBeansComponent context, Element element )
+    {
+        QName qName = AbstractDocumentComponent.getQName(element);
+        if ( !WebBeansComponent.WEB_BEANS_NAMESPACE.equals( 
+                qName.getNamespaceURI() ))
+        {
             return null;
         }
-        return getBeans();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#getComponentUpdater()
-     */
-    @Override
-    public ComponentUpdater<WebBeansComponent> getComponentUpdater() {
-        if ( mySyncUpdateVisitor== null ){
-            mySyncUpdateVisitor  = new SyncUpdateVisitor();
+        if ( context == null ){
+            return new BeansImpl( getModel() );
         }
-        return mySyncUpdateVisitor;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.dom.DocumentModel#createComponent(org.netbeans.modules.xml.xam.dom.DocumentComponent, org.w3c.dom.Element)
-     */
-    public WebBeansComponent createComponent( WebBeansComponent parent,
-            Element element )
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.dom.DocumentModel#getRootComponent()
-     */
-    public WebBeansComponent getRootComponent() {
-        return myRoot;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansModel#getBeans()
-     */
-    public BeansImpl getBeans() {
-        return (BeansImpl)getRootComponent();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansModel#getFactory()
-     */
-    public WebBeansComponentFactoryImpl getFactory() {
-        return myFactory;
+        else {
+            context.accept( this );
+        }
+        return myResult;
     }
     
-    public Set<QName> getQNames() {
-        return WebBeansElements.allQNames();
+    private WebBeansModelImpl getModel(){
+        return myModel;
     }
     
-    private BeansImpl myRoot;
+    private void setResult( WebBeansComponent component ) {
+        myResult = component;
+    }
+
+    private boolean isAcceptable( WebBeansElements elements ) {
+        return elements.getName().equals( getLocalName() );
+    }
+
+    private String getLocalName() {
+        return getElement().getLocalName();
+    }
     
-    private SyncUpdateVisitor mySyncUpdateVisitor;
+    private Element getElement(){
+        return myElement;
+    }
     
-    private WebBeansComponentFactoryImpl myFactory;
+    private WebBeansComponent myResult;
+    
+    private Element myElement;
+    
+    private WebBeansModelImpl myModel;
+
 }

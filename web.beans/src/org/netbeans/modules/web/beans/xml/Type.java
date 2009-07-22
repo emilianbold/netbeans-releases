@@ -40,16 +40,14 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
-
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
-
-    Beans getBeans();
+public interface Type extends WebBeansComponent {
     
-    WebBeansComponentFactory getFactory();
+    String TYPE = "type";           // NOI18N
+
+    String getText();
 }
