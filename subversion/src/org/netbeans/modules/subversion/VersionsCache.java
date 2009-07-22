@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -130,27 +130,7 @@ public class VersionsCache {
             return null;
         }
         if (Setup.REVISION_BASE.equals(revision)) {
-            try {
-                File svnDir = getMetadataDir(base.getParentFile());
-                if (svnDir == null) return null;
-                File svnBase = new File(svnDir, "text-base/" + base.getName() + ".svn-base");
-                if (!svnBase.exists()) return null;
-                File expanded = new File(svnDir, "text-base/" + base.getName() + ".netbeans-base");
-                if (expanded.canRead() && svnBase.isFile() && expanded.lastModified() >= svnBase.lastModified()) {
-                    return expanded;
-                }
-                SvnClient client = Subversion.getInstance().getClient(base);
-                InputStream in = client.getContent(base, SVNRevision.BASE);
-                expanded = FileUtil.normalizeFile(expanded);
-                expanded.deleteOnExit();
-                FileUtils.copyStreamToFile(new BufferedInputStream(in), expanded);
-                expanded.setLastModified(svnBase.lastModified());
-                return expanded;
-            } catch (SVNClientException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
-            }
+            return getBaseRevisionFile(base);
         } else if (Setup.REVISION_PRISTINE.equals(revision)) {
             String name = base.getName();
             File svnDir = getMetadataDir(base.getParentFile());
@@ -198,6 +178,45 @@ public class VersionsCache {
                 ioex.initCause(ex);
                 throw ioex;
             }
+        }
+    }
+
+    /**
+     * Returns content of the given file at its base revision.
+     * In other words, returns content of the given file without local
+     * modifications.
+     * The returned {@code File} may be deleted after use.
+     * The returned {@code File} is <em>not</em> scheduled for automatic
+     * deletion upon JVM shutdown.
+     *
+     * @param  referenceFile  reference file
+     * @return  file holding content of the unmodified version of the given file
+     * @exception  java.io.IOException  if some file handling operation failed
+     */
+    File getBaseRevisionFile(File referenceFile) throws IOException {
+        try {
+            File svnDir = getMetadataDir(referenceFile.getParentFile());
+            if (svnDir == null) {
+                return null;
+            }
+            File svnBase = new File(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
+            if (!svnBase.exists()) {
+                return null;
+            }
+            File expanded = new File(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N
+            if (expanded.canRead() && svnBase.isFile() && (expanded.lastModified() >= svnBase.lastModified())) {
+                return expanded;
+            }
+            SvnClient client = Subversion.getInstance().getClient(referenceFile);
+            InputStream in = client.getContent(referenceFile, SVNRevision.BASE);
+            expanded = FileUtil.normalizeFile(expanded);
+            FileUtils.copyStreamToFile(new BufferedInputStream(in), expanded);
+            expanded.setLastModified(svnBase.lastModified());
+            return expanded;
+        } catch (SVNClientException e) {
+            IOException ioe = new IOException();
+            ioe.initCause(e);
+            throw ioe;
         }
     }
 
