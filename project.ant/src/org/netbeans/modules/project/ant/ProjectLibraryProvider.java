@@ -756,7 +756,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     }
 
     private static void replaceProperty(File propfile, boolean classPathLikeValue, String key, String... value) throws IOException {
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(true);
         if (propfile.isFile()) {
             InputStream is = new FileInputStream(propfile);
             try {
