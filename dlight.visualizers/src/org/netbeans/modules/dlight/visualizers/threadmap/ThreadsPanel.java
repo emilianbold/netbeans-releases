@@ -63,7 +63,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -332,7 +331,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         headerRenderer.setBackground(Color.WHITE);
         table.getColumnModel().getColumn(DISPLAY_COLUMN_INDEX).setHeaderRenderer(headerRenderer);
 
-
         table.getColumnModel().getColumn(SUMMARY_COLUMN_INDEX).setMinWidth(MIN_SUMMARY_COLUMN_WIDTH);
         table.getColumnModel().getColumn(SUMMARY_COLUMN_INDEX).setMaxWidth(MIN_SUMMARY_COLUMN_WIDTH);
         table.getColumnModel().getColumn(SUMMARY_COLUMN_INDEX).setPreferredWidth(MIN_SUMMARY_COLUMN_WIDTH);
@@ -370,7 +368,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         legendPanel = new JPanel();
         legendPanel.setLayout(new BorderLayout());
-        legendPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+        legendPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         initLegend(false);
 
         //legendPanel.add(unknownLegend);
@@ -379,14 +377,16 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
         JPanel MSAPanel = new JPanel();
-        MSAPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+        MSAPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         MSAPanel.setLayout(new BorderLayout());
         modeMSA = new JCheckBox(MODE_MSA_TEXT);
         modeMSA.setSelected(true);
         modeMSA.setToolTipText(MODE_MSA_TOOLTIP);
+        modeMSA.setBorder(BorderFactory.createEmptyBorder(6, 3, 3, 3));
         fullMSA = new JCheckBox(FULL_MSA_TEXT);
         fullMSA.setSelected(false);
         fullMSA.setToolTipText(FULL_MSA_TOOLTIP);
+        fullMSA.setBorder(BorderFactory.createEmptyBorder(6, 3, 6, 3));
         MSAPanel.add(modeMSA, BorderLayout.NORTH);
         MSAPanel.add(fullMSA, BorderLayout.SOUTH);
         bottomPanel.add(MSAPanel, BorderLayout.WEST);
@@ -448,7 +448,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         notificationPanel.add(enableThreadsMonitoringLabel2);
         notificationPanel.add(enableThreadsMonitoringLabel3);
 
-        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
         setLayout(new BorderLayout());
 
         contentPanel.add(notificationPanel, ENABLE_THREADS_PROFILING);
@@ -577,6 +577,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             legendPanel.add(container, BorderLayout.CENTER);
         } else {
             JPanel container = new JPanel();
+            container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             container.add(createLegendLabel(ThreadState.MSAState.RunningUser, ThreadStateColumnImpl.THREAD_RUNNING_USER));
             container.add(createLegendLabel(ThreadState.MSAState.RunningSystemCall, ThreadStateColumnImpl.THREAD_RUNNING_SYSTEM));
             container.add(createLegendLabel(ThreadState.MSAState.RunningOther, ThreadStateColumnImpl.THREAD_RUNNING_OTHER));
@@ -584,6 +585,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserLock, ThreadStateColumnImpl.THREAD_SLEEP_USE_LOCK));
             legendPanel.add(container, BorderLayout.NORTH);
             container = new JPanel();
+            container.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             container.add(createLegendLabel(ThreadState.MSAState.ThreadStopped, ThreadStateColumnImpl.THREAD_THREAD_STOPPED));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingOther, ThreadStateColumnImpl.THREAD_SLEEPING_OTHER));
             container.add(createLegendLabel(ThreadState.MSAState.SleepingUserDataPageFault, ThreadStateColumnImpl.THREAD_SLEEPING_USER_DATA_PAGE_FAULT));
@@ -597,7 +599,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         ThreadStateIcon icon = new ThreadStateIcon(state, 10, 10);
         JLabel label = new JLabel(resources.name, icon, SwingConstants.LEADING);
         label.setToolTipText(resources.tooltip);
-        label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         return label;
     }
 
@@ -909,13 +911,8 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     }
 
     private void performDefaultAction() {
-        int[] array = table.getSelectedRows();
-
-        for (int i = 0; i < array.length; i++) {
-            array[i] = filteredDataToDataIndex.get(array[i]).intValue();
-        }
-
-        ThreadsPanel.this.detailsCallback.showDetails(array);
+        // no default table action
+        // call stack is shown by one click
     }
 
     private void onClickAction(MouseEvent e) {
@@ -1134,14 +1131,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     /** A callback interface - implemented by provider of additional details of a set of threads */
     public interface ThreadsDetailsCallback {
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        /** Displays a panel with details about specified threads
-         *
-         * @param indexes array of int indexes for threads to display
-         */
-        public void showDetails(int[] indexes);
-
         public void showStack(ThreadStackVisualizer visualizer);
     }
 

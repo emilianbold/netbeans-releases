@@ -185,10 +185,11 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
         g.setFont(summary);
         int y = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN - 2;
         g.setColor(UIUtils.getDarker(getBackground(),0.4f));
-        g.drawString(s, 6 + 3 + 1, y);
-        g.drawString(s, 6 + 3 - 1, y);
-        g.drawString(s, 6 + 3, y + 1);
-        g.drawString(s, 6 + 3, y - 1);
+        for(int dx = -1; dx < 2; dx++) {
+            for(int dy = -1; dy < 2; dy++) {
+                g.drawString(s, 6 + 3 + dx, y + dy);
+            }
+        }
         g.setColor(getBackground());
         g.drawString(s, 6 + 3, y);
         threadData.setSummary(percent);
