@@ -264,6 +264,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 }
             }
         }
+        paintTimeLine(g);
     }
 
     /**
@@ -400,6 +401,11 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
                 currentMark += optimalUnits;
             }
+        }
+    }
+
+    private void paintTimeLine(Graphics g) {
+        if ((viewEnd - viewStart) > 0) {
             if (timeLine != null){
                 long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
                 if (viewStart < time && time < viewEnd) {
