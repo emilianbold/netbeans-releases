@@ -107,7 +107,6 @@ Microsystems, Inc. All Rights Reserved.
 					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
-                                         webcommon(webcommon),
                                          ergonomics(ergonomics),
                                          extra-core-browser-macosx(baseide), ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
@@ -168,7 +167,6 @@ Microsystems, Inc. All Rights Reserved.
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
                                         groovy(${groovy-title}),
-					webcommon(${webcommon-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})"/>        
         <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
@@ -219,10 +217,10 @@ Microsystems, Inc. All Rights Reserved.
                   
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
-                                             -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
-                                             -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
+                                             -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
+                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
@@ -411,7 +409,7 @@ Microsystems, Inc. All Rights Reserved.
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
 
         <ant target="build-dmg">             
-             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
              <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
              <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
@@ -443,7 +441,7 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
-                <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
+                <!--<filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>-->
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
