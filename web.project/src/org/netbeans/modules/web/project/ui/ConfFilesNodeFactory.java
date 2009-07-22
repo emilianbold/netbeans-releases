@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,7 +63,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
@@ -364,12 +368,14 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private final FileChangeListener webInfListener = new FileChangeAdapter() {
 
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 if (isWellKnownFile(fe.getFile().getNameExt())) {
                     addKey(fe.getFile());
                 }
             }
 
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 // if the old file name was in keys, the new file name
                 // is now there (since it's the same FileObject)
@@ -389,6 +395,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 }
             }
 
+            @Override
             public void fileDeleted(FileEvent fe) {
                 if (isWellKnownFile(fe.getFile().getNameExt())) {
                     removeKey(fe.getFile());
@@ -398,18 +405,22 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private final FileChangeListener anyFileListener = new FileChangeAdapter() {
 
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 addKey(fe.getFile());
             }
 
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 addKey(fe.getFile());
             }
 
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 addKey(fe.getFile());
             }
 
+            @Override
             public void fileDeleted(FileEvent fe) {
                 removeKey(fe.getFile());
             }
@@ -436,11 +447,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return new ConfFilesChildren(pwm);
         }
 
+        @Override
         protected void addNotify() {
             createKeys();
             doSetKeys();
         }
 
+        @Override
         protected void removeNotify() {
             removeListeners();
         }
@@ -489,6 +502,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             addPersistenceXmlDirectoryFiles();
             addServerSpecificFiles();
             addFrameworkFiles();
+            addWebFragments();
         }
 
         private void doSetKeys() {
@@ -581,6 +595,21 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         }
 
+        private void addWebFragments() {
+            try {
+                List<FileObject> frags = pwm.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, List<FileObject>>() {
+                    public List<FileObject> run(WebAppMetadata metadata) throws Exception {
+                        return metadata.getFragmentFiles();
+                    }
+                });
+                keys.addAll(frags);
+            } catch (MetadataModelException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         private void removeListeners() {
             pwm.removeConfigurationFilesListener(serverSpecificFilesListener);
 
@@ -627,6 +656,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 return do1.getNameExt().compareTo(do2.getNameExt());
             }
 
+            @Override
             public boolean equals(Object o) {
                 return o instanceof NodeComparator;
             }
