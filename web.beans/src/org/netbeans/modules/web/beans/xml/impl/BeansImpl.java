@@ -38,18 +38,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.util.List;
+
+import org.netbeans.modules.web.beans.xml.Beans;
+import org.netbeans.modules.web.beans.xml.BeansElement;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+class BeansImpl extends WebBeansComponentImpl implements Beans {
 
-    Beans getBeans();
+    BeansImpl( WebBeansModelImpl  model, Element e ) {
+        super(model, e);
+    }
     
-    WebBeansComponentFactory getFactory();
+    BeansImpl( WebBeansModelImpl  model) {
+        this(model, createNewElement( BEANS, model));
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Beans#addElement(org.netbeans.modules.web.beans.xml.BeansElement)
+     */
+    public void addElement( BeansElement element ) {
+        appendChild(BEANS,  element );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Beans#addElement(int, org.netbeans.modules.web.beans.xml.BeansElement)
+     */
+    public void addElement( int index, BeansElement element ) {
+        insertAtIndex( BEANS, element, index);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Beans#getElements()
+     */
+    public List<BeansElement> getElements() {
+        return getChildren( BeansElement.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Beans#removeElement(org.netbeans.modules.web.beans.xml.BeansElement)
+     */
+    public void removeElement( BeansElement element ) {
+        removeChild( BEANS_ELEMENT,  element );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
+     */
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit( this );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
+     */
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return Beans.class;
+    }
+
 }

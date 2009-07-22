@@ -38,18 +38,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.util.List;
+
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
-
-    Beans getBeans();
+abstract class WebBeansComponentImpl extends 
+    AbstractDocumentComponent<WebBeansComponent> implements WebBeansComponent
+{
+    WebBeansComponentImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
     
-    WebBeansComponentFactory getFactory();
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent#getModel()
+     */
+    @Override
+    public WebBeansModelImpl getModel() {
+        return (WebBeansModelImpl)super.getModel();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent#getAttributeValueOf(org.netbeans.modules.xml.xam.dom.Attribute, java.lang.String)
+     */
+    @Override
+    protected Object getAttributeValueOf( Attribute attr, String stringValue ) {
+        return null;
+    }
+    
+    protected static Element createNewElement(String name, WebBeansModelImpl model){
+        return model.getDocument().createElementNS( WEB_BEANS_NAMESPACE, name );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent#populateChildren(java.util.List)
+     */
+    @Override
+    protected void populateChildren( List<WebBeansComponent> children ) {
+        NodeList nl = getPeer().getChildNodes();
+        if (nl != null) {
+            for (int i = 0; i < nl.getLength(); i++) {
+                Node n = nl.item(i);
+                if (n instanceof Element) {
+                    WebBeansComponent comp = (WebBeansComponent) getModel().getFactory()
+                            .createComponent((Element) n, this);
+                    if (comp != null) {
+                        children.add(comp);
+                    }
+                }
+            }
+        }
+    }
+
 }
