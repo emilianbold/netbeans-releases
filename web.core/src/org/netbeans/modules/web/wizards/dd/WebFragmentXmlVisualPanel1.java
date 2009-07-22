@@ -70,20 +70,20 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         fileNameText.setText(WEB_FRAGMENT_XML);
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-
-        FileObject docBase = wm.getDocumentBase();
-        FileObject metaDir = docBase.getFileObject(META_INF);
-        if (metaDir == null) {
-            try {
-                metaDir = docBase.createFolder(META_INF);
+        try {
+            if (wm != null) {
+                FileObject metaDir = Utils.createDirs(wm.getDocumentBase(), new String[] {META_INF});
+                locationText.setText(FileUtil.getFileDisplayName(metaDir));
             }
-            catch (IOException e) {
-                Logger.global.log(Level.WARNING, "Creation of META-INF failed", e);
-                metaDir = wm.getWebInf();
+            else {
+                FileObject metaDir = Utils.createDirs(project.getProjectDirectory(), new String[] {"src", META_INF}); // NOI18N
+                locationText.setText(FileUtil.getFileDisplayName(metaDir));
             }
         }
-
-        locationText.setText(FileUtil.getFileDisplayName(metaDir));
+        catch (IOException e) {
+            Logger.global.log(Level.WARNING, "Creation of META-INF failed", e);
+            locationText.setText(FileUtil.getFileDisplayName(wm != null ? wm.getWebInf() : project.getProjectDirectory()));
+        }
         refreshLocation();
     }
 
