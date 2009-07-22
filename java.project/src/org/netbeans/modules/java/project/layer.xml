@@ -190,30 +190,34 @@ made subject to such option by the copyright holder.
     <folder name="text">
         <folder name="x-java">
             <folder name="Actions">
-              <file name="java-project-separator-1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                  <attr name="position" intvalue="200"/>
-                    </file>
-              <file name="CompileFile.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.compile"/>
-                  <attr name="position" intvalue="800"/>
-                    </file>
-              <file name="java-project-separator-2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                  <attr name="position" intvalue="900"/>
-                    </file>
-              <file name="RunFile.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.run"/>
-                  <attr name="position" intvalue="1000"/>
-                    </file>
-              <file name="TestFile.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.test"/>
-                  <attr name="position" intvalue="1267"/>
-                    </file>
-              <file name="java-project-separator-3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                  <attr name="position" intvalue="1300"/>
-                    </file>
+                <file name="java-project-separator-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="CompileFile.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.compile"/>
+                    <attr name="position" intvalue="800"/>
+                </file>
+                <file name="java-project-separator-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="900"/>
+                </file>
+                <file name="RunFile.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.run"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+                <file name="TestFile.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.test"/>
+                    <attr name="position" intvalue="1267"/>
+                </file>
+                <file name="DebugTestFile.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.debugTest"/>
+                    <attr name="position" intvalue="1269"/>
+                </file>
+                <file name="java-project-separator-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="1300"/>
+                </file>
 
             </folder>
         </folder>
