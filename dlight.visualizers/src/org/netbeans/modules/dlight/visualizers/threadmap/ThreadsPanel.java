@@ -193,6 +193,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private long viewStart = -1;
     private int sortedColum = -1;
     private int sortedOrder = 0;
+    private TimeLine timeLine;
 
     /**
      * Creates a new threads panel that displays threads timeline from data provided
@@ -666,6 +667,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return viewStart;
     }
 
+    public TimeLine getTimeLine() {
+        return timeLine;
+    }
+
     /**
      * Invoked when one of the buttons is pressed
      */
@@ -938,10 +943,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                             }
                         }
                         ThreadState state = threadData.getThreadStateAt(index);
+                        timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), manager.getInterval());
                         StackTraceDescriptor descriptor = new StackTraceDescriptor(state, manager.getStackProvider(row), showThreadsID, prefferedState,
                                                                                    isMSAMode(), isFullMode(), manager.getStartTime());
                         ThreadStackVisualizer visualizer  = new ThreadStackVisualizer(descriptor);
                         ThreadsPanel.this.detailsCallback.showStack(visualizer);
+                        refreshUI();
                     }
                 }
             }
