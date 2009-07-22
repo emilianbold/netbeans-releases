@@ -507,14 +507,27 @@ public class Subversion {
             return;
         }
 
+        File original = null;
         try {
-            File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
+            original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
+        } finally {
+            if (original != null) {
+                try {
+                    original.delete();
+                } catch (Exception ex) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("Failed to delete temporary file "  //NOI18N
+                                    + original.getAbsolutePath());
+                    }
+                    //otherwise ignore the exception - leave the file as it is
+                }
+            }
         }
     }
     
