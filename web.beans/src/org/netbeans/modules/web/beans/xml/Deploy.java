@@ -40,16 +40,22 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.util.List;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
-
-    Beans getBeans();
+public interface Deploy extends BeansElement {
     
-    WebBeansComponentFactory getFactory();
+    String TYPE = "type";               // NOI18N
+    
+    String DEPLOY = "deploy";           // NOI18N
+    
+    List<Type> getTypes();
+    void addType( Type type );
+    void addType( int index , Type type );
+    void removeType( Type type );
+    
 }

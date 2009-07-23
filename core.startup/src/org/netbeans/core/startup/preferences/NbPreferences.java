@@ -193,7 +193,7 @@ public abstract class NbPreferences extends AbstractPreferences {
         return properties;
     }
 
-    public final void removeNode() throws BackingStoreException {
+    public @Override final void removeNode() throws BackingStoreException {
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
@@ -202,7 +202,7 @@ public abstract class NbPreferences extends AbstractPreferences {
         }
     }
     
-    public final void flush() throws BackingStoreException {
+    public @Override final void flush() throws BackingStoreException {
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
@@ -210,7 +210,7 @@ public abstract class NbPreferences extends AbstractPreferences {
         }
     }
     
-    public final void sync() throws BackingStoreException {
+    public @Override final void sync() throws BackingStoreException {
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
