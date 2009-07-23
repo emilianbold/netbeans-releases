@@ -66,8 +66,8 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         classNormName = inScope.getNormalizedName();
     }
 
-    MethodScopeImpl(Scope inScope, IndexedFunction element, PhpKind kind) {
-        super(inScope, element, kind);
+    MethodScopeImpl(Scope inScope, IndexedFunction element) {
+        super(inScope, element, PhpKind.METHOD);
         assert inScope instanceof TypeScope;
         classNormName = inScope.getNormalizedName();
     }

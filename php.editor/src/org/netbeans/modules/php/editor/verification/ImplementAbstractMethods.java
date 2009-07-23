@@ -38,17 +38,15 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import java.util.zip.CRC32;
 import javax.swing.JComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
@@ -68,11 +66,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-//TODO: indexed class IndexedClass must return interfaces
 public class ImplementAbstractMethods extends ModelRule {
-    Map<Integer,CachedFixInfo> cahcedFixedInfo = new HashMap<Integer, CachedFixInfo>();
-    long diggest;
-
     public String getId() {
         return "Implement.Abstract.Methods";//NOI18N
     }
@@ -97,12 +91,7 @@ public class ImplementAbstractMethods extends ModelRule {
     @Override
     void check(FileScope fileScope, RuleContext context, List<Hint> hints) {
         Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(fileScope);
-        long computedDigest = computeDigest(allTypes);
-        if (computedDigest != diggest || !cahcedFixedInfo.isEmpty()) {            
-            fillCachedFixedInfo(allTypes, computedDigest != diggest);
-        }
-        diggest = computedDigest;
-        for (CachedFixInfo fixInfo : cahcedFixedInfo.values()) {
+        for (FixInfo fixInfo : checkHints(allTypes)) {
             hints.add(new Hint(ImplementAbstractMethods.this, getDisplayName(),
                     context.parserResult.getSnapshot().getSource().getFileObject(), fixInfo.classNameRange,
                     Collections.<HintFix>singletonList(new Fix(context,
@@ -110,78 +99,56 @@ public class ImplementAbstractMethods extends ModelRule {
         }
     }
 
-    private long computeDigest(Collection<? extends TypeScope> allTypes) {
-        CRC32 crc32 = new CRC32();
+    private Collection<FixInfo> checkHints(Collection<? extends TypeScope> allTypes) {
+        List<FixInfo> retval = new ArrayList<FixInfo>();
         for (TypeScope typeScope : allTypes) {
-            crc32.update(String.valueOf(typeScope.hashCode()).getBytes());
-            crc32.update(String.valueOf(typeScope.getPhpModifiers().hashCode()).getBytes());
-            Collection<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
-            for (MethodScope methodScope : allMethods) {
-                crc32.update(String.valueOf(methodScope.hashCode()).getBytes());
+            LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
+            ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope) typeScope).getSuperClasses()) : null;
+            Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
+            if ((cls != null || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
+                Set<String> methNames = new HashSet<String>();
+                Collection<? extends MethodScope> allInheritedMethods = typeScope.getMethods();
+                Collection<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
+                Set<String> methodNames = new HashSet<String>();
+                for (MethodScope methodScope : allMethods) {
+                    methodNames.add(methodScope.getName());
+                }
+                for (MethodScope methodScope : allInheritedMethods) {
+                    Scope inScope = methodScope.getInScope();
+                    if (inScope instanceof InterfaceScope || methodScope.getPhpModifiers().isAbstract()) {
+                        if (!methodNames.contains(methodScope.getName())) {
+                            abstrMethods.add(methodScope);
+                        }
+                    } else {
+                        methNames.add(methodScope.getName());
+                    }
+                }
+                for (Iterator<? extends MethodScope> it = abstrMethods.iterator(); it.hasNext();) {
+                    MethodScope methodScope = it.next();
+                    if (methNames.contains(methodScope.getName())) {
+                        it.remove();
+                    }
+                }
+            }
+            if (!abstrMethods.isEmpty()) {
+                LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
+                for (MethodScope methodScope : abstrMethods) {
+                    String skeleton = methodScope.getClassSkeleton();
+                    skeleton = skeleton.replace("abstract ", ""); //NOI18N
+                    methodSkeletons.add(skeleton);
+                }
+                retval.add(new FixInfo(typeScope, methodSkeletons));
             }
         }
-        return crc32.getValue();
-    }
-
-    private void fillCachedFixedInfo(Collection<? extends TypeScope> allTypes, boolean changed) {
-        if (!changed && !cahcedFixedInfo.isEmpty()) {
-            for (TypeScope classScope : allTypes) {
-                CachedFixInfo fixInfo = cahcedFixedInfo.get(classScope.hashCode());
-                if (fixInfo != null) {
-                    fixInfo.setClassScope(classScope);
-                }
-            }
-        } else {
-            cahcedFixedInfo.clear();
-            for (TypeScope typeScope : allTypes) {
-                LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
-                ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope)typeScope).getSuperClasses()) : null;
-                Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
-                if ((cls != null  || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
-                    Set<String> methNames = new HashSet<String>();
-                    Collection<? extends MethodScope> allInheritedMethods = typeScope.getMethods();
-                    Collection<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
-                    Set<String> methodNames = new HashSet<String>();
-                    for (MethodScope methodScope : allMethods) {
-                        methodNames.add(methodScope.getName());
-                    }
-                    for (MethodScope methodScope : allInheritedMethods) {
-                        Scope inScope = methodScope.getInScope();
-                        if (inScope instanceof InterfaceScope || methodScope.getPhpModifiers().isAbstract()) {                            
-                            if (!methodNames.contains(methodScope.getName())) {
-                                abstrMethods.add(methodScope);
-                            }
-                        } else {
-                            methNames.add(methodScope.getName());
-                        }
-                    }
-                    for (Iterator<? extends MethodScope> it = abstrMethods.iterator(); it.hasNext();) {
-                        MethodScope methodScope = it.next();
-                        if (methNames.contains(methodScope.getName())) {
-                            it.remove();
-                        }
-                    }
-                }
-                if (!abstrMethods.isEmpty()) {
-                    LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
-                    for (MethodScope methodScope : abstrMethods) {
-                        String skeleton = methodScope.getClassSkeleton();
-                        skeleton = skeleton.replace("abstract ", ""); //NOI18N
-                        methodSkeletons.add(skeleton);
-                    }
-                    CachedFixInfo fixInfo = new CachedFixInfo(typeScope, methodSkeletons);
-                    cahcedFixedInfo.put(typeScope.hashCode(), fixInfo);
-                }
-            }
-        }
+        return retval;
     }
 
     private class Fix implements HintFix {
 
         private RuleContext context;
-        private final CachedFixInfo fixInfo;
+        private final FixInfo fixInfo;
 
-        Fix(RuleContext context, CachedFixInfo fixInfo) {
+        Fix(RuleContext context, FixInfo fixInfo) {
             this.context = context;
             this.fixInfo = fixInfo;
         }
@@ -212,17 +179,13 @@ public class ImplementAbstractMethods extends ModelRule {
         }
     }
 
-    private static class CachedFixInfo {
+    private static class FixInfo {
         private LinkedHashSet<String> methodSkeletons;
         private int offset;
         private OffsetRange classNameRange;
 
-        CachedFixInfo(TypeScope typeScope, LinkedHashSet<String> methodSkeletons) {
+        FixInfo(TypeScope typeScope, LinkedHashSet<String> methodSkeletons) {
             this.methodSkeletons = methodSkeletons;
-            setClassScope(typeScope);
-        }
-
-        void setClassScope(TypeScope typeScope)  {
             this.classNameRange = typeScope.getNameRange();
             this.offset = typeScope.getBlockRange().getEnd() - 1;
         }
