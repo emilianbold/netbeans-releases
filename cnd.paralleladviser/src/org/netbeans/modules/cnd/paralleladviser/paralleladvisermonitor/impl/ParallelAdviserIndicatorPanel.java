@@ -137,8 +137,9 @@ public class ParallelAdviserIndicatorPanel extends JPanel {
                 ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
                 if (!view.isOpened()) {
                     view.open();
-                    view.requestActive();
                 }
+                view.requestActive();
+                view.updateTips();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
