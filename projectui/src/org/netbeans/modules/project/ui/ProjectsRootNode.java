@@ -443,9 +443,17 @@ public class ProjectsRootNode extends AbstractNode {
         private static final int DELAY = 50;
         private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
             public @Override void fileDataCreated(FileEvent fe) {
+                if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                    setProjectFiles();
+                    return ;
+                }
                 fsRefreshTask.schedule(DELAY);
             }
             public @Override void fileFolderCreated(FileEvent fe) {
+                if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                    setProjectFiles();
+                    return ;
+                }
                 fsRefreshTask.schedule(DELAY);
             }
         };
