@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package tests;
 
 import java.io.*;
 import java.net.URL;
@@ -49,9 +50,9 @@ import org.netbeans.modules.schema2beansdev.*;
 import org.netbeans.modules.schema2beansdev.beangraph.*;
 import org.openide.util.Utilities;
 
-public class TestMain extends NbTestCase {
+public class MainTest extends NbTestCase {
 
-    public TestMain(java.lang.String testName) {
+    public MainTest(java.lang.String testName) {
         super(testName);
     }
 
@@ -60,7 +61,7 @@ public class TestMain extends NbTestCase {
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(TestMain.class);
+        TestSuite suite = new NbTestSuite(MainTest.class);
         
         return suite;
     }
@@ -350,7 +351,7 @@ public class TestMain extends NbTestCase {
 
     public void generalTest(String testName, boolean xmlSchema,
                             GenBeans.Config config) throws IOException, Schema2BeansException, InterruptedException {
-        String testOnly = System.getProperty("TestMain.testOnly");
+        String testOnly = System.getProperty("MainTest.testOnly");
         if (testOnly != null && !testOnly.equals(testName))
             return;
         try {
@@ -489,12 +490,12 @@ public class TestMain extends NbTestCase {
         // when running this code inside IDE, getResource method returns URL in NBFS
         // format, so we need to convert it to filename
         // when running this code inside code mode, nothing happens        
-        //String dataDirName = NbTestCase.convertNBFSURL(TestMain.class.getResource("data"));
+        //String dataDirName = NbTestCase.convertNBFSURL(MainTest.class.getResource("data"));
         //dataDir = new File(dataDirName);
         //System.out.println("dataDirName="+dataDirName);
 
         theClassPath += classPathEntryFromURL(org.netbeans.modules.schema2beans.BaseBean.class);
-        //theClassPath += File.pathSeparator + classPathEntryFromURL(org.openide.filesystems.FileObject.class);
+        theClassPath += File.pathSeparator + classPathEntryFromURL(org.openide.filesystems.FileObject.class);
         //theClassPath += File.pathSeparator + classPathEntryFromURL(javax.xml.namespace.QName.class);
         //theClassPath += File.pathSeparator + classPathEntryFromURL(org.w3c.dom.Node.class);
         //theClassPath += File.pathSeparator + classPathEntryFromURL(javax.xml.parsers.DocumentBuilderFactory.newInstance().getClass());

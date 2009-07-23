@@ -36,4 +36,22 @@
 				<MYOBJECT CLASS="MetaMethod">
 					<ATTRIBUTE NAME="Name">m3</ATTRIBUTE>
 					<ATTRIBUTE NAME="8-bit ASCII text">
-	task.lgr.putline('Yo amo haba
+	task.lgr.putline('Yo amo habañero chilés');
+	return;
+					</ATTRIBUTE>
+				</MYOBJECT>
+			</ARRAY>
+		</ATTRIBUTE>
+		<ANNOTATION OBJECTTYPE="CrossRefInfo" NAME="cr1">
+			<ATTRIBUTE NAME="InfoArray">
+				<ARRAY>
+					<MYOBJECT CLASS="infoItem">
+						<ATTRIBUTE NAME="Reference">putline</ATTRIBUTE>
+						<ATTRIBUTE NAME="Class">c1</ATTRIBUTE>
+						<ATTRIBUTE NAME="Method">m1</ATTRIBUTE>
+					</MYOBJECT>
+				</ARRAY>
+			</ATTRIBUTE>
+		</ANNOTATION>
+	</PHASE>
+</FORTEDDL>
