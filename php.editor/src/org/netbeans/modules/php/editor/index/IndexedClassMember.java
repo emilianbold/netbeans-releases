@@ -37,20 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.threadmap.indicator;
+package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
-
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.spi.indicator.IndicatorFactory.class)
-public class ThreadMapIndicatorFactory implements IndicatorFactory<ThreadMapIndicatorConfiguration> {
-
-    public Indicator<ThreadMapIndicatorConfiguration> create(ThreadMapIndicatorConfiguration configuration) {
-        return new ThreadMapIndicator(configuration);
+/**
+ *
+ * @author Radek Matous
+ */
+public class IndexedClassMember<E extends IndexedElement>  {
+    private final IndexedType type;
+    private final E member;
+    public IndexedClassMember(IndexedType type, E member) {
+        this.type = type;
+        this.member = member;
     }
 
-    public String getID() {
-        return ThreadMapIndicatorConfiguration.ID;
+    public IndexedType getType() {
+        return type;
     }
 
+    public E getMember() {
+        return member;
+    }
 }

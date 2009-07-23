@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +59,9 @@ public class DtraceParser {
             DLightLogger.getLogger(DtraceParser.class);
     private final DataTableMetadata metadata;
     private final List<String> colnames;
+    private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'"); // NOI18N
+    private static final String dquote = "\""; // NOI18N
+    private static final String squote = "'"; // NOI18N
 
     public DtraceParser(DataTableMetadata metadata) {
         this.metadata = metadata;
@@ -79,8 +83,6 @@ public class DtraceParser {
     /** parses first colCount columns, leaves the rest */
     protected List<String> parse(String line, int colCount) {
         List<String> matchList = new ArrayList<String>();
-        Pattern regex =
-                Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'"); // NOI18N
         Matcher regexMatcher = regex.matcher(line);
         while (regexMatcher.find()) {
             matchList.add(regexMatcher.group());
@@ -88,7 +90,7 @@ public class DtraceParser {
 
 //    String[] lines = line.split("[ \t]+");
 //    if (lines.length != metadata.getColumnsCount()-reservedColCount) {
-        if (matchList.size() < colCount) {
+        if (matchList.size() < colCount && log.isLoggable(Level.INFO)) {
             log.info("^^^^^Line:" + line + " lines array size is " + // NOI18N
                     "less than medatadat.getCoulmnsCount() columnsCount=" + //NOI18N
                     metadata.getColumnsCount() + " lines splited=" + // NOI18N
@@ -102,8 +104,6 @@ public class DtraceParser {
         for (int i = 0; i < colCount; i++) {
 
             Class columnClass = columns.get(i).getColumnClass();
-            final String dquote = "\""; // NOI18N
-            final String squote = "'"; // NOI18N
 
             if (columnClass == String.class) {
                 String stringValue = matchList.get(i);

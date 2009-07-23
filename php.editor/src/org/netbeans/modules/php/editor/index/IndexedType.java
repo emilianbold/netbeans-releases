@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,51 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.model;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
+package org.netbeans.modules.php.editor.index;
+
+import org.netbeans.modules.csl.api.ElementKind;
 
 /**
  *
  * @author Radek Matous
  */
-public final class TypeResolver {
-
-    private ModelVisitor modelVisitor;
-
-    TypeResolver(ModelVisitor modelVisitor) {
-        this.modelVisitor = modelVisitor;
+public class IndexedType extends IndexedElement {
+    IndexedType(String name, String in, PHPIndex index, String fileUrl, int offset, int flags, ElementKind kind) {
+        super(name,in,index,fileUrl,offset,flags,kind);
     }
-    //TODO: add getFieldType
-
-    public List<? extends TypeScope> getVariableType(String varName, final int offset) {
-        TypeScope type = null;
-        VariableScope varScope = modelVisitor.getNearestVariableScope(offset);
-        while (varScope != null && varName != null) {
-            //TODO: impl. doesn't count with more types
-            VariableName var = ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), varName));
-            if (var != null) {
-                //TODO: impl. doesn't count with more types
-                type = ModelUtils.getFirst(var.getTypes(offset));
-            }
-            if (varScope instanceof NamespaceScope) {
-                varScope = null;
-            } else {
-                varScope = ModelUtils.getNamespaceScope(varScope);
-            }
-        }
-        //TODO: impl. doesn't count with more types
-        List<? extends TypeScope> retval = Collections.emptyList();
-        if (type != null) {
-            retval = Collections.singletonList(type);
-        }
-
-        return retval;
-    }
-
 }

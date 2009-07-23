@@ -54,7 +54,8 @@ final class IndicatorTickerService {
     private static final IndicatorTickerService instance = new IndicatorTickerService();
     private Future tickerService;
     private boolean started = false;
-    private final Object lock = new Object();
+    private static final class Lock{};
+    private final Object lock = new Lock();
     private final Object listenersLock = new Object();
     private final List<TickerListener> listeners = new ArrayList<TickerListener>();
 

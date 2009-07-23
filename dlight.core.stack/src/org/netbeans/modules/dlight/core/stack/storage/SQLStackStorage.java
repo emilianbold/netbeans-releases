@@ -330,6 +330,7 @@ public final class SQLStackStorage {
                 funcId = ++funcIdSequence;
                 AddFunction cmd = new AddFunction();
                 cmd.id = funcId;
+                funcName = new String(funcName.toString());
                 cmd.name = funcName;
                 executor.submitCommand(cmd);
                 funcCache.put(funcName, funcId);
@@ -562,7 +563,7 @@ public final class SQLStackStorage {
     private class ExecutorThread extends Thread {
 
         private static final int MAX_COMMANDS = 1000;
-        private static final long SLEEP_INTERVAL = 200l;
+        private static final long SLEEP_INTERVAL = 200L;
         private final LinkedBlockingQueue<Object> queue;
 
         public ExecutorThread() {

@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -77,6 +78,9 @@ public class QualifiedName {
             return createUnqualifiedName((Identifier)expression);
         }
         return null;
+    }
+    public static QualifiedName create(boolean isFullyQualified, List<String> segments) {
+        return new QualifiedName(isFullyQualified, segments);
     }
     public static QualifiedName create(NamespaceScope namespaceScope) {
         final String[] segments = namespaceScope.getName().split("\\\\");//NOI18N

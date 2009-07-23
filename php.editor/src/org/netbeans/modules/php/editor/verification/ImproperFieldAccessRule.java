@@ -120,10 +120,9 @@ public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingR
         int modifiers = (insideClsName.equals(className)) ? PHPIndex.ANY_ATTR : 
             BodyDeclaration.Modifier.PUBLIC;
 
-        List<String> classNames = new ArrayList<String>();        
-        List<IndexedElement> l = new LinkedList<IndexedElement>();
         Collection<IndexedConstant> flds = null;        
-        for (String clazzName : context.index.getClassAncestors(null, className)) {
+        for (IndexedElement indexedElement : context.index.getClassAncestors(null, className)) {
+            String clazzName = indexedElement.getName();
             flds = getFields(context.index, clazzName, field, modifiers);
             if (!flds.isEmpty()) {
                 break;
