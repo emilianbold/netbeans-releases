@@ -61,7 +61,6 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -69,7 +68,6 @@ import org.openide.util.NbPreferences;
  */
 @org.netbeans.spi.project.ProjectServiceProvider(projectType="org-netbeans-modules-maven", service=AuxiliaryProperties.class)
 public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener {
-    public static final String PROP_ENABLE = "enable";
     private final Project project;
 
     private Properties cache;
@@ -82,9 +80,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         defaults.add("config/maven_checks.xml");
         defaults.add("config/avalon_checks.xml");
         defaults.add("config/turbine_checks.xml");
-        if (NbPreferences.forModule(AuxPropsImpl.class).getBoolean(PROP_ENABLE, true)) {
-            NbMavenProject.addPropertyChangeListener(prj, this);
-        }
+        NbMavenProject.addPropertyChangeListener(prj, this);
     }
 
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
@@ -173,7 +169,8 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
 
     synchronized Properties getCache() {
         if (cache == null || recheck) {
-            if (NbPreferences.forModule(AuxPropsImpl.class).getBoolean(PROP_ENABLE, true)) {
+            String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+            if (enabled != null && Boolean.parseBoolean(enabled)) {
                 cache = convert();
             } else {
                 cache = new Properties();
@@ -184,6 +181,9 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     public String get(String key, boolean shared) {
+        if (Constants.HINT_CHECKSTYLE_FORMATTING.equals(key)) {
+            return null;
+        }
         if (shared) {
             return getCache().getProperty(key);
         }
