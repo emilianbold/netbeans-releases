@@ -97,7 +97,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
     private static enum State {
 
         WAITING_DATA, // we are waiting for a data row
-        WAITING_STACK, // we are waiting for first row of ustack
+        //WAITING_STACK, // we are waiting for first row of ustack
         IN_STACK        // we are waiting for subsequent row of ustack
     }
     private State state;
@@ -152,31 +152,14 @@ final class DtraceDataAndStackParser extends DtraceParser {
                 DLightLogger.assertFalse(Character.isWhitespace(line.charAt(0)),
                         "Data row shouldn't start with ' '"); // NOI18N
 
+                currData = processDataLine(line);
                 if (isProfiler) {
                     try {
-                        currSampleDuration = Long.parseLong(line);
+                        currSampleDuration = Long.parseLong(currData.get(colCount - 2));
                     } catch (NumberFormatException ex) {
                         DLightLogger.instance.log(Level.WARNING,
                                 "error parsing line " + line, ex); // NOI18N
                     }
-                } else {
-                    currData = processDataLine(line);
-                    DLightLogger.assertTrue(currData != null,
-                            "could not parse line " + line); // NOI18N
-                }
-                //currStack.clear();
-                state = State.WAITING_STACK;
-                return null;
-            case WAITING_STACK:
-                if (line.length() == 0) {
-                    state = State.WAITING_DATA;
-                    return null;
-                }
-                String[] stackData = line.split("[ \t]+"); //NOI18N
-                DLightLogger.assertTrue(stackData.length == 3,
-                        "stack marker should consist of CPU-id, thread-id and timestamp"); // NOI18N
-                if (isProfiler) {
-                    currData = processDataLine(line);
                 }
                 state = State.IN_STACK;
                 return null;

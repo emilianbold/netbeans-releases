@@ -41,7 +41,6 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import com.sun.java.swing.Painter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -229,16 +228,27 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
         } else {
             o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
         }
-        
-        if ((o != null) && (o instanceof Painter)) {
-            Painter painter = (Painter) o;
-            BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = bufIm.createGraphics();
-            g2d.setBackground(UIManager.getColor("Panel.background"));
-            g2d.clearRect(0, 0, width, height);
-            painter.paint(g2d, null, width, height);
-            g.drawImage(bufIm, x, y, null);
+
+        if( NimbusEditorTabCellRenderer.IS_JDK_17 ) {
+            if ((o != null) && (o instanceof javax.swing.Painter)) {
+                javax.swing.Painter painter = (javax.swing.Painter) o;
+                BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2d = bufIm.createGraphics();
+                g2d.setBackground(UIManager.getColor("Panel.background"));
+                g2d.clearRect(0, 0, width, height);
+                painter.paint(g2d, null, width, height);
+                g.drawImage(bufIm, x, y, null);
+            }
         } else {
+            if ((o != null) && (o instanceof com.sun.java.swing.Painter)) {
+                com.sun.java.swing.Painter painter = (com.sun.java.swing.Painter) o;
+                BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2d = bufIm.createGraphics();
+                g2d.setBackground(UIManager.getColor("Panel.background"));
+                g2d.clearRect(0, 0, width, height);
+                painter.paint(g2d, null, width, height);
+                g.drawImage(bufIm, x, y, null);
+            }
         }
 
         if (isPreviousTabSelected) {

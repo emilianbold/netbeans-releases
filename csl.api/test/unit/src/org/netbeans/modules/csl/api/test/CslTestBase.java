@@ -137,6 +137,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -170,6 +171,7 @@ import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -187,6 +189,9 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -314,6 +319,18 @@ public abstract class CslTestBase extends NbTestCase {
      * from the fuller text
      */
     public static int getCaretOffset(String text, String caretLine) {
+        return getCaretOffsetInternal(text, caretLine).offset;
+    }
+
+    /**
+     * Like <code>getCaretOffset</code>, but the returned <code>CaretLineOffset</code>
+     * contains also the modified <code>caretLine</code> param.
+     
+     * @param text
+     * @param caretLine
+     * @return
+     */
+    private static CaretLineOffset getCaretOffsetInternal(String text, String caretLine) {
         int caretDelta = caretLine.indexOf('^');
         assertTrue(caretDelta != -1);
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
@@ -322,7 +339,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         int caretOffset = lineOffset + caretDelta;
 
-        return caretOffset;
+        return new CaretLineOffset(caretOffset, caretLine);
     }
 
     
@@ -856,6 +873,48 @@ public abstract class CslTestBase extends NbTestCase {
                 doc.getText(range.getStart(), range.getLength()) + "' instead of " + 
                 /*LexUtilities.getToken(doc, caretPos).text().toString()*/ " position " + caretPos, 
                 caretPos, range.getStart());
+    }
+
+    protected void assertMatches2(String original) throws BadLocationException {
+        BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
+        int caretPos = original.indexOf('^');
+        original = original.substring(0, caretPos) + original.substring(caretPos+1);
+        
+        int matchingCaretPos = original.indexOf('^');
+
+        original = original.substring(0, matchingCaretPos) + original.substring(matchingCaretPos+1);
+        
+        BaseDocument doc = getDocument(original);
+        
+        MatcherContext context = BracesMatchingTestUtils.createMatcherContext(doc, caretPos, false, 1);
+        BracesMatcher matcher = factory.createMatcher(context);
+        int [] origin = null, matches = null;
+        try {
+            origin = matcher.findOrigin();
+            matches = matcher.findMatches();
+        } catch (InterruptedException ex) {
+        }
+        
+        assertNotNull("Did not find origin for " + " position " + caretPos, origin);
+        assertNotNull("Did not find matches for " + " position " + caretPos, matches);
+        
+        assertEquals("Incorrect origin", caretPos, origin[0]);
+        assertEquals("Incorrect matches", matchingCaretPos, matches[0]);
+        
+        //Reverse direction
+        context = BracesMatchingTestUtils.createMatcherContext(doc, matchingCaretPos, false, 1);
+        matcher = factory.createMatcher(context);
+        try {
+            origin = matcher.findOrigin();
+            matches = matcher.findMatches();
+        } catch (InterruptedException ex) {
+        }
+        
+        assertNotNull("Did not find origin for " + " position " + caretPos, origin);
+        assertNotNull("Did not find matches for " + " position " + caretPos, matches);
+        
+        assertEquals("Incorrect origin", matchingCaretPos, origin[0]);
+        assertEquals("Incorrect matches", caretPos, matches[0]);
     }
     
     // Copied from LexUtilities
@@ -3670,7 +3729,7 @@ public abstract class CslTestBase extends NbTestCase {
         return hints;
     }
 
-    protected ComputedHints computeHints(NbTestCase test, final Rule hint, String relFilePath, FileObject fileObject, final String caretLine, final ChangeOffsetType changeOffsetType) throws Exception {
+    protected ComputedHints computeHints(NbTestCase test, final Rule hint, String relFilePath, FileObject fileObject, final String lineWithCaret, final ChangeOffsetType changeOffsetType) throws Exception {
         assertTrue(relFilePath == null || fileObject == null);
 
         initializeRegistry();
@@ -3682,13 +3741,17 @@ public abstract class CslTestBase extends NbTestCase {
         Source testSource = getTestSource(fileObject);
 
         final int caretOffset;
-        if (caretLine != null) {
-            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
-            enforceCaretOffset(testSource, caretOffset);
+        final String caretLine;
+        if (lineWithCaret != null) {
+            CaretLineOffset caretLineOffset = getCaretOffsetInternal(testSource.createSnapshot().getText().toString(), lineWithCaret);
+            caretOffset = caretLineOffset.offset;
+            caretLine = caretLineOffset.caretLine;
+            enforceCaretOffset(testSource, caretLineOffset.offset);
         } else {
             caretOffset = -1;
+            caretLine = lineWithCaret;
         }
-
+  
         final ComputedHints [] result = new ComputedHints[] { null };
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -3771,7 +3834,7 @@ public abstract class CslTestBase extends NbTestCase {
                         manager.setTestingRules(null, null, null, testHints);
 
                         if (caretLine != null) {
-                            int start = text.indexOf(caretLine);
+                            int start = text.indexOf(caretLine.toString());
                             int end = start+caretLine.length();
                             RuleContext context = manager.createRuleContext(pr, language, -1, start, end);
                             provider.computeSelectionHints(manager, context, hints, start, end);
@@ -4302,4 +4365,15 @@ public abstract class CslTestBase extends NbTestCase {
         public void close() throws SecurityException {
         }
     } // End of Waiter class
+
+    private static class CaretLineOffset {
+        private final int offset;
+        private final String caretLine;
+
+        public CaretLineOffset(int offset, String caretLine) {
+            this.offset = offset;
+            this.caretLine = caretLine;
+        }
+
+    }
 }

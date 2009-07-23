@@ -112,11 +112,13 @@ public class EditorTestCase extends JellyTestCase {
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
      */
     public void openProject(String projectName) {        
+
+        /*
         this.projectName = projectName;
         File projectPath = new File(this.getDataDir() + "/projects", projectName);
         log("data dir = "+this.getDataDir().toString());        
         
-        /* 1. check if project is open  */
+        // 1. check if project is open
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();
         boolean isOpen = true;
@@ -133,14 +135,15 @@ public class EditorTestCase extends JellyTestCase {
             log("Project is open!");            
             return;
         }
-                
-        /* 2. open project */        
+
+        */ 
+        // 2. open project
         try {
-         openDataProjects(new String[] {"projects/"+projectName});
+         openDataProjects("projects/"+projectName);
         } catch(IOException ioe) {
            fail("cannot opne project");
         }
-        //Object prj= ProjectSupport.openProject(projectPath);        
+        //Object prj= ProjectSupport.openProject(projectPath);
     }
    
     /**

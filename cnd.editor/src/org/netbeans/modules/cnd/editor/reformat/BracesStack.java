@@ -483,6 +483,7 @@ class BracesStack implements Cloneable {
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                     case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     case IF: //("if", "keyword-directive"),

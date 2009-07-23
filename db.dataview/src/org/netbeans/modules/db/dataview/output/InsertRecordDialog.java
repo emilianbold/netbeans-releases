@@ -63,10 +63,10 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -74,7 +74,10 @@ import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -123,9 +126,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         addInputFields();
         jTable1.addKeyListener(new TableKeyListener());
 
-        TableSelectionListener listener = new TableSelectionListener(jTable1);
-        jTable1.getSelectionModel().addListSelectionListener(listener);
-        jTable1.getColumnModel().getSelectionModel().addListSelectionListener(listener);
+        jTable1.getModel().addTableModelListener(new TableListener());
 
         jSplitPane1.setBottomComponent(null);
 
@@ -323,17 +324,17 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         dispose();
     }
 
-    public class TableSelectionListener implements ListSelectionListener {
+    public class TableListener implements TableModelListener {
 
-        JTable table;
-
-        TableSelectionListener(JTable table) {
-            this.table = table;
-        }
-
-        public void valueChanged(ListSelectionEvent e) {
-            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
+        public void tableChanged(TableModelEvent e) {
+            if (SwingUtilities.isEventDispatchThread()) {
                 refreshSQL();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        refreshSQL();
+                    }
+                });
             }
         }
     }
@@ -342,27 +343,41 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (jTable1.isEditing()) {
             jTable1.getCellEditor().stopCellEditing();
         }
-        String insertSQL = null;
-        SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-        SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-        for (int i = 0; i < jTable1.getRowCount(); i++) {
-            try {
-                Object[] insertedRow = getInsertValues(i);
-                insertSQL = stmtBldr.generateInsertStatement(insertedRow);
-                execHelper.executeInsertRow(insertSQL, insertedRow);
-            } catch (DBException ex) {
-                if (jSplitPane1.getBottomComponent() == null) {
-                    jSplitPane1.setDividerLocation(jSplitPane1.getHeight() / 2);
-                    jSplitPane1.setBottomComponent(jScrollPane2);
-                    previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
+        // Get out of AWT thread because SQLExecutionHelper does calls to AWT
+        // and we need to wait here to show possible exceptions.
+        new Thread("Inserting values") {  //NOI18N
+
+            @Override
+            public void run() {
+                String insertSQL = null;
+                SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
+                SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
+                for (int i = 0; i < jTable1.getRowCount(); i++) {
+                    boolean wasException = false;
+                    try {
+                        Object[] insertedRow = getInsertValues(i);
+                        insertSQL = stmtBldr.generateInsertStatement(insertedRow);
+                        RequestProcessor.Task task = execHelper.executeInsertRow(insertSQL, insertedRow);
+                        task.waitFinished();
+                        wasException = dataView.hasExceptions();
+                    } catch (DBException ex) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Exception(ex);
+                        DialogDisplayer.getDefault().notify(nd);
+                        wasException = true;
+                    }
+                    if (wasException) {
+                        // remove i already inserted
+                        for (int j = 0; j < i; j++) {
+                            ((DefaultTableModel) jTable1.getModel()).removeRow(0);
+                        }
+                        // return without closing
+                        return;
+                    }
                 }
-                jEditorPane1.setContentType("text/html"); // NOI18N
-                String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
-                jEditorPane1.setText(str);//ex.getMessage());
-                return;
+                // close dialog
+                dispose();
             }
-        }
-        dispose();
+        }.start();
     }
 
     private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {

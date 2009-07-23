@@ -415,7 +415,7 @@ from the module system.
 Suppresses checks to ensure that module section classes are actually loaded
 from the module itself.
 </api>
-<api type="import" group="property" name="netbeans.full.hack" category="friend">
+<api type="import" group="property" name="netbeans.full.hack" category="friend" url="http://wiki.netbeans.org/DevFaqNetBeansFullHack">
 Avoids using GUI when user-visible error conditions occur.
 </api>
 <api type="import" group="property" name="netbeans.mainclass" category="friend">

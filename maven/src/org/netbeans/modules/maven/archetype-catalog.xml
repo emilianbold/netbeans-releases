@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- default archetype catalog coming from
+     http://repo2.maven.org/maven2/org/apache/maven/archetype/archetype-common/2.0-alpha-4/archetype-common-2.0-alpha-4.jar -->
+<archetype-catalog>
+  <archetypes>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-basic-jsf</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a web application with Hibernate, Spring and JSF</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-basic-spring</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a web application with Hibernate, Spring and Spring MVC</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-basic-struts</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a web application with Hibernate, Spring and Struts 2</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-basic-tapestry</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a web application with Hibernate, Spring and Tapestry 4</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-core</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a jar application with Hibernate and Spring and XFire</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-modular-jsf</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a modular application with Hibernate, Spring and JSF</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-modular-spring</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a modular application with Hibernate, Spring and Spring MVC</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-modular-struts</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a modular application with Hibernate, Spring and Struts 2</description>
+    </archetype>
+    <archetype>
+      <groupId>org.appfuse.archetypes</groupId>
+      <artifactId>appfuse-modular-tapestry</artifactId>
+      <version>RELEASE</version>
+      <description>AppFuse archetype for creating a modular application with Hibernate, Spring and Tapestry 4</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-j2ee-simple</artifactId>
+      <version>RELEASE</version>
+      <description>A simple J2EE Java application</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-marmalade-mojo</artifactId>
+      <version>RELEASE</version>
+      <description>A Maven plugin development project using marmalade</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-mojo</artifactId>
+      <version>RELEASE</version>
+      <description>A Maven Java plugin development project</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-portlet</artifactId>
+      <version>RELEASE</version>
+      <description>A simple portlet application</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-profiles</artifactId>
+      <version>RELEASE</version>
+      <description></description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-quickstart</artifactId>
+      <version>RELEASE</version>
+      <description></description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-site-simple</artifactId>
+      <version>RELEASE</version>
+      <description>A simple site generation project</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-site</artifactId>
+      <version>RELEASE</version>
+      <description>A more complex site project</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>maven-archetype-webapp</artifactId>
+      <version>RELEASE</version>
+      <description>A simple Java web application</description>
+    </archetype>
+    <archetype>
+      <groupId>org.jini.maven-jini-plugin</groupId>
+      <artifactId>jini-service-archetype</artifactId>
+      <version>2.0</version>
+      <description>Archetype for Jini service project creation</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>softeu-archetype-seam</artifactId>
+      <version>RELEASE</version>
+      <repository>http://maven.softeu.cz/</repository>
+      <description>JSF+Facelets+Seam Archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>softeu-archetype-seam-simple</artifactId>
+      <version>RELEASE</version>
+      <repository>http://maven.softeu.cz/</repository>
+      <description>JSF+Facelets+Seam (no persistence) Archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.maven.archetypes</groupId>
+      <artifactId>softeu-archetype-jsf</artifactId>
+      <version>RELEASE</version>
+      <repository>http://maven.softeu.cz/</repository>
+      <description>JSF+Facelets Archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>com.rfc.maven.archetypes</groupId>
+      <artifactId>jpa-maven-archetype</artifactId>
+      <version>RELEASE</version>
+      <repository>http://maven.rodcoffin.com/repo</repository>
+      <description>JPA application</description>
+    </archetype>
+    <archetype>
+      <groupId>org.springframework.osgi</groupId>
+      <artifactId>spring-osgi-bundle-archetype</artifactId>
+      <version>1.0.2</version>
+      <description>Spring-OSGi archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>com.atlassian.maven.archetypes</groupId>
+      <artifactId>confluence-plugin-archetype</artifactId>
+      <version>RELEASE</version>
+      <repository>https://maven.atlassian.com/public</repository>
+      <description>Atlassian Confluence plugin archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>com.atlassian.maven.archetypes</groupId>
+      <artifactId>jira-plugin-archetype</artifactId>
+      <version>5</version>
+      <repository>https://maven.atlassian.com/public</repository>
+      <description>Atlassian JIRA plugin archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>net.sf.maven-har</groupId>
+      <artifactId>maven-archetype-har</artifactId>
+      <version>0.9</version>
+      <description>Hibernate Archive</description>
+    </archetype>
+    <archetype>
+      <groupId>net.sf.maven-sar</groupId>
+      <artifactId>maven-archetype-sar</artifactId>
+      <version>0.9</version>
+      <description>JBoss Service Archive</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-archetype-quickstart</artifactId>
+      <version>1.3.2</version>
+      <description>A simple Apache Wicket project</description>
+    </archetype>
+    <archetype>
+      <groupId>org.scala-tools.archetypes</groupId>
+      <artifactId>scala-archetype-simple</artifactId>
+      <version>1.2</version>
+      <repository>http://scala-tools.org/repo-releases</repository>
+      <description>A simple scala project</description>
+    </archetype>
+    <archetype>
+      <groupId>net.liftweb</groupId>
+      <artifactId>lift-archetype-blank</artifactId>
+      <version>RELEASE</version>
+      <repository>http://scala-tools.org/repo-releases</repository>
+      <description>A blank/empty liftweb project</description>
+    </archetype>
+    <archetype>
+      <groupId>net.liftweb</groupId>
+      <artifactId>lift-archetype-basic</artifactId>
+      <version>RELEASE</version>
+      <repository>http://scala-tools.org/repo-releases</repository>
+      <description>The basic (liftweb) project</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.cocoon</groupId>
+      <artifactId>cocoon-22-archetype-block-plain</artifactId>
+      <version>RELEASE</version>
+      <description>[http://cocoon.apache.org/2.2/maven-plugins/]</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.cocoon</groupId>
+      <artifactId>cocoon-22-archetype-block</artifactId>
+      <version>RELEASE</version>
+      <description>[http://cocoon.apache.org/2.2/maven-plugins/]</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.cocoon</groupId>
+      <artifactId>cocoon-22-archetype-webapp</artifactId>
+      <version>RELEASE</version>
+      <description>[http://cocoon.apache.org/2.2/maven-plugins/]</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.myfaces.buildtools</groupId>
+      <artifactId>myfaces-archetype-helloworld</artifactId>
+      <version>1.0.0</version>
+      <description>A simple archetype using MyFaces</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.myfaces.buildtools</groupId>
+      <artifactId>myfaces-archetype-helloworld-facelets</artifactId>
+      <version>1.0.0</version>
+      <description>A simple archetype using MyFaces and facelets</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.myfaces.buildtools</groupId>
+      <artifactId>myfaces-archetype-trinidad</artifactId>
+      <version>1.0.0</version>
+      <description>A simple archetype using Myfaces and Trinidad</description>
+    </archetype>
+    <archetype>
+      <groupId>org.apache.myfaces.buildtools</groupId>
+      <artifactId>myfaces-archetype-jsfcomponents</artifactId>
+      <version>1.0.0</version>
+      <description>A simple archetype for create custom JSF components using MyFaces</description>
+    </archetype>
+    <archetype>
+      <groupId>org.codehaus.groovy.maven.archetypes</groupId>
+      <artifactId>gmaven-archetype-basic</artifactId>
+      <version>1.0-rc-3</version>
+      <description>Groovy basic archetype</description>
+    </archetype>
+    <archetype>
+      <groupId>org.codehaus.groovy.maven.archetypes</groupId>
+      <artifactId>gmaven-archetype-mojo</artifactId>
+      <version>1.0-rc-3</version>
+      <description>Groovy mojo archetype</description>
+    </archetype>
+  </archetypes>
+</archetype-catalog>

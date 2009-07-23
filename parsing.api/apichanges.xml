@@ -107,6 +107,37 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="modifying-filesDeleted-filesDirty">
+      <api name="ParsingAPI"/>
+      <summary>Modifying CustomIndexerFactory and EmbeddingIndexerFactory</summary>
+      <version major="1" minor="18"/>
+      <date day="3" month="7" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="no" addition="no" modification="yes"/>
+      <description>
+          <p>
+              Modified <code>CustomIndexerFactory</code> and <code>EmbeddingIndexerFactory</code>
+              to have methods <code>filesDeleted(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>
+              and <code>filesDirty(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>.
+          </p>
+      </description>
+  </change>
+
+  <change id="adding-context-isSourceForBinaryRootIndexing">
+      <api name="ParsingAPI"/>
+      <summary>Adding Context.isSourceForBinaryRootIndexing()</summary>
+      <version major="1" minor="17"/>
+      <date day="23" month="6" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>Context.isSourceForBinaryRootIndexing()</code> in order to further
+              optimize java indexing.
+          </p>
+      </description>
+  </change>
+
   <change id="adding-forceRefresh">
       <api name="ParsingAPI"/>
       <summary>Adding IndexingManager.refreshIndex methods with forceRefresh parameter</summary>

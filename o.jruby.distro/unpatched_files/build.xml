@@ -15,9 +15,12 @@
        setting local overrides, but that's how Ant works. -->
   <property file="default.build.properties"/>
 
+  <!-- Gem file names -->
+  <property name="rspec.gem" value="rspec-1.2.6.gem"/>
+  <property name="rake.gem" value="rake-0.8.7.gem"/>
+
   <path id="build.classpath">
     <fileset dir="${build.lib.dir}" includes="*.jar"/>
-    <fileset dir="${lib.dir}" includes="bsf.jar"/>
   </path>
 
   <!-- directory that contains emma.jar and emma_ant.jar: -->
@@ -31,8 +34,6 @@
   <patternset id="java.src.pattern">
     <include name="**/*.java"/>
     <exclude unless="bsf.present" name="org/jruby/javasupport/bsf/**/*.java"/>
-    <exclude unless="jdk1.4+" name="**/XmlAstMarshal.java"/>
-    <exclude unless="jdk1.4+" name="**/AstPersistenceDelegates.java"/>
     <exclude unless="sun-misc-signal" name="**/SunSignalFacade.java"/>
   </patternset>
 
@@ -43,8 +44,6 @@
   <patternset id="other.src.pattern">
     <include name="**/*.properties"/>
   </patternset>
-
-  <taskdef name="retro" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask" classpathref="build.classpath"/>
 
   <import file="netbeans-ant.xml" optional="true"/>
 
@@ -85,7 +84,6 @@
   <!-- Checks if specific libs and versions are avaiable -->
   <target name="check-for-optional-java4-packages"
           depends="init">
-    <available property="jdk1.4+" classname="java.lang.CharSequence"/>
     <available property="jdk1.5+" classname="java.lang.StringBuilder"/>
     <available property="bsf.present" classname="org.apache.bsf.BSFManager"
                classpathref="build.classpath"/>
@@ -223,12 +221,12 @@
 
       <jar destfile="${lib.dir}/jruby.jar" compress="true" index="true">
         <fileset dir="${jruby.classes.dir}"/>
-        <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/bytelist-1.0.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-commons-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-util-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-analysis-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-tree-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/bytelist.jar"/>
         <zipfileset src="${build.lib.dir}/constantine.jar"/>
         <zipfileset src="${build.lib.dir}/jvyamlb-0.2.5.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
@@ -237,9 +235,18 @@
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/jffi.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-i386-Linux.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-amd64-Linux.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-Darwin.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-x86-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-amd64-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-ppc-AIX.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-sparc-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-sparcv9-SunOS.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
         <zipfileset src="${build.lib.dir}/dynalang-0.3.jar"/>
         <zipfileset src="${build.lib.dir}/yydebug.jar"/>
+        <zipfileset src="${build.lib.dir}/nailgun-0.7.1.jar"/>
         <manifest>
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Main-Class" value="org.jruby.Main"/>
@@ -253,13 +260,13 @@
       <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc8.jar"/>
       <jarjar destfile="${lib.dir}/jruby.jar" compress="true">
         <fileset dir="${jruby.classes.dir}"/>
-        <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-commons-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-util-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-analysis-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-tree-3.1.jar"/>
         <zipfileset src="${build.lib.dir}/constantine.jar"/>
-        <zipfileset src="${build.lib.dir}/bytelist-1.0.1.jar"/>
+        <zipfileset src="${build.lib.dir}/bytelist.jar"/>
         <zipfileset src="${build.lib.dir}/jvyamlb-0.2.5.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/jcodings.jar"/>
@@ -267,9 +274,18 @@
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/jffi.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-i386-Linux.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-amd64-Linux.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-Darwin.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-x86-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-amd64-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-ppc-AIX.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-sparc-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-sparcv9-SunOS.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
         <zipfileset src="${build.lib.dir}/dynalang-0.3.jar"/>
         <zipfileset src="${build.lib.dir}/yydebug.jar"/>
+        <zipfileset src="${build.lib.dir}/nailgun-0.7.1.jar"/>
         <manifest>
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Main-Class" value="org.jruby.Main"/>
@@ -288,50 +304,11 @@
     <copy file="${basedir}/jruby.bnd.template" tofile="${build.dir}/${bndfile}" filtering="true"/>
     <taskdef resource="aQute/bnd/ant/taskdef.properties"
       classpath="${build.lib.dir}/bnd-0.0.249.jar"/>
-    <bndwrap definitions="${build.dir}" output="${lib.dir}">
+    <bndwrap definitions="${build.dir}" output="${dest.lib.dir}">
       <fileset file="${jar.wrap}" />
     </bndwrap>
     <move file="${jar.wrap}$" tofile="${jar.wrap}"
       overwrite="true" />
-  </target>
-
-  <path id="lib.classpath">
-    <pathelement location="${build.lib.dir}/retroweaver-rt-2.0.5.jar"/>
-    <pathelement location="${build.lib.dir}/backport-util-concurrent.jar"/>
-    <pathelement location="/usr/java/j2sdk1.4.2_16/jre/lib/rt.jar" />
-    <pathelement location="${lib.dir}/bsf.jar" />
-  </path>
-
-  <target name="jar-1.4" depends="jar-jruby">
-    <copy file="${lib.dir}/jruby.jar" tofile="${lib.dir}/jruby1.5.jar"/>
-    <retro inputjar="${lib.dir}/jruby1.5.jar" outputjar="${lib.dir}/jruby-weaved.jar" target="1.4" failonerror="true" verify="true">
-      <classpath>
-        <path refid="lib.classpath"/>
-        <pathelement location="${lib.dir}/jruby-weaved.jar" />
-      </classpath>
-    </retro>
-
-      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc8.jar"/>
-      <jarjar destfile="${lib.dir}/jruby.jar">
-        <zipfileset src="${lib.dir}/jruby-weaved.jar"/>
-        <zipfileset src="${build.lib.dir}/retroweaver-rt-2.0.5.jar"/>
-        <zipfileset src="${build.lib.dir}/backport-util-concurrent.jar"/>
-        <rule pattern="edu.emory.mathcs.backport.**" result="jruby.backport.@1"/>
-        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
-      </jarjar>
-    <delete file="${lib.dir}/jruby-weaved.jar"/>
-    <delete file="${lib.dir}/jruby1.5.jar"/>
-  </target>
-
-  <target name="jar-complete-1.4" depends="jar-complete">
-    <copy file="${lib.dir}/jruby-complete.jar" tofile="${lib.dir}/jruby-complete1.5.jar"/>
-    <retro inputjar="${lib.dir}/jruby-complete1.5.jar" outputjar="${lib.dir}/jruby-complete.jar" target="1.4" failonerror="false" verify="true">
-      <classpath>
-        <path refid="lib.classpath"/>
-        <pathelement location="${lib.dir}/jruby-complete.jar" />
-      </classpath>
-    </retro>
-    <delete file="${lib.dir}/jruby-complete1.5.jar"/>
   </target>
 
     <target name="jar-complete" depends="generate-method-classes, generate-unsafe" description="Create the 'complete' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">
@@ -359,25 +336,26 @@
         <sysproperty key="jruby.home" value="${build.dir}/jar-complete/META-INF/jruby.home"/>
         <arg value="--command"/>
         <arg value="maybe_install_gems"/>
-        <arg value="rspec"/>
-        <arg value="rake"/>
+        <arg value="${build.lib.dir}/${rspec.gem}"/>
+        <arg value="${build.lib.dir}/${rake.gem}"/>
         <arg value="--no-ri"/>
         <arg value="--no-rdoc"/>
         <arg value="--env-shebang"/>
       </java>
 
       <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc8.jar"/>
-      <jarjar destfile="${lib.dir}/${filename}">
+      <jarjar destfile="${dest.lib.dir}/${filename}">
         <fileset dir="${jruby.classes.dir}"/>
         <fileset dir="${build.dir}/jar-complete">
           <exclude name="META-INF/jruby.home/lib/ruby/1.8/**"/>
+          <exclude name="META-INF/jruby.home/lib/ruby/1.9/**"/>
         </fileset>
-        <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/bytelist-1.0.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-commons-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-util-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-analysis-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-tree-3.1.jar"/>
+        <zipfileset src="${build.lib.dir}/bytelist.jar"/>
         <zipfileset src="${build.lib.dir}/constantine.jar"/>
         <zipfileset src="${build.lib.dir}/jvyamlb-0.2.5.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
@@ -386,9 +364,18 @@
         <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/jffi.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-i386-Linux.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-amd64-Linux.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-Darwin.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-x86-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-amd64-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-ppc-AIX.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-sparc-SunOS.jar"/>
+        <zipfileset src="${build.lib.dir}/jffi-sparcv9-SunOS.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
         <zipfileset src="${build.lib.dir}/dynalang-0.3.jar"/>
         <zipfileset src="${build.lib.dir}/yydebug.jar"/>
+        <zipfileset src="${build.lib.dir}/nailgun-0.7.1.jar"/>
         <manifest>
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Main-Class" value="${mainclass}"/>
@@ -397,7 +384,7 @@
       </jarjar>
       <antcall target="_osgify-jar_">
         <param name="bndfile" value="jruby-complete.bnd" />
-        <param name="jar.wrap" value="${lib.dir}/jruby-complete.jar" />
+        <param name="jar.wrap" value="${dest.lib.dir}/${filename}" />
       </antcall>
     </target>
 
@@ -436,46 +423,39 @@
     </copy>
   </target>
 
-  <target name="install-gems">
-    <property name="jruby.home" value="${basedir}"/>
-    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true">
-      <classpath refid="build.classpath"/>
-      <classpath path="${jruby.classes.dir}"/>
-      <sysproperty key="jruby.home" value="${jruby.home}"/>
-      <arg value="--command"/>
-      <arg value="maybe_install_gems"/>
-      <arg value="rspec"/>
-      <arg value="rake"/>
-      <!-- Modified for NetBeans builds: activerecord-jdbc-adapter, Rails, no ri or rdoc indices -->
-      <arg value="activesupport"/>
-      <arg value="actionpack"/>
-      <arg value="activerecord"/>
-      <!-- new in 2.0.2 -->
-      <arg value="activeresource"/>
-      <!-- Renamed from activerecord-jdbc-adapter.gem because attempting a simple
-        gem install activerecord-jdbc will find and use the ActiveRecord gem file
-        instead -->
-      <!--
-      <arg value="jdbc-activerecord-jdbc-adapter"/>
-      -->
-      <arg value="actionmailer"/>
-      <arg value="activerecord-jdbcmysql-adapter"/>
-      <!--
-      removed from the  2.0.2 bundle
-      <arg value="actionwebservice"/>
-      -->
-      <arg value="rails"/>
-      <arg value="rcov"/>
-      <!-- Ruby Debugger -->
-      <arg value="ruby-debug-base"/>
-      <arg value="ruby-debug-ide"/>
-      <!-- other params -->
-      <arg value="--env-shebang"/>
-      <arg value="--no-rdoc"/>
-      <arg value="--no-ri"/>
-      <arg value="--local"/>
-    </java>
-  </target>
+    <target name="install-gems">
+        <property name="jruby.home" value="${basedir}"/>
+        <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true">
+            <classpath refid="build.classpath"/>
+            <classpath path="${jruby.classes.dir}"/>
+            <sysproperty key="jruby.home" value="${jruby.home}"/>
+            <arg value="--command"/>
+            <arg value="maybe_install_gems"/>
+            <arg value="rspec"/>
+            <arg value="rake"/>
+              <!-- Modified for NetBeans builds: activerecord-jdbc-adapter, Rails, no ri or rdoc indices -->
+            <arg value="activesupport-2.3.2"/>
+            <arg value="actionpack-2.3.2"/>
+            <arg value="activerecord-2.3.2"/>
+            <arg value="actionmailer-2.3.2"/>
+            <arg value="activeresource-2.3.2"/>
+            <arg value="activerecord-jdbc-adapter-0.9.1"/>
+            <arg value="jdbc-mysql-5.0.4"/>
+            <arg value="activerecord-jdbcmysql-adapter-0.9.1"/>
+            <arg value="jdbc-postgres-8.2"/>
+            <arg value="activerecord-jdbcpostgresql-adapter-0.9.1"/>
+            <arg value="rails"/>
+            <arg value="rcov"/>
+              <!-- Ruby Debugger -->
+            <arg value="ruby-debug-base"/>
+            <arg value="ruby-debug-ide"/>
+              <!-- other params -->
+            <arg value="--env-shebang"/>
+            <arg value="--no-rdoc"/>
+            <arg value="--no-ri"/>
+            <arg value="--local"/>
+        </java>
+    </target>
 
   <target name="install-build-gems" depends="install-gems">
     <property name="jruby.home" value="${basedir}"/>
@@ -548,6 +528,16 @@
   <target name="test" depends="
     copy-test-files,
     instrument,
+    run-junit-compiled-short,
+    test-security-manager,
+    test-rake-targets,
+    coverage-report"
+    description="Runs unit tests.">
+  </target>
+
+  <target name="test-extended" depends="
+    copy-test-files,
+    instrument,
     run-junit-compiled,
     test-security-manager,
     test-rake-targets,
@@ -577,52 +567,13 @@
       coverage-report"
 	  description="Runs unit tests in all modes."/>
 
-  <target name="weave-tests" description="weave the test classes">
-    <retro srcdir="${test.classes.dir}" target="1.4" failonerror="true" verify="true">
-      <classpath>
-        <path refid="lib.classpath"/>
-        <pathelement location="${lib.dir}/jruby.jar" />
-        <pathelement location="${build.lib.dir}/junit.jar" />
-        <pathelement location="${build.lib.dir}/asm-3.0.jar" />
-        <pathelement location="${test.classes.dir}" />
-      </classpath>
-    </retro>
-  </target>
-
-  <target name="test-1.4" depends="
-    copy-test-files,
-    jar-1.4,
-    weave-tests,
-    instrument,
-    run-junit-compiled,
-    run-junit-compiled-1.9,
-    coverage-report"
-  	description="Runs unit tests with 1.4-weaved jruby classes.">
-  </target>
-
-  <target name="test-all-1.4" depends="
-      copy-test-files,
-      jar-1.4,
-      weave-tests,
-      instrument,
-      run-junit-interpreted,
-      run-junit-compiled,
-      run-junit-precompiled,
-      run-junit-interpreted-1.9,
-      run-junit-compiled-1.9,
-      run-junit-precompiled-1.9,
-      run-junit-reflected-precompiled,
-      run-junit-precompiled-threadpool,
-      compile-stdlib,
-      coverage-report"
-	  description="Runs unit tests in all modes with weaved jruby classes."/>
-
   <!-- All junit permutations for 1.8 and 1.9 support -->
   <target name="run-junit-interpreted"><run-junit-1.8/></target>
   <target name="run-junit-interpreted-1.9"><run-junit-1.9/></target>
   <target name="run-junit-reflected-interpreted"><run-junit-1.8 reflection="true"/></target>
   <target name="run-junit-reflected-interpreted-1.9"><run-junit-1.9 reflection="true"/></target>
   <target name="run-junit-compiled"><run-junit-1.8 compile.mode="JIT" jit.threshold="0"/></target>
+  <target name="run-junit-compiled-short"><run-junit-1.8-short compile.mode="JIT" jit.threshold="0"/></target>
   <!-- temporarily disabled during compiler work -->
   <target name="run-junit-compiled-1.9"><run-junit-1.9 compile.mode="JIT" jit.threshold="0"/></target>
   <target name="run-junit-reflected-compiled"><run-junit-1.8 compile.mode="JIT" jit.threshold="0" reflection="true"/></target>
@@ -642,7 +593,6 @@
       <exclude name="jcodings.jar"/>
       <exclude name="joni.jar"/>
     </fileset>
-    <pathelement path="${lib.dir}/bsf.jar"/>
     <pathelement path="${java.class.path}"/>
     <pathelement path="${lib.dir}/jruby.jar"/>
     <pathelement location="${test.classes.dir}"/>
@@ -703,6 +653,26 @@
   </macrodef>
 
   <!-- runs junit tests for 1.8 functionality -->
+  <macrodef name="run-junit-1.8-short">
+    <attribute name="compile.mode" default="OFF"/>
+    <attribute name="jit.threshold" default="20"/>
+    <attribute name="reflection" default="false"/>
+    <attribute name="thread.pooling" default="false"/>
+
+    <sequential>
+      <run-junit compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}" reflection="@{reflection}" thread.pooling="@{thread.pooling}">
+	<junit-tests>
+	  <test name="${test}" if="test"/>
+	  <test name="org.jruby.test.ScriptTestSuite" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jruby.test.JRubyTestSuite" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jruby.test.MRITestSuite" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jruby.test.MainTestSuite" todir="${test.results.dir}" unless="test"/>
+	</junit-tests>
+      </run-junit>
+    </sequential>
+  </macrodef>
+
+  <!-- runs junit tests for 1.8 functionality -->
   <macrodef name="run-junit-1.8">
     <attribute name="compile.mode" default="OFF"/>
     <attribute name="jit.threshold" default="20"/>
@@ -747,6 +717,7 @@
       <classpath path="${jruby.classes.dir}"/>
       <sysproperty key="java.security.manager" value=""/>
       <sysproperty key="java.security.policy" value="file:test/restricted.policy"/>
+      <sysproperty key="java.awt.headless" value="true"/>
       <arg value="-e"/>
       <arg value="puts 'Restricted policy looks ok'"/>
     </java>
@@ -773,6 +744,7 @@
     <attribute name="jvm.args" default="-ea"/>
 
     <sequential>
+      <echo message="Running rake @{rake.targets}"/>
       <echo message="compile=@{compile.mode}, threshold=@{jit.threshold}, objectspace=@{objectspace.enabled} threadpool=@{thread.pooling} reflection=@{reflection}"/>
 
       <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="@{dir}">
@@ -823,12 +795,12 @@
   <target name="fetch-stable-specs" depends="fetch-specs, detect-stable-specs-need-update" if="stable-specs-need-update">
       <echo message="Rolling rubyspec to stable version"/>
       <exec dir="${rubyspec.dir}" executable="git">
-          <arg line="co ${rubyspecs.revision}"/>
+          <arg line="checkout ${rubyspecs.revision}"/>
       </exec>
 
       <echo message="Rolling mspec to stable version"/>
       <exec dir="${mspec.dir}" executable="git">
-          <arg line="co ${mspec.revision}"/>
+          <arg line="checkout ${mspec.revision}"/>
       </exec>
 
   	<!-- Write down the revision of downloaded specs -->
@@ -1130,11 +1102,15 @@
     <include name="bin/generate_yaml_index.rb"/>
     <include name="bin/testrb"/>
     <include name="bin/ast*"/>
+    <include name="bin/spec.bat"/>
+    <include name="bin/rake.bat"/>
   </patternset>
 
   <patternset id="dist.lib.files">
     <include name="lib/ruby/1.8/**"/>
     <include name="lib/ruby/site_ruby/1.8/**"/>
+    <include name="lib/ruby/1.9/**"/>
+    <include name="lib/ruby/site_ruby/1.9/**"/>
     <include name="lib/ruby/gems/1.8/specifications/sources-0.0.1.gemspec"/>
     <include name="lib/ruby/gems/1.8/gems/sources-0.0.1/**"/>
   </patternset>
@@ -1157,6 +1133,7 @@
     <exclude name="docs/rdocs.tar.gz"/>
     <exclude name="bench/**"/>
     <include name="share/**"/>
+    <include name="tool/nailgun/**"/>
   </patternset>
 
   <patternset id="dist.src.files">
@@ -1197,7 +1174,10 @@
             </filtermapper>
         </mapper>
     </unzip>
-    <unzip src="build_lib/jffi.jar" dest="dist/lib/native">
+    <unzip dest="dist/lib/native">
+        <fileset dir="build_lib">
+            <include name="jffi-*.jar"/>
+        </fileset>
         <patternset>
             <include name="**/libjffi.*"/>
         </patternset>
@@ -1343,40 +1323,6 @@
   <target name="jruby-nailgun" depends="generate-method-classes,build-ng"
     description="Set up JRuby to be run with Nailgun (jruby-ng, jruby-ng-server)">
     <mkdir dir="${build.dir}/nailmain"/>
-    <javac srcdir="${nailgun.home}/src/java" destdir="${build.dir}/nailmain"
-      classpath="${nailgun.home}/nailgun-0.7.1.jar:${jruby.classes.dir}" debug="true"
-      source="${javac.version}" target="${javac.version}"
-      deprecation="true" encoding="UTF-8" />
-    <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask"
-      classpath="${build.lib.dir}/jarjar-1.0rc8.jar"/>
-    <jarjar destfile="${nailgun.home}/jruby-nailgun.jar">
-      <fileset dir="${jruby.classes.dir}">
-        <exclude name="org/jruby/util/ant/**/*.class"/>
-      </fileset>
-      <fileset dir="${build.dir}/nailmain"/>
-      <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
-      <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
-      <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
-      <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
-      <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
-      <zipfileset src="${build.lib.dir}/bytelist-1.0.1.jar"/>
-      <zipfileset src="${build.lib.dir}/constantine.jar"/>
-      <zipfileset src="${build.lib.dir}/jvyamlb-0.2.5.jar"/>
-      <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
-      <zipfileset src="${build.lib.dir}/jcodings.jar"/>
-      <zipfileset src="${build.lib.dir}/joni.jar"/>
-      <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
-      <zipfileset src="${build.lib.dir}/jna.jar"/>
-      <zipfileset src="${build.lib.dir}/jffi.jar"/>
-      <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
-      <zipfileset src="${nailgun.home}/nailgun-0.7.1.jar"/>
-      <zipfileset src="${build.lib.dir}/yydebug.jar"/>
-      <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Main-Class" value="org.jruby.Main"/>
-      </manifest>
-    </jarjar>
   </target>
 
   <target name="fetch-rails">
@@ -1415,9 +1361,66 @@
   <target name="test-rails-stable" depends="jar,install-build-gems,fetch-rails">
       <!-- Need to disable assertions because of a rogue one in OpenSSL -->
       <run-rake dir="${rails.dir}/activesupport" rake.targets="test" jvm.args="-da"/>
-      
+
       <run-rake dir="${rails.dir}/actionmailer" rake.targets="test"/>
       <run-rake dir="${rails.dir}/activemodel" rake.targets="test"/>
       <run-rake dir="${rails.dir}/railties" rake.targets="test"/>
+  </target>
+
+  <target name="fetch-prawn">
+      <condition property="prawn-repo-exists">
+          <available file="test/prawn/.git"/>
+      </condition>
+
+      <antcall target="do-fetch-prawn"/>
+      <antcall target="do-update-prawn"/>
+  </target>
+
+  <target name="do-fetch-prawn" unless="prawn-repo-exists">
+      <!-- Rails repo might already have been pulled, so delete it -->
+      <antcall target="clear-prawn" inheritall="false"/>
+
+      <echo message="Cloning prawn repo to: test/prawn"/>
+      <exec executable="git">
+          <arg value="clone"/>
+          <arg value="--depth"/><arg value="1"/>
+          <arg value="git://github.com/sandal/prawn.git"/>
+          <arg value="test/prawn"/>
+      </exec>
+      <exec executable="git" dir="test/prawn">
+          <arg value="checkout"/>
+          <arg value="0.4.1"/>
+      </exec>
+      <exec executable="git" dir="test/prawn">
+          <arg value="submodule"/>
+          <arg value="init"/>
+      </exec>
+      <exec executable="git" dir="test/prawn">
+          <arg value="submodule"/>
+          <arg value="update"/>
+      </exec>
+  </target>
+
+  <target name="do-update-prawn" if="prawn-repo-exists">
+      <echo message="Updating rubyspec repo -- test/prawn"/>
+      <exec dir="test/prawn" executable="git">
+        <arg value="pull"/>
+      </exec>
+      <exec executable="git" dir="test/prawn">
+          <arg value="checkout"/>
+          <arg value="0.4.1"/>
+      </exec>
+      <exec executable="git" dir="test/prawn">
+          <arg value="submodule"/>
+          <arg value="update"/>
+      </exec>
+  </target>
+
+  <target name="clear-prawn">
+      <delete dir="test/prawn"/>
+  </target>
+
+  <target name="test-prawn" depends="jar,install-build-gems,fetch-prawn">
+      <run-rake dir="test/prawn" rake.targets="test examples"/>
   </target>
 </project>

@@ -40,24 +40,27 @@
  */
 package org.netbeans.modules.web.jsf.impl.metamodel;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
 
 
 /**
  * @author ads
  *
  */
-class ConverterFinder implements ElementFinder<Converter> {
+class ConverterFinder implements ElementFinder<FacesConverter> {
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.impl.metamodel.ElementFinder#getAnnotations(org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImpl)
      */
-    public List<Converter> getAnnotations( JsfModelImpl model   ) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<FacesConverter> getAnnotations( JsfModelImpl model   ) {
+        Collection<ConverterImpl> collection = model.getConverterManager().getObjects();
+        return new ArrayList<FacesConverter>( collection );
     }
 
     /* (non-Javadoc)

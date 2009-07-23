@@ -137,6 +137,8 @@ public class FindersHelperTest extends TestCase {
         assertFalse(FindersHelper.isFinderMethod("not_a_finder"));
         assertFalse(FindersHelper.isFinderMethod("findery"));
         assertFalse(FindersHelper.isFinderMethod("ally"));
+        assertFalse(FindersHelper.isFinderMethod(" "));
+        assertFalse(FindersHelper.isFinderMethod(""));
     }
 
     public void testNextAttributeLocation() {

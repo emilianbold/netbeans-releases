@@ -48,7 +48,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -56,17 +61,20 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -78,6 +86,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -114,6 +123,7 @@ public class PhpProject implements Project {
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
 
+    // all next properties are guarded by PhpProject.this lock as well so it could be possible to break this lock to individual locks
     // #165136
     // @GuardedBy(ProjectManager.mutex())
     volatile FileObject sourcesDirectory;
@@ -121,6 +131,12 @@ public class PhpProject implements Project {
     volatile FileObject testsDirectory;
     // @GuardedBy(ProjectManager.mutex())
     volatile FileObject seleniumDirectory;
+
+    // @GuardedBy(ProjectManager.mutex())
+    volatile Set<BasePathSupport.Item> ignoredFolders;
+    final Object ignoredFoldersLock = new Object();
+    final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
+    private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -134,6 +150,8 @@ public class PhpProject implements Project {
         testRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.TESTS);
         seleniumRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SELENIUM);
         lookup = createLookup(configuration);
+
+        addWeakPropertyEvaluatorListener(ignoredFoldersListener);
     }
 
     public Lookup getLookup() {
@@ -146,6 +164,10 @@ public class PhpProject implements Project {
 
     void addWeakPropertyEvaluatorListener(PropertyChangeListener listener) {
         eval.addPropertyChangeListener(WeakListeners.propertyChange(listener, eval));
+    }
+
+    void addWeakIgnoredFoldersListener(ChangeListener listener) {
+        ignoredFoldersChangeSupport.addChangeListener(WeakListeners.change(listener, ignoredFoldersChangeSupport));
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -204,6 +226,10 @@ public class PhpProject implements Project {
 
     private FileObject resolveSourcesDirectory() {
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
+        // # 168390 - more logging
+        if (srcDirProperty == null) {
+            Logger.getLogger(PhpProject.class.getName()).info("Property for Sources must be defined [" + eval.getProperties() + "]");
+        }
         assert srcDirProperty != null : "Property for Sources must be defined";
         FileObject srcDir = helper.resolveFileObject(srcDirProperty);
         if (srcDir != null) {
@@ -316,6 +342,55 @@ public class PhpProject implements Project {
                 NotifyDescriptor.OK_OPTION));
     }
 
+    Set<FileObject> getIgnoredFolders() {
+        if (ignoredFolders == null) {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    synchronized (ignoredFoldersLock) {
+                        if (ignoredFolders == null) {
+                            ignoredFolders = resolveIgnoredFolders();
+                        }
+                    }
+                    return null;
+                }
+            });
+        }
+        assert ignoredFolders != null : "Ignored folders cannot be null";
+        if (ignoredFolders.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<FileObject> ignored = new HashSet<FileObject>();
+        File projectDir = FileUtil.toFile(getProjectDirectory());
+        for (BasePathSupport.Item item : ignoredFolders) {
+            if (item.isBroken()) {
+                continue;
+            }
+            File file = new File(item.getFilePath());
+            if (!file.isAbsolute()) {
+                file = PropertyUtils.resolveFile(projectDir, item.getFilePath());
+            }
+            if (file.exists()) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null && fo.isValid()) {
+                    ignored.add(fo);
+                }
+            }
+        }
+        return ignored;
+    }
+
+    private Set<BasePathSupport.Item> resolveIgnoredFolders() {
+        IgnorePathSupport ignorePathSupport = new IgnorePathSupport(eval, refHelper, helper);
+        Set<BasePathSupport.Item> ignored = new HashSet<BasePathSupport.Item>();
+        EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        Iterator<BasePathSupport.Item> itemsIterator = ignorePathSupport.itemsIterator(properties.getProperty(PhpProjectProperties.IGNORE_PATH));
+        while (itemsIterator.hasNext()) {
+            ignored.add(itemsIterator.next());
+        }
+        return ignored;
+    }
+
     /*
      * Copied from MakeProject.
      */
@@ -362,6 +437,18 @@ public class PhpProject implements Project {
         });
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder(200);
+        buffer.append(getClass().getName());
+        buffer.append(" [ project directory: ");
+        buffer.append(getProjectDirectory());
+        buffer.append(", source directory: ");
+        buffer.append(sourcesDirectory);
+        buffer.append(" ]");
+        return buffer.toString();
+    }
+
     public AntProjectHelper getHelper() {
         return helper;
     }
@@ -371,6 +458,7 @@ public class PhpProject implements Project {
     }
 
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
+        PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
         return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(),
@@ -382,6 +470,7 @@ public class PhpProject implements Project {
                 new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
+                new PhpModuleImpl(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
@@ -389,7 +478,8 @@ public class PhpProject implements Project {
                 new CustomizerProviderImpl(this),
                 new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpProjectOperations(this) ,
-                new PhpProjectEncodingQueryImpl(getEvaluator()),
+                phpProjectEncodingQueryImpl,
+                new TemplateAttributesProviderImpl(getHelper(), phpProjectEncodingQueryImpl),
                 new PhpTemplates(),
                 new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
@@ -418,7 +508,7 @@ public class PhpProject implements Project {
         }
 
         public String getName() {
-            return PhpProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
 
         public Project getProject() {
@@ -441,9 +531,12 @@ public class PhpProject implements Project {
             sourcesDirectory = null;
             testsDirectory = null;
             seleniumDirectory = null;
+            ignoredFolders = null;
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
+            // do it in a background thread
+            getIgnoredFolders();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
@@ -531,6 +624,15 @@ public class PhpProject implements Project {
 
         public void runAllTests() {
             ConfigAction.get(ConfigAction.Type.SELENIUM, PhpProject.this).runProject();
+        }
+    }
+
+    private final class IgnoredFoldersListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpProjectProperties.IGNORE_PATH.equals(evt.getPropertyName())) {
+                ignoredFolders = null;
+                ignoredFoldersChangeSupport.fireChange();
+            }
         }
     }
 }

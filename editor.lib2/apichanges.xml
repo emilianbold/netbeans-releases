@@ -104,6 +104,16 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added-component-removed-property">
+            <summary>EditorRegistry.COMPONENT_REMOVED_PROPERTY added.</summary>
+            <version major="1" minor="13"/>
+            <date day="1" month="7" year="2009"/>
+            <author login="dbalek"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>EditorRegistry.COMPONENT_REMOVED_PROPERTY is fired when a component is removed from
+            component hierarchy.
+            </description>
+        </change>
 
         <change id="added-dialogbinding">
             <summary>DialogBinding added</summary>

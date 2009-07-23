@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.repository.queue;
 import java.io.IOException;
 import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
@@ -109,7 +111,7 @@ public class RepositoryWritingThread implements Runnable {
         if (Stats.queueTrace) { System.err.printf("%s: started.\n", getName()); }
         
         while( true ) {
-            RepositoryQueue.Entry entry;
+            RepositoryQueue.Entry<Key, Persistent> entry;
             try {
                 try {
                     rwLock.readLock().lock();

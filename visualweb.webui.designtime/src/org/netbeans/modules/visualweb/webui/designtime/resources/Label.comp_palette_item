@@ -3,7 +3,7 @@
 <palette_item version="1.0">
   <component classname="com.sun.rave.web.ui.component.Label" type="visual" />
   <icon16 urlvalue="nbres:/org/netbeans/modules/visualweb/web/ui/dt/component/Label_C16.png" />
-  <icon32 urlvalue="nbres:vweb/ui/dt/component/Label_C32.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/visualweb/web/ui/dt/component/Label_C32.png" />
   <description localizing-bundle="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"
                display-name-key="NAME_vweb-ui-component-Label"
                tooltip-key="HINT_vweb-ui-component-Label"

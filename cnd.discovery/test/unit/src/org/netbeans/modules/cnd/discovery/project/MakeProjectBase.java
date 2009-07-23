@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.discovery.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.Cancellable;
@@ -76,7 +77,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
+public abstract class MakeProjectBase extends CndBaseTestCase { //extends NbTestCase
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =true;
     private static final boolean TRACE = true;
 
@@ -85,11 +86,11 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
         }
-        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+//        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
-        MockServices.setServices(MakeProjectType.class);
+//        MockServices.setServices(MakeProjectType.class);
     }
 
     @Override
@@ -99,13 +100,19 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         startupModel();
     }
 
-//    @Override
-//    protected List<Class> getServises() {
-//        List<Class> list = new ArrayList<Class>();
-//        list.add(MakeProjectType.class);
-//        list.addAll(super.getServises());
-//        return list;
-//    }
+    @Override
+    protected List<Class> getServises() {
+        List<Class> list = new ArrayList<Class>();
+        list.add(MakeProjectType.class);
+        list.addAll(super.getServises());
+        return list;
+    }
+
+    @Override
+    protected void setUpMime() {
+        // setting up MIME breaks other services
+        super.setUpMime();
+    }
 
     private void startupModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
@@ -183,7 +190,7 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
                     } else if ("path".equals(name)) {
                         return path;
                     } else if ("configureName".equals(name)) {
-                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
+                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
                             // run configure only once
                             return null;
@@ -325,13 +332,14 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
     }
 
     protected void perform(CsmProject csmProject) {
-        if (TRACE) {
-            System.err.println("Model content:");
-        }
         csmProject.waitParse();
-        for (CsmFile file : csmProject.getAllFiles()) {
+        Collection<CsmFile> col = csmProject.getAllFiles();
+        if (TRACE) {
+            System.err.println("Model has "+col.size()+" files");
+        }
+        for (CsmFile file : col) {
             if (TRACE) {
-                System.err.println("\t"+file.getAbsolutePath());
+                //System.err.println("\t"+file.getAbsolutePath());
             }
             for(CsmInclude include : file.getIncludes()){
                 assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
@@ -349,7 +357,7 @@ public abstract class MakeProjectBase extends NbTestCase { //BaseTestCase {
         String createdFolder = dataPath+"/"+packageName;
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
-            public void executionStarted() {
+            public void executionStarted(int pid) {
             }
             public void executionFinished(int rc) {
                 finish.set(true);

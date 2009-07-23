@@ -60,7 +60,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.BeanNode;
 import org.openide.util.NbPreferences;
 
 /**
@@ -98,8 +97,6 @@ public class I18nOptions {
     public static final String PROP_LAST_RESOURCE2 = "lastResource2"; // NOI18N
 
     
-    /** Provided due exeternaliazation only. 
-     * Don't create this object directly use superclass <code>findObject</code> method instead. */
     private I18nOptions() {}
 
     public static I18nOptions getDefault() {
@@ -109,11 +106,6 @@ public class I18nOptions {
     private  static Preferences getPreferences() {
         return NbPreferences.forModule(I18nOptions.class);
     }    
-    
-    /** Implements superclass abstract method. */
-    public String displayName() {
-        return I18nUtil.getBundle().getString("LBL_Internationalization");
-    }
     
     /** Getter for init java code property. */
     public String getInitJavaCode() {
@@ -176,7 +168,7 @@ public class I18nOptions {
         getPreferences().putBoolean(PROP_REPLACE_RESOURCE_VALUE,
                                     replaceResourceValue);
     }
-    
+
     /** Getter for last resource property. */
     @Deprecated
     public DataObject getLastResource2() {
@@ -288,8 +280,4 @@ public class I18nOptions {
 
         return l;
     }    
-    
-    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
-        return new BeanNode(I18nOptions.getDefault());
-    }             
 }

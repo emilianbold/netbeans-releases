@@ -97,7 +97,6 @@ public final class ModelUtils {
                 if (acceptNull || classifier != null) {
                     dep.setClassifier(classifier);
                 }
-                model.endTransaction();
             }
         };
         Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));

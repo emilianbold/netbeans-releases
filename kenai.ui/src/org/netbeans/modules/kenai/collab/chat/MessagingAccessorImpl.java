@@ -40,9 +40,10 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -99,25 +100,25 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
 
     @Override
-    public ActionListener getOpenMessagesAction(final ProjectHandle project) {
-        return new ActionListener() {
+    public Action getOpenMessagesAction(final ProjectHandle project) {
+        return new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
-                chatTC.setActive(project.getId());
+                chatTC.setActiveGroup(project.getId());
                 chatTC.requestActive(false);
             }
         };
     }
 
     @Override
-    public ActionListener getCreateChatAction(final ProjectHandle project) {
+    public Action getCreateChatAction(final ProjectHandle project) {
         return new CreateChatAction(project.getId());
     }
 
     @Override
-    public ActionListener getReconnectAction(final ProjectHandle project) {
-        return new ActionListener() {
+    public Action getReconnectAction(final ProjectHandle project) {
+        return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, null);

@@ -45,6 +45,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -60,7 +61,7 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
         super(name);
     }
 
-    // TODO fails because o.n.m.a.p.queries.UpdateTrackingFileOwnerQuery does not scan extra-compilation-units, fix
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testOwnershipNetBeansOrg() throws Exception {
         // Basic module:
         assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar");
@@ -84,7 +85,8 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
         assertOwnership(resolveEEPPath("/suite1/action-project"), resolveEEPPath("/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"));
         assertOwnership(resolveEEPPath("/suite1/action-project"), resolveEEPPath("/suite1/build/cluster/update_tracking/org-netbeans-examples-modules-action.xml"));
     }
-    
+
+    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     private void assertOwnership(String project, String file) throws Exception {
         FileObject projectFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbRootFile(), project));
         assertNotNull("have project " + project, projectFO);

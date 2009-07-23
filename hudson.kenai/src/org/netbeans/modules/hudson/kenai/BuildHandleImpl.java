@@ -40,8 +40,9 @@
 package org.netbeans.modules.hudson.kenai;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
@@ -84,8 +85,8 @@ class BuildHandleImpl extends BuildHandle {
     public void addPropertyChangeListener(PropertyChangeListener l) {}
     public void removePropertyChangeListener(PropertyChangeListener l) {}
 
-    public ActionListener getDefaultAction() {
-        return new ActionListener() {
+    public Action getDefaultAction() {
+        return new AbstractAction() {
             public void actionPerformed(final ActionEvent e) {
                 // Mostly copied from ProblemNotification.actionPerformed.
                 final int build = job.getLastBuild();

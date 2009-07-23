@@ -148,16 +148,20 @@ public class CppMetaModel implements PropertyChangeListener {
     public void scheduleParsing(final Document doc) {
 
 	final String title = (String) doc.getProperty(Document.TitleProperty);
-	log.log(Level.FINE, "CppMetaModel.scheduleParsing: Checking " + getShortName(doc) +
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "CppMetaModel.scheduleParsing: Checking " + getShortName(doc) +
 		" [" + Thread.currentThread().getName() + "]"); // NOI18N
+        }
 	final CppFile file = map.get(title);
         // try to cancel task
         if (task != null) {
             task.cancel();
         }
 	if (file == null) {
-	    log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting initial parse for " +
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting initial parse for " +
 			getShortName(doc));
+            }
 	    task = getCppParserRP().post(new Runnable() {
 		public void run() {
 		    CppFile file = new CppFile(title);
@@ -167,8 +171,10 @@ public class CppMetaModel implements PropertyChangeListener {
 		}
 	    }, reparseDelay);
 	} else if (file.needsUpdate()) {
-	    log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting update parse for " +
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting update parse for " +
 			getShortName(doc));
+            }
 	    task = getCppParserRP().post(new Runnable() {
 		public void run() {
 		    file.startParsing(doc);

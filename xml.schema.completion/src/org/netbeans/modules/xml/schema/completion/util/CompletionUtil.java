@@ -468,11 +468,14 @@ public class CompletionUtil {
         List<CompletionResultItem> items = new ArrayList<CompletionResultItem>();
         String anyNamespace = any.getTargetNamespace();
         String tns = any.getModel().getRoot().getTargetNamespace();        
-        for(CompletionModel cm : context.getCompletionModels()) {            
+        for (CompletionModel cm : context.getCompletionModels()) {
+            if (cm == null) continue;
+
             //##other => items from other namespaces
-            if(anyNamespace.equals("##other")) { //NOI18N
-               if(tns != null && !tns.equals(cm.getTargetNamespace()))
-                populateItemsForAny(cm,any,context,items);
+            if (anyNamespace.equals("##other")) { //NOI18N
+                if ((tns != null) && (! tns.equals(cm.getTargetNamespace()))) {
+                    populateItemsForAny(cm, any, context, items);
+                }
             }
 
             //##targetNamespace => items from target namespace
@@ -503,21 +506,22 @@ public class CompletionUtil {
         return items;
     }
     
-    private static void populateItemsForAny(CompletionModel cm,
-            AXIComponent any, CompletionContextImpl context, List<CompletionResultItem> items) {
+    private static void populateItemsForAny(CompletionModel cm, AXIComponent any,
+            CompletionContextImpl context, List<CompletionResultItem> items) {
+        if (cm == null) return;
+
         AXIModel am = AXIModelFactory.getDefault().getModel(cm.getSchemaModel());
-        if(any instanceof AnyElement) {
+        if (any instanceof AnyElement) {
             for(Element e : am.getRoot().getElements()) {
-                addNSAwareCompletionItems(e,context,cm,items);
+                addNSAwareCompletionItems(e, context, cm, items);
             }
         }
-        if(any instanceof AnyAttribute) {
+        if (any instanceof AnyAttribute) {
             for(Attribute a : am.getRoot().getAttributes()) {
-                addNSAwareCompletionItems(a,context,cm,items);
+                addNSAwareCompletionItems(a, context, cm, items);
             }
         }        
     }
-    
     
     /**
      * Finds namespaces declared in all start tags in the document and keeps a map

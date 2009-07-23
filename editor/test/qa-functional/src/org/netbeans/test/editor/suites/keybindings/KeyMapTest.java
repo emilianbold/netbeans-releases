@@ -50,7 +50,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.KeyMapOperator;
@@ -83,7 +83,7 @@ public class KeyMapTest extends JellyTestCase {
         newProjectOper.selectCategory("Java");
         newProjectOper.selectProject("Java Application");
         newProjectOper.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
         new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
         new JTextFieldOperator(npnlso, 1).setText(getDataDir().getAbsolutePath()); // NOI18N
         newProjectOper.finish();

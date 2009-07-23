@@ -74,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
+import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
@@ -202,7 +203,7 @@ public class PullAction extends ContextAction {
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
         final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
         // If the repository has no default pull path then inform user
-        if (pullSourceString == null) {
+        if (isNullOrEmpty(pullSourceString)) {
             notifyDefaultPullUrlNotSpecified(logger);
             return;
         }
@@ -243,10 +244,8 @@ public class PullAction extends ContextAction {
         logger.outputInRed(getMessage("MSG_PULL_DONE"));                //NOI18N
         logger.output     ("");                                         //NOI18N
         DialogDisplayer.getDefault().notify(
-                new DialogDescriptor.Confirmation(
-                        getMessage("MSG_NO_DEFAULT_PULL_SET"),          //NOI18N
-                        title,
-                        INFORMATION_MESSAGE));
+                new DialogDescriptor.Message(
+                        getMessage("MSG_NO_DEFAULT_PULL_SET")));        //NOI18N
     }
 
     private static void notifyDefaultPullUrlInvalid(String pullUrl,
@@ -261,9 +260,7 @@ public class PullAction extends ContextAction {
         logger.outputInRed(getMessage("MSG_PULL_DONE"));                //NOI18N
         logger.output     ("");                                         //NOI18N
         DialogDisplayer.getDefault().notify(
-                new DialogDescriptor.Confirmation(msg,
-                                                  title,
-                                                  INFORMATION_MESSAGE));
+                new DialogDescriptor.Message(msg));
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, HgURL pullSource, String fromPrjName, String toPrjName, OutputLogger logger) {

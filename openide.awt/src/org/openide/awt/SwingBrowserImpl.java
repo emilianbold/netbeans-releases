@@ -67,6 +67,7 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
@@ -95,6 +96,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     private PropertyChangeSupport pcs;
     private String statusMessage = ""; // NOI18N
     private SwingBrowser swingBrowser;
+    private final JScrollPane scroll;
 
     /** list of accessed URLs for back/fwd navigation */
     private Vector<Object> historyList;
@@ -112,6 +114,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     SwingBrowserImpl() {
         pcs = new PropertyChangeSupport(this);
         swingBrowser = new SwingBrowser();
+        scroll = new JScrollPane(swingBrowser);
         historyList = new Vector<Object>(5, 3);
         historyIndex = -1;
         swingBrowser.addPropertyChangeListener(
@@ -164,7 +167,7 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     * @return visual component of html browser.
     */
     public java.awt.Component getComponent() {
-        return swingBrowser;
+        return scroll;
     }
 
     /**

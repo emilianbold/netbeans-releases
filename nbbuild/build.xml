@@ -117,6 +117,8 @@ made subject to such option by the copyright holder.
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
       <exclude name="**/CheckHelpSetsBin.java" unless="have.javahelp"/>
+      <exclude name="**/ModifiedHTMLIndexerKit.java" unless="have.javahelp"/>
+      <exclude name="**/ModifiedIndexer.java" unless="have.javahelp"/>
       <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
     <jar jarfile="nbantext.jar">

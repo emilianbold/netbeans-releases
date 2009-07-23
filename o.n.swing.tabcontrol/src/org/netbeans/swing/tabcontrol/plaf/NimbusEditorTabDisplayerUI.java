@@ -46,7 +46,6 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import com.sun.java.swing.Painter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -110,18 +109,30 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
     }
     
     protected void paintBackground(Graphics g) {
-        Painter painter = null;
-        if (displayer.isActive()) {
-            painter = (Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled+MouseOver].backgroundPainter");
-        }
-        if (!displayer.isActive() || null == painter) {
-            painter = (Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
-        }
-
         Graphics2D g2d = (Graphics2D) g;
         int w = displayer.getWidth();
         int h = displayer.getHeight();
-        painter.paint(g2d, null, w, h);
+        if( NimbusEditorTabCellRenderer.IS_JDK_17 ) {
+            javax.swing.Painter painter = null;
+            if (displayer.isActive()) {
+                painter = (javax.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled+MouseOver].backgroundPainter");
+            }
+            if (!displayer.isActive() || null == painter) {
+                painter = (javax.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
+            }
+
+            painter.paint(g2d, null, w, h);
+        } else {
+            com.sun.java.swing.Painter painter = null;
+            if (displayer.isActive()) {
+                painter = (com.sun.java.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled+MouseOver].backgroundPainter");
+            }
+            if (!displayer.isActive() || null == painter) {
+                painter = (com.sun.java.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
+            }
+
+            painter.paint(g2d, null, w, h);
+        }
 
         Color c = (Color) UIManager.get("nimbusBorder");
         g.setColor(c);

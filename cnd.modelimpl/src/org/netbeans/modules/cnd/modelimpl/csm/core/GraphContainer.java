@@ -504,7 +504,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
-    private ReadWriteLock graphLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock graphLock = new ReentrantReadWriteLock();
     
     private static class NodeLink implements SelfPersistent, Persistent {
         
@@ -570,8 +570,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
 
     public static final class ParentFiles {
-        private Set<CsmUID<CsmFile>> comilationUnits;
-        private Set<CsmUID<CsmFile>> parentFiles;
+        private final Set<CsmUID<CsmFile>> comilationUnits;
+        private final Set<CsmUID<CsmFile>> parentFiles;
         private ParentFiles(Set<CsmUID<CsmFile>> comilationUnits, Set<CsmUID<CsmFile>> parentFiles){
             this.comilationUnits = comilationUnits;
             this.parentFiles = parentFiles;
@@ -591,8 +591,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
 
     public static final class CoherenceFiles {
-        private Set<CsmUID<CsmFile>> coherenceFiles;
-        private Set<CsmUID<CsmFile>> parentFiles;
+        private final Set<CsmUID<CsmFile>> coherenceFiles;
+        private final Set<CsmUID<CsmFile>> parentFiles;
         private CoherenceFiles(Set<CsmUID<CsmFile>> parentFiles, Set<CsmUID<CsmFile>> coherenceFiles){
             this.parentFiles = parentFiles;
             this.coherenceFiles = coherenceFiles;

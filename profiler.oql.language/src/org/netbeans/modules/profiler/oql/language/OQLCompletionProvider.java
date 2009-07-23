@@ -48,7 +48,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.profiler.heapwalk.oql.OQLEngine;
+import org.netbeans.lib.profiler.heap.JavaClass;
+import org.netbeans.modules.profiler.oql.engine.api.OQLEngine;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -205,7 +206,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                     case CLAZZ_E:
                     case CLAZZ: {
                         OQLEngine e = (OQLEngine)document.getProperty(OQLEngine.class);
-                        final String tokentext = currentToken.toString();
+                        final String tokentext = currentToken.toString().replace("\n", " ").trim();
 
                         String regex = ".*?" + tokentext.replace("[", "\\[").replace("]", "\\]").replace("$", "\\$") + ".*";
                         String camel = null;
@@ -231,23 +232,23 @@ public class OQLCompletionProvider implements CompletionProvider {
 
                         Set<String> completions = new HashSet<String>();
 
-                        Iterator clzs = e.getHeapHelper().getClassNames(prefix);
+                        Iterator clzs = e.getHeap().getJavaClassesByRegExp(prefix).iterator();
                         while(clzs.hasNext()) {
-                            String className = (String)clzs.next();
+                            String className = (String)((JavaClass)clzs.next()).getName();
                             completions.add("00 " + className);
                         }
 
                         if (camel != null) {
-                            clzs = e.getHeapHelper().getClassNames(camel);
+                            clzs = e.getHeap().getJavaClassesByRegExp(camel).iterator();;
                             while(clzs.hasNext()) {
-                                String className = (String)clzs.next();
+                                String className = (String)((JavaClass)clzs.next()).getName();
                                 completions.add("01 " + className);
                             }
                         }
 
-                        clzs = e.getHeapHelper().getClassNames(regex);
+                        clzs = e.getHeap().getJavaClassesByRegExp(regex).iterator();;
                         while(clzs.hasNext()) {
-                            String className = (String)clzs.next();
+                            String className = (String)((JavaClass)clzs.next()).getName();
                             completions.add("02 " + className);
                         }
 

@@ -73,6 +73,8 @@ import hidden.org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -126,6 +128,7 @@ public class DependencyNode extends AbstractNode {
     private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
     private static final String MISSING_BADGE_ICON = "org/netbeans/modules/maven/ResourceNotIncluded.gif"; //NOI18N
     private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
+    private static final String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
 
     private Artifact art;
     private NbMavenProjectImpl project;
@@ -139,6 +142,8 @@ public class DependencyNode extends AbstractNode {
             + NbBundle.getMessage(DependencyNode.class, "ICON_SourceBadge");//NOI18N
     private static String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MISSING_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
+    private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
     
 
     public static Children createChildren(Lookup look, boolean longLiving) {
@@ -197,6 +202,20 @@ public class DependencyNode extends AbstractNode {
     public boolean isTransitive() {
         List trail = art.getDependencyTrail();
         return trail != null && trail.size() > 2;
+    }
+
+    public boolean isManaged() {
+        DependencyManagement dm = project.getOriginalMavenProject().getDependencyManagement();
+        if (dm != null) {
+            List<Dependency> dmList = dm.getDependencies();
+            for (Dependency d : dmList) {
+                if (art.getGroupId().equals(d.getGroupId()) &&
+                    art.getArtifactId().equals(d.getArtifactId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void setIconBase() {
@@ -448,6 +467,11 @@ public class DependencyNode extends AbstractNode {
                 Image ann = ImageUtilities.loadImage(SOURCE_BADGE_ICON); //NOI18N
                 ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
                 retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
+            }
+            if (DependenciesNode.showManagedState() && isManaged()) {
+                Image ann = ImageUtilities.loadImage(MANAGED_BADGE_ICON); //NOI18N
+                ann = ImageUtilities.addToolTipToImage(ann, toolTipManaged);
+                retValue = ImageUtilities.mergeImages(retValue, ann, 0, 8);//NOI18N
             }
             return retValue;
         } else {
@@ -984,7 +1008,7 @@ public class DependencyNode extends AbstractNode {
                         FileObject root = FileUtil.getArchiveRoot(jar);
                         String rel = FileUtil.getRelativePath(root, fil);
                         if (rel.endsWith(".class")) { //NOI18N
-                            rel = rel.replaceAll("class$", javadoc ? "html" : "java"); //NOI18N
+                            rel = rel.replaceAll("class$", javadoc ? "html" : ""); //NOI18N
                         }
                         if (javadoc) {
                             JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
@@ -1001,7 +1025,13 @@ public class DependencyNode extends AbstractNode {
                         } else {
                             SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(root.getURL());
                             for (FileObject srcRoot : res.getRoots()) {
-                                FileObject src = srcRoot.getFileObject(rel);
+                                FileObject src = srcRoot.getFileObject(rel + "java"); //NOI18N
+                                if (src == null) {
+                                    src = srcRoot.getFileObject(rel + "scala"); //NOI18N
+                                }
+                                if (src == null) {
+                                    src = srcRoot.getFileObject(rel + "groovy"); //NOI18N
+                                }
                                 if (src != null) {
                                     DataObject dobj2 = DataObject.find(src);
                                     if (tryOpen(dobj2)) {

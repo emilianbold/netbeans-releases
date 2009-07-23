@@ -301,7 +301,21 @@ public class HgUtils {
         }
         return path;
     }
-    
+
+    /**
+     * Tells whether the given string is {@code null} or empty.
+     * A string is considered empty if it consists only of spaces (and possibly
+     * other spacing characters). The current implementation checks just for
+     * spaces, future implementations may also check for other spacing
+     * characters.
+     *
+     * @param  string to be verified or {@code null}
+     * @return  {@code true} if the string is {@null} or empty,
+     *          {@code false} otherwise
+     */
+    public static boolean isNullOrEmpty(String str) {
+        return (str == null) || (str.trim().length() == 0);
+    }
     
     /**
      * fixIniFilePathsOnWindows - converts '\' to '\\' in paths in IniFile on Windows

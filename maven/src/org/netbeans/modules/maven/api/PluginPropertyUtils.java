@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.maven.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
@@ -57,7 +57,6 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
-import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.Project;
@@ -329,6 +328,7 @@ public class PluginPropertyUtils {
     }
     
     public static Properties getPluginPropertyParameter(MavenProject prj, String groupId, String artifactId, String propertyParameter, String goal) {
+        //TODO we might need to merge the props from various locations..
         Properties toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -385,6 +385,20 @@ public class PluginPropertyUtils {
                     try {
                         String val = ch.getValue();
                         if (val == null) {
+                            //#168036
+                            //we have the "property" named element now.
+                            if (ch.getChildCount() == 2) {
+                                Xpp3Dom nameDom = ch.getChild("name"); //NOI18N
+                                Xpp3Dom valueDom = ch.getChild("value"); //NOI18N
+                                if (nameDom != null && valueDom != null) {
+                                    String name = nameDom.getValue();
+                                    String value = valueDom.getValue();
+                                    Object evaluated = eval.evaluate(value);
+                                    if (name != null && value != null) {
+                                        toRet.put(name, evaluated != null ? ("" + evaluated) : value);  //NOI18N
+                                    }
+                                }
+                            }
                             //#153063
                             continue;
                         }

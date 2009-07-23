@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 
-import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -109,7 +108,6 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             repository = new Repository(repositoryModeMask, title); 
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
-            panel.repositoryPanel.setLayout(new BorderLayout());
             panel.repositoryPanel.add(repository.getPanel());
             valid();
         }                        

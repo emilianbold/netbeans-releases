@@ -397,7 +397,7 @@ function get_file_url(filename, lang_id) {
 
 
 function get_file_bouncer_url(platform, option, language) {
-    var url = BOUNCER_URL;
+    var url = get_build_info(isMainLanguage(language)).BOUNCER_URL;
     url += "?" + "product=" + get_build_info(isMainLanguage(language)).BOUNCER_PRODUCT_PREFIX;
     if(option != "all") {
         url += "-" + option;

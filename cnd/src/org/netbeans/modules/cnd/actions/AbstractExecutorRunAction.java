@@ -341,7 +341,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             progressHandle.finish();
         }
 
-        public void executionStarted() {
+        public void executionStarted(int pid) {
             progressHandle.start();
         }
 

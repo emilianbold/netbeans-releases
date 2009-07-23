@@ -1,0 +1,21 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+${IMPORTS}
+public final class ${CLASS_NAME} implements ActionListener {
+    private final ${CONTEXT_TYPE} context;
+
+    public ${CLASS_NAME}(${CONTEXT_TYPE} context) {
+        this.context = context;
+    }
+
+    public void actionPerformed(ActionEvent ev) {
+        ${PERFORM_ACTION_CODE}
+    }
+}

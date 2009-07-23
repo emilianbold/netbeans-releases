@@ -11,7 +11,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       generate_timeouts:METHOD:[PUBLIC]:ESCAPED{generate_timeouts}<font color='#777777'> : ESCAPED{Array}</font>:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{config_info}}):
       initialized:FIELD:[]:ESCAPED{initialized}:
-      lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}:
+      lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{Config, Unknown}</font>:
       mutex:FIELD:[]:ESCAPED{mutex}:
       nameserver:FIELD:[]:ESCAPED{nameserver}:
       ndots:FIELD:[]:ESCAPED{ndots}:
@@ -26,11 +26,13 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       Str:CLASS:[]:ESCAPED{Str}:
         ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
         downcase:ATTRIBUTE:[]:ESCAPED{downcase}:
+        downcase:FIELD:[]:ESCAPED{downcase}:
         eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
         hash:METHOD:[PUBLIC]:ESCAPED{hash}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{string}}):
         inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
         string:ATTRIBUTE:[]:ESCAPED{string}:
+        string:FIELD:[]:ESCAPED{string}:
         to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:
       split:METHOD:[PUBLIC, STATIC]:ESCAPED{split}(PARAMETERS{ESCAPED{arg}})<font color='#777777'> : ESCAPED{Array}</font>:
     Message:CLASS:[]:ESCAPED{Message}:
@@ -64,41 +66,53 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         put_string_list:METHOD:[PUBLIC]:ESCAPED{put_string_list}(PARAMETERS{ESCAPED{ds}}):
         to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:
       aa:ATTRIBUTE:[]:ESCAPED{aa}:
-      add_additional:METHOD:[PUBLIC]:ESCAPED{add_additional}(PARAMETERS{ESCAPED{name}, ESCAPED{ttl}, ESCAPED{data}}):
-      add_answer:METHOD:[PUBLIC]:ESCAPED{add_answer}(PARAMETERS{ESCAPED{name}, ESCAPED{ttl}, ESCAPED{data}}):
-      add_authority:METHOD:[PUBLIC]:ESCAPED{add_authority}(PARAMETERS{ESCAPED{name}, ESCAPED{ttl}, ESCAPED{data}}):
-      add_question:METHOD:[PUBLIC]:ESCAPED{add_question}(PARAMETERS{ESCAPED{name}, ESCAPED{typeclass}}):
+      aa:FIELD:[]:ESCAPED{aa}:
+      add_additional:METHOD:[PUBLIC]:ESCAPED{add_additional}(PARAMETERS{ESCAPED{name}, ESCAPED{ttl}, ESCAPED{data}})<font color='#777777'> : ESCAPED{Array}</font>:
+      add_answer:METHOD:[PUBLIC]:ESCAPED{add_answer}(PARAMETERS{ESCAPED{name}, ESCAPED{ttl}, ESCAPED{data}})<font color='#777777'> : ESCAPED{Array}</font>:
+      add_authority:METHOD:[PUBLIC]:ESCAPED{add_authority}(PARAMETERS{ESCAPED{name}, ESCAPED{ttl}, ESCAPED{data}})<font color='#777777'> : ESCAPED{Array}</font>:
+      add_question:METHOD:[PUBLIC]:ESCAPED{add_question}(PARAMETERS{ESCAPED{name}, ESCAPED{typeclass}})<font color='#777777'> : ESCAPED{Array}</font>:
       additional:ATTRIBUTE:[]:ESCAPED{additional}:
+      additional:FIELD:[]:ESCAPED{additional}:
       answer:ATTRIBUTE:[]:ESCAPED{answer}:
+      answer:FIELD:[]:ESCAPED{answer}:
       authority:ATTRIBUTE:[]:ESCAPED{authority}:
+      authority:FIELD:[]:ESCAPED{authority}:
       decode:METHOD:[PUBLIC, STATIC]:ESCAPED{decode}(PARAMETERS{ESCAPED{m}})<font color='#777777'> : ESCAPED{Message}</font>:
-      each_additional:METHOD:[PUBLIC]:ESCAPED{each_additional}:
-      each_answer:METHOD:[PUBLIC]:ESCAPED{each_answer}:
-      each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}:
-      each_question:METHOD:[PUBLIC]:ESCAPED{each_question}:
+      each_additional:METHOD:[PUBLIC]:ESCAPED{each_additional}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_answer:METHOD:[PUBLIC]:ESCAPED{each_answer}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_question:METHOD:[PUBLIC]:ESCAPED{each_question}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}:
       encode:METHOD:[PUBLIC]:ESCAPED{encode}<font color='#777777'> : ESCAPED{String}</font>:
       id:ATTRIBUTE:[]:ESCAPED{id}:
+      id:FIELD:[]:ESCAPED{id}:
       identifier:FIELD:[STATIC]:ESCAPED{identifier}:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{id}}):
       opcode:ATTRIBUTE:[]:ESCAPED{opcode}:
+      opcode:FIELD:[]:ESCAPED{opcode}:
       qr:ATTRIBUTE:[]:ESCAPED{qr}:
+      qr:FIELD:[]:ESCAPED{qr}:
       question:ATTRIBUTE:[]:ESCAPED{question}:
+      question:FIELD:[]:ESCAPED{question}:
       ra:ATTRIBUTE:[]:ESCAPED{ra}:
+      ra:FIELD:[]:ESCAPED{ra}:
       rcode:ATTRIBUTE:[]:ESCAPED{rcode}:
+      rcode:FIELD:[]:ESCAPED{rcode}:
       rd:ATTRIBUTE:[]:ESCAPED{rd}:
+      rd:FIELD:[]:ESCAPED{rd}:
       tc:ATTRIBUTE:[]:ESCAPED{tc}:
+      tc:FIELD:[]:ESCAPED{tc}:
     Name:CLASS:[]:ESCAPED{Name}:
       ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
       []:METHOD:[PUBLIC]:ESCAPED{[]}(PARAMETERS{ESCAPED{i}}):
       absolute:FIELD:[]:ESCAPED{absolute}:
       absolute?:METHOD:[PUBLIC]:ESCAPED{absolute?}<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
       create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}})<font color='#777777'> : ESCAPED{Name, Unknown}</font>:
-      hash:METHOD:[PUBLIC]:ESCAPED{hash}:
+      hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Integer}</font>:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{labels}, ESCAPED{absolute}}):
       inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
       labels:FIELD:[]:ESCAPED{labels}:
-      length:METHOD:[PUBLIC]:ESCAPED{length}:
+      length:METHOD:[PUBLIC]:ESCAPED{length}<font color='#777777'> : ESCAPED{Integer}</font>:
       subdomain_of?:METHOD:[PUBLIC]:ESCAPED{subdomain_of?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
       to_a:METHOD:[PUBLIC]:ESCAPED{to_a}<font color='#777777'> : ESCAPED{Array}</font>:
       to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:
@@ -134,7 +148,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     Requester:CLASS:[]:ESCAPED{Requester}:
       ConnectedUDP:CLASS:[]:ESCAPED{ConnectedUDP}:
         Sender:CLASS:[]:ESCAPED{Sender}:
-          send:METHOD:[PUBLIC]:ESCAPED{send}:
+          send:METHOD:[PUBLIC]:ESCAPED{send}<font color='#777777'> : ESCAPED{Object}</font>:
         host:FIELD:[]:ESCAPED{host}:
         id:FIELD:[]:ESCAPED{id}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{host}, ESCAPED{port}}):
@@ -148,11 +162,12 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{msg}, ESCAPED{data}, ESCAPED{sock}, ESCAPED{queue}}):
         msg:FIELD:[]:ESCAPED{msg}:
         queue:ATTRIBUTE:[]:ESCAPED{queue}:
+        queue:FIELD:[]:ESCAPED{queue}:
         recv:METHOD:[PUBLIC]:ESCAPED{recv}(PARAMETERS{ESCAPED{msg}}):
         sock:FIELD:[]:ESCAPED{sock}:
       TCP:CLASS:[]:ESCAPED{TCP}:
         Sender:CLASS:[]:ESCAPED{Sender}:
-          send:METHOD:[PUBLIC]:ESCAPED{send}:
+          send:METHOD:[PUBLIC]:ESCAPED{send}<font color='#777777'> : ESCAPED{IO}</font>:
         host:FIELD:[]:ESCAPED{host}:
         id:FIELD:[]:ESCAPED{id}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{host}, ESCAPED{port}}):
@@ -166,7 +181,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
           host:FIELD:[]:ESCAPED{host}:
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{msg}, ESCAPED{data}, ESCAPED{sock}, ESCAPED{host}, ESCAPED{port}, ESCAPED{queue}}):
           port:FIELD:[]:ESCAPED{port}:
-          send:METHOD:[PUBLIC]:ESCAPED{send}:
+          send:METHOD:[PUBLIC]:ESCAPED{send}<font color='#777777'> : ESCAPED{Object}</font>:
         id:FIELD:[]:ESCAPED{id}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}:
         sender:METHOD:[PUBLIC]:ESCAPED{sender}(PARAMETERS{ESCAPED{msg}, ESCAPED{data}, ESCAPED{queue}, ESCAPED{host}, ESCAPED{port}}):
@@ -188,100 +203,125 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       ClassInsensitiveTypes:CONSTANT:[]:ESCAPED{ClassInsensitiveTypes}<font color='#777777'> : ESCAPED{Array}</font>:
       ClassValue:CONSTANT:[]:ESCAPED{ClassValue}<font color='#777777'> : ESCAPED{NilClass}</font>:
       DomainName:CLASS:[]:ESCAPED{DomainName}:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{DomainName}</font>:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{name}}):
         name:ATTRIBUTE:[]:ESCAPED{name}:
+        name:FIELD:[]:ESCAPED{name}:
       Generic:CLASS:[]:ESCAPED{Generic}:
         create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{type_value}, ESCAPED{class_value}})<font color='#777777'> : ESCAPED{Class, Unknown}</font>:
         data:ATTRIBUTE:[]:ESCAPED{data}:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        data:FIELD:[]:ESCAPED{data}:
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{Generic}</font>:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{data}}):
       HINFO:CLASS:[]:ESCAPED{HINFO}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
         cpu:ATTRIBUTE:[]:ESCAPED{cpu}:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        cpu:FIELD:[]:ESCAPED{cpu}:
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{HINFO}</font>:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{cpu}, ESCAPED{os}}):
         os:ATTRIBUTE:[]:ESCAPED{os}:
+        os:FIELD:[]:ESCAPED{os}:
       IN:MODULE:[]:ESCAPED{IN}:
         A:CLASS:[]:ESCAPED{A}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           address:ATTRIBUTE:[]:ESCAPED{address}:
-          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+          address:FIELD:[]:ESCAPED{address}:
+          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{A}</font>:
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
         AAAA:CLASS:[]:ESCAPED{AAAA}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           address:ATTRIBUTE:[]:ESCAPED{address}:
-          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+          address:FIELD:[]:ESCAPED{address}:
+          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{AAAA}</font>:
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
         ClassValue:CONSTANT:[]:ESCAPED{ClassValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
         SRV:CLASS:[]:ESCAPED{SRV}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{SRV}</font>:
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{priority}, ESCAPED{weight}, ESCAPED{port}, ESCAPED{target}}):
           port:ATTRIBUTE:[]:ESCAPED{port}:
+          port:FIELD:[]:ESCAPED{port}:
           priority:ATTRIBUTE:[]:ESCAPED{priority}:
+          priority:FIELD:[]:ESCAPED{priority}:
           target:ATTRIBUTE:[]:ESCAPED{target}:
+          target:FIELD:[]:ESCAPED{target}:
           weight:ATTRIBUTE:[]:ESCAPED{weight}:
+          weight:FIELD:[]:ESCAPED{weight}:
         WKS:CLASS:[]:ESCAPED{WKS}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
           TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
           address:ATTRIBUTE:[]:ESCAPED{address}:
+          address:FIELD:[]:ESCAPED{address}:
           bitmap:ATTRIBUTE:[]:ESCAPED{bitmap}:
-          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+          bitmap:FIELD:[]:ESCAPED{bitmap}:
+          decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{WKS}</font>:
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}, ESCAPED{protocol}, ESCAPED{bitmap}}):
           protocol:ATTRIBUTE:[]:ESCAPED{protocol}:
+          protocol:FIELD:[]:ESCAPED{protocol}:
       MINFO:CLASS:[]:ESCAPED{MINFO}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{MINFO}</font>:
         emailbx:ATTRIBUTE:[]:ESCAPED{emailbx}:
+        emailbx:FIELD:[]:ESCAPED{emailbx}:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{rmailbx}, ESCAPED{emailbx}}):
         rmailbx:ATTRIBUTE:[]:ESCAPED{rmailbx}:
+        rmailbx:FIELD:[]:ESCAPED{rmailbx}:
       MX:CLASS:[]:ESCAPED{MX}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{MX}</font>:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         exchange:ATTRIBUTE:[]:ESCAPED{exchange}:
+        exchange:FIELD:[]:ESCAPED{exchange}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{preference}, ESCAPED{exchange}}):
         preference:ATTRIBUTE:[]:ESCAPED{preference}:
+        preference:FIELD:[]:ESCAPED{preference}:
       NS:CLASS:[]:ESCAPED{NS}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
       PTR:CLASS:[]:ESCAPED{PTR}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
       SOA:CLASS:[]:ESCAPED{SOA}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{SOA}</font>:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         expire:ATTRIBUTE:[]:ESCAPED{expire}:
+        expire:FIELD:[]:ESCAPED{expire}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{mname}, ESCAPED{rname}, ESCAPED{serial}, ESCAPED{refresh}, ESCAPED{retry_}, ESCAPED{expire}, ESCAPED{minimum}}):
         minimum:ATTRIBUTE:[]:ESCAPED{minimum}:
+        minimum:FIELD:[]:ESCAPED{minimum}:
         mname:ATTRIBUTE:[]:ESCAPED{mname}:
+        mname:FIELD:[]:ESCAPED{mname}:
         refresh:ATTRIBUTE:[]:ESCAPED{refresh}:
+        refresh:FIELD:[]:ESCAPED{refresh}:
         retry:ATTRIBUTE:[]:ESCAPED{retry}:
+        retry:FIELD:[]:ESCAPED{retry}:
         rname:ATTRIBUTE:[]:ESCAPED{rname}:
+        rname:FIELD:[]:ESCAPED{rname}:
         serial:ATTRIBUTE:[]:ESCAPED{serial}:
+        serial:FIELD:[]:ESCAPED{serial}:
       TXT:CLASS:[]:ESCAPED{TXT}:
         TypeValue:CONSTANT:[]:ESCAPED{TypeValue}<font color='#777777'> : ESCAPED{Fixnum}</font>:
         data:METHOD:[PUBLIC]:ESCAPED{data}:
-        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
+        decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}})<font color='#777777'> : ESCAPED{TXT}</font>:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{first_string}, ESCAPED{*rest_strings}}):
         strings:ATTRIBUTE:[]:ESCAPED{strings}:
+        strings:FIELD:[]:ESCAPED{strings}:
       decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
       encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
       eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
       get_class:METHOD:[PUBLIC, STATIC]:ESCAPED{get_class}(PARAMETERS{ESCAPED{type_value}, ESCAPED{class_value}}):
-      hash:METHOD:[PUBLIC]:ESCAPED{hash}:
+      hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Integer}</font>:
     UDPSize:CONSTANT:[]:ESCAPED{UDPSize}<font color='#777777'> : ESCAPED{Fixnum}</font>:
     close:METHOD:[PUBLIC]:ESCAPED{close}:
     config:FIELD:[]:ESCAPED{config}:
@@ -297,11 +337,11 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     getresources:METHOD:[PUBLIC]:ESCAPED{getresources}(PARAMETERS{ESCAPED{name}, ESCAPED{typeclass}})<font color='#777777'> : ESCAPED{Array}</font>:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{config_info}}):
     initialized:FIELD:[]:ESCAPED{initialized}:
-    lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}:
+    lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{DNS}</font>:
     mutex:FIELD:[]:ESCAPED{mutex}:
     open:METHOD:[PUBLIC, STATIC]:ESCAPED{open}(PARAMETERS{ESCAPED{*args}}):
     requester:FIELD:[]:ESCAPED{requester}:
-  DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}:
+  DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}<font color='#777777'> : ESCAPED{Resolv}</font>:
   Hosts:CLASS:[]:ESCAPED{Hosts}:
     DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}:
     DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}<font color='#777777'> : ESCAPED{String}</font>:
@@ -315,16 +355,17 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     getnames:METHOD:[PUBLIC]:ESCAPED{getnames}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array}</font>:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{filename}}):
     initialized:FIELD:[]:ESCAPED{initialized}:
-    lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}:
+    lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{Hosts}</font>:
     mutex:FIELD:[]:ESCAPED{mutex}:
     name2addr:FIELD:[]:ESCAPED{name2addr}:
   IPv4:CLASS:[]:ESCAPED{IPv4}:
     ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
     Regex:CONSTANT:[]:ESCAPED{Regex}<font color='#777777'> : ESCAPED{Regexp}</font>:
     address:ATTRIBUTE:[]:ESCAPED{address}:
-    create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}}):
+    address:FIELD:[]:ESCAPED{address}:
+    create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}})<font color='#777777'> : ESCAPED{IPv4, Unknown}</font>:
     eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
-    hash:METHOD:[PUBLIC]:ESCAPED{hash}:
+    hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Fixnum}</font>:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
     inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
     to_name:METHOD:[PUBLIC]:ESCAPED{to_name}:
@@ -337,9 +378,10 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     Regex_CompressedHex:CONSTANT:[]:ESCAPED{Regex_CompressedHex}<font color='#777777'> : ESCAPED{Regexp}</font>:
     Regex_CompressedHex4Dec:CONSTANT:[]:ESCAPED{Regex_CompressedHex4Dec}<font color='#777777'> : ESCAPED{Regexp}</font>:
     address:ATTRIBUTE:[]:ESCAPED{address}:
+    address:FIELD:[]:ESCAPED{address}:
     create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}})<font color='#777777'> : ESCAPED{IPv6, Unknown}</font>:
     eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
-    hash:METHOD:[PUBLIC]:ESCAPED{hash}:
+    hash:METHOD:[PUBLIC]:ESCAPED{hash}<font color='#777777'> : ESCAPED{Fixnum}</font>:
     initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
     inspect:METHOD:[PUBLIC]:ESCAPED{inspect}<font color='#777777'> : ESCAPED{String}</font>:
     to_name:METHOD:[PUBLIC]:ESCAPED{to_name}<font color='#777777'> : ESCAPED{Name}</font>:
@@ -347,9 +389,9 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
   ResolvError:CLASS:[]:ESCAPED{ResolvError}:
   ResolvTimeout:CLASS:[]:ESCAPED{ResolvTimeout}:
   each_address:METHOD:[PUBLIC, STATIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}, ESCAPED{&block}}):
-  each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}}):
+  each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   each_name:METHOD:[PUBLIC, STATIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}}):
-  each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}}):
+  each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   getaddress:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
   getaddress:METHOD:[PUBLIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
   getaddresses:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddresses}(PARAMETERS{ESCAPED{name}}):

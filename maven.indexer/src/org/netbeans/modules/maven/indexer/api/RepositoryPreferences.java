@@ -84,6 +84,8 @@ public final class RepositoryPreferences {
     public static final int FREQ_STARTUP = 2;
     public static final int FREQ_NEVER = 3;
     private final Map<FileObject, RepositoryInfo> infoCache = new TreeMap<FileObject, RepositoryInfo>(new Comp());
+    private static final String REPO_FOLDER = "Projects/org-netbeans-modules-maven/Repositories";
+
     //---------------------------------------------------------------------------
     private RepositoryPreferences() {
     }
@@ -94,8 +96,20 @@ public final class RepositoryPreferences {
     }
 
     //#138102
-    private FileObject getSystemFsRoot() {
-        return FileUtil.getConfigFile("Projects/org-netbeans-modules-maven/Repositories"); //NOI18N
+    private FileObject getRepoFolder() {
+        FileObject repo = FileUtil.getConfigFile(REPO_FOLDER);
+        if (repo == null) {
+            Logger.getLogger(RepositoryPreferences.class.getName()).warning(
+                    "Maven Repository root folder " + REPO_FOLDER + //NOI18N
+                    " was deleted somehow, creating dummy (empty) one."); //NOI18N
+            try {
+                repo = FileUtil.createFolder(FileUtil.getConfigRoot(), REPO_FOLDER);
+            } catch (IOException ex) {
+                // what to do? config file system probably totally broken here...
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return repo;
     }
 
     public synchronized static RepositoryPreferences getInstance() {
@@ -106,7 +120,6 @@ public final class RepositoryPreferences {
     }
 
     public RepositoryInfo getRepositoryInfoById(String id) {
-        assert getSystemFsRoot() != null;
         for (RepositoryInfo ri : getRepositoryInfos()) {
             if (ri.getId().equals(id)) {
                 return ri;
@@ -116,20 +129,23 @@ public final class RepositoryPreferences {
     }
 
     public List<RepositoryInfo> getRepositoryInfos() {
+        final FileObject repoFolder = getRepoFolder();
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        synchronized (infoCache) {
-            for (FileObject fo : getSystemFsRoot().getChildren()) {
-                if (!infoCache.containsKey(fo)) {
-                    RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
-                    infoCache.put(fo, ri);
+        if (repoFolder != null) {
+            synchronized (infoCache) {
+                for (FileObject fo : repoFolder.getChildren()) {
+                    if (!infoCache.containsKey(fo)) {
+                        RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
+                        infoCache.put(fo, ri);
+                    }
                 }
+                HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
+                gone.removeAll(Arrays.asList(repoFolder.getChildren()));
+                for (FileObject g : gone) {
+                    infoCache.remove(g);
+                }
+                toRet.addAll(infoCache.values());
             }
-            HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
-            gone.removeAll(Arrays.asList(getSystemFsRoot().getChildren()));
-            for (FileObject g : gone) {
-                infoCache.remove(g);
-            }
-            toRet.addAll(infoCache.values());
         }
         return toRet;
     }
@@ -140,10 +156,10 @@ public final class RepositoryPreferences {
      */
     public synchronized void addOrModifyRepositoryInfo(RepositoryInfo info) {
         try {
-            FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
+            FileObject fo = getRepoFolder().getFileObject(getFileObjectName(info.getId()));
             if (fo == null) {
                 int position = calculatePosition();
-                fo = getSystemFsRoot().createData(getFileObjectName(info.getId()));
+                fo = getRepoFolder().createData(getFileObjectName(info.getId()));
                 fo.setAttribute("position", position); //NOI18N
             }
             fo.setAttribute(KEY_TYPE, info.getType());
@@ -161,7 +177,7 @@ public final class RepositoryPreferences {
 
     private int calculatePosition() {
         int customStart = 5000;
-        for (FileObject fo : getSystemFsRoot().getChildren()) {
+        for (FileObject fo : getRepoFolder().getChildren()) {
             Integer attr = (Integer) fo.getAttribute("position"); //NOI18N
             if (attr != null && attr.intValue() > customStart) {
                 customStart = attr.intValue();
@@ -180,7 +196,7 @@ public final class RepositoryPreferences {
     }
     
     public void removeRepositoryInfo(RepositoryInfo info) {
-        FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
+        FileObject fo = getRepoFolder().getFileObject(getFileObjectName(info.getId()));
         if (fo != null) {
             synchronized (infoCache) {
                 infoCache.remove(fo);

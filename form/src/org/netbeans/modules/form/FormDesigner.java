@@ -1028,6 +1028,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void selectionChanged() {
+        if (formModel == null) {
+            // Some (redundant) postponed update => ignore
+            // See, for example, issue 153953 - the formDesigner is reset
+            // during refactoring. The selection is cleared, but the corresponding
+            // event arrives after formModel is cleared and before it is
+            // initialized again
+            return;
+        }
         updateDesignerActions();
         updateResizabilityActions();
         updateAssistantContext();

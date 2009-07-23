@@ -94,9 +94,11 @@ import junit.framework.TestResult;
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public class NbModuleSuite {
+    private static final Logger LOG;
 
     static {
         System.setProperty("org.netbeans.MainImpl.154417", "true");
+        LOG = Logger.getLogger(NbModuleSuite.class.getName());
     }
 
     private NbModuleSuite() {}
@@ -968,7 +970,13 @@ public class NbModuleSuite {
                     is.close();
                 }
             }
-
+            for (;;) {
+                int index = builder.indexOf("\r\n");
+                if (index == -1) {
+                    break;
+                }
+                builder.deleteCharAt(index);
+            }
             return builder.toString();
         }
 
@@ -1126,16 +1134,53 @@ public class NbModuleSuite {
         }
 
         private static void writeModule(File file, String xml) throws IOException {
+            String previous = null;
             if (file.exists()) {
-                String previous = asString(new FileInputStream(file), true);
+                previous = asString(new FileInputStream(file), true);
                 if (previous.equals(xml)) {
                     return;
                 }
+                LOG.info("rewrite module file: " + file);
+                charDump(previous);
+                LOG.fine("new----");
+                charDump(xml);
+                LOG.fine("end----");
             }
-
             FileOutputStream os = new FileOutputStream(file);
             os.write(xml.getBytes("UTF-8"));
             os.close();
+        }
+
+        private static void charDump(String text) {
+            StringBuilder sb = new StringBuilder(5 * text.length());
+            for (int i = 0; i < text.length(); i++) {
+                if (i % 8 == 0) {
+                    if (i > 0) {
+                        sb.append('\n');
+                    }
+                } else {
+                    sb.append(' ');
+                }
+
+                int ch = text.charAt(i);
+                if (' ' <= ch && ch <= 'z') {
+                    sb.append('\'').append((char)ch).append('\'');
+                } else {
+                    sb.append('x').append(two(Integer.toHexString(ch).toUpperCase()));
+                }
+            }
+            sb.append('\n');
+            LOG.fine(sb.toString());
+        }
+
+        private static String two(String s) {
+            int len = s.length();
+            switch (len) {
+                case 0: return "00";
+                case 1: return "0" + s;
+                case 2: return s;
+                default: return s.substring(len - 2);
+            }
         }
     } // end of S
 }

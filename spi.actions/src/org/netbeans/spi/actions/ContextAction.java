@@ -44,7 +44,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
@@ -272,6 +271,16 @@ public abstract class ContextAction<T> extends NbAction {
     @Override
     protected final NbAction internalCreateContextAwareInstance(Lookup actionContext) {
         return createStub (actionContext);
+    }
+
+    @Override
+    public boolean equals (Object o) {
+        return o != null && o.getClass() == getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().getName().hashCode();
     }
 
     ActionStub<T> createStub(Lookup actionContext) {

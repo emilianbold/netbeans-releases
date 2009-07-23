@@ -42,11 +42,10 @@
 package org.netbeans.performance.languages.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -58,7 +57,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
 
-    private NewProjectNameLocationStepOperator wizard_location;
+    private NewProjectWizardOperator wizard;
     public String category, project, project_name, project_type;
     
     public CreatePHPSampleProjectTest(String testName) {
@@ -91,26 +90,20 @@ public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
         repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
         repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
 
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        wizard_location = new NewProjectNameLocationStepOperator();
-        String directory = CommonUtilities.getTempDir() + "createdProjects";
-        wizard_location.txtProjectLocation().setText("");
-        wizard_location.txtProjectLocation().typeText(directory);
-        project_name = project_type + "_" + System.currentTimeMillis();
-        wizard_location.txtProjectName().setText("");
-        wizard_location.txtProjectName().typeText(project_name);
     }
     
     public ComponentOperator open(){
-        wizard_location.finish();
+        wizard.finish();
         return null;
     }
     
     @Override
     public void close(){
+        EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }    
     

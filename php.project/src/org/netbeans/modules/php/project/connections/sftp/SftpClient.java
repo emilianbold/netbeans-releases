@@ -47,10 +47,6 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -60,16 +56,11 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -82,13 +73,13 @@ import org.openide.windows.OutputWriter;
 public class SftpClient implements RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(SftpClient.class.getName());
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
+    static final Map<Integer, String> PASSPHRASES = new HashMap<Integer, String>();
 
     private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
     private final SftpLogger sftpLogger;
     private Session sftpSession;
     private ChannelSftp sftpClient;
-
 
     public SftpClient(SftpConfiguration configuration, InputOutput io) {
         assert configuration != null;
@@ -123,16 +114,6 @@ public class SftpClient implements RemoteClient {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Login as " + username);
         }
-        if (!PhpProjectUtils.hasText(identityFile) && !PhpProjectUtils.hasText(password)) {
-            password = PASSWORDS.get(configuration.hashCode());
-            if (password == null) {
-                PasswordPanel passwordPanel = new PasswordPanel(configuration.getDisplayName(), username);
-                if (passwordPanel.open()) {
-                    password = passwordPanel.getPassword();
-                    PASSWORDS.put(configuration.hashCode(), password);
-                }
-            }
-        }
 
         JSch jsch = null;
         Channel channel = null;
@@ -140,16 +121,16 @@ public class SftpClient implements RemoteClient {
         try {
             JSch.setLogger(sftpLogger);
             sftpSession = jsch.getSession(username, host, port);
-            if (PhpProjectUtils.hasText(knownHostsFile)) {
+            if (StringUtils.hasText(knownHostsFile)) {
                 jsch.setKnownHosts(knownHostsFile);
             }
-            if (PhpProjectUtils.hasText(identityFile)) {
+            if (StringUtils.hasText(identityFile)) {
                 jsch.addIdentity(identityFile);
             }
-            if (PhpProjectUtils.hasText(password)) {
+            if (StringUtils.hasText(password)) {
                 sftpSession.setPassword(password);
             }
-            sftpSession.setUserInfo(new SftpUserInfo(configuration.getDisplayName(), username));
+            sftpSession.setUserInfo(new SftpUserInfo(configuration));
             sftpSession.setTimeout(timeout);
             sftpSession.connect(timeout);
 
@@ -160,6 +141,7 @@ public class SftpClient implements RemoteClient {
         } catch (JSchException exc) {
             // remove password from a memory storage
             PASSWORDS.remove(configuration.hashCode());
+            PASSPHRASES.remove(configuration.hashCode());
             disconnect();
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
@@ -417,6 +399,30 @@ public class SftpClient implements RemoteClient {
         return null;
     }
 
+    static String getPasswordForUser(SftpConfiguration configuration) {
+        String password = PASSWORDS.get(configuration.hashCode());
+        if (password == null) {
+            PasswordPanel passwordPanel = PasswordPanel.forUser(configuration.getDisplayName(), configuration.getUserName());
+            if (passwordPanel.open()) {
+                password = passwordPanel.getPassword();
+                PASSWORDS.put(configuration.hashCode(), password);
+            }
+        }
+        return password;
+    }
+
+    static String getPasswordForCertificate(SftpConfiguration configuration) {
+        String password = PASSPHRASES.get(configuration.hashCode());
+        if (password == null) {
+            PasswordPanel passwordPanel = PasswordPanel.forCertificate(configuration.getDisplayName());
+            if (passwordPanel.open()) {
+                password = passwordPanel.getPassword();
+                PASSPHRASES.put(configuration.hashCode(), password);
+            }
+        }
+        return password;
+    }
+
     private static final class RemoteFileImpl implements RemoteFile {
         private final ChannelSftp.LsEntry entry;
 
@@ -499,20 +505,14 @@ public class SftpClient implements RemoteClient {
     }
 
     private static final class SftpUserInfo implements UserInfo, UIKeyboardInteractive {
-        private final String configurationName;
-        private final String userName;
-        private String passwd;
+        private final SftpConfiguration configuration;
+        private volatile String passwd;
+        private volatile String passphrase;
 
-        public SftpUserInfo(String configurationName, String userName) {
-            assert configurationName != null;
-            assert userName != null;
+        public SftpUserInfo(SftpConfiguration configuration) {
+            assert configuration != null;
 
-            this.configurationName = configurationName;
-            this.userName = userName;
-        }
-
-        public String getPassword() {
-            return passwd;
+            this.configuration = configuration;
         }
 
         public boolean promptYesNo(String message) {
@@ -527,72 +527,43 @@ public class SftpClient implements RemoteClient {
         }
 
         public String getPassphrase() {
-            return null;
+            return passphrase;
         }
 
         public boolean promptPassphrase(String message) {
-            return true;
+            passphrase = getPasswordForCertificate(configuration);
+            return passphrase != null;
+        }
+
+        public String getPassword() {
+            return passwd;
         }
 
         public boolean promptPassword(String message) {
-            return true;
+            passwd = getPasswordForUser(configuration);
+            return passwd != null;
         }
 
         public void showMessage(String message) {
-            JOptionPane.showMessageDialog(null, message);
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message));
         }
-
-        // <editor-fold defaultstate="collapsed" desc="Code taken from examples from JSCh library">
-        final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
-        private Container panel;
 
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
                 String[] prompt, boolean[] echo) {
 
-            panel = new JPanel();
-            panel.setLayout(new GridBagLayout());
-
-            gbc.weightx = 1.0;
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.gridx = 0;
-            panel.add(new JLabel(instruction), gbc);
-            gbc.gridy++;
-
-            gbc.gridwidth = GridBagConstraints.RELATIVE;
-
-            JTextField[] texts = new JTextField[prompt.length];
-            for (int i = 0; i < prompt.length; i++) {
-                gbc.fill = GridBagConstraints.NONE;
-                gbc.gridx = 0;
-                gbc.weightx = 1;
-                panel.add(new JLabel(prompt[i]), gbc);
-
-                gbc.gridx = 1;
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                gbc.weighty = 1;
-                if (echo[i]) {
-                    texts[i] = new JTextField(20);
-                } else {
-                    texts[i] = new JPasswordField(20);
+            // #166555
+            if (prompt.length == 1
+                    && echo.length == 1 && !echo[0]) {
+                // ask for password
+                passwd = configuration.getPassword();
+                if (!StringUtils.hasText(passwd)) {
+                    passwd = getPasswordForUser(configuration);
                 }
-                panel.add(texts[i], gbc);
-                gbc.gridy++;
-            }
-
-            if (JOptionPane.showConfirmDialog(null, panel,
-                    destination + ": " + name, // NOI18N
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
-                String[] response = new String[prompt.length];
-                for (int i = 0; i < prompt.length; i++) {
-                    response[i] = texts[i].getText();
+                if (StringUtils.hasText(passwd)) {
+                    return new String[] {passwd};
                 }
-                return response;
-            } else {
-                return null;  // cancel
             }
+            return null;
         }
-        // </editor-fold>
     }
 }

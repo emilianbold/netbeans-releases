@@ -63,6 +63,8 @@ public class SunCCCompiler extends SunCCCCompiler {
     public SunCCCompiler createCopy() {
         SunCCCompiler copy = new SunCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
         copy.setName(getName());
+        copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
+        copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
         return copy;
     }
 
@@ -76,7 +78,7 @@ public class SunCCCompiler extends SunCCCCompiler {
     }
     
     @Override
-    protected void parseCompilerOutput(BufferedReader reader) {
+    protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
         
         try {
             String line;
@@ -92,11 +94,11 @@ public class SunCCCompiler extends SunCCCCompiler {
                         token = line.substring(includeIndex+2);
                     }
                     if ( ! token.equals("-xbuiltin")) { //NOI18N
-                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                     }
                     if (token.endsWith("Cstd")) { // NOI18N
                         // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
+                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
                     }
                     // Hack to handle -compat flag. If this flag is added,
                     // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
@@ -109,28 +111,18 @@ public class SunCCCompiler extends SunCCCCompiler {
                         break;
                     }
                 }
-                parseUserMacros(line, systemPreprocessorSymbolsList);
+                parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                 if (line.startsWith("#define ")) { // NOI18N
                     int i = line.indexOf(' ', 8);
                     if (i > 0) {
                         String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                        systemPreprocessorSymbolsList.add(token);
+                        pair.systemPreprocessorSymbolsList.add(token);
                     }
                 }
             }
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
-        }
-    }
-    
-    private void dumpLists() {
-        System.out.println("==================================" + getDisplayName()); // NOI18N
-        for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
-            System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
-        }
-        for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
-            System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
         }
     }
     

@@ -75,11 +75,6 @@
 
     <folder name="Editors">
         <folder name="text">
-            <folder name="xml">
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance_hidden"/>
-                </folder>
-            </folder>
             <folder name="x-bpel+xml">
                 <folder name="Popup">
                     <file name="org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.shadow">

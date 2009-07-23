@@ -48,10 +48,15 @@ package org.netbeans.modules.j2ee.api.ejbjar;
  *
  */
 
-public class EjbProjectConstants {
+public final class EjbProjectConstants {
 
+    @Deprecated
     public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
+
+    @Deprecated
     public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
+
+    @Deprecated
     public static final String JAVA_EE_5_LEVEL = "1.5"; //NOI18N
 
     private EjbProjectConstants() {

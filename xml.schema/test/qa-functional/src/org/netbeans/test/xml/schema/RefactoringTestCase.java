@@ -41,8 +41,8 @@ package org.netbeans.test.xml.schema;
 import java.awt.Point;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -108,7 +108,7 @@ public class RefactoringTestCase extends JellyTestCase {
         opNewFileWizard.selectCategory("XML");
         opNewFileWizard.selectFileType("XML Schema");
         opNewFileWizard.next();
-        NewFileNameLocationStepOperator opNewFileNameLocationStep = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator opNewFileNameLocationStep = new NewJavaFileNameLocationStepOperator();
         opNewFileNameLocationStep.setObjectName(LONG_SCHEMA_NAME);
 //        opNewFileNameLocationStep.setFolder("NotDefaultPackage");
         
@@ -391,7 +391,7 @@ public class RefactoringTestCase extends JellyTestCase {
         opNewFileWizard.selectFileType("Java Package");
         opNewFileWizard.next();
 
-        NewFileNameLocationStepOperator opNewFileNameLocationStep = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator opNewFileNameLocationStep = new NewJavaFileNameLocationStepOperator();
         opNewFileNameLocationStep.setObjectName("NotDefaultPackage");
         opNewFileWizard.finish();
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -75,6 +75,12 @@ public abstract class SvnCommand implements CommandNotificationListener {
      * True if the command produced errors (messages in error stream), false otherwise.
      */
     private boolean hasFailed;
+
+    /**
+     * exit code (return code) of the command - only set it the command execution
+     * was not interrupted
+     */
+    private Integer exitCode;
 
     /**
      * Internal check mechanism to prevent commands reuse.
@@ -174,6 +180,20 @@ public abstract class SvnCommand implements CommandNotificationListener {
         notificationHandler.logError(line);
     }
 
+    public void commandCompleted(int exitCode) {
+        this.exitCode = Integer.valueOf(exitCode);
+    }
+
+    /**
+     * Returns exit code of the command.
+     * @return  integer having the value of the command's exit code
+     *          (return code), or {@code null} if the command was cancelled
+     *          or otherwise interrupted
+     */
+    public Integer getExitCode() {
+        return exitCode;
+    }
+
     public void commandFinished() {
         notificationHandler.logCompleted("");        
     }
@@ -242,6 +262,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
         String[] lines = new String[files.length];
         for (int i = 0; i < files.length; i++) {
             lines[i] = files[i].getAbsolutePath();            
+            if (files[i].getName().indexOf('@') != -1) {
+                lines[i] += '@';
+            }
         }
         return createTempCommandFile(lines);
     }
@@ -305,17 +328,22 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
         public void add(File... files) {
             for (File file : files) {
-                add(file.getAbsolutePath());    
+                add(file);
             }            
         }
         
         public void add(File file) {
-            add(file.getAbsolutePath());
+            String absolutePath = file.getAbsolutePath();
+            if (absolutePath.indexOf('@') == -1) {
+                add(absolutePath);
+            } else {
+                add(absolutePath + '@');
+            }
         }
-        
+
         public void add(SVNUrl url) {
             if(url != null) {
-                add(encodeUrl(url).toString());
+                add(makeCliUrlString(url));
             }            
         }
 
@@ -328,7 +356,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         
         public void add(SVNUrl url, SVNRevision pegging) {
             if(url != null) {
-                add(encodeUrl(url).toString() + "@" + (pegging == null ? "HEAD" : pegging));
+                add(makeCliUrlString(url, pegging));
             }            
         }
         
@@ -350,10 +378,27 @@ public abstract class SvnCommand implements CommandNotificationListener {
         public void addUrlArguments(SVNUrl... urls) throws IOException {        
             String[] paths = new String[urls.length];
             for (int i = 0; i < urls.length; i++) {
-                paths[i] = encodeUrl(urls[i]).toString();
+                paths[i] = makeCliUrlString(urls[i]);
             }
             add("--targets");
             add(createTempCommandFile(paths));
+        }
+
+        private String makeCliUrlString(SVNUrl url) {
+            String cliUrlString = encodeUrl(url).toString();
+
+            for (String pathSegment : url.getPathSegments()) {
+                if (pathSegment.indexOf('@') != -1) {
+                    cliUrlString += '@';
+                    break;
+                }
+            }
+
+            return cliUrlString;
+        }
+
+        private String makeCliUrlString(SVNUrl url, SVNRevision pegRev) {
+            return encodeUrl(url).toString() + '@' + (pegRev == null ? "HEAD" : pegRev);
         }
         
         public void addMessage(String message) throws IOException {
@@ -382,7 +427,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             if(psswd == null) {
                 psswd = "";
             }
-            if (psswd.trim().equals("")) {
+            if (org.openide.util.Utilities.isWindows() && psswd.trim().equals("")) {
                 psswd = "\"" + psswd + "\"";
             }
             add("--password");                               		

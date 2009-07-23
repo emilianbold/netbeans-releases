@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.CommandLineHelper;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
@@ -87,7 +86,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         if (workingDirectory != null) {
             workingDirectory = new File(workingDirectory).getAbsolutePath();
-            workingDirectory = CommandLineHelper.getInstance(info.getExecutionEnvironment()).toShellPath(workingDirectory);
         }
 
         final MacroMap env = info.getEnvVariables();
@@ -95,9 +93,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         UnbufferSupport.initUnbuffer(info, env);
 
         // Always prepend /bin and /usr/bin to PATH
-        String path = env.get("PATH"); // NOI18N
-
-        env.put("PATH", "/bin:/usr/bin:" + path); // NOI18N
+        env.put("PATH", "/bin:/usr/bin:${PATH}"); // NOI18N
 
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
@@ -118,7 +114,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         ew.write(env);
 
         if (workingDirectory != null) {
-            processInput.write(("cd " + workingDirectory + "\n").getBytes()); // NOI18N
+            processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
         }
 
         String cmd = "exec " + info.getCommandLineForShell() + "\n"; // NOI18N
@@ -154,7 +150,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 val = env.get(var);
                 if (val != null) {
                     pb.environment().put(var, val);
-                    LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[] {var, val});
+                    LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{var, val});
                 }
             }
         }

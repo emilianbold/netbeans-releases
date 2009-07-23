@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -55,8 +55,29 @@ public class RevertTest extends AbstractCommandTest {
         super(testName);
     }
             
-    public void testRevert() throws Exception {                                                
-        File file = createFile("file");
+    public void testRevertFile() throws Exception {
+        testRevertFile("file");
+    }
+
+    public void testRevertFileWithAtSign() throws Exception {
+        testRevertFile("@file");
+        testRevertFile("fi@le");
+        testRevertFile("file@");
+    }
+
+    public void testRevertFileInDir() throws Exception {
+        testRevertFile("folder/file");
+    }
+
+    public void testRevertFileWithAtSignInDir() throws Exception {
+        testRevertFile("folder/@file");
+        testRevertFile("folder/fi@le");
+        testRevertFile("folder/file@");
+    }
+
+    private void testRevertFile(String filePath) throws Exception {
+        createAndCommitParentFolders(filePath);
+        File file = createFile(filePath);
         write(file, 1);
         add(file);
         commit(file);
@@ -123,10 +144,21 @@ public class RevertTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {file1, file2, file3});        
     }            
     
-    public void testRevertFolderRecursivelly() throws Exception {                                                
-        File folder1 = createFolder("folder1");
+    public void testRevertFolderRecursivelly() throws Exception {
+        testRevertFolderRecursivelly("folder1", "folder11");
+    }
+
+    public void testRevertFolderWithAtSignRecursivelly() throws Exception {
+        testRevertFolderRecursivelly("@folder1", "@folder11");
+        testRevertFolderRecursivelly("fol@der1", "fol@der11");
+        testRevertFolderRecursivelly("folder1@", "folder11@");
+    }
+
+    private void testRevertFolderRecursivelly(String folder1Name,
+                                              String folder11Name) throws Exception {
+        File folder1 = createFolder(folder1Name);
         File file11 = createFile(folder1, "file11");
-        File folder11 = createFolder(folder1, "folder11");
+        File folder11 = createFolder(folder1, folder11Name);
         File file111 = createFile(folder11, "file111");
         
         write(file11, 1);
@@ -165,10 +197,21 @@ public class RevertTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {file11, file111});       // only files were reverted (modified) 
     }        
     
-    public void testRevertFolderNonRecursivelly() throws Exception {                                                
-        File folder1 = createFolder("folder1");
+    public void testRevertFolderNonRecursivelly() throws Exception {
+        testRevertFolderNonRecursivelly("folder1", "folder11");
+    }
+
+    public void testRevertFolderWithAtSignNonRecursivelly() throws Exception {
+        testRevertFolderNonRecursivelly("@folder1", "@folder11");
+        testRevertFolderNonRecursivelly("fol@der1", "fol@der11");
+        testRevertFolderNonRecursivelly("folder1@", "folder11@");
+    }
+
+    private void testRevertFolderNonRecursivelly(String folder1Name,
+                                                 String folder11Name) throws Exception {
+        File folder1 = createFolder(folder1Name);
         File file11 = createFile(folder1, "file11");
-        File folder11 = createFolder(folder1, "folder11");
+        File folder11 = createFolder(folder1, folder11Name);
         File file111 = createFile(folder11, "file111");
         
         write(file11, 1);

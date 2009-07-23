@@ -763,6 +763,7 @@ to simulate
             <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
             <xsl:call-template name="runTargets">
                 <xsl:with-param name="subprojname" select="$subprojname"/>
+                <xsl:with-param name="name" select="$name"/>
             </xsl:call-template>
         </xsl:for-each>
         <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
@@ -770,6 +771,7 @@ to simulate
             <xsl:variable name="subprojname" select="projdeps2:foreign-project"/>
             <xsl:call-template name="runTargets">
                 <xsl:with-param name="subprojname" select="$subprojname"/>
+                <xsl:with-param name="name" select="$name"/>
             </xsl:call-template>
         </xsl:for-each>
         
@@ -784,11 +786,15 @@ to simulate
             <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
             <sleep seconds="3"/>
             <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}"/>                
+            <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
+                <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
+            </copy>
         </target>
     </xsl:template>
 
     <xsl:template name="runTargets">
         <xsl:param name="subprojname"/>
+        <xsl:param name="name"/>
         <target name="run-{$subprojname}" depends="-tool-{$subprojname},-java-{$subprojname}"/>
         <target name="-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="-as-retrieve-option-workaround">
             <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
@@ -808,6 +814,24 @@ to simulate
                     <propertyref prefix="run-sys-prop."/>
                     <mapper type="glob" from="run-sys-prop.*" to="*"/>
                 </syspropertyset>
+            </java>
+        </target>
+        <target name="tool2-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="run-deploy,-as-retrieve-option-workaround">
+            <mkdir dir="${{dist.dir}}/{$name}Client"/>
+            <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
+                <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
+            </copy>
+            <java fork="true" jar="${{client.jar}}">
+                <xsl:attribute name="dir">${basedir}</xsl:attribute>
+                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                </xsl:if>
+                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg={$subprojname}"/>
+                    <arg line="${{application.args.param}}"/>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
             </java>
         </target>
         <target name="-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">

@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="whitespace"/>
     <fontcolor default="string" name="markup-attribute-value"/>
     <fontcolor bgColor="ff0d1622" foreColor="white" name="default">
-        <font name="Monaco" size="12" style="plain"/>
+        <font name="Monospaced" size="13" style="plain"/>
     </fontcolor>
     <fontcolor name="operator"/>
     <fontcolor foreColor="ffa6a684" name="comment">

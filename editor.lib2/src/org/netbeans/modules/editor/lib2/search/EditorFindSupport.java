@@ -495,11 +495,11 @@ public final class EditorFindSupport {
         }
     }
     
-    private FindReplaceResult findReplaceImpl(String replaceExp, Map<String, Object> props, boolean oppositeDir){
+    private FindReplaceResult findReplaceImpl(String replaceExp, 
+            Map<String, Object> props, boolean oppositeDir, JTextComponent c) {
         incSearchReset();
         props = getValidFindProperties(props);
         boolean back = isBackSearch(props, oppositeDir);
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
         Object findWhat = props.get(FIND_WHAT);
         if (findWhat == null) { // nothing to search for
             return null;
@@ -513,7 +513,7 @@ public final class EditorFindSupport {
             if (findWhat.equals(c.getSelectedText())) {
                 Object dp = props.get(FIND_BACKWARD_SEARCH);
                 boolean direction = (dp != null) ? ((Boolean)dp).booleanValue() : false;
-                
+
                 if (dotPos == (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart()))
                     dotPos += (oppositeDir ^ direction ? -1 : 1);
             }
@@ -570,7 +570,7 @@ public final class EditorFindSupport {
     * @param oppositeDir whether search in opposite direction
     */
     public boolean find(Map<String, Object> props, boolean oppositeDir) {
-        FindReplaceResult result = findReplaceImpl(null, props, oppositeDir);
+        FindReplaceResult result = findReplaceImpl(null, props, oppositeDir, EditorRegistry.lastFocusedComponent());
         return (result != null);
     }
 
@@ -600,7 +600,7 @@ public final class EditorFindSupport {
                 int off1 = startPos;
                 int off2 = back ? blockStartPos : blockEndPos;
                 FindReplaceResult result = DocumentFinder.findReplaceResult(replaceExp, doc, Math.min(off1, off2), Math.max(off1, off2), 
-                       props, oppositeDir );
+                       props, oppositeDir);
                 if (result == null){
                     return null;
                 }
@@ -671,20 +671,22 @@ public final class EditorFindSupport {
     public boolean replace(Map<String, Object> props, boolean oppositeDir)
     throws BadLocationException {
         incSearchReset();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
+        return replaceImpl(props, oppositeDir, c);
+    }
+
+    boolean replaceImpl(Map<String, Object> props, boolean oppositeDir, JTextComponent c) throws BadLocationException {
         props = getValidFindProperties(props);
         Boolean b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
         boolean back = (b != null && b.booleanValue());
         if (oppositeDir) {
             back = !back;
         }
-
         b = (Boolean)props.get(FIND_BLOCK_SEARCH);
         boolean blockSearch = (b != null && b.booleanValue());
         Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
         int blockSearchStart = (i != null) ? i.intValue() : -1;
-        int blockSearchEnd = getBlockEndOffset();
 
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
             String s = (String)props.get(FIND_REPLACE_WITH);
             Caret caret = c.getCaret();
@@ -696,7 +698,7 @@ public final class EditorFindSupport {
                 c.setCaretPosition(dotPos);
             }
             
-            FindReplaceResult result = findReplaceImpl(s, props, oppositeDir);
+            FindReplaceResult result = findReplaceImpl(s, props, oppositeDir, c);
             if (result!=null){
                 s  = result.getReplacedString();
             } else {
@@ -733,14 +735,31 @@ public final class EditorFindSupport {
     public void replaceAll(Map<String, Object> props) {
         incSearchReset();
         JTextComponent c = EditorRegistry.lastFocusedComponent();
+        replaceAllImpl(props, c);
+    }
+
+    /**
+     * This method is called from unit test. It is implementation of the above method.
+     * @param props
+     * @param c
+     */
+    void replaceAllImpl(Map<String, Object> props, JTextComponent c) {
+        props = getValidFindProperties(props);
+        props = new HashMap<String, Object>(props);
+        String replaceWithOriginal = (String)props.get(FIND_REPLACE_WITH);
+
+        Object findWhat = props.get(FIND_WHAT);
+        if (findWhat == null) { // nothing to search for
+            return;
+        }
+        if (findWhat.equals(replaceWithOriginal)) {
+            return;
+        }
+
         Document doc = c.getDocument();
         int maxCnt = doc.getLength();
         int replacedCnt = 0;
         int totalCnt = 0;
-
-        props = getValidFindProperties(props);
-        props = new HashMap<String, Object>(props);
-        String replaceWithOriginal = (String)props.get(FIND_REPLACE_WITH);
 
         Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
         boolean blockSearch = (b != null && b.booleanValue());
@@ -748,13 +767,13 @@ public final class EditorFindSupport {
         boolean wrapSearch = (b != null && b.booleanValue());
         b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
         boolean backSearch = (b != null && b.booleanValue());
-        
+
         if (wrapSearch){
             props.put(FIND_WRAP_SEARCH, Boolean.FALSE);
             props.put(FIND_BACKWARD_SEARCH, Boolean.FALSE);
-            firePropertyChange(null, null, null); 
+            firePropertyChange(null, null, null);
         }
-        
+
         Integer i = (Integer) props.get(FIND_BLOCK_SEARCH_START);
         int blockSearchStart = (i != null) ? i.intValue() : -1;
         int blockSearchEnd = getBlockEndOffset();
@@ -775,16 +794,16 @@ public final class EditorFindSupport {
                         endPosWholeSearch = -1;
                     }
                 }
-                
+
                 int actualPos = wrapSearch ? 0 : c.getCaret().getDot();
-                
+
                 int pos = (blockSearch && blockSearchStart > -1) ? ( backSearch ? blockSearchEnd : blockSearchStart) : (backSearch? -1 : actualPos); // actual position
-                
+
                 while (true) {
                     blockSearchEnd = getBlockEndOffset();
-                    FindReplaceResult result = findReplaceInBlock(replaceWithOriginal, c, pos, 
-                            (blockSearch && blockSearchStart > -1) ? blockSearchStart : startPosWholeSearch, 
-                            (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : endPosWholeSearch, 
+                    FindReplaceResult result = findReplaceInBlock(replaceWithOriginal, c, pos,
+                            (blockSearch && blockSearchStart > -1) ? blockSearchStart : startPosWholeSearch,
+                            (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : endPosWholeSearch,
                             props, backSearch);
                     if (result == null){
                         break;
@@ -817,11 +836,16 @@ public final class EditorFindSupport {
                         pos = backSearch ? blk[0] : blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
                         replacedCnt++;
                     }
+                    // The following is lame attempt to break the loop: if
+                    // someone knows a better way please remove this but check
+                    // that all tests in EditorFindSupportTest pass!
+                    if (replacedCnt > maxCnt) {
+                        break;
+                    }
                 }
-                
+
                 // Display message about replacement
                 if (totalCnt == 0){
-                    Object findWhat = props.get(FIND_WHAT);
                     String exp = "'' "; //NOI18N
                     if (findWhat != null) { // nothing to search for
                         exp = "'" + findWhat + "' "; // NOI18N

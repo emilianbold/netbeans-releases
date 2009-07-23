@@ -26,7 +26,7 @@ then
 fi
 . "$basename"/env.sh
 
-if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ]  ; then
+if [ -n "$NETBEANS_INSTALL_DIR" ] && [ -d "$NETBEANS_INSTALL_DIR" ] && [ 1 -eq "$NETBEANS_CHECK_BUILDNUMBER" ] ; then
     #read build_info to get current build number
     cd "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans/"$NB_CLUSTER_DIR";
     current_buildnumber=`cat build_info | sed '/Number/!d;s/Number:[ \t]*//'`

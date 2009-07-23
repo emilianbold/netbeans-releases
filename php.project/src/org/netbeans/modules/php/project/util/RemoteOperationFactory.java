@@ -89,7 +89,9 @@ final class RemoteOperationFactory extends FileOperationFactory {
                     try {
                         if (transferFiles.size() > 0) {
                             TransferInfo transferInfo = client.upload(sourceRoot, transferFiles);
-                            return transferInfo.hasAnyTransfered();
+                            return !transferInfo.hasAnyFailed()
+                                    && !transferInfo.hasAnyPartiallyFailed()
+                                    && !transferInfo.hasAnyIgnored();
                         }
                     } finally {
                         client.disconnect();
@@ -205,11 +207,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected synchronized RemoteClient getRemoteClient(PhpProject project) {
         if (remoteClient == null) {
-            remoteClient = new RemoteClient(getRemoteConfiguration(project), RemoteClient.AdvancedProperties.create(
-                    null,
-                    getRemoteDirectory(project),
-                    ProjectPropertiesSupport.areRemotePermissionsPreserved(project),
-                    ProjectPropertiesSupport.isRemoteUploadDirectly(project)));
+            remoteClient = new RemoteClient(getRemoteConfiguration(project), new RemoteClient.AdvancedProperties()
+                    .setAdditionalInitialSubdirectory(getRemoteDirectory(project))
+                    .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
+                    .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project)));
         }
         return remoteClient;
     }

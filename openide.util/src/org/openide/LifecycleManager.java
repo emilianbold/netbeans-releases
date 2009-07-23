@@ -83,6 +83,16 @@ public abstract class LifecycleManager {
      */
     public abstract void exit();
 
+    /**
+     * Request that the application restart immediately after next being shut down.
+     * You may want to then call {@link #exit} to go ahead and restart now.
+     * @throws UnsupportedOperationException if this request cannot be honored
+     * @since org.openide.util 7.25
+     */
+    public void markForRestart() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
+
     /** Fallback instance. */
     private static final class Trivial extends LifecycleManager {
         public Trivial() {

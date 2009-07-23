@@ -623,12 +623,14 @@ class RubyCompletionItem extends DefaultCompletionProposal {
             if (hasBlock) {
                 String[] blockArgs = null;
                 String attrs = method.getEncodedAttributes();
-                int yieldNameBegin = attrs.indexOf(';');
-                if (yieldNameBegin != -1) {
-                    int yieldNameEnd = attrs.indexOf(';', yieldNameBegin + 1);
-                    if (yieldNameEnd != -1) {
-                        blockArgs = attrs.substring(yieldNameBegin + 1,
-                                yieldNameEnd).split(",");
+                if (attrs != null) {
+                    int yieldNameBegin = attrs.indexOf(';');
+                    if (yieldNameBegin != -1) {
+                        int yieldNameEnd = attrs.indexOf(';', yieldNameBegin + 1);
+                        if (yieldNameEnd != -1) {
+                            blockArgs = attrs.substring(yieldNameBegin + 1,
+                                    yieldNameEnd).split(",");
+                        }
                     }
                 }
                 // TODO - if it's not an indexed class, pull this from the

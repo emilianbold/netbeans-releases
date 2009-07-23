@@ -48,6 +48,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
@@ -185,7 +186,8 @@ implements FileNameMapper {
         } catch (Exception ex) {
             throw new BuildException("Cannot parse " + layer, ex);
         }
-        ResArray bundles = new ResArray();
+        Map<String,ResArray> bundles = new HashMap<String,ResArray>();
+        bundles.put("", new ResArray());
         ResArray icons = new ResArray();
         StringBuilder modules = new StringBuilder();
         String sep = "\n    ";
@@ -229,7 +231,15 @@ implements FileNameMapper {
                             JarEntry je = en.nextElement();
                             if (concatPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);
-                                bundles.add(new ZipResource(jar, "UTF-8", zipEntry));
+                                String noExt = je.getName().replaceFirst("\\.[^\\.]*$", "");
+                                int index = noExt.indexOf("_");
+                                String suffix = index == -1 ? "" : noExt.substring(index + 1);
+                                ResArray ra = bundles.get(suffix);
+                                if (ra == null) {
+                                    ra = new ResArray();
+                                    bundles.put(suffix, ra);
+                                }
+                                ra.add(new ZipResource(jar, "UTF-8", zipEntry));
                             }
                             if (copyPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);
@@ -250,25 +260,29 @@ implements FileNameMapper {
             }
         }
 
-        Concat concat = new Concat();
-        concat.setProject(getProject());
-        bundles.add(new StringResource(""));
-        concat.add(bundles);
-        concat.setDestfile(bundle);
-        {
-            FilterChain ch = new FilterChain();
-            LineContainsRegExp filter = new LineContainsRegExp();
-            filter.addConfiguredRegexp(linePattern);
-            ch.addLineContainsRegExp(filter);
-            concat.addFilterChain(ch);
-            concat.addFilterChain(bundleFilter);
+        for (Map.Entry<String, ResArray> entry : bundles.entrySet()) {
+            ResArray ra = entry.getValue();
+            
+            Concat concat = new Concat();
+            concat.setProject(getProject());
+            ra.add(new StringResource(""));
+            concat.add(ra);
+            concat.setDestfile(localeVariant(bundle, entry.getKey()));
+            {
+                FilterChain ch = new FilterChain();
+                LineContainsRegExp filter = new LineContainsRegExp();
+                filter.addConfiguredRegexp(linePattern);
+                ch.addLineContainsRegExp(filter);
+                concat.addFilterChain(ch);
+                concat.addFilterChain(bundleFilter);
+            }
+            Concat.TextElement te = new Concat.TextElement();
+            te.setProject(getProject());
+            te.addText("\n\n\ncnbs=\\" + modules + "\n\n");
+            te.setFiltering(false);
+            concat.addFooter(te);
+            concat.execute();
         }
-        Concat.TextElement te = new Concat.TextElement();
-        te.setProject(getProject());
-        te.addText("\n\n\ncnbs=\\" + modules + "\n\n");
-        te.setFiltering(false);
-        concat.addFooter(te);
-        concat.execute();
 
         {
             HashMap<String,Resource> names = new HashMap<String,Resource>();
@@ -399,6 +413,14 @@ implements FileNameMapper {
                 copy.add(url);
             }
         });
+    }
+
+    private static File localeVariant(File base, String locale) {
+        if (locale.length() == 0) {
+            return base;
+        }
+        String name = base.getName().replaceFirst("\\.", "_" + locale + ".");
+        return new File(base.getParentFile(), name);
     }
 
     public void setFrom(String arg0) {

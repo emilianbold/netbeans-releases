@@ -154,11 +154,11 @@ public final class SourceCache {
                 return parser;
             }
         }
-        final Snapshot _snapshot = getSnapshot ();
         Parser _parser = null;
         Lookup lookup = MimeLookup.getLookup (mimeType);
         ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
         if (parserFactory != null) {
+            final Snapshot _snapshot = getSnapshot ();
             final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
             _parser = parserFactory.createParser (_tmp);
         }

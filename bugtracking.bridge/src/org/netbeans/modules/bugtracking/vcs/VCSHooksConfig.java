@@ -50,6 +50,17 @@ import org.openide.util.NbPreferences;
 public class VCSHooksConfig {
     private static VCSHooksConfig instance = null;
 
+    private static final String HG_HOOK_RESOLVE         = "vcshook.hg_resolve";         // NOI18N
+    private static final String HG_HOOK_ADD_MSG         = "vcshook.hg_add_mgs";         // NOI18N
+    private static final String HG_HOOK_ADD_REV         = "vcshook.hg_add_rev";         // NOI18N
+    private static final String HG_HOOK_ADD_ISSUE       = "vcshook.hg_add_issue";       // NOI18N
+    private static final String HG_HOOK_AFTER_COMMIT    = "vcshook.hg_after_commit";    // NOI18N
+
+    private static final String SVN_HOOK_RESOLVE        = "vcshook.svn_resolve";        // NOI18N
+    private static final String SVN_HOOK_ADD_MSG        = "vcshook.svn_add_mgs";        // NOI18N
+    private static final String SVN_HOOK_ADD_REV        = "vcshook.svn_add_rev";        // NOI18N
+    private static final String SVN_HOOK_ADD_ISSUE      = "vcshook.svn_add_issue";      // NOI18N
+
     private static final String HG_HOOK_COMMENT_FORMAT  = "vcshook.hg_comment_format";  // NOI18N
     private static final String HG_HOOK_ISSUE_FORMAT    = "vcshook.hg_issue_format";    // NOI18N
     private static final String SVN_HOOK_COMMENT_FORMAT = "vcshook.svn_comment_format"; // NOI18N
@@ -84,6 +95,78 @@ public class VCSHooksConfig {
 
     void setSvnIssueFormat(Format format) {
         getPreferences().put(SVN_HOOK_ISSUE_FORMAT, format.toString());
+    }
+
+    void setSvnResolve(boolean bl) {
+        getPreferences().putBoolean(SVN_HOOK_RESOLVE, bl);
+    }
+
+    void setSvnAddMsg(boolean bl) {
+        getPreferences().putBoolean(SVN_HOOK_ADD_MSG, bl);
+    }
+
+    void setSvnAddRev(boolean bl) {
+        getPreferences().putBoolean(SVN_HOOK_ADD_REV, bl);
+    }
+
+    void setSvnAddIssue(boolean bl) {
+        getPreferences().putBoolean(SVN_HOOK_ADD_ISSUE, bl);
+    }
+
+    void setHgResolve(boolean bl) {
+        getPreferences().putBoolean(HG_HOOK_RESOLVE, bl);
+    }
+
+    void setHgAddMsg(boolean bl) {
+        getPreferences().putBoolean(HG_HOOK_ADD_MSG, bl);
+    }
+
+    void setHgAddRev(boolean bl) {
+        getPreferences().putBoolean(HG_HOOK_ADD_REV, bl);
+    }
+
+    void setHgAddIssue(boolean bl) {
+        getPreferences().putBoolean(HG_HOOK_ADD_ISSUE, bl);
+    }
+
+    void setHgAfterCommit(boolean bl) {
+        getPreferences().putBoolean(HG_HOOK_AFTER_COMMIT, bl);
+    }
+
+    boolean getSvnResolve() {
+        return getPreferences().getBoolean(SVN_HOOK_RESOLVE, false);
+    }
+
+    boolean getSvnAddMsg() {
+        return getPreferences().getBoolean(SVN_HOOK_ADD_MSG, false);
+    }
+
+    boolean getSvnAddRev() {
+        return getPreferences().getBoolean(SVN_HOOK_ADD_REV, false);
+    }
+
+    boolean getSvnAddIssue() {
+        return getPreferences().getBoolean(SVN_HOOK_ADD_ISSUE, false);
+    }
+
+    boolean getHgResolve() {
+        return getPreferences().getBoolean(HG_HOOK_RESOLVE, false);
+    }
+
+    boolean getHgAddMsg() {
+        return getPreferences().getBoolean(HG_HOOK_ADD_MSG, false);
+    }
+
+    boolean getHgAddRev() {
+        return getPreferences().getBoolean(HG_HOOK_ADD_REV, false);
+    }
+
+    boolean getHgAddIssue() {
+        return getPreferences().getBoolean(HG_HOOK_ADD_ISSUE, false);
+    }
+
+    boolean getHgAfterCommit() {
+        return getPreferences().getBoolean(HG_HOOK_AFTER_COMMIT, false);
     }
 
     Format getHgCommentFormat() {

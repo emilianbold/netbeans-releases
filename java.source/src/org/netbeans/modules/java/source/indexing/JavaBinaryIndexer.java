@@ -67,7 +67,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         LOG.log(Level.FINE, "index({0})", context.getRootURI());
         try {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
-            cim.reserveWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
                     File cacheFolder = JavaIndex.getClassFolder(context.getRootURI());
@@ -76,16 +76,18 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                     if (uq == null) {
                         return null; //IDE is exiting, indeces are already closed.
                     }
-                    final BinaryAnalyser ba = uq.getBinaryAnalyser();
-                    if (ba != null) { //ba == null => IDE is exiting, indexing will be done on IDE restart
-                        //todo: may also need interruption.
-                        try {
-                            BinaryAnalyser.Result finished = ba.start(context.getRootURI(), new AtomicBoolean(false), new AtomicBoolean(false));
-                            while (finished == BinaryAnalyser.Result.CANCELED) {
-                                finished = ba.resume();
+                    if (context.isAllFilesIndexing()) {
+                        final BinaryAnalyser ba = uq.getBinaryAnalyser();
+                        if (ba != null) { //ba == null => IDE is exiting, indexing will be done on IDE restart
+                            //todo: may also need interruption.
+                            try {
+                                BinaryAnalyser.Result finished = ba.start(context.getRootURI(), new AtomicBoolean(false), new AtomicBoolean(false));
+                                while (finished == BinaryAnalyser.Result.CANCELED) {
+                                    finished = ba.resume();
+                                }
+                            } finally {
+                                ba.finish();
                             }
-                        } finally {
-                            ba.finish();
                         }
                     }
                     return null;

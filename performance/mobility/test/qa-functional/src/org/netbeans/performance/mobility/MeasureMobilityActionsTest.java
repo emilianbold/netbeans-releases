@@ -61,7 +61,6 @@ public class MeasureMobilityActionsTest  {
         System.setProperty("suitename", MeasureMobilityActionsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Mobility Actions suite");
 
-        // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateMobilityProjectTest.class)
                 .addTest(OpenMIDletEditorTest.class) // Open a visual MIDlet
                 .addTest(MIDletViewsSwitchTest.class) // Flow To Design Switch

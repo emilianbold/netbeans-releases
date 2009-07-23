@@ -43,7 +43,6 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.Actions;
@@ -92,17 +91,15 @@ public final class FileCommandAction extends ProjectAction {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
         if ( projects.length == 1 ) {            
-            ActionProvider ap = (ActionProvider)projects[0].getLookup().lookup( ActionProvider.class );
+            ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
             ap.invokeAction( getCommand(), context );
         }
         
     }
-    
 
     @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new FileCommandAction( getCommand(), getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
     }
 
-    
 }

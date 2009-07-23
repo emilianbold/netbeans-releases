@@ -298,7 +298,13 @@ public final class MasterMatcher {
         
         // Highlight all the matches
         for(int i = startIdx; i < offsets.length / 2; i++) {
-            highlights.addHighlight(offsets[i * 2], offsets[i * 2 + 1], coloring);
+            try {
+                highlights.addHighlight(offsets[i * 2], offsets[i * 2 + 1], coloring);
+            } catch (Throwable t) {
+                // ignore, most likely invalid offsets supplied from a custom BracesMatcher,
+                // unfortunately here it's too late to know who supplied them (#167478)
+                LOG.log(Level.FINE, null, t);
+            }
         }
     }
 

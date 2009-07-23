@@ -273,7 +273,7 @@ public final class Main extends Object {
 
 
     try {
-        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+        if (!Boolean.getBoolean("netbeans.full.hack") && !Boolean.getBoolean("netbeans.close")) {
 	    // -----------------------------------------------------------------------------------------------------
 	    // License check
             if (!handleLicenseCheck()) {

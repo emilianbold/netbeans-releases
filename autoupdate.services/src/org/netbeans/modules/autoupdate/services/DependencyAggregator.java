@@ -52,26 +52,30 @@ import org.openide.modules.ModuleInfo;
  * @author Jirka Rechtacek
  */
 public class DependencyAggregator extends Object {
-    private static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
+    private final static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
     
     private Collection<ModuleInfo> depending = new CopyOnWriteArraySet<ModuleInfo> ();
     private final DependencyDecoratorKey key;
     
     private DependencyAggregator (DependencyDecoratorKey key) {
+        synchronized(key2dependency) {
         if (key2dependency.containsKey (key)) {
             throw new IllegalArgumentException ("No duplicate DependencyDecorator for key " + key);
         }
         this.key = key;
+        }
     }
     
     public static DependencyAggregator getAggregator (Dependency dep) {
         DependencyDecoratorKey key = new DependencyDecoratorKey (dep.getName (), dep.getType (), dep.getComparison ());
+        synchronized(key2dependency) {
         DependencyAggregator res = key2dependency.get (key);
         if (res == null) {
             res = new DependencyAggregator (key);
             key2dependency.put (key, res);
         }
         return res;
+        }
     }
     
     public int getType () {

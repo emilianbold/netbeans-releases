@@ -307,7 +307,7 @@ public class RelatedCMPHelper {
             }
         }
 
-        generator = new DbSchemaEjbGenerator(genTables, schemaElement);
+        generator = new DbSchemaEjbGenerator(genTables, schemaElement, collectionType);
     }
     
     public EntityClass[] getBeans() {

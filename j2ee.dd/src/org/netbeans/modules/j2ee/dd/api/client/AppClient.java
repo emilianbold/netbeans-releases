@@ -56,7 +56,6 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 public interface AppClient extends RootInterface {
     
     public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-    public static final String VERSION_1_3="1.3"; //NOI18N
     public static final String VERSION_1_4="1.4"; //NOI18N
     public static final String VERSION_5_0="5"; //NOI18N
     public static final int STATE_VALID=0;

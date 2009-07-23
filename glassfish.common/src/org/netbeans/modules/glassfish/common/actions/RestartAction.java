@@ -110,7 +110,8 @@ public class RestartAction extends NodeAction {
                 ) {
             return false;
         }
-        return true;
+        return true &&
+                null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) ;
     }
 
     public HelpCtx getHelpCtx() {

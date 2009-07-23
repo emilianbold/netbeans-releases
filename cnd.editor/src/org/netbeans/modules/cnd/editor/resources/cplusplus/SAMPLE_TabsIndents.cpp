@@ -2,7 +2,7 @@
 /*
  */
 namespace A{
-class ClassA : InterfaceA, InterfaceB, IntefaceC {
+class ClassA : InterfaceA, InterfaceB, InterfaceC {
 public:
 int number;
 enum inner {

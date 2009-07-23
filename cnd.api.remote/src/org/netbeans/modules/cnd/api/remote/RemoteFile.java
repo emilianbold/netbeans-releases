@@ -48,7 +48,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -99,6 +102,19 @@ public class RemoteFile extends File {
     public boolean exists() {
         //TODO: nonono
         return HostInfoProvider.fileExists(execEnv, getPath());
+    }
+
+    @Override
+    public boolean delete() {
+        Future<Integer> task = CommonTasksSupport.rmDir(execEnv, getPath(), true, null);
+        try {
+            int rc = task.get();
+            return (rc == 0);
+        } catch (InterruptedException ex) {
+            return false;
+        } catch (ExecutionException ex) {
+            return false;
+        }
     }
 
     @Override

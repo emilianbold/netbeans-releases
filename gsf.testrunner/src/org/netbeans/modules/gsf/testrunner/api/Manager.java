@@ -391,15 +391,19 @@ public final class Manager {
      */
     private void createIO(final ResultDisplayHandler displayHandler) {
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-
+            Runnable r = new Runnable() {
                 public void run() {
                     final ResultWindow window = ResultWindow.getInstance();
                     window.addDisplayComponent(displayHandler.getDisplayComponent());
                     window.setOutputComp(displayHandler.getOutputComponent());
                     displayHandler.createIO(window.getIOContainer());
                 }
-            });
+            };
+            if (SwingUtilities.isEventDispatchThread()){
+                r.run();
+            }else{
+                SwingUtilities.invokeAndWait(r);
+            }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (InvocationTargetException ex) {

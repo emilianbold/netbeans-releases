@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -113,5 +114,7 @@ public final class APTSystemStorage {
             allMacroMaps.clear();
         }
         includesStorage.dispose();
+        APTMacroCache.getManager().dispose();
+        IncludeDirEntry.disposeCache();
     }
 }

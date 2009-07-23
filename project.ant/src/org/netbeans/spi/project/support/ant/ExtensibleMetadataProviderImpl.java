@@ -57,7 +57,7 @@ final class ExtensibleMetadataProviderImpl implements AuxiliaryConfiguration, Ca
     /**
      * Relative path from project directory to the required private cache directory.
      */
-    private static final String CACHE_PATH = "nbproject/private/cache"; // NOI18N
+    private static final String CACHE_PATH = "nbproject/private"; // NOI18N
     
     private final AntProjectHelper helper;
     

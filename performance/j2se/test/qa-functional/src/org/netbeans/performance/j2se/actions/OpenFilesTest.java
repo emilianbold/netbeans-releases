@@ -136,7 +136,7 @@ public class OpenFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         doMeasurement();
     }
-    
+
     public void testOpening20kBTxtFile(){
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
@@ -154,7 +154,7 @@ public class OpenFilesTest extends PerformanceTestCase {
         menuItem = EDIT;
         doMeasurement();
     }
-    
+
     @Override
     protected void initialize(){
         EditorOperator.closeDiscardAll();

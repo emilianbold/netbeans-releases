@@ -110,7 +110,7 @@ public class VersionNode extends AbstractNode {
         this.record = versionInfo;
         if (dispNameShort) {
             setName(versionInfo.getVersion());
-            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() //NOI18N
+            setDisplayName(versionInfo.getVersion() + " [ " + (versionInfo.getType() != null ? versionInfo.getType() : "jar") //NOI18N
                     + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ]");//NOI18N
         } else {
             setName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
@@ -146,30 +146,23 @@ public class VersionNode extends AbstractNode {
         Action[] retValue;
         if(info.isRemoteDownloadable()){
              retValue = new Action[]{
-            CopyAction.get(CopyAction.class),
             new ShowArtifactAction(record),
             new AddAsDependencyAction(artifact),
             CommonArtifactActions.createFindUsages(artifact),
             null,
-            CommonArtifactActions.createViewProjectHomeAction(artifact),
-            CommonArtifactActions.createViewBugTrackerAction(artifact),
-            CommonArtifactActions.createSCMActions(artifact)
+            CopyAction.get(CopyAction.class),
         };
         
         }else{
         
 
         retValue = new Action[]{
-            CopyAction.get(CopyAction.class),
             new ShowArtifactAction(record),
             new AddAsDependencyAction(artifact),
-            null,
             CommonArtifactActions.createFindUsages(artifact),
-            null,
             CommonArtifactActions.createViewJavadocAction(artifact),
-            CommonArtifactActions.createViewProjectHomeAction(artifact),
-            CommonArtifactActions.createViewBugTrackerAction(artifact),
-            CommonArtifactActions.createSCMActions(artifact)
+            null,
+            CopyAction.get(CopyAction.class),
         };
         }
         return retValue;

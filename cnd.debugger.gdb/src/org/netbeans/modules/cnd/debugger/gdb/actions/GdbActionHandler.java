@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -64,7 +63,7 @@ public class GdbActionHandler implements ProjectActionHandler {
 
     private ProjectActionEvent pae;
 
-    public void init(ProjectActionEvent pae) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
 
@@ -113,7 +112,7 @@ public class GdbActionHandler implements ProjectActionHandler {
     
     public void executionStarted() {
         for (ExecutionListener listener : listeners) {
-            listener.executionStarted();
+            listener.executionStarted(ExecutionListener.UNKNOWN_PID);
         }
     }
     

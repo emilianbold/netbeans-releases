@@ -71,9 +71,11 @@ public class SchemaModelTest extends TestCase {
     public SchemaModelTest(String testName) {
         super(testName);
     }
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
         TestCatalogModel.getDefault().clearDocumentPool();
     }
@@ -92,6 +94,8 @@ public class SchemaModelTest extends TestCase {
         suite.addTest(new SchemaModelTest("testResolve2"));
         suite.addTest(new SchemaModelTest("testResolve3"));
         suite.addTest(new SchemaModelTest("testResolve4"));
+        suite.addTest(new SchemaModelTest("testResolve5"));
+        suite.addTest(new SchemaModelTest("testResolve6"));
         suite.addTest(new SchemaModelTest("testFlushDumpThenReload"));                
         return suite;
     }
@@ -119,7 +123,7 @@ public class SchemaModelTest extends TestCase {
 	d = (Document) sm2.getModelSource().getLookup().lookup(Document.class);
         //System.out.println(d.getText(0, d.getLength()));
        
-        this.assertFalse("testSync", sm2.getSchema().getVersion().equals(current));
+        assertFalse("testSync", sm2.getSchema().getVersion().equals(current));
         assertEquals("1.3", sm2.getSchema().getVersion());
     }
 
@@ -235,7 +239,7 @@ public class SchemaModelTest extends TestCase {
     public void testResolve1() throws Exception {
         SchemaModel sm = Util.loadSchemaModel("resources/C.xsd");
         assert(sm.getState() == State.VALID);
-        GlobalComplexType gct = (GlobalComplexType)sm.getSchema().getChildren().get(1);
+        GlobalComplexType gct = (GlobalComplexType)sm.getSchema().getChildren().get(2);
         assert("C2".equals(gct.getName()));
         LocalElement e1 = (LocalElement)gct.getChildren().get(0).getChildren().get(0);
         assert(e1 != null && e1.getName().equals("C21"));
@@ -254,7 +258,7 @@ public class SchemaModelTest extends TestCase {
     public void testResolve2() throws Exception {
         SchemaModel sm = Util.loadSchemaModel("resources/A.xsd");        
         assert(sm.getState() == State.VALID);
-        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
         assert("A1".equals(ge.getName()));
         NamedComponentReference ncr = ge.getType();
         String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
@@ -271,7 +275,7 @@ public class SchemaModelTest extends TestCase {
     public void testResolve3() throws Exception {
         SchemaModel sm = Util.loadSchemaModel("resources/A.xsd");
         assert(sm.getState() == State.VALID);
-        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(3);
         assert("A2".equals(ge.getName()));
         NamedComponentReference ncr = ge.getType();
         String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
@@ -290,7 +294,7 @@ public class SchemaModelTest extends TestCase {
     public void testResolve4() throws Exception {
         SchemaModel sm = Util.loadSchemaModel("resources/B.xsd");
         assert(sm.getState() == State.VALID);
-        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(3);
         assert("B2".equals(ge.getName()));
         NamedComponentReference ncr = ge.getType();
         String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
@@ -307,4 +311,68 @@ public class SchemaModelTest extends TestCase {
         gct = (GlobalComplexType)ncr.get();
         assert(gct != null && gct.getName().equals("D1"));        
     }
+
+    /**
+     * Another one test related to the issue #122836
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=122836.
+     * It tests more deep inclusions. The first solution has supported only
+     * simple case, like is testein by testResolve4()
+     *
+     * B includes C & D; C includes E; D includes F.
+     * B uses types defined in E. E uses types defined in F.
+     * E & F do not know anything about each other.
+     * In this use-case, if you expand from B, it'll resolve types from 
+     * all included schema: C, D, E, F.
+     */
+    public void testResolve5() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel("resources/B.xsd");
+        assert(sm.getState() == State.VALID);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(4);
+        assert("B3".equals(ge.getName()));
+        NamedComponentReference ncr = ge.getType();
+        String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assert("http://xml.netbeans.org/schema/B:E2".equals(name));
+        //this is when it'll try to resolve
+        GlobalComplexType gct = (GlobalComplexType)ncr.get();
+        assert(gct != null && gct.getName().equals("E2"));
+        LocalElement e1 = (LocalElement)gct.getChildren().get(0).getChildren().get(0);
+        assert(e1 != null && e1.getName().equals("E21"));
+        ncr = e1.getType();
+        name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assert("http://xml.netbeans.org/schema/B:F1".equals(name));
+        //this is when it'll try to resolve
+        gct = (GlobalComplexType)ncr.get();
+        assert(gct != null && gct.getName().equals("F1"));
+    }
+
+    /**
+     * A imports B, B imports G. An element in A uses a complex type defined in G.
+     * It has to be not accessible.
+     */
+    public void testResolve6() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel("resources/A.xsd");
+        assert(sm.getState() == State.VALID);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(4);
+        assert("G1".equals(ge.getName()));
+        NamedComponentReference ncr = ge.getType();
+        String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assert("http://xml.netbeans.org/schema/G:G1".equals(name));
+        //this is when it'll try to resolve
+        GlobalComplexType gct = (GlobalComplexType)ncr.get();
+        assert(gct != null);
+        //
+        Import gImport = (Import)sm.getSchema().getChildren().get(1);
+        assert "G.xsd".equals(gImport.getSchemaLocation());
+        //
+        sm.startTransaction();
+        try {
+            sm.getSchema().removeExternalReference(gImport);
+        } finally {
+            sm.endTransaction();
+        }
+        //
+        // Try resolve G1 type again
+        gct = (GlobalComplexType)ncr.get();
+    }
+
 }

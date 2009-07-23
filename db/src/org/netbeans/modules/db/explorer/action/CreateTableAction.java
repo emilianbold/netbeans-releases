@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -66,14 +63,7 @@ public class CreateTableAction extends BaseAction {
         DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
 
         if (dbconn != null) {
-            Connection conn = dbconn.getConnection();
-            try {
-                if (conn != null) {
-                    enabled = !conn.isClosed();
-                }
-            } catch (SQLException e) {
-                Exceptions.printStackTrace(e);
-            }
+            enabled = DatabaseConnection.isVitalConnection(dbconn.getConnection(), dbconn);
         }
 
         return enabled;
@@ -98,10 +88,9 @@ public class CreateTableAction extends BaseAction {
     private void perform(final BaseNode node) {
         DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
 
-        String name = findSchemaWorkingName(node.getLookup());
-
-        final CreateTableDialog dlg = new CreateTableDialog(connection.getConnector().getDatabaseSpecification(), name);
-        if (dlg.run()) {
+        String schema = findSchemaWorkingName(node.getLookup());
+        boolean tableCreated = CreateTableDialog.showDialogAndCreate(connection.getConnector().getDatabaseSpecification(), schema);
+        if (tableCreated) {
             SystemAction.get(RefreshAction.class).performAction(new Node[] { node });
         }
     }

@@ -119,6 +119,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 "<profilesXml xmlns=\"http://maven.apache.org/PROFILES/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
 "  xsi:schemaLocation=\"http://maven.apache.org/PROFILES/1.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
 "</profilesXml>";//NO18N
+    // a copy is in maven.model's Utilities.
 
     private static final String BROKEN_NBACTIONS = "BROKENNBACTIONS";  //NOI18N
     
@@ -149,7 +150,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setTitle( MessageFormat.format(
                     org.openide.util.NbBundle.getMessage(CustomizerProviderImpl.class, "TIT_Project_Properties"),
                     new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
-            
+            dialog.setModal(true);
             dialog.setVisible(true);
         } catch (FileNotFoundException ex) {
             if ("No pom file exists.".equals(ex.getMessage())) { //NOI18N
@@ -240,7 +241,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             }
         }
 
-        handle = ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(), mapps, configs, active);
+        handle = ACCESSOR.createHandle(model, profilesModel, 
+                project.getOriginalMavenProject(), mapps, configs, active,
+                project.getAuxProps());
         handle.setConfigurationsEnabled(configEnabled);
     }
     
@@ -261,7 +264,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     public static abstract class ModelAccessor {
         
         public abstract ModelHandle createHandle(POMModel model, ProfilesModel prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
-                List<ModelHandle.Configuration> configs, ModelHandle.Configuration active);
+                List<ModelHandle.Configuration> configs, ModelHandle.Configuration active, MavenProjectPropsImpl auxProps);
         
     }
     /** Listens to the actions on the Customizer's option buttons */
@@ -329,6 +332,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         Utilities.saveChanges(handle.getPOMModel());
         if (handle.isModified(handle.getProfileModel())) {
             Utilities.saveChanges(handle.getProfileModel());
+        } else {
+            if (handle.getProfileModel().isIntransaction()) {
+                handle.getProfileModel().rollbackTransaction();
+            }
         }
         if (handle.isModified(handle.getActionMappings())) {
             writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));

@@ -195,7 +195,6 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
     }
 
     private static TinyCharSequence createFromBytes(byte[] b, int n) {
-        assert b != null;
         if (n < 8) {
             return new Fixed7CharSequenceKey(b, n);
         } else if (n < 16) {
@@ -469,7 +468,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 
         @Override
         public int hashCode() {
-            return i1+31*i2;
+            int hash = 0;
+            for (int i = 0; i < length(); i++) {
+                hash = 31*hash+charAt(i);
+            }
+            return hash;
+//            return (i1 >> 4) + (i1 >> 8) + (i2 << 5) - i2;
         }
 
         public CharSequence subSequence(int start, int end) {

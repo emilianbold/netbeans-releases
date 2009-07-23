@@ -39,7 +39,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.DialogDescriptor;
@@ -47,7 +47,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public final class OpenKenaiProjectAction implements ActionListener {
+public final class OpenKenaiProjectAction extends AbstractAction {
 
     private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
 

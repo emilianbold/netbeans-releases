@@ -113,14 +113,14 @@ if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
 then
    hg up || exit 6
 else
-   if hg merge; then
+   if hg --config ui.merge=internal:merge --config ui.interactive=1 merge < /dev/null; then
      echo Merge OK.
    else
      echo Merge failed.
      hg heads
      exit 7
    fi
-   hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
+   hg ci -u "$push_username"@netbeans.org -m "Merge of $pop_url" || exit 8
 fi
 HGOUT=`hg out $push_url`
 testresult "$TESTDIR" "outgoing.changes" "$HGOUT"

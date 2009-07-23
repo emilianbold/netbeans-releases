@@ -42,10 +42,13 @@
 package org.netbeans.modules.web.api.webmodule;
 
 import java.util.Iterator;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
-import org.netbeans.modules.web.spi.webmodule.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -71,26 +74,44 @@ import org.openide.util.Parameters;
  * @author  Pavel Buzek
  */
 public final class WebModule {
-    
+
+    @Deprecated
     public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
+
+    @Deprecated
     public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
+
+    @Deprecated
     public static final String JAVA_EE_5_LEVEL = "1.5"; //NOI18N
-    
+
+    @SuppressWarnings("deprecation")
     private final WebModuleImplementation impl;
+
+    private final WebModuleImplementation2 impl2;
+
     private static final Lookup.Result implementations =
             Lookup.getDefault().lookupResult(WebModuleProvider.class);
     
     static  {
         WebModuleAccessor.setDefault(new WebModuleAccessor() {
+
+            @Override
             public WebModule createWebModule(WebModuleImplementation spiWebmodule) {
-                return new WebModule(spiWebmodule);
+                return new WebModule(spiWebmodule, null);
+            }
+
+            @Override
+            public WebModule createWebModule(WebModuleImplementation2 spiWebmodule) {
+                return new WebModule(null, spiWebmodule);
             }
         });
     }
-    
-    private WebModule (WebModuleImplementation impl) {
-        Parameters.notNull("impl", impl); // NOI18N
+
+    @SuppressWarnings("deprecation")
+    private WebModule (WebModuleImplementation impl, WebModuleImplementation2 impl2) {
+        assert (impl != null && impl2 == null) || (impl == null && impl2 != null);
         this.impl = impl;
+        this.impl2 = impl2;
     }
     
     /**
@@ -124,6 +145,9 @@ public final class WebModule {
      * @return the static documents folder; can be null.
      */
     public FileObject getDocumentBase () {
+        if (impl2 != null) {
+            return impl2.getDocumentBase ();
+        }
         return impl.getDocumentBase ();
     }
     
@@ -138,6 +162,9 @@ public final class WebModule {
      * @return the WEB-INF folder; can be null.
      */
     public FileObject getWebInf () {
+        if (impl2 != null) {
+            return impl2.getWebInf();
+        }
         return impl.getWebInf ();
     }
 
@@ -151,6 +178,9 @@ public final class WebModule {
      * @return the <code>web.xml</code> file; can be null.
      */
     public FileObject getDeploymentDescriptor () {
+        if (impl2 != null) {
+            return impl2.getDeploymentDescriptor();
+        }
         return impl.getDeploymentDescriptor ();
     }
     
@@ -160,18 +190,31 @@ public final class WebModule {
      * @return the context path; can be null.
      */
     public String getContextPath () {
+        if (impl2 != null) {
+            return impl2.getContextPath();
+        }
         return impl.getContextPath ();
     }
     
     /**
      * Returns the J2EE platform version of this module. The returned value is
-     * one of the constants {@link #J2EE_13_LEVEL}, {@link #J2EE_14_LEVEL} or 
-     * {@link #JAVA_EE_5_LEVEL}.
+     * one of the properties string for constants defined in {@link Profile}.
      *
      * @return J2EE platform version; never null.
+     * @deprecated use {@link #getJ2eeProfile()}
      */
     public String getJ2eePlatformVersion () {
-        return impl.getJ2eePlatformVersion ();
+        if (impl2 != null) {
+            return impl2.getJ2eeProfile().toPropertiesString();
+        }
+        return impl.getJ2eePlatformVersion();
+    }
+
+    public Profile getJ2eeProfile() {
+         if (impl2 != null) {
+            return impl2.getJ2eeProfile();
+        }
+        return Profile.fromPropertiesString(impl.getJ2eePlatformVersion());
     }
     
     /**
@@ -190,6 +233,9 @@ public final class WebModule {
      */
     @Deprecated
     public FileObject[] getJavaSources() {
+        if (impl2 != null) {
+            return impl2.getJavaSources();
+        }
         return impl.getJavaSources();
     }
     
@@ -200,6 +246,9 @@ public final class WebModule {
      * @return this web module's metadata model; never null.
      */
     public MetadataModel<WebAppMetadata> getMetadataModel() {
+        if (impl2 != null) {
+            return impl2.getMetadataModel();
+        }
         return impl.getMetadataModel();
     }
 }

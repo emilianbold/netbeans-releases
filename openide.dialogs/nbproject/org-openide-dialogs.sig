@@ -1,5 +1,5 @@
 #Signature file v4.0
-#Version 7.8.1
+#Version 7.10.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -160,6 +160,17 @@ meth public static org.openide.LifecycleManager getDefault()
 supr java.lang.Object
 hcls Trivial
 
+CLSS public final org.openide.NotificationLineSupport
+meth public final java.lang.String getErrorMessage()
+meth public final java.lang.String getInformationMessage()
+meth public final java.lang.String getWarningMessage()
+meth public final void clearMessages()
+meth public final void setErrorMessage(java.lang.String)
+meth public final void setInformationMessage(java.lang.String)
+meth public final void setWarningMessage(java.lang.String)
+supr java.lang.Object
+hfds nd
+
 CLSS public org.openide.NotifyDescriptor
 cons public NotifyDescriptor(java.lang.Object,java.lang.String,int,int,java.lang.Object[],java.lang.Object)
 fld public final static int DEFAULT_OPTION = -1
@@ -177,6 +188,8 @@ fld public final static java.lang.Object NO_OPTION
 fld public final static java.lang.Object OK_OPTION
 fld public final static java.lang.Object YES_OPTION
 fld public final static java.lang.String PROP_DETAIL = "detail"
+fld public final static java.lang.String PROP_ERROR_NOTIFICATION = "errorNotification"
+fld public final static java.lang.String PROP_INFO_NOTIFICATION = "infoNotification"
 fld public final static java.lang.String PROP_MESSAGE = "message"
 fld public final static java.lang.String PROP_MESSAGE_TYPE = "messageType"
 fld public final static java.lang.String PROP_OPTIONS = "options"
@@ -184,6 +197,7 @@ fld public final static java.lang.String PROP_OPTION_TYPE = "optionType"
 fld public final static java.lang.String PROP_TITLE = "title"
 fld public final static java.lang.String PROP_VALID = "valid"
 fld public final static java.lang.String PROP_VALUE = "value"
+fld public final static java.lang.String PROP_WARNING_NOTIFICATION = "warningNotification"
 innr public final static Exception
 innr public static Confirmation
 innr public static InputLine
@@ -192,6 +206,8 @@ meth protected static java.lang.String getTitleForType(int)
 meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth protected void initialize()
 meth public final boolean isValid()
+meth public final org.openide.NotificationLineSupport createNotificationLineSupport()
+meth public final org.openide.NotificationLineSupport getNotificationLineSupport()
 meth public final void setValid(boolean)
 meth public int getMessageType()
 meth public int getOptionType()
@@ -211,7 +227,7 @@ meth public void setOptions(java.lang.Object[])
 meth public void setTitle(java.lang.String)
 meth public void setValue(java.lang.Object)
 supr java.lang.Object
-hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,message,messageType,optionType,options,title,valid,value
+hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,errMsg,infoMsg,message,messageType,notificationLineSupport,optionType,options,title,valid,value,warnMsg
 
 CLSS public static org.openide.NotifyDescriptor$Confirmation
 cons public Confirmation(java.lang.Object)
@@ -340,7 +356,7 @@ meth public void setOptions(java.lang.Object[])
 meth public void setTitleFormat(java.text.MessageFormat)
 meth public void setValue(java.lang.Object)
 supr org.openide.DialogDescriptor
-hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
+hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
 hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
 
 CLSS public static org.openide.WizardDescriptor$ArrayIterator<%0 extends java.lang.Object>

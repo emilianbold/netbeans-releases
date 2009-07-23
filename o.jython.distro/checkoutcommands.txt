@@ -1,3 +1,0 @@
-svn export https://jython.svn.sourceforge.net/svnroot/jython/trunk/jython/ jython
-rm -R etc/jython-2.5.zip
-zip -rm etc/jython-2.5.zip jython

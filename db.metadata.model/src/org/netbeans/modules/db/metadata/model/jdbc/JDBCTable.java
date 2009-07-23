@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 - 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.jdbc;
@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +85,7 @@ public class JDBCTable extends TableImplementation {
     // Need a marker because there may be *no* primary key, and we don't want
     // to hit the database over and over again when there is no primary key
     private boolean primaryKeyInitialized = false;
+    private static final String SQL_EXCEPTION_NOT_YET_IMPLEMENTED = "not yet implemented";
 
     public JDBCTable(JDBCSchema jdbcSchema, String name) {
         this.jdbcSchema = jdbcSchema;
@@ -168,7 +168,7 @@ public class JDBCTable extends TableImplementation {
                 rs.close();
             }
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
         columns = Collections.unmodifiableMap(newColumns);
     }
@@ -193,41 +193,54 @@ public class JDBCTable extends TableImplementation {
                         newIndexes.put(index.getName(), index.getIndex());
                         currentIndexName = indexName;
                     }
-                    
-                    IndexColumn col = createJDBCIndexColumn(index, rs).getIndexColumn();
-                    index.addColumn(col);
-                    LOGGER.log(Level.FINE, "Added column " + col.getName() + " to index " + indexName);
+
+                    JDBCIndexColumn idx = createJDBCIndexColumn(index, rs);
+                    if (idx == null) {
+                        LOGGER.log(Level.INFO, "Cannot create index column for " + indexName + " from " + rs);
+                    } else {
+                        IndexColumn col = idx.getIndexColumn();
+                        index.addColumn(col);
+                        LOGGER.log(Level.FINE, "Added column " + col.getName() + " to index " + indexName);
+                    }
                 }
             } finally {
                 rs.close();
             }
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
 
         indexes = Collections.unmodifiableMap(newIndexes);
     }
 
     protected JDBCIndex createJDBCIndex(String name, ResultSet rs) {
+        IndexType type = IndexType.OTHER;
+        boolean isUnique = false;
         try {
-            IndexType type = JDBCUtils.getIndexType(rs.getShort("TYPE"));
-            boolean isUnique = !rs.getBoolean("NON_UNIQUE");
-            return new JDBCIndex(this.getTable(), name, type, isUnique);
+            type = JDBCUtils.getIndexType(rs.getShort("TYPE"));
+            isUnique = !rs.getBoolean("NON_UNIQUE");
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
+        return new JDBCIndex(this.getTable(), name, type, isUnique);
     }
 
     protected JDBCIndexColumn createJDBCIndexColumn(JDBCIndex parent, ResultSet rs) {
+        Column column = null;
+        int position = 0;
+        Ordering ordering = Ordering.NOT_SUPPORTED;
         try {
-            Column column = getColumn(rs.getString("COLUMN_NAME"));
-            int position = rs.getInt("ORDINAL_POSITION");
-            Ordering ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
-
-            return new JDBCIndexColumn(parent.getIndex(), column.getName(), column, position, ordering);
+            column = getColumn(rs.getString("COLUMN_NAME"));
+            position = rs.getInt("ORDINAL_POSITION");
+            ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
+        if (column == null) {
+            LOGGER.log(Level.INFO, "Cannot get column for index " + parent + " from " + rs);
+            return null;
+        }
+        return new JDBCIndexColumn(parent.getIndex(), column.getName(), column, position, ordering);
     }
 
         protected void createForeignKeys() {
@@ -257,7 +270,7 @@ public class JDBCTable extends TableImplementation {
                 rs.close();
             }
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
 
         foreignKeys = Collections.unmodifiableMap(newKeys);
@@ -268,23 +281,29 @@ public class JDBCTable extends TableImplementation {
     }
 
     protected JDBCForeignKeyColumn createJDBCForeignKeyColumn(JDBCForeignKey parent, ResultSet rs) {
+        Table table = findReferredTable(rs);
+        String colname = null;
+        Column referredColumn = null;
+        colname = null;
+        Column referringColumn = null;
+        int position = 0;
+
         try {
-            Table table = findReferredTable(rs);
-            String colname = rs.getString("PKCOLUMN_NAME"); // NOI18N
-            Column referredColumn = table.getColumn(colname);
+            table = findReferredTable(rs);
+            colname = rs.getString("PKCOLUMN_NAME"); // NOI18N
+            referredColumn = table.getColumn(colname);
             if (referredColumn == null) {
                 throw new MetadataException(getMessage("ERR_COL_NOT_FOUND", table.getParent().getParent().getName(), table.getParent().getName(), table.getName(), colname)); // NOI18N
             }
 
             colname = rs.getString("FKCOLUMN_NAME");
-            Column referringColumn = getColumn(colname);
+            referringColumn = getColumn(colname);
 
-            int position = rs.getInt("KEY_SEQ");
-
-            return new JDBCForeignKeyColumn(parent.getForeignKey(), referringColumn.getName(), referringColumn, referredColumn, position);
+            position = rs.getInt("KEY_SEQ");
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
+        return new JDBCForeignKeyColumn(parent.getForeignKey(), referringColumn.getName(), referringColumn, referredColumn, position);
     }
     
     private String getMessage(String key, String ... args) {
@@ -295,6 +314,7 @@ public class JDBCTable extends TableImplementation {
         JDBCMetadata metadata = jdbcSchema.getJDBCCatalog().getJDBCMetadata();
         Catalog catalog;
         Schema schema;
+        Table table = null;
 
         try {
             String catalogName = rs.getString("PKTABLE_CAT"); // NOI18N
@@ -319,17 +339,17 @@ public class JDBCTable extends TableImplementation {
             }
 
             String tableName = rs.getString("PKTABLE_NAME");
-            Table table = schema.getTable(tableName);
+            table = schema.getTable(tableName);
 
             if (table == null) {
                 throw new MetadataException(getMessage("ERR_TABLE_NOT_FOUND", catalogName, schemaName, tableName));
             }
 
-            return table;
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
 
+        return table;
     }
 
 
@@ -350,7 +370,7 @@ public class JDBCTable extends TableImplementation {
                 rs.close();
             }
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            filterSQLException(e);
         }
 
         primaryKey = createJDBCPrimaryKey(pkname, Collections.unmodifiableCollection(pkcols)).getPrimaryKey();
@@ -395,5 +415,13 @@ public class JDBCTable extends TableImplementation {
         createPrimaryKey();
         primaryKeyInitialized = true;
         return primaryKey;
+    }
+
+    private void filterSQLException(SQLException x) throws MetadataException {
+        if (SQL_EXCEPTION_NOT_YET_IMPLEMENTED.equalsIgnoreCase(x.getMessage())) {
+            Logger.getLogger(JDBCTable.class.getName()).log(Level.FINE, x.getLocalizedMessage(), x);
+        } else {
+            throw new MetadataException(x);
+        }
     }
 }

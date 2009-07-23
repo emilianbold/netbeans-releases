@@ -54,6 +54,17 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
  */
 public final class TestRunnerUtilities {
 
+    /**
+     * Class path for tests under JRuby. If not specified, {@link SharedRubyProjectProperties#JAVAC_CLASSPATH} is
+     * used.
+     */
+    private static final String TEST_JAVAC_CLASSPATH = "test.javac.classpath"; // NOI18N
+    /**
+     * JVM args for tests under JRuby. If not specified, {@link SharedRubyProjectProperties#JVM_ARGS} is
+     * used.
+     */
+    private static final String TEST_JVM_ARGS = "test.jvm.args"; // NOI18N
+
     private static final List<String> NB_RUNNER_FILES = Arrays.asList(TestUnitRunner.MEDIATOR_SCRIPT_NAME,
             TestUnitRunner.TEST_RUNNER_SCRIPT_NAME, TestUnitRunner.SUITE_RUNNER_SCRIPT_NAME,
             RspecRunner.RSPEC_MEDIATOR_SCRIPT, AutotestRunner.AUTOTEST_LOADER);
@@ -89,12 +100,32 @@ public final class TestRunnerUtilities {
     }
     
 
+    /**
+     * Adds the standard project properties (e.g. encoding, class path etc.) to the
+     * given descriptor.
+     * 
+     * @param descriptor
+     * @param project
+     */
     static void addProperties(RubyExecutionDescriptor descriptor, Project project) {
         PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
-        if (evaluator != null) {
-            descriptor.addInitialArgs(evaluator.getProperty(SharedRubyProjectProperties.RUBY_OPTIONS));
-            descriptor.setEncoding(evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING));
+        if (evaluator == null) {
+            return;
         }
+        descriptor.addInitialArgs(evaluator.getProperty(SharedRubyProjectProperties.RUBY_OPTIONS));
+        descriptor.setEncoding(evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING));
+
+        String classPath = evaluator.getProperty(TEST_JAVAC_CLASSPATH);
+        if (classPath == null) {
+            classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
+        }
+        descriptor.classPath(classPath);
+
+        String jvmArgs = evaluator.getProperty(TEST_JVM_ARGS);
+        if (jvmArgs == null) {
+            jvmArgs = evaluator.getProperty(SharedRubyProjectProperties.JVM_ARGS);
+        }
+        descriptor.jvmArguments(jvmArgs);
     }
 
     /**

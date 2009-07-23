@@ -237,7 +237,7 @@ public class FactoryTestGenerator {
     + "    }\n"
     + "    \n"
     + "    private static void assertEquals(TreeNode node, String view) throws TreeException{\n"
-    + "        String str = Utilities.replaceString(TestUtil.nodeToString(node), \"\\n\", \"\");\n"
+    + "        String str = TestUtil.nodeToString(node).replace(\"\\n\", \"\");\n"
     + "        if (!!! str.equals(view)) {\n"
     + "            fail(\"Invalid node view \\n is       : \\\"\" + str + \"\\\"\\n should be: \\\"\" + view + \"\\\"\");\n"
     + "        }\n"

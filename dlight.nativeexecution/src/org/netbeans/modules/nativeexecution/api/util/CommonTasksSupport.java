@@ -38,12 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -59,6 +56,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -121,42 +119,41 @@ public final class CommonTasksSupport {
                     }
                     return result;
                 }
-                CommandLineHelper helper = CommandLineHelper.getInstance(dstExecEnv);
-                String dstFileNameEscaped = helper.toShellPath(dstFileName);
+
+                String trgFileName;
+
+                if (dstExecEnv.isLocal() && Utilities.isWindows()) {
+                    trgFileName = WindowsSupport.getInstance().convertToShellPath(dstFileName);
+                } else {
+                    trgFileName = dstFileName;
+                }
+
                 try {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("cat >%s", dstFileNameEscaped)); // NOI18N
+                    npb.setCommandLine(String.format("cat >\"%s\"", trgFileName)); // NOI18N
                     NativeProcess np = npb.call();
 
                     OutputStream os = np.getOutputStream();
-                    InputStream es = np.getErrorStream();
 
                     result = transferFileContent(localFile, os);
 
-                    BufferedReader br = new BufferedReader(new InputStreamReader(es));
-                    String errorLine;
-
-                    while ((errorLine = br.readLine()) != null) {
-                        if (error != null) {
-                            try {
-                                error.append(errorLine);
-                            } catch (IOException ex) {
-                            }
-                        }
+                    if (error != null) {
+                        error.append(ProcessUtils.readProcessErrorLine(np));
                     }
-
                     result += np.waitFor();
                 } catch (IOException ex) {
                     if (error != null) {
                         error.append(ex.getMessage() == null ? ex.toString() : ex.getMessage()); // NOI18N
                     }
                 }
+
                 if (result == 0) {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(dstExecEnv);
-                    npb.setCommandLine(String.format("chmod 0%03o %s", mask, dstFileNameEscaped)); // NOI18N
+                    npb.setCommandLine(String.format("chmod 0%03o \"%s\"", mask, trgFileName)); // NOI18N
                     NativeProcess np = npb.call();
                     result += np.waitFor();
                 }
+
                 return result;
             }
         };
