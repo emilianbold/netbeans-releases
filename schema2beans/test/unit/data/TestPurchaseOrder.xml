@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,29 +40,25 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
-            <module-dependencies/>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
-                </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
-            </test-dependencies>
-            
-            <public-packages>
-                <package>org.netbeans.modules.schema2beans</package>
-            </public-packages>
-        </data>
-    </configuration>
-</project>
+<purchaseOrder orderDate='20021010'>
+	<shipTo country="US">
+		<name>J</name>
+		<city>Foster City</city>
+	</shipTo>
+	<billTo>
+		<name>C</name>
+	</billTo>
+	<comment>comment for the purchase order</comment>
+	<items>
+		<item partNum='123'>
+			<productName>Stargazer lily</productName>
+			<quantity>5</quantity>
+			<USPrice>1.21</USPrice>
+		</item>
+		<item partNum='124'>
+			<productName>Red Rose</productName>
+			<quantity>2</quantity>
+			<USPrice>2</USPrice>
+		</item>
+	</items>
+</purchaseOrder>
