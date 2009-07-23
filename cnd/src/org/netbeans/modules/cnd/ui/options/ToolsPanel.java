@@ -1109,9 +1109,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         lbBaseDirectory = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
         btBaseDirectory = new javax.swing.JButton();
-        btVersions = new javax.swing.JButton();
         buttomPanel = new javax.swing.JPanel();
         lblErrors = new javax.swing.JLabel();
+        btVersions = new javax.swing.JButton();
         btRestore = new javax.swing.JButton();
         ToolSetPanel = new javax.swing.JPanel();
         spDirlist = new JScrollPane(lstDirlist);
@@ -1368,7 +1368,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         requiredToolsLabel.setText(bundle.getString("LBL_RequiredTools")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 0, 0);
         add(requiredToolsLabel, gridBagConstraints);
@@ -1426,7 +1426,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 6);
@@ -1468,6 +1468,21 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         add(btBaseDirectory, gridBagConstraints);
         btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
+        buttomPanel.setOpaque(false);
+        buttomPanel.setLayout(new java.awt.GridBagLayout());
+
+        lblErrors.setForeground(new java.awt.Color(255, 51, 51));
+        lblErrors.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblErrors.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.text")); // NOI18N
+        lblErrors.setEnabled(false);
+        lblErrors.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        buttomPanel.add(lblErrors, gridBagConstraints);
+        lblErrors.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.AccessibleContext.accessibleName")); // NOI18N
+
         btVersions.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_Versions").charAt(0));
         btVersions.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.text")); // NOI18N
         btVersions.addActionListener(new java.awt.event.ActionListener() {
@@ -1476,23 +1491,12 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 18;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
-        add(btVersions, gridBagConstraints);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        buttomPanel.add(btVersions, gridBagConstraints);
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
-
-        buttomPanel.setOpaque(false);
-        buttomPanel.setLayout(new javax.swing.BoxLayout(buttomPanel, javax.swing.BoxLayout.LINE_AXIS));
-
-        lblErrors.setForeground(new java.awt.Color(255, 51, 51));
-        lblErrors.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        lblErrors.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.text")); // NOI18N
-        lblErrors.setEnabled(false);
-        lblErrors.setFocusable(false);
-        buttomPanel.add(lblErrors);
-        lblErrors.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.AccessibleContext.accessibleName")); // NOI18N
 
         btRestore.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_RestoreDefault_BT").charAt(0));
         btRestore.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.text")); // NOI18N
@@ -1502,17 +1506,19 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 btRestoreActionPerformed(evt);
             }
         });
-        buttomPanel.add(btRestore);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        buttomPanel.add(btRestore, gridBagConstraints);
         btRestore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(buttomPanel, gridBagConstraints);
 
         ToolSetPanel.setOpaque(false);
