@@ -41,12 +41,15 @@ package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author vkraemer
  */
-public class Util {
+public final class Util {
 
     private Util() {
     }
@@ -74,4 +77,55 @@ public class Util {
         return false;
     }
 
+
+    /**
+     * Add quotes to string if and only if it contains space characters.
+     *
+     * Note: does not handle generalized white space (tabs, localized white
+     * space, etc.)
+     *
+     * @param path file path in string form.
+     * @return quote path if it contains any space characters, otherwise same.
+     */
+    public static final String quote(String path) {
+        return path.indexOf(' ') == -1 ? path : "\"" + path + "\""; // NOI18N
+    }
+
+    /**
+     * Add escape characters for backslash and dollar sign characters in
+     * path field.
+     *
+     * @param path file path in string form.
+     * @return adjusted path with backslashes and dollar signs escaped with
+     *   backslash character.
+     */
+    public static final String escapePath(String path) {
+        return path.replace("\\", "\\\\").replace("$", "\\$"); // NOI18N
+    }
+
+    /**
+     * Convert classpath fragment using standard separator to a list of
+     * normalized files (nonexistent jars will be removed).
+     *
+     * @param cp classpath string
+     * @param root root folder for expanding relative path names
+     * @return list of existing jars, normalized
+     */
+    public static final  List<File> classPathToFileList(String cp, File root) {
+        List<File> result = new ArrayList<File>();
+        if(cp != null && cp.length() > 0) {
+            String [] jars = cp.split(File.pathSeparator);
+            for(String jar: jars) {
+                File jarFile = new File(jar);
+                if(!jarFile.isAbsolute() && root != null) {
+                    jarFile = new File(root, jar);
+                }
+                if(jarFile.exists()) {
+                    result.add(FileUtil.normalizeFile(jarFile));
+                }
+            }
+        }
+        return result;
+    }
+    
 }

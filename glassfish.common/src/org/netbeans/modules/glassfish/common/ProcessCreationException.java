@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.web.beans.api.model;
-
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
-
-
-/**
- * @author ads
  *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public final class WebBeansModelFactory {
+package org.netbeans.modules.glassfish.common;
 
-    private WebBeansModelFactory(){
-    }
-    
-    public static synchronized MetadataModel<WebBeansModel> getMetaModel( ModelUnit unit ){
-        WeakReference<MetadataModel<WebBeansModel>> reference = MODELS.get( unit );
-        MetadataModel<WebBeansModel> metadataModel = null;
-        if ( reference != null ){
-            metadataModel = reference.get();
+import org.openide.util.NbBundle;
+
+public class ProcessCreationException extends Exception {
+
+    private final String messageName;
+    private final String[] args;
+
+    ProcessCreationException(Exception cause, String messageName, String... args) {
+        super();
+        if (null != cause) {
+            initCause(cause);
         }
-        if (  metadataModel == null ){
-            metadataModel = createMetaModel(unit);
-            if ( reference == null ){
-                reference = new WeakReference<MetadataModel<WebBeansModel>>( metadataModel);
-            }
-            MODELS.put( unit,  reference );
-        }
-        return metadataModel;
+        this.messageName = messageName;
+        this.args = args;
     }
-    
-    public static MetadataModel<WebBeansModel> createMetaModel( ModelUnit unit ){
-        return MetadataModelFactory.createMetadataModel( 
-                WebBeansModelImplementation.createMetaModel(unit ));
+
+    @Override
+    public String getLocalizedMessage() {
+        return NbBundle.getMessage(StartTask.class, messageName, args);
     }
-    
-    private static HashMap<ModelUnit, WeakReference<MetadataModel<WebBeansModel>>>
-        MODELS = new HashMap<ModelUnit, WeakReference<MetadataModel<WebBeansModel>>>();
 }
