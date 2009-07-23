@@ -1835,9 +1835,9 @@ public class Installer extends ModuleInstall implements Runnable {
             if (slownData != null) {
                 String message;
                 if (slownData.getLatestActionName() == null) {
-                    message = NbBundle.getMessage(Installer.class, "Summary_MSG_No_Action", slownData.getTime());
+                    message = String.format("AWT thread blocked for %1$s ms.", Long.toString(slownData.getTime())); // NOI18N
                 } else {
-                    message = NbBundle.getMessage(Installer.class, "Summary_MSG", slownData.getLatestActionName(), slownData.getTime());
+                    message = String.format("Invoking %1$s took %2$s ms.", slownData.getLatestActionName(), Long.toString(slownData.getTime()));// NOI18N
                 }
                 reportPanel.setSummary(message);
             } else {

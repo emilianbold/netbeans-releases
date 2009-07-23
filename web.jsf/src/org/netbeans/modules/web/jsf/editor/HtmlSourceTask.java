@@ -51,6 +51,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 
 /**
  * 
@@ -100,6 +101,9 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
                     break;
                 }
             }
+
+            //update EL embedding in the source
+            ELDynamicEmbedding.updateEmbedding(result);
         }
         
 

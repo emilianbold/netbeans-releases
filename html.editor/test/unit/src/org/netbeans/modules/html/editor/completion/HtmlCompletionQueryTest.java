@@ -99,7 +99,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     public static Test xsuite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlCompletionQueryTest("testOpenTagJustAfterText"));
+        suite.addTest(new HtmlCompletionQueryTest("testSimpleEndTag"));
         return suite;
     }
 

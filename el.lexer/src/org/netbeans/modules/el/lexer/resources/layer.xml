@@ -47,6 +47,11 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-el">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.el.lexer.resources.Bundle"/>
+
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.el.lexer.api.ELTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
                 
                 <folder name="FontsColors">
                     <folder name="NetBeans">
