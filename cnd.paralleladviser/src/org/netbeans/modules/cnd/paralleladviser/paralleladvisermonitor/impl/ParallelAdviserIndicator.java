@@ -72,7 +72,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
@@ -119,7 +119,7 @@ import org.openide.util.NbBundle;
 
             SunStudioDataCollector collector = new SunStudioDataCollector();
 
-            for (FunctionCall functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
+            for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
                 CsmFunction function = CodeModelUtils.getFunction(collector.getProject(), functionCall.getFunction().getQuilifiedName());
                 for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
                     if (CodeModelUtils.canParallelize(loop)) {
@@ -199,12 +199,12 @@ import org.openide.util.NbBundle;
             }
         }
 
-        public List<FunctionCall> getFunctionCallsSortedByInclusiveTime() {
+        public List<FunctionCallWithMetric> getFunctionCallsSortedByInclusiveTime() {
             FunctionDatatableDescription funcDescription = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
-            List<FunctionCall> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
-            Collections.sort(functions, new Comparator<FunctionCall>() {
+            List<FunctionCallWithMetric> functions = ((FunctionsListDataProvider) dataProvider).getFunctionsList(metadata, funcDescription, Arrays.asList(SunStudioDCConfiguration.c_eUser, SunStudioDCConfiguration.c_iUser));
+            Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
 
-                public int compare(FunctionCall o1, FunctionCall o2) {
+                public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
                     return (int) ((Double) o2.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) - (Double) o1.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()));
                 }
             });
