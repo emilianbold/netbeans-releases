@@ -22,8 +22,8 @@
   require 'validator'
   require 'authent'
   
-  class Ape
-  
++ class Ape
+| 
 +   def initialize(args)
 |     @dialogs = (args[:crumbs]) ? {} : []
 |     output = args[:output] || 'html'
@@ -40,8 +40,8 @@
 |     @header = @footer = nil
 |     @lnum = 1
 -   end
-  
-    # Args: APP URI, username/password, preferred entry/media collections
+| 
+|   # Args: APP URI, username/password, preferred entry/media collections
 +   def check(uri, username=nil, password=nil,
 |       requested_e_coll = nil, requested_m_coll = nil)
 | 
@@ -55,7 +55,7 @@
 |         "#{$!}\n#{$!.class}\n#{$!.backtrace}"
 |     end
 -   end
-  
+| 
 +   def might_fail(uri, requested_e_coll = nil, requested_m_coll = nil)
 | 
 |     info "TESTING: Service document and collections."
@@ -143,7 +143,7 @@
 |       warning "No collection for 'image/jpeg', won't test media posting."
 |     end
 -   end
-    
+|   
 +   def test_media_linkage(coll)
 |     info "TESTING: Media collection re-ordering after PUT."
 |     
@@ -203,7 +203,7 @@
 |     good "Entries correctly ordered after update of multi-post."
 | 
 -   end
-    
+|   
 +   def test_sorting(coll)
 |     
 |     info "TESTING: Collection re-ordering after PUT."
@@ -273,7 +273,7 @@
 |     
 |     
 -   end
-  
+| 
 +   def test_entry_posts(entry_collection)
 |     
 |     collection_uri = entry_collection.href
@@ -444,7 +444,7 @@
 |     end
 | 
 -   end
-  
+| 
 +   def test_media_posts media_collection
 |     
 |     info "TESTING: Posting to media collection."
@@ -557,7 +557,7 @@
 |     end
 |     
 -   end
-  
+| 
 +   def check_new_entry(as_posted, new_entry, desc)
 | 
 |     if compare_entries(as_posted, new_entry, "entry as posted", desc)
@@ -586,12 +586,12 @@
 |       warning "Server discarded foreign markup in #{desc}."
 |     end
 -   end
-  
-    #
-    # End of tests; support functions from here down
-    #
-  
-    # Fetch a feed and look up an entry by ID in it
+| 
+|   #
+|   # End of tests; support functions from here down
+|   #
+| 
+|   # Fetch a feed and look up an entry by ID in it
 +   def find_entry(feed_uri, name, id, report=false)
 |     entries = Feed.read(feed_uri, name, self, report)
 |     entries.each do |from_feed|
@@ -600,13 +600,13 @@
 | 
 |     return "Couldn't find id #{id} in feed #{feed_uri}"
 -   end
-  
-    # remember the dialogue that the get/put/post/delete actor recorded
+| 
+|   # remember the dialogue that the get/put/post/delete actor recorded
 +   def save_dialog(name, actor)
 |     @dialogs[name] = actor.crumbs if @dialogs
 -   end
-  
-    # Get a resource, optionally check its content-type
+| 
+|   # Get a resource, optionally check its content-type
 +   def check_resource(uri, name, content_type, report=true)
 |     resource = Getter.new(uri, @authent)
 | 
@@ -636,21 +636,21 @@
 | 
 |     return resource
 -   end
-  
+| 
 +   def header(uri)
 |     @header = "APP Service doc: #{uri}"
 -   end
-  
+| 
 +   def footer(message)
 |     @footer = message
 -   end
-  
+| 
 +   def show_crumbs key
 |     @dialogs[key].each do |d|
 |       puts "D: #{d}"
 |     end
 -   end
-  
+| 
 +   def warning(message, crumb_key=nil)
 |     if @dialogs
 |       step "D#{crumb_key}" if crumb_key
@@ -658,7 +658,7 @@
 |     end
 |     step "W" + message
 -   end
-  
+| 
 +   def error(message, crumb_key=nil)
 |     if @dialogs
 |       step "D#{crumb_key}" if crumb_key
@@ -666,7 +666,7 @@
 |     end
 |     step "E" + message
 -   end
-  
+| 
 +   def good(message, crumb_key=nil)
 |     if @dialogs
 |       step "D#{crumb_key}" if crumb_key
@@ -674,32 +674,32 @@
 |     end
 |     step "G" + message
 -   end
-  
+| 
 +   def info(message)
 |     step "I" + message
 -   end
-  
+| 
 +   def step(message)
 |     puts "PROGRESS: #{message[1..-1]}" if @@debugging
 |     @steps << message
 -   end
-  
+| 
 +   def start_list(message)
 |     step [ message + ":" ]
 -   end
-  
+| 
 +   def list_item(message)
 |     @steps[-1] << message
 -   end
-  
+| 
 +   def end_list
 -   end
-  
+| 
 +   def line
 |     printf "%2d. ", @lnum
 |     @lnum += 1
 -   end
-  
+| 
 +   def report(output=STDOUT)
 |     if @output == 'text'
 |       report_text output
@@ -707,9 +707,9 @@
 |       report_html output
 |     end
 -   end
-  
-  
-  
+| 
+| 
+| 
 +   def report_html(output=STDOUT)
 |     dialog = nil
 | 
@@ -799,7 +799,7 @@
 |       end
 |     end
 -   end
-  
+| 
 +   def report_li(dialog, marker, text)
 |     @w.li do
 |       @w.p do
@@ -826,7 +826,7 @@
 |     end
 |     @w.text! "\n"
 -   end
-  
+| 
 +   def show_message(crumb, tf)
 |     message = crumb[1 .. -1]
 |     message.gsub!(/^\s*"/, '')
@@ -837,7 +837,7 @@
 |     message.gsub!(/\\t/, '&nbsp;&nbsp;&nbsp;&nbsp;')
 |     @w.div(:class => tf) { @w.target! << message }
 -   end
-  
+| 
 +   def report_text
 |     puts @header if @header
 |     @steps.each do |step|
@@ -873,7 +873,7 @@
 |       puts @footer if @footer
 |     end
 -   end
-  
+| 
 +   def compare_entries(e1, e2, e1Name, e2Name)
 |     problems = 0
 |     [ 'title', 'summary', 'content' ].each do |field|
@@ -881,7 +881,7 @@
 |     end
 |     return problems == 0
 -   end
-  
+| 
 +   def compare1(e1, e2, e1Name, e2Name, field)
 |     c1 = e1.child_content(field)
 |     c2 = e2.child_content(field)
@@ -907,7 +907,7 @@
 |     end
 |     return problem
 -   end
-  
+| 
 +   def write_mark(mark)
 |     case mark
 |     when :check
@@ -920,7 +920,7 @@
 |       @w.img(:align => 'top', :src => '/ape/info.png')
 |     end
 -   end
-  
-  end
+| 
+- end
   
   
