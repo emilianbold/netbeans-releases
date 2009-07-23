@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.ruby.hints.infrastructure;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,6 +38,7 @@ import java.util.Set;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.IRubyWarnings.ID;
+import org.jrubyparser.ast.WhenNode;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -311,7 +313,7 @@ public class RubyHintsProvider implements HintsProvider {
             List<Hint> result) {
         applyRules(manager, context, node.getNodeType(), node, path, hints, result);
         
-        List<Node> list = node.childNodes();
+        List<Node> list = childNodes(node);
 
         for (Node child : list) {
             if (child.isInvisible()) {
@@ -325,6 +327,25 @@ public class RubyHintsProvider implements HintsProvider {
             scan(manager, context, child, path, hints, result);
             path.ascend();
         }        
+    }
+
+    private List<Node> childNodes(Node node) {
+        if (node.getNodeType() == NodeType.WHENNODE) {
+            // skip the next case nodes for when nodes, the
+            // new parser includes them in child nodes which
+            // confuses our hints
+            // XXX: change this behaviour in the parser?
+            WhenNode whenNode = (WhenNode) node;
+            List<Node> list = new ArrayList<Node>(2);
+            if (whenNode.getExpressionNodes() != null) {
+                list.add(whenNode.getExpressionNodes());
+            }
+            if (whenNode.getBodyNode() != null) {
+                list.add(whenNode.getBodyNode());
+            }
+            return list;
+        }
+        return node.childNodes();
     }
 
     public void cancel() {
