@@ -140,7 +140,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
 
@@ -1156,6 +1155,8 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         if (slownData != null){
+            assert slownData.getNpsContent() != null: "nps param should be not null";
+            assert slownData.getNpsContent().length > 0 : "nps param should not be empty";
             os.println("Content-Disposition: form-data; name=\"slowness\"; filename=\"" + id + "_slowness.gz\"");
             os.println("Content-Type: x-application/nps");
             os.println();
