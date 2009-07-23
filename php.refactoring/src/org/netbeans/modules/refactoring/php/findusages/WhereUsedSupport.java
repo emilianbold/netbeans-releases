@@ -168,7 +168,8 @@ public final class WhereUsedSupport {
         Model model = ModelFactory.getModel(info);
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
         Occurence occurence = occurencesSupport.getOccurence();
-        return (occurence != null && occurence.getAllDeclarations().size() == 1) ? new WhereUsedSupport(PHPIndex.get(info),
+        final boolean canContinue = occurence != null && occurence.getDeclaration() != null && occurence.getAllDeclarations().size() <= 1;
+        return canContinue ? new WhereUsedSupport(PHPIndex.get(info),
                 occurence.getDeclaration(), offset, info.getSnapshot().getSource().getFileObject()) : null;
     }
 

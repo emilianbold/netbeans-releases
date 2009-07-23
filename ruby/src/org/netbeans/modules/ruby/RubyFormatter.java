@@ -541,7 +541,12 @@ public class RubyFormatter implements Formatter {
             // wholesale formatting a whole document, leave these lines alone.
             final boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
 
-            final boolean includeEnd = endOffset == doc.getLength() || indentOnly;
+            //XXX: setting includeEnd always to true for now - this appears
+            // to fix several indenting related issues, but i don't know what was the
+            // reason for not setting it always to true before - possibly something
+            // i can't think of now,  so leaving old code here as commented out
+            final boolean includeEnd = true;
+            //final boolean includeEnd = endOffset == doc.getLength() || indentOnly;
             
             // TODO - remove initialbalance etc.
             computeIndents(doc, initialIndent, initialOffset, endOffset, info, 

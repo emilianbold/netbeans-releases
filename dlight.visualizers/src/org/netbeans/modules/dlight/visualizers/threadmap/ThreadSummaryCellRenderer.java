@@ -52,7 +52,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 
 /**
  * @author Alexander Simon
@@ -215,7 +215,7 @@ public class ThreadSummaryCellRenderer extends JPanel implements TableCellRender
                 Map.Entry<MSAState, AtomicInteger> entry = it.next();
                 int value = entry.getValue().get();
                 MSAState s = entry.getKey();
-                StateResources res = ThreadStateColumnImpl.getThreadStateResources(s);
+                ThreadStateResources res = ThreadStateResources.forState(s);
                 if (res != null) {
                     buf.append("<tr>");// NOI18N
                     buf.append("<td>");// NOI18N

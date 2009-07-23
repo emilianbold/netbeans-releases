@@ -58,6 +58,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -437,6 +438,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         };
 
+        private final ClassPathChangeListener cpListener = new ClassPathChangeListener(this);
+
         private ConfFilesChildren(ProjectWebModule pwm) {
             this.pwm = pwm;
             keys = new HashSet<FileObject>();
@@ -608,6 +611,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            FileObject[] roots = pwm.getSourceRoots();
+            if (roots != null) {
+                for (FileObject root : roots) {
+                    ClassPath cp = pwm.getClassPathProvider().findClassPath(root, ClassPath.COMPILE);
+                    cp.addPropertyChangeListener(cpListener);
+                }
+            }
         }
 
         private void removeListeners() {
@@ -663,4 +673,15 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         }
     }
+
+    private static class ClassPathChangeListener implements PropertyChangeListener {
+        private ConfFilesChildren confFiles;
+        ClassPathChangeListener(ConfFilesChildren confFiles) {
+            this.confFiles = confFiles;
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+            confFiles.refreshNodes();
+        }
+    }
+
 }

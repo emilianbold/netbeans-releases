@@ -64,7 +64,7 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 /**
@@ -122,7 +122,7 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
 
     private int addThread(JPanel panel, int y, Stack stack){
         MSAState msa = stack.getState();
-        StateResources res = ThreadStateColumnImpl.getThreadStateResources(msa);
+        ThreadStateResources res = ThreadStateResources.forState(msa);
         if (res != null) {
             y++;
             panel.add(new JLabel(res.name+" "+stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), JLabel.LEFT), // NOI18N
