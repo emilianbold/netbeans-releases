@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -142,6 +144,8 @@ public final class AntProjectHelper {
             }
         };
     }
+
+    private static final Logger LOG = Logger.getLogger(AntProjectHelper.class.getName());
     
     private static RequestProcessor RP;
     
@@ -561,14 +565,21 @@ public final class AntProjectHelper {
      * to <code>project.xml</code>.
      * Access from GeneratedFilesHelper.
      */
-    void possiblyThrowProjectXmlModified(String msg) throws IllegalStateException {
+    void ensureProjectXmlUnmodified(String msg, boolean doSave) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
             IllegalStateException ise = new IllegalStateException(msg);
             if (addedProjectXmlPath != null) {
                 ise.initCause(addedProjectXmlPath);
             }
-            throw ise;
+            LOG.log(Level.INFO, null, ise);
+            if (doSave) {
+                try {
+                    save();
+                } catch (IOException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
+            }
         }
     }
     

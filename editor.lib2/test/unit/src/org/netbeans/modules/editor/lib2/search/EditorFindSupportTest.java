@@ -92,7 +92,7 @@ public class EditorFindSupportTest {
             }
         });
         t.start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         if (!finished[0]) {
             t.stop();
         }
@@ -125,7 +125,7 @@ public class EditorFindSupportTest {
             }
         });
         t.start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         if (!finished[0]) {
             t.stop();
         }
@@ -159,7 +159,7 @@ public class EditorFindSupportTest {
             }
         });
         t.start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         if (!finished[0]) {
             t.stop();
         }
@@ -192,7 +192,7 @@ public class EditorFindSupportTest {
             }
         });
         t.start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         if (!finished[0]) {
             t.stop();
         }
@@ -227,7 +227,7 @@ public class EditorFindSupportTest {
             }
         });
         t.start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         if (!finished[0]) {
             t.stop();
         }
@@ -262,7 +262,7 @@ public class EditorFindSupportTest {
             }
         });
         t.start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         if (!finished[0]) {
             t.stop();
         }

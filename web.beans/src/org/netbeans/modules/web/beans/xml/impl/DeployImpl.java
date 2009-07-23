@@ -38,18 +38,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import java.util.List;
+
+import org.netbeans.modules.web.beans.xml.Deploy;
+import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+class DeployImpl extends WebBeansComponentImpl implements Deploy {
 
-    Beans getBeans();
+    DeployImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
     
-    WebBeansComponentFactory getFactory();
+    DeployImpl( WebBeansModelImpl model) {
+        super(model, createNewElement( DEPLOY, model));
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Deploy#addType(org.netbeans.modules.web.beans.xml.Type)
+     */
+    public void addType( Type type ) {
+        appendChild( TYPE,  type );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Deploy#addType(int, org.netbeans.modules.web.beans.xml.Type)
+     */
+    public void addType( int index, Type type ) {
+        insertAtIndex( TYPE, type, index);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Deploy#getTypes()
+     */
+    public List<Type> getTypes() {
+        return getChildren( Type.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Deploy#removeType(org.netbeans.modules.web.beans.xml.Type)
+     */
+    public void removeType( Type type ) {
+        removeChild( TYPE , type );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
+     */
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit( this );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
+     */
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return Deploy.class;
+    }
+
 }

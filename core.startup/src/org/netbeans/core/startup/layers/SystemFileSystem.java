@@ -51,6 +51,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -206,7 +207,7 @@ implements FileSystem.Status, FileChangeListener {
             } catch (MissingResourceException ex) {
                 ModuleLayeredFileSystem.err.log(
                         Level.WARNING,
-                        "Computing display name for " + fo, ex); // NOI18N
+                        "Computing display name for " + fo + " defined by " + Arrays.toString((Object[]) fo.getAttribute("layers")), ex); // NOI18N
             // ignore
             }
         }

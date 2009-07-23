@@ -40,16 +40,18 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModel extends DocumentModel<WebBeansComponent> {
+public interface WebBeansComponentFactory {
 
-    Beans getBeans();
+    WebBeansComponent createComponent( Element element, WebBeansComponent context);
     
-    WebBeansComponentFactory getFactory();
+    Beans createBeans();
+    Deploy createDeploy();
+    Type createType();
 }
