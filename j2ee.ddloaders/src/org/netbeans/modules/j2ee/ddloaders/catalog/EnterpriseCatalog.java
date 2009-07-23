@@ -90,6 +90,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         schemas.add(new SchemaInfo("web-app_2_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("web-app_2_5.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("web-app_3_0.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("web-common_3_0.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("web-fragment_3_0.xsd", JAVAEE_NS));
         // jsp
         schemas.add(new SchemaInfo("jsp_2_0.xsd", J2EE_NS));

@@ -466,6 +466,45 @@ public class SnapshotTest extends NbTestCase {
         }
         Utilities.removeParserResultTask(pr, src);
     }
+
+    public void testSnapshotEmbedding168725 () throws IOException {
+        clearWorkDir ();
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla");
+        OutputStream outputStream = testFile.getOutputStream ();
+        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
+        writer.close ();
+        Source source = Source.create (testFile);
+        Snapshot originalSnapshot = source.createSnapshot ();
+        Embedding languageJednaEmbedding = Embedding.create (Arrays.asList (new Embedding[] {
+            originalSnapshot.create ("Pozor, ", "text/jedna"),
+            originalSnapshot.create (56, 6, "text/jedna"),
+            originalSnapshot.create (" ", "text/jedna"),
+            originalSnapshot.create (34, 14, "text/jedna"),
+            originalSnapshot.create ("!!!", "text/jedna"),
+        }));
+        assertEquals ("text/jedna", languageJednaEmbedding.getMimeType ());
+        Snapshot languageJednaSnapshot = languageJednaEmbedding.getSnapshot ();
+        assertEquals ("text/jedna", languageJednaSnapshot.getMimeType ());
+        assertEquals ("Pozor, pokusy se budou delat!!!", languageJednaSnapshot.getText ().toString ());
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (0));
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (6));
+        assertEquals (56, languageJednaSnapshot.getOriginalOffset (7));
+        assertEquals (62, languageJednaSnapshot.getOriginalOffset (13));
+        assertEquals (34, languageJednaSnapshot.getOriginalOffset (14));
+        assertEquals (43, languageJednaSnapshot.getOriginalOffset (23));
+        assertEquals (48, languageJednaSnapshot.getOriginalOffset (28));
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (30));
+
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (0));
+        assertEquals (14, languageJednaSnapshot.getEmbeddedOffset (34));
+        assertEquals (28, languageJednaSnapshot.getEmbeddedOffset (48));
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (49));
+        assertEquals (7, languageJednaSnapshot.getEmbeddedOffset (56));
+        assertEquals (13, languageJednaSnapshot.getEmbeddedOffset (62));
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (63));
+    }
 }
 
 

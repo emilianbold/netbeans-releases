@@ -41,17 +41,28 @@
 package org.netbeans.modules.web.wizards;
 
 import java.awt.Component;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /** Wizard panel that collects data for the Servlet and Filter
  * wizards. 
@@ -105,13 +116,102 @@ public class ServletPanel implements WizardDescriptor.FinishablePanel {
     }
 
     public boolean isValid() {
-        if (deployData.isValid()) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-            return true;
+        if (!deployData.isValid()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, deployData.getErrorMessage());
+            return false;
         }
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-                deployData.getErrorMessage());
-        return false;
+        if (Utilities.isJavaEE6(wizard)) {
+            // check name and mapping uniqness again with metadata model
+            WebModule wm = Utilities.findWebModule(wizard);
+            if (wm != null && deployData instanceof ServletData) {
+                ServletData servletData = (ServletData)deployData;
+                String name = servletData.getName();
+                if (servletData.fileType == FileType.SERVLET) {
+                    // find name clashings
+                    for (ServletInfo si : getServlets(wm)) {
+                        if (si.getName().equals(name)) {
+                            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(ServletData.class, "MSG_servlet_name_defined", name, si.getServletClass())); //NOI18N
+                            return false;
+                        }
+                    }
+                    // find URL mapping clashings
+                    for (ServletInfo si : getServlets(wm)) {
+                        List<String> patterns = si.getUrlPatterns();
+                        for (String pattern : patterns) {
+                            for (String m : servletData.getUrlMappings()) {
+                                if (pattern.equals(m)) {
+                                    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                                            NbBundle.getMessage(ServletData.class, "MSG_servlet_mapping_defined", m, si.getServletClass())); //NOI18N
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (servletData.fileType == FileType.FILTER) {
+                    // find name clashings
+                    for (FilterInfo fi : getFilters(wm)) {
+                        if (fi.getName().equals(name)) {
+                            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(ServletData.class, "MSG_filter_name_defined", name, fi.getFilterClass())); //NOI18N
+                            return false;
+                        }
+                    }
+                    // find URL mapping clashings
+                    for (FilterInfo fi : getFilters(wm)) {
+                        List<String> patterns = fi.getUrlPatterns();
+                        for (String pattern : patterns) {
+                            for (FilterMappingData m : servletData.getFilterMappings()) {
+                                if (pattern.equals(m.getPattern())) {
+                                    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                                            NbBundle.getMessage(ServletData.class, "MSG_filter_mapping_defined", m.getPattern(), fi.getFilterClass())); //NOI18N
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        return true;
+    }
+
+    private List<ServletInfo> getServlets(WebModule wm) {
+        try {
+            List<ServletInfo> servlets = wm.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, List<ServletInfo>>() {
+                public List<ServletInfo> run(WebAppMetadata metadata) throws Exception {
+                    return metadata.getServlets();
+                }
+            });
+            return servlets;
+        }
+        catch (MetadataModelException e) {
+            Logger.global.log(Level.WARNING, "getServlets failed", e);
+        }
+        catch (IOException e) {
+            Logger.global.log(Level.WARNING, "getServlets failed", e);
+        }
+        return Collections.emptyList();
+    }
+
+    private List<FilterInfo> getFilters(WebModule wm) {
+        try {
+            List<FilterInfo> filters = wm.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, List<FilterInfo>>() {
+                public List<FilterInfo> run(WebAppMetadata metadata) throws Exception {
+                    return metadata.getFilters();
+                }
+            });
+            return filters;
+        }
+        catch (MetadataModelException e) {
+            Logger.global.log(Level.WARNING, "getFilters failed", e);
+        }
+        catch (IOException e) {
+            Logger.global.log(Level.WARNING, "getFilters failed", e);
+        }
+        return Collections.emptyList();
     }
 
     public HelpCtx getHelp() {

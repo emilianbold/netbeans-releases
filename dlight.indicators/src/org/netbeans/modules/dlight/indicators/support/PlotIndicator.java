@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.indicators.support;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -72,6 +73,7 @@ public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
     private final Graph graph;
     private final Legend legend;
     private final JButton button;
+    private final int graphCount;
 
     public PlotIndicator(PlotIndicatorConfiguration configuration) {
         super(configuration);
@@ -81,6 +83,7 @@ public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
         this.button = new JButton(getDefaultAction());
         button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
         this.panel = new GraphPanel<Graph, Legend>(configuration.getTitle(), graph, legend, null, graph.getVerticalAxis(), button);
+        this.graphCount = configuration.getGraphDescriptors().size();
     }
 
     private static Graph createGraph(PlotIndicatorConfiguration configuration) {
@@ -140,8 +143,9 @@ public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
 
     @Override
     protected void tick() {
-        dataRowHandler.tick();
-        float[] plotData = dataRowHandler.getGraphData();
+        float[] plotData = new float[graphCount];
+        Map<String, String> details = new HashMap<String, String>();
+        dataRowHandler.tick(plotData, details);
         if (plotData != null) {
             int oldLimit = graph.getUpperLimit();
             int newLimit = graph.calculateUpperLimit(plotData);
@@ -151,7 +155,7 @@ public final class PlotIndicator extends Indicator<PlotIndicatorConfiguration> {
             graph.setUpperLimit(oldLimit);
             graph.addData(plotData);
         }
-        for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
+        for (Map.Entry<String, String> entry : details.entrySet()) {
             legend.updateDetail(entry.getKey(), entry.getValue());
         }
     }
