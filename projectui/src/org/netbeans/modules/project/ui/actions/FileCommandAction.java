@@ -41,12 +41,15 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
@@ -73,8 +76,15 @@ public final class FileCommandAction extends ProjectAction {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
         if ( projects.length != 1 ) {
-            setEnabled( false ); // Zero or more than one projects found or command not supported            
-            presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );            
+            if (projects.length == 0 && globalProvider(context) != null) {
+                setEnabled(true);
+                Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+                presenterName = ActionsUtil.formatName(getNamePattern(), files.size(),
+                        files.isEmpty() ? "" : files.iterator().next().getPrimaryFile().getNameExt()); // NOI18N
+            } else {
+                setEnabled(false); // Zero or more than one projects found or command not supported
+                presenterName = ActionsUtil.formatName(getNamePattern(), 0, "");
+            }
         }
         else {
             FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
@@ -93,13 +103,27 @@ public final class FileCommandAction extends ProjectAction {
         if ( projects.length == 1 ) {            
             ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
             ap.invokeAction( getCommand(), context );
+            return;
         }
         
+        ActionProvider provider = globalProvider(context);
+        if (provider != null) {
+            provider.invokeAction(getCommand(), context);
+        }
     }
 
     @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new FileCommandAction( getCommand(), getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
+    }
+
+    private ActionProvider globalProvider(Lookup context) {
+        for (ActionProvider ap : Lookup.getDefault().lookupAll(ActionProvider.class)) {
+            if (Arrays.asList(ap.getSupportedActions()).contains(getCommand()) && ap.isActionEnabled(getCommand(), context)) {
+                return ap;
+            }
+        }
+        return null;
     }
 
 }
