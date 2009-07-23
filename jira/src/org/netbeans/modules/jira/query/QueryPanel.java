@@ -179,7 +179,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         descriptionCheckBox.setOpaque(false);
         commentsCheckBox.setOpaque(false);
         environmentCheckBox.setOpaque(false);
-        
+        refreshCheckBox.setOpaque(false);
+
         lblIssueKeyWarning.setVisible(false);
         warningLabel.setVisible(false);
 
