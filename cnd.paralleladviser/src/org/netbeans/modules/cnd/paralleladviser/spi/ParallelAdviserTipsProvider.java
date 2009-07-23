@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,61 +49,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.paralleladviser.spi;
 
-package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
-
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import java.util.Collection;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
 
 
 /**
- * Action which shows Parallel Adviser component.
+ * Service that provides tips for Parallel Adviser.
  *
  * @author Nick Krasilnikov
  */
-public class ParallelAdviserViewAction extends CallableSystemAction {
+public interface ParallelAdviserTipsProvider {
 
-    public ParallelAdviserViewAction() {
-    }
+    public Collection<Advice> getTips();
 
-    @Override
-    public void actionPerformed(ActionEvent evt) {
-        performAction();
-    }
-
-    @Override
-    protected String iconResource() {
-        return ParallelAdviserTopComponent.ICON_PATH;
-    }
-
-    public void performAction() {
-        ParallelAdviserTopComponent win = ParallelAdviserTopComponent.findInstance();
-        win.updateTips();
-        if(!win.isOpened()) {
-            win.open();
-        }
-        win.requestActive();
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(ParallelAdviserViewAction.class, "CTL_ParallelAdviserAction"); // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return CsmUtilities.isAnyNativeProjectOpened();
-    }
-
-    @Override
-    protected boolean asynchronous () {
-        return false;
-    }
-    
 }

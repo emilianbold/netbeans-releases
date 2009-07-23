@@ -49,61 +49,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
-package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
-
-import java.awt.event.ActionEvent;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
+import java.net.URL;
+import javax.swing.JComponent;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
-
+import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
 
 /**
- * Action which shows Parallel Adviser component.
+ * Loop parallelization advice.
  *
  * @author Nick Krasilnikov
  */
-public class ParallelAdviserViewAction extends CallableSystemAction {
+public class LoopParallelizationAdvice implements Advice {
 
-    public ParallelAdviserViewAction() {
+    private final CsmFunction function;
+    private final CsmLoopStatement loop;
+    private final double processorUtilization;
+
+    public LoopParallelizationAdvice(CsmFunction function, CsmLoopStatement loop, double processorUtilization) {
+        this.function = function;
+        this.loop = loop;
+        this.processorUtilization = processorUtilization;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent evt) {
-        performAction();
+    public CsmFunction getFunction() {
+        return function;
     }
 
-    @Override
-    protected String iconResource() {
-        return ParallelAdviserTopComponent.ICON_PATH;
-    }
+    public JComponent getComponent() {
+        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
+        return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl, "Loop for parallelization has been found", // NOI18N
+                "There is <b><a href=\"loop\">loop</a></b> in function <b><a href=\"function\">" + function.getName() + "</a></b> that could be effectively parallelized.<br>" + // NOI18N
+                "Processor utilizastion is only <b>" + String.format("%1$.1f", processorUtilization) + "%</b> now.<br><br>" + // NOI18N
+                "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
+                "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
+                "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
+                "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>." // NOI18N
+                , // NOI18N
+                new HyperlinkListener() {
 
-    public void performAction() {
-        ParallelAdviserTopComponent win = ParallelAdviserTopComponent.findInstance();
-        win.updateTips();
-        if(!win.isOpened()) {
-            win.open();
-        }
-        win.requestActive();
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (e.getDescription().equals("function")) { // NOI18N
+                        CsmUtilities.openSource(function);
+                    }
+                    if (e.getDescription().equals("loop")) { // NOI18N
+                        CsmUtilities.openSource(loop);
+                    }
+                }
+            }
+        });
     }
-
-    public String getName() {
-        return NbBundle.getMessage(ParallelAdviserViewAction.class, "CTL_ParallelAdviserAction"); // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return CsmUtilities.isAnyNativeProjectOpened();
-    }
-
-    @Override
-    protected boolean asynchronous () {
-        return false;
-    }
-    
 }
