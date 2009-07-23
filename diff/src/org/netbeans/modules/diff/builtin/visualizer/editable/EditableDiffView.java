@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
-import java.awt.Component;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
