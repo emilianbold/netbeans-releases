@@ -85,8 +85,6 @@ public final class FolderBasedController extends OptionsPanelController implemen
     }    
     
     public final synchronized void update() {
-        mimeType2delegates = null;
-        
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
             c.getComponent(masterLookup);
