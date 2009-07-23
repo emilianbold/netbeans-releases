@@ -440,14 +440,20 @@ public class ProjectsRootNode extends AbstractNode {
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
         private final Set<FileObject> projectDirsListenedTo = new WeakSet<FileObject>();
+        private static final int DELAY = 50;
         private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
             public @Override void fileDataCreated(FileEvent fe) {
-                setProjectFiles();
+                fsRefreshTask.schedule(DELAY);
             }
             public @Override void fileFolderCreated(FileEvent fe) {
-                setProjectFiles();
+                fsRefreshTask.schedule(DELAY);
             }
         };
+        private final RequestProcessor.Task fsRefreshTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                setProjectFiles();
+            }
+        });
 
         public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
