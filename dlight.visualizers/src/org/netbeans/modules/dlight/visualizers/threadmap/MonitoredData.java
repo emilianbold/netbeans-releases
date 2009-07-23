@@ -39,58 +39,52 @@
 
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 /**
  *
  * @author Alexander Simon (adapted for CND)
  */
 public class MonitoredData {
-    private List<ThreadMapData> data = new ArrayList<ThreadMapData>();
-    private MonitoredData(List<ThreadMapData> data) {
-        this.data = data;
+    private ThreadMapData mapData;
+    private MonitoredData(ThreadMapData mapData) {
+        this.mapData = mapData;
     }
 
-    public static MonitoredData getMonitoredData(List<ThreadMapData> data) {
-        return new MonitoredData(data);
+    public static MonitoredData getMonitoredData(ThreadMapData mapData) {
+        return new MonitoredData(mapData);
     }
 
     public int getThreadsSize() {
-        return data.size();
+        return mapData.getThreadsData().size();
     }
 
     public int getThreadStatesSize() {
-        return data.get(0).getThreadState().size();
+        return mapData.getThreadsData().get(0).getThreadState().size();
     }
 
     public ThreadInfo getThreadInfo(int index){
-        return data.get(index).getThreadInfo();
-    }
-
-    public int[] getThreadIds() {
-        int[] res = new int[data.size()];
-        for(int i = 0; i < data.size(); i++){
-            res[i] = data.get(i).getThreadInfo().getThreadId();
-        }
-        return res;
+        return mapData.getThreadsData().get(index).getThreadInfo();
     }
 
     public List<ThreadState> getThreadStates(int index) {
-        return data.get(index).getThreadState();
+        return mapData.getThreadsData().get(index).getThreadState();
     }
 
-    public long[] getStateTimestamps() {
-        List<ThreadState> states = data.get(0).getThreadState();
-        int size = states.size();
-        long[] res = new long[size];
-        for(int i = 0; i < size; i++) {
-            ThreadState state = states.get(i);
-            res[i] = state.getTimeStamp();
-        }
-        return res;
+    public long getStartTimestamp(int index) {
+        List<ThreadState> states = mapData.getThreadsData().get(index).getThreadState();
+        return states.get(0).getTimeStamp();
+    }
+    
+    public int getTimeStampInterval(){
+        return (int) mapData.getPrecision().getValueIn(TimeUnit.NANOSECONDS);
+    }
+
+    public ThreadMapData getStackProvider(){
+        return mapData;
     }
 }

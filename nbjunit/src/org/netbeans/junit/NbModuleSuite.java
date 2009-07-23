@@ -970,7 +970,13 @@ public class NbModuleSuite {
                     is.close();
                 }
             }
-
+            for (;;) {
+                int index = builder.indexOf("\r\n");
+                if (index == -1) {
+                    break;
+                }
+                builder.deleteCharAt(index);
+            }
             return builder.toString();
         }
 
@@ -1135,14 +1141,46 @@ public class NbModuleSuite {
                     return;
                 }
                 LOG.info("rewrite module file: " + file);
-                LOG.fine(previous);
+                charDump(previous);
                 LOG.fine("new----");
-                LOG.fine(xml);
+                charDump(xml);
                 LOG.fine("end----");
             }
             FileOutputStream os = new FileOutputStream(file);
             os.write(xml.getBytes("UTF-8"));
             os.close();
+        }
+
+        private static void charDump(String text) {
+            StringBuilder sb = new StringBuilder(5 * text.length());
+            for (int i = 0; i < text.length(); i++) {
+                if (i % 8 == 0) {
+                    if (i > 0) {
+                        sb.append('\n');
+                    }
+                } else {
+                    sb.append(' ');
+                }
+
+                int ch = text.charAt(i);
+                if (' ' <= ch && ch <= 'z') {
+                    sb.append('\'').append((char)ch).append('\'');
+                } else {
+                    sb.append('x').append(two(Integer.toHexString(ch).toUpperCase()));
+                }
+            }
+            sb.append('\n');
+            LOG.fine(sb.toString());
+        }
+
+        private static String two(String s) {
+            int len = s.length();
+            switch (len) {
+                case 0: return "00";
+                case 1: return "0" + s;
+                case 2: return s;
+                default: return s.substring(len - 2);
+            }
         }
     } // end of S
 }

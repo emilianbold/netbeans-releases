@@ -41,20 +41,19 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.Color;
 import javax.swing.Icon;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 
 /**
  * @author Jiri Sedlacek
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadStateIcon implements Icon {
-    public static final int ICON_NONE = -100;
-
     protected Color threadStateColor;
     protected int height;
     protected int width;
 
-    public ThreadStateIcon(int threadState, int width, int height) {
-        this.threadStateColor = getThreadStateColor(threadState);
+    public ThreadStateIcon(ThreadState.MSAState threadState, int width, int height) {
+        this.threadStateColor = ThreadStateColumnImpl.getThreadStateColor(threadState);
         this.width = width;
         this.height = height;
     }
@@ -69,7 +68,7 @@ public class ThreadStateIcon implements Icon {
 
     public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
         if (threadStateColor != null) {
-            if (!threadStateColor.equals(ThreadData.THREAD_STATUS_ZOMBIE_COLOR)) {
+            if (!threadStateColor.equals(ThreadStateColumnImpl.THREAD_STATUS_ZOMBIE_COLOR)) {
                 g.setColor(threadStateColor);
                 g.fillRect(x, y, width, height);
             }
@@ -77,13 +76,5 @@ public class ThreadStateIcon implements Icon {
             g.setColor(Color.BLACK);
             g.drawRect(x, y, width - 1, height - 1);
         }
-    }
-
-    protected Color getThreadStateColor(int threadState) {
-        if (threadState == ICON_NONE) {
-            return null;
-        }
-
-        return ThreadData.getThreadStateColor(threadState);
     }
 }

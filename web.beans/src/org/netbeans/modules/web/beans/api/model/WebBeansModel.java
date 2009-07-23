@@ -87,7 +87,7 @@ public final class WebBeansModel {
      * This method differs from {@link #getInjectable(VariableElement)}
      * by injection point type. Injection point could be defined via 
      * programmatic lookup which is dynamically specify injectable type.
-     * Such situation appears when injection point uses Instance interface. 
+     * Such situation appears when injection point uses Instance<?> interface. 
      * In case of @Any binding usage this list will contain all 
      * possible binding types for <code>element</code>  ( all beans 
      * that implements or extends type parameter for Instance<> ). 
@@ -99,6 +99,39 @@ public final class WebBeansModel {
             return null;
         }
         return getProvider().getInjectables(element, getModelImplementation());
+    }
+    
+    /**
+     * Test if variable element is injection point. 
+     * It means that it has some bean type as type and binding annotations.
+     * It differs from {@link #isDynamicInjectionPoint(VariableElement)}.
+     * In the latter method injection point is used for programmatic 
+     * lookup. Refer to javadoc of this method.
+     * @param element element for check
+     * @return true if element is simple injection point
+     */
+    public boolean isInjectionPoint( VariableElement element ){
+        if ( getProvider() == null ){
+            return false;
+        }
+        return getProvider().isInjectionPoint(element);
+    }
+    
+    /**
+     * Test if variable element is injection point that is used for
+     * programmatic lookup. It could happen if variable declared via 
+     * Instance<?> interface with binding annotations.
+     * Typesafe resolution in this case could not be done 
+     * statically and method {@link #getInjectables(VariableElement)} should
+     * be used to access to possible bean types.
+     * @param element  element for check
+     * @return true if element is dynamic injection point
+     */
+    public boolean isDynamicInjectionPoint( VariableElement element ){
+        if ( getProvider() == null ){
+            return false;
+        }
+        return getProvider().isDynamicInjectionPoint(element);
     }
     
     /**

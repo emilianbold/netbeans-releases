@@ -103,7 +103,7 @@ class CachingSupport {
 
     //TODO: modifiers not taken into account
     static Collection<? extends FieldElement> getInheritedFields(ClassScope clsScope, String fieldName, ModelElement elem, final int... modifiers) {
-        assert fieldName.startsWith("$");
+        assert fieldName.startsWith("$") : fieldName;
         Collection<? extends FieldElement> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {

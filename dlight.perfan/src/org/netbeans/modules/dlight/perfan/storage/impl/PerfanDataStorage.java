@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -162,7 +162,7 @@ public final class PerfanDataStorage extends DataStorage {
         return result;
     }
 
-    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall) {
+    public FunctionStatistic getFunctionStatistic(FunctionCallWithMetric functionCall) {
         FunctionStatistic result = null;
 
         try {

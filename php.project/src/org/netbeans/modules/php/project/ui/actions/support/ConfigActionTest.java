@@ -40,10 +40,13 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -53,6 +56,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
@@ -260,13 +264,37 @@ class ConfigActionTest extends ConfigAction {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_XML_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
+
+            String testName = info.testName;
+            List<String> generatedFiles = new ArrayList<String>(3);
+            File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
+            if (bootstrap != null) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_BOOTSTRAP)
+                        .addArgument(bootstrap.getAbsolutePath());
+            }
+            File configuration = phpUnit.getConfigurationFile(project, generatedFiles);
+            if (configuration != null) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_CONFIGURATION)
+                        .addArgument(configuration.getAbsolutePath());
+            }
+            if (testName == CWD) {
+                // provide NetBeans suite
+                File suite = phpUnit.getSuiteFile(project, generatedFiles);
+                if (suite != null) {
+                    testName = suite.getAbsolutePath();
+                }
+            }
+            PhpUnit.informAboutGeneratedFiles(generatedFiles);
+
             if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(info.testName);
+                    .addArgument(testName);
             return externalProcessBuilder;
         }
 
@@ -352,7 +380,11 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public void rerun() {
-            run(info);
+            PhpActionProvider.submitTask(new Runnable() {
+                public void run() {
+                    ConfigActionTest.this.run(info);
+                }
+            });
         }
 
         public boolean enabled() {
@@ -389,7 +421,11 @@ class ConfigActionTest extends ConfigAction {
 
         @Override
         public void rerun() {
-            debug(info);
+            PhpActionProvider.submitTask(new Runnable() {
+                public void run() {
+                    ConfigActionTest.this.debug(info);
+                }
+            });
         }
     }
 

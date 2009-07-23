@@ -612,7 +612,7 @@ public abstract class OperationSupportImpl {
         }
 
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            createRestartMarker();
+            markForRestart();
             LifecycleManager.getDefault ().exit ();
             // if exit&restart fails => use restart later as fallback
             doRestartLater (restarter);
@@ -620,22 +620,11 @@ public abstract class OperationSupportImpl {
 
         public void doRestartLater (Restarter restarter) {
             // shedule module for restart
-            createRestartMarker();
+            markForRestart();
             if(affectedModules!=null) {
             for (UpdateElement el : affectedModules) {
                 UpdateUnitFactory.getDefault().scheduleForRestart (el);
             }
-            }
-        }
-        private void createRestartMarker() {
-            try {
-                File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
-                File restartFile = new File(targetUserdir, "var/restart");//NOI18N
-                if(!restartFile.exists()) {
-                    restartFile.createNewFile();
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Can`t create restart file marker", ex);
             }
         }
     }
@@ -691,7 +680,7 @@ public abstract class OperationSupportImpl {
         }
 
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            createRestartMarker();
+            markForRestart();
             LifecycleManager.getDefault ().exit ();
             // if exit&restart fails => use restart later as fallback
             doRestartLater (restarter);
@@ -699,24 +688,21 @@ public abstract class OperationSupportImpl {
 
         public void doRestartLater (Restarter restarter) {
             // shedule module for restart
-            createRestartMarker();
+            markForRestart();
             if(affectedModules!=null) {
             for (UpdateElement el : affectedModules) {
                 UpdateUnitFactory.getDefault().scheduleForRestart (el);
             }
             }
         }
-        private void createRestartMarker() {
-            try {
-                File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
-                File restartFile = new File(targetUserdir, "var/restart");//NOI18N
-                if(!restartFile.exists()) {
-                    restartFile.createNewFile();
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Can`t create restart file marker", ex);
-            }
+    }
 
+    private static void markForRestart() {
+        try {
+            LifecycleManager.getDefault().markForRestart();
+        } catch (UnsupportedOperationException x) {
+            LOGGER.log(Level.INFO, null, x);
         }
     }
+
 }

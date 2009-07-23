@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
@@ -64,18 +68,40 @@ class Binding extends PersistentObject {
         return myAnnotation;
     }
     
-    TypeElement getType(){
-        return myTypeElement;
-    }
-
     boolean refresh( TypeElement type ) {
-        myTypeElement = type;
-        // TODO : check presence of annotation at least. One should care about
-        // inherited annotations and @Specialize annotaiton presence as well. 
-        return false;
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        if ( annotationsByType.get( getAnnotationName()) != null ){
+            return true;
+        }
+        return  AnnotationObjectProvider.checkSuper(type, getAnnotationName(), 
+                getHelper())!= null;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals( Object obj ) {
+        if ( obj instanceof Binding ){
+            return ((Binding)obj).getTypeElement().equals( getTypeElement()); 
+        }
+        else {
+            return false;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return getTypeElement().hashCode();
     }
     
     private String myAnnotation;
-    private TypeElement myTypeElement;
 
 }

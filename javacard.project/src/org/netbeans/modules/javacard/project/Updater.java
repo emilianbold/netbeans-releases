@@ -222,7 +222,7 @@ public class Updater implements UpdateImplementation {
                 val = r.filterValue(val);
             }
             if (!"display.name".equals(key)) { //NOI18N
-                val = Utilities.replaceString (val, displayName, "${display.name}"); //NOI18N
+                val = val.replace(displayName, "${display.name}"); //NOI18N
             }
             if (!ProjectPropertyNames.PROJECT_PROP_DIST_JAR.equals(key) && val.startsWith("${basedir}/")) { //NOI18N
                 val = val.substring ("${basedir}/".length()); //NOI18N
@@ -318,7 +318,7 @@ public class Updater implements UpdateImplementation {
 
         public String filterValue(String value) {
             String lookFor = "${" + oldKey + "}"; //NOI18N
-            return Utilities.replaceString(value, lookFor, "${" + newKey + "}"); //NOI18N
+            return value.replace(lookFor, "${" + newKey + "}"); //NOI18N
         }
     }
 }

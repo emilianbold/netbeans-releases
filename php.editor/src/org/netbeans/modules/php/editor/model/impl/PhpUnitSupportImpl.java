@@ -41,7 +41,6 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -97,39 +96,17 @@ public class PhpUnitSupportImpl implements PhpUnitSupport {
 
     public Collection<? extends FileObject> filesForClassName(FileObject sourceRootDirectory,
             final String clsName) {
-        if (sourceRootDirectory.isData()) { throw new IllegalArgumentException(); }
-        final List<FileObject> retval = new ArrayList<FileObject>();
-        Enumeration<? extends FileObject> childsEnum = sourceRootDirectory.getChildren(true);
-        while (childsEnum.hasMoreElements()) {
-            FileObject child = childsEnum.nextElement();
-            if (child.isData()) {
-                sourceRootDirectory = child;
-                break;
-            }
+        if (sourceRootDirectory.isData()) {
+            throw new IllegalArgumentException("sourceRootDirectory must be a folder");
         }
-        FileObject sourceFileObject = sourceRootDirectory;
-        Source source = Source.create(sourceFileObject);
-        if (source != null) {
-            try {
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        Parser.Result pr = resultIterator.getParserResult();
-                        if (pr instanceof PHPParseResult) {
-                            PHPParseResult phpresult = (PHPParseResult) pr;
-                            PHPIndex index = PHPIndex.get(phpresult);
-                            Collection<IndexedClass> classes = index.getClasses(phpresult, clsName, QuerySupport.Kind.EXACT);
-                            for (IndexedClass indexedClass : classes) {
-                            FileObject fo = indexedClass.getFileObject();
-                            if (fo != null) {
-                                retval.add(fo);
-                            }
-                            }
-                        }
-                    }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+        final List<FileObject> retval = new ArrayList<FileObject>();
+
+        PHPIndex index = PHPIndex.get(Collections.singletonList(sourceRootDirectory));
+        Collection<IndexedClass> classes = index.getClasses(null, clsName, QuerySupport.Kind.EXACT);
+        for (IndexedClass indexedClass : classes) {
+            FileObject fo = indexedClass.getFileObject();
+            if (fo != null && fo.isValid()) {
+                retval.add(fo);
             }
         }
         return retval;

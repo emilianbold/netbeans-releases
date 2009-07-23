@@ -726,11 +726,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private boolean isLeaf(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.isLeaf == null) {
-                    np.isLeaf = model.isLeaf(node);
+            Boolean isLeaf;
+            synchronized (np.LEAF_LOCK) {
+                isLeaf = np.isLeaf;
+                if (isLeaf == null) {
+                    isLeaf = model.isLeaf(node);
+                    np.isLeaf = isLeaf;
                 }
-                return np.isLeaf;
+                return isLeaf;
             }
         }
 
@@ -759,11 +762,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private int getChildrenCount(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.childrenCount == null) {
-                    np.childrenCount = model.getChildrenCount(node);
+            Integer childrenCount;
+            synchronized (np.CHILDREN_LOCK) {
+                childrenCount = np.childrenCount;
+                if (childrenCount == null) {
+                    childrenCount = model.getChildrenCount(node);
+                    np.childrenCount = childrenCount;
                 }
-                return np.childrenCount;
+                return childrenCount;
             }
         }
 
@@ -822,9 +828,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         public void modelChanged(CompoundModel cm, ModelEvent event) {
             //System.err.println("UnionTreeModel.modelChanged("+event+") from "+event.getSource());
-            if (event == null || event instanceof ModelEvent.TreeChanged) {
-                Thread.dumpStack();
-            }
             Collection<ModelListener> listeners;
             synchronized (modelListeners) {
                 listeners = new ArrayList<ModelListener>(modelListeners);
@@ -890,11 +893,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private boolean canRename(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.canRename == null) {
-                    np.canRename = model.canRename(node);
+            Boolean canRename;
+            synchronized (np.RENAME_LOCK) {
+                canRename = np.canRename;
+                if (canRename == null) {
+                    canRename = model.canRename(node);
+                    np.canRename = canRename;
                 }
-                return np.canRename;
+                return canRename;
             }
         }
 
@@ -917,11 +923,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private boolean canCopy(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.canCopy == null) {
-                    np.canCopy = model.canCopy(node);
+            Boolean canCopy;
+            synchronized (np.COPY_CUT_LOCK) {
+                canCopy = np.canCopy;
+                if (canCopy == null) {
+                    canCopy = model.canCopy(node);
+                    np.canCopy = canCopy;
                 }
-                return np.canCopy;
+                return canCopy;
             }
         }
 
@@ -944,11 +953,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private boolean canCut(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.canCut == null) {
-                    np.canCut = model.canCut(node);
+            Boolean canCut;
+            synchronized (np.COPY_CUT_LOCK) {
+                canCut = np.canCut;
+                if (canCut == null) {
+                    canCut = model.canCut(node);
+                    np.canCut = canCut;
                 }
-                return np.canCut;
+                return canCut;
             }
         }
 
@@ -1038,11 +1050,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private String getIconBaseWithExtension(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.iconBaseWithExtension == null) {
-                    np.iconBaseWithExtension = model.getIconBaseWithExtension(node);
+            String iconBaseWithExtension;
+            synchronized (np.ICON_LOCK) {
+                iconBaseWithExtension = np.iconBaseWithExtension;
+                if (iconBaseWithExtension == null) {
+                    iconBaseWithExtension = model.getIconBaseWithExtension(node);
+                    np.iconBaseWithExtension = iconBaseWithExtension;
                 }
-                return np.iconBaseWithExtension;
+                return iconBaseWithExtension;
             }
         }
 
@@ -1064,11 +1079,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private String getDisplayName(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.displayName == null) {
-                    np.displayName = model.getDisplayName(node);
+            String displayName;
+            synchronized (np.DISPLAY_NAME_LOCK) {
+                displayName = np.displayName;
+                if (displayName == null) {
+                    displayName = model.getDisplayName(node);
+                    np.displayName = displayName;
                 }
-                return np.displayName;
+                return displayName;
             }
         }
 
@@ -1098,11 +1116,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private String getIconBase(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.iconBase == null) {
-                    np.iconBase = model.getIconBase(node);
+            String iconBase;
+            synchronized (np.ICON_LOCK) {
+                iconBase = np.iconBase;
+                if (iconBase == null) {
+                    iconBase = model.getIconBase(node);
+                    np.iconBase = iconBase;
                 }
-                return np.iconBase;
+                return iconBase;
             }
         }
 
@@ -1124,11 +1145,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private String getShortDescription(CompoundModel model, Object node) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
-                if (np.shortDescription == null) {
-                    np.shortDescription = model.getShortDescription(node);
+            String shortDescription;
+            synchronized (np.SHORT_DESCRIPTION_LOCK) {
+                shortDescription = np.shortDescription;
+                if (shortDescription == null) {
+                    shortDescription = model.getShortDescription(node);
+                    np.shortDescription = shortDescription;
                 }
-                return np.shortDescription;
+                return shortDescription;
             }
         }
 
@@ -1208,7 +1232,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private Object getValueAt(CompoundModel model, Object node, String columnID) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
+            synchronized (np.VALUE_LOCK) {
                 Object value = np.valueAt.get(columnID);
                 if (value == null) {
                     value = model.getValueAt(node, columnID);
@@ -1240,7 +1264,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         private boolean isReadOnly(CompoundModel model, Object node, String columnID) throws UnknownTypeException {
             NodeProperties np = getPropertiesFor(model, node);
-            synchronized (np) {
+            synchronized (np.READ_LOCK) {
                 Boolean value = np.isReadOnly.get(columnID);
                 if (value == null) {
                     value = model.isReadOnly(node, columnID);
@@ -1278,7 +1302,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     String c = adjustColumn(viewName, columnID);
                     model.setValueAt(node, c, value);
                     NodeProperties np = getPropertiesFor(model, node);
-                    synchronized (np) {
+                    synchronized (np.VALUE_LOCK) {
                         np.valueAt.put(columnID, value);
                     }
                     return;
@@ -1290,7 +1314,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 try {
                     model.setValueAt(node, c, value);
                     NodeProperties np = getPropertiesFor(model, node);
-                    synchronized (np) {
+                    synchronized (np.VALUE_LOCK) {
                         np.valueAt.put(columnID, value);
                     }
                     return;
@@ -1404,22 +1428,20 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         np = nodeProperties.get(node);
                     }
                     if (np != null) {
-                        synchronized (np) {
-                            if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
-                                np.displayName = null;
-                            }
-                            if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
-                                np.iconBase = null;
-                                np.iconBaseWithExtension = null;
-                            }
-                            if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
-                                np.shortDescription = null;
-                            }
-                            if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
-                                np.childrenCount = null;
-                                np.children = null;
-                                np.isLeaf = null;
-                            }
+                        if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
+                            np.displayName = null;
+                        }
+                        if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
+                            np.iconBase = null;
+                            np.iconBaseWithExtension = null;
+                        }
+                        if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
+                            np.shortDescription = null;
+                        }
+                        if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
+                            np.childrenCount = null;
+                            np.children = null;
+                            np.isLeaf = null;
                         }
                     }
                 }
@@ -1436,10 +1458,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         np = nodeProperties.get(node);
                     }
                     if (np != null) {
-                        synchronized (np) {
-                            np.valueAt.clear();
-                            np.isReadOnly.clear();
-                        }
+                        np.clearValues();
                     }
                 }
             }
@@ -1462,13 +1481,24 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             Map<String, Object> valueAt = new HashMap<String, Object>();
             Map<String, Boolean> isReadOnly = new HashMap<String, Boolean>();
 
-            synchronized Object[] getChildren() {
-                if (children == null) {
+            final Object CHILDREN_LOCK = new Object();
+            final Object LEAF_LOCK = new Object();
+            final Object RENAME_LOCK = new Object();
+            final Object COPY_CUT_LOCK = new Object();
+            final Object DISPLAY_NAME_LOCK = new Object();
+            final Object SHORT_DESCRIPTION_LOCK = new Object();
+            final Object ICON_LOCK = new Object();
+            final Object VALUE_LOCK = new Object();
+            final Object READ_LOCK = new Object();
+
+            Object[] getChildren() {
+                Reference[] chr = children;
+                if (chr == null) {
                     return null;
                 }
-                Object[] ch = new Object[children.length];
+                Object[] ch = new Object[chr.length];
                 for (int i = 0; i < ch.length; i++) {
-                    ch[i] = children[i].get();
+                    ch[i] = chr[i].get();
                     if (ch[i] == null) {
                         children = null;
                         ch = null;
@@ -1478,11 +1508,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 return ch;
             }
 
-            synchronized void setChildren(Object[] ch) {
-                children = new Reference[ch.length];
-                for (int i = 0; i < ch.length; i++) {
-                    children[i] = new WeakReference(ch[i]);
+            void setChildren(Object[] ch) {
+                synchronized (CHILDREN_LOCK) {
+                    children = new Reference[ch.length];
+                    for (int i = 0; i < ch.length; i++) {
+                        children[i] = new WeakReference(ch[i]);
+                    }
                 }
+            }
+
+            void clearValues() {
+                valueAt = new HashMap<String, Object>();
+                isReadOnly = new HashMap<String, Boolean>();
             }
         }
 

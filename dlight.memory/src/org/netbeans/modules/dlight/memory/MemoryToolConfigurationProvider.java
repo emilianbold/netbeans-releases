@@ -294,8 +294,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         public void tick() {
         }
 
-        public int[] getGraphData() {
-            return new int[]{mem};
+        public float[] getGraphData() {
+            return new float[]{mem};
         }
 
         public Map<String, String> getDetails() {

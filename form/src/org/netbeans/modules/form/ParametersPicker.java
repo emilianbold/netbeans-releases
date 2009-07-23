@@ -279,8 +279,8 @@ public class ParametersPicker extends javax.swing.JPanel {
         if (valueButton.isSelected()) {
             if (requiredType.equals(String.class)) {
                 String s = valueField.getText();
-                s = Utilities.replaceString(s, "\\", "\\\\"); // fixes bug 835 // NOI18N
-                s = Utilities.replaceString(s, "\"", "\\\""); // NOI18N
+                s = s.replace("\\", "\\\\"); // fixes bug 835 // NOI18N
+                s = s.replace("\"", "\\\""); // NOI18N
                 return "\""+s+"\""; // NOI18N
             }
             else

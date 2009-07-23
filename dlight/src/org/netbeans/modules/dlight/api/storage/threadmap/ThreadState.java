@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
 /**
@@ -46,34 +45,37 @@ package org.netbeans.modules.dlight.api.storage.threadmap;
 public interface ThreadState {
 
     /**
-     * Aggregated thread states.
+     * Sum of all MSA in any time.
      */
-    public static enum ShortThreadState {
-        NotExist,
-        Sleeping,
-        Waiting,
-        Blocked,
-        Running,
-    }
+    static final int POINTS = 100;
 
     /**
-     * All possible thread states.
+     * Aggregated thread states.
      */
-    public static enum FullThreadState {
-        NotExist,
-        Stopped,
-        SleepingOther,
-        SleepingUserTextPageFault,
-        SleepingUserDataPageFault,
-        SleepingKernelPageFault,
-        SleepingSemafore,
-        SleepingConditionalVariable,
-        SleepingSystemSynchronization,
-        SleepingUserSynchronization,
-        WaitingCPU,
-        RunningOther,
-        RunningSystemCall,
-        RunningUser,
+    static enum MSAState {
+        // Short states list ...
+
+        START_SHORT_LIST,
+        Running, // on cpu and runn
+        Sleeping, // sleep()
+        Waiting, // pthread_join, for example
+        Blocked, // on some mutex
+        Stopped, // lwp_suspend()
+        END_SHORT_LIST,
+        // Long states list ...
+        START_LONG_LIST,
+        RunningUser, // running in user mode
+        RunningSystemCall, // running in sys call or page fault
+        RunningOther, // running in other trap
+        SleepingUserTextPageFault, // asleep in user text page fault
+        SleepingUserDataPageFault, // asleep in user data page fault
+        SleepingKernelPageFault, // asleep in kernel page fault
+        SleepingUserLock, // asleep waiting for user-mode lock
+        SleepingOther, // asleep for any other reason
+        WaitingCPU, // waiting for CPU (latency)
+        ThreadStopped, // stopped (/proc, jobcontrol, lwp_suspend)
+        END_LONG_LIST,
+        ThreadFinished, // Thread is gone
     }
 
     /**
@@ -82,18 +84,18 @@ public interface ThreadState {
     int size();
 
     /**
-     * returns string representation of enum value of ShortThreadState or FullThreadState.
+     * returns MSAState.
      *
      * @param index of state.
      * @return state ID by index.
      */
-    String getStateName(int index);
+    MSAState getMSAState(int index, boolean full);
 
     /**
      * @param index of state.
-     * @return value of state by index. Unit of value is 0.1%. I.e. sum of all values is 1000.
+     * @return value of state by index. Unit of value is 1%. I.e. sum of all values is 100.
      */
-    int getState(int index);
+    byte getState(int index);
 
     /**
      * returns -1 if there are no stack avaliable.
@@ -108,4 +110,11 @@ public interface ThreadState {
      * @return beginning time in natural unit of state.
      */
     long getTimeStamp();
+
+    /**
+     * returns index of state that represents "sampling" one.
+     *
+     * @return state ID by index.
+     */
+    int getSamplingStateIndex(boolean full);
 }

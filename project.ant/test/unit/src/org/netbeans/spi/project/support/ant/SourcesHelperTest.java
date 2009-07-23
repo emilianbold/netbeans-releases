@@ -41,8 +41,6 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.io.IOException;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -125,19 +123,19 @@ public final class SourcesHelperTest extends NbTestCase {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
         sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
-        sh.addPrincipalSourceRoot("${src1.dir}", "Sources #1", null, null); // inside proj dir
-        sh.addPrincipalSourceRoot("${src2.dir}", "Sources #2", null, null); // outside (rel path)
-        sh.addPrincipalSourceRoot("${src2a.dir}", "Sources #2a", null, null); // redundant
-        sh.addPrincipalSourceRoot("${src3.dir}", "Sources #3", null, null); // outside (abs path)
-        sh.addPrincipalSourceRoot("${src4.dir}", "The Whole Shebang", null, null); // above proj dir
-        sh.addPrincipalSourceRoot("${src5.dir}", "None such", null, null); // does not exist on disk
+        sh.sourceRoot("${src1.dir}").displayName("Sources #1").add(); // inside proj dir
+        sh.sourceRoot("${src2.dir}").displayName("Sources #2").add(); // outside (rel path)
+        sh.sourceRoot("${src2a.dir}").displayName("Sources #2a").add(); // redundant
+        sh.sourceRoot("${src3.dir}").displayName("Sources #3").add(); // outside (abs path)
+        sh.sourceRoot("${src4.dir}").displayName("The Whole Shebang").add(); // above proj dir
+        sh.sourceRoot("${src5.dir}").displayName("None such").add(); // does not exist on disk
         sh.addNonSourceRoot("${build.dir}");
         sh.addOwnedFile("${ext.file}");
-        sh.addTypedSourceRoot("${src1.dir}", "java", "Packages #1", null, null);
-        sh.addTypedSourceRoot("${src3.dir}", "java", "Packages #3", null, null);
-        sh.addTypedSourceRoot("${src5.dir}", "java", "No Packages", null, null);
-        sh.addTypedSourceRoot("${src2.dir}", "docroot", "Documents #2", null, null);
-        sh.addTypedSourceRoot("${src2a.dir}", "docroot", "Documents #2a", null, null); // redundant
+        sh.sourceRoot("${src1.dir}").type("java").displayName("Packages #1").add();
+        sh.sourceRoot("${src3.dir}").type("java").displayName("Packages #3").add();
+        sh.sourceRoot("${src5.dir}").type("java").displayName("No Packages").add();
+        sh.sourceRoot("${src2.dir}").type("docroot").displayName("Documents #2").add();
+        sh.sourceRoot("${src2a.dir}").type("docroot").displayName("Documents #2a").add(); // redundant
         // Separate project that has includes its project directory implicitly only.
         // Also hardcodes paths rather than using properties.
         proj2dir = scratch.createFolder("proj2dir");
@@ -152,12 +150,12 @@ public final class SourcesHelperTest extends NbTestCase {
         project2 = ProjectManager.getDefault().findProject(proj2dir);
         assertNotNull("have a project2", project2);
         sh2 = new SourcesHelper(project2, h2, h2.getStandardPropertyEvaluator());
-        sh2.addPrincipalSourceRoot("src1", "Sources #1", null, null);
-        sh2.addPrincipalSourceRoot("src2", "Sources #2", null, null);
+        sh2.sourceRoot("src1").displayName("Sources #1").add();
+        sh2.sourceRoot("src2").displayName("Sources #2").add();
         sh2.addNonSourceRoot("build");
         sh2.addOwnedFile(FileUtil.toFile(ext2File).getAbsolutePath());
-        sh2.addTypedSourceRoot("src1", "java", "Packages #1", null, null);
-        sh2.addTypedSourceRoot("src2", "java", "Packages #2", null, null);
+        sh2.sourceRoot("src1").type("java").displayName("Packages #1").add();
+        sh2.sourceRoot("src2").type("java").displayName("Packages #2").add();
     }
     
     public void testSourcesBasic() throws Exception {
@@ -425,14 +423,14 @@ public final class SourcesHelperTest extends NbTestCase {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
         sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
-        sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
-        sh.addPrincipalSourceRoot("${src2.dir}", "${src2.includes}", "${src2.excludes}", "Sources #2", null, null);
-        sh.addPrincipalSourceRoot("${src3.dir}", "${src3.includes}", null, "Sources #3", null, null);
-        sh.addPrincipalSourceRoot("${src4.dir}", "**", "", "Sources #4", null, null);
-        sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
-        sh.addTypedSourceRoot("${src2.dir}", "${src2.includes}", "${src2.excludes}", "java", "Packages #2", null, null);
-        sh.addTypedSourceRoot("${src3.dir}", "${src3.includes}", null, "java", "Packages #3", null, null);
-        sh.addTypedSourceRoot("${src4.dir}", "**", "", "java", "Packages #4", null, null);
+        sh.sourceRoot("${src1.dir}").includes("${src1.includes}").excludes("${src1.excludes}").displayName("Sources #1").add();
+        sh.sourceRoot("${src2.dir}").includes("${src2.includes}").excludes("${src2.excludes}").displayName("Sources #2").add();
+        sh.sourceRoot("${src3.dir}").includes("${src3.includes}").displayName("Sources #3").add();
+        sh.sourceRoot("${src4.dir}").includes("**").excludes("").displayName("Sources #4").add();
+        sh.sourceRoot("${src1.dir}").type("java").includes("${src1.includes}").excludes("${src1.excludes}").displayName("Packages #1").add();
+        sh.sourceRoot("${src2.dir}").type("java").includes("${src2.includes}").excludes("${src2.excludes}").displayName("Packages #2").add();
+        sh.sourceRoot("${src3.dir}").type("java").includes("${src3.includes}").displayName("Packages #3").add();
+        sh.sourceRoot("${src4.dir}").type("java").includes("**").excludes("").displayName("Packages #4").add();
         Sources s = sh.createSources();
         SourceGroup[] groups = s.getSourceGroups("java");
         SourceGroup g1 = groups[0];
@@ -599,8 +597,8 @@ public final class SourcesHelperTest extends NbTestCase {
         ProjectManager.getDefault().saveProject(project);
         //minimalSubfolders = true
         sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
-        sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
-        sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
+        sh.sourceRoot("${src1.dir}").includes("${src1.includes}").excludes("${src1.excludes}").displayName("Sources #1").add();
+        sh.sourceRoot("${src1.dir}").type("java").includes("${src1.includes}").excludes("${src1.excludes}").displayName("Packages #1").add();
         sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, true);
         Sources s = sh.createSources();
         SourceGroup[] groups = s.getSourceGroups("java");
@@ -609,8 +607,8 @@ public final class SourcesHelperTest extends NbTestCase {
         assertNull(FileOwnerQuery.getOwner(src1dir));
         //minimalSubfolders = false
         sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
-        sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
-        sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
+        sh.sourceRoot("${src1.dir}").includes("${src1.includes}").excludes("${src1.excludes}").displayName("Sources #1").add();
+        sh.sourceRoot("${src1.dir}").type("java").includes("${src1.includes}").excludes("${src1.excludes}").displayName("Packages #1").add();
         sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
         s = sh.createSources();
         groups = s.getSourceGroups("java");
@@ -641,13 +639,13 @@ public final class SourcesHelperTest extends NbTestCase {
         SourceRootConfig root = sh.sourceRoot("${src1.dir}").hint("main");  // existing with a hint
         root.displayName("Sources #1").add();
         root.displayName("Packages #1").type("java").add();
-        sh.addPrincipalSourceRoot("${src2.dir}", null, null, "Sources #2", null, null); // non-existent, without a hint
-        sh.addTypedSourceRoot("${src2.dir}", null, null, "java", "Packages #2", null, null);
+        sh.sourceRoot("${src2.dir}").displayName("Sources #2").add(); // non-existent, without a hint
+        sh.sourceRoot("${src2.dir}").type("java").displayName("Packages #2").add();
         root = sh.sourceRoot("${test1.dir}").hint("test");  // non-existent, should be created
         root.displayName("Test Sources #1").add();
         root.displayName("Test Packages #1").type("java").add();
-        sh.addPrincipalSourceRoot("${test2.dir}", null, null, "Test Sources #2", null, null);   // existing without a hint
-        sh.addTypedSourceRoot("${test2.dir}", null, null, "java", "Test Packages #2", null, null);
+        sh.sourceRoot("${test2.dir}").displayName("Test Sources #2").add();   // existing without a hint
+        sh.sourceRoot("${test2.dir}").type("java").displayName("Test Packages #2").add();
         sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, true);
         Sources s = sh.createSources();
         SourceGroup[] groups = s.getSourceGroups("java");

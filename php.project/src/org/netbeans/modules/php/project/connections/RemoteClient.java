@@ -1134,14 +1134,14 @@ public final class RemoteClient implements Cancellable {
             io = builder.io;
             additionalInitialSubdirectory = builder.additionalInitialSubdirectory;
             preservePermissions = builder.preservePermissions;
-            uploadDirectly = builder.preservePermissions;
+            uploadDirectly = builder.uploadDirectly;
             operationMonitor = builder.operationMonitor;
         }
 
         /**
          * Get additional initial subdirectory (directory which starts with {@value TransferFile#SEPARATOR} and is appended
          * to {@link RemoteConfiguration#getInitialDirectory()} and set as default base remote directory. Can be <code>null</code>.
-         * @return additional initial subdirectory
+         * @return additional initial subdirectory, can be <code>null</code>.
          */
         public String getAdditionalInitialSubdirectory() {
             return additionalInitialSubdirectory;
@@ -1159,7 +1159,6 @@ public final class RemoteClient implements Cancellable {
          * @return new properties with configured additional initial subdirectory, can be <code>null</code>.
          */
         public AdvancedProperties setAdditionalInitialSubdirectory(String additionalInitialSubdirectory) {
-            Parameters.notNull("additionalInitialSubdirectory", additionalInitialSubdirectory);
             return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setAdditionalInitialSubdirectory(additionalInitialSubdirectory));
         }
 

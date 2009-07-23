@@ -51,7 +51,6 @@ import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
-import org.netbeans.modules.dlight.visualizers.api.impl.ThreadMapVisualizerConfigurationAccessor;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadMapVisualizer;
 
 /**
@@ -134,18 +133,18 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
     public void componentOpened() {
-        // temporary for testing
-        instance.addVisualizer("Thread Map", new ThreadMapVisualizer(null, null)); //NOI18N
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        if (viewComponent instanceof ThreadMapVisualizer) {
+            ((ThreadMapVisualizer)viewComponent).shutdown();
+        }
     }
 
     void writeProperties(java.util.Properties p) {
@@ -222,11 +221,18 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
     public void showup() {
         open();
         requestActive();
+        if (viewComponent instanceof ThreadMapVisualizer) {
+            ThreadMapVisualizer view = (ThreadMapVisualizer) viewComponent;
+            view.startup();
+        }
     }
 
     private void closePerformanceMonitor(Visualizer view) {
         if (viewComponent != view.getComponent()) {
             return;
+        }
+        if (viewComponent instanceof ThreadMapVisualizer) {
+            ((ThreadMapVisualizer)view).shutdown();
         }
         remove(view.getComponent());
         setName(NbBundle.getMessage(ThreadMapTopComponent.class, "ThreadMapDetailes")); //NOI18N

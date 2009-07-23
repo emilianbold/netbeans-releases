@@ -48,8 +48,10 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -157,7 +159,7 @@ public class Hk2PluginProperties {
     public List<URL> getClasses() {
         List<String> jars = new ArrayList<String>();
 
-        List<URL> list = new ArrayList<URL>();
+        Set<URL> urlSet = new HashSet<URL>();
         File serverDir = new File(getGlassfishRoot());
 
         try {
@@ -177,16 +179,16 @@ public class Hk2PluginProperties {
                     if(cp != null && cp.length() > 0) {
                         File parent = javaEEJar.getParentFile();
                         for(String jarName: cp.split(" ")) {
-                            list.add(fileToUrl(new File(parent, jarName)));
+                            urlSet.add(fileToUrl(new File(parent, jarName)));
                         }
                     }
                 }
 
                 // Older V3 install that doesn't use Class-Path, so assume it's all in javax.javaee
-                if(list.size() == 0) {
+                if(urlSet.size() == 0) {
                     Logger.getLogger("glassfish-javaee").log(Level.FINER,
                             javaEEJar.getAbsolutePath() + " contains null classpath or subjars not found.  Using directly.");
-                    list.add(fileToUrl(javaEEJar));
+                    urlSet.add(fileToUrl(javaEEJar));
                 }
             } else {
                 // v3 (Prelude and Final) doesn't have the javax.javaee jar, since it is not a
@@ -216,30 +218,30 @@ public class Hk2PluginProperties {
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
                 if ((jar != null) && (jar.exists()))  {
-                    list.add(fileToUrl(jar));
+                    urlSet.add(fileToUrl(jar));
                 }
             }
             // prefer the smaller API jars if they are available...
             File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "endorsed/webservices-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
             if (null != jar) {
-                list.add(fileToUrl(jar));
+                urlSet.add(fileToUrl(jar));
             } else {
                 jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "webservices-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
                 if (null != jar) {
-                    list.add(fileToUrl(jar));
+                    urlSet.add(fileToUrl(jar));
                 }
             }
             jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "endorsed/jaxb-api-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
             if (null != jar) {
-                list.add(fileToUrl(jar));
+                urlSet.add(fileToUrl(jar));
             } else {
                 jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(),
                     "jaxb-osgi"+ServerUtilities.GFV3_VERSION_MATCHER);
                 if (null != jar) {
-                    list.add(fileToUrl(jar));
+                    urlSet.add(fileToUrl(jar));
                 }
             }
         } catch (MalformedURLException ex) {
@@ -247,8 +249,9 @@ public class Hk2PluginProperties {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-
-        return list;
+        List retVal = new ArrayList<URL>();
+        retVal.addAll(urlSet);
+        return retVal;
     }
 
     /**

@@ -177,7 +177,28 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                 try {
                     InstallCancellable ic = new InstallCancellable();
                     OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
-                    oc.add(updateElement);
+                    if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
+                        oc.add(updateElement);
+                    } else if (updateElement.getUpdateUnit().isPending()) {
+                        notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_RestartNeeded"), //NOI18N
+                            NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_RestartNeeded"), //NOI18N
+                            NotifyDescriptor.INFORMATION_MESSAGE, false);
+                        return;
+                    } else {
+                        oc = OperationContainer.createForUpdate();
+                        if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
+                            oc.add(updateElement);
+                        } else {
+                            Subversion.LOG.warning("MissingClient: cannot install " + updateElement.toString());
+                            if (updateElement.getUpdateUnit().getInstalled() != null) {
+                                Subversion.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString());
+                            }
+                            notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
+                                    NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
+                                    NotifyDescriptor.ERROR_MESSAGE, false);
+                            return;
+                        }
+                    }
                     Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), panel.forceGlobalCheckBox.isSelected());
                     if(ic.cancelled) return;
                     Installer i = oc.getSupport().doValidate(v, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Validating") + updateElement.getDisplayName(), ic));
@@ -209,7 +230,13 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     private static void notifyError (final String message, final String title) {
-        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION}, NotifyDescriptor.OK_OPTION);
+        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
+    }
+
+    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType, 
+                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notifyLater(nd);
     }
 

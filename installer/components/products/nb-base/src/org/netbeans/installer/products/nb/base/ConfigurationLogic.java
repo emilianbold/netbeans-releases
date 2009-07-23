@@ -112,6 +112,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.netbeans.clusters")); // NOI18N
             for (String clusterName: CLUSTERS) {
+                File lastModified = new File(new File(installLocation, clusterName), 
+                                    NetBeansUtils.LAST_MODIFIED_MARKER);
+                if(!FileUtils.exists(lastModified)) {
+                    filesList.add(lastModified);
+                }
                 NetBeansUtils.addCluster(installLocation, clusterName);
             }
         } catch (IOException e) {
@@ -731,11 +736,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "{ide-cluster}"; // NOI18N
     public static final String WEBSVCCOMMON_CLUSTER =
             "{websvccommon-cluster}"; // NOI18N
+    public static final String EXTRA_CLUSTER =
+            "{extra-cluster}"; // NOI18N
     public static final String [] CLUSTERS = new String [] {
         PLATFORM_CLUSTER,
         NB_CLUSTER,
         IDE_CLUSTER,
-        WEBSVCCOMMON_CLUSTER};
+        WEBSVCCOMMON_CLUSTER,
+        EXTRA_CLUSTER};
     
     public static final String EXECUTABLE_WINDOWS =
             BIN_SUBDIR + "/netbeans.exe"; // NOI18N

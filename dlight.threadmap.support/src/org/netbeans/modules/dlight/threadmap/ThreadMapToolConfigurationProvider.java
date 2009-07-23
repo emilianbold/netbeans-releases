@@ -38,15 +38,28 @@
  */
 package org.netbeans.modules.dlight.threadmap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapMetadata;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
+import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.threadmap.indicator.ThreadMapIndicatorConfiguration;
+import org.netbeans.modules.dlight.threadmap.collector.MSAParser;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -57,27 +70,41 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ThreadMapTool.DetailedToolName"); // NOI18N
 
+    private static final int[] MSA_TO_SIMPLE = {0, 1, 3, 3, 3, 3, 2, 3, 3, 3};
+
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
 
-        DataTableMetadata msaTableMetadata = createMsaTableMetadata();
+        DataTableMetadata msaTableMetadata = createIndicatorTableMetadata();
 
-        ThreadMapIndicatorConfiguration indicatorConfig = new ThreadMapIndicatorConfiguration(null);
-        ThreadMapMetadata threadMapMetadata = new ThreadMapMetadata(msaTableMetadata);
-        VisualizerConfiguration visualizerConfig = new ThreadMapVisualizerConfiguration(threadMapMetadata);
+        PlotIndicatorConfiguration indicatorConfig = new PlotIndicatorConfiguration(
+                new IndicatorMetadata(msaTableMetadata.getColumns()), INDICATOR_POSITION, loc("ThreadMapTool.Indicator.Title"), 1, // NOI18N
+                Arrays.asList(
+                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_USER"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_SYSTEM"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_USER_LOCK"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_OTHER"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                new DataRowToMSAPlot(msaTableMetadata.getColumns()));
+        indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
+
+        VisualizerConfiguration visualizerConfig = new ThreadMapVisualizerConfiguration();
 
         indicatorConfig.addVisualizerConfiguration(visualizerConfig);
         toolConfiguration.addIndicatorConfiguration(indicatorConfig);
 
-
         String scriptFile = Util.copyResource(getClass(),
                 Util.getBasePath(getClass()) + "/resources/msa.d"); // NOI18N
 
-        DTDCConfiguration dtraceDataCollectorConfiguration =
-                new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
+        DTDCConfiguration dtraceDataCollectorConfiguration = new DTDCConfiguration(scriptFile, Arrays.asList(msaTableMetadata));
 
-        toolConfiguration.addDataCollectorConfiguration(dtraceDataCollectorConfiguration);
+        dtraceDataCollectorConfiguration.setDtraceParser(new MSAParser(new TimeDuration(TimeUnit.SECONDS, 1), null));
+        dtraceDataCollectorConfiguration.setIndicatorFiringFactor(1); // MSAParser will do aggregation once per second...
+
+        MultipleDTDCConfiguration collector = new MultipleDTDCConfiguration(dtraceDataCollectorConfiguration, "msa"); // NOI18N
+
+        toolConfiguration.addIndicatorDataProviderConfiguration(collector);
+        toolConfiguration.addDataCollectorConfiguration(collector);
 
         return toolConfiguration;
     }
@@ -87,14 +114,76 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
                 ThreadMapToolConfigurationProvider.class, key, params);
     }
 
-    private DataTableMetadata createMsaTableMetadata() {
-        Column cpuId = new Column("CPUID", Integer.class, loc("ThreadMapTool.ColumnName.CPUID"), null); // NOI18N
-        Column threadId = new Column("THRID", Integer.class, loc("ThreadMapTool.ColumnName.THRID"), null); // NOI18N
-        Column timestamp = new Column("TSTAMP", Long.class, loc("ThreadMapTool.ColumnName.TSTAMP"), null); // NOI18N
-        Column usrTime = new Column("LMS_USER", Integer.class, loc("ThreadMapTool.ColumnName.LMS_USER"), null); // NOI18N
-        Column sysTime = new Column("LMS_SYSTEM", Integer.class, loc("ThreadMapTool.ColumnName.LMS_SYSTEM"), null); // NOI18N
+    private DataTableMetadata createIndicatorTableMetadata() {
+        Column threads = new Column("threads", Integer.class); // NOI18N
+        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
+        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
+        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
+        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
+        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
+        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
+        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
+        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
+        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
+        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
 
         return new DataTableMetadata("MSA", // NOI18N
-                Arrays.asList(cpuId, threadId, timestamp, usrTime, sysTime), null);
+                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null);
+    }
+
+    private static class DataRowToMSAPlot implements DataRowToPlot {
+
+        private final List<Column> columns;
+        private float[] data;
+
+        public DataRowToMSAPlot(List<Column> columns) {
+            this.columns = new ArrayList<Column>(columns);
+            this.data = new float[4];
+        }
+
+        public void addDataRow(DataRow row) {
+            String threadsColumn = columns.get(0).getColumnName();
+            Object threadsValue = row.getData(threadsColumn);
+            int threads = threadsValue == null? 1 : toInt(threadsValue);
+            float[] newData = new float[4];
+            int sum = 0;
+            for (int i = 1; i < columns.size(); ++i) {
+                String columnName = columns.get(i).getColumnName();
+                Object value = row.getData(columnName);
+                if (value != null) {
+                    int intValue = toInt(value);
+                    newData[MSA_TO_SIMPLE[i - 1]] += intValue;
+                    sum += intValue;
+                }
+            }
+            if (0 < sum) {
+                for (int i = 0; i < newData.length; ++i) {
+                    newData[i] = threads * newData[i] / sum;
+                }
+                data = newData;
+            }
+        }
+
+        public void tick() {
+        }
+
+        public float[] getGraphData() {
+            return data;
+        }
+
+        public Map<String, String> getDetails() {
+            return Collections.emptyMap();
+        }
+    }
+
+    private static int toInt(Object obj) {
+        if (obj instanceof Number) {
+            return ((Number)obj).intValue();
+        } else if (obj instanceof String) {
+            try {
+                return Integer.parseInt((String)obj);
+            } catch (NumberFormatException ex) {}
+        }
+        return 0;
     }
 }

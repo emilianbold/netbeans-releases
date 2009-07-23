@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -56,15 +57,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -72,11 +69,10 @@ import org.netbeans.modules.php.project.spi.PhpUnitSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -98,9 +94,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
     private static final String PHP_OPEN_TAG = "<?php"; // NOI18N
-    private static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
     private static final String REQUIRE_ONCE_TPL = "require_once '%s';"; // NOI18N
-    static final String REQUIRE_ONCE_REL_PART = "'.dirname(__FILE__).'/"; // NOI18N
 
     private static final ExecutionDescriptor EXECUTION_DESCRIPTOR
             = new ExecutionDescriptor().controllable(false).frontWindow(false);
@@ -146,6 +140,7 @@ public final class CreateTestsAction extends NodeAction {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
                 handle.start();
                 try {
+                    LifecycleManager.getDefault().saveAll();
                     generateTests(activatedNodes, phpUnit, phpProject);
                 } finally {
                     handle.finish();
@@ -206,30 +201,34 @@ public final class CreateTestsAction extends NodeAction {
     void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
         assert phpProject != null;
 
-        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
+        final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
         final Set<FileObject> proceeded = new HashSet<FileObject>();
         final Set<FileObject> failed = new HashSet<FileObject>();
         final Set<File> toOpen = new HashSet<File>();
-        try {
-            for (FileObject fo : files) {
-                generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
-                Enumeration<? extends FileObject> children = fo.getChildren(true);
-                while (children.hasMoreElements()) {
-                    generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+        FileUtil.runAtomicAction(new Runnable() {
+            public void run() {
+                try {
+                    for (FileObject fo : files) {
+                        generateTest(phpUnit, phpProject, fo, proceeded, failed, toOpen);
+                        Enumeration<? extends FileObject> children = fo.getChildren(true);
+                        while (children.hasMoreElements()) {
+                            generateTest(phpUnit, phpProject, children.nextElement(), proceeded, failed, toOpen);
+                        }
+                    }
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    UiUtils.processExecutionException(ex);
                 }
             }
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex);
-        }
+        });
 
         if (!failed.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (FileObject file : failed) {
                 sb.append(file.getNameExt());
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                     NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
@@ -277,7 +276,7 @@ public final class CreateTestsAction extends NodeAction {
         Collection<? extends String> classNames = phpUnitSupport.getClassNames(sourceFo);
         if (classNames.size() == 0) {
             // run phpunit in order to have some output
-            generateSkeleton(phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
+            generateSkeleton(phpProject, phpUnit, sourceFo.getName(), sourceFo, parent, paramSkeleton);
             failed.add(sourceFo);
             return;
         }
@@ -291,7 +290,7 @@ public final class CreateTestsAction extends NodeAction {
             final File generatedFile = getGeneratedFile(className, parent);
 
             // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpUnit, className, sourceFo, parent, paramSkeleton);
+            Future<Integer> result = generateSkeleton(phpProject, phpUnit, className, sourceFo, parent, paramSkeleton);
             try {
                 if (result.get() != 0) {
                     // test not generated
@@ -310,10 +309,26 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private Future<Integer> generateSkeleton(PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
+    private Future<Integer> generateSkeleton(PhpProject project, PhpUnit phpUnit, String className, FileObject sourceFo, File parent, String paramSkeleton) {
         // test does not exist yet
         ExternalProcessBuilder externalProcessBuilder = new ExternalProcessBuilder(phpUnit.getProgram())
-                .workingDirectory(parent)
+                .workingDirectory(parent);
+        List<String> generatedFiles = new ArrayList<String>(2);
+        File bootstrap = phpUnit.getBootstrapFile(project, generatedFiles);
+        if (bootstrap != null) {
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
+                    .addArgument(bootstrap.getAbsolutePath());
+        }
+        File configuration = phpUnit.getConfigurationFile(project, generatedFiles);
+        if (configuration != null) {
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.PARAM_CONFIGURATION)
+                    .addArgument(configuration.getAbsolutePath());
+        }
+        PhpUnit.informAboutGeneratedFiles(generatedFiles);
+
+        externalProcessBuilder = externalProcessBuilder
                 .addArgument(paramSkeleton)
                 .addArgument(className)
                 .addArgument(sourceFo.getNameExt());
@@ -358,35 +373,20 @@ public final class CreateTestsAction extends NodeAction {
             return generatedFile;
         }
 
-        testFile = adjustFileContent(generatedFile, testFile, sourceFile, getRequireOnce(testFile, sourceFile));
+        testFile = adjustFileContent(generatedFile, testFile, sourceFile, PhpUnit.getRequireOnce(testFile, sourceFile));
         if (testFile == null) {
             return null;
         }
         assert testFile.isFile() : "Test file must exist: " + testFile;
 
         // reformat the file
-// XXX DISABLED DUE TO HTML INDENTER ASSERTION ERROR
-//        try {
-//            reformat(testFile);
-//        } catch (IOException ex) {
-//            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-//        } catch (BadLocationException ex) {
-//            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-//        }
+        try {
+            PhpProjectUtils.reformatFile(testFile);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        }
 
         return testFile;
-    }
-
-    static String getRequireOnce(File testFile, File sourceFile) {
-        File parentFile = testFile.getParentFile();
-        String relPath = PropertyUtils.relativizeFile(parentFile, sourceFile);
-        if (relPath == null) {
-            // cannot be versioned...
-            relPath = sourceFile.getAbsolutePath();
-        } else {
-            relPath = REQUIRE_ONCE_REL_PART + relPath;
-        }
-        return relPath.replace(File.separatorChar, DIRECTORY_SEPARATOR);
     }
 
     private File adjustFileContent(File generatedFile, File testFile, File sourceFile, String requireOnce) {
@@ -432,39 +432,5 @@ public final class CreateTestsAction extends NodeAction {
             LOGGER.info("Cannot delete generated file " + generatedFile);
         }
         return testFile;
-    }
-
-    private void reformat(final File testFile) throws IOException, BadLocationException {
-        FileObject testFileObject = FileUtil.toFileObject(testFile);
-        assert testFileObject != null : "No fileobject for " + testFile;
-
-        final DataObject dataObject = DataObject.find(testFileObject);
-        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        assert ec != null : "No editorcookie for " + testFileObject;
-
-        Document doc = ec.openDocument();
-        assert doc instanceof BaseDocument;
-
-        // reformat
-        final BaseDocument baseDoc = (BaseDocument) doc;
-        final Reformat reformat = Reformat.get(baseDoc);
-        reformat.lock();
-        // XXX using deprecated api because we need to save document AFTER it is formatted (needs to be synchronous)
-        try {
-            baseDoc.atomicLock();
-            try {
-                reformat.reformat(0, baseDoc.getLength());
-            } finally {
-                baseDoc.atomicUnlock();
-            }
-        } finally {
-            reformat.unlock();
-        }
-
-        // save
-        SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
-        if (saveCookie != null) {
-            saveCookie.save();
-        }
     }
 }

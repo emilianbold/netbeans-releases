@@ -43,14 +43,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
@@ -74,7 +77,19 @@ public class MeasurementTestCase extends RemoteTestBase {
     private final String displayNameBase;
     private static final boolean DEBUG = true;
 
-    public MeasurementTestCase(String testName, ExecutionEnvironment execEnv, File testDirectory, String displayNameBase) {
+    private static final List<StatEntry> statistics = new ArrayList<StatEntry>();
+
+    private static final class StatEntry {
+        public String label;
+        public long time;
+        public StatEntry(String label, long time) {
+            this.label = label;
+            this.time = time;
+        }
+
+    }
+
+    private MeasurementTestCase(String testName, ExecutionEnvironment execEnv, File testDirectory, String displayNameBase) {
         super(testName, execEnv);
         if (DEBUG)  {
             Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
@@ -85,24 +100,44 @@ public class MeasurementTestCase extends RemoteTestBase {
     }
 
    
-    private void do_test() throws Exception {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String dst = getDestDir(execEnv);
-        PrintWriter out = new PrintWriter(System.out);
-        PrintWriter err = new PrintWriter(System.err);
-        System.out.printf("testUploadFile: %s to %s:%s\n", srcDir.getAbsolutePath(), execEnv.getDisplayName(), dst);
-        ZipSyncWorker worker = new ZipSyncWorker(srcDir, execEnv, out, err);
-        worker.synchronizeImpl(dst);
-        CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
+    private void do_test(boolean removeFileStampsStorage) throws Exception {
+        File privProjectStorageDir = null;
+        try {
+            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+            String dst = getDestDir(execEnv);
+            PrintWriter out = new PrintWriter(System.out);
+            PrintWriter err = new PrintWriter(System.err);
+            System.out.printf("testUploadFile: %s to %s:%s\n", srcDir.getAbsolutePath(), execEnv.getDisplayName(), dst);
+
+            File tmp = new File(System.getProperty("java.io.tmpdir"));
+            tmp = new File(tmp, System.getProperty("user.name"));
+            tmp = new File(tmp, "testdata");
+            privProjectStorageDir = new File(tmp, srcDir.getName() + "-nbproject-private");
+            //removeDirectoryContent(privProjectStorageDir);
+
+            ZipSyncWorker worker = new ZipSyncWorker(srcDir, execEnv, out, err, privProjectStorageDir);
+            long time = System.currentTimeMillis();
+            worker.synchronizeImpl(dst);
+            time = System.currentTimeMillis() - time;
+            statistics.add(new StatEntry(getName(), time));
+            CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
+        } catch (Exception e) {
+            statistics.add(new StatEntry(getName(), -1));
+            throw e;
+        } finally {
+            if (removeFileStampsStorage) {
+                //removeDirectory(privProjectStorageDir);
+            }
+        }
     }
 
     public void test_upload_first() throws Exception {
-        do_test();
+        do_test(true);
     }
 
     public void test_upload_changed() throws Exception {
         change();
-        do_test();
+        do_test(false);
     }
 
     private static final int MAX_SIZE = 1024 * 1024; // max size of files to be changed
@@ -128,7 +163,7 @@ public class MeasurementTestCase extends RemoteTestBase {
             if (file.length() <= MAX_SIZE) {
                 if ((totalCount++) % latch == 0) {
                     changedCount++;
-                    if (DEBUG) { System.out.printf("Changing %s\n", file); }
+                    //if (DEBUG) { System.out.printf("Changing %s\n", file); }
                     char[] buffer = new char[(int) file.length()];
                     Reader reader = new FileReader(file);
                     int size = reader.read(buffer);
@@ -154,13 +189,60 @@ public class MeasurementTestCase extends RemoteTestBase {
 
     @Override
     public String getName() {
-        String name = displayNameBase + ' ' + srcDir.getName();
+        String name = srcDir.getName() + ' ' + displayNameBase;
         ExecutionEnvironment env = getTestExecutionEnvironment();
         if (env == null) {
             return name;
         } else {
             return String.format("%s [%s]", name, env);
         }
+    }
+
+    // @BeforeClass
+    public static void initializeStatistics() {
+        statistics.clear(); // just in case
+    }
+
+    // @AfterClass
+    public static void printStatistics() {
+        PrintStream ps = System.out;
+        int max = 0;
+        for (StatEntry entry : statistics) {
+            max = Math.max(max, entry.label.length());
+        }
+        //String pattern = String.format("%%%ds %%02d:%%02d:%%02d\n", max+2);
+        String okPattern = String.format("%%%ds %%4d:%%02d\n", max+2);
+        String erPattern = String.format("%%%ds FAILED\n", max+2);
+        ps.printf("================================================================\n");
+        for (StatEntry entry : statistics) {
+            long time  = entry.time;
+            if (time >= 0) {
+                long s = (((time%1000) >= 500) ? 1 : 0) + time/1000;
+                //long h = s / 3600;
+                //long m = (s % 3600) / 60;
+                long m = s / 60;
+                s = s % 60;
+                ps.printf(okPattern, entry.label, m, s);
+            } else {
+                ps.printf(erPattern, entry.label);
+            }
+        }
+        ps.printf("----------------------------------------------------------------\n");
+        statistics.clear(); //
+    }
+
+    private static class MeasurementTestSuite extends RemoteDevelopmentTest {
+
+        public MeasurementTestSuite(String name, Collection<Test> tests) {
+            super(name, tests);
+        }
+
+        @Override
+        public void run(TestResult result) {
+            initializeStatistics();
+            super.run(result);
+            printStatistics();
+        }       
     }
 
     public static Test suite() throws IOException, FormatException {
@@ -177,13 +259,13 @@ public class MeasurementTestCase extends RemoteTestBase {
                 } else if (!file.exists() || !file.canRead() || !file.isDirectory()) {
                     tests.add(TestSuite.warning("Can't read directory  " + file.getAbsolutePath()));
                 } else {
-                    tests.add(new MeasurementTestCase("test_upload_first", env, file, "First"));
-                    tests.add(new MeasurementTestCase("test_upload_first", env, file, "First"));
-                    tests.add(new MeasurementTestCase("test_upload_changed", env, file, "Changed"));
+                    tests.add(new MeasurementTestCase("test_upload_first", env, file,   "first    "));
+                    tests.add(new MeasurementTestCase("test_upload_first", env, file,   "unchanged"));
+                    tests.add(new MeasurementTestCase("test_upload_changed", env, file, "changed  "));
                 }
             }
         }
-        RemoteDevelopmentTest suite = new RemoteDevelopmentTest(MeasurementTestCase.class.getName(), tests);
+        RemoteDevelopmentTest suite = new MeasurementTestSuite(MeasurementTestCase.class.getName(), tests);
         return suite;
     }
 }

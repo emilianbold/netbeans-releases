@@ -49,6 +49,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Scope;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -81,7 +82,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,6 +102,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.OutputFileManager.InvalidSourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -120,6 +124,7 @@ public class TreeLoader extends LazyTreeLoader {
     
     private static final Logger LOGGER = Logger.getLogger(TreeLoader.class.getName());
     public  static boolean DISABLE_CONFINEMENT_TEST = false; //Only for tests!
+    public  static boolean DISABLE_ARTIFICAL_PARAMETER_NAMES = false; //Only for tests!
 
     private Context context;
     private ClasspathInfo cpInfo;
@@ -167,9 +172,17 @@ public class TreeLoader extends LazyTreeLoader {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         if (clazz != null) {
             URL url = SourceUtils.getJavadoc(clazz, cpInfo);
-            if (url != null)
-                return getParamNamesFromJavadocText(url, clazz);
+            if (url != null) {
+                if (getParamNamesFromJavadocText(url, clazz)) {
+                    return true;
+                }
+            }
+            if (!DISABLE_ARTIFICAL_PARAMETER_NAMES) {
+                fillArtificalParamNames(clazz);
+                return true;
+            }
         }
+        
         return false;
     }
 
@@ -254,6 +267,8 @@ public class TreeLoader extends LazyTreeLoader {
             File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
             jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
             jti.generate(Collections.singletonList(clazz));
+        } catch (InvalidSourcePath isp) {
+            LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
         }
@@ -279,6 +294,7 @@ public class TreeLoader extends LazyTreeLoader {
         }
         if (!f.exists()) {
             try {
+                f.getParentFile().mkdirs();
                 OutputStream os = new FileOutputStream(f);
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
                 try {
@@ -514,6 +530,26 @@ public class TreeLoader extends LazyTreeLoader {
         return false;
     }
     
+    private void fillArtificalParamNames(final ClassSymbol clazz) {
+        for (Symbol s : clazz.getEnclosedElements()) {
+            if (s instanceof MethodSymbol) {
+                MethodSymbol ms = (MethodSymbol) s;
+
+                if (ms.getParameters().isEmpty()) {
+                    continue;
+                }
+                
+                Set<String> usedNames = new HashSet<String>();
+                
+                for (VarSymbol vs : ms.getParameters()) {
+                    String name = JavaSourceAccessor.getINSTANCE().generateReadableParameterName(vs.asType().toString(), usedNames);
+
+                    vs.setName(clazz.name.table.fromString(name));
+                }
+            }
+        }
+    }
+
     private String getCharSet(ChangedCharSetException e) {
         String spec = e.getCharSetSpec();
         if (e.keyEqualsCharSet()) {

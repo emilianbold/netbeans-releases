@@ -196,8 +196,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
     static String getActionName(Action action) {
         String arg = (String) action.getValue(Action.NAME);
-        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
-        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+        arg = arg.replace("&", ""); // NOI18N
+        return arg.replace("...", ""); // NOI18N
     }
 
 

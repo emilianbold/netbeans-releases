@@ -98,7 +98,6 @@ import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Various utilities for operating on the JRuby ASTs that are used
@@ -916,7 +915,7 @@ public class AstUtilities {
         return getDefName(method).equals(getCallName(call)) &&
         Arity.matches(callArity, Arity.getDefArity(method));
     }
-    
+
     // TODO: use the structure analyzer data for more accurate traversal?
     /** For the given signature, locating the corresponding Node within the tree that
      * it corresponds to */
@@ -1046,7 +1045,17 @@ public class AstUtilities {
                 }
             }
             break;
-            
+
+        case FCALLNODE:
+            if (isAttr(node)) {
+                SymbolNode[] symbols = getAttrSymbols(node);
+                for (SymbolNode sym : symbols) {
+                    if (name.equals(sym.getName())) {
+                        return sym;
+                    }
+                }
+            }
+            break;
         case CONSTDECLNODE:
             if (name.equals(getName(node))) {
                 return node;

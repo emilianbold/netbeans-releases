@@ -38,20 +38,23 @@
  */
 package org.netbeans.modules.dlight.spi.impl;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
-import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ThreadMapDataProvider extends DataProvider {
+public interface ThreadMapDataProvider extends VisualizerDataProvider {
 
     /**
      * @param metadata define needed time selection and aggregation.
      * @return list threads data about all threads that alive in selected time period.
      */
-    public List<ThreadMapData> queryData(ThreadMapDataQuery metadata);
+    ThreadMapData queryData(ThreadMapDataQuery query);
+
+    StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState);
 }

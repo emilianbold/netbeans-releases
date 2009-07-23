@@ -42,114 +42,165 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.cnd.actions.MakeAction;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.openide.nodes.Node;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.openide.util.Utilities;
+import org.openide.windows.IOProvider;
 
 public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
+    private CompilerSet SunStudioSet = null;
+    private CompilerSet GNUSet = null;
+    private CompilerSet MinGWSet = null;
+    private CompilerSet CygwinSet = null;
+
+    List<CompilerSet> allAvailableCompilerSets = null;
+    List<CompilerSet> SunStudioCompilerSet = null;
+    List<CompilerSet> GNUCompilerSet = null;
+    String[] defaultConfs = new String[] {"Debug", "Release"};
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
+        List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
+        for (CompilerSet set : sets) {
+            if (set.getName().equals("SunStudio")) {
+                SunStudioSet = set;
+            }
+            if (set.getName().equals("GNU")) {
+                GNUSet = set;
+            }
+            if (set.getName().equals("MinGW")) {
+                MinGWSet = set;
+            }
+            if (set.getName().equals("Cygwin")) {
+                CygwinSet = set;
+            }
+        }
+
+        allAvailableCompilerSets = new ArrayList<CompilerSet>();
+        allAvailableCompilerSets.add(SunStudioSet);
+        allAvailableCompilerSets.add(GNUSet);
+        allAvailableCompilerSets.add(MinGWSet);
+        allAvailableCompilerSets.add(CygwinSet);
+
+        SunStudioCompilerSet = new ArrayList<CompilerSet>();
+        SunStudioCompilerSet.add(SunStudioSet);
+
+        GNUCompilerSet = new ArrayList<CompilerSet>();
+        GNUCompilerSet.add(GNUSet);
     }
 
     @Test
     public void testArguments() throws IOException {
-        testSample("Arguments", "all");
+        testSample(allAvailableCompilerSets, "Arguments", defaultConfs, "");
     }
 
     @Test
     public void testInputOutput() throws IOException {
-        testSample("InputOutput", "all");
+        testSample(allAvailableCompilerSets, "InputOutput", defaultConfs, "");
     }
 
     @Test
     public void testWelcome() throws IOException {
-        testSample("Welcome", "all");
+        testSample(allAvailableCompilerSets, "Welcome", defaultConfs, "");
     }
 
     @Test
     public void testQuote() throws IOException {
-        testSample("Quote", "all");
+        testSample(allAvailableCompilerSets, "Quote", defaultConfs, "");
+    }
+
+    @Test
+    public void testSubProjects() throws IOException {
+        testSample(allAvailableCompilerSets, "SubProjects", defaultConfs, "");
+    }
+
+    @Test
+    public void testPi() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"}, "");
+            testSample(GNUCompilerSet, "Pi", new String[] {"Serial"}, "");
+        }
+        else {
+            testSample(allAvailableCompilerSets, "Pi", new String[] {"Serial"}, "");
+        }
+    }
+
+    @Test
+    public void testFreeway() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+            testSample(allAvailableCompilerSets, "Freeway", defaultConfs, "");
+        }
     }
 
     @Test
     public void testFractal() throws IOException {
-        testSample("Fractal", "CONF=Debug");
-        testSample("Fractal", "CONF=PerformanceDebug");
-        testSample("Fractal", "CONF=DianogsableRelease");
-        testSample("Fractal", "CONF=Release");
-        testSample("Fractal", "CONF=PerformanceRelease");
+        testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"}, "");
     }
-    
+
     @Test
-    public void testSubProjects() throws IOException {
-        testSample("SubProjects", "all");
+    public void testLexYacc() throws IOException {
+        if (!Utilities.isWindows()) {
+            testSample(allAvailableCompilerSets, "LexYacc", defaultConfs, "");
+        }
     }
 
-//    @Test
-//    public void testPi() throws IOException {
-//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-//            setDefaultCompilerSet("SunStudio");
-//            testSample("Pi", "all");
-//        }
-//    }
-//
-//    @Test
-//    public void testFreeway() throws IOException {
-//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-//            setDefaultCompilerSet("SunStudio");
-//            testSample("Freeway", "all");
-//            setDefaultCompilerSet("GNU");
-//            testSample("Freeway", "all");
-//        }
-//    }
-//
-//    @Test
-//    public void testFractal() throws IOException {
-//        testSample("Fractal", "CONF=Debug");
-//        testSample("Fractal", "CONF=PerformanceDebug");
-//        testSample("Fractal", "CONF=DianogsableRelease");
-//        testSample("Fractal", "CONF=Release");
-//        testSample("Fractal", "CONF=PerformanceRelease");
-//    }
-//
-//    @Test
-//    public void testLexYacc() throws IOException {
-//        testSample("LexYacc", "all");
-//    }
-//
-//    @Test
-//    public void testMP() throws IOException {
-//        testSample("MP", "all");
-//    }
-
-
-    private void setDefaultCompilerSet(String setName) {
-        List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
-        for (CompilerSet set : sets) {
-            if (set.getName().equals(setName)) {
-                CompilerSetManager.getDefault().setDefault(set);
-                break;
-            }
+    @Test
+    public void testMP() throws IOException {
+        if (!Utilities.isWindows()) {
+            testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"}, "");
         }
+    }
+
+    @Test
+    public void testHello() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(SunStudioCompilerSet, "Hello", defaultConfs, "");
+        }
+    }
+
+    @Test
+    public void testHelloQtWorld() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
+        }
+        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs, "");
+        }
+    }
+
+    @Test
+    public void testProfilingDemo() throws IOException {
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+            testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs, "");
+        }
+    }
+
+    @Override
+    protected List<Class> getServises() {
+        List<Class> list = new ArrayList<Class>();
+        list.add(MakeProjectType.class);
+        list.addAll(super.getServises());
+        return list;
     }
 
     private static Set<DataObject> instantiateSample(String name, File destdir) throws IOException {
@@ -166,23 +217,27 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         return projectCreator.instantiate(wiz);
     }
 
-    public void testSample(String sample, String target) throws IOException {
-        final CountDownLatch done = new CountDownLatch(1);
-        final AtomicInteger build_rc = new AtomicInteger(-1);
-        class MyExecutionListener implements ExecutionListener {
-
-            public void executionFinished(int rc) {
-                build_rc.set(rc);
-                done.countDown();
-            }
-
-            public void executionStarted() {
+    public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions) throws IOException {
+        for (CompilerSet set : sets) {
+            if (set != null) {
+                for (String conf : confs) {
+                    testSample(set, sample, conf, makeOptions);
+                }
             }
         }
+    }
+
+    public void testSample(CompilerSet set, String sample, String conf, String makeOptions) throws IOException {
+        final CountDownLatch done = new CountDownLatch(1);
+        final AtomicInteger build_rc = new AtomicInteger(-1);
+
+        CompilerSetManager.getDefault().setDefault(set);
+        MakeOptions.setDefaultMakeOptions(makeOptions);
 
         File workDir = getWorkDir();//new File("/tmp");
-        File projectDir = new File(workDir, sample);
+        File projectDir = new File(workDir, sample + set.getName() + conf);
         File mainProjectDir = null;
+        FileObject mainProjectDirFO = null;
         Set<DataObject> projectDataObjects;
 
         projectDataObjects = instantiateSample(sample, projectDir);
@@ -190,30 +245,67 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         for (DataObject projectDataObject : projectDataObjects) {
             FileObject projectDirFO = projectDataObject.getPrimaryFile();
             if (mainProjectDir == null) {
+                mainProjectDirFO = projectDirFO;
                 mainProjectDir = FileUtil.toFile(projectDirFO);
             }
             ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
             MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
+            descriptor.getConfs().setActive(conf);
             descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         }
 
-        File makefile = new File(mainProjectDir, "Makefile");
-        FileObject makefileFileObject = FileUtil.toFileObject(makefile);
-        assertTrue("makefileFileObject == null", makefileFileObject != null);
-        DataObject dObj = null;
-        try {
-            dObj = DataObject.find(makefileFileObject);
-        } catch (DataObjectNotFoundException ex) {
-        }
-        assertTrue("DataObjectNotFoundException", dObj != null);
-        Node node = dObj.getNodeDelegate();
-        assertTrue("node == null", node != null);
+        final String successLine = "BUILD SUCCESSFUL";
+        final String failureLine = "BUILD FAILED";
 
-        MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
-        assertTrue("ses == null", ses != null);
+        IOProvider iop = IOProvider.getDefault();
+        assert iop instanceof CndTestIOProvider;
+        ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
+            public void linePrinted(String line) {
+                if(line != null) {
+                    if (line.startsWith(successLine)) {
+                        build_rc.set(0);
+                        done.countDown();
+                    }
+                    else if (line.startsWith(failureLine)) {
+                        // message is:
+                        // BUILD FAILED (exit value 1, total time: 326ms)
+                        int rc = -1;
+                        String[] tokens = line.split("[ ,]");
+                        if (tokens.length > 4) {
+                            try {
+                                rc = Integer.parseInt(tokens[4]);
+                            } catch(NumberFormatException nfe) {
+                                nfe.printStackTrace();
+                            }
+                        }
+                        build_rc.set(rc);
+                        done.countDown();
+                    }
+                }
+            }
+        });
 
-        MakeAction.execute(node, target, new MyExecutionListener(), null, null, null);
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
+        MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+        makeActionProvider.invokeAction("build", null);
 
+//        File makefile = new File(mainProjectDir, "Makefile");
+//        FileObject makefileFileObject = FileUtil.toFileObject(makefile);
+//        assertTrue("makefileFileObject == null", makefileFileObject != null);
+//        DataObject dObj = null;
+//        try {
+//            dObj = DataObject.find(makefileFileObject);
+//        } catch (DataObjectNotFoundException ex) {
+//        }
+//        assertTrue("DataObjectNotFoundException", dObj != null);
+//        Node node = dObj.getNodeDelegate();
+//        assertTrue("node == null", node != null);
+//
+//        MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
+//        assertTrue("ses == null", ses != null);
+//
+//        MakeAction.execute(node, target, new MyExecutionListener(), null, null, null);
+//
         try {
             done.await();
         } catch (InterruptedException ir) {

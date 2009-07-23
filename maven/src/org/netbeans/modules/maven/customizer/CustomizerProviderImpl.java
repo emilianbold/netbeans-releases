@@ -150,7 +150,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setTitle( MessageFormat.format(
                     org.openide.util.NbBundle.getMessage(CustomizerProviderImpl.class, "TIT_Project_Properties"),
                     new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
-            
+            dialog.setModal(true);
             dialog.setVisible(true);
         } catch (FileNotFoundException ex) {
             if ("No pom file exists.".equals(ex.getMessage())) { //NOI18N
@@ -332,6 +332,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         Utilities.saveChanges(handle.getPOMModel());
         if (handle.isModified(handle.getProfileModel())) {
             Utilities.saveChanges(handle.getProfileModel());
+        } else {
+            if (handle.getProfileModel().isIntransaction()) {
+                handle.getProfileModel().rollbackTransaction();
+            }
         }
         if (handle.isModified(handle.getActionMappings())) {
             writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));

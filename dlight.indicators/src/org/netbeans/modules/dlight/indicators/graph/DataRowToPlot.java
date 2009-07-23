@@ -50,7 +50,7 @@ public interface DataRowToPlot {
 
     public void tick();
 
-    public int[] getGraphData();
+    public float[] getGraphData();
 
     public Map<String, String> getDetails();
 }

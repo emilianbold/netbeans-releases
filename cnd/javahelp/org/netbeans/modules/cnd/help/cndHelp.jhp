@@ -28,6 +28,7 @@
 				<file title="CandC++SessionsWindow.html"/>
 				<file title="CandC++ThreadsWindow.html"/>
 				<file title="CandC++WatchesWindow.html"/>
+				<file title="CodeAssistance.html"/>
 				<file title="CompilerOptions.html"/>
 				<file title="CompilingSingleCandC++File.html"/>
 				<file title="CorC++VariablesandExpressions.html"/>
@@ -110,6 +111,8 @@
 				<file title="ProjectsWindow.html"/>
 			</directory>
 			<directory title="images">
+				<file title="appclient.gif"/>
+				<file title="application_assembler_16.gif"/>
 				<file title="arrow.gif"/>
 				<file title="blue-ball-mid.gif"/>
 				<file title="blue-sqr-mid.gif"/>
@@ -143,14 +146,19 @@
 				<file title="cswitch.gif"/>
 				<file title="CurrentFrame.gif"/>
 				<file title="CurrentSession.gif"/>
+				<file title="CurrentThread.gif"/>
+				<file title="deconstructors.png"/>
 				<file title="deconstructors_private.png"/>
 				<file title="deconstructors_protected.png"/>
+				<file title="direct_only.png"/>
 				<file title="earProjectIcon.gif"/>
 				<file title="ejbjarProjectIcon.gif"/>
+				<file title="EjbModuleNodeIcon.gif"/>
 				<file title="enumeration_16.png"/>
 				<file title="enumeration_item_16.png"/>
 				<file title="error-glyph.png"/>
 				<file title="expand.gif"/>
+				<file title="extern_variable_16.png"/>
 				<file title="Field.gif"/>
 				<file title="fields.png"/>
 				<file title="fields_private.png"/>
@@ -171,16 +179,19 @@
 				<file title="include_sys_16.png"/>
 				<file title="include_user_16.png"/>
 				<file title="j2seProject.gif"/>
+				<file title="junit_filter.gif"/>
 				<file title="local_constant.png"/>
 				<file title="local_variable.png"/>
 				<file title="LocalVariable.gif"/>
 				<file title="logical.png"/>
+				<file title="makeProject.gif"/>
 				<file title="methods.png"/>
 				<file title="methods_private.png"/>
 				<file title="methods_protected.png"/>
 				<file title="methods_static.png"/>
 				<file title="methods_static_private.png"/>
 				<file title="methods_static_protected.png"/>
+				<file title="module.gif"/>
 				<file title="namespace_16.png"/>
 				<file title="namespace_alias.png"/>
 				<file title="next.png"/>
@@ -202,14 +213,27 @@
 				<file title="platform.gif"/>
 				<file title="previous.png"/>
 				<file title="projectFolder.gif"/>
+				<file title="refresh.png"/>
+				<file title="RunningThread.gif"/>
+				<file title="runtime-window-databases.png"/>
+				<file title="runtime-window-httpserver.png"/>
+				<file title="runtime-window-processes.png"/>
+				<file title="runtime-window-servers.png"/>
+				<file title="runtime-window-vcscommands.png"/>
+				<file title="runtime-window-webservices.png"/>
+				<file title="runtime-window-xmlentitycatalogs.png"/>
 				<file title="Session.gif"/>
 				<file title="space_8pix.gif"/>
 				<file title="StaticVariable.gif"/>
 				<file title="struct_16.png"/>
 				<file title="struct_forward_decl.png"/>
+				<file title="subtypehierarchy.gif"/>
+				<file title="supertypehierarchy.gif"/>
 				<file title="SuperVariable.gif"/>
+				<file title="SuspendedThread.gif"/>
 				<file title="template_parameter_16.png"/>
 				<file title="tip.gif"/>
+				<file title="tree.png"/>
 				<file title="typedef_16.png"/>
 				<file title="union_16.png"/>
 				<file title="using_declaration_16.png"/>
@@ -218,6 +242,8 @@
 				<file title="Watch.gif"/>
 				<file title="webPages.gif"/>
 				<file title="webProjectIcon.gif"/>
+				<file title="who_includes.png"/>
+				<file title="who_is_included.png"/>
 			</directory>
 			<directory title="WorkingWithCandC++Projects">
 				<file title="AboutCandC++Projects.html"/>
@@ -231,6 +257,7 @@
 				<file title="CodeAssistanceWizardP5.html"/>
 				<file title="CodeAssistanceWizardP6.html"/>
 				<file title="CompilingSingleCandC++File.html"/>
+				<file title="Configuring.html"/>
 				<file title="ConfiguringBuildTools.html"/>
 				<file title="ConfiguringCodeStyle.html"/>
 				<file title="ConfiguringFileExtensions.html"/>
@@ -267,6 +294,7 @@
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
 				<file title="RemoteDevelopment.html"/>
+				<file title="RunningCorC++Project.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>
 				<file title="SettingMainCorC++Project.html"/>
@@ -274,6 +302,7 @@
 			</directory>
 			<file title="cnd.hs"/>
 			<file title="cndTOC.xml"/>
+			<file title="credits.html"/>
 			<file title="map.xml"/>
 			<file title="stopwords.swd"/>
 		</directory>

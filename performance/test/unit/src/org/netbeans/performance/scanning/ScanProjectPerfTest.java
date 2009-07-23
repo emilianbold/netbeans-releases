@@ -82,6 +82,11 @@ public class ScanProjectPerfTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDirPath());
     }
 
+    @Override
+    protected int timeOut() {
+        return 15*60000; // 15min
+    }
+
     public void testScanJEdit() throws IOException, ExecutionException, InterruptedException {
         String zipPath = Utilities.projectOpen("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", "jEdit41.zip");
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
@@ -97,7 +102,7 @@ public class ScanProjectPerfTest extends NbTestCase {
         FileObject projectDir = Utilities.openProject("clean/projects/ST", getWorkDir());
         scanProject(projectDir);
     }
-    
+
     public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
         String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "mediawiki.zip";
         File f = new File(zipPath);
@@ -110,6 +115,18 @@ public class ScanProjectPerfTest extends NbTestCase {
         scanProject(projectDir);
     }
     
+    public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
+        String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "openjdk.zip";
+        File f = new File(zipPath);
+        if (!f.exists()) {
+             zipPath = Utilities.projectOpen("http://kim-sun.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip", "openjdk.zip");
+        }
+        File zipFile = FileUtil.normalizeFile(new File(zipPath));
+        Utilities.unzip(zipFile, getWorkDirPath());
+        FileObject projectDir = Utilities.openProject("openjdk/jdk/make/netbeans/world", getWorkDir());
+        scanProject(projectDir);
+    }
+
     private void scanProject(final FileObject projectDir) throws IOException, ExecutionException, InterruptedException{
         final String projectName = projectDir.getName();
         
@@ -140,7 +157,7 @@ public class ScanProjectPerfTest extends NbTestCase {
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
                 addTest(ScanProjectPerfTest.class).
-                clusters(".*").
+                clusters(".*").gui(false).
                 enableModules("php.*", ".*"));
     }
 

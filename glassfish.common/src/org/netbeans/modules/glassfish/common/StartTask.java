@@ -358,7 +358,7 @@ public class StartTask extends BasicTask<OperationState> {
     private NbProcessDescriptor createProcessDescriptor() throws ProcessCreationException { 
         String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
                 File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
-        if (!File.separator.equals("/")) {
+        if (Utilities.isWindows()) {
             startScript += ".exe"; // NOI18N
         }
         File ss = new File(startScript);
@@ -631,6 +631,33 @@ public class StartTask extends BasicTask<OperationState> {
                     readJvmConfig = false;
                 }
             };
+        }
+
+        @Override
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
+//            <java-config
+//                classpath-prefix="CP-PREFIX"
+//                classpath-suffix="CP-SUFFIX"
+//                debug-enabled="false"
+//                debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009"
+//                env-classpath-ignored="false"
+//                java-home="${com.sun.aas.javaRoot}"
+//                javac-options="-g"
+//                native-library-path-prefix="NATIVE-LIB-PREFIX"
+//                native-library-path-suffix="NATIVE-LIB-SUFFIX"
+//                rmic-options="-iiop -poa -alwaysgenerate -keepgenerated -g"
+//                server-classpath="SERVER-CLASSPATH"
+//                system-classpath="SYSTEM-CLASSPATH">
+            if(readJvmConfig) {
+                String prefix = attributes.getValue("classpath-prefix");
+                String suffix = attributes.getValue("classpath-suffix");
+                boolean ignoreEnvCP = "true".equals(attributes.getValue("env-classpath-ignored"));
+                String javaHome = attributes.getValue("java-home");
+
+
+
+
+            }
         }
         
         @Override

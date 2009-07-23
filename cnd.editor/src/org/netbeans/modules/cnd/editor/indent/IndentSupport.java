@@ -171,7 +171,14 @@ public class IndentSupport {
 
     private boolean isComment(TokenItem token) {
         CppTokenId tokenID = token.getTokenID();
-        return (tokenID == CppTokenId.LINE_COMMENT || tokenID == CppTokenId.BLOCK_COMMENT);
+        switch (tokenID) {
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case DOXYGEN_COMMENT:
+            case DOXYGEN_LINE_COMMENT:
+                return true;
+        }
+        return false;
     }
 
     private boolean isImportant(TokenItem token) {

@@ -44,15 +44,37 @@ import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.mobility.project.ui.security.ExportPanel;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * @author David Kaspar
  */
 public class MEKeyTool {
     
+    public static String getMEKeyToolPath(final Object target) {
+        if (target == null)
+            return null;
+
+        if (target instanceof J2MEPlatform){
+            return getMEKeyToolPath((J2MEPlatform)target);
+        } else {
+            return getMEKeyToolPath((J2MEPlatform.Device)target);
+        }
+    }
+
     public static String getMEKeyToolPath(final J2MEPlatform platform) {
         if (platform == null)
             return null;
@@ -65,6 +87,50 @@ public class MEKeyTool {
         return toolFile.getAbsolutePath();
     }
     
+    public static String getMEKeyToolPath(final J2MEPlatform.Device device) {
+        final Collection<JavaPlatform> javaMEPlatforms = ExportPanel.getJavaMEPlatformsWithoutBdj();
+        for (final JavaPlatform javaPlatform : javaMEPlatforms) {
+            if (javaPlatform instanceof J2MEPlatform) {
+                final J2MEPlatform j2MEPlatform = (J2MEPlatform) javaPlatform;
+                J2MEPlatform.Device[] devices = j2MEPlatform.getDevices();
+                for (J2MEPlatform.Device deviceInPlatform : devices) {
+                    if (deviceInPlatform.equals(device)) {
+                        final String result = getMEKeyToolPath(j2MEPlatform);
+                        return result;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String keystoreForDevice(final J2MEPlatform.Device device) {
+        final JavaPlatformManager platformManager = JavaPlatformManager.getDefault();
+        for (final JavaPlatform platform : platformManager.getInstalledPlatforms()) {
+            if (platform != null) {
+                if (platform instanceof J2MEPlatform) {
+                    J2MEPlatform.Device[] devices = ((J2MEPlatform) platform).getDevices();
+                    for (J2MEPlatform.Device dev : devices) {
+                        if (dev.equals(device))
+                            return keystorePathForDevice(((J2MEPlatform) platform), device.getName());
+                    }
+                }
+            }
+        }
+        return  null;
+    }
+
+    public static KeyDetail[] listKeys(final Object target) {
+        if (target == null)
+            return null;
+
+        if (target instanceof J2MEPlatform){
+            return listKeys((J2MEPlatform)target);
+        } else {
+            return listKeys((J2MEPlatform.Device)target);
+        }
+    }
+
     public static KeyDetail[] listKeys(final J2MEPlatform platform) {
         final String toolString = getMEKeyToolPath(platform);
         if (toolString == null)
@@ -98,6 +164,132 @@ public class MEKeyTool {
         }
     }
     
+    public static KeyDetail[] listKeys(final J2MEPlatform.Device device) {
+        final String toolString = getMEKeyToolPath(device);
+        String ksPath = keystoreForDevice(device);
+
+        if (toolString == null)
+            return null;
+        try {
+            final BufferedReader br = execute(new String[] { toolString, "-list", "-MEkeystore", ksPath}); // NOI18N
+            final ArrayList<KeyDetail> list = new ArrayList<KeyDetail>();
+            KeyDetail key = null;
+            for (; ;) {
+                final String line = br.readLine();
+                if (line == null)
+                    break;
+                if ("".equals(line)) // NOI18N
+                    continue;
+                if (line.startsWith("Key ")) { // NOI18N
+                    if (key != null)
+                        list.add(key);
+                    try {
+                        key = new KeyDetail(Integer.parseInt(line.substring("Key ".length()))); // NOI18N
+                    } catch (NumberFormatException e) {
+                        key = null;
+                    }
+                } else if (key != null)
+                    key.addLine(line);
+            }
+            if (key != null)
+                list.add(key);
+            return list.toArray(new KeyDetail[list.size()]);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static String keystorePathForDevice(final J2MEPlatform platform, final String deviceName) {
+        File systemPropsFile = new File(platform.getHomePath() + "/toolkit-lib/modules/bootstrap/conf/system.properties"); //NOI18N
+        if (!systemPropsFile.exists()) {
+            return null;
+        }
+
+        Properties systemProps = new Properties();
+        BufferedInputStream bis = null;
+        try {
+            bis = new BufferedInputStream(new FileInputStream(systemPropsFile));
+            systemProps.load(bis);
+        } catch (IOException iOException) {
+        } finally {
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        File deviceWorkingDir = new File(System.getProperty("user.home") + File.separatorChar + systemProps.getProperty("toolkits.dir") + File.separatorChar + systemProps.getProperty("release.dir") + File.separatorChar + systemProps.getProperty("work.dir")); //NOI18N
+        if (!deviceWorkingDir.exists()) {
+            FileObject manager = platform.findTool("emulator"); //NOI18N
+            if (manager == null) return null;
+            try {
+                execute(new String[]{FileUtil.toFile(manager).toString()});
+            } catch (IOException ex) { } //no need to notify
+            if (!deviceWorkingDir.exists()){
+                return null;
+            }
+        }
+
+        FileObject deviceFolderFO = FileUtil.toFileObject(FileUtil.normalizeFile(deviceWorkingDir));
+        for (FileObject device : deviceFolderFO.getChildren()) {
+            FileObject xmlProps = device.getFileObject("properties", "xml"); //NOI18N
+            if (xmlProps == null) {
+                return null;
+            }
+
+            final boolean[] inName = {false};
+            final boolean[] found = {false};
+            try {
+                XMLReader reader = XMLUtil.createXMLReader();
+                reader.setContentHandler(new org.xml.sax.helpers.DefaultHandler() {
+
+                    @Override
+                    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                        if ("void".equals(qName) && "name".equals(attributes.getValue("property"))) { //NOI18N
+                            inName[0] = true;
+                        }
+                    }
+
+                    @Override
+                    public void endElement(String uri, String localName, String qName) throws SAXException {
+                        if (inName[0] == true && "string".equals(qName)) { //NOI18N
+                            inName[0] = false;
+                        }
+                    }
+
+                    @Override
+                    public void characters(char[] ch, int start, int length) throws SAXException {
+                        if (inName[0] == true) {
+                            if (deviceName.equals(new String(ch, start, length))) {
+                                found[0] = true;
+                            }
+                        }
+                    }
+                });
+                reader.parse(new InputSource(xmlProps.getInputStream()));
+            } catch (SAXException sAXException) {
+            } catch (IOException iOException) {
+            }
+
+            if (found[0]) {
+                final FileObject appDbFO = device.getFileObject("appdb"); //NOI18N
+                if (null == appDbFO) {
+                    return null;
+                }
+                final FileObject ksFO = appDbFO.getFileObject("_main.ks"); //NOI18N
+                if (null == ksFO) {
+                    return null;
+                }
+                final String ksPath = ksFO.toString();
+                return ksPath;
+            }
+        }
+
+        return null;
+    }
+
     public static class KeyDetail {
         
         final private int order;
@@ -195,6 +387,7 @@ public class MEKeyTool {
             this.sb = sb;
         }
         
+        @Override
         public void run() {
             try {
                 final InputStreamReader r = new InputStreamReader(is);

@@ -331,7 +331,7 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
             return new String[] { name };
         }
         String keyPart = name.substring (pos);
-        String modsPart = org.openide.util.Utilities.replaceString (name.substring (0, pos), "-", ""); //NOI18N
+        String modsPart = name.substring(0, pos).replace("-", ""); //NOI18N
         if (modsPart.length() > 1) {
             Collection perms = new HashSet(modsPart.length() * modsPart.length());
             int idx = name.indexOf(key);

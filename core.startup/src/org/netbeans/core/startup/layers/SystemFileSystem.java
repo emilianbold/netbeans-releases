@@ -52,7 +52,6 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -216,15 +215,13 @@ implements FileSystem.Status, FileChangeListener {
 
     /** Annotate name
     */
-    public String annotateName (String s, Set set) {
+    public String annotateName(String s, Set<? extends FileObject> files) {
 
         // Look for a localized file name.
         // Note: all files in the set are checked. But please only place the attribute
         // on the primary file, and use this primary file name as the bundle key.
-        Iterator it = set.iterator ();
-        while (it.hasNext ()) {
+        for (FileObject fo : files) {
             // annotate a name
-            FileObject fo = (FileObject) it.next ();
             String displayName = annotateName(fo);
             if (displayName != null) {
                 return displayName;
@@ -283,10 +280,8 @@ implements FileSystem.Status, FileChangeListener {
 
     /** Annotate icon
     */
-    public Image annotateIcon (Image im, int type, Set s) {
-        Iterator it = s.iterator ();
-        while (it.hasNext ()) {
-            FileObject fo = (FileObject) it.next ();
+    public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
+        for (FileObject fo : files) {
             Image img = annotateIcon(fo, type);
             if (img != null) {
                 return img;

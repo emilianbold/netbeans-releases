@@ -294,6 +294,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                     boolean found = false;
 
+                    // commented out to fix #168745 - the field needs
+                    // to be added as a child to the class that contains it
+                    // even if there is an attribute_accessor for it.
+                    // (leaving this code here as i don't know what was the original
+                    // reason for excluding it - possibly something i can't think of now)
+                    /**
                     for (AstElement member : clz.getChildren()) {
                         if ((member.getKind() == ElementKind.ATTRIBUTE) &&
                                 member.getName().equals(fieldName)) {
@@ -302,6 +308,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                             break;
                         }
                     }
+                    */
 
                     if (!found) {
                         clz.addChild(co);
@@ -886,7 +893,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             path.ascend();
         }
     }
-    
+
     /** Analyze the given method and see if it looks like the following
      * common pattern (at least in Rails) :
      * <pre>

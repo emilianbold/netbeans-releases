@@ -127,8 +127,6 @@ public class Subversion {
     }
 
     private void init() {
-        loadIniParserClassesWorkaround();
-
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
         fileStatusProvider = new FileStatusProvider();
@@ -139,19 +137,6 @@ public class Subversion {
         SubversionVCS svcs  = org.openide.util.Lookup.getDefault().lookup(SubversionVCS.class);
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
-    }
-
-    /**
-     * Ini4j uses context classloader to load classes, use this as a workaround.
-     */
-    private void loadIniParserClassesWorkaround() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        try {
-            SvnConfigFiles.getInstance();   // triggers ini4j initialization
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
     }
 
     private void cleanup() {
@@ -208,6 +193,8 @@ public class Subversion {
                                String username,
                                String password,
                                int handledExceptions) throws SVNClientException {
+        // ping config file copying
+        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
         return client;
@@ -216,7 +203,7 @@ public class Subversion {
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
         String username = ""; // NOI18N
         String password = ""; // NOI18N
-        
+
         SvnKenaiSupport kenaiSupport = SvnKenaiSupport.getInstance();
         if(kenaiSupport.isKenai(repositoryUrl.toString())) {
             PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(false);
@@ -238,6 +225,8 @@ public class Subversion {
                                String username,
                                String password,
                                SvnProgressSupport support) throws SVNClientException {
+        // ping config file copying
+        SvnConfigFiles.getInstance();
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
@@ -301,6 +290,8 @@ public class Subversion {
      */
     public SvnClient getClient(boolean attachListeners) throws SVNClientException {
         cleanupFilesystem();
+        // ping config file copying
+        SvnConfigFiles.getInstance();
         if(attachListeners) {
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();

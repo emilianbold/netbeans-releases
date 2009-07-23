@@ -38,230 +38,31 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapData;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadMapDataQuery;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapDataProvider;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.threadmap.storage.ThreadMapDataStorage;
 
-/**
- *
- * @author ak119685
- */
 public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
-    private final ThreadMapStorage dataBase = new ThreadMapStorage();
-
-    public List<ThreadMapData> queryData(ThreadMapDataQuery query) {
-        return dataBase.getThreadMap(query);
-    }
-
-    public void attachTo(DataStorage storage) {
-    }
+    private final ThreadMapDataStorage storage = ThreadMapDataStorage.getInstance();
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public ThreadMapData queryData(ThreadMapDataQuery query) {
+        if (storage == null) {
+            throw new NullPointerException("No STORAGE"); // NOI18N
+        }
+
+        return storage.queryThreadMapData(query);
     }
 
-    private static final class ThreadMapStorage {
-
-        private final List<MockThreadMapData> storage = new ArrayList<MockThreadMapData>();
-        private Timer timer = new Timer();
-        private int currentTime = 0;
-//        private ThreadMapMetadata query;
-
-        private ThreadMapStorage() {
-            timer.schedule(new TimerTask() {
-
-                @Override
-                public void run() {
-                    if (currentTime == 0) {
-                        storage.add(new MockThreadMapData("Dispather", 1, 97, 900, 3)); //NOI18N
-                    }
-                    if (currentTime == 20) {
-                        storage.add(new MockThreadMapData("Worker", 2, 980, 0, 20)); //NOI18N
-                    }
-                    if (currentTime == 30) {
-                        storage.add(new MockThreadMapData("Bad Dispather", 3, 800, 200, 0)); //NOI18N
-                    }
-                    if (currentTime == 50) {
-                        storage.add(new MockThreadMapData("Bad Worker", 4, 800, 0, 200)); //NOI18N
-                    }
-                    for (MockThreadMapData data : storage) {
-                        data.advance(currentTime);
-                    }
-                    currentTime++;
-                }
-            }, 0, 1000);
-        }
-
-        public List<ThreadMapData> getThreadMap(ThreadMapDataQuery query) {
-            List<ThreadMapData> result = new ArrayList<ThreadMapData>();
-            assert query.getTimeUnit() == TimeUnit.SECONDS;
-            assert query.getStep() == 1;
-            assert !query.isFullState();
-//            this.query = query;
-            for (MockThreadMapData data : storage) {
-                ThreadInfo info = data.getThreadInfo();
-                List<ThreadState> list = new ArrayList<ThreadState>();
-                for (ThreadState state : data.getThreadState()) {
-                    int start = (int) state.getTimeStamp();
-                    if (start < query.getTimeFrom() * 1000) {
-                        continue;
-                    } else if (start > query.getTimeTo() * 1000) {
-                        break;
-                    }
-                    list.add(state);
-                }
-                result.add(new ThreadMapDataImpl(info, list));
-            }
-            return result;
-        }
-    }
-
-    private static final class ThreadMapDataImpl implements ThreadMapData {
-
-        private final ThreadInfo info;
-        private final List<ThreadState> list;
-
-        public ThreadMapDataImpl(ThreadInfo info, List<ThreadState> list) {
-            this.info = info;
-            this.list = list;
-        }
-
-        public ThreadInfo getThreadInfo() {
-            return info;
-        }
-
-        public List<ThreadState> getThreadState() {
-            return list;
-        }
-    }
-
-    private static final class MockThreadMapData implements ThreadMapData {
-
-        private final ThreadInfo info;
-        private final List<ThreadState> threadLine = new LinkedList<ThreadState>();
-        private final int running;
-        private final int waiting;
-        private final int blocking;
-        private final int sleeping;
-        private final Random rand = new Random();
-
-        public MockThreadMapData(final String name, final int id, int running, int waiting, int blocking) {
-            info = new ThreadInfo() {
-
-                public int getThreadId() {
-                    return id;
-                }
-
-                public String getThreadName() {
-                    return name;
-                }
-            };
-            this.running = running;
-            this.waiting = waiting;
-            this.blocking = blocking;
-            sleeping = 1000 - running - waiting - blocking;
-        }
-
-        public ThreadInfo getThreadInfo() {
-            return info;
-        }
-
-        public List<ThreadState> getThreadState() {
-            return threadLine;
-        }
-
-        public void advance(int currentTime) {
-            int runningTime = running > 0 ? rand.nextInt(running) : 0;
-            int waitingTime = waiting > 0 ? rand.nextInt(waiting) : 0;
-            int blockingTime = blocking > 0 ? rand.nextInt(blocking) : 0;
-            int sleepingTime = sleeping > 0 ? rand.nextInt(sleeping) : 0;
-            int s = runningTime + waitingTime + blockingTime + sleepingTime;
-            int rest = 0;
-            int oldRest = 0;
-            oldRest = rest;
-            rest = (1000 * runningTime + rest) % s;
-            runningTime = (1000 * runningTime + oldRest) / s;
-            oldRest = rest;
-            rest = (1000 * waitingTime + rest) % s;
-            waitingTime = (1000 * waitingTime + oldRest) / s;
-            oldRest = rest;
-            rest = (1000 * blockingTime + rest) % s;
-            blockingTime = (1000 * blockingTime + oldRest) / s;
-            sleepingTime = 1000 - runningTime - waitingTime - blockingTime;
-            MockThreadState state = new MockThreadState(currentTime * 1000, runningTime, waitingTime, blockingTime, sleepingTime);
-            threadLine.add(state);
-        }
-    }
-
-    private static final class MockThreadState implements ThreadState {
-
-        private final short runningTime;
-        private final short waitingTime;
-        private final short blockingTime;
-        private final short sleepingTime;
-        private final long currentTime;
-
-        public MockThreadState(int currentTime, int runningTime, int waitingTime, int blockingTime, int sleepingTime) {
-            this.runningTime = (short) runningTime;
-            this.waitingTime = (short) waitingTime;
-            this.blockingTime = (short) blockingTime;
-            this.sleepingTime = (short) sleepingTime;
-            this.currentTime = currentTime;
-        }
-
-        public int size() {
-            return 4;
-        }
-
-        public String getStateName(int index) {
-            switch (index) {
-                case 0:
-                    return ThreadState.ShortThreadState.Blocked.name();
-                case 1:
-                    return ThreadState.ShortThreadState.Running.name();
-                case 2:
-                    return ThreadState.ShortThreadState.Sleeping.name();
-                case 3:
-                    return ThreadState.ShortThreadState.Waiting.name();
-            }
-            throw new IllegalArgumentException();
-        }
-
-        public int getState(int index) {
-            switch (index) {
-                case 0:
-                    return blockingTime;
-                case 1:
-                    return runningTime;
-                case 2:
-                    return sleepingTime;
-                case 3:
-                    return waitingTime;
-            }
-            throw new IllegalArgumentException();
-        }
-
-        public long getTimeStamp(int index) {
-            return currentTime;
-        }
-
-        public long getTimeStamp() {
-            return currentTime;
-        }
+    public StackTrace getStackTrace(long timestamp, ThreadInfo threadInfo, MSAState threadState) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

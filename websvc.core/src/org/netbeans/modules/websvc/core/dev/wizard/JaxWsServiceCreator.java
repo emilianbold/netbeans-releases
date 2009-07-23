@@ -474,6 +474,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     if (interfaceClass[0] == null) {
                         interfaceClass[0] = ref.getRemote();
                     }
+                    if (interfaceClass[0] == null) {
+                        interfaceClass[0] = ref.getEjbClass();
+                    }
 
                     ejbRefInjection = generateEjbInjection(workingCopy, make, interfaceClass[0], onClassPath);
 
@@ -552,7 +555,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
         Set<String> operationNames = new HashSet<String>();
         for (Element el : interfaceElements) {
-            if (el.getKind() == ElementKind.METHOD) {
+            if (el.getKind() == ElementKind.METHOD && el.getModifiers().contains(Modifier.PUBLIC)) {
                 ExecutableElement methodEl = (ExecutableElement) el;
                 MethodTree method = utils.createAbstractMethodImplementation(classElement, methodEl);
 

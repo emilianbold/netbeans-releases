@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
 /*package*/ class ThreadMapIndicator extends Indicator<ThreadMapIndicatorConfiguration> {
@@ -66,10 +67,18 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 
     @Override
     public void updated(List<DataRow> data) {
+//        for (DataRow row : data) {
+//            System.out.println("!!! " + row.toString());
+//        }
     }
 
     @Override
     public void reset() {
+    }
+
+    @Override
+    protected List<Column> getMetadataColumns() {
+        return super.getMetadataColumns();
     }
 
     @Override

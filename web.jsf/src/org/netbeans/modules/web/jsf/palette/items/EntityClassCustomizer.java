@@ -171,6 +171,9 @@ public final class EntityClassCustomizer extends javax.swing.JPanel {
                                           : detail.isSelected() ? EntityClass.FORM_TYPE_DETAIL : EntityClass.FORM_TYPE_NEW;
         entityClass.setFormType(formType);
 
+        if (formType == EntityClass.FORM_TYPE_EMPTY)
+            return;
+        
         if (managedBeanCreate.isSelected()) {
             String beanName = managedBeanName.getText();
             entityClass.setVariable(beanName);

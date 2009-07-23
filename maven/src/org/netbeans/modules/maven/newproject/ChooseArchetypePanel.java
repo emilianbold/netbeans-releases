@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +72,8 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -86,6 +89,15 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
 
     private static File getLocalCatalogFile() {
         return new File(new File(System.getProperty("user.home"), ".m2"), "archetype-catalog.xml"); //NOI18N
+    }
+
+    private static FileObject getDefaultCatalogFileObject() {
+        URL url = ChooseArchetypePanel.class.getClassLoader().getResource("org/netbeans/modules/maven/archetype-catalog.xml");
+        System.out.println("url1=" + url);
+        if (url != null) {
+            return URLMapper.findFileObject(url);
+        }
+        return null;
     }
 
     private ExplorerManager manager;
@@ -442,13 +454,16 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return new Node[] { createLocalRepoNode() };
             }
             if (arch == CATALOGS_PLACEHOLDER) {
+                List<Node> nds = new ArrayList<Node>();
                 Node nd = createLocalCatalogNode();
                 if (nd != null) {
-                    return new Node[] {nd};
-                } else {
-                    return new Node[0];
+                    nds.add(nd);
                 }
-                //TODO add more catalogs here..
+                Node def = createDefaultCatalogNode();
+                if (def != null) {
+                    nds.add(def);
+                }
+                return nds.toArray(new Node[0]);
             }
             return ChooseArchetypePanel.createNodes(arch, Children.LEAF);
         }
@@ -490,6 +505,18 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider(fil)));
         nd.setName("local-catalog-content"); //NOI18N
         nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_LocalCatalog"));
+        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
+        return nd;
+    }
+
+    private static Node createDefaultCatalogNode() {
+        FileObject fil = getDefaultCatalogFileObject();
+        if (fil == null) {
+            return null;
+        }
+        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider(fil)));
+        nd.setName("default-catalog-content"); //NOI18N
+        nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_DefaultCatalog"));
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
         return nd;
     }

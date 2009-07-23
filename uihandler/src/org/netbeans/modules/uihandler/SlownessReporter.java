@@ -74,6 +74,7 @@ class SlownessReporter {
     private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     static final long LATEST_ACTION_LIMIT = 1000;//ms
+    private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 60000); // NOI18N
 
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
@@ -101,10 +102,9 @@ class SlownessReporter {
                 break;
             }
             if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
-                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage()))) {
+                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage())) ||
+                    (UI_ACTION_KEY_PRESS.equals(rec.getMessage()))) {
                 latestActionClassName = getParam(rec, 4);
-            } else if (UI_ACTION_KEY_PRESS.equals(rec.getMessage())) {
-                latestActionClassName = getParam(rec, 2);
             }
             if (latestActionClassName != null) {
                 latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N
@@ -140,6 +140,14 @@ class SlownessReporter {
                     ImageUtilities.loadImageIcon("org/netbeans/modules/uihandler/vilik.png", true),
                     createPanel(), createPanel(),
                     NotificationDisplayer.Priority.LOW);
+            if (CLEAR > 0) {
+                Installer.RP.post(new Runnable() {
+
+                    public void run() {
+                        clear();
+                    }
+                }, CLEAR, Thread.MIN_PRIORITY);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {

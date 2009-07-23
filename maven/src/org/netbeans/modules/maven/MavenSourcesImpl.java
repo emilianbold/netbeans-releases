@@ -439,6 +439,22 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 folder = FileUtilities.convertStringToFile(mp.getBuild().getTestSourceDirectory());
             }
         }
+        if (MavenSourcesImpl.TYPE_GROOVY.equals(type)) {
+            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
+                folder = new File(project.getGroovyDirectory(false));
+            }
+            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+                folder = new File(project.getGroovyDirectory(true));
+            }
+        }
+        if (MavenSourcesImpl.TYPE_SCALA.equals(type)) {
+            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
+                folder = new File(project.getScalaDirectory(false));
+            }
+            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
+                folder = new File(project.getScalaDirectory(true));
+            }
+        }
         if (folder != null) {
             folder.mkdirs();
             FileUtil.refreshFor(folder);

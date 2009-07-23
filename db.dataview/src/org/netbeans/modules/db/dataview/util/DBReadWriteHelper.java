@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -353,8 +354,8 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "Invalid Data for" + jdbcType + "type --", e);
-            throw new DBException("Invalid Data for " + jdbcType + " type ", e);
+            mLogger.log(Level.SEVERE, "Invalid Data for" + jdbcType + "type -- ", e); // NOI18N
+            throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_InvalidType", jdbcType, e)); // NOI18N
         }
     }
 
@@ -381,8 +382,7 @@ public class DBReadWriteHelper {
                         } else if ((str.equalsIgnoreCase("false")) || (str.equalsIgnoreCase("0"))) { // NOI18N
                             return Boolean.FALSE;
                         } else {
-                            String errMsg = "Values must be true/false or numeric 0 or 1";
-                            throw new DBException(errMsg);
+                            throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_Boolean")); // NOI18N
                         }
                     }
                 }
@@ -425,23 +425,20 @@ public class DBReadWriteHelper {
                 case -9:  //NVARCHAR
                 case -8:  //ROWID
                 case -15: //NCHAR
-                    if (valueObj.toString().length() > col.getPrecision()) {
+                    if (col.getPrecision() > 0 && valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName(false);
-                        String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
-                        throw new DBException(errMsg);
+                        throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_TooLarge", valueObj, colName)); // NOI18N
                     }
                     return valueObj;
 
                 case Types.BIT:
                     if (valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName(false);
-                        String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
-                        throw new DBException(errMsg);
+                        throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_TooLarge", valueObj, colName)); // NOI18N
                     }
                     if (valueObj.toString().trim().length() == 0) {
                         String colName = col.getQualifiedName(false);
-                        String errMsg = "Invalid data for column " + colName;
-                        throw new DBException(errMsg);
+                        throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_Invalid", valueObj, colName)); // NOI18N
                     }
                     BinaryToStringConverter.convertBitStringToBytes(valueObj.toString());
                     return valueObj;
@@ -466,9 +463,7 @@ public class DBReadWriteHelper {
             String type = col.getTypeName();
             String colName = col.getQualifiedName(false);
             int precision = col.getPrecision();
-            String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
-            errMsg += "\nCause: " + e.getMessage();
-            throw new DBException(errMsg);
+            throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_ErrLog", new Object[] {colName, type, precision, e.getLocalizedMessage()}));
         }
     }
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.mercurial.util;
 import java.awt.EventQueue;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import javax.swing.JOptionPane;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -66,6 +65,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -256,6 +256,7 @@ public class HgCommand {
     private final static String HG_HEADS_CREATED_ERR = "(+1 heads)"; // NOI18N
     private final static String HG_NO_HG_CMD_FOUND_ERR = "hg: not found";
     private final static String HG_ARG_LIST_TOO_LONG_ERR = "Arg list too long";
+    private final static String HG_ARGUMENT_LIST_TOO_LONG_ERR = "Argument list too long"; //NOI18N
 
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
 
@@ -315,6 +316,32 @@ public class HgCommand {
     private static final String HG_LOG_CHANGESET_GENERAL_NAME = "changeset.tmpl"; //NOI18N
     private static final String HG_LOG_STYLE_NAME = "log.style";        //NOI18N
     private static final String HG_ARGUMENT_STYLE = "--style=";         //NOI18N
+    private static final int WINDOWS_MAX_COMMANDLINE_SIZE = 8000;
+    private static final int MAC_MAX_COMMANDLINE_SIZE = 64000;
+    private static final int UNIX_MAX_COMMANDLINE_SIZE = 128000;
+    private static final int MAX_COMMANDLINE_SIZE;
+    static {
+        String maxCmdSizeProp = System.getProperty("mercurial.maxCommandlineSize");
+        if (maxCmdSizeProp == null) {
+            maxCmdSizeProp = "";                                            //NOI18N
+        }
+        int maxCmdSize = 0;
+        try {
+            maxCmdSize = Integer.parseInt(maxCmdSizeProp);
+        } catch (NumberFormatException e) {
+            maxCmdSize = 0;
+        }
+        if (maxCmdSize < 1024) {
+            if (Utilities.isWindows()) {
+                maxCmdSize = WINDOWS_MAX_COMMANDLINE_SIZE;
+            } else if (Utilities.isMac()) {
+                maxCmdSize = MAC_MAX_COMMANDLINE_SIZE;
+            } else {
+                maxCmdSize = UNIX_MAX_COMMANDLINE_SIZE;
+            }
+        }
+        MAX_COMMANDLINE_SIZE = maxCmdSize;
+    }
 
     /**
      * Merge working directory with the head revision
@@ -1757,33 +1784,22 @@ public class HgCommand {
 
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
-
-            List<String> saveCommand = null;
-            if(Utilities.isWindows()) {
-                saveCommand = new ArrayList<String>(command);
-            }
-
             for(File f: commitFiles){
-                command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+                if (f.getAbsolutePath().length() >= repository.getAbsolutePath().length()) {
+                    // list contains the root itself
+                    command.add(f.getAbsolutePath());
+                } else {
+                    command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+                }
             }
             if(Utilities.isWindows()) {
-                // Count size of command
                 int size = 0;
+                // Count size of command
                 for (String line : command) {
                     size += line.length();
                 }
-                int maxSize = 32767; // Assume CreateProcess is used
-                if (size > maxSize) {
-                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_QUERY")); // NOI18N
-                    descriptor.setTitle(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
-                    descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
-                    descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-
-                    Object res = DialogDisplayer.getDefault().notify(descriptor);
-                    if (res == NotifyDescriptor.NO_OPTION) {
-                        return;
-                    }
-                    command = saveCommand;
+                if (isTooLongCommand(size)) {
+                    throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR", command.get(1), command.size() -2 )); //NOI18N
                 }
             }
             List<String> list = exec(command);
@@ -1876,23 +1892,46 @@ public class HgCommand {
     public static void doAdd(File repository, List<File> addFiles, OutputLogger logger)  throws HgException {
         if (repository == null) return;
         if (addFiles.size() == 0) return;
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_ADD_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-
-        for(File f: addFiles){
-            if(f.isDirectory())
-                continue;
-            // We do not look for files to ignore as we should not here
-            // with a file to be ignored.
-            command.add(f.getAbsolutePath());
+        List<String> basicCommand = new ArrayList<String>();
+        int basicCommandSize = 0, commandSize = 0; // limitation for windows max command line size - #168155
+        basicCommand.add(getHgCommand());
+        basicCommand.add(HG_ADD_CMD);
+        basicCommand.add(HG_OPT_REPOSITORY);
+        basicCommand.add(repository.getAbsolutePath());
+        for (String s : basicCommand) {
+            basicCommandSize += s.length() + 1;
         }
-        List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"), logger);
+        // iterating through all files, cannot add all files immediately, too many files can cause troubles
+        // adding files to the command one by one and testing if the command's size doesn't exceed OS limits
+        ListIterator<File> iterator = addFiles.listIterator();
+        while (iterator.hasNext()) {
+            // each loop will call one add command
+            List<String> command = new LinkedList<String>(basicCommand);
+            commandSize = basicCommandSize;
+            boolean fileAdded = false;
+            while (iterator.hasNext()) {
+                File f = iterator.next();
+                if (f.isDirectory()) {
+                    continue;
+                }
+                // test if limits aren't exceeded
+                commandSize += f.getAbsolutePath().length() + 1;
+                if (fileAdded // at least one file must be added
+                        && isTooLongCommand(commandSize)) {
+                    Mercurial.LOG.fine("doAdd: adding files in loop");  //NOI18N
+                    iterator.previous();
+                    break;
+                }
+                // We do not look for files to ignore as we should not here
+                // with a file to be ignored.
+                command.add(f.getAbsolutePath());
+                fileAdded = true;
+            }
+            List<String> list = exec(command);
+            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0))) {
+                handleError(command, list, list.get(0), logger);
+            }
+        }
     }
 
     /**
@@ -2228,25 +2267,54 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doRemove(File repository, List<File> removeFiles, OutputLogger logger)  throws HgException {
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_REMOVE_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add(HG_REMOVE_FLAG_FORCE_CMD);
-        for(File f: removeFiles){
-            try {
-                command.add(f.getCanonicalPath());
-            } catch (IOException ioe) {
-                Mercurial.LOG.log(Level.WARNING, null, ioe); // NOI18N
-                command.add(f.getAbsolutePath()); // don't give up
+        if (repository == null) return;
+        if (removeFiles.size() == 0) return;
+        List<String> basicCommand = new ArrayList<String>();
+        int basicCommandSize = 0, commandSize = 0; // limitation for windows max command line size - #168155
+        basicCommand.add(getHgCommand());
+        basicCommand.add(HG_REMOVE_CMD);
+        basicCommand.add(HG_OPT_REPOSITORY);
+        basicCommand.add(repository.getAbsolutePath());
+        basicCommand.add(HG_REMOVE_FLAG_FORCE_CMD);
+        for (String s : basicCommand) {
+            basicCommandSize += s.length() + 1;
+        }
+        // iterating through all files, cannot remove all files at once, too many files can cause troubles
+        // removing files to the command one by one and testing if the command's size doesn't exceed OS limits
+        ListIterator<File> iterator = removeFiles.listIterator();
+        while (iterator.hasNext()) {
+            // each loop will call one remove command
+            List<String> command = new LinkedList<String>(basicCommand);
+            commandSize = basicCommandSize;
+            boolean fileAdded = false;
+            while (iterator.hasNext()) {
+                File f = iterator.next();
+                if (f.isDirectory()) {
+                    continue;
+                }
+                String filePath;
+                try {
+                    filePath = f.getCanonicalPath();
+                } catch (IOException ioe) {
+                    Mercurial.LOG.log(Level.INFO, null, ioe); // NOI18N
+                    filePath = f.getAbsolutePath(); // don't give up
+                }
+                // test if limits aren't exceeded
+                commandSize += filePath.length() + 1;
+                if (fileAdded // at least one file must be added
+                        && isTooLongCommand(commandSize)) {
+                    Mercurial.LOG.fine("doAdd: removing files in a loop"); //NOI18N
+                    iterator.previous();
+                    break;
+                }
+                command.add(filePath);
+                fileAdded = true;
+            }
+            List<String> list = exec(command);
+            if (!list.isEmpty()) {
+                handleError(command, list, list.get(0), logger);
             }
         }
-
-        List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"), logger);
     }
 
     /**
@@ -2664,7 +2732,7 @@ public class HgCommand {
                     Mercurial.LOG.log(Level.FINE, "execEnv():  process returned 255"); // NOI18N
                     if (list.isEmpty()) {
                         Mercurial.LOG.log(Level.SEVERE, "command: " + command); // NOI18N
-                        throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
+                        throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
                     }
                 }
             } catch (InterruptedException e) {
@@ -2694,7 +2762,7 @@ public class HgCommand {
             // Handle low level Mercurial failures
             if (isErrorArgsTooLong(e.getMessage())){
                 assert(command.size()> 2);
-                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR",
+                throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR",
                             command.get(1), command.size() -2 ));
             }else if (isErrorNoHg(e.getMessage()) || isErrorCannotRun(e.getMessage())){
                 throw new HgException(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_MSG"));
@@ -2981,7 +3049,8 @@ public class HgCommand {
         return msg.indexOf(HG_NO_HG_CMD_FOUND_ERR) > -1; // NOI18N
     }
     private static boolean isErrorArgsTooLong(String msg) {
-        return msg.indexOf(HG_ARG_LIST_TOO_LONG_ERR) > -1; // NOI18N
+        return msg.indexOf(HG_ARG_LIST_TOO_LONG_ERR) > -1
+                || msg.contains(HG_ARGUMENT_LIST_TOO_LONG_ERR);
     }
 
     private static boolean isErrorCannotRun(String msg) {
@@ -3254,6 +3323,15 @@ public class HgCommand {
             }
         }
         return isRepository[0];
+    }
+
+    /**
+     * Commands are limited by size
+     * @param commandSize
+     * @return
+     */
+    private static boolean isTooLongCommand(int commandSize) {
+        return (Utilities.isWindows() || Utilities.isMac()) && commandSize > MAX_COMMANDLINE_SIZE;
     }
 
     /**

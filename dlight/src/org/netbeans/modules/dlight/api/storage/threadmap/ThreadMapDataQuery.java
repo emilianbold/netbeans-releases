@@ -38,18 +38,14 @@
  */
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  *
  * @author Alexander Simon
  */
 public final class ThreadMapDataQuery {
 
-    private final TimeUnit timeUnit;
     private final long timeFrom;
     private final long timeTo;
-    private final long step;
     private final boolean fullState;
 
     /**
@@ -60,19 +56,14 @@ public final class ThreadMapDataQuery {
      * @param fullState state aggregation. True - no aggregation by state (see FullThreadState enumeration). False - aggregate to ShortThreadState.
      * @return list threads data about all threads that alive in selected time period.
      */
-    public ThreadMapDataQuery(TimeUnit timeUnit, long timeFrom, long timeTo, long step, boolean fullState) {
-        this.timeUnit = timeUnit;
+    private ThreadMapDataQuery(long timeFrom, long timeTo, boolean fullState) {
         this.timeFrom = timeFrom;
         this.timeTo = timeTo;
-        this.step = step;
         this.fullState = fullState;
     }
 
-    /**
-     * @return time unit.
-     */
-    public TimeUnit getTimeUnit() {
-        return timeUnit;
+    public ThreadMapDataQuery(long timeFrom, boolean fullState) {
+        this(timeFrom, Long.MAX_VALUE, fullState);
     }
 
     /**
@@ -87,13 +78,6 @@ public final class ThreadMapDataQuery {
      */
     public long getTimeTo() {
         return timeTo;
-    }
-
-    /**
-     * @return aggregation time in time units.
-     */
-    public long getStep() {
-        return step;
     }
 
     /**

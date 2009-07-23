@@ -167,6 +167,7 @@ public class PresenceIndicator {
                     });
                     for (MultiUserChat muc : chats) {
                         String chatName = StringUtils.parseName(muc.getRoom());
+                        assert chatName!=null: "muc.getRoom() = " + muc.getRoom();
                         tipBuffer.append("<font color=gray>" + getDisplayName(muc) + "</font><br>"); // NOI18N
                         Iterator<String> i = muc.getOccupants();
                         ArrayList<String> occupants = new ArrayList<String>();

@@ -82,7 +82,6 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -124,9 +123,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
     
     public void actionPerformed(ActionEvent arg0) {
-        FileDescription typeDescriptor = getSelectedFile();
-        if (typeDescriptor != null) {
-            typeDescriptor.open();
+        FileDescription[] typeDescriptors = getSelectedFiles();
+        if (typeDescriptors != null) {
+            for(FileDescription td: typeDescriptors){
+                td.open();
+            }
         }
     }
 
@@ -202,8 +203,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     // Private methods ---------------------------------------------------------
 
-    private FileDescription getSelectedFile() {
-        FileDescription result = null;
+    private FileDescription[] getSelectedFiles() {
+        FileDescription[] result = null;
 //        try {
             panel = new FileSearchPanel(this, findCurrentProject());
             dialog = createDialog(panel);
@@ -224,7 +225,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 //            }
 
             dialog.setVisible(true);
-            result = panel.getSelectedFile();
+            result = panel.getSelectedFiles();
 
 //        } catch (IOException ex) {
 //            ErrorManager.getDefault().notify(ex);

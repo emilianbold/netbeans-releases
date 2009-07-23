@@ -72,6 +72,9 @@ made subject to such option by the copyright holder.
             <classpath>
                 <path path="${classpath-translated}"/>
             </classpath>
+            <bootclasspath>
+                <path path="${platform.bootcp}"/>
+            </bootclasspath>
         </nbjpdastart>
         <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}" jvm="${platform.java}" fork="true">
             <jvmarg line="${debug-args-line}"/>

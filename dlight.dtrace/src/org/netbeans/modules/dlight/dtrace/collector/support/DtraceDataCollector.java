@@ -564,11 +564,12 @@ public final class DtraceDataCollector
         private long getTimestamp(DataRow row) {
             Object timestamp = row.getData("timestamp"); // NOI18N
             if (timestamp instanceof Number) {
-                return ((Number)timestamp).longValue();
+                return ((Number) timestamp).longValue();
             } else if (timestamp instanceof String) {
                 try {
-                    return Long.parseLong((String)timestamp);
-                } catch (NumberFormatException ex) {}
+                    return Long.parseLong((String) timestamp);
+                } catch (NumberFormatException ex) {
+                }
             }
             return -1;
         }

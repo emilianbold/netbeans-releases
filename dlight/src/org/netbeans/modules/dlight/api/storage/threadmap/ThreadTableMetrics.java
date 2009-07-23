@@ -53,8 +53,8 @@ public final class ThreadTableMetrics {
     static {
         columns = new ArrayList<Column>(3);
         columns.add(create("threadName", String.class)); // NOI18N
-        columns.add(create("state", StateLine.class)); // NOI18N
-        columns.add(create("summary", StateSummary.class)); // NOI18N
+        columns.add(create("state", ThreadStateColumn.class)); // NOI18N
+        columns.add(create("summary", ThreadSummaryColumn.class)); // NOI18N
     }
 
     private ThreadTableMetrics() {

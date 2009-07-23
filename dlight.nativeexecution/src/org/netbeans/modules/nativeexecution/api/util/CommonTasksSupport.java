@@ -137,8 +137,9 @@ public final class CommonTasksSupport {
 
                     result = transferFileContent(localFile, os);
 
-                    error.append(ProcessUtils.readProcessErrorLine(np));
-
+                    if (error != null) {
+                        error.append(ProcessUtils.readProcessErrorLine(np));
+                    }
                     result += np.waitFor();
                 } catch (IOException ex) {
                     if (error != null) {

@@ -93,9 +93,12 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, 
     }
 
     public boolean isIgnored(File file){
-        return ignoredFilesPattern.matcher(file.getName()).find();
+        return isIgnored(file.getName());
     }
 
+    public boolean isIgnored(String fileName) {
+        return ignoredFilesPattern.matcher(fileName).find();
+    }
     /**
      * Add a listener to changes.
      * @param l a listener to add

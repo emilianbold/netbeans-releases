@@ -367,11 +367,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             } else if (closest instanceof InstVarNode) {
                 // A field variable read
                 String name = ((INameNode)closest).getName();
-                return findInstanceFromIndex(parserResult, name, path, index);
+                return findInstanceFromIndex(parserResult, name, path, index, false);
             } else if (closest instanceof ClassVarNode) {
                 // A class variable read
                 String name = ((INameNode)closest).getName();
-                return findInstanceFromIndex(parserResult, name, path, index);
+                return findInstanceFromIndex(parserResult, name, path, index, false);
             } else if (closest instanceof GlobalVarNode) {
                 // A global variable read
                 String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
@@ -463,6 +463,15 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     if (clz != null) {
                         location = getLocation(parserResult, clz);
                     }
+                }
+
+                // methods
+                if (location == DeclarationLocation.NONE) {
+                    location = findInstanceMethodsFromIndex(parserResult, name, path, index);
+                }
+                // fields
+                if (location == DeclarationLocation.NONE) {
+                    location = findInstanceFromIndex(parserResult, name, path, index, true);
                 }
 
                 return fix(location, parserResult);
@@ -1790,7 +1799,14 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
 
             for (int i = 0; i < symbols.length; i++) {
-                if (name.equals("@" + symbols[i].getName())) {
+                // possibly an instance variable referred by attr_accessor and like
+                if (name.equals(symbols[i].getName())) {
+                    Node root = AstUtilities.getRoot(info);
+                    DeclarationLocation location =
+                            findInstanceFromIndex(info, name, new AstPath(root, node), RubyIndex.get(info), true);
+                    if (location != DeclarationLocation.NONE) {
+                        return location;
+                    }
                     return getLocation(info, symbols[i]);
                 }
             }
@@ -1851,12 +1867,12 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return DeclarationLocation.NONE;
     }
 
-    private DeclarationLocation findInstanceFromIndex(ParserResult info, String name, AstPath path, RubyIndex index) {
+    private DeclarationLocation findInstanceFromIndex(ParserResult info, String name, AstPath path, RubyIndex index, boolean inherited) {
         String fqn = AstUtilities.getFqnName(path);
 
         // TODO - if fqn has multiple ::'s, try various combinations? or is 
         // add inherited already doing that?
-        Set<IndexedField> f = index.getInheritedFields(fqn, name, QuerySupport.Kind.EXACT, false);
+        Set<IndexedField> f = index.getInheritedFields(fqn, name, QuerySupport.Kind.EXACT, inherited);
         for (IndexedField field : f) {
             // How do we choose one?
             // For now, just pick the first one
@@ -1871,7 +1887,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
         return DeclarationLocation.NONE;
     }
-    
+
+    private DeclarationLocation findInstanceMethodsFromIndex(ParserResult info, String name, AstPath path, RubyIndex index) {
+        String fqn = AstUtilities.getFqnName(path);
+        Set<IndexedMethod> methods = index.getInheritedMethods(fqn, name, QuerySupport.Kind.EXACT);
+        return getLocation(methods);
+    }
+
     private DeclarationLocation findGlobal(ParserResult info, Node node, String name) {
         if (node instanceof GlobalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.core.api.support.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -167,11 +168,15 @@ public final class SourceUtils {
         for (Element element : typeElement.getEnclosedElements()) {
             if (element.getKind() == ElementKind.CONSTRUCTOR) {
                 ExecutableElement constructor = (ExecutableElement)element;
-                if (constructor.getParameters().size() == 0 && !controller.getElementUtilities().isSynthetic(constructor)) {
+
+                TreePath path=TreePath.getPath(controller.getCompilationUnit(),(controller.getTrees().getTree(constructor)));//somehow elementutilities fails to handle it sometime, use tree utilities to get status
+ 
+                if (constructor.getParameters().size() == 0 && !controller.getTreeUtilities().isSynthetic(path)) {
                     return constructor;
                 }
             }
         }
         return null;
     }
+
 }

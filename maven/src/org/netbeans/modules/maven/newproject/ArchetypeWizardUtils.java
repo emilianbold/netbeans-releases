@@ -83,6 +83,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author mkleint
@@ -346,7 +347,7 @@ public class ArchetypeWizardUtils {
             if (prj == null) { //#143596
                 return;
             }
-            NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
+            final NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
             if (watch != null) {
                 // do not create java/test for pom type projects.. most probably not relevant.
                 if (! NbMavenProject.TYPE_POM.equals(watch.getPackagingType())) {
@@ -361,7 +362,12 @@ public class ArchetypeWizardUtils {
                         file.mkdirs();
                     }
                 }
-                watch.downloadDependencyAndJavadocSource();
+                //see #163529 for reasoning
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        watch.downloadDependencyAndJavadocSource();
+                    }
+                });
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

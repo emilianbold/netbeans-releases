@@ -41,26 +41,36 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.io.Serializable;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
 
 /**
  * @author Jiri Sedlacek
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer, Serializable {
+
     private Color unselectedBackground;
     private Color unselectedForeground;
-    private ThreadData threadData;
+    private ThreadStateColumnImpl threadData;
     private ThreadsPanel viewManager; // view manager for this cell
     private long dataEnd;
     private long dataStart;
     private long viewEnd;
     private long viewStart;
+    //private Map<String, AtomicInteger> map = new LinkedHashMap<String, AtomicInteger>();
+    private EnumMap<MSAState, AtomicInteger> map = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
 
     /** Creates a new instance of ThreadStateCellRenderer */
     public ThreadStateCellRenderer(ThreadsPanel viewManager) {
@@ -108,7 +118,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         return !colorMatch && super.isOpaque();
     }
 
-    public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
             int row, int column) {
         if (isSelected) {
             super.setForeground(table.isFocusOwner() ? table.getSelectionForeground() : UIUtils.getUnfocusedSelectionForeground());
@@ -123,8 +133,8 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
         }
 
-        if (value instanceof ThreadData) {
-            threadData = (ThreadData) value;
+        if (value instanceof ThreadStateColumnImpl) {
+            threadData = (ThreadStateColumnImpl) value;
         }
 
         viewStart = viewManager.getViewStart();
@@ -133,6 +143,91 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         dataEnd = viewManager.getDataEnd();
 
         return this;
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        String tip = getToolTipText(event.getPoint());
+        if (tip != null) {
+            return tip;
+        }
+        return super.getToolTipText(event);
+    }
+
+    public String getToolTipText(Point point) {
+        int index = getStateIndex(point);
+        if (index >= 0) {
+            ThreadState state = threadData.getThreadStateAt(index);
+            long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp()) - dataStart;
+            StringBuilder buf = new StringBuilder();
+            buf.append("<html>");// NOI18N
+            buf.append("Time ");// NOI18N
+            buf.append(TimeLineUtils.getMillisValue(ms));
+            EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+            ThreadStateColumnImpl.fillMap(viewManager, state, aMap);
+            buf.append("<table>");// NOI18N
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
+                int value = entry.getValue().get();
+                MSAState s = entry.getKey();
+                StateResources res = ThreadStateColumnImpl.getThreadStateResources(s);
+                if (res != null) {
+                    buf.append("<tr>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append("<font bgcolor=#");// NOI18N
+                    buf.append(Integer.toHexString(res.color.getRed()));
+                    buf.append(Integer.toHexString(res.color.getGreen()));
+                    buf.append(Integer.toHexString(res.color.getBlue()));
+                    buf.append(">&nbsp;&nbsp;");// NOI18N
+                    buf.append("</font></td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(res.name);
+                    buf.append("</td>");// NOI18N
+                    buf.append("<td>");// NOI18N
+                    buf.append(""+value+"%");// NOI18N
+                    buf.append("</td>");// NOI18N
+                    buf.append("</tr>");// NOI18N
+                }
+            }
+            buf.append("</table>");// NOI18N
+            buf.append("</html>");// NOI18N
+            return buf.toString();
+        }
+        return null;
+    }
+
+    private int getStateIndex(Point point){
+        if (threadData != null) {
+            int index = getFirstVisibleDataUnit();
+            if (index != -1) {
+                int width = Math.abs(getX());
+                if ((viewEnd - viewStart) > 0) {
+                    float factor = (float) width / (float) (viewEnd - viewStart);
+
+                    while ((index < threadData.size()) &&
+                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= viewEnd)) {
+                        // Thread alive
+                        if (threadData.isAlive(index)) {
+                            int x; // Begin of rectangle
+                            int xx; // End of rectangle
+
+                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
+
+                            if (index < (threadData.size() - 1)) {
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
+                            } else {
+                                xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
+                            }
+                            if (x <= point.x && point.x < xx) {
+                                return index;
+                            }
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     /**
@@ -156,7 +251,8 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
                 if ((viewEnd - viewStart) > 0) {
                     float factor = (float) width / (float) (viewEnd - viewStart);
 
-                    while ((index < threadData.size()) && (threadData.getTimeStampAt(index) <= viewEnd)) {
+                    while ((index < threadData.size()) &&
+                           (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) <= viewEnd)) {
                         // Thread alive
                         if (threadData.isAlive(index)) {
                             paintThreadState(g, index, threadData.getThreadStateAt(index), factor, width);
@@ -217,14 +313,14 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
 
     private int getFirstVisibleDataUnit() {
         for (int i = 0; i < threadData.size(); i++) {
-            long timestamp = threadData.getTimeStampAt(i);
+            long timestamp = ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i).getTimeStamp());
 
             if ((timestamp <= viewEnd) && (i == (threadData.size() - 1))) {
                 return i; // last data unit before viewEnd
             }
 
             if (timestamp <= viewStart) {
-                if (threadData.getTimeStampAt(i + 1) > viewStart) {
+                if (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(i + 1).getTimeStamp()) > viewStart) {
                     return i; // data unit ends between viewStart and viewEnd
                 }
             } else {
@@ -241,33 +337,42 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
         int x; // Begin of rectangle
         int xx; // End of rectangle
 
-        x = Math.max((int) ((float) (threadData.getTimeStampAt(index) - viewStart) * factor), 0);
+        x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - viewStart) * factor), 0);
 
         if (index < (threadData.size() - 1)) {
-            xx = Math.min((int) ((float) (threadData.getTimeStampAt(index + 1) - viewStart) * factor), width);
+            xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - viewStart) * factor), width);
         } else {
             xx = Math.min((int) ((dataEnd - viewStart) * factor), width + 1);
         }
 
-        int size = threadStateColor.size();
-        int delta = getHeight() - 12;
-
-        int y = 0;
-        int rest = 0;
-        int oldRest = 0;
-
-        for(int i = 0; i < size; i++) {
-            int v = threadStateColor.getState(i);
-            Color c = ThreadData.getThreadStateColor(threadStateColor, i);
-            oldRest = rest;
-            rest = (v*delta+rest)%1000;
-            int d = (v*delta+oldRest)/1000;
-            y += d;
-            if (d > 0) {
-                g.setColor(c);
-                g.fillRect(x, 6+delta-y, xx - x, d);
-                //g.fillRect(x, 6, xx - x, getHeight() - 12);
+        int delta = getHeight() - ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN * 2;
+        if (viewManager.isMSAMode()){
+            for (AtomicInteger i : map.values()) {
+                i.set(0);
             }
+
+            ThreadStateColumnImpl.fillMap(viewManager, threadStateColor, map);
+
+            int y = 0;
+            int rest = ThreadState.POINTS/2;
+            int oldRest = 0;
+            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(map); it.hasNext();){
+                Map.Entry<MSAState, AtomicInteger> entry = it.next();
+                int v = entry.getValue().get();
+                Color c = ThreadStateColumnImpl.getThreadStateColor(entry.getKey());
+                oldRest = rest;
+                rest = (v*delta+oldRest)%ThreadState.POINTS;
+                int d = (v*delta+oldRest)/ThreadState.POINTS;
+                y += d;
+                if (d > 0) {
+                    g.setColor(c);
+                    g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN + delta - y, xx - x, d);
+                }
+            }
+        } else {
+            Color c = ThreadStateColumnImpl.getThreadStateColor(threadStateColor.getMSAState(threadStateColor.getSamplingStateIndex(viewManager.isFullMode()), viewManager.isFullMode()));
+            g.setColor(c);
+            g.fillRect(x, ThreadsPanel.THREAD_LINE_TOP_BOTTOM_MARGIN, xx - x, delta);
         }
     }
 
@@ -307,4 +412,5 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             g.drawLine(x, 0, x, getHeight() - 1);
         }
     }
+
 }

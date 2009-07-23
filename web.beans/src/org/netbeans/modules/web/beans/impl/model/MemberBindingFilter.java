@@ -58,14 +58,27 @@ import javax.lang.model.type.DeclaredType;
  * @author ads
  *
  */
-class MemberBindingFilter extends TypeFilter {
+class MemberBindingFilter<T extends Element> extends Filter<T> {
     
     private static final String NON_BINDING_MEMBER_ANNOTATION =
                 "javax.enterprise.inject.NonBinding";    // NOI18N
     
-    static MemberBindingFilter get() {
-        // could be changed to cached ThreadLocal variable 
-        return new MemberBindingFilter();
+    private MemberBindingFilter( Class<T> clazz ){
+        myClass = clazz;
+    }
+    
+    static <T extends Element> MemberBindingFilter<T> get( Class<T> clazz ) {
+        assertElement(clazz);
+        // could be changed to cached ThreadLocal variable
+        if ( clazz.equals( Element.class )){
+            return (MemberBindingFilter<T>) new MemberBindingFilter<Element>(
+                    Element.class);
+        }
+        else if ( clazz.equals( TypeElement.class ) ){
+            return (MemberBindingFilter<T>)new MemberBindingFilter<TypeElement>(
+                    TypeElement.class);
+        }
+        return null;
     }
 
     void init( List<AnnotationMirror> bindingAnnotations,
@@ -78,7 +91,7 @@ class MemberBindingFilter extends TypeFilter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.TypeFilter#filter(java.util.Set)
      */
-    void filter( Set<TypeElement> set ) {
+    void filter( Set<T> set ) {
         super.filter(set);
         if ( set.size() == 0 ){
             return;
@@ -95,7 +108,7 @@ class MemberBindingFilter extends TypeFilter {
          * One need to check presence of member in binding annotation at 
          * injected point and compare this member with member in annotation
          * for discovered type.
-         * Members with  @NonBinding annotation should be iognored. 
+         * Members with  @NonBinding annotation should be ignored. 
          */
          for (AnnotationMirror annotation : getBindingAnnotations()) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> 
@@ -106,11 +119,15 @@ class MemberBindingFilter extends TypeFilter {
         }
     }
     
+    Class<T> getElementClass(){
+        return myClass;
+    }
+    
     private void checkMembers(
             Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues,
-            Set<ExecutableElement> members, Set<TypeElement> set )
+            Set<ExecutableElement> members, Set<T> set )
     {
-        MemberCheckerFilter filter = MemberCheckerFilter.get();
+        MemberCheckerFilter<T> filter = MemberCheckerFilter.get( getElementClass());
         filter.init( elementValues , members, getImplementation());
         filter.filter(set);
     }
@@ -158,5 +175,5 @@ class MemberBindingFilter extends TypeFilter {
 
     private WebBeansModelImplementation myImpl;
     private List<AnnotationMirror> myBindingAnnotations;
-
+    private Class<T> myClass;
 }

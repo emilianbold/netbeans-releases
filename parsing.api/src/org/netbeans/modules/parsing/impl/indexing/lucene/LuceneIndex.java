@@ -101,7 +101,7 @@ public class LuceneIndex implements IndexImpl {
             assert document instanceof LuceneDocument;
 
             toAdd.add((LuceneDocument) document);
-            forceFlush = toAdd.size() > MAX_DOCS || lmListener.isLowMemory();
+            forceFlush = lmListener.isLowMemory();
         }
 
         if (forceFlush) {
@@ -634,8 +634,12 @@ public class LuceneIndex implements IndexImpl {
         }
         else {
             StringBuilder b = new StringBuilder();
+            b.append("Index folder: ").append(indexFolder.getAbsolutePath()).append("\n"); //NOI18N
             for (File c : children) {
-                b.append(c.getName() +" f: " + c.isFile() + " r: " + c.canRead() + " w: " + c.canWrite()+"\n");  //NOI18N
+                b.append(c.getName()).append(" f: ").append(c.isFile()) //NOI18N
+                    .append(" r: ").append(c.canRead()) //NOI18N
+                    .append(" w: ").append(c.canWrite()) //NOI18N
+                    .append("\n");  //NOI18N
             }
             message = b.toString();
         }

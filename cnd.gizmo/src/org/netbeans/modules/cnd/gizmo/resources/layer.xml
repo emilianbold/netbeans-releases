@@ -14,11 +14,12 @@
           <file name="MemoryToolConfigurationProvider.shadow">
             <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
           </file>
-          <!--
           <file name="ThreadMapToolConfigurationProvider.shadow">
             <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
           </file>
-          -->
+          <!--file name="DLightParallelAdviserToolConfigurationProvider.shadow">
+            <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightParallelAdviserToolConfigurationProvider.instance"/>
+          </file-->
         </folder>
         <folder name="ConfigurationOptions">
           <file name="GizmoConfigurationOptions.instance">

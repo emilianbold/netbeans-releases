@@ -78,6 +78,7 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -87,6 +88,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -318,6 +320,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
                     break;
+                case NAMESPACE_ONLY:
+                    autoCompleteNamespaces(proposals, request);
+                    break;
+                case NAMESPACE_ELEMENT:
+                    autoCompleteNamespaces(proposals, request);
+                    //TODO: add ns-specific items (class names, functions, constants)
+                    break;
+                case NAMESPACE_CLASS_ELEMENT:
+                    autoCompleteNamespaces(proposals, request);
+                    //TODO: add ns-specific class names
+                    break;
                 case SERVER_ENTRY_CONSTANTS:
                     //TODO: probably better PHPCompletionItem instance should be used
                     //autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
@@ -399,6 +412,40 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
 
+    }
+
+
+    private void autoCompleteNamespaces(List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request) {
+
+        String nsPrefix = request.prefix;
+        PHPIndex index = request.index;
+        int completedSegmentIdx = QualifiedName.create(nsPrefix).getSegments().size() - 1;
+        if (nsPrefix.endsWith("\\")){
+            completedSegmentIdx ++;
+        }
+
+        Collection<IndexedNamespace> namespaces = index.getNamespaces(request.result,
+                nsPrefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+
+        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
+
+        for (IndexedNamespace namespace : namespaces) {
+            if (namespace.getName().startsWith(nsPrefix)) {
+                String completedSegment = namespace.getQualifiedName().getSegments().get(completedSegmentIdx);
+
+                IndexedNamespace existingNs = namespacesMap.get(completedSegment);
+
+                if (existingNs == null || !existingNs.isResolved()){
+                    namespacesMap.put(completedSegment, namespace);
+                }
+            }
+        }
+
+        for (IndexedNamespace namespace : namespacesMap.values()){
+            String itm = namespace.getQualifiedName().toString(completedSegmentIdx);
+            proposals.add(new PHPCompletionItem.NamespaceItem(itm, namespace.isResolved(), request));
+        }
     }
 
     private void autoCompleteMethodName(ParserResult info, int caretOffset, List<CompletionProposal> proposals,
@@ -689,6 +736,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // all toplevel variables, wchich are defined in more files
         Map<String, IndexedConstant> allUnUniqueVars = new LinkedHashMap<String, IndexedConstant>();
 
+        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
         //Obtain all top level statment from index
         for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
             if (element instanceof IndexedFunction) {
@@ -719,7 +767,23 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             else if (element instanceof IndexedConstant) {
                 proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant) element, request));
+            } else if (element instanceof IndexedNamespace){
+                IndexedNamespace namespace = (IndexedNamespace) element;
+                String prefix = namespace.getQualifiedName().getSegments().getFirst();
+
+                IndexedNamespace existingNs = namespacesMap.get(prefix);
+
+                if (existingNs == null || !existingNs.isResolved()){
+                    namespacesMap.put(prefix, (IndexedNamespace) element);
+                }        
             }
+        }
+
+        for (IndexedNamespace namespace : namespacesMap.values()){
+            String prefix = namespace.getQualifiedName().getSegments().getFirst();
+            
+            proposals.add(new PHPCompletionItem.NamespaceItem('\\' + prefix + '\\',
+                    namespace.isResolved(), request));
         }
 
         // add local variables
@@ -1070,6 +1134,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
+    private static final boolean isPrefixBreaker(char c){
+        return !(isPHPIdentifierPart(c) || c == '\\' || c == '$' || c == ':');
+    }
+
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
@@ -1090,7 +1158,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (lineOffset > 0) {
                         for (int i = lineOffset - 1; i >= 0; i--) {
                             char c = line.charAt(i);
-                            if (!isPHPIdentifierPart(c)) {
+                            if (!isPHPIdentifierPart(c) && c != '\\') {
                                 break;
                             } else {
                                 start = i;
@@ -1147,7 +1215,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         // end of identifiers for example.
                         if (prefix.length() == 1) {
                             char c = prefix.charAt(0);
-                            if (!(isPHPIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
+                            if (isPrefixBreaker(c)) {
                                 return null;
                             }
                         } else {
@@ -1156,13 +1224,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                                 char c = prefix.charAt(i);
                                 if (i == 0 && c == ':') {
                                     // : is okay at the begining of prefixes
-                                } else if (!(isPHPIdentifierPart(c) || c == '@' || c == '$')) {
+                                } else if (isPrefixBreaker(c)) {
                                     prefix = prefix.substring(i + 1);
                                     break;
                                 }
                             }
                         }
                     }
+
+                    if (prefix.startsWith("\\")){ //NOI18N
+                        prefix = prefix.substring(1); //NOI18N
+                    }
+
                     return prefix;
                 }
             } finally {
@@ -1211,6 +1284,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
                     || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
+                    || t.id() == PHPTokenId.PHP_NS_SEPARATOR
                     || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                 return QueryType.ALL_COMPLETION;
             }

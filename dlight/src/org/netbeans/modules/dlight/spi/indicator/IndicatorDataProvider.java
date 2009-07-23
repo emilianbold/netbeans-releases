@@ -92,6 +92,10 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         // TODO: ???
 
         for (DataTableMetadata tdm : getDataTablesMetadata()) {
+            if (tdm == null) {
+                continue;
+            }
+
             List<DataTableMetadata.Column> providedColumns = tdm.getColumns();
             for (DataTableMetadata.Column pcol : providedColumns) {
                 for (DataTableMetadata.Column icol : indicatorColumns) {
