@@ -97,8 +97,7 @@ class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent>
     public WebBeansComponent createComponent( WebBeansComponent parent,
             Element element )
     {
-        // TODO Auto-generated method stub
-        return null;
+        return getFactory().createComponent(element, parent );
     }
 
     /* (non-Javadoc)

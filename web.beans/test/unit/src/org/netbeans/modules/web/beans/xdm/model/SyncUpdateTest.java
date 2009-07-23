@@ -38,38 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml.impl;
+package org.netbeans.modules.web.beans.xdm.model;
 
+import java.util.List;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.beans.xml.BeansElement;
+import org.netbeans.modules.web.beans.xml.Deploy;
+import org.netbeans.modules.web.beans.xml.Type;
 import org.netbeans.modules.web.beans.xml.WebBeansModel;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
 
 
 /**
  * @author ads
  *
  */
-public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
-    
-    private WebBeansModelFactory(){
-    }
-    
-    public static WebBeansModelFactory getInstance(){
-        return INSTANCE;
+public class SyncUpdateTest extends NbTestCase {
+
+    public SyncUpdateTest( String name ) {
+        super(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.AbstractModelFactory#createModel(org.netbeans.modules.xml.xam.ModelSource)
-     */
-    @Override
-    public WebBeansModel createModel( ModelSource modelSource ) {
-        return new WebBeansModelImpl( modelSource );
+    public void testDeploy() throws Exception{
+        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
+        
+        Util.setDocumentContentTo(model, "deploy-beans.xml");
+        
+        List<BeansElement> elements = model.getBeans().getElements();
+        assertEquals( 2 ,  elements.size());
+        
+        List<Type> types = ((Deploy)elements.get(1 )).getTypes();
+        assertEquals( 1,  types.size());
     }
     
-    public WebBeansModel getModel(ModelSource source) {
-        return (WebBeansModel) super.getModel(source);
+    public void testType() throws Exception{
+        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
+        
+        Util.setDocumentContentTo(model, "type-beans.xml");
+        
+        List<BeansElement> elements = model.getBeans().getElements();
+        assertEquals( 1 ,  elements.size());
+        
+        List<Type> types = (model.getBeans().getChildren(Deploy.class).get(0)).getTypes();
+        assertEquals( 2,  types.size());
+        
+        boolean type1Found = false;
+        boolean type2Found = false;
+        for (Type type : types) {
+            String text = type.getText();
+            if ( text.equals("type1")){
+                type1Found = true;
+            }
+            else if ( text.equals( "type2")){
+                type2Found = true;
+            }
+        }
+        
+        assertTrue( "Type with 'type1' value is not found",  type1Found );
+        assertTrue( "Type with 'type2' value is not found",  type2Found );
     }
-    
-    private static final WebBeansModelFactory INSTANCE = new WebBeansModelFactory();
-
 }
