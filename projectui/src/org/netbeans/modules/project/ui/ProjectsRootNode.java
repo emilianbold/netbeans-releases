@@ -128,10 +128,12 @@ public class ProjectsRootNode extends AbstractNode {
         }
     }
         
+    @Override
     public String getName() {
         return ( "OpenProjects" ); // NOI18N
     }
     
+    @Override
     public String getDisplayName() {
         if ( this.bundle == null ) {
             this.bundle = NbBundle.getBundle( ProjectsRootNode.class );
@@ -139,14 +141,17 @@ public class ProjectsRootNode extends AbstractNode {
         return bundle.getString( "LBL_OpenProjectsNode_Name" ); // NOI18N
     }
     
+    @Override
     public boolean canRename() {
         return false;
     }
         
+    @Override
     public Node.Handle getHandle() {        
         return new Handle(type);
     }
     
+    @Override
     public Action[] getActions( boolean context ) {
         if (context || type == PHYSICAL_VIEW) {
             return new Action[0];
