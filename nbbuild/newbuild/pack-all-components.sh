@@ -67,6 +67,9 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME xml "xml*"
     rm -rf xml*
 
+    pack_component $DIST_DIR/zip/moduleclusters $NAME javacard "javacard*"
+    rm -rf javacard*
+
     cd $NB_ALL/nbbuild
 
     #Pack all the NetBeans
