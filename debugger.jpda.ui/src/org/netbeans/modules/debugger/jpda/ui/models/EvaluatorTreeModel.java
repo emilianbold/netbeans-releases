@@ -49,7 +49,6 @@ import java.util.HashSet;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
-import org.netbeans.modules.debugger.jpda.ui.HistoryPanel;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -216,10 +215,10 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel implements NodeA
 
         @Override
         Object [] getChildren(int from, int to) {
-            ArrayList<HistoryPanel.Item> items = CodeEvaluator.getHistory();
+            ArrayList<CodeEvaluator.History.Item> items = CodeEvaluator.getHistory();
             ItemNode[] vals = new ItemNode[items.size()];
             for (int x = 0; x < items.size(); x++) {
-                HistoryPanel.Item item = items.get(x);
+                CodeEvaluator.History.Item item = items.get(x);
                 vals[x] = new ItemNode(item);
             }
             return vals;
@@ -270,9 +269,9 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel implements NodeA
 
     static class ItemNode extends SpecialNode {
 
-        HistoryPanel.Item item;
+        CodeEvaluator.History.Item item;
 
-        protected ItemNode(HistoryPanel.Item item) {
+        protected ItemNode(CodeEvaluator.History.Item item) {
             this.item = item;
         }
 

@@ -58,13 +58,10 @@ made subject to such option by the copyright holder.
     <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
     
      <!--"semantic" highlighting:-->
-    <fontcolor name="mod-method">
+    <fontcolor name="mod-method"> <!-- used for JSF tags in xhtml -->
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="mod-class">
-        <font style="italic" />
-    </fontcolor>
-    <fontcolor name="mod-field">
-        <font style="strikethrough" />
-    </fontcolor>
+    <fontcolor name="mod-class" waveUnderlined="red"/>
+    <fontcolor name="mod-field" bgColor="ffe3f2e1" /> <!-- used for EL in xhtml -->
+
 </fontscolors>

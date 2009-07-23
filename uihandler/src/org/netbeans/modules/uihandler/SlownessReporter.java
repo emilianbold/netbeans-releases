@@ -90,7 +90,7 @@ class SlownessReporter {
         return null;
     }
 
-    String getLatestAction(List<LogRecord> recs, byte[] nps, long time) {
+    String getLatestAction(List<LogRecord> recs, long time) {
         long now = System.currentTimeMillis();
         ListIterator<LogRecord> it = recs.listIterator(recs.size());
         String latestActionClassName = null;
@@ -121,7 +121,7 @@ class SlownessReporter {
     }
 
     void notifySlowness(List<LogRecord> recs, byte[] nps, long time) {
-        String latestActionName = getLatestAction(recs, nps, time);
+        String latestActionName = getLatestAction(recs, time);
         pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionName)));
         if (pending.size() > 5) {
             pending.remove().clear();
