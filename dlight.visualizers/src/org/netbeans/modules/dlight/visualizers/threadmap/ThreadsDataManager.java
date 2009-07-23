@@ -69,7 +69,6 @@ public class ThreadsDataManager {
     private long endTime; // Timestamp of threadData end
     private long startTime; // Timestamp of threadData start
     private final Set<DataManagerListener> listeners = new HashSet<DataManagerListener>();
-    private ThreadMapData stackProvider;
     private int monitoredDataInterval;
 
     /**
@@ -155,10 +154,6 @@ public class ThreadsDataManager {
         return threadData.get(index).getName();
     }
 
-    public synchronized ThreadData getStackProvider(int index) {
-        return stackProvider.getThreadsData().get(index);
-    }
-
     /**
      * Returns the number of currently monitored threads
      */
@@ -218,7 +213,6 @@ public class ThreadsDataManager {
         if (updateThreadSize == 0) {
             return;
         }
-        stackProvider = monitoredData.getStackProvider();
         monitoredDataInterval = monitoredData.getTimeStampInterval();
         Map<Integer, Integer> IdToNumber = new LinkedHashMap<Integer, Integer>();
         for(int i = 0; i < updateThreadSize; i++){
@@ -246,6 +240,7 @@ public class ThreadsDataManager {
                         col.add(newState);
                         lastTimeStamp = newState.getTimeStamp();
                     }
+                    col.updateStackProvider(monitoredData.getStackProvider(newData));
                 }
                 if (lastTimeStamp == -1) {
                     if (col.isAlive()){
@@ -262,7 +257,8 @@ public class ThreadsDataManager {
             int size = states.size();
             if (size > 0) {
                 MergedThreadInfo info = new MergedThreadInfo(monitoredData.getThreadInfo(i), monitoredData.getStartTimestamp(i));
-                ThreadStateColumnImpl col = new ThreadStateColumnImpl(info);
+                ThreadData stackProvider = monitoredData.getStackProvider(i);
+                ThreadStateColumnImpl col = new ThreadStateColumnImpl(info, stackProvider);
                 threadData.add(col);
                 for (int j = 0; j < size; j++) {
                     col.add(states.get(j));
