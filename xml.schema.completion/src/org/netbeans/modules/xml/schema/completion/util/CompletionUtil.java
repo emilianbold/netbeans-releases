@@ -506,21 +506,22 @@ public class CompletionUtil {
         return items;
     }
     
-    private static void populateItemsForAny(CompletionModel cm,
-            AXIComponent any, CompletionContextImpl context, List<CompletionResultItem> items) {
+    private static void populateItemsForAny(CompletionModel cm, AXIComponent any,
+            CompletionContextImpl context, List<CompletionResultItem> items) {
+        if (cm == null) return;
+
         AXIModel am = AXIModelFactory.getDefault().getModel(cm.getSchemaModel());
-        if(any instanceof AnyElement) {
+        if (any instanceof AnyElement) {
             for(Element e : am.getRoot().getElements()) {
-                addNSAwareCompletionItems(e,context,cm,items);
+                addNSAwareCompletionItems(e, context, cm, items);
             }
         }
-        if(any instanceof AnyAttribute) {
+        if (any instanceof AnyAttribute) {
             for(Attribute a : am.getRoot().getAttributes()) {
-                addNSAwareCompletionItems(a,context,cm,items);
+                addNSAwareCompletionItems(a, context, cm, items);
             }
         }        
     }
-    
     
     /**
      * Finds namespaces declared in all start tags in the document and keeps a map
