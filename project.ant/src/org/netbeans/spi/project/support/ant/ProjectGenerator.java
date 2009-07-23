@@ -116,6 +116,7 @@ public class ProjectGenerator {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
                 public AntProjectHelper run() throws IOException {
+                    directory.refresh();
                     FileObject projectXml = directory.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
                         throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
