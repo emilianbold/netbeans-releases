@@ -103,6 +103,9 @@ implements ActionListener, Runnable, Callable<JButton> {
             if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
                 byte[] nps = (byte[]) record.getParameters()[0];
                 long time = (Long) record.getParameters()[1];
+                assert nps != null: "nps param should be not null";
+                assert nps.length > 0 : "nps param should not be empty";
+                assert time >= 1000 : "1s is minimal reportable time";
                 reporter.notifySlowness(Installer.getLogs(), nps, time);
                 return;
             }
