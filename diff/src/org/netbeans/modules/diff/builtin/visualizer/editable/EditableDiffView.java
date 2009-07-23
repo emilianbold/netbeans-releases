@@ -429,9 +429,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (editableCookie != null) {
             saveModifiedDocument();
             editableCookie.removePropertyChangeListener(this);
-            if (editableCookie.getOpenedPanes() == null) {
-                editableCookie.close();
-            }
         }
     }
 
