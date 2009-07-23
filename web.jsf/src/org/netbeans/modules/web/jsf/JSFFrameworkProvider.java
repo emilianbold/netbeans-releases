@@ -300,7 +300,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             //we need deployment descriptor, create if null
             if(dd==null)
             {
-                dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), true, webModule.getWebInf());
+                dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
             }
             //faces servlet mapping
             String facesMapping = panel == null ? "faces/*" : panel.getURLPattern();

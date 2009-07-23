@@ -136,6 +136,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue166552.php");
     }
     
+    public void test168908() throws Exception{
+        testIndentInFile("testfiles/indent/issue168908.php");
+    }
+    
     @Override
     protected boolean runInEQ() {
         return true;

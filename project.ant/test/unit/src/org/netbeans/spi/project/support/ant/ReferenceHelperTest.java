@@ -974,7 +974,7 @@ public class ReferenceHelperTest extends NbTestCase {
     }
     
     private void writeProperties(FileObject prop, String[] keys, String[] values) throws Exception {
-	EditableProperties p = new EditableProperties();
+	EditableProperties p = new EditableProperties(false);
 	
 	for (int cntr = 0; cntr < keys.length; cntr++) {
 	    p.setProperty(keys[cntr], values[cntr]);

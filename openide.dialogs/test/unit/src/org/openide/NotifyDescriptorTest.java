@@ -40,27 +40,16 @@
  */
 package org.openide;
 
-
 import javax.swing.*;
 import org.netbeans.junit.*;
 
 /** Testing issue 56878.
  * @author  Jiri Rechtacek
- *
  */
 public class NotifyDescriptorTest extends NbTestCase {
 
-
     public NotifyDescriptorTest (String name) {
         super(name);
-    }
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run (new NbTestSuite (NotifyDescriptorTest.class));
-        System.exit (0);
-    }
-
-    protected final void setUp () {
     }
 
     public void testDefaultValue () {
@@ -71,7 +60,7 @@ public class NotifyDescriptorTest extends NbTestCase {
         assertEquals ("Test descriptor has defaultButton as defaultValue", defaultButton, dd.getValue ());
         dd.setClosingOptions (null);
         
-        DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+        DialogDisplayer.getDefault().createDialog(dd);
         customButton.doClick ();
         
         assertEquals ("Test dialog closed by CustomButton", customButton, dd.getValue ());

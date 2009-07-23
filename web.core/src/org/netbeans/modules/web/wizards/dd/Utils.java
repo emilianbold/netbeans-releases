@@ -37,47 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.tld;
+package org.netbeans.modules.web.wizards.dd;
 
 import java.io.IOException;
-import java.net.URL;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author marekfukala
+ * @author Petr Slechta
  */
-public class TldEntityResolver implements EntityResolver {
+public class Utils {
 
-    public static final String TAGLIB_SCHEMA_21_URI = "http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"; //NOI18N
-    public static final String TAGLIB_SCHEMA_21_RESOURCE = "org/netbeans/modules/web/jsf/editor/tld/resources/web-jsptaglibrary_2_1.xsd"; //NOI18N
-
-    public  static final String TAGLIB_DTD_JSP11_PUBLICID="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN"; // NOI18N
-    public static final String TAGLIB_DTD_JSP11_RESOURCE = "org/netbeans/modules/web/jsf/editor/tld/resources/web-jsptaglibrary_1_1.dtd"; //NOI18N
-
-    public  static final String TAGLIB_DTD_JSP12_PUBLICID="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"; // NOI18N
-    public static final String TAGLIB_DTD_JSP12_RESOURCE = "org/netbeans/modules/web/jsf/editor/tld/resources/web-jsptaglibrary_1_2.dtd"; //NOI18N
-
-
-    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-//        System.out.println("resolving publicid = " + publicId + " systemid = " + systemId);
-
-        if(systemId.equals(TAGLIB_SCHEMA_21_URI)){
-            return getResource(TAGLIB_DTD_JSP11_RESOURCE);
-        } else if(publicId.equals(TAGLIB_DTD_JSP11_PUBLICID)) {
-            return getResource(TAGLIB_DTD_JSP11_RESOURCE);
-        } else if(publicId.equals(TAGLIB_DTD_JSP12_PUBLICID)) {
-            return getResource(TAGLIB_DTD_JSP12_RESOURCE);
-        }
-        
-        return null;
+    private Utils() {
     }
 
-    private InputSource getResource(String location) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(location);
-        return new InputSource(url.toString());
+    static FileObject createDirs(FileObject where, String[] dirs) throws IOException {
+        FileObject base = where;
+        for (String dir : dirs) {
+            FileObject newDir = base.getFileObject(dir);
+            if (newDir == null) {
+                newDir = base.createFolder(dir);
+            }
+            base = newDir;
+        }
+        return base;
     }
 
 }

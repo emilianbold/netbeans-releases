@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.dlight.api.storage.threadmap;
 
+import org.netbeans.modules.dlight.api.stack.StackTrace;
+
 /**
  * Represents thread state line column
  *
@@ -54,4 +56,6 @@ public interface ThreadStateColumn {
     ThreadState getThreadStateAt(int index);
 
     boolean isAlive();
+
+    StackTrace getStackTrace(long timeStamp);
 }

@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansModel;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -52,10 +56,13 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> implements WebBeansModel {
+class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> 
+    implements WebBeansModel 
+{
 
     WebBeansModelImpl( ModelSource source ) {
         super(source);
+        myFactory = new WebBeansComponentFactoryImpl( this );
     }
 
     /* (non-Javadoc)
@@ -63,8 +70,14 @@ class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> impleme
      */
     @Override
     public WebBeansComponent createRootComponent( Element root ) {
-        // TODO Auto-generated method stub
-        return null;
+        BeansImpl beans = (BeansImpl)getFactory().createComponent( root, null);
+        if ( beans!= null ){
+            myRoot = beans;
+        }
+        else {
+            return null;
+        }
+        return getBeans();
     }
 
     /* (non-Javadoc)
@@ -72,8 +85,10 @@ class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> impleme
      */
     @Override
     public ComponentUpdater<WebBeansComponent> getComponentUpdater() {
-        // TODO Auto-generated method stub
-        return null;
+        if ( mySyncUpdateVisitor== null ){
+            mySyncUpdateVisitor  = new SyncUpdateVisitor();
+        }
+        return mySyncUpdateVisitor;
     }
 
     /* (non-Javadoc)
@@ -90,8 +105,30 @@ class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> impleme
      * @see org.netbeans.modules.xml.xam.dom.DocumentModel#getRootComponent()
      */
     public WebBeansComponent getRootComponent() {
-        // TODO Auto-generated method stub
-        return null;
+        return myRoot;
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansModel#getBeans()
+     */
+    public BeansImpl getBeans() {
+        return (BeansImpl)getRootComponent();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansModel#getFactory()
+     */
+    public WebBeansComponentFactoryImpl getFactory() {
+        return myFactory;
+    }
+    
+    public Set<QName> getQNames() {
+        return WebBeansElements.allQNames();
+    }
+    
+    private BeansImpl myRoot;
+    
+    private SyncUpdateVisitor mySyncUpdateVisitor;
+    
+    private WebBeansComponentFactoryImpl myFactory;
 }

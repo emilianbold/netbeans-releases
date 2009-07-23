@@ -108,6 +108,15 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         return sortFragments(webXml, res);
     }
 
+    public List<FileObject> getFragmentFiles() {
+        refreshFragments();
+        List<FileObject> res = new ArrayList<FileObject>();
+        for (FragmentRec fr : fragmentRecs) {
+            res.add(fr.source);
+        }
+        return res;
+    }
+
     public List<ServletInfo> getServlets() {
         return doMerging(MergeEngines.servletsEngine());
     }

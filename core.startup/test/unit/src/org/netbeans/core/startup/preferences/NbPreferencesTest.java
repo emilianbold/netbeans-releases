@@ -71,14 +71,14 @@ public class NbPreferencesTest extends NbTestCase {
             super(testName);                        
         }
         
-        public void run(final TestResult result) {
+        public @Override void run(final TestResult result) {
             //just do registration before code NbTestCase
             NbPreferencesFactory.doRegistration();       
             Preferences.userRoot();                        
             super.run(result);
         }
         
-        protected void tearDown() throws Exception {
+        protected @Override void tearDown() throws Exception {
             super.tearDown();
             /*Logger logger = Logger.getAnonymousLogger();
             logger.log(Level.INFO  ,getName()+ "->" + Statistics.FLUSH.toString());//NOI18N
@@ -88,7 +88,7 @@ public class NbPreferencesTest extends NbTestCase {
              **/
         }
         
-        protected void setUp() throws Exception {            
+        protected @Override void setUp() throws Exception {
             super.setUp();                        
             Statistics.CHILDREN_NAMES.reset();
             Statistics.FLUSH.reset();
