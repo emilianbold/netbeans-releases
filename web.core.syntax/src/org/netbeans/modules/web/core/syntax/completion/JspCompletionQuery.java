@@ -122,11 +122,6 @@ public class JspCompletionQuery {
                 queryJspDirective(result, component, offset, sup, (SyntaxElement.Directive)elem, doc);
                 break;
                 
-                // EXPRESSION LANGUAGE
-            case JspSyntaxSupport.EL_COMPLETION_CONTEXT:
-                queryEL(result, component, offset, sup);
-                break;
-                
                 // CONTENT LANGUAGE
             case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
                 // JSP tags results
@@ -266,49 +261,6 @@ public class JspCompletionQuery {
         result.addAllItems(sup.getPossibleEndTags(offset, anchor, tokenPart));
     }
     
-    /** Gets a list of completion items for EL */
-    private void queryEL(CompletionResultSet result, JTextComponent component, int offset, JspSyntaxSupport sup) throws BadLocationException {
-        
-        ELExpression elExpr = new ELExpression(sup);
-        
-        switch (elExpr.parse(offset)){
-        case ELExpression.EL_START:
-            // implicit objects
-            for (ELImplicitObjects.ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) {
-                result.addItem(JspCompletionItem.createELImplicitObject(implOb.getName(), offset - elExpr.getReplace().length(), implOb.getType()));
-            }
-            
-            // defined beans on the page
-            BeanData[] beans = sup.getBeanData();
-            if (beans != null){
-                for (int i = 0; i < beans.length; i++) {
-                    if (beans[i].getId().startsWith(elExpr.getReplace()))
-                        result.addItem(JspCompletionItem.createELBean(beans[i].getId(), offset - elExpr.getReplace().length(), beans[i].getClassName()));
-                }
-            }
-            //Functions
-            List functions = ELFunctions.getFunctions(sup, elExpr.getReplace());
-            Iterator iter = functions.iterator();
-            while (iter.hasNext()) {
-                ELFunctions.Function fun = (ELFunctions.Function) iter.next();
-                result.addItem(JspCompletionItem.createELFunction(
-                        fun.getName(),
-                        offset - elExpr.getReplace().length(),
-                        fun.getReturnType(),
-                        fun.getPrefix(),
-                        fun.getParameters()));
-            }
-            break;
-        case ELExpression.EL_BEAN:
-        case ELExpression.EL_IMPLICIT:
-            
-            List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), offset - elExpr.getReplace().length());
-            result.addAllItems(items);
-            
-            break;
-        }
-        
-    }
     
     /** Gets a list of JSP directives which can be completed just after <% in java scriptlet context */
     private void queryJspDirectiveInScriptlet(CompletionResultSet result, int offset, JspSyntaxSupport sup) throws BadLocationException {
