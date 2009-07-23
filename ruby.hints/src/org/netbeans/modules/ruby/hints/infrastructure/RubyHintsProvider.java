@@ -38,6 +38,7 @@ import java.util.Set;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.IRubyWarnings.ID;
+import org.jrubyparser.ast.CaseNode;
 import org.jrubyparser.ast.WhenNode;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
@@ -336,16 +337,23 @@ public class RubyHintsProvider implements HintsProvider {
             // confuses our hints
             // XXX: change this behaviour in the parser?
             WhenNode whenNode = (WhenNode) node;
-            List<Node> list = new ArrayList<Node>(2);
-            if (whenNode.getExpressionNodes() != null) {
-                list.add(whenNode.getExpressionNodes());
-            }
-            if (whenNode.getBodyNode() != null) {
-                list.add(whenNode.getBodyNode());
-            }
-            return list;
+            return nodeList(whenNode.getExpressionNodes(), whenNode.getBodyNode());
+        } else if (node.getNodeType() == NodeType.CASENODE) {
+            CaseNode caseNode = (CaseNode) node;
+            // include the else node for case nodes
+            return nodeList(caseNode.getCaseNode(), caseNode.getCases(), caseNode.getElseNode());
         }
         return node.childNodes();
+    }
+
+    private List<Node> nodeList(Node... nodes) {
+        List<Node> result = new ArrayList<Node>(nodes.length);
+        for (Node node : nodes) {
+            if (node != null) {
+                result.add(node);
+            }
+        }
+        return result;
     }
 
     public void cancel() {
