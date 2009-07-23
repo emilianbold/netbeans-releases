@@ -225,6 +225,10 @@ class ConfigActionTest extends ConfigAction {
             assert phpUnit != null;
         }
 
+        protected boolean allTests(PhpUnitInfo info) {
+            return info.testName == null;
+        }
+
         public ExecutionDescriptor getDescriptor() throws IOException {
             ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                     .optionsPath(UiUtils.OPTIONS_PATH)
@@ -264,7 +268,7 @@ class ConfigActionTest extends ConfigAction {
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
             File startFile = FileUtil.toFile(info.startFile);
-            Files files = phpUnit.getFiles(project, info.testName == null);
+            Files files = phpUnit.getFiles(project, allTests(info));
             if (files.bootstrap != null) {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_BOOTSTRAP)
@@ -292,7 +296,7 @@ class ConfigActionTest extends ConfigAction {
 
         public String getOutputTabTitle() {
             String title = null;
-            if (info.testName == null) {
+            if (allTests(info)) {
                 File suite = phpUnit.getCustomSuite(project);
                 if (suite == null) {
                     title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
@@ -314,12 +318,12 @@ class ConfigActionTest extends ConfigAction {
         }
 
         protected UnitTestRunner getTestRunner() {
-            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler);
+            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler, allTests(info));
         }
 
         void handleCodeCoverage() {
             if (!isCoverageEnabled()
-                    || info.testName != null) {
+                    || !allTests(info)) {
                 // XXX not enabled or just one test case (could be handled later)
                 return;
             }
@@ -360,7 +364,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         protected UnitTestRunner getTestRunner() {
             assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
-            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler);
+            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler, allTests(info));
         }
     }
 
