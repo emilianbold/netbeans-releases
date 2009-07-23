@@ -56,7 +56,6 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Keymap;
-import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -96,7 +95,7 @@ public class TopComponentTest extends NbTestCase {
 
         }
         ContextAwareAction del = new CAA();
-        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, null, "DisplayName", null, true);
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, "DisplayName", null, true);
         Action a = context.createContextAwareInstance(tc.getLookup());
         tc.getActionMap().put("key", a);
 
@@ -122,7 +121,7 @@ public class TopComponentTest extends NbTestCase {
         }
         tc.associateLookup(Lookups.fixed(tc.getActionMap(), tc));
         ContextAwareAction del = new CAA();
-        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, null, "DisplayName", null, true);
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, "DisplayName", null, true);
         Action a = context.createContextAwareInstance(tc.getLookup());
         tc.getActionMap().put("key", a);
 
