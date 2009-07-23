@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.sync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -341,15 +340,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             }
         }
 
-        public void tick() {
-        }
-
-        public float[] getGraphData() {
-            return new float[]{threads, threads * Math.min(locks, 100) / 100.0f};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.emptyMap();
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = threads;
+            data[1] = threads * Math.min(locks, 100) / 100.0f;
         }
     }
 }

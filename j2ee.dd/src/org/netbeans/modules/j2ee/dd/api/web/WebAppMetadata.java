@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.openide.filesystems.FileObject;
 
@@ -78,6 +79,13 @@ public interface WebAppMetadata {
      * Never returns null.
      */
     List<ServletInfo> getServlets();
+
+    /**
+     * @return list of objects that hold information about filters (information
+     * aggregated from web.xml file, web-fragment.xml files, and annotations).
+     * Never returns null.
+     */
+    List<FilterInfo> getFilters();
 
     /**
      * @return list of all defined security roles

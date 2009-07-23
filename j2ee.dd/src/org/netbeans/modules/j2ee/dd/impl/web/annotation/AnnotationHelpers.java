@@ -57,6 +57,7 @@ public class AnnotationHelpers {
 
     private AnnotationModelHelper helper;
     private PersistentObjectManager<WebServlet> webServletsPOM;
+    private PersistentObjectManager<WebFilter> webFiltersPOM;
     private PersistentObjectManager<SecurityRoles> securityRolesPOM;
 
     public AnnotationHelpers(AnnotationModelHelper helper) {
@@ -77,6 +78,17 @@ public class AnnotationHelpers {
                 }
             });
         return webServletsPOM;
+    }
+
+    public PersistentObjectManager<WebFilter> getWebFilterPOM() {
+        if (webFiltersPOM == null)
+            webFiltersPOM = helper.createPersistentObjectManager(new AnnotationProvider("javax.servlet.annotation.WebFilter") {
+                @Override
+                WebFilter newItem(AnnotationModelHelper helper, TypeElement typeElement) {
+                    return new WebFilter(helper, typeElement);
+                }
+            });
+        return webFiltersPOM;
     }
 
     public PersistentObjectManager<SecurityRoles> getSecurityRolesPOM() {

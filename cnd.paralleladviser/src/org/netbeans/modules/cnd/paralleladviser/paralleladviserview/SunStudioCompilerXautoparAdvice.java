@@ -66,7 +66,7 @@ public class SunStudioCompilerXautoparAdvice implements Advice {
 
         URL iconUrl = SunStudioCompilerXautoparAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
 
-        return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl,
+        return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl, "Automatic parallelization with Sun Studio compilers", // NOI18N
                 "<b>-xautopar</b> turns on automatic parallelization for multiple processors. " + // NOI18N
                 "Does dependence analysis (analyze loops for inter-iteration data dependence) and loop restructuring. " + // NOI18N
                 "If optimization is not at-xO3 or higher, optimization is raised to-xO3 and a warning is emitted." + // NOI18N
@@ -81,6 +81,6 @@ public class SunStudioCompilerXautoparAdvice implements Advice {
                 "If you use <b>-xautopar</b> and compile and link in separate steps, then you must also link with <b>-xautopar</b>." + // NOI18N
                 "<br>" + // NOI18N
                 "<br>" + // NOI18N
-                "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>."); // NOI18N
+                "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>.", null); // NOI18N
     }
 }

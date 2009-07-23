@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,28 +49,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
+package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
-import java.net.URL;
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 
 /**
- * Loop parallelization advice.
+ * Service that provides tips for Parallel Adviser.
  *
  * @author Nick Krasilnikov
  */
-public class LoopParallelizationAdvice implements Advice {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
+public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvider {
 
-    public JComponent getComponent() {
-        URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
-        return ParallelAdviserAdviceUtils.createAdviceComponent(iconUrl,
-                "Parallel computing is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
-                "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
-                "which are then solved concurrently (\"in parallel\"). There are several different forms of parallel computing: bit-level, " + // NOI18N
-                "instruction level, data, and task parallelism. Parallelism has been employed for many years, mainly in high-performance computing, " + // NOI18N
-                "but interest in it has grown lately due to the physical constraints preventing frequency scaling. " + // NOI18N
-                "As power consumption (and consequently heat generation) by computers has become a concern in recent years, " + // NOI18N
-                "parallel computing has become the dominant paradigm in computer architecture, mainly in the form of multicore processors."); // NOI18N
+    private final static Collection<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
+
+    public static void addTip(LoopParallelizationAdvice tip) {
+        for (LoopParallelizationAdvice advice : tips) {
+            if(advice.getFunction().equals(tip.getFunction())) {
+                tips.remove(advice);
+                break;
+            }
+        }
+        tips.add(tip);
     }
+
+    public static void clearTips() {
+        tips.clear();
+    }
+
+    public Collection<Advice> getTips() {
+        return new ArrayList<Advice>(tips);
+    }
+
 }

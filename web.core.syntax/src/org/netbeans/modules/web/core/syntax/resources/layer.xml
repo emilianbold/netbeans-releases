@@ -143,6 +143,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
@@ -280,6 +281,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-web-core-syntax-completion-ElCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
