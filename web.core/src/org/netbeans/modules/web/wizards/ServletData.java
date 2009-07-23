@@ -75,7 +75,7 @@ class ServletData extends DeployData {
     private String[][] initparams = null;
     private boolean paramOK = true;
     private String duplicitParam = null;
-    private FileType fileType = null;
+    FileType fileType = null;
 
     ServletData(FileType fileType) {
         this.fileType = fileType;
