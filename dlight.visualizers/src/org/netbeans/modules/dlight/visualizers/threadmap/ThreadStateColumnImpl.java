@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.api.stack.StackTrace;
@@ -53,8 +52,8 @@ import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadsDataManager.MergedThreadInfo;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,78 +65,17 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     /** Thread is waiting to die. Also used for "doesn't exist yet" and "dead" */
     public static final Color THREAD_STATUS_ZOMBIE_COLOR = Color.BLACK;
 
-    // I18N String constants
-    static final ResourceBundle messages = NbBundle.getBundle(ThreadStateColumnImpl.class);
-
-    public static final StateResources THREAD_RUNNING = new StateResources(new Color(84, 185, 72), MSAState.Running);
-    public static final StateResources THREAD_RUNNING_USER = new StateResources(new Color(84, 185, 72), MSAState.RunningUser);
-    public static final StateResources THREAD_RUNNING_SYSTEM = new StateResources(new Color(0, 166, 80), MSAState.RunningSystemCall);
-    public static final StateResources THREAD_RUNNING_OTHER = new StateResources(new Color(0, 169, 157), MSAState.RunningOther);
-
-    public static final StateResources THREAD_BLOCKED = new StateResources(new Color(238, 29, 37), MSAState.Blocked);
-    public static final StateResources THREAD_SLEEP_USE_LOCK = new StateResources(new Color(238, 29, 37), MSAState.SleepingUserLock);
-
-    public static final StateResources THREAD_WAITING = new StateResources(new Color(83, 130, 161), MSAState.Waiting);
-    public static final StateResources THREAD_WAITING_CPU = new StateResources(new Color(83, 130, 161), MSAState.WaitingCPU);
-
-    public static final StateResources THREAD_SLEEPING = new StateResources(new Color(255, 199, 38), MSAState.Sleeping);
-    public static final StateResources THREAD_SLEEPING_OTHER = new StateResources(new Color(255, 199, 38), MSAState.SleepingOther);
-    public static final StateResources THREAD_SLEEPING_USER_DATA_PAGE_FAULT = new StateResources(new Color(247, 149, 29), MSAState.SleepingUserDataPageFault);
-    public static final StateResources THREAD_SLEEPING_USER_TEXT_PAGE_FAULT = new StateResources(new Color(231, 111, 0), MSAState.SleepingUserTextPageFault);
-    public static final StateResources THREAD_SLEEPING_KERNEL_PAGE_FAULT = new StateResources(new Color(114, 138, 132), MSAState.SleepingKernelPageFault);
-
-    public static final StateResources THREAD_THREAD_STOPPED = new StateResources(new Color(255, 242, 0), MSAState.ThreadStopped);
-
     static Color getThreadStateColor(MSAState threadState) {
-        switch(threadState) {
-            case ThreadFinished: return THREAD_STATUS_ZOMBIE_COLOR;
-            
-            case Running: return THREAD_RUNNING.color;
-            case RunningUser: return THREAD_RUNNING_USER.color;
-            case RunningSystemCall: return THREAD_RUNNING_SYSTEM.color;
-            case RunningOther: return THREAD_RUNNING_OTHER.color;
-
-            case Blocked: return THREAD_BLOCKED.color;
-            case SleepingUserLock: return THREAD_SLEEP_USE_LOCK.color;
-
-            case Waiting: return THREAD_WAITING.color;
-            case WaitingCPU: return THREAD_WAITING_CPU.color;
-
-            case Sleeping: return THREAD_SLEEPING.color;
-            case SleepingOther: return THREAD_SLEEPING_OTHER.color;
-            case SleepingUserDataPageFault: return THREAD_SLEEPING_USER_DATA_PAGE_FAULT.color;
-            case SleepingUserTextPageFault: return THREAD_SLEEPING_USER_TEXT_PAGE_FAULT.color;
-            case SleepingKernelPageFault: return THREAD_SLEEPING_KERNEL_PAGE_FAULT.color;
-
-            case Stopped: return THREAD_SLEEPING.color;
-            case ThreadStopped: return THREAD_THREAD_STOPPED.color;
+        if (threadState == MSAState.ThreadFinished) {
+            return THREAD_STATUS_ZOMBIE_COLOR;
         }
+
+        ThreadStateResources res = ThreadStateResources.forState(threadState);
+        if (res != null) {
+            return res.color;
+        }
+
         return THREAD_STATUS_UNKNOWN_COLOR;
-    }
-
-    static StateResources getThreadStateResources(MSAState threadState) {
-        switch(threadState) {
-            case Running: return THREAD_RUNNING;
-            case RunningUser: return THREAD_RUNNING_USER;
-            case RunningSystemCall: return THREAD_RUNNING_SYSTEM;
-            case RunningOther: return THREAD_RUNNING_OTHER;
-
-            case Blocked: return THREAD_BLOCKED;
-            case SleepingUserLock: return THREAD_SLEEP_USE_LOCK;
-
-            case Waiting: return THREAD_WAITING;
-            case WaitingCPU: return THREAD_WAITING_CPU;
-
-            case Sleeping: return THREAD_SLEEPING;
-            case SleepingOther: return THREAD_SLEEPING_OTHER;
-            case SleepingUserDataPageFault: return THREAD_SLEEPING_USER_DATA_PAGE_FAULT;
-            case SleepingUserTextPageFault: return THREAD_SLEEPING_USER_TEXT_PAGE_FAULT;
-            case SleepingKernelPageFault: return THREAD_SLEEPING_KERNEL_PAGE_FAULT;
-
-            case Stopped: return THREAD_SLEEPING;
-            case ThreadStopped: return THREAD_THREAD_STOPPED;
-        }
-        return null;
     }
 
     static Color getThreadStateColor(ThreadState threadStateColor, int msa) {
@@ -309,17 +247,6 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     void updateStackProvider(ThreadData stackProvider) {
         if (stackProvider != null) {
             this.stackProvider = stackProvider;
-        }
-    }
-
-    public static final class StateResources {
-        final Color color;
-        final String name;
-        final String tooltip;
-        StateResources(Color color, MSAState state){
-            this.color = color;
-            name = messages.getString("ThreadState"+state.name()+"Name"); // NOI18N
-            tooltip = messages.getString("ThreadState"+state.name()+"Tooltip"); // NOI18N
         }
     }
 }
