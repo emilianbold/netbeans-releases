@@ -50,15 +50,19 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.web.Filter;
+import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
+import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.SecurityRoles;
+import org.netbeans.modules.j2ee.dd.impl.web.annotation.WebFilter;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.WebServlet;
 
 /**
@@ -67,6 +71,7 @@ import org.netbeans.modules.j2ee.dd.impl.web.annotation.WebServlet;
 public class MergeEngines {
 
     private static ServletsEngine servletsEngine = new ServletsEngine();
+    private static FiltersEngine filtersEngine = new FiltersEngine();
     private static SecurityRolesEngine securityRolesEngine = new SecurityRolesEngine();
     private static ResourceRefsEngine resourceRefsEngine = new ResourceRefsEngine();
     private static ResourceEnvRefsEngine resourceEnvRefsEngine = new ResourceEnvRefsEngine();
@@ -82,6 +87,10 @@ public class MergeEngines {
     // -------------------------------------------------------------------------
     static MergeEngine<ServletInfo> servletsEngine() {
         return servletsEngine;
+    }
+
+    static MergeEngine<FilterInfo> filtersEngine() {
+        return filtersEngine;
     }
 
     static MergeEngine<String> securityRolesEngine() {
@@ -153,6 +162,49 @@ public class MergeEngines {
                 for (ServletMapping sm : mappings) {
                     if (sm.getServletName().equals(servletName) && sm.getUrlPattern() != null)
                         mpgs.add(sm.getUrlPattern());
+                }
+            }
+            return mpgs;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    private static class FiltersEngine extends MergeEngine<FilterInfo> {
+        @Override
+        void addItems(WebApp webXml) {
+            addFilters(webXml.getFilter(), webXml.getFilterMapping());
+        }
+
+        @Override
+        void addItems(WebFragment webXml) {
+            addFilters(webXml.getFilter(), webXml.getFilterMapping());
+        }
+
+        @Override
+        void addAnnotations(AnnotationHelpers annotationHelpers) {
+            for (WebFilter ann : annotationHelpers.getWebFilterPOM().getObjects()) {
+                res.add(FilterInfoAccessor.getDefault().createFilterInfo(
+                        ann.getName(), ann.getFilterClass(), ann.getUrlPatterns()));
+            }
+        }
+
+        private void addFilters(Filter[] filters, FilterMapping[] mappings) {
+            if (filters != null) {
+                for (Filter f : filters) {
+                    String name = f.getFilterName();
+                    String clazz = f.getFilterClass();
+                    List<String> urlMappings = findUrlMappingsForFilter(mappings, name);
+                    res.add(FilterInfoAccessor.getDefault().createFilterInfo(name, clazz, urlMappings));
+                }
+            }
+        }
+
+        private List<String> findUrlMappingsForFilter(FilterMapping[] mappings, String filterName) {
+            List<String> mpgs = new ArrayList<String>();
+            if (mappings != null) {
+                for (FilterMapping fm : mappings) {
+                    if (fm.getFilterName().equals(filterName) && fm.getUrlPattern() != null)
+                        mpgs.add(fm.getUrlPattern());
                 }
             }
             return mpgs;

@@ -81,7 +81,10 @@ public class ParallelAdviserViewAction extends CallableSystemAction {
 
     public void performAction() {
         ParallelAdviserTopComponent win = ParallelAdviserTopComponent.findInstance();
-        win.open();
+        win.updateTips();
+        if(!win.isOpened()) {
+            win.open();
+        }
         win.requestActive();
     }
 

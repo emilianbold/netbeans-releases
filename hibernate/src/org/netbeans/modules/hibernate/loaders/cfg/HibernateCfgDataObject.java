@@ -105,7 +105,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         modelSynchronizer = new ModelSynchronizer(this);
 
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        //cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         cookies.add(checkCookie);
