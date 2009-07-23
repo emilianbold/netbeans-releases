@@ -439,7 +439,7 @@ public class ELExpression {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
                         String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
                         
-                        CompletionItem item = JspCompletionItem.createELProperty(propertyName, anchorOffset, type);
+                        CompletionItem item = ElCompletionItem.createELProperty(propertyName, anchorOffset, type);
                         
                         completionItems.add(item);
                     }
