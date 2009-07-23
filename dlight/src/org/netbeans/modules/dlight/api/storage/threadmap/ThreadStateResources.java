@@ -70,7 +70,7 @@ public enum ThreadStateResources {
 
     private ThreadStateResources(Color color, MSAState state) {
         this.color = color;
-        ResourceBundle bundle = NbBundle.getBundle(ThreadStateResources.class);
+        ResourceBundle bundle = NbBundle.getBundle(getClass());
         name = bundle.getString("ThreadState" + state.name() + "Name"); // NOI18N
         tooltip = bundle.getString("ThreadState" + state.name() + "Tooltip"); // NOI18N
     }
