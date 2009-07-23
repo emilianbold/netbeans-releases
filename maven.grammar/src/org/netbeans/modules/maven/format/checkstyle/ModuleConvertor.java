@@ -39,9 +39,10 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
+import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.StringUtils;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -91,7 +92,7 @@ private static String PROP_SPACE_BEFORE_ELSE = "org-netbeans-modules-editor-inde
 private static String PROP_NEWLINE_MODIFIERS = "org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.placeNewLineAfterModifiers";
 private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.placeWhileOnNewLine";
 
-    public Properties convert(File checkstyleFile) {
+    public Properties convert(InputStream checkstyleStream) {
         Properties props = new Properties();
         SAXBuilder bldr = new SAXBuilder();
         bldr.setValidation(false);
@@ -102,7 +103,7 @@ private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.t
             }
         });
         try {
-            Document doc = bldr.build(checkstyleFile);
+            Document doc = bldr.build(checkstyleStream);
             Element root = doc.getRootElement();
             processModule(root, "", props);
             if (props.size() > 0) {
@@ -112,6 +113,8 @@ private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.t
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            IOUtil.close(checkstyleStream);
         }
         return props;
 
