@@ -44,12 +44,12 @@ package org.netbeans.modules.j2ee.ddloaders.web;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import java.beans.*;
 
 import java.net.URL;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
 /** A node to represent this object.
  *
