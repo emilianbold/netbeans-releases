@@ -401,7 +401,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
 
     private void writeProperties(String path, String... properties) throws IOException {
         FileObject f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), path);
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         for (String def : properties) {
             String[] nameValue = def.split("=", 2);
             ep.put(nameValue[0], nameValue[1]);

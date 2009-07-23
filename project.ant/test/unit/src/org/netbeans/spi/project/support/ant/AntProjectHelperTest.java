@@ -772,7 +772,7 @@ public class AntProjectHelperTest extends NbTestCase {
         pp.addChangeListener(mcl);
         assertEquals("no defs initially", Collections.EMPTY_MAP, pp.getProperties());
         assertNull("no file made yet", h.getProjectDirectory().getFileObject(path));
-        ep = new EditableProperties();
+        ep = new EditableProperties(false);
         ep.setProperty("one", "1");
         ep.setProperty("two", "2");
         h.putProperties(path, ep);

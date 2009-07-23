@@ -64,7 +64,7 @@ public class StoreGroupTest extends NbTestCase {
         String NEW_VALUE = "newValue";
         
         // Needed objects
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         PropertyEvaluator evaluator = new PlainPropertyEvaluator( ep );
         StoreGroup sg = new StoreGroup();
 
@@ -101,7 +101,7 @@ public class StoreGroupTest extends NbTestCase {
         JToggleButton inverseButtons[] = new JToggleButton[ TEST_PROPERTIES.length ];
         
         // Needed objects
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         PropertyEvaluator evaluator = new PlainPropertyEvaluator( ep );
         StoreGroup sg = new StoreGroup();
         StoreGroup inverseSg = new StoreGroup();
@@ -129,7 +129,7 @@ public class StoreGroupTest extends NbTestCase {
             inverseButtons[i].setSelected( !inverseButtons[i].isSelected() );            
         }
         
-        EditableProperties inverseEp = new EditableProperties();
+        EditableProperties inverseEp = new EditableProperties(false);
         sg.store( ep );
         inverseSg.store( inverseEp );
         for( int i = 0; i < TEST_PROPERTIES.length; i++ ) {
@@ -146,7 +146,7 @@ public class StoreGroupTest extends NbTestCase {
         String PROP_STRING = "string";
         
         // Needed objects
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         PropertyEvaluator evaluator = new PlainPropertyEvaluator( ep );
         StoreGroup sg = new StoreGroup();
 
@@ -188,7 +188,7 @@ public class StoreGroupTest extends NbTestCase {
         String ORIGINAL_B_VALUE = "original_B_Value";
         String NEW_A_VALUE = "new_A_Value";
         
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(false);
         PropertyEvaluator evaluator = new PlainPropertyEvaluator( ep );
         StoreGroup sg = new StoreGroup();
 
@@ -201,7 +201,7 @@ public class StoreGroupTest extends NbTestCase {
         JTextField jtf2 = new JTextField ();
         jtf2.setDocument ( doc2 );               
         jtf1.setText( NEW_A_VALUE );     
-        EditableProperties newEp = new EditableProperties ();
+        EditableProperties newEp = new EditableProperties(false);
         sg.store( newEp );        
         assertEquals( "Expected one new propery", 1, newEp.size());
         assertEquals( "Value has to be set into the properties", NEW_A_VALUE, newEp.getProperty( PROP_NAME_A ) );

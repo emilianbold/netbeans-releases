@@ -42,6 +42,8 @@
 package org.openide.awt;
 
 import java.awt.event.KeyEvent;
+import javax.swing.ButtonModel;
+import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
@@ -55,7 +57,7 @@ public class MnemonicsTest extends NbTestCase {
         super(name);
     }
 
-    // XXX testSetLocalizedText, testFindMnemonicAmpersand
+    // XXX testFindMnemonicAmpersand
 
     /** @see #31093 */
     public void testMnemonicAfterParens() throws Exception {
@@ -107,6 +109,19 @@ public class MnemonicsTest extends NbTestCase {
             assertEquals(KeyEvent.VK_A, b.getMnemonic());
             assertEquals('A', b.getText().charAt(b.getDisplayedMnemonicIndex()));
         }
+    }
+    
+    public void testSetLocalizedTextWithModel() throws Exception {
+        ButtonModel m = new DefaultButtonModel();
+        JButton b = new JButton();
+        Mnemonics.setLocalizedText(b, "Hello &There");
+        assertEquals("Hello There", b.getText());
+        assertEquals('T', b.getMnemonic());
+        assertEquals(6, b.getDisplayedMnemonicIndex());
+        b.setModel(m);
+        assertEquals("Hello There", b.getText());
+        assertEquals('T', b.getMnemonic());
+        assertEquals(6, b.getDisplayedMnemonicIndex());
     }
     
 }

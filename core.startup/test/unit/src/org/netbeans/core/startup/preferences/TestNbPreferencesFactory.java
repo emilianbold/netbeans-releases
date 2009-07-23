@@ -41,9 +41,6 @@
 package org.netbeans.core.startup.preferences;
 
 import java.util.prefs.Preferences;
-import java.util.prefs.PreferencesFactory;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * @author Radek Matous
@@ -73,7 +70,4 @@ public class TestNbPreferencesFactory extends NbPreferencesTest.TestBasicSetup {
         assertTrue(Preferences.systemRoot() instanceof NbPreferences);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
 }
