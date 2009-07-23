@@ -139,11 +139,11 @@ public class ELExpression {
             Token jspToken = jspTokenSequence.token();
             isDefferedExecution = jspToken.text().toString().startsWith("#{"); //NOI18N
             
-            if (jspToken.id() == JspTokenId.EL){
+//            if (jspToken.id() == JspTokenId.EL){
                 if (offset == jspToken.offset(hi) + "${".length()){ //NOI18N
                     return EL_START;
                 }
-            }
+//            }
             
             ts.move(offset);
             if (!ts.moveNext() && !ts.movePrevious()) {
