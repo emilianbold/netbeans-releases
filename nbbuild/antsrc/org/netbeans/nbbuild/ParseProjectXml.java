@@ -1301,6 +1301,7 @@ public final class ParseProjectXml extends Task {
             for (File jar : jars) {
                 if (!jar.isFile()) {
                     log("Classpath entry " + jar + " does not exist; skipping", Project.MSG_WARN);
+                    continue;
                 }
                 InputStream is = new FileInputStream(jar);
                 try {

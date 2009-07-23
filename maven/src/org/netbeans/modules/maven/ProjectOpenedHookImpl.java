@@ -65,7 +65,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * openhook implementation, register global classpath and also
@@ -78,7 +77,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
     private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private List<URI> uriReferences = new ArrayList<URI>();
 
     // ui logging
@@ -108,6 +107,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
+        //#167572 in the unlikely event that generated sources are located outside of
+        // the project root.
+        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots()));
         URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
         File rootDir = new File(rootUri);
         for (URI uri : uris) {

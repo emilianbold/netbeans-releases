@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
  * @author  Radim Kubacki
  */
 public final class DiagnosticTask implements Runnable {
+    private static final Logger LOG = Logger.getLogger(DiagnosticTask.class.getName());
     private static boolean executed;
 
     public DiagnosticTask() {}
@@ -74,8 +75,11 @@ public final class DiagnosticTask implements Runnable {
             return;
         }
         String diagInfo = logParams();
-        Logger.getLogger(DiagnosticTask.class.getName()).info(diagInfo);
+        LOG.info(diagInfo);
         logEnv();
+        if (Boolean.getBoolean("netbeans.full.hack")) {
+            LOG.warning("Using netbeans.full.hack=true; see http://wiki.netbeans.org/DevFaqNetBeansFullHack");
+        }
         executed = true;
     }
     
@@ -87,22 +91,22 @@ public final class DiagnosticTask implements Runnable {
             Method m = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
             m.setAccessible(true);
             long freeMem = (Long)m.invoke(osBean);
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, "Total memory {0}", freeMem);
+            LOG.log(Level.INFO, "Total memory {0}", freeMem);
 
             LogRecord lr = new LogRecord(Level.INFO, "MEMORY");
             lr.setResourceBundle(NbBundle.getBundle(DiagnosticTask.class));
             lr.setParameters(new Object[] {freeMem});
             Logger.getLogger("org.netbeans.ui.performance").log(lr);
         } catch (NoSuchMethodException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         } catch (SecurityException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         } catch (InvocationTargetException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         }
     }
 
@@ -203,7 +207,7 @@ public final class DiagnosticTask implements Runnable {
 //        } catch (MalformedObjectNameException ex) {
 //            Logger.getLogger("global").log(Level.WARNING, null, ex);
         } catch (NullPointerException ex) {
-            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         }
         return sb.toString();
     }

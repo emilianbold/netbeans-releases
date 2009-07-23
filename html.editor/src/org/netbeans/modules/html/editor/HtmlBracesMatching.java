@@ -192,11 +192,9 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     if (result == null) {
                         return;
                     }
-                    AstNode root = result.root();
 
                     int searched = result.getSnapshot().getEmbeddedOffset(context.getSearchOffset());
-
-                    AstNode origin = AstNodeUtils.findDescendant(root, searched);
+                    AstNode origin = result.findLeaf(searched);
                     if (origin != null) {
                         if (origin.type() == AstNode.NodeType.OPEN_TAG ||
                                 origin.type() == AstNode.NodeType.ENDTAG) {

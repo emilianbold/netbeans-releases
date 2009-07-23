@@ -64,6 +64,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -72,8 +73,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
-import org.netbeans.modules.php.project.api.Pair;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -265,7 +265,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         // #150179 - index file not mandatory
-        if (!PhpProjectUtils.hasText(indexFile)) {
+        if (!StringUtils.hasText(indexFile)) {
             indexFile = null;
         }
         err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);

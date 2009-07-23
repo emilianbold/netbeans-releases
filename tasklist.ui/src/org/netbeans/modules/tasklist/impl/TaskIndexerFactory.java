@@ -40,7 +40,6 @@
 package org.netbeans.modules.tasklist.impl;
 
 import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -76,7 +75,7 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
     }
 
     @Override
-    public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+    public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
         try {
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : deleted ) {
@@ -90,7 +89,7 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
     }
 
     @Override
-    public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+    public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
         try {
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : dirty ) {

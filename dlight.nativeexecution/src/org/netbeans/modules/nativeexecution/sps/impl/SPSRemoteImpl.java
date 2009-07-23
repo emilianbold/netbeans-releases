@@ -41,7 +41,6 @@ package org.netbeans.modules.nativeexecution.sps.impl;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,11 +49,13 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.security.acl.NotOwnerException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -92,11 +93,10 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
                 throw new IOException("Unable to get sshd pid"); // NOI18N
             }
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(pidFetchProcess.getInputStream()));
-            String line = br.readLine();
+            List<String> out = ProcessUtils.readProcessOutput(pidFetchProcess);
             String pidCandidate = null;
 
-            while (line != null) {
+            for (String line : out) {
                 line = line.trim();
                 if (line.endsWith("sshd")) { // NOI18N
                     try {
@@ -104,7 +104,6 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
                     } catch (NumberFormatException ex) {
                     }
                 }
-                line = br.readLine();
             }
 
             pid = pidCandidate;
@@ -112,16 +111,10 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Logger.getInstance().fine(ex.toString());
-            if (pidFetchProcess != null) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(pidFetchProcess.getErrorStream()));
-                try {
-                    String line = br.readLine();
-                    while (line != null) {
-                        Logger.getInstance().fine(line);
-                        line = br.readLine();
-                    }
-                } catch (IOException ioex) {
-                }
+            try {
+                ProcessUtils.logError(Level.FINE, Logger.getInstance(), pidFetchProcess);
+            } catch (IOException ioex) {
+                Exceptions.printStackTrace(ioex);
             }
         }
 
@@ -133,8 +126,6 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         super.invalidate();
         pid = null;
     }
-
-
 
     public synchronized void requestPrivileges(List<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         ConnectionManager mgr = ConnectionManager.getInstance();

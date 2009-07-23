@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -57,14 +58,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.windows.InputOutput;
 
 /**
@@ -76,9 +78,10 @@ import org.openide.windows.InputOutput;
  * This class is not threadsafe.
  * @author Tomas Mysik
  */
-public class RemoteClient implements Cancellable {
+public final class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
-    private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = AdvancedProperties.create(null, null, false, false);
+    private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = new AdvancedProperties();
+    private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
     private static final Set<String> IGNORED_REMOTE_DIRS = new HashSet<String>(Arrays.asList(".", "..")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
@@ -87,10 +90,11 @@ public class RemoteClient implements Cancellable {
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
-    private static enum Operation { UPLOAD, DOWNLOAD, DELETE };
+    public static enum Operation { UPLOAD, DOWNLOAD, DELETE };
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
+    private final OperationMonitor operationMonitor;
     private final String baseRemoteDirectory;
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
     private volatile boolean cancelled = false;
@@ -114,13 +118,21 @@ public class RemoteClient implements Cancellable {
         this.configuration = configuration;
         this.properties = properties;
 
+        OperationMonitor monitor = properties.getOperationMonitor();
+        if (monitor != null) {
+            operationMonitor = monitor;
+        } else {
+            operationMonitor = DEV_NULL_OPERATION_MONITOR;
+        }
+
         // base remote directory
         StringBuilder baseDirBuffer = new StringBuilder(configuration.getInitialDirectory());
-        if (PhpProjectUtils.hasText(properties.additionalInitialSubdirectory)) {
-            if (!properties.additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
+        String additionalInitialSubdirectory = properties.getAdditionalInitialSubdirectory();
+        if (StringUtils.hasText(additionalInitialSubdirectory)) {
+            if (!additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
                 throw new IllegalArgumentException("additionalInitialSubdirectory must start with " + TransferFile.SEPARATOR);
             }
-            baseDirBuffer.append(properties.additionalInitialSubdirectory);
+            baseDirBuffer.append(additionalInitialSubdirectory);
         }
         String baseDir = baseDirBuffer.toString();
         // #150646 - should not happen now, likely older nb project metadata
@@ -142,7 +154,7 @@ public class RemoteClient implements Cancellable {
         // remote client itself
         org.netbeans.modules.php.project.connections.spi.RemoteClient client = null;
         for (RemoteConnectionProvider provider : RemoteConnections.get().getConnectionProviders()) {
-            client = provider.getRemoteClient(configuration, properties.io);
+            client = provider.getRemoteClient(configuration, properties.getInputOutput());
             if (client != null) {
                 break;
             }
@@ -270,12 +282,14 @@ public class RemoteClient implements Cancellable {
 
         // XXX order filesToUpload?
         try {
+            operationMonitor.operationStart(Operation.UPLOAD, filesToUpload);
             for (TransferFile file : filesToUpload) {
                 if (cancelled) {
                     LOGGER.fine("Upload cancelled");
                     break;
                 }
 
+                operationMonitor.operationProcess(Operation.UPLOAD, file);
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
@@ -287,6 +301,7 @@ public class RemoteClient implements Cancellable {
                 }
             }
         } finally {
+            operationMonitor.operationFinish(Operation.UPLOAD, filesToUpload);
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -316,7 +331,7 @@ public class RemoteClient implements Cancellable {
             String fileName = file.getName();
 
             int oldPermissions = -1;
-            if (properties.preservePermissions) {
+            if (properties.isPreservePermissions()) {
                 oldPermissions = remoteClient.getPermissions(fileName);
                 LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
             } else {
@@ -324,7 +339,7 @@ public class RemoteClient implements Cancellable {
             }
 
             String tmpFileName = null;
-            if (properties.uploadDirectly) {
+            if (properties.isUploadDirectly()) {
                 LOGGER.fine("File will be uploaded directly.");
                 tmpFileName = fileName;
             } else {
@@ -343,26 +358,26 @@ public class RemoteClient implements Cancellable {
                     if (remoteClient.storeFile(tmpFileName, is)) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            String f = file.getRelativePath() + (properties.uploadDirectly ? "" : REMOTE_TMP_NEW_SUFFIX);
+                            String f = file.getRelativePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
                             LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, f));
                         }
                         break;
                     } else if (LOGGER.isLoggable(Level.FINE)) {
-                        String f = file.getRelativePath() + (properties.uploadDirectly ? "" : REMOTE_TMP_NEW_SUFFIX);
+                        String f = file.getRelativePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
                         LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, f));
                     }
                 }
             } finally {
                 is.close();
                 if (success) {
-                    if (!properties.uploadDirectly) {
+                    if (!properties.isUploadDirectly()) {
                         success = moveRemoteFile(tmpFileName, fileName);
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine(String.format("File %s renamed to %s: %s", tmpFileName, fileName, success));
                         }
                     }
 
-                    if (properties.preservePermissions && success && oldPermissions != -1) {
+                    if (properties.isPreservePermissions() && success && oldPermissions != -1) {
                         int newPermissions = remoteClient.getPermissions(fileName);
                         LOGGER.fine(String.format("New permissions of %s: %d", fileName, newPermissions));
                         if (oldPermissions != newPermissions) {
@@ -511,12 +526,14 @@ public class RemoteClient implements Cancellable {
 
         // XXX order filesToDownload?
         try {
+            operationMonitor.operationStart(Operation.DOWNLOAD, filesToDownload);
             for (TransferFile file : filesToDownload) {
                 if (cancelled) {
                     LOGGER.fine("Download cancelled");
                     break;
                 }
 
+                operationMonitor.operationProcess(Operation.DOWNLOAD, file);
                 try {
                     downloadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
@@ -528,6 +545,8 @@ public class RemoteClient implements Cancellable {
                 }
             }
         } finally {
+            operationMonitor.operationFinish(Operation.DOWNLOAD, filesToDownload);
+
             // refresh filesystem
             FileUtil.refreshFor(baseLocalDir);
 
@@ -1062,35 +1081,178 @@ public class RemoteClient implements Cancellable {
         return dirs;
     }
 
+    public static interface OperationMonitor {
+        /**
+         * {@link Operation} started for the files.
+         * @param operation {@link Operation} currently run
+         * @param forFiles collection of files for which the operation started
+         */
+        void operationStart(Operation operation, Collection<TransferFile> forFiles);
+
+        /**
+         * {@link Operation} process for the file.
+         * @param operation {@link Operation} currently run
+         * @param forFile files for which the operation is run
+         */
+        void operationProcess(Operation operation, TransferFile forFile);
+
+        /**
+         * {@link Operation} finished for the files.
+         * @param operation {@link Operation} currently run
+         * @param forFiles collection of files for which the operation finished
+         */
+        void operationFinish(Operation operation, Collection<TransferFile> forFiles);
+    }
+
+    private static final class DevNullOperationMonitor implements OperationMonitor {
+        public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
+        }
+        public void operationProcess(Operation operation, TransferFile forFile) {
+        }
+        public void operationFinish(Operation operation, Collection<TransferFile> forFiles) {
+        }
+    }
+
     /**
      * Advanced properties for a {@link RemoteClient}.
      */
     public static final class AdvancedProperties {
-        public final InputOutput io;
-        public final String additionalInitialSubdirectory;
-        public final boolean preservePermissions;
-        public final boolean uploadDirectly;
-
-        private AdvancedProperties(InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions, boolean uploadDirectly) {
-            this.io = io;
-            this.additionalInitialSubdirectory = additionalInitialSubdirectory;
-            this.preservePermissions = preservePermissions;
-            this.uploadDirectly = uploadDirectly;
-        }
+        private final InputOutput io;
+        private final String additionalInitialSubdirectory;
+        private final boolean preservePermissions;
+        private final boolean uploadDirectly;
+        private final OperationMonitor operationMonitor;
 
         /**
          * Create advanced properties for a {@link RemoteClient}.
-         * @param io {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
-         *           Displays all the commands received from server.
+         */
+        public AdvancedProperties() {
+            this(new AdvancedPropertiesBuilder());
+        }
+
+        private AdvancedProperties(AdvancedPropertiesBuilder builder) {
+            io = builder.io;
+            additionalInitialSubdirectory = builder.additionalInitialSubdirectory;
+            preservePermissions = builder.preservePermissions;
+            uploadDirectly = builder.uploadDirectly;
+            operationMonitor = builder.operationMonitor;
+        }
+
+        /**
+         * Get additional initial subdirectory (directory which starts with {@value TransferFile#SEPARATOR} and is appended
+         * to {@link RemoteConfiguration#getInitialDirectory()} and set as default base remote directory. Can be <code>null</code>.
+         * @return additional initial subdirectory, can be <code>null</code>.
+         */
+        public String getAdditionalInitialSubdirectory() {
+            return additionalInitialSubdirectory;
+        }
+
+        /**
+         * Return properties with configured additional initial subdirectory.
+         * <p>
+         * All other properties of the returned properties are inherited from
+         * <code>this</code>.
+         *
          * @param additionalInitialSubdirectory additional directory which must start with {@value TransferFile#SEPARATOR} and is appended
          *                                      to {@link RemoteConfiguration#getInitialDirectory()} and
-         *                                      set as default base remote directory. Can be <code>null</code>.
+         *                                      set as default base remote directory.
+         * @return new properties with configured additional initial subdirectory, can be <code>null</code>.
+         */
+        public AdvancedProperties setAdditionalInitialSubdirectory(String additionalInitialSubdirectory) {
+            return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setAdditionalInitialSubdirectory(additionalInitialSubdirectory));
+        }
+
+        /**
+         * Get {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
+         * Displays all the commands received from server.
+         * @return {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
+         */
+        public InputOutput getInputOutput() {
+            return io;
+        }
+
+        /**
+         * Return properties with configured displayer of protocol commands.
+         * <p>
+         * All other properties of the returned properties are inherited from
+         * <code>this</code>.
+         *
+         * @param io {@link InputOutput}, the displayer of protocol commands.
+         *           Displays all the commands received from server.
+         * @return new properties with configured displayer of protocol commands
+         */
+        public AdvancedProperties setInputOutput(InputOutput io) {
+            Parameters.notNull("io", io);
+            return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setInputOutput(io));
+        }
+
+        /**
+         * Get {@link OperationMonitor monitor of commands}.
+         * @return {@link OperationMonitor monitor of commands}, can be <code>null</code>.
+         */
+        public OperationMonitor getOperationMonitor() {
+            return operationMonitor;
+        }
+
+        /**
+         * Return properties with configured {@link OperationMonitor monitor of commands}.
+         * <p>
+         * All other properties of the returned properties are inherited from
+         * <code>this</code>.
+         *
+         * @param operationMonitor {@link OperationMonitor monitor of commands}.
+         * @return new properties with configured {@link OperationMonitor monitor of commands}
+         */
+        public AdvancedProperties setOperationMonitor(OperationMonitor operationMonitor) {
+            Parameters.notNull("operationMonitor", operationMonitor);
+            return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setOperationMonitor(operationMonitor));
+        }
+
+        /**
+         * <code>True</code> if permissions should be preserved; please note that this is not supported for local
+         * files (possible in Java 6 and newer only) and also it will very likely cause slow down of file transfer.
+         * @return <code>true</code> if permissions should be preserved
+         */
+        public boolean isPreservePermissions() {
+            return preservePermissions;
+        }
+
+        /**
+         * Return properties with configured preserved permissions.
+         * <p>
+         * All other properties of the returned properties are inherited from
+         * <code>this</code>.
+         *
          * @param preservePermissions <code>true</code> if permissions should be preserved; please note that this is not supported for local
          *                            files (possible in Java 6 and newer only) and also it will very likely cause slow down of file transfer.
-         * @param uploadDirectly whether to upload files <b>without</b> a temporary file. <b>Warning:</b> can be dangerous.
+         * @return new properties with configured preserved permissions
          */
-        public static AdvancedProperties create(InputOutput io, String additionalInitialSubdirectory, boolean preservePermissions, boolean uploadDirectly) {
-            return new AdvancedProperties(io, additionalInitialSubdirectory, preservePermissions, uploadDirectly);
+        public AdvancedProperties setPreservePermissions(boolean preservePermissions) {
+            Parameters.notNull("preservePermissions", preservePermissions);
+            return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setPreservePermissions(preservePermissions));
+        }
+
+        /**
+         * <code>True</code> if file upload is done <b>without</b> a temporary file.
+         * <b>Warning:</b> can be dangerous.
+         * @return <code>true</code> if file upload is done <b>without</b> a temporary file
+         */
+        public boolean isUploadDirectly() {
+            return uploadDirectly;
+        }
+
+        /**
+         * Return properties with configured direct upload.
+         * <p>
+         * All other properties of the returned properties are inherited from
+         * <code>this</code>.
+         *
+         * @param uploadDirectly whether to upload files <b>without</b> a temporary file. <b>Warning:</b> can be dangerous.
+         * @return new properties with configured direct upload
+         */
+        public AdvancedProperties setUploadDirectly(boolean uploadDirectly) {
+            Parameters.notNull("uploadDirectly", uploadDirectly);
+            return new AdvancedProperties(new AdvancedPropertiesBuilder(this).setUploadDirectly(uploadDirectly));
         }
 
         @Override
@@ -1104,8 +1266,54 @@ public class RemoteClient implements Cancellable {
             sb.append(preservePermissions);
             sb.append(", uploadDirectly: ");
             sb.append(uploadDirectly);
+            sb.append(", operationMonitor: ");
+            sb.append(operationMonitor);
             sb.append(" ]");
             return sb.toString();
+        }
+    }
+
+    private static final class AdvancedPropertiesBuilder {
+        InputOutput io;
+        String additionalInitialSubdirectory;
+        boolean preservePermissions = false;
+        boolean uploadDirectly = false;
+        OperationMonitor operationMonitor;
+
+        AdvancedPropertiesBuilder() {
+        }
+
+        public AdvancedPropertiesBuilder(AdvancedProperties properties) {
+            io = properties.getInputOutput();
+            additionalInitialSubdirectory = properties.getAdditionalInitialSubdirectory();
+            preservePermissions = properties.isPreservePermissions();
+            uploadDirectly = properties.isUploadDirectly();
+            operationMonitor = properties.getOperationMonitor();
+        }
+
+        public AdvancedPropertiesBuilder setAdditionalInitialSubdirectory(String additionalInitialSubdirectory) {
+            this.additionalInitialSubdirectory = additionalInitialSubdirectory;
+            return this;
+        }
+
+        public AdvancedPropertiesBuilder setInputOutput(InputOutput io) {
+            this.io = io;
+            return this;
+        }
+
+        public AdvancedPropertiesBuilder setOperationMonitor(OperationMonitor operationMonitor) {
+            this.operationMonitor = operationMonitor;
+            return this;
+        }
+
+        public AdvancedPropertiesBuilder setPreservePermissions(boolean preservePermissions) {
+            this.preservePermissions = preservePermissions;
+            return this;
+        }
+
+        public AdvancedPropertiesBuilder setUploadDirectly(boolean uploadDirectly) {
+            this.uploadDirectly = uploadDirectly;
+            return this;
         }
     }
 }

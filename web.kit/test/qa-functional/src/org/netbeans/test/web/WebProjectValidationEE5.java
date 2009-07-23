@@ -52,7 +52,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -70,14 +69,6 @@ import org.netbeans.junit.ide.ProjectSupport;
 /**
  */
 public class WebProjectValidationEE5 extends WebProjectValidation {
-
-    private static ProjectHelper phelper = new ProjectHelper() {
-
-        public Node getSourceNode() {
-            return new SourcePackagesNode(PROJECT_NAME);
-        }
-    };
-    
 
     static {
         PROJECT_NAME = "WebJ2EE5Project"; // NOI18N
@@ -176,7 +167,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer(getServerNode(Server.GLASSFISH).getText());
-        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
+        serverStep.selectJavaEEVersion(JAVA_EE_5);
         serverStep.next();
         NewWebProjectJSFFrameworkStepOperator frameworkStep = new NewWebProjectJSFFrameworkStepOperator();
         frameworkStep.finish();

@@ -77,6 +77,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
@@ -86,7 +87,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Profile;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -102,7 +103,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
-import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -456,9 +456,9 @@ final public class WebProjectProperties {
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
             
-            Profile j2eeProfile = Profile.fromPropertiesString(project.getAPIWebModule().getJ2eePlatformVersion());
+            Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
             if (shouldCreateWebXml()) {
-                WebProjectUtilities.createWebXml(j2eeProfile, true, project.getAPIWebModule().getWebInf());
+                DDHelper.createWebXml(j2eeProfile, true, project.getAPIWebModule().getWebInf());
             }
 
             // extend project with selected frameworks

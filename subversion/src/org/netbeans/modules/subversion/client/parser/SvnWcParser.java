@@ -144,7 +144,7 @@ public class SvnWcParser {
                         || finalTextStatus.equals(SVNStatusKind.ADDED.toString())
                         || finalTextStatus.equals(SVNStatusKind.REPLACED.toString())
                         || finalTextStatus.equals(SVNStatusKind.DELETED.toString());
-                if (!SVNStatusKind.DELETED.toString().equals(finalTextStatus) && !file.exists()) {
+                if (!SVNStatusKind.DELETED.toString().equals(finalTextStatus) && !file.exists() && !isUnderParent(file)) {
                     finalTextStatus = SVNStatusKind.MISSING.toString();
                 }
 
@@ -244,6 +244,23 @@ public class SvnWcParser {
         } catch (IllegalArgumentException ex) {
             throw new LocalSubversionException(ex);
         }
+    }
+
+    private boolean isUnderParent (File file) {
+        Subversion.LOG.fine("SvnWcParser:isUnderParent: 168248 hook");  //NOI18N
+        File parentFile = file.getParentFile();
+        if (parentFile != null) {
+            File[] children = parentFile.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    if (file.equals(child)) {
+                        Subversion.LOG.fine("SvnWcParser:isUnderParent: file " + file.getAbsolutePath() + " seems to be a broken link"); //NOI18N
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public ISVNInfo getInfoFromWorkingCopy(File file) throws LocalSubversionException {

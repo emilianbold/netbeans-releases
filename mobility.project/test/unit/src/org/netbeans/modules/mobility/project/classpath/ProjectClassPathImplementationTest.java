@@ -59,8 +59,6 @@ import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
-
 /**
  *
  * @author lukas
@@ -92,8 +90,7 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
         
         aph = J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,null);
         projDir=FileUtil.toFileObject(proj);
-        instance=new ProjectClassPathImplementation(aph, RequestProcessor.getDefault()) {
-            
+        instance=new ProjectClassPathImplementation(aph) {
             protected String evaluatePath() {
                 return "test.jar";
             }

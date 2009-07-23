@@ -536,6 +536,36 @@ In order for the IDE to recognize references to those classes defined in the
 <extra-compilation-unit>, you may also need add/modify your module's cp.extra
 property to include the value specified in the <package-root> element.
 
+AN IMPORTANT NOTE: CUSTOMIZATION OF BUILD SCRIPTS
+-------------------------------------------------
+
+Harness scripts allow a great degree of customization in your project's build
+script and properties files (see sections on properties and Ant targets
+below). Due to open nature of Ant scripts (everything is public) special
+attention must be paid to migrating customized build scripts to newer version of
+harness. In order to avoid unexpected use of newer version of  harness with new
+IDE, make sure that your either define harness location explicitly via
+harness.dir property or that you use harness supplied with NB platform you are
+building against ('Harness supplied with Platform' option on Harness tab in
+NetBeans Platform Manager).
+
+Of course sometimes you want to upgrade to newer version of harness. To minimize
+the chances that it will break your (customized) build, follow these
+simple rules:
+
+ * Use only properties listed in the following sections and avoid overriding
+   those marked 'Do not override' or similarly.
+ * Depend on/override only targets listed in sections 'Targets available for
+   overriding...' below
+ * When overriding targets, use only pre- or post-hooks (described below) for
+   your code and call original target as a whole in 'depends' attribute of the
+   target.
+
+Note that even when sticking to these rules, there is always possibility that
+migration to newer version of harness will break your build, especially when you
+depend on some implementation details, like a property *not* being set in
+particular internal target, concrete calling order of targets, etc.
+
 PROPERTIES WHICH MAY BE DEFINED IN YOUR project.properties
 ----------------------------------------------------------
 
@@ -713,7 +743,7 @@ discussion above for details of how this is used.
 netbeans.dest.dir - absolute pathname of NB platform (or IDE or whatever) that
 you are building your module against, and into which your module will be built.
 Available in project.properties (and in all properties files for netbeans.org
-modules).
+modules). Specified folder must exist and must contain valid NB platform.
 
 netbeans.home - location of "platform*" cluster of the NetBeans IDE installation
 you are running. *Only defined* when you run an Ant script *inside* the IDE.
@@ -856,7 +886,7 @@ with another module even if tests in previous module failed. Set to "false"
 in your suite's project.properties to force test target to stop after tests
 in one module failed. In module project this controls whether test target
 fails when tests fail (when set to "false" or unset) or succeeds even if 
-test failed (when set to anything else).
+test failed (when set to "true").
 
 extra.test.libs.dir - directory with extra libraries needed for test run. 
 

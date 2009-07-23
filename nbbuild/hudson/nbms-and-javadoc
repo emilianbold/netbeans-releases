@@ -25,6 +25,8 @@ ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || 
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 (cd nbbuild/netbeans; for cluster in *; do if [ -d $cluster/update_tracking ]; then zip -rq ../dist/$BUILD_TAG-$cluster.zip $cluster; fi; done)
 
+ant -Dtest.fail.on.error=false build-test-dist
+
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
 ant -v -f $mydir/build-update-descriptor.xml || exit
 ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuild/build/jnlp/ \

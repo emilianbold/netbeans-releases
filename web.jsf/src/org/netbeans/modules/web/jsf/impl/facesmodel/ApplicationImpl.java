@@ -275,10 +275,14 @@ class ApplicationImpl extends IdentifiableComponentImpl
      * @see org.netbeans.modules.web.jsf.api.facesmodel.Application#getSystemEventListeners()
      */
     public List<SystemEventListener> getSystemEventListeners() {
-        // TODO : add annotations ...
         List<FacesSystemEventListener> list = getChildren( FacesSystemEventListener.class );
         List<SystemEventListener> result = new LinkedList<SystemEventListener>();
         result.addAll( list );
+        AbstractJsfModel model = getModel().getModelSource().getLookup().lookup(
+                AbstractJsfModel.class);
+        if ( model != null ){
+            result.addAll( model.getSystemEventListeners() );
+        }
         return result;
     }
 

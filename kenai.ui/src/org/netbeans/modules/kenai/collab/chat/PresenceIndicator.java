@@ -100,7 +100,6 @@ public class PresenceIndicator {
     public static synchronized PresenceIndicator getDefault() {
         if (instance == null) {
             instance = new PresenceIndicator();
-            KenaiConnection.getDefault();
         }
         return instance;
     }
@@ -140,7 +139,7 @@ public class PresenceIndicator {
     private static RequestProcessor presenceUpdater = new RequestProcessor();
 
 
-    public class PresenceListener implements PacketListener {
+    public static class PresenceListener implements PacketListener {
         private RequestProcessor.Task task;
         public PresenceListener() {
             task = presenceUpdater.create(new Runnable() {
@@ -168,6 +167,7 @@ public class PresenceIndicator {
                     });
                     for (MultiUserChat muc : chats) {
                         String chatName = StringUtils.parseName(muc.getRoom());
+                        assert chatName!=null: "muc.getRoom() = " + muc.getRoom();
                         tipBuffer.append("<font color=gray>" + getDisplayName(muc) + "</font><br>"); // NOI18N
                         Iterator<String> i = muc.getOccupants();
                         ArrayList<String> occupants = new ArrayList<String>();
@@ -184,10 +184,10 @@ public class PresenceIndicator {
                     }
                     tipBuffer.append("</body></html>"); // NOI18N
                     if (onlineUsers.size() == 0) {
-                        setStatus(Status.OFFLINE);
+                        PresenceIndicator.getDefault().setStatus(Status.OFFLINE);
                     } else {
-                        label.setToolTipText(tipBuffer.toString());
-                        label.setText(String.valueOf(onlineUsers.size()));
+                        PresenceIndicator.getDefault().label.setToolTipText(tipBuffer.toString());
+                        PresenceIndicator.getDefault().label.setText(String.valueOf(onlineUsers.size()));
                     }
 
                 }

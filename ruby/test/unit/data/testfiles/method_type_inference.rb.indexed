@@ -9,6 +9,7 @@ Searchable Keys:
   method : condition3;;Fixnum|String|Float;
   method : condition;;Fixnum|String|Float;
   method : method_as_exit_point
+  method : return_self;;A;
   method : simple_array;;Fixnum;
   method : simple_int;;Fixnum;
   require : method_type_inference

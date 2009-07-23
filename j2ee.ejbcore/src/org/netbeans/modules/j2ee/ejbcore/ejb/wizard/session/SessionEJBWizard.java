@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 
 import java.io.IOException;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
@@ -88,7 +89,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        ejbPanel = new SessionEJBWizardDescriptor();
+        ejbPanel = new SessionEJBWizardDescriptor(project);
         WizardDescriptor.Panel wizardDescriptorPanel = new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true);
 
         panels = new WizardDescriptor.Panel[] {wizardDescriptorPanel};
@@ -99,13 +100,14 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         FileObject pkg = Templates.getTargetFolder(wiz);
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
-        boolean isSimplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
+        Profile profile = ejbModule.getJ2eeProfile();
+        boolean isSimplified = profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB);
         SessionGenerator sessionGenerator = SessionGenerator.create(
                 Templates.getTargetName(wiz), 
                 pkg, 
                 ejbPanel.hasRemote(), 
                 ejbPanel.hasLocal(), 
-                ejbPanel.isStateful(), 
+                ejbPanel.getSessionType(),
                 isSimplified, 
                 true, // TODO: UI - add checkbox for creation of business interface
                 !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage

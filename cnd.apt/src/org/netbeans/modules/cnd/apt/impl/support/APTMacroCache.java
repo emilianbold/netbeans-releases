@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
 
@@ -67,8 +69,18 @@ public abstract class APTMacroCache  {
     public abstract APTMacro getMacro(APTMacro macro);
     public abstract void dispose();
 
-    private static final int MACRO_MANAGER_DEFAULT_CAPACITY=1024;
-    private static final int MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int MACRO_MANAGER_DEFAULT_CAPACITY;
+    private static final int MACRO_MANAGER_DEFAULT_SLICED_NUMBER;
+    static {
+        int nrProc = CndUtils.getConcurrencyLevel();
+        if (nrProc <= 4) {
+            MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 32;
+            MACRO_MANAGER_DEFAULT_CAPACITY = 512;
+        } else {
+            MACRO_MANAGER_DEFAULT_SLICED_NUMBER = 128;
+            MACRO_MANAGER_DEFAULT_CAPACITY = 128;
+        }
+    }
     private static final APTMacroCache instance = create(false);
 
     private static APTMacroCache create(boolean single) {
@@ -93,8 +105,8 @@ public abstract class APTMacroCache  {
             this.initialCapacity = initialCapacity;
         }
 
-        // we need exclusive copy of string => use "new String(String)" constructor
-        private final String lock = new String("lock in APTMacroCache"); // NOI18N
+        private static final class Lock {}
+        private final Object lock = new Lock();
 
         /**
          * returns shared string instance equal to input text.
@@ -119,9 +131,9 @@ public abstract class APTMacroCache  {
         }
 
         public final void dispose() {
-            if (false){
-                System.out.println("Dispose cache "+getClass().getName()); // NOI18N
+            if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                 Object[] arr = storage.toArray();
+                System.out.println("Dispose macro cache "+arr.length + " " + getClass().getName()); // NOI18N
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();
                 for(Object o : arr){
                     if (o != null) {
@@ -147,13 +159,19 @@ public abstract class APTMacroCache  {
 
     private static final class APTCompoundMacroManager extends APTMacroCache {
         private final APTMacroCache[] instances;
-        private final int sliceNumber; // primary number for better distribution
+//        private final int sliceNumber; // primary number for better distribution
+        private final int segmentMask; // mask
         private APTCompoundMacroManager(int sliceNumber) {
             this(sliceNumber, APTMacroCache.MACRO_MANAGER_DEFAULT_CAPACITY);
         }
         private APTCompoundMacroManager(int sliceNumber, int initialCapacity) {
-            this.sliceNumber = sliceNumber;
-            instances = new APTMacroCache[sliceNumber];
+            // Find power-of-two sizes best matching arguments
+            int ssize = 1;
+            while (ssize < sliceNumber) {
+                ssize <<= 1;
+            }
+            segmentMask = ssize - 1;
+            instances = new APTMacroCache[ssize];
             for (int i = 0; i < instances.length; i++) {
                 instances[i] = new APTSingleMacroManager(initialCapacity);
             }
@@ -163,10 +181,7 @@ public abstract class APTMacroCache  {
             if (macro == null) {
                 throw new NullPointerException("null macro is illegal to share"); // NOI18N
             }
-            int index = macro.hashCode() % sliceNumber;
-            if (index < 0) {
-                index += sliceNumber;
-            }
+            int index = macro.hashCode() & segmentMask;
             return instances[index];
         }
 

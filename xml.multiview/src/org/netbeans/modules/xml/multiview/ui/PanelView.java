@@ -49,9 +49,7 @@ import javax.swing.JPopupMenu;
 
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
-import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 /**
  * The component that will display a panel corresponding to the node selection of its parent ExplorerManager, usually a

@@ -67,8 +67,8 @@ public abstract class RubyCodeCompleterTestBase extends RubyTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        doTestSpecificSetUp();
         super.setUp();
-        RubyIndexer.userSourcesTest = true;
     }
 
     @Override
@@ -82,30 +82,45 @@ public abstract class RubyCodeCompleterTestBase extends RubyTestBase {
         return loadPath;
     }
 
+    protected void doTestSpecificSetUp() {
+        Method setupMethod = getMethod("do" + getName().substring(4) + "Setup");
+        if (setupMethod != null) {
+            try {
+                setupMethod.invoke(this);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        } else {
+            RubyIndexer.userSourcesTest = false;
+        }
+    }
+
     protected FileObject[] getAdditionalClassPath() {
         // check whether the test needs some specfic class path setup, i.e.
         // whether there is a corresponding getTest<TestName>ClassPath method
-        String classPathMethod = "getTest" + getName().substring(4) + "ClassPath";
-        for (Method method : getClass().getDeclaredMethods()) {
-           if (method.getName().equals(classPathMethod)) {
-                try {
-                    FileObject result = (FileObject) method.invoke(this);
-                    return result == null ? new FileObject[0] : new FileObject[]{result};
-                } catch (IllegalAccessException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-           }
+        Method classPathMethod = getMethod("getTest" + getName().substring(4) + "ClassPath");
+        if (classPathMethod != null) {
+            try {
+                FileObject result = (FileObject) classPathMethod.invoke(this);
+                return result == null ? new FileObject[0] : new FileObject[]{result};
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
         // by default add the golden files to the class path
         FileObject testFileFO = FileUtil.toFileObject(getDataFile("/testfiles"));
         return new FileObject[]{testFileFO};
     }
 
-
+    private Method getMethod(String name) {
+        for (Method method : getClass().getDeclaredMethods()) {
+           if (method.getName().equals(name)) {
+               return method;
+           }
+        }
+        return null;
+        
+    }
     @Override
     protected void checkCall(ParserResult parserResult, int caretOffset, String expectedParameter, boolean expectSuccess) {
         IndexedMethod[] methodHolder = new IndexedMethod[1];

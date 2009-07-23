@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -92,7 +93,7 @@ public class PHPIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
     private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
-        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR};
+        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
 
     private final QuerySupport index;
 
@@ -124,6 +125,7 @@ public class PHPIndex {
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
+        Collection<IndexedNamespace> namespaces = new ArrayList<IndexedNamespace>();
 
         // search through the top leve elements
         final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, 
@@ -132,11 +134,13 @@ public class PHPIndex {
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
         findClasses(result, nameKind, prefix, classes);
+        findNamespaces(result, nameKind, prefix, namespaces);
         findTopVariables(result, nameKind, prefix, vars);
         elements.addAll(functions);
         elements.addAll(constants);
         elements.addAll(classes);
         elements.addAll(vars);
+        elements.addAll(namespaces);
         return elements;
     }
 
@@ -163,7 +167,9 @@ public class PHPIndex {
                 int offset = sig.integer(2);
                 String superClass = sig.string(3);
                 superClass = superClass.length() == 0 ? null : superClass;
-                IndexedClass clazz = new IndexedClass(className, null, this, map.getUrl().toString(), superClass, offset, 0);
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, offset, 0);
                 //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 classes.add(clazz);
             }
@@ -222,7 +228,9 @@ public class PHPIndex {
                 }
                 int offset = sig.integer(3);
                 String arguments = sig.string(2);
-                IndexedFunction func = new IndexedFunction(funcName, null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
+                String namespaceName = sig.string(6);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+                IndexedFunction func = new IndexedFunction(funcName, null, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), arguments, offset, 0, ElementKind.METHOD);
                 int[] optionalArgs = extractOptionalArgs(sig.string(4));
                 func.setOptionalArgs(optionalArgs);
                 //func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
@@ -261,6 +269,34 @@ public class PHPIndex {
                         map.getUrl().toString(), offset, 0, typeName);
                 //var.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 vars.add(var);
+            }
+        }
+    }
+
+    protected void findNamespaces(final Collection<? extends IndexResult> result, QuerySupport.Kind kind, String name, Collection<IndexedNamespace> namespaces) {
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_NAMESPACE);
+            if (signatures == null) {
+                continue;
+            }
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String nsName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!nsName.startsWith(name)) {
+                        continue;
+                    }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!nsName.equals(name)) {
+                        continue;
+                    }
+                }
+                int offset = sig.integer(2);
+                IndexedNamespace ns = new IndexedNamespace(nsName, null, this,
+                        map.getUrl().toString(), offset, 0);
+                namespaces.add(ns);
             }
         }
 
@@ -576,7 +612,7 @@ public class PHPIndex {
                 String args = sig.string(1);
                 int offset = sig.integer(2);
 
-                IndexedFunction func = new IndexedFunction(funcName, funcName,
+                IndexedFunction func = new IndexedFunction(funcName, funcName,sig.string(6),
                         this, signaturesMap.get(signature).getUrl().toString(), args, offset, flags, ElementKind.METHOD);
 
                 int optionalArgs[] = extractOptionalArgs(sig.string(3));
@@ -765,6 +801,39 @@ public class PHPIndex {
         return constants;
     }
 
+    public Collection<IndexedNamespace> getNamespaces(PHPParseResult context, String name, QuerySupport.Kind kind) {
+        Collection<IndexedNamespace> namespaces = new ArrayList<IndexedNamespace>();
+        Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_NAMESPACE, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_NAMESPACE);
+
+        for (IndexResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_NAMESPACE);
+            if (signatures == null) {
+                continue;
+            }
+
+            for (String signature : signatures) {
+                Signature sig = Signature.get(signature);
+                //sig.string(0) is the case insensitive search key
+                String nsName = sig.string(1);
+                if (kind == QuerySupport.Kind.PREFIX || kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX) {
+                    //case sensitive
+                    if (!nsName.startsWith(name)) {
+                        continue;
+                    }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!nsName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
+                }
+                int offset = sig.integer(2);
+                IndexedNamespace namespace = new IndexedNamespace(nsName, null, this, map.getUrl().toString(), offset, 0);
+                //constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                namespaces.add(namespace);
+            }
+        }
+        return namespaces;
+    }
+
     public Set<FileObject> filesWithIdentifiers(String identifierName) {
         final Set<FileObject> result = new HashSet<FileObject>();
         
@@ -874,7 +943,10 @@ public class PHPIndex {
                 int offset = sig.integer(2);
                 String interfaces[] = sig.string(3).split(","); //NOI18N
 
-                IndexedInterface iface = new IndexedInterface(ifaceName, null,
+                String namespaceName = sig.string(4);
+                boolean useNamespaceName = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
+
+                IndexedInterface iface = new IndexedInterface(ifaceName, useNamespaceName ? namespaceName : null,
                         this, map.getUrl().toString(), interfaces, offset, 0);
 
                 //iface.setResolved(context != null && isReachable(context, map.getPersistentUrl()));

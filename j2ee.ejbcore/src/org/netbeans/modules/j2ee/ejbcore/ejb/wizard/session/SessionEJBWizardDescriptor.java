@@ -47,9 +47,10 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -59,6 +60,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     
     private SessionEJBWizardPanel wizardPanel;
     private final EJBNameOptions ejbNames;
+    private final Project project;
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
     
@@ -66,8 +68,9 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
 
     private WizardDescriptor wizardDescriptor;
 
-    public SessionEJBWizardDescriptor() {
+    public SessionEJBWizardDescriptor(Project project) {
         this.ejbNames = new EJBNameOptions();
+        this.project = project;
     }
     
     public void addChangeListener(ChangeListener changeListener) {
@@ -76,7 +79,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     
     public java.awt.Component getComponent() {
         if (wizardPanel == null) {
-            wizardPanel = new SessionEJBWizardPanel(this);
+            wizardPanel = new SessionEJBWizardPanel(project, this);
             // add listener to events which could cause valid status to change
         }
         return wizardPanel;
@@ -95,7 +98,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         }
         boolean isLocal = wizardPanel.isLocal();
         boolean isRemote = wizardPanel.isRemote();
-        if (!isLocal && !isRemote) {
+        if (!isLocal && !isRemote && !J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
@@ -161,9 +164,9 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     public boolean hasLocal() {
         return wizardPanel.isLocal();
     }
-    
-    public boolean isStateful() {
-        return !wizardPanel.isStateless();
+
+    public String getSessionType() {
+        return wizardPanel.getSessionType();
     }
     
     public boolean isFinishPanel() {

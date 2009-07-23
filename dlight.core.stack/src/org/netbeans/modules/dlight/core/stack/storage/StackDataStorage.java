@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.core.stack.storage;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 
@@ -67,11 +67,11 @@ public interface StackDataStorage {//extends StackSupport {
 
     List<FunctionMetric> getMetricsList();
 
-    List<FunctionCall> getCallers(FunctionCall[] path, boolean aggregate);
+    List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate);
 
-    List<FunctionCall> getCallees(FunctionCall[] path, boolean aggregate);
+    List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate);
 
-    List<FunctionCall> getHotSpotFunctions(FunctionMetric metric, int limit);
+    List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit);
 
-    List<FunctionCall> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
+    List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription);
 }

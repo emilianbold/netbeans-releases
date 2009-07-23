@@ -74,8 +74,22 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     // second is in canCancel
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
 
-    public void init(ProjectActionEvent pae) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
+    }
+
+    /**
+     * Will be called to get arguments for the action. Can be overridden.
+     */
+    public String getArguments() {
+        return pae.getProfile().getArgsFlat();
+    }
+
+    /**
+     * Will be called to get the environment for the action. Can be overridden.
+     */
+    public String[] getEnvironment() {
+        return pae.getProfile().getEnvironment().getenv();
     }
 
     public void execute(InputOutput io) {
@@ -84,8 +98,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 pae.getType() == ProjectActionEvent.Type.BUILD ||
                 pae.getType() == ProjectActionEvent.Type.CLEAN) {
             String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
-            String args = pae.getProfile().getArgsFlat();
-            String[] env = pae.getProfile().getEnvironment().getenv();
+            String args = getArguments();
+            String[] env = getEnvironment();
             boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
             MakeConfiguration conf = pae.getConfiguration();
             ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -119,7 +133,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         exe = "cmd.exe"; // NOI18N
                         // exe path naturalization is needed for cmd on windows, see issue 149404
                         args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
-                                + " " + pae.getProfile().getArgsFlat(); // NOI18N
+                                + " " + getArguments(); // NOI18N
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
                         exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
                     }
@@ -267,9 +281,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
-    public void executionStarted() {
+    public void executionStarted(int pid) {
         for (ExecutionListener l : listeners) {
-            l.executionStarted();
+            l.executionStarted(pid);
         }
     }
 

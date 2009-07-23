@@ -127,7 +127,8 @@ public final class NativeProjectProvider {
 	private boolean pathsRelCurFile;
 	
 	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
-	private final Object listenersLock = new Object();
+        private static final class Lock {}
+        private final Object listenersLock = new Lock();
 
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 

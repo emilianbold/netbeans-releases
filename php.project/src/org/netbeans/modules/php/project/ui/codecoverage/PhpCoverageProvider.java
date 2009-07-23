@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
@@ -53,8 +55,9 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -63,6 +66,7 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Mysik
  */
 public final class PhpCoverageProvider implements CoverageProvider {
+    private static final Logger LOGGER = Logger.getLogger(PhpCoverageProvider.class.getName());
     private static final Set<String> MIME_TYPES = Collections.singleton(PhpSourcePath.MIME_TYPE);
 
     private final Object lock = new Object();
@@ -71,6 +75,8 @@ public final class PhpCoverageProvider implements CoverageProvider {
     private Boolean enabled = null;
     // GuardedBy(lock)
     private CoverageVO coverage = null;
+
+    private volatile String netbeansSuitePath;
 
     public PhpCoverageProvider(PhpProject project) {
         assert project != null;
@@ -139,6 +145,11 @@ public final class PhpCoverageProvider implements CoverageProvider {
             return null;
         }
         String path = FileUtil.toFile(fo).getAbsolutePath();
+
+        if (path.equals(getNetBeansSuitePath())) {
+            return null;
+        }
+
         // XXX optimize - hold files in a linked hash map
         for (FileVO file : cov.getFiles()) {
             if (path.equals(file.getPath())) {
@@ -153,9 +164,12 @@ public final class PhpCoverageProvider implements CoverageProvider {
         if (cov == null) {
             return null;
         }
+        String suitePath = getNetBeansSuitePath();
         List<FileCoverageSummary> result = new ArrayList<FileCoverageSummary>(cov.getFiles().size());
         for (FileVO file : cov.getFiles()) {
-            result.add(getFileCoverageSummary(file));
+            if (!file.getPath().equals(suitePath)) {
+                result.add(getFileCoverageSummary(file));
+            }
         }
         return result;
     }
@@ -175,23 +189,30 @@ public final class PhpCoverageProvider implements CoverageProvider {
     static FileCoverageSummary getFileCoverageSummary(FileVO file) {
         assert file != null;
         FileObject fo = FileUtil.toFileObject(new File(file.getPath()));
-        int executedLineCount = getExecutedLineCount(file);
         return new FileCoverageSummary(
                 fo,
                 fo.getNameExt(),
-                file.getMetrics().loc,
-                executedLineCount,
-                file.getMetrics().loc - executedLineCount,
+                file.getMetrics().statements,
+                file.getMetrics().coveredStatements,
+                -1,
                 -1);
     }
 
-    private static int getExecutedLineCount(FileVO file) {
-        int executed = file.getMetrics().loc;
-        for (LineVO line : file.getLines()) {
-            if (line.count == 0) {
-                executed--;
+    private String getNetBeansSuitePath() {
+        if (netbeansSuitePath != null) {
+            return netbeansSuitePath;
+        }
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        if (phpUnit == null) {
+            LOGGER.log(Level.FINE, "PHPUnit not found but code coverage is present for {0} - how this can happen?!", project);
+        } else {
+            netbeansSuitePath = phpUnit.getSuiteFilePath(project);
+            if (netbeansSuitePath != null) {
+                LOGGER.log(Level.FINE, "Found NetBeansSuite file {0} for {1}", new Object[] {netbeansSuitePath, project});
+            } else {
+                LOGGER.log(Level.FINE, "NetBeansSuite file not found for {0}?!", project);
             }
         }
-        return executed;
+        return netbeansSuitePath;
     }
 }

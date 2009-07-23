@@ -46,13 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.Collections;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.openide.util.Lookup;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
  *
@@ -86,26 +83,28 @@ import org.openide.util.Lookup;
             // we're dealing with a local toolchain
             path = LinkSupport.resolveWindowsLink(path);
             File file = new File(path);
-            if (file.exists()) {
-                ProcessBuilder pb = new ProcessBuilder(path, getVersionFlags());
-                pb.redirectErrorStream(true);
-                try {
-                    Process process = pb.start();
-                    version = extractVersion(process.getInputStream());
-                } catch (IOException ioe) {
-                    // silently drop
-                }
-            }
-        } else {
-            // it's a remote toolchain
-            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            if (provider != null) {
-                provider.run(tool.getExecutionEnvironment(),
-                        path + " " + getVersionFlags() + " 2>&1", // NOI18N
-                        Collections.<String, String>emptyMap());
-                version = extractVersion(new StringReader(provider.getOutput()));
+            if (!file.exists()) {
+                alreadyRun = true;
+                return;
             }
         }
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(tool.getExecutionEnvironment());
+        npb.setExecutable(path);
+        npb.setArguments(getVersionFlags());
+        npb.redirectError();
+
+        try {
+            NativeProcess process = npb.call();
+            version = extractVersion(process.getInputStream());
+
+            // version retrieved, now destroy the process
+            // (dbx does not exit with -V argument)
+            process.destroy();
+        } catch (Exception ex) {
+            // silently drop
+        }
+        
         alreadyRun = true;
     }
 
@@ -122,13 +121,9 @@ import org.openide.util.Lookup;
     }
 
     private String extractVersion(InputStream is) {
-        return extractVersion(new InputStreamReader(is));
-    }
-
-    private String extractVersion(Reader reader) {
         BufferedReader br = null;
         try {
-            br = new BufferedReader(reader);
+            br = new BufferedReader(new InputStreamReader(is));
             return br.readLine();
         } catch (IOException ioe) {
             return null;

@@ -103,7 +103,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceHandler;
 import org.netbeans.modules.web.jsf.api.facesmodel.StateManager;
 import org.netbeans.modules.web.jsf.api.facesmodel.TagHandlerDelegateFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.ValidatorId;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesValidatorId;
 import org.netbeans.modules.web.jsf.api.facesmodel.VariableResolver;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewDeclarationLanguageFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
@@ -270,7 +270,7 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
         return new AbsoluteOrderingImpl( model );
     }
     
-    public ValidatorId createValidatorId(){
+    public FacesValidatorId createValidatorId(){
         return new ValidatorIdImpl( model );
     }
     

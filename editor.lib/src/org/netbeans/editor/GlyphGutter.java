@@ -281,8 +281,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     public void update() {
         if (editorUI == null)
             return ;
-        Coloring lineColoring = (Coloring)editorUI.getColoringMap().get(FontColorNames.LINE_NUMBER_COLORING);
-        Coloring defaultColoring = (Coloring)editorUI.getDefaultColoring();
+        Coloring lineColoring = editorUI.getColoringMap().get(FontColorNames.LINE_NUMBER_COLORING);
+        Coloring defaultColoring = editorUI.getDefaultColoring();
         
         // fix for issue #16940
         // the real cause of this problem is that closed document is not garbage collected, 
@@ -291,10 +291,17 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (lineColoring == null)
             return;
 
-        backgroundColor = UIManager.getColor("NbEditorGlyphGutter.background"); //NOI18N
+
+        final Color backColor = lineColoring.getBackColor();
+        // set to white by o.n.swing.plaf/src/org/netbeans/swing/plaf/aqua/AquaLFCustoms
+        if (org.openide.util.Utilities.isMac()) {
+            backgroundColor = backColor;
+        } else {
+            backgroundColor = UIManager.getColor("NbEditorGlyphGutter.background"); //NOI18N
+        }
         if( null == backgroundColor ) {
-            if (lineColoring.getBackColor() != null)
-                backgroundColor = lineColoring.getBackColor();
+            if (backColor != null)
+                backgroundColor = backColor;
             else
                 backgroundColor = defaultColoring.getBackColor();
         }

@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -188,19 +190,35 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return list;
     }
 
+    private Reference<List<NativeProject>> cachedDependency = new SoftReference<List<NativeProject>>(null);
     public List<NativeProject> getDependences() {
-        List<NativeProject> list = new ArrayList<NativeProject>();
-        MakeConfiguration makeConfiguration = getMakeConfiguration();
-        if (makeConfiguration != null) {
-            for (Object lib : makeConfiguration.getSubProjects()) {
-                Project prj = (Project) lib;
-                NativeProject nativeProject = prj.getLookup().lookup(NativeProject.class);
-                if (nativeProject != null) {
-                    list.add(nativeProject);
+        List<NativeProject> cachedList = cachedDependency.get();
+        if (cachedList == null) {
+            cachedList = new ArrayList<NativeProject>(0);
+            MakeConfiguration makeConfiguration = getMakeConfiguration();
+            int size = 0;
+            NativeProject oneOf = null;
+            if (makeConfiguration != null) {
+                for (Object lib : makeConfiguration.getSubProjects()) {
+                    Project prj = (Project) lib;
+                    NativeProject nativeProject = prj.getLookup().lookup(NativeProject.class);
+                    if (nativeProject != null) {
+                        cachedList.add(nativeProject);
+                        size++;
+                        oneOf = nativeProject;
+                    }
                 }
             }
+            if (size == 0) {
+                cachedList = Collections.<NativeProject>emptyList();
+            } else if (size == 1) {
+                cachedList = Collections.singletonList(oneOf);
+            } else {
+                cachedList = Collections.unmodifiableList(cachedList);
+            }
+            cachedDependency = new SoftReference<List<NativeProject>>(cachedList);
         }
-        return list;
+        return cachedList;
     }
 
     public void addProjectItemsListener(NativeProjectItemsListener listener) {
@@ -457,6 +475,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     private void checkForChangedItemsWorker(Folder folder, Item item) {
+        clearCache();
         synchronized (listeners) {
             if (listeners.size() == 0) {
                 return;
@@ -707,5 +726,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     @Override
     public String toString() {
         return getProjectDisplayName()+" "+getProjectRoot(); // NOI18N
+    }
+
+    private void clearCache() {
+        cachedDependency.clear();
     }
 }

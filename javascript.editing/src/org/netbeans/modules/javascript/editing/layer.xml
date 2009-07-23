@@ -13,6 +13,12 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.JsTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-javascript-editing-JsBracesMatcherFactory.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
                 
                 <folder name="FontsColors">
                     <folder name="NetBeans">

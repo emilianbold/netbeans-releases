@@ -60,7 +60,7 @@ public class MeasureWebFootprintsTest {
         TestSuite suite = new NbTestSuite("Web Footprints suite");
         System.setProperty("suitename", MeasureWebFootprintsTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(WebProjectWorkflow.class, ".*", ".*"));
+       // suite.addTest(NbModuleSuite.create(WebProjectWorkflow.class, ".*", ".*"));
         
         return suite;
     }

@@ -146,8 +146,10 @@ public final class MacroExpanderFactory {
                 if (!initialized) {
                     try {
                         HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
-                        setupPredefined(hi);
-                        initialized = true;
+                        if (hi != null) {
+                            setupPredefined(hi);
+                            initialized = true;
+                        }
                     } catch (IOException ex) {
                     } catch (CancellationException ex) {
                     }

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -96,17 +97,9 @@ public class SunCCCCompilerTest {
             System.out.println("Parse Compiler Output of SunStudio CC on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
-        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("/opt/SUNWspro/prod/include/CC");
@@ -139,17 +132,9 @@ public class SunCCCCompilerTest {
             System.out.println("Parse Compiler Output of SunStudio C on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
-        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("/opt/SUNWspro/prod/include/cc");
@@ -185,17 +170,9 @@ public class SunCCCCompilerTest {
             System.out.println("Parse Compiler Output of SunStudio C on Lunix");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_LINUX);
-        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
-
-            @Override
-            protected String normalizePath(String path) {
-                return path;
-            }
-        };
-        instance.setSystemIncludeDirectories(new ArrayList<String>());
-        instance.setSystemPreprocessorSymbols(new ArrayList<String>());
-        instance.parseCompilerOutput(buf);
-        List<String> out = instance.getSystemIncludeDirectories();
+        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<String>();
         golden.add("/shared/dp/sstrunk/090219/inst/intel-Linux.inst/opt/sun/sunstudioceres/prod/include/cc");
@@ -210,7 +187,7 @@ public class SunCCCCompilerTest {
         }
         assert (golden.equals(out));
 
-        out = instance.getSystemPreprocessorSymbols();
+        out = instance.pair.systemPreprocessorSymbolsList;
         Collections.<String>sort(out);
         golden = new ArrayList<String>();
         golden.add("_LP64");
@@ -245,5 +222,14 @@ public class SunCCCCompilerTest {
         }
         assert (golden.equals(out));
     }
-
+    private static final class MySunCCCompiler  extends SunCCCompiler {
+        Pair pair = new Pair();
+        protected MySunCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+            super(env, flavor, kind, name, displayName, path);
+        }
+        @Override
+        protected String normalizePath(String path) {
+            return path;
+        }
+    }
 }

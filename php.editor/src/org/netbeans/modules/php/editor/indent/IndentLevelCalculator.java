@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -89,6 +90,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Block node) {
+
+        // do not indent virtual blocks created by namespace declarations
+        if (getPath().get(0) instanceof NamespaceDeclaration){
+            return;
+        }
+
+        // end of hot fix
+
         indentListOfStatements(node.getStatements());
         super.visit(node);
     }
@@ -298,7 +307,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     private void addIndentLevel(int offset, int indent){
-        Integer existingIndent = indentLevels.get(offset);
+        Integer existingIndent = getExistingIndentLevel(offset);
 
         int newIndent = existingIndent == null ? indent : indent + existingIndent;
         try {
@@ -306,5 +315,16 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    //TODO optimize for performace
+    private Integer getExistingIndentLevel(int offset){
+        for (Position pos : indentLevels.keySet()){
+            if (pos.getOffset() == offset){
+                indentLevels.get(pos);
+            }
+        }
+
+        return 0;
     }
 }

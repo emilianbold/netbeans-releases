@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.management.api.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.spi.datafilter.DataFilterFactory;
@@ -67,7 +68,9 @@ public class DataFiltersManager {
         for (DataFilterFactory dff : factories) {
             if (allDataFilterFactories.add(dff)) {
                 for (String id : dff.getSupportedFilterIDs()) {
-                    log.fine("DataFilterFactory for " + id + " registered..."); // NOI18N
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("DataFilterFactory for " + id + " registered..."); // NOI18N
+                    }
                 }
             }
         }

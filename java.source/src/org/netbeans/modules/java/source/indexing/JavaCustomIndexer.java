@@ -135,7 +135,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     splitSources(files,javaSources),
                     context.getRootURI());
 
-            ClassIndexManager.getDefault().reserveWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
@@ -162,7 +162,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     break;
                                 }
                             }
-                            assert compileResult != null && compileResult.success;
+                            assert compileResult != null;
 
                             Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
                             Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
@@ -247,7 +247,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
-            ClassIndexManager.getDefault().reserveWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
@@ -465,13 +465,13 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDeleted({0})", deleted); //NOI18N
             clearFiles(context, deleted);
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             JavaIndex.LOG.log(Level.FINE, "filesDirty({0})", dirty); //NOI18N
             markDirtyFiles(context, dirty);
         }

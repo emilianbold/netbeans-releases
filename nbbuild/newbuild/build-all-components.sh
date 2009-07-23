@@ -404,5 +404,5 @@ cd $NB_ALL/nbbuild
 #Remove the build helper files
 rm -f netbeans/nb.cluster.*
 #rm -f netbeans/build_info
-rm -rf netbeans/extra
+#rm -rf netbeans/extra
 rm -rf netbeans/testtools

@@ -141,8 +141,8 @@ public class RetoucheUtils {
     private static final Logger LOG = Logger.getLogger(RetoucheUtils.class.getName());
     
     public static String htmlize(String input) {
-        String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
-        temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
+        String temp = input.replace("<", "&lt;"); // NOI18N
+        temp = temp.replace(">", "&gt;"); // NOI18N
         return temp;
     }
     
@@ -256,7 +256,7 @@ public class RetoucheUtils {
         if (set==null)
             return string;
         if (string.trim().length() == 0) {
-            return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
+            return string.replace(" ", "&nbsp;").replace("\n", "<br>"); //NOI18N
         } 
         StringBuffer buf = new StringBuffer(string);
         if (StyleConstants.isBold(set)) {

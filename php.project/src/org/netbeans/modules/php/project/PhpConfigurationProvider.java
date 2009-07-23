@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project;
@@ -91,7 +91,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
 
     public static final class Config implements ProjectConfiguration {
 
-        /** file basename, or null for default config */
+        /** The file basename, or <code>null</code> for default config. */
         public final String name;
         private final String displayName;
 
@@ -104,14 +104,17 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
             return displayName;
         }
 
+        @Override
         public int hashCode() {
             return name != null ? name.hashCode() : 0;
         }
 
+        @Override
         public boolean equals(Object o) {
             return (o instanceof Config) && Utilities.compareObjects(name, ((Config) o).name);
         }
 
+        @Override
         public String toString() {
             return "PhpConfigurationProvider.Config[" + name + "," + displayName + "]"; // NOI18N
 
@@ -123,18 +126,22 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener fcl = new FileChangeAdapter() {
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             update(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             update(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             update(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             update(fe);
         }
@@ -244,7 +251,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         }
     }
 
-    public void setActiveConfiguration(Config c) throws IllegalArgumentException, IOException {
+    public void setActiveConfiguration(Config c) throws IOException {
         if (c != DEFAULT && !configs.values().contains(c)) {
             throw new IllegalArgumentException();
         }
@@ -273,8 +280,8 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
     }
 
     public boolean configurationsAffectAction(String command) {
-        return command.equals(ActionProvider.COMMAND_RUN) ||
-                command.equals(ActionProvider.COMMAND_DEBUG);
+        return command.equals(ActionProvider.COMMAND_RUN)
+                || command.equals(ActionProvider.COMMAND_DEBUG);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener lst) {

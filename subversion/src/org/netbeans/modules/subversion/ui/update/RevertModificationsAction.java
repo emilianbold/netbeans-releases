@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -164,12 +164,15 @@ public class RevertModificationsAction extends ContextAction {
                             return;
                         }
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
-                        revisions = recountStartRevision(client, url, revisions);
+                        RevertModifications.RevisionInterval targetInterval = recountStartRevision(client, url, revisions);
                         if(files[i].exists()) {
-                            client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);
+                            client.merge(url, targetInterval.endRevision,
+                                         url, targetInterval.startRevision,
+                                         files[i], false, recursive);
                         } else {
-                            assert revisions.startRevision instanceof SVNRevision.Number : "The revision has to be a Number when trying to undelete file!";
-                            client.copy(url, files[i], revisions.startRevision);
+                            assert targetInterval.startRevision instanceof SVNRevision.Number
+                                   : "The revision has to be a Number when trying to undelete file!";
+                            client.copy(url, files[i], targetInterval.startRevision);
                         }
                     }
                 } else {
@@ -237,16 +240,21 @@ public class RevertModificationsAction extends ContextAction {
     }
     
     private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
-        if(ret.startRevision.equals(SVNRevision.HEAD)) {
+        SVNRevision currStartRevision = ret.startRevision;
+        SVNRevision currEndRevision = ret.endRevision;
+
+        if(currStartRevision.equals(SVNRevision.HEAD)) {
             ISVNInfo info = client.getInfo(repository);
-            ret.startRevision = info.getRevision();
+            currStartRevision = info.getRevision();
         }
-        long start = Long.parseLong(ret.startRevision.toString());
-        if(start > 0) {
-            start = start - 1;
-        }
-        ret.startRevision = new SVNRevision.Number(start);
-        return ret;
+
+        long currStartRevNum = Long.parseLong(currStartRevision.toString());
+        long newStartRevNum = (currStartRevNum > 0) ? currStartRevNum - 1
+                                                    : currStartRevNum;
+
+        return new RevertModifications.RevisionInterval(
+                                         new SVNRevision.Number(newStartRevNum),
+                                         currEndRevision);
     }
 
 }

@@ -115,7 +115,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             }
         }
 
-        public void executionStarted() {
+        public void executionStarted(int pid) {
             setEnabled(false);
         }
 

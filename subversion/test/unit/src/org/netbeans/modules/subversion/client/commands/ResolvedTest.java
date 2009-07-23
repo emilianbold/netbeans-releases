@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.subversion.client.commands;
@@ -64,17 +64,35 @@ public class ResolvedTest extends AbstractCommandTest {
         super.setUp();      
     }
     
-    public void testResolved() throws Exception {                                                
+    public void testResolved() throws Exception {
+        testResolved("wc1", "wc2", "file");
+    }
+
+    public void testResolvedFileWithAtSign1() throws Exception {
+        testResolved("wc1", "wc2", "@file");
+    }
+
+    public void testResolvedFileWithAtSign2() throws Exception {
+        testResolved("wc1", "wc2", "fi@le");
+    }
+
+    public void testResolvedFileWithAtSign3() throws Exception {
+        testResolved("wc1", "wc2", "file@");
+    }
+
+    private void testResolved(String folder1Name,
+                              String folder2Name,
+                              String fileName) throws Exception {
                         
-        File wc1 = createFolder("wc1");
-        File file1 = createFile(wc1, "file");
+        File wc1 = createFolder(folder1Name);
+        File file1 = createFile(wc1, fileName);
         write(file1, 1);
         importFile(wc1);
         assertStatus(SVNStatusKind.NORMAL, wc1);
         assertStatus(SVNStatusKind.NORMAL, file1);
                         
-        File wc2 = createFolder("wc2");      
-        File file2 = new File(wc2, "file");
+        File wc2 = createFolder(folder2Name);
+        File file2 = new File(wc2, fileName);
         
         SVNUrl url = getTestUrl().appendPath(wc1.getName());
         ISVNClientAdapter c = getNbClient();         

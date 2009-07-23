@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="JavaCard3">
+            <file name="org-netbeans-modules-javacard-console-ShowAPDUConsoleAction.instance">
+                <attr name="position" intvalue="2204"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-javacardserver">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-javacard-console-ShowAPDUConsoleAction.instance">
-                        <attr name="position" intvalue="500"/>
+                    <file name="org-netbeans-modules-javacard-console-ShowAPDUConsoleAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-console-ShowAPDUConsoleAction.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder>
             </folder>

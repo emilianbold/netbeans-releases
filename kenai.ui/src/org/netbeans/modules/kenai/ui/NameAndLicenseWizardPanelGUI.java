@@ -869,7 +869,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private void setUsername(String uName) {
         if (uName != null) {
             usernameLabel.setText(uName);
-            usernameLabel.setForeground(Color.BLUE);
+            usernameLabel.setForeground(new Color(0, 102, 0));
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,

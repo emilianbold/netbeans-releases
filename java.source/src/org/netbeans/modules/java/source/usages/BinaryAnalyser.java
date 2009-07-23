@@ -473,9 +473,14 @@ public class BinaryAnalyser implements LowMemoryListener {
             addUsage (usages, ifaceName, ClassIndexImpl.UsageType.SUPER_INTERFACE);
         }                     
 
+        if (!FULL_INDEX) {
+            //1a. Add top-level class annotations:
+            handleAnnotations(usages, classFile.getAnnotations(), true);
+        }
+        
         if (FULL_INDEX) {
-            //1a. Add type annotations:
-            handleAnnotations(usages, classFile.getAnnotations());
+            //1b. Add class annotations:
+            handleAnnotations(usages, classFile.getAnnotations(), false);
 
             //2. Add filed usages 
             final ConstantPool constantPool = classFile.getConstantPool();
@@ -506,7 +511,7 @@ public class BinaryAnalyser implements LowMemoryListener {
             //4, 5, 6, 8 Add method type refs (return types, param types, exception types) and local variables.
             Collection<Method> methods = classFile.getMethods();
             for (Method method : methods) {
-                handleAnnotations(usages, method.getAnnotations());
+                handleAnnotations(usages, method.getAnnotations(), false);
                 
                 String jvmTypeId = method.getReturnType();
                 ClassName type = ClassFileUtil.getType (jvmTypeId);
@@ -564,7 +569,7 @@ public class BinaryAnalyser implements LowMemoryListener {
             //7. Add Filed Type References                        
             Collection<Variable> vars = classFile.getVariables();
             for (Variable var : vars) {
-                handleAnnotations(usages, var.getAnnotations());
+                handleAnnotations(usages, var.getAnnotations(), false);
                 
                 String jvmTypeId = var.getDescriptor();
                 ClassName type = ClassFileUtil.getType (jvmTypeId);
@@ -610,9 +615,13 @@ public class BinaryAnalyser implements LowMemoryListener {
         return (ArrayList<String>) cr[0];
     }
     
-    private void handleAnnotations(final Map<ClassName, Set<UsageType>> usages, Iterable<? extends Annotation> annotations) {
+    private void handleAnnotations(final Map<ClassName, Set<UsageType>> usages, Iterable<? extends Annotation> annotations, boolean onlyTopLevel) {
         for (Annotation a : annotations) {
             addUsage(usages, a.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+            
+            if (onlyTopLevel) {
+                continue;
+            }
 
             List<ElementValue> toProcess = new LinkedList<ElementValue>();
 

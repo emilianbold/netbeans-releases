@@ -270,6 +270,8 @@ public class TopSecurityManager extends SecurityManager {
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
     static {
+        warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
+        warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
         warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
         warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N

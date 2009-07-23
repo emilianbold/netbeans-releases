@@ -51,6 +51,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.wag.manager.search.SearchEngine;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,12 +59,18 @@ import org.openide.util.Exceptions;
  */
 public class WagSearchResult implements Comparable<WagSearchResult> {
 
+    public enum State {
+
+        UNINITIALIZED, SEARCHING, FOUND
+    };
     public static final String PROP_NAME = "searchResult";
     private String query;
     private int maxResults;
     private int currentIndex;
     private SortedSet<WagService> services;
     private PropertyChangeSupport pps;
+    private State state;
+
 
     static {
         try {
@@ -83,12 +90,18 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
 
     public WagSearchResult() {
         pps = new PropertyChangeSupport(this);
+        services = new TreeSet<WagService>();
+        state = State.UNINITIALIZED;
     }
 
     public WagSearchResult(String query, int maxResults) {
         this();
         this.query = query;
-        this.maxResults = maxResults;        
+        this.maxResults = maxResults;
+    }
+
+    public State getState() {
+        return state;
     }
 
     public String getQuery() {
@@ -108,42 +121,36 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
     }
 
     public Collection<WagService> getServices() {
-        if (services == null) {
-            services = new TreeSet<WagService>();
-            services.addAll(getSearchResult());
-        }
         return Collections.unmodifiableSortedSet(services);
     }
 
-    private SortedSet<WagService> getServicesInternal() {
-        if (services == null) {
-            services = new TreeSet<WagService>();
-        }
-
-        return services;
-    }
-
     public void addServices(Collection<WagService> servicesToAdd) {
-        SortedSet<WagService> services = getServicesInternal();
         SortedSet<WagService> old = new TreeSet<WagService>(services);
         services.addAll(servicesToAdd);
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
 
     public void removeServices(Collection<WagService> servicesToRemove) {
-        SortedSet<WagService> services = getServicesInternal();
         SortedSet<WagService> old = new TreeSet<WagService>(services);
         services.removeAll(servicesToRemove);
         fireChange(old, Collections.unmodifiableSortedSet(services));
     }
 
     public void refresh() {
-        SortedSet<WagService> services = getServicesInternal();
-        SortedSet<WagService> old = new TreeSet<WagService>(services);
-        services.clear();
-        fireChange(old, Collections.unmodifiableSortedSet(services));
-        services.addAll(getSearchResult());
-        fireChange(old, Collections.unmodifiableSortedSet(services));
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                State oldState = state;
+                services.clear();
+                state = State.SEARCHING;
+                fireChange(oldState, state);
+
+                oldState = state;
+                services.addAll(getSearchResult());
+                state = State.FOUND;
+                fireChange(oldState, state);
+            }
+        });
+
     }
 
     public void next() {
@@ -154,8 +161,10 @@ public class WagSearchResult implements Comparable<WagSearchResult> {
     public void previous() {
         currentIndex -= maxResults;
 
-        if (currentIndex < 0) currentIndex = 0;
-        
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        }
+
         refresh();
     }
 

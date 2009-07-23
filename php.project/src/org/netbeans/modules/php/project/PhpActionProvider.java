@@ -43,6 +43,8 @@ package org.netbeans.modules.php.project;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.actions.CopyCommand;
@@ -63,12 +65,12 @@ import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.LifecycleManager;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Radek Matous
  */
 public class PhpActionProvider implements ActionProvider {
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
     private final Map<String, Command> commands;
 
     PhpActionProvider(PhpProject project) {
@@ -100,7 +102,7 @@ public class PhpActionProvider implements ActionProvider {
         return commandIds.toArray(new String[commandIds.size()]);
     }
 
-    public void invokeAction(final String commandId, final Lookup lookup) throws IllegalArgumentException {
+    public void invokeAction(final String commandId, final Lookup lookup) {
         final Command command = getCommand(commandId);
         command.getProject().getCopySupport().waitFinished();
         if (command.saveRequired()) {
@@ -109,7 +111,7 @@ public class PhpActionProvider implements ActionProvider {
         if (!command.asyncCallRequired()) {
             command.invokeAction(lookup);
         } else {
-            RequestProcessor.getDefault().post(new Runnable() {
+            submitTask(new Runnable() {
                 public void run() {
                     command.invokeAction(lookup);
                 }
@@ -117,7 +119,12 @@ public class PhpActionProvider implements ActionProvider {
         }
     }
 
-    public boolean isActionEnabled(String commandId, Lookup lookup) throws IllegalArgumentException {
+    public static void submitTask(Runnable runnable) {
+        assert runnable != null;
+        EXECUTOR.submit(runnable);
+    }
+
+    public boolean isActionEnabled(String commandId, Lookup lookup) {
         return getCommand(commandId).isActionEnabled(lookup);
     }
 

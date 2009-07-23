@@ -204,8 +204,16 @@ public class VariablesTableModel implements TableModel, Constants {
                         }
                     }
                     if (row instanceof ObjectVariable) {
+                        String declaredType;
+                        if (row instanceof LocalVariable) {
+                            declaredType = ((LocalVariable) row).getDeclaredType();
+                        } else if (row instanceof Field) {
+                            declaredType = ((Field) row).getDeclaredType();
+                        } else {
+                            declaredType = ((ObjectVariable) row).getType();
+                        }
                         // Allow to edit Strings
-                        if (!"java.lang.String".equals(((ObjectVariable) row).getType())) { // NOI18N
+                        if (!"java.lang.String".equals(declaredType)) { // NOI18N
                             return true;
                         }
                     }

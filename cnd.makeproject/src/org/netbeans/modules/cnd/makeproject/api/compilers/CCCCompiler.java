@@ -56,20 +56,99 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends BasicCompiler {
+    private Pair compilerDefinitions;
     private static File tmpFile = null;
     
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
-    
+
+    @Override
+    public boolean setSystemIncludeDirectories(List<String> values) {
+        assert values != null;
+        if (compilerDefinitions == null) {
+            compilerDefinitions = new Pair();
+        }
+        if (values.equals(compilerDefinitions.systemIncludeDirectoriesList)) {
+            return false;
+        }
+        PersistentList<String> systemIncludeDirectoriesList = new PersistentList<String>(values);
+        normalizePaths(systemIncludeDirectoriesList);
+        compilerDefinitions.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
+        saveSystemIncludesAndDefines();
+        return true;
+    }
+
+    @Override
+    public boolean setSystemPreprocessorSymbols(List<String> values) {
+        assert values != null;
+        if (compilerDefinitions == null) {
+            compilerDefinitions = new Pair();
+        }
+        if (values.equals(compilerDefinitions.systemPreprocessorSymbolsList)) {
+            return false;
+        }
+        compilerDefinitions.systemPreprocessorSymbolsList = new PersistentList<String>(values);
+        saveSystemIncludesAndDefines();
+        return true;
+    }
+
+    @Override
+    public List<String> getSystemPreprocessorSymbols() {
+        if (compilerDefinitions != null){
+            return compilerDefinitions.systemPreprocessorSymbolsList;
+        }
+        getSystemIncludesAndDefines();
+        return compilerDefinitions.systemPreprocessorSymbolsList;
+    }
+
+    @Override
+    public List<String> getSystemIncludeDirectories() {
+        if (compilerDefinitions != null){
+            return compilerDefinitions.systemIncludeDirectoriesList;
+        }
+        getSystemIncludesAndDefines();
+        return compilerDefinitions.systemIncludeDirectoriesList;
+    }
+
+    public void saveSystemIncludesAndDefines() {
+        if (compilerDefinitions != null){
+            compilerDefinitions.systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
+            compilerDefinitions.systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
+        }
+    }
+
+    private void restoreSystemIncludesAndDefines() {
+        PersistentList<String> systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
+        PersistentList<String>systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
+        if (systemIncludeDirectoriesList != null && systemPreprocessorSymbolsList != null) {
+            compilerDefinitions = new Pair(systemIncludeDirectoriesList, systemPreprocessorSymbolsList);
+        }
+    }
+
+    private synchronized void getSystemIncludesAndDefines() {
+        if (compilerDefinitions == null) {
+            restoreSystemIncludesAndDefines();
+            if (compilerDefinitions == null) {
+                compilerDefinitions = getFreshSystemIncludesAndDefines();
+                saveSystemIncludesAndDefines();
+            }
+        }
+    }
+
+    public void resetSystemIncludesAndDefines() {
+        compilerDefinitions = getFreshSystemIncludesAndDefines();
+        saveSystemIncludesAndDefines();
+    }
+
     public String getMTLevelOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
@@ -102,7 +181,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
     
-    protected void getSystemIncludesAndDefines(String arguments, boolean stdout) throws IOException {
+    protected void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
         String path = getPath();
         if (path != null && path.length() == 0) {
             return;
@@ -155,7 +234,7 @@ public abstract class CCCCompiler extends BasicCompiler {
             }
             reader = new BufferedReader(new InputStreamReader(is));
         }
-        parseCompilerOutput(reader);
+        parseCompilerOutput(reader, pair);
         try {
             if (is != null) {
                 is.close();
@@ -171,13 +250,9 @@ public abstract class CCCCompiler extends BasicCompiler {
     }
     
     // To be overridden
-    public abstract void saveSystemIncludesAndDefines();
-    
-    // To be overridden
-    public abstract void resetSystemIncludesAndDefines();
-    
-    // To be overridden
-    protected abstract void parseCompilerOutput(BufferedReader reader);
+    protected abstract void parseCompilerOutput(BufferedReader reader, Pair pair);
+
+    protected abstract Pair getFreshSystemIncludesAndDefines();
 
     protected String getDefaultPath() {
         CompilerDescriptor compiler = getDescriptor();
@@ -258,6 +333,30 @@ public abstract class CCCCompiler extends BasicCompiler {
         } else {
             return getClass().getName() + getCompilerSet().getName() +
                     ExecutionEnvironmentFactory.toUniqueID(getExecutionEnvironment()).hashCode() + getPath().hashCode() + "."; // NOI18N
+        }
+    }
+
+    private void dumpLists() {
+        System.out.println("==================================" + getDisplayName()); // NOI18N
+        for (int i = 0; i < compilerDefinitions.systemIncludeDirectoriesList.size(); i++) {
+            System.out.println("-I" + compilerDefinitions.systemIncludeDirectoriesList.get(i)); // NOI18N
+        }
+        for (int i = 0; i < compilerDefinitions.systemPreprocessorSymbolsList.size(); i++) {
+            System.out.println("-D" + compilerDefinitions.systemPreprocessorSymbolsList.get(i)); // NOI18N
+        }
+    }
+
+    protected final class Pair {
+        public PersistentList<String> systemIncludeDirectoriesList;
+        public PersistentList<String> systemPreprocessorSymbolsList;
+        public Pair(){
+            systemIncludeDirectoriesList = new PersistentList<String>();
+            systemPreprocessorSymbolsList = new PersistentList<String>();
+        }
+        public Pair(PersistentList<String> systemIncludeDirectoriesList,
+                    PersistentList<String> systemPreprocessorSymbolsList){
+            this.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
+            this.systemPreprocessorSymbolsList = systemPreprocessorSymbolsList;
         }
     }
 }

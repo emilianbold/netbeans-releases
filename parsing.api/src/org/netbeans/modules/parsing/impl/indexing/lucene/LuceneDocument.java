@@ -81,5 +81,10 @@ public class LuceneDocument implements IndexDocumentImpl {
     public String[] getValues(String key) {
         return doc.getValues(key);
     }
-    
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + "; " + getSourceName(); //NOI18N
+    }
+
 }

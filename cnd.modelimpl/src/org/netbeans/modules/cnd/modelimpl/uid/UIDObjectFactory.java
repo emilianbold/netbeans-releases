@@ -101,9 +101,16 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     protected UIDObjectFactory() {
     }
 
-    synchronized public static UIDObjectFactory getDefaultFactory() {
-        if (theFactory == null) {
-            theFactory = new UIDObjectFactory();
+    public static UIDObjectFactory getDefaultFactory() {
+        UIDObjectFactory out = theFactory;
+        if (out == null) {
+            out = theFactory;
+            synchronized (UIDObjectFactory.class) {
+                out = theFactory;
+                if (out == null) {
+                    theFactory = out = new UIDObjectFactory();
+                }
+            }
         }
         return theFactory;
     }
@@ -466,10 +473,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     };
 
     private static final class HelperDeclarationsSortedMap implements SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> {
-        private DataInput aStream;
-        private int size;
-        private UIDObjectFactory factory;
-        private APTStringManager manager;
+        private final DataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final APTStringManager manager;
 
         private HelperDeclarationsSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
@@ -613,10 +620,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     };
 
     private static final class HelperMacrosSortedMap implements SortedMap<NameSortedKey, CsmUID<CsmMacro>> {
-        private DataInput aStream;
-        private int size;
-        private UIDObjectFactory factory;
-        private APTStringManager manager;
+        private final DataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final APTStringManager manager;
 
         private HelperMacrosSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
@@ -754,10 +761,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final class HelperNamespaceDefinitionSortedMap implements SortedMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> {
-        private DataInput aStream;
-        private int size;
-        private UIDObjectFactory factory;
-        private APTStringManager manager;
+        private final DataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final APTStringManager manager;
 
         private HelperNamespaceDefinitionSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
@@ -894,10 +901,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final class HelperCharSequencesSortedMap implements SortedMap<CharSequence, Object> {
-        private DataInput aStream;
-        private int size;
-        private UIDObjectFactory factory;
-        private APTStringManager manager;
+        private final DataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final APTStringManager manager;
 
         private HelperCharSequencesSortedMap(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();
@@ -1047,10 +1054,10 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final class HelperCharSequencesSortedMap2 implements SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> {
-        private DataInput aStream;
-        private int size;
-        private UIDObjectFactory factory;
-        private APTStringManager manager;
+        private final DataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final APTStringManager manager;
 
         private HelperCharSequencesSortedMap2(UIDObjectFactory factory, DataInput aStream, APTStringManager manager) throws IOException {
             size = aStream.readInt();

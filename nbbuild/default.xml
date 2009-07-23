@@ -133,7 +133,10 @@ made subject to such option by the copyright holder.
 
     <!-- netbeans.dest.dir -> cluster.path.id translation for NB.org modules -->
     <!-- XXX should use cluster.properties rather than relying on this file -->
-    <loadfile property="cluster.path.evaluated" srcfile="${nb_all}/ide/launcher/netbeans.clusters">
+    <available property="clusters.file" file="${nb_all}/ide/launcher/netbeans.clusters" value="${nb_all}/ide/launcher/netbeans.clusters"/>
+    <!-- fallback for orphaned modules -->
+    <available property="clusters.file" file="${netbeans.dest.dir}/etc/netbeans.clusters" value="${netbeans.dest.dir}/etc/netbeans.clusters"/>
+    <loadfile property="cluster.path.evaluated" srcfile="${clusters.file}">
         <filterchain>
             <striplinecomments>
                 <comment value="#"/>

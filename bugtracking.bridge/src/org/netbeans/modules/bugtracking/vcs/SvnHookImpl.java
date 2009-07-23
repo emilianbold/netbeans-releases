@@ -80,7 +80,7 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public SvnHookContext beforeCommit(SvnHookContext context) throws IOException {
-        Repository selectedRepository = panel.getSelectedRepository();
+        Repository selectedRepository = getSelectedRepository();
 
         if(context.getFiles().length == 0) {
 
@@ -104,7 +104,7 @@ public class SvnHookImpl extends SvnHook {
         LOG.log(Level.FINE, "svn beforeCommit start for " + file);                // NOI18N
 
         String msg = context.getMessage();
-        if(panel.addIssueCheckBox.isSelected()) {
+        if(isAddIssueSelected()) {
             
 
             final Format format = VCSHooksConfig.getInstance().getSvnIssueFormat();
@@ -112,7 +112,7 @@ public class SvnHookImpl extends SvnHook {
             formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
             formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
 
-            Issue issue = panel.getIssue();
+            Issue issue = getIssue();
             if (issue == null) {
                 LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
                 return null;
@@ -130,7 +130,7 @@ public class SvnHookImpl extends SvnHook {
             }
         }
         List<LogEntry> logEntries = null;
-        if(panel.addRevisionCheckBox.isSelected()) {
+        if(isAddRevisionSelected()) {
             logEntries = new ArrayList<LogEntry>();
         }
         return new SvnHookContext(context.getFiles(), msg, logEntries);
@@ -138,6 +138,11 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public void afterCommit(SvnHookContext context) {
+        VCSHooksConfig.getInstance().setSvnAddMsg(isAddCommentSelected());
+        VCSHooksConfig.getInstance().setSvnAddIssue(isAddIssueSelected());
+        VCSHooksConfig.getInstance().setSvnAddRev(isAddRevisionSelected());
+        VCSHooksConfig.getInstance().setSvnResolve(isResolveSelected());
+
         if(context.getFiles().length == 0) {
             LOG.warning("calling svn afterCommit for zero files");              // NOI18N
             return;
@@ -146,25 +151,25 @@ public class SvnHookImpl extends SvnHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "svn afterCommit start for " + file);               // NOI18N
 
-        if(!panel.addCommentCheckBox.isSelected() &&
-           !panel.addRevisionCheckBox.isSelected() &&
-           !panel.resolveCheckBox.isSelected())
+        if(!isAddCommentSelected() &&
+           !isAddRevisionSelected() &&
+           !isResolveSelected())
         {
             LOG.log(Level.FINER, " nothing to do in svn afterCommit for " + file); // NOI18N
             return;
         }
 
-        Issue issue = panel.getIssue();
+        Issue issue = getIssue();
         if (issue == null) {
             LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
             return;
         }
         
         String msg = context.getMessage();
-        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) { // NOI18N
+        if(!isAddCommentSelected() || msg == null || msg.trim().equals("")) { // NOI18N
             msg = null;
         }
-        if(panel.addRevisionCheckBox.isSelected()) {
+        if(isAddRevisionSelected()) {
             List<LogEntry> entries = context.getLogEntries();
             assert entries.size() > 0;
             LogEntry logEntry = entries.get(0);
@@ -192,13 +197,14 @@ public class SvnHookImpl extends SvnHook {
             LOG.log(Level.FINER, " svn commit hook message '" + msg + "'");     // NOI18N
         }
 
-        issue.addComment(msg, panel.resolveCheckBox.isSelected());
+        issue.addComment(msg, isResolveSelected());
         issue.open();
         LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
     }
 
     @Override
     public JPanel createComponent(SvnHookContext context) {
+        LOG.finer("SvnHookImpl.createComponent()");                     //NOI18N
         File referenceFile;
         if(context.getFiles().length == 0) {
             referenceFile = null;
@@ -206,7 +212,15 @@ public class SvnHookImpl extends SvnHook {
         } else {
             referenceFile = context.getFiles()[0];
         }
+
         panel = new HookPanel();
+        panel.addCommentCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnAddMsg());
+        panel.addIssueCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnAddIssue());
+        panel.addRevisionCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnAddRev());
+        panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnResolve());
+        panel.commitRadioButton.setSelected(false);
+
+
         RepositorySelector.setup(panel, referenceFile);
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
@@ -252,4 +266,29 @@ public class SvnHookImpl extends SvnHook {
             VCSHooksConfig.getInstance().setSvnIssueFormat(p.getFormat());
         }
     }
+
+    private boolean isAddCommentSelected() {
+        return (panel != null) && panel.addCommentCheckBox.isSelected();
+    }
+
+    private boolean isAddIssueSelected() {
+        return (panel != null) && panel.addIssueCheckBox.isSelected();
+    }
+
+    private boolean isAddRevisionSelected() {
+        return (panel != null) && panel.addRevisionCheckBox.isSelected();
+    }
+
+    private boolean isResolveSelected() {
+        return (panel != null) && panel.resolveCheckBox.isSelected();
+    }
+
+    private Repository getSelectedRepository() {
+        return (panel != null) ? panel.getSelectedRepository() : null;
+    }
+
+    private Issue getIssue() {
+        return (panel != null) ? panel.getIssue() : null;
+    }
+
 }

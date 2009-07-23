@@ -93,7 +93,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
             root = method;
         }
 
-        ContextKnowledge knowledge = new ContextKnowledge(index, root, node, caretOffset, caretOffset, doc, fo);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, node, caretOffset, caretOffset, parserResult);
         return RubyTypeInferencer.create(knowledge);
     }
 

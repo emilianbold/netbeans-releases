@@ -80,7 +80,7 @@ public class EditorSanityTest extends NbTestCase {
      */
     public void testMultiviewEditorReflection() throws Exception {
         ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-        Class settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
+        Class<?> settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
         Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
         settingsClass.getMethod("addSettingsChangeListener", listenerClass);
         settingsClass.getMethod("removeSettingsChangeListener", listenerClass);

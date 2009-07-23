@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.maven.execute;
 
-import org.netbeans.modules.maven.spi.execute.AdvancedProcessKiller;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +55,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -65,8 +63,8 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
-import org.netbeans.modules.maven.execute.cmd.DirectConstructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -87,12 +85,13 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     static final String ENV_PREFIX = "Env."; //NOI18N
     static final String ENV_JAVAHOME = "Env.JAVA_HOME"; //NOI18N
 
+    private static final String KEY_UUID = "NB_EXEC_MAVEN_PROCESS_UUID"; //NOI18N
+
     private ProgressHandle handle;
     private Process process;
     private String processUUID;
     private Process preProcess;
     private String preProcessUUID;
-    private static final String KEY_UUID = "NB_MAVEN_PROCESS_UUID"; //NOI18N
     
     private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
@@ -226,14 +225,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
 
     private void kill(Process prcs, String uuid) {
-        AdvancedProcessKiller killer = Lookup.getDefault().lookup(AdvancedProcessKiller.class);
-        if (killer != null) {
-            Map<String, String> env = new HashMap<String, String>();
-            env.put(KEY_UUID, uuid);
-            killer.kill(prcs, env);
-        } else {
-            prcs.destroy();
-        }
+        Map<String, String> env = new HashMap<String, String>();
+        env.put(KEY_UUID, uuid);
+        ExternalProcessSupport.destroy(prcs, env);
     }
     
     public boolean cancel() {
@@ -395,15 +389,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
 
         File mavenHome = MavenSettings.getDefault().getCommandLinePath();
-        Constructor constructeur;
-
-        if (Boolean.getBoolean("maven.direct")) {
-            //TODO don't assume we know the path to mvn..
-            DefaultArtifactVersion dav = new DefaultArtifactVersion(MavenSettings.getCommandLineMavenVersion());
-            constructeur = new DirectConstructor(dav, javaHome, mavenHome);
-        } else {
-            constructeur = new ShellConstructor(mavenHome);
-        }
+        Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
 

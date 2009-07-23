@@ -1,9 +1,8 @@
 ﻿Name:  ValidationAPI
 Version: 0.2
-License: CDDL + GPL2 w/ Classpath Exception
+License: CDDL-GPL-2-CP
 OSR: 11316
 Origin: http://kenai.com/projects/simplevalidation/downloads/download/ValidationAPI.jar
-Files: ValidationAPI.jar
 Source: http://kenai.com/projects/simplevalidation/pages/Home
 Comment:  Provides utilities for adding input validation to Swing forms quickly and easily
 

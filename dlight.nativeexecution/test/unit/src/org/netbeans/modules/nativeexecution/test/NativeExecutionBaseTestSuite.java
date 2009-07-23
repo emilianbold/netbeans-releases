@@ -226,12 +226,14 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         public final String envSection;
         public final String condSection;
         public final String condKey;
+        public final boolean condDefault;
 
-        public TestMethodData(String name, String envSection, String condSection, String condKey) {
+        public TestMethodData(String name, String envSection, String condSection, String condKey, boolean condDefault) {
             this.name = name;
             this.envSection = envSection;
             this.condSection = condSection;
             this.condKey = condKey;
+            this.condDefault = condDefault;
         }
 
 
@@ -276,7 +278,11 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         try {
             RcFile rcFile = NativeExecutionTestSupport.getRcFile();
             String value = rcFile.get(methodData.condSection, methodData.condKey);
-            return Boolean.parseBoolean(value);
+            if (value == null) {
+                return methodData.condDefault;
+            } else {
+                return Boolean.parseBoolean(value);
+            }
         } catch (FileNotFoundException ex) {
             // silently: just no file => condition is false, that's it
             return false;
@@ -327,18 +333,19 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                                 Conditional conditionalAnnotation = method.getAnnotation(Conditional.class);
                                 String condSection = (conditionalAnnotation == null) ? null : conditionalAnnotation.section();
                                 String condKey = (conditionalAnnotation == null) ? null : conditionalAnnotation.key();
+                                boolean condDefault = (conditionalAnnotation == null) ? false : conditionalAnnotation.defaultValue();
                                 if (forAllEnvAnnotation != null) {
                                     String envSection = forAllEnvAnnotation.section();
                                     if (envSection == null || envSection.length() == 0) {
                                         envSection = defaultSection;
                                     }
                                     if (envSection != null && envSection.length() > 0) {
-                                        result.testMethods.add(new TestMethodData(method.getName(), envSection, condSection, condKey));
+                                        result.testMethods.add(new TestMethodData(method.getName(), envSection, condSection, condKey, condDefault));
                                     } else {
                                         addTest(warning("@ForAllEnvironments annotation for method " + testClass.getName() + '.' + method.getName() + " does not specify section"));
                                     }
                                 } else {
-                                    result.testMethods.add(new TestMethodData(method.getName(), null, condSection, condKey));
+                                    result.testMethods.add(new TestMethodData(method.getName(), null, condSection, condKey, condDefault));
                                 }
                             }
                         }

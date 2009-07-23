@@ -105,7 +105,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class ActionProviderImpl implements ActionProvider {
 
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     private static String[] supported = new String[]{
         COMMAND_BUILD,
         "build-with-dependencies", //NOI18N

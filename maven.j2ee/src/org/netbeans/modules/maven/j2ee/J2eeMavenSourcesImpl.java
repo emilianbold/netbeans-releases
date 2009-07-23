@@ -66,7 +66,7 @@ public class J2eeMavenSourcesImpl implements Sources {
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     public static final String TYPE_WEB_INF="web_inf"; //NOI18N
     
-    private Project project;
+    private final Project project;
     private final List<ChangeListener> listeners;
     
     private SourceGroup webDocSrcGroup;

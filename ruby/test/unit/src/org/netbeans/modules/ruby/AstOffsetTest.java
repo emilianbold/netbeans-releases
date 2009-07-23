@@ -150,6 +150,10 @@ public class AstOffsetTest extends RubyTestBase {
         checkOffsets("testfiles/action_controller.rb");
     }
 
+    public void testJapanese() throws Exception {
+        checkOffsets("testfiles/japanese_spec.rb");
+    }
+
     // These tests fail!!
     //    public void testStringOffset1() throws Exception {
     //        // AstUtilities generated an assertion for this

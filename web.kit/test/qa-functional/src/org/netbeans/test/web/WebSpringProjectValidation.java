@@ -57,13 +57,6 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author dk198696
  */
 public class WebSpringProjectValidation extends WebProjectValidationEE5 {
-        protected static ProjectHelper phelper = new ProjectHelper() {
-
-        public Node getSourceNode() {
-            return new SourcePackagesNode(PROJECT_NAME);
-        }
-    };
-    
 
     static {
         PROJECT_NAME = "WebSpringProject";
@@ -139,7 +132,7 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer(getServerNode(Server.ANY).getText());
-        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
+        serverStep.selectJavaEEVersion(JAVA_EE_5);
         serverStep.next();
 
         NewWebProjectSpringFrameworkStepOperator frameworkStep = new NewWebProjectSpringFrameworkStepOperator();

@@ -1676,10 +1676,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  // XXX do this from AWT???
                                                  ERR.fine("task-discardAllEdits");
                                                  getUndoRedo().discardAllEdits();
-                                                 // Insert before-save undo event to enable unmodifying undo
-                                                 ERR.fine("task-undoableEditHappened");
-                                                 getUndoRedo().undoableEditHappened(new UndoableEditEvent(CloneableEditorSupport.this,
-                                                                                                          new BeforeSaveEdit(lastSaveTime)));
                                                  ERR.fine("task-check already modified");
                                                  // #57104 - if modified previously now it should become unmodified
                                                  if (isAlreadyModified()) {
@@ -3120,7 +3116,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (myDoc == null) {
                 throw new javax.swing.undo.CannotRedoException(); // NOI18N
             }
-
+            
             support.justRevertedToNotModified = false;
             new RenderUndo(0, myDoc);
 
@@ -3170,6 +3166,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public void discardAllEdits() {
             final StyledDocument myDoc = support.getDocument();
             new RenderUndo(5, myDoc);
+            // Insert before-save undo event to enable unmodifying undo
+            undoableEditHappened(new UndoableEditEvent(support, support.new BeforeSaveEdit(support.lastSaveTime)));
         }
 
         @Override

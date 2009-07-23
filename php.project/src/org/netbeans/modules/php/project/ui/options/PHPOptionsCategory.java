@@ -36,24 +36,21 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.project.ui.options;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author tomslot
  */
-public class PHPOptionsCategory extends OptionsCategory{
-    public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; //NOI18N
-    
+public class PHPOptionsCategory extends OptionsCategory {
+
     @Override
     public Icon getIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/php-options-icon.png", false); // NOI18N
@@ -71,7 +68,6 @@ public class PHPOptionsCategory extends OptionsCategory{
 
     @Override
     public OptionsPanelController create() {
-        return new PhpOptionsPanelController();
+        return OptionsPanelController.createAdvanced(UiUtils.OPTIONS_PATH);
     }
-
 }

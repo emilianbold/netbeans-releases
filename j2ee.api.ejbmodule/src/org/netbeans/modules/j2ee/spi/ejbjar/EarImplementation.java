@@ -48,6 +48,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 /**
  * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.Ear}.
  * @see EjbJarFactory
+ * @deprecated implement {@link EarImplementation2}
  */
 public interface EarImplementation {
 

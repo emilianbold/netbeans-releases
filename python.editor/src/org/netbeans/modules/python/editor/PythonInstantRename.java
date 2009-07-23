@@ -40,6 +40,7 @@ import org.netbeans.modules.python.editor.lexer.PythonTokenId;
 import org.netbeans.modules.python.editor.lexer.PythonCommentTokenId;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.python.antlr.PythonTree;
+import org.python.antlr.ast.Attribute;
 import org.python.antlr.ast.Call;
 import org.python.antlr.ast.ClassDef;
 import org.python.antlr.ast.FunctionDef;
@@ -63,7 +64,7 @@ public class PythonInstantRename implements InstantRenamer {
         AstPath path = AstPath.get(root, caretOffset);
         PythonTree leaf = path.leaf();
 
-        if (PythonAstUtils.isNameNode(leaf)) {
+        if (PythonAstUtils.isNameNode(leaf) || leaf instanceof Attribute) {
             return true;
         }
 

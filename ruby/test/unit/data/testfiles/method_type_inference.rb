@@ -4,6 +4,10 @@ class A
     simple_int
   end
 
+  def return_self
+    self
+  end
+
   def simple_int
     42
   end

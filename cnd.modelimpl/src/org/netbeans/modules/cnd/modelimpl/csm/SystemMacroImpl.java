@@ -66,7 +66,7 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     private final CharSequence macroBody;
     private final Kind macroKind;
     private final List<CharSequence> params;
-    private CsmFile containingFile;
+    private final CsmFile containingFile;
     private final CsmUID<CsmMacro> uid;
 
     public SystemMacroImpl(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {

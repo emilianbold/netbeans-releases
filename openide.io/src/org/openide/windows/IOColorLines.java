@@ -50,7 +50,7 @@ import org.openide.util.Lookup;
  * <pre>
  *  // print green line
  *  InputOutput io = ...;
- *  IOColors.println(io, "Green line", Color.GREEN);
+ *  IOColorLines.println(io, "Green line", Color.GREEN);
  * </pre>
  * How to support {@link IOColorLines} in own {@link IOProvider} implementation:
  * <ul>

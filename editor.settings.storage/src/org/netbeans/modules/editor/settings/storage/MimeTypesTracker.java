@@ -295,6 +295,7 @@ public final class MimeTypesTracker {
         
         if (event != null) {
             pcs.firePropertyChange(event);
+            EditorSettingsImpl.getInstance().notifyMimeTypesChange(event.getOldValue(), event.getNewValue());
         }
     }
 

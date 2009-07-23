@@ -58,10 +58,16 @@ public final class SessionMethodController extends AbstractMethodController {
 
     private final MetadataModel<EjbJarMetadata> model;
     private final String sessionType;
+    private final boolean allowsNoInterface;
 
     public SessionMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> model) {
+        this(ejbClass, model, false);
+    }
+
+    public SessionMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> model, boolean allowsNoInterface) {
         super(ejbClass, model);
         this.model = model;
+        this.allowsNoInterface = allowsNoInterface;
         String resultSessionType = null;
         try {
             resultSessionType = model.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -124,5 +130,10 @@ public final class SessionMethodController extends AbstractMethodController {
     public boolean supportsMethodType(MethodType.Kind methodType) {
         boolean stateless = Session.SESSION_TYPE_STATELESS.equals(sessionType);
         return  methodType == MethodType.Kind.BUSINESS || (!isSimplified() && !stateless && (methodType == MethodType.Kind.CREATE));
+    }
+
+    @Override
+    public boolean allowsNoInterface(){
+        return allowsNoInterface;
     }
 }

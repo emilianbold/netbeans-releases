@@ -161,6 +161,11 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
         super.componentActivated ();
     }
 
+    @Override
+    protected void componentClosed() {
+        browserComponent.getBrowserImpl().dispose();
+    }
+
     public java.awt.Image getIcon () {
         return new ImageIcon (HtmlBrowser.class.getResource ("/org/openide/resources/html/htmlView.gif")).getImage ();   // NOI18N
     }

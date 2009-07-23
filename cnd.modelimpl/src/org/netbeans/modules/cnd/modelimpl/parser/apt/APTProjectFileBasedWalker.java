@@ -79,6 +79,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     
     protected boolean include(ResolvedPath resolvedPath, APTInclude apt, APTMacroMap.State postIncludeState) {
         FileImpl included = null;
+        boolean error = false;
         if (resolvedPath != null) {
             CharSequence path = resolvedPath.getPath();
             if (getIncludeHandler().pushInclude(path, apt, resolvedPath.getIndex())) {
@@ -102,10 +103,12 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                     APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[] {file});// NOI18N
                     getIncludeHandler().popInclude();
                 }
+            } else {
+                error = true;
             }
         }
         postInclude(apt, included);
-        return postIncludeState == null;
+        return (postIncludeState == null) && !error;
     }
     
     abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException;

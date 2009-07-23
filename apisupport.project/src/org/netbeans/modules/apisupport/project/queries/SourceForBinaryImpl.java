@@ -59,7 +59,6 @@ import org.w3c.dom.Element;
 
 /**
  * Provides sources for module build products.
- * XXX can we also translate xtest/lib/nbjunit.jar -> xtest/nbjunit/src/?
  */
 public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementation {
     

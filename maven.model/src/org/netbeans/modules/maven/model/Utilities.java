@@ -58,7 +58,6 @@ import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
@@ -86,6 +85,12 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
+    private static final String PROFILES_SKELETON =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //NO18N
+"<profilesXml xmlns=\"http://maven.apache.org/PROFILES/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
+"  xsi:schemaLocation=\"http://maven.apache.org/PROFILES/1.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
+"</profilesXml>";//NO18N
+    //a copy is in CustomizerProviderImpl
 
     /**
      * 
@@ -329,7 +334,7 @@ public class Utilities {
                 }
             }
         } else {
-            //TODO report error.. what is the error?
+            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, "Cannot create model from current content of " + pomFileObject);
         }
     }
 
@@ -342,7 +347,9 @@ public class Utilities {
     public static void performProfilesModelOperations(FileObject profilesFileObject, List<ModelOperation<ProfilesModel>> operations) {
         assert profilesFileObject != null;
         assert operations != null;
-        ModelSource source = Utilities.createModelSource(profilesFileObject);
+        ModelSource source = profilesFileObject.getSize() == 0 ?
+            Utilities.createModelSourceForMissingFile(FileUtil.toFile(profilesFileObject), true, PROFILES_SKELETON, "text/x-maven-profile+xml") :
+            Utilities.createModelSource(profilesFileObject);
         ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
         if (model != null) {
             try {

@@ -48,6 +48,7 @@ import java.util.List;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -58,7 +59,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableContainerImpl {
     private List<? extends Parameter> paremeters;
-    private String returnType;
+    String returnType;
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
@@ -196,5 +197,43 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableCont
         VariableNameImpl retval = new VariableNameImpl(this, node, false);
         addElement(retval);
         return retval;
+    }
+
+    @Override
+    public String getIndexSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName().toLowerCase()).append(";");//NOI18N
+        sb.append(getName()).append(";");//NOI18N
+        StringBuilder defaultArgs = new StringBuilder();
+        List<? extends Parameter> parameters = getParameters();
+        for (int paramIdx = 0; paramIdx < parameters.size(); paramIdx++) {
+            Parameter parameter = parameters.get(paramIdx);
+            if (paramIdx > 0) { sb.append(","); }//NOI18N
+            sb.append(parameter.getName());
+            if (parameter.getDefaultValue() != null) {
+                if (defaultArgs.length() > 0) { defaultArgs.append(","); }//NOI18N
+                defaultArgs.append(paramIdx);
+            }
+        }
+        sb.append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(defaultArgs).append(";");//NOI18N
+        if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
+            sb.append(returnType);
+        }
+        sb.append(";");//NOI18N
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        return sb.toString();
+    }
+
+    @Override
+    public QualifiedName getNamespaceName() {
+        if (indexedElement instanceof IndexedFunction) {
+            IndexedFunction indexedFunction = (IndexedFunction)indexedElement;
+            return QualifiedName.create(indexedFunction.getNamespaceName());
+        }
+        return super.getNamespaceName();
     }
 }

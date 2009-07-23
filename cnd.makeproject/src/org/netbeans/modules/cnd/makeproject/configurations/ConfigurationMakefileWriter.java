@@ -333,15 +333,15 @@ public class ConfigurationMakefileWriter {
             if (0 < qmakeSpec.length()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
-            bw.write("nbproject/qt-${CONF}.mk: nbproject/qt-${CONF}.pro FORCE\n"); // NOI18N
+            bw.write("nbproject/qt-${CND_CONF}.mk: nbproject/qt-${CND_CONF}.pro FORCE\n"); // NOI18N
             // It is important to generate makefile in current directory, and then move it to nbproject/.
             // Otherwise qmake will complain that sources are not found.
-            bw.write("\tqmake VPATH=. " + qmakeSpec + "-o qttmp-${CONF}.mk nbproject/qt-${CONF}.pro\n"); // NOI18N
-            bw.write("\tmv -f qttmp-${CONF}.mk nbproject/qt-${CONF}.mk\n"); // NOI18N
+            bw.write("\tqmake VPATH=. " + qmakeSpec + "-o qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.pro\n"); // NOI18N
+            bw.write("\tmv -f qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
             if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
-                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CONF}.mk >nbproject/qt-${CONF}.tmp\n"); // NOI18N
-                bw.write("\t@mv -f nbproject/qt-${CONF}.tmp nbproject/qt-${CONF}.mk\n"); // NOI18N
+                bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CND_CONF}.mk >nbproject/qt-${CND_CONF}.tmp\n"); // NOI18N
+                bw.write("\t@mv -f nbproject/qt-${CND_CONF}.tmp nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
             }
             bw.write('\n'); // NOI18N
             bw.write("FORCE:\n\n"); // NOI18N
@@ -352,8 +352,9 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
             bw.write(".build-conf:\n"); // NOI18N
-            bw.write("\t@echo Tool collection not found.\n"); // NOI18N
-            bw.write("\t@echo Please specify existing tool collection in project properties\n"); // NOI18N
+            bw.write("\t@echo 'Tool collection " + conf.getCompilerSet().getCompilerSetName().getValue() // NOI18N
+                    + " was missing when this makefile was generated'\n"); // NOI18N
+            bw.write("\t@echo 'Please specify existing tool collection in project properties'\n"); // NOI18N
             bw.write("\t@exit 1\n\n"); // NOI18N
             return;
         }
@@ -380,8 +381,8 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
-        bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CONF}.mk\n"); // NOI18N
-        bw.write("\t${MAKE} -f nbproject/qt-${CONF}.mk " + output + "\n"); // NOI18N
+        bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
+        bw.write("\t${MAKE} -f nbproject/qt-${CND_CONF}.mk " + output + "\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -389,7 +390,7 @@ public class ConfigurationMakefileWriter {
         String output = compilerSet.normalizeDriveLetter(getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
-        bw.write("\t${MAKE} " + MakeOptions.getInstance().getMakeOptions() // NOI18N
+        bw.write("\t${MAKE} " // NOI18N
                 + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
                 + output + "\n\n"); // NOI18N
     }
@@ -658,7 +659,9 @@ public class ConfigurationMakefileWriter {
     }
 
     public static void writeDependencyChecking(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && !conf.isQmakeConfiguration()) {
+        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && !conf.isQmakeConfiguration() && conf.getCompilerSet().getCompilerSet() != null) {
+            // if conf.getCompilerSet().getCompilerSet() == null and we write this to makefile,
+            // make would give confusing error message (see IZ#168540)
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
             bw.write(".dep.inc: .depcheck-impl\n"); // NOI18N

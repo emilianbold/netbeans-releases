@@ -40,36 +40,44 @@
  */
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.util.WeakListeners;
 
-final class SourcePathImplementation implements ClassPathImplementation {
+final class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    private final SourceRoots sourceRoots;
+
     private List<PathResourceImplementation> resources;
-    private SourceRoots sourceRoots;
 
     /**
      * Construct the implementation.
      * @param sourceRoots used to get the roots information and events
      */
-    public SourcePathImplementation(SourceRoots sourceRoots) {
+    private SourcePathImplementation(SourceRoots sourceRoots) {
         assert sourceRoots != null;
         this.sourceRoots = sourceRoots;
     }
 
-    private void invalidate() {
-        synchronized (this) {
-            this.resources = null;
-        }
-        this.support.firePropertyChange (PROP_RESOURCES,null,null);
+    public static SourcePathImplementation forProject(GrailsProject project, SourceRoots sourceRoots) {
+        GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
+        SourcePathImplementation impl = new SourcePathImplementation(sourceRoots);
+
+        config.addPropertyChangeListener(WeakListeners.propertyChange(impl, config));
+
+        return impl;
     }
 
     public List<PathResourceImplementation> getResources() {
@@ -84,20 +92,30 @@ final class SourcePathImplementation implements ClassPathImplementation {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.size());
                 for (URL url : roots) {
                     PathResourceImplementation res = ClassPathSupport.createResource(url);
-                    result.add (res);
+                    result.add(res);
                 }
                 this.resources = Collections.unmodifiableList(result);
             }
             return this.resources;
-        }        
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
+                || GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())) {
+            synchronized (this) {
+                this.resources = null;
+            }
+            this.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+        }
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener (listener);
+        support.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener (listener);
+        support.removePropertyChangeListener(listener);
     }
 
 }

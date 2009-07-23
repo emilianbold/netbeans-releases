@@ -92,6 +92,7 @@ public class Mercurial {
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
+    public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.mercurial.status"); //NOI18N
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
 
     private static final int STATUS_DIFFABLE =
@@ -317,7 +318,7 @@ public class Mercurial {
                     return knownRoot;
                 }
                 folders.add(file);
-                if(canWrite(file)) {
+                if(exists(file)) {
                     addFoldersToRoot(folders, file);
                     return file;
                 }
@@ -367,7 +368,7 @@ public class Mercurial {
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (canWrite(file)){
+            if (exists(file)){
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
                 topmost =  file;
@@ -403,8 +404,8 @@ public class Mercurial {
         return knownParent;
     }
 
-    private boolean canWrite(File file) {
-        return new File(file, ".hg").canWrite();
+    private boolean exists(File file) {
+        return new File(file, ".hg").exists();
     }
 
     public HgFileNode [] getNodes(VCSContext context, int includeStatus) {

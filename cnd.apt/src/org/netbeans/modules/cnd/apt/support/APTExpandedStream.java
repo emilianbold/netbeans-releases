@@ -53,7 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.impl.support.*;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;

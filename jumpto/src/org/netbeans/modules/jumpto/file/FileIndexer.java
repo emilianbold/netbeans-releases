@@ -40,7 +40,6 @@
 package org.netbeans.modules.jumpto.file;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,7 +76,7 @@ public final class FileIndexer extends CustomIndexer {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : deleted) {
@@ -92,7 +91,7 @@ public final class FileIndexer extends CustomIndexer {
         }
 
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             // no need to do anything, we are not indexing anythong from inside of the file
         }
 

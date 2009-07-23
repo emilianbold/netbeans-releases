@@ -40,11 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
-<project name="appsrvbridge" default="default" basedir=".">
-    <description>Builds, tests, and runs the project appsrvbridge.</description>
+<project name="j2ee.sun.appsrv81/appsrvbridge" default="default" basedir=".">
     <import file="nbproject/build-impl.xml"/>
     <import file="../../nbbuild/templates/projectized.xml"/>
     <!--

@@ -384,6 +384,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 case DOXYGEN_COMMENT:
                 case NEW_LINE:
                 case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                 case WHITESPACE:
                     // skip
                     break;
@@ -792,6 +793,7 @@ public abstract class CsmResultItem implements CompletionItem {
                             case DOXYGEN_COMMENT:
                             case NEW_LINE:
                             case LINE_COMMENT:
+                            case DOXYGEN_LINE_COMMENT:
                             case WHITESPACE:
                                 break;
                             default:

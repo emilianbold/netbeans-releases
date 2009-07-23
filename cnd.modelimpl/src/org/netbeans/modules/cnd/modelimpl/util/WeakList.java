@@ -49,7 +49,7 @@ import java.util.*;
  */
 public class WeakList<T> implements Iterable<T> {
 
-    private List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
+    private final List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
 
     /**
      * Adds a weak reference to the given element to this list

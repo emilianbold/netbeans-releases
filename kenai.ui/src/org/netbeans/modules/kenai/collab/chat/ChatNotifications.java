@@ -69,6 +69,7 @@ public class ChatNotifications {
     private static ChatNotifications instance;
 
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
+    private HashMap<String, Notification> privateNotifications = new HashMap();
     private Preferences preferences = NbPreferences.forModule(ChatNotifications.class);
 
     
@@ -82,14 +83,29 @@ public class ChatNotifications {
         return instance;
     }
 
+    /**
+     * @param name kenai project name
+     */
     public synchronized void removeGroup(final String name) {
         MessagingHandleImpl r = groupMessages.get(name);
         if (r != null) {
             r.disposeNotification();
             r.notifyMessagesRead();
-            groupMessages.remove(r);
+            groupMessages.remove(name);
         }
     }
+
+    /**
+     * @param name user short name
+     */
+    public synchronized void removePrivate(final String name) {
+        Notification n = privateNotifications.get(name);
+        if (n != null) {
+            n.clear();
+            privateNotifications.remove(name);
+        }
+    }
+
 
     synchronized void addGroupMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
@@ -106,7 +122,7 @@ public class ChatNotifications {
                 public void actionPerformed(ActionEvent arg0) {
                     final ChatTopComponent chatTc = ChatTopComponent.findInstance();
                     ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
-                    chatTc.setActive(chatRoomName);
+                    chatTc.setActiveGroup(chatRoomName);
                 }
             };
 
@@ -119,8 +135,22 @@ public class ChatNotifications {
         }
     }
 
-    void addPrivateMessage(Message msg) {
-        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+    synchronized void addPrivateMessage(final Message msg) {
+        final String name = StringUtils.parseName(msg.getFrom());
+        Notification n = privateNotifications.get(name);
+        if (n != null) {
+            n.clear();
+            privateNotifications.remove(name);
+        }
+        n = NotificationDisplayer.getDefault().notify("New Message", getIcon(), "New Message from " + name, new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                ChatTopComponent tc = ChatTopComponent.findInstance();
+                tc.open();
+                tc.setActivePrivate(name);
+            }
+        }, Priority.NORMAL);
+        privateNotifications.put(name, n);
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
@@ -156,6 +186,4 @@ public class ChatNotifications {
         return NEWMSG;
     }
 }
-
-
 

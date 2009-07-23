@@ -247,11 +247,11 @@
                 <test-type>
                     <name>qa-functional</name>
                     <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -266,6 +266,10 @@
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <recursive/>
                     </test-dependency>
                 </test-type>
                 <test-type>

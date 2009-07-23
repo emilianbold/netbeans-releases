@@ -89,8 +89,11 @@ public class CppLexer extends CndLexer {
                     break;
                 case '/':
                     switch (read(true)) {
+                        case '/':
+                            skipLineComment();
+                            break;
                         case '*': // block or doxygen comment
-                            skipComment();
+                            skipBlockComment();
                             break;
                         case '\r':
                             consumeNewline();
@@ -110,10 +113,14 @@ public class CppLexer extends CndLexer {
         }
     }
 
-    private void skipComment() {
-        super.finishComment(false);
+    private void skipBlockComment() {
+        super.finishBlockComment(false);
     }
     
+    private void skipLineComment() {
+        super.finishLineComment(false);
+    }
+
     @SuppressWarnings("fallthrough")
     private void skipLiteral(boolean endDblQuote) {
         while (true) { // string literal

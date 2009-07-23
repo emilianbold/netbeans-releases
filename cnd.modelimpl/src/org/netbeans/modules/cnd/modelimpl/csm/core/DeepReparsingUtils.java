@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -104,7 +105,7 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnEdit(List<FileImpl> toReparse, ProjectBase project, boolean scheduleParsing) {
+    static void reparseOnEdit(Collection<FileImpl> toReparse, ProjectBase project, boolean scheduleParsing) {
         Set<CsmUID<CsmFile>> topParents = new HashSet<CsmUID<CsmFile>>();
         Set<CsmUID<CsmFile>> parents = new HashSet<CsmUID<CsmFile>>();
         Set<CsmUID<CsmFile>> coherence = new HashSet<CsmUID<CsmFile>>();
@@ -195,7 +196,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectBase project) {
+    public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase project) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(project);
             Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();

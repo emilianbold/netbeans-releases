@@ -83,14 +83,14 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="assigneeField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="assigneeField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="dueField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dueField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="160" max="32767" attributes="0"/>
                                       <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -124,17 +124,17 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="timeSpentField" linkSize="4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="timeSpentPanel" pref="447" max="32767" attributes="0"/>
+                              <Component id="timeSpentPanel" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="remainingEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="remainingEstimatePanel" pref="447" max="32767" attributes="0"/>
+                              <Component id="remainingEstimatePanel" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="originalEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="originalEstimatePanel" pref="447" max="32767" attributes="0"/>
+                              <Component id="originalEstimatePanel" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -146,26 +146,34 @@
                           <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="attachmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="subtaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="originalEstimateLabelNew" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="environmentScrollPane" pref="491" max="32767" attributes="0"/>
-                          <Component id="summaryField" alignment="0" pref="491" max="32767" attributes="0"/>
-                          <Component id="addCommentScrollPane" alignment="0" pref="491" max="32767" attributes="0"/>
+                          <Component id="environmentScrollPane" max="32767" attributes="0"/>
+                          <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
+                          <Component id="addCommentScrollPane" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="dummyAttachmentPanel" alignment="0" pref="491" max="32767" attributes="0"/>
-                          <Component id="dummySubtaskPanel" alignment="0" pref="491" max="32767" attributes="0"/>
+                          <Component id="dummyAttachmentPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="dummySubtaskPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="originalEstimateFieldNew" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="originalEstimateHint" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="separator" alignment="0" pref="635" max="32767" attributes="0"/>
-          <Component id="dummyCommentPanel" alignment="0" pref="635" max="32767" attributes="0"/>
+          <Component id="separator" alignment="0" max="32767" attributes="0"/>
+          <Component id="dummyCommentPanel" alignment="0" max="32767" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="475" max="32767" attributes="0"/>
+              <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -235,11 +243,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="remainingEstimateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="remainingEstimateField" linkSize="6" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="remainingEstimateField" linkSize="9" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="remainingEstimatePanel" linkSize="6" min="-2" max="-2" attributes="0"/>
+                  <Component id="remainingEstimatePanel" linkSize="9" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="timeSpentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -247,17 +255,19 @@
                   </Group>
                   <Component id="timeSpentPanel" linkSize="7" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="attachmentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="dummyAttachmentPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="subtaskLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="dummySubtaskPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -269,10 +279,19 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="addCommentScrollPane" min="-2" max="-2" attributes="0"/>
+                  <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="addCommentScrollPane" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="originalEstimateFieldNew" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="originalEstimateLabelNew" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="originalEstimateHint" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -380,9 +399,11 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="dueField">
+    <Component class="javax.swing.JFormattedTextField" name="dueField">
       <Properties>
-        <Property name="columns" type="int" value="15"/>
+        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter() {&#xa;    public Object stringToValue(String text) throws java.text.ParseException {&#xa;        if (text == null || text.trim().length() == 0) {&#xa;            return null;&#xa;        }&#xa;        return super.stringToValue(text);&#xa;    }&#xa;})" type="code"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="assigneeLabel">
@@ -642,12 +663,15 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="actionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="acceptIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="startProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="resolveIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="createSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="convertToSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="logWorkButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="stopProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="closeIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="reopenIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -659,9 +683,15 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="actionLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="acceptIssueButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="startProgressButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="stopProgressButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="reopenIssueButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="resolveIssueButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="closeIssueButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="createSubtaskButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
@@ -688,12 +718,25 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="acceptIssueButton">
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="startProgressButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.acceptIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.startProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startProgressButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="stopProgressButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.stopProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stopProgressButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="resolveIssueButton">
           <Properties>
@@ -701,6 +744,19 @@
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolveIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolveIssueButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="closeIssueButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.closeIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeIssueButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="createSubtaskButton">
           <Properties>
@@ -722,6 +778,9 @@
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logWorkButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
           <Properties>
@@ -731,6 +790,16 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="reopenIssueButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.reopenIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reopenIssueButtonActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
@@ -756,5 +825,39 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
+    <Component class="javax.swing.JTextField" name="originalEstimateFieldNew">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="originalEstimateLabelNew">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateLabelNew.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="originalEstimateHint">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+          <FontInfo relative="true">
+            <Font component="originalEstimateHint" property="font" relativeSize="true" size="-2"/>
+          </FontInfo>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateHint.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="logWorkButton2">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logWorkButtonActionPerformed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

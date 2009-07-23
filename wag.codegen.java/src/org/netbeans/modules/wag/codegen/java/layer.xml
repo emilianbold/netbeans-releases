@@ -8,7 +8,7 @@
             <file name="zcl.properties" url="/org/netbeans/modules/wag/codegen/java/resources/zcl.properties">
                 <attr name="position" intvalue="50"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
         </folder>
     </folder>

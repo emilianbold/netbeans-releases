@@ -42,7 +42,7 @@ package org.netbeans.modules.kenai.ui.dashboard;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Image;
-import java.awt.event.ActionListener;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
@@ -64,8 +64,8 @@ public class LinkButton extends JButton {
      * @param al Action to invoke when the button is pressed, can be null but
      * the button is disabled then.
      */
-    public LinkButton( Image img, ActionListener al ) {
-        this( new ImageIcon(img), al );
+    public LinkButton( Image img, Action a ) {
+        this( new ImageIcon(img), a );
     }
 
     /**
@@ -74,11 +74,11 @@ public class LinkButton extends JButton {
      * @param al Action to invoke when the button is pressed, can be null but
      * the button is disabled then.
      */
-    public LinkButton( Icon icon, ActionListener al ) {
+    public LinkButton( Icon icon, Action a ) {
         setIcon(icon);
         setPressedIcon(icon);
 
-        init(al);
+        init(a);
     }
 
     /**
@@ -88,12 +88,14 @@ public class LinkButton extends JButton {
      * @param al Action to invoke when the button is pressed, can be null but
      * the button is disabled then.
      */
-    public LinkButton( String text, Icon icon, ActionListener al ) {
+    public LinkButton( String text, Icon icon, Action a ) {
         super(text);
         setIcon(icon);
         setPressedIcon(icon);
-
-        init(al);
+        Object tooltip = a.getValue(Action.SHORT_DESCRIPTION);
+        if( null != tooltip )
+            setToolTipText(tooltip.toString());
+        init(a);
     }
 
 
@@ -103,10 +105,20 @@ public class LinkButton extends JButton {
      * @param al Action to invoke when the button is pressed, can be null but
      * the button is disabled then.
      */
-    public LinkButton( String text, ActionListener al ) {
+    public LinkButton( String text, Action a ) {
         super( text );
 
-        init(al);
+        if( null != a ) {
+            Icon icon = (Icon) a.getValue(Action.SMALL_ICON);
+            if( null != icon ) {
+                setIcon(icon);
+                setPressedIcon(icon);
+            }
+            Object tooltip = a.getValue(Action.SHORT_DESCRIPTION);
+            if( null != tooltip )
+                setToolTipText(tooltip.toString());
+        }
+        init(a);
     }
 
     /**
@@ -126,7 +138,7 @@ public class LinkButton extends JButton {
         }
     }
 
-    private void init( ActionListener al ) {
+    private void init( Action al ) {
         setOpaque(false);
         setBorder(BorderFactory.createEmptyBorder());
         setBorderPainted(false);

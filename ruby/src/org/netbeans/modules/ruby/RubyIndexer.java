@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -261,7 +260,8 @@ public class RubyIndexer extends EmbeddingIndexer {
             return;
         }
 
-        TreeAnalyzer analyzer = new TreeAnalyzer(r, support, indexable);
+        TreeAnalyzer analyzer =
+                new TreeAnalyzer(r, support, indexable, new ContextKnowledge(null, root, r));
         analyzer.analyze();
 
         for (IndexDocument doc : analyzer.getDocuments()) {
@@ -313,7 +313,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         @Override
-        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             try {
                 IndexingSupport support = IndexingSupport.getInstance(context);
                 for (Indexable indexable : deleted) {
@@ -325,7 +325,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
         
         @Override
-        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : dirty) {
@@ -348,45 +348,40 @@ public class RubyIndexer extends EmbeddingIndexer {
         private final List<IndexDocument> documents;
         private String url;
         private final boolean platform;
+        private final ContextKnowledge knowledge;
 
-        private TreeAnalyzer(RubyParseResult result, IndexingSupport support, Indexable indexable) {
+        private TreeAnalyzer(RubyParseResult result,
+                IndexingSupport support,
+                Indexable indexable,
+                ContextKnowledge knowledge) {
+
             this.result = result;
             this.file = RubyUtils.getFileObject(result);
             this.support = support;
             this.indexable = indexable;
             this.documents = new ArrayList<IndexDocument>();
             this.platform = RubyUtils.isPlatformFile(file);
+            this.knowledge = knowledge;
         }
 
         private String getRequireString(Set<String> requireSet) {
-            if ((requireSet != null) && (requireSet.size() > 0)) {
-                StringBuilder sb = new StringBuilder(20 * requireSet.size());
-
-                for (String s : requireSet) {
-                    if (sb.length() > 0) {
-                        sb.append(","); // NOI18N
-                    }
-
-                    sb.append(s);
-                }
-
-                return sb.toString();
-            }
-
-            return null;
+            return asCommaSeparatedString(requireSet);
         }
 
-        // TODO - combine with getRequireString
         private String getIncludedString(Set<String> includes) {
-            if ((includes != null) && (includes.size() > 0)) {
-                StringBuilder sb = new StringBuilder(20 * includes.size());
+            return asCommaSeparatedString(includes);
+        }
 
-                for (String include : includes) {
+        private String asCommaSeparatedString(Set<String> strings) {
+            if (strings != null && strings.size() > 0) {
+                StringBuilder sb = new StringBuilder(20 * strings.size());
+
+                for (String each : strings) {
                     if (sb.length() > 0) {
                         sb.append(",");
                     }
 
-                    sb.append(include);
+                    sb.append(each);
                 }
 
                 return sb.toString();
@@ -434,7 +429,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             List<?extends AstElement> structure = ar.getElements();
 
             // Rails special case
-            // in case of 2.3.3 fall through to do normal indexing as well, these special cases
+            // in case of 2.3.2 fall through to do normal indexing as well, these special cases
             // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
             // if rails is in vendor/rails, we can't tell the version from
             // the path, so playing safe and falling through to do also normal
@@ -581,12 +576,8 @@ public class RubyIndexer extends EmbeddingIndexer {
          * in several other classes too - ActiveRecord etc.)
          */
         private void handleRailsClass(String classIn, String classFqn, String clz, String clzNoCase) {
-            Node root = AstUtilities.getRoot(result);
+            Node root = knowledge.getRoot();
 
-            if (root == null) {
-                return;
-            }
-            
             IndexDocument document = support.createDocument(indexable);
             documents.add(document);
 
@@ -649,11 +640,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         /** Handle a migration file */
         private void handleMigration() {
-            Node root = AstUtilities.getRoot(result);
-
-            if (root == null) {
-                return;
-            }
+            Node root = knowledge.getRoot();
 
             // Look for self.up methods and register all column deltas
             // create_table: create new table
@@ -1399,11 +1386,9 @@ public class RubyIndexer extends EmbeddingIndexer {
 
             //XXX: this will skip TI for tests as it did in GSF where
             // platform was always false.
-
-            Node root = AstUtilities.getRoot(result);
             if (platform && !userSourcesTest) {
                 signature = RubyIndexerHelper.getMethodSignature(
-                        child, root, flags, signature, file, result.getSnapshot());
+                        child, flags, signature, file, knowledge);
                 if (signature == null) {
                     return;
                 }
@@ -1411,7 +1396,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 if (!userSourcesTest) {
                     signature = RubyIndexerHelper.replaceAttributes(signature, flags);
                 }
-                signature = RubyIndexerHelper.getMethodSignatureForUserSources(root, child, signature, flags, result.getSnapshot());
+                signature = RubyIndexerHelper.getMethodSignatureForUserSources(child, signature, flags, knowledge);
             }
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
 
