@@ -40,13 +40,31 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+
 
 
 
@@ -83,7 +101,31 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      */
     @Override
     public void actionPerformed( ActionEvent event, JTextComponent component ) {
-        
+        if ( component == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        FileObject fileObject = NbEditorUtilities.getFileObject( 
+                component.getDocument());
+        if ( fileObject == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        ClassPath boot = getClassPath( project , ClassPath.BOOT);
+        ClassPath compile = getClassPath(project, ClassPath.COMPILE );
+        ClassPath src = getClassPath(project , ClassPath.SOURCE);
+        if ( boot == null || compile == null || src == null ){
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
+        MetadataModel<WebBeansModel> metaModel = WebBeansModelFactory.
+            getMetaModel( modelUnit );
     }
     
     /* (non-Javadoc)
@@ -91,8 +133,33 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      */
     @Override
     public boolean isEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        if (EditorRegistry.lastFocusedComponent() == null
+                || !EditorRegistry.lastFocusedComponent().isShowing())
+        {
+            return false;
+        }
+        return OpenProjects.getDefault().getOpenProjects().length > 0;
+    }
+    
+    private ClassPath getClassPath( Project project, String type ) {
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        if ( sources == null ){
+            return null;
+        }
+        SourceGroup[] sourceGroups = sources.getSourceGroups( 
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        int i=0;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
     }
 
 }
