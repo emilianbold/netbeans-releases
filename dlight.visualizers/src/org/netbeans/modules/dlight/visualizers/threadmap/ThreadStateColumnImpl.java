@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
@@ -248,11 +250,13 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     private final MergedThreadInfo info;
+    private ThreadData stackProvider;
     private final List<ThreadState> list = new ArrayList<ThreadState>();
     private final AtomicInteger comparable = new AtomicInteger();
 
-    ThreadStateColumnImpl(MergedThreadInfo info) {
+    ThreadStateColumnImpl(MergedThreadInfo info, ThreadData stackProvider) {
         this.info = info;
+        this.stackProvider = stackProvider;
     }
 
     public void setSummary(int sum) {
@@ -283,6 +287,10 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return !list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
 
+    public StackTrace getStackTrace(long timeStamp) {
+        return stackProvider.getStackTrace(timeStamp);
+    }
+
     void add(ThreadState state) {
         list.add(state);
     }
@@ -296,6 +304,12 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
     long getThreadStartTimeStamp() {
         return info.getStartTimeStamp();
+    }
+
+    void updateStackProvider(ThreadData stackProvider) {
+        if (stackProvider != null) {
+            this.stackProvider = stackProvider;
+        }
     }
 
     public static final class StateResources {
