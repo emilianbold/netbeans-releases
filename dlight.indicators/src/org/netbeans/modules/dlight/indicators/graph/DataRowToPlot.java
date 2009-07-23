@@ -42,15 +42,26 @@ import java.util.Map;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 
 /**
+ * Converts incoming data rows into plot data.
+ * Required part of every plot indicator.
+ *
  * @author Alexey Vladykin
  */
 public interface DataRowToPlot {
 
+    /**
+     * Indicator calls this method for every data row
+     * it gets from indicator data provider.
+     *
+     * @param row  new data row
+     */
     public void addDataRow(DataRow row);
 
-    public void tick();
-
-    public float[] getGraphData();
-
-    public Map<String, String> getDetails();
+    /**
+     * Indicator calls this every second to request new data to draw.
+     *
+     * @param data  implementation should fill this array with new data
+     * @param details  implementation should fill the map with new details
+     */
+    public void tick(float[] data, Map<String, String> details);
 }

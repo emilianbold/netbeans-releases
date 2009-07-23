@@ -173,4 +173,9 @@ public class Utilities {
         }
         return false;
     }
+
+    public static WebModule findWebModule(TemplateWizard wizard) {
+        Project project = Templates.getProject(wizard);
+        return WebModule.getWebModule(project.getProjectDirectory());
+    }
 }

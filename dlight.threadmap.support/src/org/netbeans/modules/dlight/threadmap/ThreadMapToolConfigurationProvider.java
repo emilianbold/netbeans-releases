@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.threadmap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -168,15 +167,8 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
             }
         }
 
-        public void tick() {
-        }
-
-        public float[] getGraphData() {
-            return data;
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.emptyMap();
+        public void tick(float[] data, Map<String, String> details) {
+            System.arraycopy(this.data, 0, data, 0, data.length);
         }
     }
 

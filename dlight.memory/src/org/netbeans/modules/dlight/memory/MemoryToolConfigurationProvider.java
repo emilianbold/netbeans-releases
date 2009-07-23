@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.memory;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -292,15 +291,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             }
         }
 
-        public void tick() {
-        }
-
-        public float[] getGraphData() {
-            return new float[]{mem};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.singletonMap(MAX_HEAP_DETAIL_ID, formatValue(max));
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = mem;
+            details.put(MAX_HEAP_DETAIL_ID, formatValue(max));
         }
     }
 

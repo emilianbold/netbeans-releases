@@ -81,6 +81,7 @@ import java.util.Set;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -1554,7 +1555,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void notifySuspendAll() {
+        notifySuspendAll(true);
+    }
+
+    public List<PropertyChangeEvent> notifySuspendAll(boolean doFire) {
         Collection threads = threadsTranslation.getTranslated();
+        List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(threads.size());
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
             if (threadOrGroup instanceof JPDAThreadImpl) {
@@ -1564,7 +1570,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                    status == JPDAThread.STATE_ZOMBIE);
                 if (!invalid) {
                     try {
-                        ((JPDAThreadImpl) threadOrGroup).notifySuspended();
+                        PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire);
+                        if (event != null) {
+                            events.add(event);
+                        }
                     } catch (ObjectCollectedException ocex) {
                         invalid = true;
                     }
@@ -1573,6 +1582,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
         }
+        return events;
     }
 
     public void notifySuspendAllNoFire() {

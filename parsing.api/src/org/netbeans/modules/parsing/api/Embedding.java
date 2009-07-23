@@ -40,6 +40,8 @@
 package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
 
@@ -132,6 +134,7 @@ public final class Embedding {
                 -1
             });
         }
+        Collections.sort (originalToCurrent, TMS_VCLV);
         Snapshot snapshot = new Snapshot (
             sb,
             source,
@@ -190,6 +193,13 @@ public final class Embedding {
     public String toString () {
         return "Embedding (" + getMimeType () + ", " + getSnapshot () + ")";
     }
+
+    private static final Comparator<int[]> TMS_VCLV = new Comparator<int[]> () {
+
+        public int compare (int[] o1, int[] o2) {
+            return o1 [0] - o2 [0];
+        }
+    };
 }
 
 

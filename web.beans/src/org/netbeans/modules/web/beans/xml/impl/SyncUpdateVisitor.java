@@ -58,24 +58,35 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Beans)
      */
     public void visit( Beans beans ) {
-        // TODO Auto-generated method stub
-
+        assert false : "Should never add or remove beans root"; // NOI18N
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
      */
     public void visit( Deploy deploy ) {
-        // TODO Auto-generated method stub
-
+        assert getParent() instanceof Beans;
+        Beans beans = (Beans)getParent();
+        if ( isAdd() ){
+            beans.addElement( getIndex(), deploy );
+        }
+        else if ( isRemove() ){
+            beans.removeElement( deploy );
+        }
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
      */
     public void visit( Type type ) {
-        // TODO Auto-generated method stub
-
+        assert getParent() instanceof Deploy;
+        Deploy deploy = (Deploy)getParent();
+        if ( isAdd() ){
+            deploy.addType( getIndex(), type);
+        }
+        else if ( isRemove() ){
+            deploy.removeType(type);
+        }
     }
 
     /* (non-Javadoc)
@@ -84,8 +95,7 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
     public void update( WebBeansComponent target, WebBeansComponent child,
             Operation operation )
     {
-        // TODO Auto-generated method stub
-        
+        update(target, child, -1 , operation);
     }
 
     /* (non-Javadoc)
@@ -94,8 +104,40 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
     public void update( WebBeansComponent target, WebBeansComponent child,
             int index, Operation operation )
     {
-        // TODO Auto-generated method stub
-        
+        assert target != null;
+        assert child != null;
+        assert operation == null || operation == Operation.ADD ||
+            operation == Operation.REMOVE;
+
+        myParent = target;
+        myIndex = index;
+        myOperation = operation;
+        child.accept(this);
     }
 
+    private boolean isAdd() {
+        return getOperation() == Operation.ADD;
+    }
+
+    private boolean isRemove() {
+        return getOperation() == Operation.REMOVE;
+    }
+
+    private WebBeansComponent getParent() {
+        return myParent;
+    }
+
+    private int getIndex() {
+        return myIndex;
+    }
+
+    private Operation getOperation() {
+        return myOperation;
+    }
+
+    private WebBeansComponent myParent;
+
+    private int myIndex;
+
+    private Operation myOperation;
 }

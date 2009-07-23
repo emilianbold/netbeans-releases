@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.schema.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +72,9 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.dom.SyncUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.netbeans.modules.xml.schema.model.impl.resolver.ChamelionResolver;
+import org.netbeans.modules.xml.schema.model.impl.resolver.ImportResolver;
+import org.netbeans.modules.xml.schema.model.impl.resolver.IncludeResolver;
 
 /**
  *
@@ -140,7 +142,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
     {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace) &&
             XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(getSchema().getTargetNamespace())) {
-            return resolve(namespace, localName, type, null, new HashSet<SchemaModel>());
+            return resolveImpl(namespace, localName, type);
         }
         
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
@@ -148,68 +150,43 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             return sm.findByNameAndType(localName, type);
         }
         
-        return resolve(namespace, localName, type, null, new HashSet<SchemaModel>());
+        return resolveImpl(namespace, localName, type);
     }
-    
-    <T extends NamedReferenceable> T resolve(
-            String namespace, String localName, Class<T> type,
-            SchemaModelReference refToMe, Collection<SchemaModel> checked)
-    {
+
+    protected <T extends NamedReferenceable> T resolveImpl(
+            String namespace, String localName, Class<T> type) {
+        //
         if (getState() != State.VALID) {
             return null;
         }
-        
-        T found = null;
-        String targetNamespace = getSchema().getTargetNamespace();
-        if ( targetNamespace != null && targetNamespace.equals(namespace) ||
-            targetNamespace == null && namespace == null ||
-            targetNamespace == null && refToMe instanceof Include) {
-            found = findByNameAndType(localName, type);
-            
-            //Non-conservative approach to same namespace resolution.
-            //See http://www.netbeans.org/issues/show_bug.cgi?id=122836
-            if (found == null && refToMe == null) {
-                Collection<SchemaModelImpl> models = getMegaIncludedModels(namespace);
-                for (SchemaModelImpl sm : models) {
-                    if (sm == null || checked.contains(sm)) {
-                        continue;
-                    }
-                    //
-                    found = sm.findByNameAndType(localName, type);
-                    if (found != null) {
-                        break;
-                    }
-                }
-            }            
+        //
+        Schema mySchema = getSchema();
+        if (mySchema == null) {
+            return null;
         }
-        
-        if (found == null && (! (refToMe instanceof Import) 
-                    || ((Import)refToMe).getNamespace().equals(namespace))) {
-            checked.add(this);
-            
-            Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();
-            for (SchemaModelReference ref : modelRefs) {
-                // import should not have null namespace
-                if (ref instanceof Import) {
-                    if (namespace == null || ! namespace.equals(((Import)ref).getNamespace())) {
-                        continue;
-                    }
-                }
-
-                SchemaModelImpl resolvedRef = this.resolve(ref);
-                if (resolvedRef != null && ! checked.contains(resolvedRef)) {
-                    found = resolvedRef.resolve(namespace, localName, type, ref, checked);
-                }
-                if (found != null) {
-                    break;
-                }
+        //
+        String targetNamespace = mySchema.getTargetNamespace();
+        //
+        if (Util.equal(targetNamespace, namespace)) { // Both can be null
+            return IncludeResolver.resolve(this, namespace, localName, type);
+        } else {
+            if (targetNamespace == null) {
+                return ChamelionResolver.resolve(this, namespace, localName, type);
+            } else {
+                return ImportResolver.resole(this, namespace, localName, type);
             }
         }
-        
-        return found;
     }
-    
-    protected SchemaModelImpl resolve(SchemaModelReference ref) {
+
+    /**
+     * Resolves reference to another model with the help of references' cache.
+     * Calling ref.resolveReferencedModel() does time consuming resolve.
+     * So it is recommended to use this method whenever it possible.
+     *
+     * @param ref
+     * @return
+     */
+    public SchemaModelImpl resolve(SchemaModelReference ref) {
         if (mRefCacheSupport == null) {
             try {
                 return (SchemaModelImpl) ref.resolveReferencedModel();
@@ -224,109 +201,25 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
 
     public Collection<SchemaModelReference> getSchemaModelReferences() {
         Collection<SchemaModelReference> refs = new ArrayList<SchemaModelReference>();
-        refs.addAll(getSchema().getRedefines());
-        refs.addAll(getSchema().getIncludes());
-        refs.addAll(getSchema().getImports());
+        Schema schema = getSchema();
+        if (schema != null) {
+            refs.addAll(schema.getRedefines());
+            refs.addAll(schema.getIncludes());
+            refs.addAll(schema.getImports());
+        }
         return refs;
     }
     
-    /**
-     * It looks for a set of schema models, which can be visible to each others.
-     * The matter is, if model A includes B, then model B model's definitions
-     * is visible to A. But the oposite assertion is also correct because B
-     * logically becomes a part of A after inclusion.
-     *
-     * The problem is described in the issue http://www.netbeans.org/issues/show_bug.cgi?id=122836
-     *
-     * The task of the method is to find a set of schema models, which
-     * can be visible to the current model. The parameter is used as a hint
-     * to exclude the models from other namespace.
-     *
-     * @param soughtNs
-     * @return
-     */
-    private Set<SchemaModelImpl> getMegaIncludedModels(String soughtNs) {
-        //
-        Schema mySchema = this.getSchema();
-        if (mySchema == null) {
-            return Collections.EMPTY_SET; 
+    public Collection<SchemaModelReference> getNotImportRefrences() {
+        Collection<SchemaModelReference> refs = new ArrayList<SchemaModelReference>();
+        Schema schema = getSchema();
+        if (schema != null) {
+            refs.addAll(schema.getRedefines());
+            refs.addAll(schema.getIncludes());
         }
-        //
-        // If the current model has empty target namespace, then it can be included anywhere
-        // If the current model has not empty target namespace, then it can be included only
-        // to models with the same target namespace.
-        String myTargetNs = this.getSchema().getTargetNamespace();
-        if (myTargetNs != null && !soughtNs.equals(myTargetNs)) {
-            return Collections.EMPTY_SET;
-        }
-        //
-        // The map collects all inclusion between schema models
-        // Key is including schema, value is the list of included schema
-        MultivalueMap.Graph<SchemaModelImpl> inclusionGraph =
-                new MultivalueMap.Graph<SchemaModelImpl>();
-        //
-        // Key is included schema, value is the list of including schema
-        MultivalueMap.Graph<SchemaModelImpl> backInclusionMap =
-                new MultivalueMap.Graph<SchemaModelImpl>();
-        //
-        // Populates inclusion map from all schema models, which have already loaded.
-        List<SchemaModel> modelsList = SchemaModelFactory.getDefault().getModels();
-        for(SchemaModel sModel: modelsList) {
-            if(sModel == null || sModel.getSchema() == null || sModel == this) {
-                continue;
-            }
-            //
-            Schema otherSchema = sModel.getSchema();
-            if (otherSchema == null) {
-                continue;
-            }
-            //
-            if (soughtNs != null) {
-                String otherTargetNs = otherSchema.getTargetNamespace();
-                if (otherTargetNs != null && !soughtNs.equals(otherTargetNs)) {
-                    // Skip all other models with different targetNamespace.
-                    continue;
-                }
-            }
-            //
-            assert sModel instanceof SchemaModelImpl;
-            SchemaModelImpl otherSModel = SchemaModelImpl.class.cast(sModel);
-            //
-            Collection<Include> includes = otherSchema.getIncludes();
-            for(Include ref: includes) {
-                SchemaModelImpl includedSm = otherSModel.resolve(ref);
-                if (includedSm != null) {
-                    inclusionGraph.put(otherSModel, includedSm);
-                    backInclusionMap.put(includedSm, otherSModel);
-                }
-            }
-        }
-        //
-        // Now there is forward and back inclusion graphs.
-        if (inclusionGraph.isEmpty()) {
-            return Collections.EMPTY_SET;
-        }
-        //
-        // Look for the roots of inclusion.
-        // Root s the top schema model, which includes current schema recursively,
-        // but isn't included anywhere itself.
-        Set<SchemaModelImpl> inclusionRoots = 
-                MultivalueMap.Utils.getTreeLeafs(backInclusionMap, this);
-        //
-        HashSet<SchemaModelImpl> result = new HashSet<SchemaModelImpl>();
-        for (SchemaModelImpl root : inclusionRoots) {
-            // The namespace of the inclusion root has to be exectly the same
-            // as required.
-            if (Util.equal(root.getSchema().getTargetNamespace(), soughtNs)) {
-                MultivalueMap.Utils.populateAllSubItems(inclusionGraph, root, result);
-            }
-        }
-        //
-        result.remove(this);
-        //
-        return result;
+        return refs;
     }
-            
+
     public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
         return new FindGlobalReferenceVisitor<T>().find(type, localName, getSchema());
     }

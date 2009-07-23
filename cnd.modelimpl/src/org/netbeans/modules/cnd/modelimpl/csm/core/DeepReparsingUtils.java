@@ -391,6 +391,7 @@ public final class DeepReparsingUtils {
     private static void invalidateFileAndPreprocState(final ProjectBase project, final CsmFile parent) {
         if (parent.getProject() == project) {
             FileImpl parentImpl = (FileImpl) parent;
+            parentImpl.clearStateCache();
             project.invalidatePreprocState(parentImpl.getBuffer().getFile());
             parentImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -404,6 +405,7 @@ public final class DeepReparsingUtils {
             CsmProject project = parent.getProject();
             if (project instanceof ProjectBase) {
                 FileImpl parentImpl = (FileImpl) parent;
+                parentImpl.clearStateCache();
                 ((ProjectBase) project).invalidatePreprocState(parentImpl.getBuffer().getFile());
                 parentImpl.markReparseNeeded(false);
                 if (TraceFlags.USE_DEEP_REPARSING_TRACE) {

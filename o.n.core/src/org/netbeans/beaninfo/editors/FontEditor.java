@@ -153,6 +153,10 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public void paintValue (Graphics g, Rectangle rectangle) {
+        paintText(g, rectangle, fontName == null ? "null" : fontName); //NOI18N
+    }
+
+    private void paintText (Graphics g, Rectangle rectangle, String text) {
         Font originalFont = g.getFont ();
         
         // Fix of 21713, set default value
@@ -172,7 +176,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             fm = g.getFontMetrics (paintFont);
         }
         g.setFont (paintFont);
-        g.drawString (NbBundle.getMessage(FontEditor.class, "MSG_Preview"), // NOI18N
+        g.drawString (text,
                       rectangle.x,
                       rectangle.y + (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
         g.setFont (originalFont);
@@ -423,8 +427,11 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
                 @Override
                 public void paint (Graphics g) {
-                    //          super.paint (g);
-                    FontEditor.this.paintValue (g, new Rectangle (0, 0, this.getSize().width - 1, this.getSize().height - 1));
+                    FontEditor.this.paintText(
+                        g,
+                        new Rectangle (0, 0, this.getSize().width - 1, this.getSize().height - 1),
+                        NbBundle.getMessage(FontEditor.class, "MSG_Preview") // NOI18N
+                    );
                 }
             };
             p.add ("Center", pp); // NOI18N

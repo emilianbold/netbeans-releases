@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -297,16 +296,11 @@ public final class DLightCPUToolConfigurationProvider
             }
         }
 
-        public void tick() {
+        public void tick(float[] data, Map<String, String> details) {
             ++seconds;
-        }
-
-        public float[] getGraphData() {
-            return new float[]{sys, usr};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.singletonMap(TIME_DETAIL_ID, formatTime(seconds));
+            data[0] = sys;
+            data[1] = usr;
+            details.put(TIME_DETAIL_ID, formatTime(seconds));
         }
     }
 
