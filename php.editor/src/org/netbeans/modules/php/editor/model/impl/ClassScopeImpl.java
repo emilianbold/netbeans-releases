@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.ArrayList;
@@ -174,29 +173,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
 
 
     public Collection<? extends MethodScope> getInheritedMethods() {
-        Set<MethodScope> allMethods = new HashSet<MethodScope>();
-        IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
-        PHPIndex index = indexScopeImpl.getIndex();
-        ClassScope clz = ModelUtils.getFirst(getSuperClasses());
-        List<InterfaceScope> interfaces = new ArrayList<InterfaceScope>();
-        interfaces.addAll(getSuperInterfaces());
-        while(clz != null) {
-            Collection<IndexedFunction> indexedFunctions = index.getMethods(null, clz.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-            for (IndexedFunction indexedFunction : indexedFunctions) {
-                allMethods.add(new MethodScopeImpl((ClassScopeImpl) clz, indexedFunction, PhpKind.METHOD));
-            }
-            interfaces.addAll(clz.getSuperInterfaces());
-            ClassScope clzz = ModelUtils.getFirst(clz.getSuperClasses());
-            if (clzz != null && clzz.getName().equals(clz.getName())) {
-                break;
-            }
-            clz = clzz;
-        }
-
-        for (InterfaceScope ifaceScope : interfaces) {
-            allMethods.addAll(ifaceScope.getMethods());
-        }
-        return allMethods;
+        return findInheritedMethods("");//NOI18N
     }
 
     @Override
@@ -295,10 +272,24 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope {
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getSuperClassName()).append(";");//NOI18N
+        final String superClassName = getSuperClassName();
+        if (superClassName != null) {
+            sb.append(superClassName);
+        }
+        sb.append(";");//NOI18N
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(";");//NOI18N
+        List<? extends String> superInterfaceNames = getSuperInterfaceNames();
+        StringBuilder ifaceSb = new StringBuilder();
+        for (String iface : superInterfaceNames) {
+            if (ifaceSb.length() > 0) {
+                ifaceSb.append(",");//NOI18N
+            }
+            ifaceSb.append(iface);//NOI18N
+        }
+        sb.append(ifaceSb);
+        sb.append(";");//NOI18N
         //TODO: add ifaces
         return sb.toString();
     }
