@@ -38,72 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.j2ee.dd.api.web;
+package org.netbeans.modules.web.beans.xdm.model;
 
 import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
-import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
-import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
-import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
-import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
-import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
-import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
-import org.openide.filesystems.FileObject;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.beans.xml.BeansElement;
+import org.netbeans.modules.web.beans.xml.Deploy;
+import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.WebBeansModel;
+
 
 /**
- * Interface for access metadata for web application.
- * @author Petr Slechta
+ * @author ads
+ *
  */
-public interface WebAppMetadata {
+public class SyncUpdateTest extends NbTestCase {
 
-    /**
-     * @return object model of main web.xml deployment descriptor. Returns null
-     * if web.xml is not present.
-     */
-    WebApp getRoot();
+    public SyncUpdateTest( String name ) {
+        super(name);
+    }
 
-    /**
-     * @return list of object models for web-fragment.xml deployment descriptors.
-     * Never returns null.
-     */
-    List<WebFragment> getFragments();
-
-    List<FileObject> getFragmentFiles();
-
-    /**
-     * @return list of objects that hold information about servlets (information
-     * aggregated from web.xml file, web-fragment.xml files, and annotations).
-     * Never returns null.
-     */
-    List<ServletInfo> getServlets();
-
-    /**
-     * @return list of objects that hold information about filters (information
-     * aggregated from web.xml file, web-fragment.xml files, and annotations).
-     * Never returns null.
-     */
-    List<FilterInfo> getFilters();
-
-    /**
-     * @return list of all defined security roles
-     */
-    List<String> getSecurityRoles();
-
-    List<ResourceRef> getResourceRefs();
-
-    List<ResourceEnvRef> getResourceEnvRefs();
-
-    List<EnvEntry> getEnvEntries();
-
-    List<MessageDestinationRef> getMessageDestinationRefs();
-
-    List<ServiceRef> getServiceRefs();
-
-    List<EjbLocalRef> getEjbLocalRefs();
-
-    List<EjbRef> getEjbRefs();
-
+    public void testDeploy() throws Exception{
+        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
+        
+        Util.setDocumentContentTo(model, "deploy-beans.xml");
+        
+        List<BeansElement> elements = model.getBeans().getElements();
+        assertEquals( 2 ,  elements.size());
+        
+        List<Type> types = ((Deploy)elements.get(1 )).getTypes();
+        assertEquals( 1,  types.size());
+    }
+    
+    public void testType() throws Exception{
+        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
+        
+        Util.setDocumentContentTo(model, "type-beans.xml");
+        
+        List<BeansElement> elements = model.getBeans().getElements();
+        assertEquals( 1 ,  elements.size());
+        
+        List<Type> types = (model.getBeans().getChildren(Deploy.class).get(0)).getTypes();
+        assertEquals( 2,  types.size());
+        
+        boolean type1Found = false;
+        boolean type2Found = false;
+        for (Type type : types) {
+            String text = type.getText();
+            if ( text.equals("type1")){
+                type1Found = true;
+            }
+            else if ( text.equals( "type2")){
+                type2Found = true;
+            }
+        }
+        
+        assertTrue( "Type with 'type1' value is not found",  type1Found );
+        assertTrue( "Type with 'type2' value is not found",  type2Found );
+    }
 }

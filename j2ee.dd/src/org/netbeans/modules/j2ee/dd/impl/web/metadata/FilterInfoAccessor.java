@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.web.beans.xml.WebBeansModel;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
+package org.netbeans.modules.j2ee.dd.impl.web.metadata;
 
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
+import org.openide.util.Exceptions;
 
 /**
- * @author ads
- *
+ * @author Petr Slechta
  */
-public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
-    
-    private WebBeansModelFactory(){
-    }
-    
-    public static WebBeansModelFactory getInstance(){
-        return INSTANCE;
+public abstract class FilterInfoAccessor {
+
+    private static volatile FilterInfoAccessor accessor;
+
+    public static void setDefault(FilterInfoAccessor accessor) {
+        if (FilterInfoAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        FilterInfoAccessor.accessor = accessor;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.AbstractModelFactory#createModel(org.netbeans.modules.xml.xam.ModelSource)
-     */
-    @Override
-    public WebBeansModel createModel( ModelSource modelSource ) {
-        return new WebBeansModelImpl( modelSource );
-    }
-    
-    public WebBeansModel getModel(ModelSource source) {
-        return (WebBeansModel) super.getModel(source);
-    }
-    
-    private static final WebBeansModelFactory INSTANCE = new WebBeansModelFactory();
+    public static FilterInfoAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
 
+        Class c = FilterInfo.class;
+        try {
+            Class.forName(c.getName(), true, FilterInfoAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException cnf) {
+            Exceptions.printStackTrace(cnf);
+        }
+
+        return accessor;
+    }
+
+    public abstract FilterInfo createFilterInfo(String name, String filterClass, List<String> urlPatterns);
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.xml.impl;
 
-import org.netbeans.modules.web.beans.xml.WebBeansModel;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
+package org.netbeans.modules.j2ee.dd.api.web.model;
 
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.j2ee.dd.impl.web.metadata.FilterInfoAccessor;
 
 /**
- * @author ads
- *
+ * Data object that holds information about filter.
+ * @author Petr Slechta
  */
-public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
-    
-    private WebBeansModelFactory(){
+public class FilterInfo {
+
+    private final String name;
+    private final String filterClass;
+    private final List<String> urlPatterns;
+
+    static {
+        FilterInfoAccessor.setDefault(new FilterInfoAccessor() {
+
+            @Override
+            public FilterInfo createFilterInfo(String name, String servletClass, List<String> urlPatterns) {
+                return new FilterInfo(name, servletClass, urlPatterns);
+            }
+        });
     }
     
-    public static WebBeansModelFactory getInstance(){
-        return INSTANCE;
+    private FilterInfo(String name, String filterClass, List<String> urlPatterns) {
+        this.name = name;
+        this.filterClass = filterClass;
+        this.urlPatterns = urlPatterns;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.AbstractModelFactory#createModel(org.netbeans.modules.xml.xam.ModelSource)
+    /**
+     * @return name of the servlet
      */
-    @Override
-    public WebBeansModel createModel( ModelSource modelSource ) {
-        return new WebBeansModelImpl( modelSource );
+    public String getName() {
+        return name;
     }
-    
-    public WebBeansModel getModel(ModelSource source) {
-        return (WebBeansModel) super.getModel(source);
+
+    /**
+     * @return class that implements the servlet
+     */
+    public String getFilterClass() {
+        return filterClass;
     }
-    
-    private static final WebBeansModelFactory INSTANCE = new WebBeansModelFactory();
+
+    /**
+     * @return URL patterns that are associated with the servlet
+     */
+    public List<String> getUrlPatterns() {
+        return Collections.unmodifiableList(urlPatterns);
+    }
 
 }

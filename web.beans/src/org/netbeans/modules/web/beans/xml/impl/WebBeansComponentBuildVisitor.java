@@ -100,9 +100,10 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
             return null;
         }
         if ( context == null ){
-            return new BeansImpl( getModel() );
+            return new BeansImpl( getModel() , element );
         }
         else {
+            myElement = element;
             context.accept( this );
         }
         return myResult;

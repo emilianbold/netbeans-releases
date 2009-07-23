@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.web.jsf.editor.jspel;
 
-import java.awt.Component;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.web.core.syntax.completion.ElCompletionItem;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.openide.util.ImageUtilities;
 
@@ -52,7 +52,7 @@ import org.openide.util.ImageUtilities;
  */
 public class JSFResultItem {
 
-    public static class JSFBean extends JspCompletionItem.ELBean {
+    public static class JSFBean extends ElCompletionItem.ELBean {
 
         private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/jsf_bean_16.png";  //NOI18N
 
@@ -71,7 +71,7 @@ public class JSFResultItem {
         }
     }
 
-    public static class JSFMethod extends JspCompletionItem.ELBean {
+    public static class JSFMethod extends ElCompletionItem.ELBean {
 
         private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/method_16.png";      //NOI18N
 
@@ -85,7 +85,7 @@ public class JSFResultItem {
         }
     }
 
-    public static class JSFResourceBundle extends JspCompletionItem.ELBean {
+    public static class JSFResourceBundle extends ElCompletionItem.ELBean {
 
         private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesLocale.gif";  //NOI18N
 
