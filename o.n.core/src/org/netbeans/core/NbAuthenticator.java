@@ -72,6 +72,9 @@ final class NbAuthenticator extends java.net.Authenticator {
             return new java.net.PasswordAuthentication(ProxySettings.getAuthenticationUsername(), ProxySettings.getAuthenticationPassword());
         } else {
             if (System.currentTimeMillis() - lastTry > TIMEOUT) {
+                if (getRequestingProtocol().startsWith("SOCKS")&&(ProxySettings.getAuthenticationUsername().length()>0)) { //NOI18N
+                    return new java.net.PasswordAuthentication(ProxySettings.getAuthenticationUsername(), ProxySettings.getAuthenticationPassword());
+                }
                 NbAuthenticatorPanel ui = new NbAuthenticatorPanel(getRequestingPrompt());
                 Object result = DialogDisplayer.getDefault().notify(
                         new DialogDescriptor(ui, NbBundle.getMessage(NbAuthenticator.class, "CTL_Authentication"))); //NOI18N
