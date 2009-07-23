@@ -1137,8 +1137,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         btAsBrowse = new javax.swing.JButton();
         btFortranBrowse.addActionListener(this);
         lbFamilyValue = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        lbQMakePath = new javax.swing.JLabel();
+        lbCMakePath = new javax.swing.JLabel();
         tfQMakePath = new javax.swing.JTextField();
         tfQMakePath.getDocument().putProperty(Document.TitleProperty, QMAKE_NAME);
         tfQMakePath.getDocument().addDocumentListener(this);
@@ -1687,23 +1687,23 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         add(lbFamilyValue, gridBagConstraints);
 
-        jLabel1.setLabelFor(tfQMakePath);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_QMakeCommand")); // NOI18N
+        lbQMakePath.setLabelFor(tfQMakePath);
+        lbQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_QMakeCommand")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(jLabel1, gridBagConstraints);
+        add(lbQMakePath, gridBagConstraints);
 
-        jLabel2.setLabelFor(tfCMakePath);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_CMakeCommand")); // NOI18N
+        lbCMakePath.setLabelFor(tfCMakePath);
+        lbCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_CMakeCommand")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(jLabel2, gridBagConstraints);
+        add(lbCMakePath, gridBagConstraints);
 
         tfQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfQMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1721,7 +1721,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(tfCMakePath, gridBagConstraints);
 
@@ -1749,7 +1749,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btCMakeBrowse, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
@@ -2052,11 +2052,10 @@ private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
     private javax.swing.JCheckBox cbMakeRequired;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lbAsCommand;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
+    private javax.swing.JLabel lbCMakePath;
     private javax.swing.JLabel lbCppCommand;
     private javax.swing.JLabel lbDevHost;
     private javax.swing.JLabel lbFamily;
@@ -2064,6 +2063,7 @@ private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JLabel lbFortranCommand;
     private javax.swing.JLabel lbGdbCommand;
     private javax.swing.JLabel lbMakeCommand;
+    private javax.swing.JLabel lbQMakePath;
     private javax.swing.JLabel lbToolCollections;
     private javax.swing.JLabel lblErrors;
     private javax.swing.JList lstDirlist;
