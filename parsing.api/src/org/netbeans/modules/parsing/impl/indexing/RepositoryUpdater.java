@@ -1286,56 +1286,60 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     return false;
                 }
 
-                final URL url = dirty.getURL();
-                if (url == null) {
-                    continue;
-                }
-                final FileObject fileObject = URLMapper.findFileObject(url);
-                if (fileObject == null) {
-                    continue;
-                }
+                Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> infos = IndexerCache.getEifCache().getIndexersFor(dirty.getMimeType());
+                if (infos.size() > 0) {
+                    final URL url = dirty.getURL();
+                    if (url == null) {
+                        continue;
+                    }
 
-                Source src = Source.create(fileObject);
-                try {
-                    ParserManager.parse(Collections.singleton(src), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            final String mimeType = resultIterator.getSnapshot().getMimeType();
-                            final Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> infos = IndexerCache.getEifCache().getIndexersFor(mimeType);
+                    final FileObject fileObject = URLMapper.findFileObject(url);
+                    if (fileObject == null) {
+                        continue;
+                    }
 
-                            for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
-                                EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
-                                if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
-                                }
+                    Source src = Source.create(fileObject);
+                    try {
+                        ParserManager.parse(Collections.singleton(src), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                final String mimeType = resultIterator.getSnapshot().getMimeType();
+                                final Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> infos = IndexerCache.getEifCache().getIndexersFor(mimeType);
 
-                                final Parser.Result pr = resultIterator.getParserResult();
-                                if (pr != null) {
-                                    final String indexerName = indexerFactory.getIndexerName();
-                                    final int indexerVersion = indexerFactory.getIndexVersion();
-                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
-                                    transactionContexts.add(context);
+                                for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
+                                    EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
+                                    if (LOGGER.isLoggable(Level.FINE)) {
+                                        LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
+                                    }
 
-                                    final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
-                                    if (indexer != null) {
-                                        try {
-                                            SPIAccessor.getInstance().index(indexer, dirty, pr, context);
-                                        } catch (ThreadDeath td) {
-                                            throw td;
-                                        } catch (Throwable t) {
-                                            LOGGER.log(Level.WARNING, null, t);
+                                    final Parser.Result pr = resultIterator.getParserResult();
+                                    if (pr != null) {
+                                        final String indexerName = indexerFactory.getIndexerName();
+                                        final int indexerVersion = indexerFactory.getIndexVersion();
+                                        final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, false, sourceForBinaryRoot, null);
+                                        transactionContexts.add(context);
+
+                                        final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
+                                        if (indexer != null) {
+                                            try {
+                                                SPIAccessor.getInstance().index(indexer, dirty, pr, context);
+                                            } catch (ThreadDeath td) {
+                                                throw td;
+                                            } catch (Throwable t) {
+                                                LOGGER.log(Level.WARNING, null, t);
+                                            }
                                         }
                                     }
-                                }
 
-                                for (Embedding embedding : resultIterator.getEmbeddings()) {
-                                    run(resultIterator.getResultIterator(embedding));
+                                    for (Embedding embedding : resultIterator.getEmbeddings()) {
+                                        run(resultIterator.getResultIterator(embedding));
+                                    }
                                 }
                             }
-                        }
-                    });
-                } catch (final ParseException e) {
-                    LOGGER.log(Level.WARNING, null, e);
+                        });
+                    } catch (final ParseException e) {
+                        LOGGER.log(Level.WARNING, null, e);
+                    }
                 }
             }
 
