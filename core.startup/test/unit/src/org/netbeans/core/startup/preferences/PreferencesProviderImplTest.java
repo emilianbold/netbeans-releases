@@ -42,7 +42,6 @@
 package org.netbeans.core.startup.preferences;
 
 import java.util.prefs.Preferences;
-import org.netbeans.junit.NbTestCase;
 
 /**
  *

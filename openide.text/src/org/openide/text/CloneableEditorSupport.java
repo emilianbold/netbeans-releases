@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.text;
 
 import java.awt.Component;
@@ -2120,17 +2121,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
     }
-
-    private StringBuffer sb;
-
-    String getLog () {
-        if (sb != null) {
-            return sb.toString();
-        } else {
-            return "";
-        }
-    }
-
+    
     /** Is called under getLock () to close the document.
      */
     private boolean doCloseDocument() {
@@ -2155,19 +2146,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         fireEvent = true;
         setDoc(null, false);
         kit = null;
-        
-        if (sb == null) {
-            sb = new StringBuffer(1024);
-        }
-        sb.append("\n++ [" + Integer.toHexString(System.identityHashCode(this)) + "]"
-        + " CES.doCloseDocument"
-        + " kit SET to null"
-        + " Thread:[" + Thread.currentThread().getName() + "]");
-        Exception ex = new Exception();
-        StringWriter sw = new StringWriter(500);
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        sb.append("\n" + sw.toString());
         
         getUndoRedo().discardAllEdits();
         updateLineSet(true);

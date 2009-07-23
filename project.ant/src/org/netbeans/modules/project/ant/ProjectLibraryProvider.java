@@ -690,7 +690,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
         
         public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
-            if (path.equals(getContent(volumeType))) {
+            if (path.equals(contents.get(volumeType))) {
                 return;
             }
             contents.put(volumeType, new ArrayList<URI>(path));
@@ -756,7 +756,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     }
 
     private static void replaceProperty(File propfile, boolean classPathLikeValue, String key, String... value) throws IOException {
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(true);
         if (propfile.isFile()) {
             InputStream is = new FileInputStream(propfile);
             try {
@@ -808,11 +808,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             }
         }
 
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             return obj instanceof ProjectLibraryArea && ((ProjectLibraryArea) obj).mainPropertiesFile.equals(mainPropertiesFile);
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             return mainPropertiesFile.hashCode();
         }
 
