@@ -57,6 +57,8 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl.ParallelAdviserIndicatorConfiguration;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.openide.util.NbBundle;
@@ -69,15 +71,23 @@ import org.openide.util.NbBundle;
 public final class DLightParallelAdviserToolConfigurationProvider
         implements DLightToolConfigurationProvider {
 
-    public static final int INDICATOR_POSITION = 100000;
     private static final String TOOL_NAME = loc("ParallelAdviserMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ParallelAdviserMonitorTool.DetailedToolName"); // NOI18N
+    // This indicator should be the last one
+    public static final int INDICATOR_POSITION = 100000;
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
         toolConfiguration.setIcon("/org/netbeans/modules/dlight/paralleladviser/resouces/notification.png"); // NOI18N
 
+        // Collectors
+        // SunStudio
+        SunStudioDCConfiguration ssCollectorConfig =
+                new SunStudioDCConfiguration(CollectedInfo.FUNCTIONS_LIST);
+        toolConfiguration.addDataCollectorConfiguration(ssCollectorConfig);
+
+        // Indicator
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -50,60 +50,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
+package org.netbeans.modules.cnd.paralleladviser.api;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.openide.util.Lookup;
 
 /**
- * Action which shows Parallel Adviser component.
+ * Parallel Adviser API.
  *
  * @author Nick Krasilnikov
  */
-public class ParallelAdviserViewAction extends CallableSystemAction {
+public class ParallelAdviser {
 
-    public ParallelAdviserViewAction() {
+    /**
+     * Constructor.
+     */
+    private ParallelAdviser() {
     }
 
-    @Override
-    public void actionPerformed(ActionEvent evt) {
-        performAction();
+    /** Static method to obtain the provider.
+     * @return the provider
+     */
+    private static synchronized Collection<? extends ParallelAdviserTipsProvider> getParallelAdviserTipsProviders() {
+        return Lookup.getDefault().lookupAll(ParallelAdviserTipsProvider.class);
     }
 
-    @Override
-    protected String iconResource() {
-        return ParallelAdviserTopComponent.ICON_PATH;
-    }
-
-    public void performAction() {
-        ParallelAdviserTopComponent win = ParallelAdviserTopComponent.findInstance();
-        win.updateTips();
-        if(!win.isOpened()) {
-            win.open();
+    /**
+     * Collects tips from providers
+     *
+     * @return - tips
+     */
+    public static Collection<Advice> getTips() {
+        Collection<Advice> tips = new ArrayList<Advice>();
+        for (ParallelAdviserTipsProvider provider : getParallelAdviserTipsProviders()) {
+            tips.addAll(provider.getTips());
         }
-        win.requestActive();
+        return tips;
     }
-
-    public String getName() {
-        return NbBundle.getMessage(ParallelAdviserViewAction.class, "CTL_ParallelAdviserAction"); // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return CsmUtilities.isAnyNativeProjectOpened();
-    }
-
-    @Override
-    protected boolean asynchronous () {
-        return false;
-    }
-    
 }
