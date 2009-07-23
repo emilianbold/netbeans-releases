@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
@@ -131,14 +130,8 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         public void addDataRow(DataRow row) {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
-        public void tick() {
+        public void tick(float[] data, Map<String,String> details) {
             //throw new UnsupportedOperationException("Not supported yet.");
-        }
-        public float[] getGraphData() {
-            return new float[] {50};
-        }
-        public Map<String, String> getDetails() {
-            return Collections.emptyMap();
         }
     }
 }
