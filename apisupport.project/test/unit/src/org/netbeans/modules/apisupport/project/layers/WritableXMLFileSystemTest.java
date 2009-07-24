@@ -410,7 +410,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("Literal value is returned prefixed with bundle", "bundle:org.netbeans.modules.apisupport.project.layers#AHOJ", lit);
 
         Object value = x.getAttribute("bv");
-        // not working:
+        // not working, localized attrs implemented only in merged layer FS, see BadgingSupport:
         //assertEquals("value is returned localized", "Hello", value);
         // currently returns null:
         assertNull("Current behaviour. Improve. XXX", value);
@@ -457,7 +457,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("Literal value is returned prefixed with bundle", "bundle:org.netbeans.modules.apisupport.project.layers#AHOJ", lit);
 
         Object value = x.getAttribute("bv");
-        // not working:
+        // not working, localized attrs implemented only in merged layer FS, see BadgingSupport:
         //assertEquals("value is returned localized", "Hello", value);
         // currently returns null:
         assertNull("Current behaviour. Improve. XXX", value);
