@@ -130,6 +130,13 @@ public class ThreadsDataManager {
     /**
      * Returns the timestamp representing end time of collecting threadData (timestamp of last valid threadData record).
      */
+    public synchronized long getEndTimeStump() {
+        return endTime;
+    }
+
+    /**
+     * Returns the timestamp representing end time of collecting threadData (timestamp of last valid threadData record).
+     */
     public synchronized long getEndTime() {
         return ThreadStateColumnImpl.timeStampToMilliSeconds(endTime);
     }
