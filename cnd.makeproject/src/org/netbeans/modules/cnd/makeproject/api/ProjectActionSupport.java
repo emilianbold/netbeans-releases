@@ -331,15 +331,19 @@ public class ProjectActionSupport {
                     progressHandle.finish();
                     return;
                 }
+                boolean foundFactory = false;
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
                         handler.execute(ioTab);
+                        foundFactory = true;
                         break;
                     }
                 }
-
+                if (!foundFactory) {
+                    progressHandle.finish();
+                }
             }
 
         }

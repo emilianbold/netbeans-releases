@@ -153,10 +153,10 @@ do
 	then
 	    line="$line;dmake"
 	fi
-        gdb=$(type -p gdb)
-        if [ -n "$gdb" ]
+        dbx=$(type -p dbx)
+        if [ -n "$dbx" ]
         then
-            line="$line;gdb=$gdb"
+            line="$line;dbx=$dbx"
         fi
     elif [ -x "$f/gcc" -o -x "$f/g++" ]
     then
