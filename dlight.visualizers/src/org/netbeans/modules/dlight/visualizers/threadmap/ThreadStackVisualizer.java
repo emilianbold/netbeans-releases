@@ -40,103 +40,118 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.BorderLayout;
-import java.util.List;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
-import org.netbeans.modules.dlight.api.stack.StackTrace;
+import org.netbeans.modules.dlight.api.stack.FunctionCall;
+import org.netbeans.modules.dlight.api.stack.OpenInEditor;
+import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
+import org.netbeans.modules.dlight.api.stack.StackTraceColumn;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateColumn;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
-import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStateColumnImpl.StateResources;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadStateResources;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
 public class ThreadStackVisualizer extends JPanel implements Visualizer<VisualizerConfiguration> {
-    private final long time;
-    private final ThreadsDataManager manager;
-    private final ThreadStateColumn stateCol;
-    private final ThreadState state;
-    private final String threadName;
-    private final boolean isFullMode;
-    private final int detailedState;
-    private final List<Integer> filteredThreads;
-    private final int index;
-    private final int row;
+    private final StackTraceColumn descriptor;
 
-    ThreadStackVisualizer(ThreadsDataManager manager, int row, int index, List<Integer> filteredThreads, boolean isFullMode, int detailedState) {
-        this.manager = manager;
-        this.index = index;
-        this.row = row;
-        stateCol = manager.getThreadData(row);
-        state = stateCol.getThreadStateAt(index);
-        threadName = manager.getThreadName(row);
-        time = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp()) - manager.getStartTime();
-        this.isFullMode = isFullMode;
-        this.detailedState = detailedState;
-        this.filteredThreads = filteredThreads;
+    ThreadStackVisualizer(StackTraceColumn descriptor) {
+        this.descriptor = descriptor;
         init();
     }
 
     @Override
     public String getName(){
-        return threadName;
+        if (descriptor.getStacks().size() > 0) {
+            return descriptor.getStacks().get(0).getThreadInfo().getThreadName();
+        }
+        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetailes"); //NOI18N
     }
 
-    private void init(){
+    private void init() {
         setLayout(new BorderLayout());
         JScrollPane pane = new JScrollPane();
         add(pane, BorderLayout.CENTER);
-        StringBuilder buf = new StringBuilder();
-        buf.append("<html>");// NOI18N
-        buf.append("Time ");// NOI18N
-        buf.append(TimeLineUtils.getMillisValue(time));
-        printStack(buf, state, threadName);
-        for(Integer i : filteredThreads){
-            if (i.intValue() != row) {
-                ThreadStateColumnImpl col = manager.getThreadData(i.intValue());
-                if (index < col.size()) {
-                    printStack(buf, col.getThreadStateAt(index), col.getName());
-                }
+        JPanel panel = new JPanel();
+        panel.setBackground(new JTextPane().getBackground());
+        panel.setLayout(new GridBagLayout());
+        pane.setViewportView(panel);
+        int y = 0;
+        long time = descriptor.getTime();
+        String timeString = TimeLineUtils.getMillisValue(time);
+        if (descriptor.getStacks().size() > 0) {
+            String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
+            panel.add(new JLabel(message),
+                    new GridBagConstraints(0, y,
+                                1, 1,
+                                1., 0.,
+                                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
+                                new Insets(10, 10, 0, 0), 0, 0));
+            for(Stack stack : descriptor.getStacks()){
+                y = addThread(panel, y, stack);
             }
+        } else {
+            String message = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerNoStackAt", timeString); //NOI18N
+            panel.add(new JLabel(message), // NOI18N
+                new GridBagConstraints(0, y,
+                            1, 1,
+                            1., 0.,
+                            GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
+                            new Insets(10, 10, 0, 0), 0, 0));
         }
-        buf.append("</html>");// NOI18N
-        pane.setViewportView(new JLabel(buf.toString()));
     }
 
-    private void printStack(StringBuilder buf, ThreadState aState, String aThreadName) {
-        StackTrace stack; // = state.getSamplingStackTrace();
-        buf.append("<p>"); // NOI18N
-        StateResources res = ThreadStateColumnImpl.getThreadStateResources(aState.getMSAState(aState.getSamplingStateIndex(isFullMode), isFullMode));
+    private int addThread(JPanel panel, int y, Stack stack){
+        MSAState msa = stack.getState();
+        ThreadStateResources res = ThreadStateResources.forState(msa);
         if (res != null) {
-            buf.append("<font bgcolor=#"); // NOI18N
-            buf.append(Integer.toHexString(res.color.getRed()));
-            buf.append(Integer.toHexString(res.color.getGreen()));
-            buf.append(Integer.toHexString(res.color.getBlue()));
-            buf.append(">&nbsp;&nbsp;"); // NOI18N
-            buf.append("</font>"); // NOI18N
+            y++;
+            panel.add(new JLabel(res.name+" "+stack.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), JLabel.LEFT), // NOI18N
+                    new GridBagConstraints(0, y,
+                                1, 1,
+                                0., 0.,
+                                GridBagConstraints.WEST, GridBagConstraints.NONE,
+                                new Insets(10, 20, 0, 0), 0, 0));
+            return addStack(panel, y, stack);
         }
-        buf.append(" "); // NOI18N
-        buf.append(aState.getMSAState(aState.getSamplingStateIndex(isFullMode), isFullMode).name());
-        buf.append(" "); // NOI18N
-        buf.append(aThreadName);
-        for (int i = 0; i < 5; i++) {
-            buf.append("<p>"); // NOI18N
-            buf.append("&nbsp;&nbsp;"); // NOI18N
-            buf.append("<font color=blue>"); // NOI18N
-            buf.append("MyClass.Method" + i + "()"); // NOI18N
-            buf.append("</font>"); // NOI18N
-        }
+        return y;
     }
 
+    private int addStack(JPanel panel, int y, Stack stack) {
+        for(FunctionCall call : stack.getStack()) {
+            y++;
+            JButton button = new JButton(call.getDisplayedName());
+            button.setBorder(BorderFactory.createEmptyBorder());
+            button.setForeground(Color.blue);
+            panel.add(button,
+                new GridBagConstraints(0, y,
+                            1, 1,
+                            0., 0.,
+                            GridBagConstraints.WEST, GridBagConstraints.NONE,
+                            new Insets(0, 30, 0, 0), 0, 0));
+            button.setAction(new OpenAction(call));
+        }
+        return y;
+    }
 
     public VisualizerConfiguration getVisualizerConfiguration() {
         return new VisualizerConfiguration(){
@@ -161,5 +176,16 @@ public class ThreadStackVisualizer extends JPanel implements Visualizer<Visualiz
     }
 
     public void refresh() {
+    }
+
+    private static final class OpenAction extends AbstractAction {
+        private final FunctionCall call;
+        private OpenAction(FunctionCall call) {
+            this.call = call;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            OpenInEditor.open(call);
+        }
     }
 }

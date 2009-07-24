@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -52,6 +54,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 
 /**
  * 
@@ -61,13 +64,10 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
     public static class Factory extends TaskFactory {
 
-        //todo: limit the source of the html code somehow
-        //not all html code containg the facelets namespace should
-        //trigger the support?!?!
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if(mimeType.equals("text/html")) {
+            if (mimeType.equals("text/html")) { //NOI18N
                 return Collections.singletonList(new HtmlSourceTask());
             } else {
                 return Collections.EMPTY_LIST;
@@ -92,25 +92,31 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
-        Source source = result.getSnapshot().getSource();
-        //look for facelets fragments in the parser result
+        //process only xhtml content
+        if (result.getHtmlVersion().isXhtml()) {
+            Source source = result.getSnapshot().getSource();
+            Map<String, String> namespaces = result.getNamespaces();
 
-        //TODO: should also recognize namespaces of the child elements like
-        // <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets ...>
-        // for now we only check the root tag
-        Map<String, String> namespaces = result.getNamespaces();
-
-        for(String uri : namespaces.keySet()) {
-            if(JsfSupport.isJSFLibrary(uri)) {
-                JsfSupport jsfs = JsfSupport.findFor(source);
-                if(jsfs != null) {
-                    jsfs.face(result);
+            //search for a jsf library namespace and if found activate the JsfSupport
+            for (String uri : namespaces.keySet()) {
+                if (JsfSupport.isJSFLibrary(uri)) {
+                    JsfSupport.findFor(source);
+                    break;
                 }
             }
+
+            //enable EL support it this xhtml file
+            //TODO possibly add if(jsf_used()) { //enable el }
+            Document doc = result.getSnapshot().getSource().getDocument(true);
+            if (doc.getProperty(InputAttributes.class) == null) {
+                InputAttributes inputAttributes = new InputAttributes();
+                inputAttributes.setValue(HTMLTokenId.language(), "enable el", new Object(), false); //NOI18N
+                doc.putProperty(InputAttributes.class, inputAttributes);
+            }
+
         }
-        
+
 
     }
-
 }
 

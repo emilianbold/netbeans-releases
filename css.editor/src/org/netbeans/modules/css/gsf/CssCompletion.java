@@ -477,7 +477,7 @@ public class CssCompletion implements CodeCompletionHandler {
    
     @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        return new ElementHandle.UrlHandle(CssHelpResolver.HELP_URL + link);
+        return CssHelpResolver.getHelpZIPURL() == null ? null : new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURL() + link);
     }
     
     @Override

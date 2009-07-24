@@ -121,12 +121,10 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
     private static final Logger LOGGER = Logger.getLogger(JSFConfigComponentFactoryImpl.class.getName());
     
     private final JSFConfigModelImpl model;
-    private final CreateVisitor myCreateVisitor;
     
     /** Creates a new instance of JSFConfigComponentFactoruImpl */
     public JSFConfigComponentFactoryImpl(JSFConfigModelImpl model) {
         this.model = model;
-        myCreateVisitor = new CreateVisitor();
     }
     
     public JSFConfigComponent create(Element element, JSFConfigComponent context) {
@@ -137,7 +135,7 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
                 configComponent = new FacesConfigImpl(model, element);
             }
         } else {
-            configComponent = myCreateVisitor.create(element, context);
+            configComponent = new CreateVisitor().create(element, context);
         }
         return configComponent;
     }

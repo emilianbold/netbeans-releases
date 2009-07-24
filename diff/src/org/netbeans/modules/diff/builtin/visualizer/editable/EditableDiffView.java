@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.diff.builtin.visualizer.editable;
 
-import java.awt.Component;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -429,9 +428,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (editableCookie != null) {
             saveModifiedDocument();
             editableCookie.removePropertyChangeListener(this);
-            if (editableCookie.getOpenedPanes() == null) {
-                editableCookie.close();
-            }
         }
     }
 

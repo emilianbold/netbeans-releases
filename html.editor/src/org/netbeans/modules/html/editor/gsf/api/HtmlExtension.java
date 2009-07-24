@@ -83,8 +83,6 @@ public abstract class HtmlExtension {
     //completion
     public abstract List<CompletionItem> completeOpenTags(CompletionContext context);
 
-    public abstract List<CompletionItem> completeCloseTags(CompletionContext context);
-
     public abstract List<CompletionItem> completeAttributes(CompletionContext context);
 
     public abstract List<CompletionItem> completeAttributeValue(CompletionContext context);
@@ -98,24 +96,31 @@ public abstract class HtmlExtension {
 
         private int astoffset;
         private String preText;
+        private String itemText;
         private AstNode currentNode;
 
-        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText) {
-            this(result, originalOffset, astoffset, ccItemStartOffset, preText, null);
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText) {
+            this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, null);
         }
 
-
-        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, AstNode currentNode) {
+ 
+        public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode) {
             this.result = result;
             this.originalOffset = originalOffset;
             this.astoffset = astoffset;
             this.preText = preText;
             this.ccItemStartOffset = ccItemStartOffset;
             this.currentNode = currentNode;
+            this.itemText = itemText;
         }
 
         public String getPrefix() {
             return preText;
+        }
+
+        /** returns the whole word under cursor */
+        public String getItemText() {
+            return itemText;
         }
 
         public int getAstoffset() {

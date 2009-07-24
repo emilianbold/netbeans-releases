@@ -49,19 +49,28 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -69,12 +78,14 @@ import org.openide.util.NbPreferences;
  */
 @org.netbeans.spi.project.ProjectServiceProvider(projectType="org-netbeans-modules-maven", service=AuxiliaryProperties.class)
 public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener {
-    public static final String PROP_ENABLE = "enable";
     private final Project project;
 
     private Properties cache;
     private boolean recheck = true;
     private List<String> defaults = new ArrayList<String>();
+
+
+    private final RequestProcessor RP = new RequestProcessor("Download checkstyle plugin classpath", 1);
 
     public AuxPropsImpl(Project prj) {
         this.project = prj;
@@ -82,9 +93,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         defaults.add("config/maven_checks.xml");
         defaults.add("config/avalon_checks.xml");
         defaults.add("config/turbine_checks.xml");
-        if (NbPreferences.forModule(AuxPropsImpl.class).getBoolean(PROP_ENABLE, true)) {
-            NbMavenProject.addPropertyChangeListener(prj, this);
-        }
+        NbMavenProject.addPropertyChangeListener(prj, this);
     }
 
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
@@ -122,7 +131,6 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                     //sort of simplistic
                     return cache;
                 } else {
-                    //TODO we should also check the plugin's classpath for the file.
                     String loc = PluginPropertyUtils.getReportPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_CHECKSTYLE, "configLocation", null);
                     if (loc == null && definesCheckStyle(project)) {
                         loc = "config/sun_checks.xml"; //this is the default NOI18N
@@ -136,15 +144,40 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                         if (file != null && file.exists()) {
                             fo = copyToCacheDir(FileUtil.toFileObject(file));
                         } else {
-                            //try downloading url
-                            URL url = new URL(loc);
-                            fo = copyToCacheDir(url.openStream());
+                            List<File> deps = findDependencyArtifacts();
+                            if (deps.size() > 0) {
+                                for (File d : deps) {
+                                    FileObject fileFO = FileUtil.toFileObject(d);
+                                    if (FileUtil.isArchiveFile(fileFO)) {
+                                        FileObject root = FileUtil.getArchiveRoot(fileFO);
+                                        if (root != null) {
+                                            fo = root.getFileObject(loc);
+                                            if (fo != null) break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (fo == null) {
+                                final URL url = new URL(loc);
+                                RP.post(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            copyToCacheDir(url.openStream());
+                                            synchronized (AuxPropsImpl.this) {
+                                                recheck = true;
+                                            }
+                                        } catch (IOException ex) {
+                                            ex.printStackTrace();
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }
                 }
             }
             if (fo != null) {
-                return mc.convert(FileUtil.toFile(fo));
+                return mc.convert(fo.getInputStream());
             }
         } catch (IOException io) {
             Exceptions.printStackTrace(io);
@@ -171,9 +204,57 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         return false;
     }
 
+    /**
+     *
+     * @return list of files in local repository
+     */
+    private List<File> findDependencyArtifacts() {
+        List<File> cpFiles = new ArrayList<File>();
+        final NbMavenProject p = project.getLookup().lookup(NbMavenProject.class);
+        List<Plugin> plugins = p.getMavenProject().getBuildPlugins();
+        for (Plugin plug : plugins) {
+            if (Constants.PLUGIN_CHECKSTYLE.equals(plug.getArtifactId()) &&
+                    Constants.GROUP_APACHE_PLUGINS.equals(plug.getGroupId())) {
+                try {
+                    List<Dependency> deps = plug.getDependencies();
+                    final MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                    ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
+                    final MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
+                    for (Dependency d : deps) {
+                        final Artifact projectArtifact = artifactFactory.createArtifactWithClassifier(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getType(), d.getClassifier());
+                        String localPath = online.getLocalRepository().pathOf(projectArtifact);
+                        File f = FileUtil.normalizeFile(new File(online.getLocalRepository().getBasedir(), localPath));
+                        if (f.exists()) {
+                            cpFiles.add(f);
+                        } else {
+                            RP.post(new Runnable() {
+                                public void run() {
+                                    try {
+                                        //TODO add progress bar.
+                                        builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
+                                        synchronized (AuxPropsImpl.this) {
+                                            recheck = true;
+                                        }
+                                    } catch (ProjectBuildingException ex) {
+                                        ex.printStackTrace();
+//                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch (ComponentLookupException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return cpFiles;
+    }
+
     synchronized Properties getCache() {
         if (cache == null || recheck) {
-            if (NbPreferences.forModule(AuxPropsImpl.class).getBoolean(PROP_ENABLE, true)) {
+            String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+            if (enabled != null && Boolean.parseBoolean(enabled)) {
                 cache = convert();
             } else {
                 cache = new Properties();
@@ -184,6 +265,9 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     public String get(String key, boolean shared) {
+        if (Constants.HINT_CHECKSTYLE_FORMATTING.equals(key)) {
+            return null;
+        }
         if (shared) {
             return getCache().getProperty(key);
         }

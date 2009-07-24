@@ -100,7 +100,7 @@ public abstract class XTest extends JellyTestCase {
     /** Returns test's package name delimited by 'separator'. */
     protected String getPackageName(String separator) {
         String name = getPackageName();
-        name = org.openide.util.Utilities.replaceString(name, ".", separator);
+        name = name.replace(".", separator);
         return name;
     }
 

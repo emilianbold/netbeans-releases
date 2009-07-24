@@ -53,6 +53,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -137,13 +138,18 @@ public class ELExpression {
             }
             
             Token jspToken = jspTokenSequence.token();
+            //XXX uglyyy hack, the whole code must be reimplemented!!!
+            boolean inAttrValue = jspToken.id() == HTMLTokenId.VALUE &&
+                    (jspToken.text().charAt(0) == '\'' ||
+                    jspToken.text().charAt(0) == '"');
+
             isDefferedExecution = jspToken.text().toString().startsWith("#{"); //NOI18N
             
-            if (jspToken.id() == JspTokenId.EL){
-                if (offset == jspToken.offset(hi) + "${".length()){ //NOI18N
+//            if (jspToken.id() == JspTokenId.EL){
+                if (offset == (jspToken.offset(hi) + "${".length() + (inAttrValue ? 1 : 0))){ //NOI18N
                     return EL_START;
                 }
-            }
+//            }
             
             ts.move(offset);
             if (!ts.moveNext() && !ts.movePrevious()) {
@@ -439,7 +445,7 @@ public class ELExpression {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
                         String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
                         
-                        CompletionItem item = JspCompletionItem.createELProperty(propertyName, anchorOffset, type);
+                        CompletionItem item = ElCompletionItem.createELProperty(propertyName, anchorOffset, type);
                         
                         completionItems.add(item);
                     }

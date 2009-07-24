@@ -505,7 +505,6 @@ public class Actions extends Object {
      *   --&gt;
      *   &lt;attr name="key" stringvalue="KeyInActionMap"/&gt;
      *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; 
-     *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
@@ -583,7 +582,6 @@ public class Actions extends Object {
      * @param delegate action to call when this action is invoked
      * @param key alternatively an action can be looked up in action map
      *    (see {@link Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean)})
-     * @param fallback action to fallback to (can be <code>null</code>)
      * @param displayName localized name of the action (including ampersand)
      * @param iconBase the location to the action icon
      * @param noIconInMenu true if this icon shall not have an item in menu
@@ -596,13 +594,11 @@ public class Actions extends Object {
         boolean surviveFocusChange,
         ContextAwareAction delegate,
         String key,
-        Action fallback,
         String displayName, String iconBase, boolean noIconInMenu
     ) {
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("key", key); // NOI18N
         map.put("surviveFocusChange", surviveFocusChange); // NOI18N
-        map.put("fallback", fallback); // NOI18N
         map.put("delegate", delegate); // NOI18N
         map.put("type", type); // NOI18N
         map.put("selectionType", single ? ContextSelection.EXACTLY_ONE : ContextSelection.ANY);

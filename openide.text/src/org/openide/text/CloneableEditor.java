@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,7 +47,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -82,11 +81,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** Position of cursor. Used to keep the value between deserialization
      * and initialization time. */
     private int cursorPosition = -1;
-
-    private StringBuffer sb = new StringBuffer(1024);
-
+    
     private final Object CLOSE_LAST_LOCK = new Object();
-
+    
     // #20647. More important custom component.
 
     /** Custom editor component, which is used if specified by document
@@ -365,12 +362,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     LOG.log(Level.INFO,"Failed to open document",exc);
                 }
                 kit = k;
-                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                + " -- CloneableEditor.DoInitialize.initNonVisual"
-                + " name:" + getName()
-                + " SET kit:" + kit
-                + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-                + " Thread:[" + Thread.currentThread().getName() + "]");
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE,"DoInitialize.initNonVisual doc and kit are set"
@@ -393,42 +384,16 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private void initCustomEditor() {
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initCustomEditor"
-            + " name:" + getName()
-            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-            + " Thread:[" + Thread.currentThread().getName() + "]" + " ENTER");
             if (doc instanceof NbDocument.CustomEditor) {
                 NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
-                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                + " -- CloneableEditor.DoInitialize.initCustomEditor"
-                + " tmp:" + tmp.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(tmp)));
-                sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                + " -- CloneableEditor.DoInitialize.initCustomEditor"
-                + " tmp.ui:" + tmp.getUI().getClass().getName());
-                try {
-                    customComponent = ce.createEditor(tmp);
-                } catch (NullPointerException ex) {
-                    Logger logger = Logger.getLogger("org.netbeans.ui.text");   // NOI18N
-                    LogRecord rec = new LogRecord(Level.INFO, "LOG_CLONEABLE_EDITOR");   // NOI18N
-                    rec.setLoggerName(logger.getName());
-                    String log;
-                    if (tmp instanceof QuietEditorPane) {
-                        log = ((QuietEditorPane) tmp).getLog();
-                    } else {
-                        log = "Pane is not QuietEditorPane";
-                    }
-                    rec.setParameters(new Object [] {"1.0", sb.toString(), log, support.getLog()});
-                    logger.log(rec);
-                    throw new IllegalStateException("Unexpected UI class:" + tmp.getUI().getClass().getName(), ex);
-                }
+                customComponent = ce.createEditor(tmp);
                 
                 if (customComponent == null) {
                     throw new IllegalStateException(
                         "Document:" + doc // NOI18N
-                         +" implementing NbDocument.CustomEditor may not" // NOI18N
-                         +" return null component"
-                    ); // NOI18N
+                         + " implementing NbDocument.CustomEditor may not" // NOI18N
+                         + " return null component" // NOI18N
+                    );
                 }
             }            
         }
@@ -489,22 +454,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (tmp.getDocument() == doc) {
                 return false;
             }
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument INVOKE tmp.setEditorKit(kit)"
-            + " kit:" + kit
-            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-            + " Thread:[" + Thread.currentThread().getName() + "]");
             tmp.setEditorKit(kit);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
             // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
             // and reopen #132669
             tmp.setWorking(QuietEditorPane.FIRE);
             tmp.setDocument(doc);
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initDocument"
-            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-            + " RETURN TRUE"
-            + " Thread:[" + Thread.currentThread().getName() + "]");
             return true;
         }
         
@@ -519,12 +474,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 isInInitVisual = false;
                 return;
             }
-            sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-            + " -- CloneableEditor.DoInitialize.initVisual"
-            + " name:" + getName()
-            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-            + " ENTER"
-            + " Thread:[" + Thread.currentThread().getName() + "]");
             if (LOG.isLoggable(Level.FINE)) {
                 /*Exception ex = new Exception();
                 StringWriter sw = new StringWriter(500);
@@ -627,10 +576,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
-                    sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                    + " -- CloneableEditor.componentClosed.run ENTER"
-                    + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-                    + " Thread:[" + Thread.currentThread().getName() + "]");
                     // #23486: pane could not be initialized yet.
                     if (pane != null) {
                         // #114608 - commenting out setting of the empty document
@@ -640,10 +585,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         // #138611 - this calls kit.deinstall, which is what our kits expect,
                         // calling it with null does not impact performance, because the pane
                         // will not create new document and typically nobody listens on "editorKit" prop change
-                        sb.append("\n[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
-                        + " -- CloneableEditor.componentClosed.run INVOKE pane.setEditorKit(null)"
-                        + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
-                        + " Thread:[" + Thread.currentThread().getName() + "]");
                         pane.setEditorKit(null);
                     }
 

@@ -76,6 +76,12 @@ public class TldClassPathSupport implements PropertyChangeListener {
                     LIBRARIES.put(lib.getURI(), lib);
                 }
             }
+
+            //add default libraries
+            for(TldLibrary lib : TldLibraryGlobalCache.getDefault().getDefaultLibraries()) {
+                LIBRARIES.put(lib.getURI(), lib);
+            }
+
             cache_valid = true;
             dumpLibs();
         }
@@ -85,7 +91,7 @@ public class TldClassPathSupport implements PropertyChangeListener {
     private void dumpLibs() {
         System.out.println("Available TLD libraries:"); //NOI18N
         for (TldLibrary l : getLibraries().values()) {
-            System.out.println(l.getURI() + "("+ l.getDefinitionFile().getPath() +")");
+            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; "+ (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") +")");
         }
 
     }

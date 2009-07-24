@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
 import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
@@ -82,5 +83,9 @@ public class MonitoredData {
     
     public int getTimeStampInterval(){
         return (int) mapData.getPrecision().getValueIn(TimeUnit.NANOSECONDS);
+    }
+
+    public ThreadData getStackProvider(int index){
+        return mapData.getThreadsData().get(index);
     }
 }

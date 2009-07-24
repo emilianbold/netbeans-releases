@@ -62,6 +62,30 @@ public class ModelUnit {
         myHelper = AnnotationModelHelper.create(classpathInfo);
     }
     
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals( Object obj ) {
+        if ( obj instanceof ModelUnit ){
+            ModelUnit unit = (ModelUnit) obj;
+            return myBootPath.equals( unit.myBootPath ) && myCompilePath.equals(
+                    unit.myCompilePath ) && mySourcePath.equals( mySourcePath );
+        }
+        else {
+            return false;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return 37*(37*myBootPath.hashCode() + myCompilePath.hashCode()) 
+            +mySourcePath.hashCode();
+    }
+    
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath)
     {

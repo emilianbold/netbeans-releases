@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G
  */
 public class ViewProjectHomeAction extends AbstractAction {

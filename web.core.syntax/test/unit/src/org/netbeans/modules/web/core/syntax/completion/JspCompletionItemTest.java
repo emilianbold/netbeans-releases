@@ -40,7 +40,7 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import org.junit.Test;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem.ELBean;
+import org.netbeans.modules.web.core.syntax.completion.ElCompletionItem.ELBean;
 import org.netbeans.test.web.core.syntax.TestBase;
 
 /**
@@ -50,17 +50,17 @@ import org.netbeans.test.web.core.syntax.TestBase;
 public class JspCompletionItemTest extends TestBase {
 
     public JspCompletionItemTest() {
-        super(JspCompletionItemTest.class.getName());
+        super("");
     }
 
     public void testELBeanType() {
-        ELBean elb = new JspCompletionItem.ELBean(null, 0, "Collection");
+        ELBean elb = new ElCompletionItem.ELBean(null, 0, "Collection");
         assertEquals("Collection", elb.getRightHtmlText());
 
-        elb = new JspCompletionItem.ELBean(null, 0, "java.util.Collection");
+        elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection");
         assertEquals("Collection", elb.getRightHtmlText());
 
-        elb = new JspCompletionItem.ELBean(null, 0, "java.util.Collection<java.lang.String>");
+        elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection<java.lang.String>");
         assertEquals("Collection&lt;String&gt;", elb.getRightHtmlText());
 
     }

@@ -4,8 +4,6 @@
 <#assign licenseLast = "-->">
 <#include "../Licenses/license-${project.license}.txt">
 
-<!-- To regenerate this file, simply delete it and run any PHPUnit test. -->
-
 <!-- see http://www.phpunit.de/wiki/Documentation -->
 <!--phpunit bootstrap="/path/to/bootstrap.php"
          colors="false"

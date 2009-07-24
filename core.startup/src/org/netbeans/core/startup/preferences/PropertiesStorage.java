@@ -83,41 +83,41 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     
     static NbPreferences.FileStorage instanceReadOnly(final String absolutePath) {
         return new PropertiesStorage(absolutePath, false) {
-            public boolean isReadOnly() {
+            public @Override boolean isReadOnly() {
                 return true;
             }
             
-            public final String[] childrenNames() {
+            public @Override final String[] childrenNames() {
                 return new String[0];
             }
             
-            public final Properties load() throws IOException {
+            public @Override final Properties load() throws IOException {
                 return new Properties();
             }
             
-            protected FileObject toPropertiesFile(boolean create) throws IOException {
+            protected @Override FileObject toPropertiesFile(boolean create) throws IOException {
                 if (create) {
                     throw new IOException();
                 }
                 return null;
             }
             
-            protected FileObject toFolder(boolean create) throws IOException {
+            protected @Override FileObject toFolder(boolean create) throws IOException {
                 if (create) {
                     throw new IOException();
                 }
                 return null;
             }
             
-            protected FileObject toPropertiesFile() {
+            protected @Override FileObject toPropertiesFile() {
                 return null;
             }
             
-            protected FileObject toFolder() {
+            protected @Override FileObject toFolder() {
                 return null;
             }
             
-            FileObject preferencesRoot() throws IOException {
+            @Override FileObject preferencesRoot() throws IOException {
                 return FileUtil.createFolder(SFS_ROOT, SYSTEMROOT_PREFIX);
             }
             
@@ -258,7 +258,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
             }
         }
         return new FilterOutputStream(os) {
-            public void close() throws IOException {
+            public @Override void close() throws IOException {
                 super.close();
                 lock.releaseLock();
             }

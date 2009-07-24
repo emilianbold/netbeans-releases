@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.sync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -53,6 +52,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
@@ -329,37 +329,20 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             for (String columnName : row.getColumnNames()) {
                 for (Column threadColumn : threadColumns) {
                     if (threadColumn.getColumnName().equals(columnName)) {
-                        threads = toInt(row.getData(columnName));
+                        threads = DataUtil.toInt(row.getData(columnName));
                     }
                 }
                 for (Column lockColumn : lockColumns) {
                     if (lockColumn.getColumnName().equals(columnName)) {
-                        locks = toInt(row.getData(columnName));
+                        locks = DataUtil.toInt(row.getData(columnName));
                     }
                 }
             }
         }
 
-        public void tick() {
+        public void tick(float[] data, Map<String, String> details) {
+            data[0] = threads;
+            data[1] = threads * Math.min(locks, 100) / 100.0f;
         }
-
-        public int[] getGraphData() {
-            return new int[]{threads, Math.round(threads * Math.min(locks, 100) / 100)};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.emptyMap();
-        }
-    }
-
-    private static int toInt(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number)obj).intValue();
-        } else if (obj instanceof String) {
-            try {
-                return Integer.parseInt((String)obj);
-            } catch (NumberFormatException ex) {}
-        }
-        return 0;
     }
 }

@@ -52,6 +52,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -110,9 +111,11 @@ public class CodeUtils {
         } else if (typeName instanceof Variable){
             Variable v = (Variable)typeName;
             return extractUnqualifiedIdentifier(v.getName()); // #167863
+        } else if (typeName instanceof FieldAccess) {
+            return extractUnqualifiedIdentifier(((FieldAccess)typeName).getField()); // #167863
         }
         //TODO: php5.3 !!!
-        assert false : typeName.getClass(); //NOI18N
+        //assert false : typeName.getClass(); //NOI18N
         return null;
     }
 
@@ -341,8 +344,9 @@ public class CodeUtils {
 
                 String methodName = parts[1];
 
-                for (IndexedFunction func : index.getAllMethods(context, className,
+                for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(context, className,
                         methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
+                    IndexedFunction func = classMember.getMember();
 
                     varType = func.getReturnType();
                 }
@@ -366,9 +370,9 @@ public class CodeUtils {
                 }
 
                 if (className != null) {
-                    for (IndexedFunction func : index.getAllMethods(context, className,
+                    for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(context, className,
                             methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
-
+                        IndexedFunction func = classMember.getMember();
                         varType = func.getReturnType();
                     }
                 }

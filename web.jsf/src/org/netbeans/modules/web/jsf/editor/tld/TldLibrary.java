@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,8 +48,11 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.xml.services.UserCatalog;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
+import org.openide.xml.EntityCatalog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -62,12 +67,17 @@ import org.xml.sax.SAXException;
 public class TldLibrary {
 
     private FileObject definitionFile;
-    private String prefix = null;
-    private String uri = null;
+    private String prefix;
+    private String uri;
+    private String displayName;
     private Map<String, Tag> tags = new HashMap<String, Tag>();
 
     static TldLibrary create(FileObject definitionFile) throws TldLibraryException {
         return new TldLibrary(definitionFile);
+    }
+
+    static TldLibrary create(InputStream content) throws TldLibraryException {
+        return new TldLibrary(content);
     }
 
     private TldLibrary(FileObject definitionFile) throws TldLibraryException {
@@ -75,11 +85,16 @@ public class TldLibrary {
         parseLibrary();
     }
 
+    private TldLibrary(InputStream content) throws TldLibraryException {
+        this.definitionFile = null;
+        parseLibrary(content);
+    }
+
     @Override
     public String toString() {
         try {
             StringBuffer sb = new StringBuffer();
-            sb.append(getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath()); //NOI18N
+            sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
             sb.append("; defaultPrefix = " + getDefaultPrefix() + "; uri = " + getURI() + "; tags={"); //NOI18N
             for(Tag t : getTags().values()) {
                 sb.append(t.toString());
@@ -103,6 +118,10 @@ public class TldLibrary {
         return prefix;
     }
 
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
     public Map<String, Tag> getTags() {
         return tags;
     }
@@ -110,11 +129,17 @@ public class TldLibrary {
     //--------------- private -------------------
     private void parseLibrary() throws TldLibraryException {
         try {
+            parseLibrary(getDefinitionFile().getInputStream());
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    private void parseLibrary(InputStream content) throws TldLibraryException {
+        try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            InputSource is = new InputSource(getDefinitionFile().getInputStream()); //default encoding?!?!
-
-//            docBuilder.setEntityResolver(new FaceletsCatalog());
+            InputSource is = new InputSource(content); //default encoding?!?!
+            docBuilder.setEntityResolver(UserCatalog.getDefault().getEntityResolver()); //we count on TaglibCatalog from web.core module
             Document doc = docBuilder.parse(is);
 
             //usually the default taglib prefix
@@ -122,13 +147,23 @@ public class TldLibrary {
 
             prefix = getTextContent(tagLib, "short-name"); //NOI18N
             if(prefix == null) {
-                throw new TldLibraryException("Missing short-name entry in " + getDefinitionFile().getPath() + " library.", null);
+                //no default prefix
+                prefix = "";
             }
-
 
             uri = getTextContent(tagLib, "uri"); //NOI18N
             if(uri == null) {
                 throw new TldLibraryException("Missing uri entry in " + getDefinitionFile().getPath() + " library.", null);
+            }
+
+            displayName = getTextContent(tagLib, "display-name"); //NOI18N
+            if(displayName == null) {
+                //no display-name specified in the TLD, lets try to get the displayname from names registry
+                displayName = TldUtils.getLibraryDisplayName(uri);
+                if(displayName == null) {
+                    //no entry even here, use TLD file name
+                    displayName = getDefinitionFile().getNameExt();
+                }
             }
 
             //scan the <tag> nodes content - the tag descriptions

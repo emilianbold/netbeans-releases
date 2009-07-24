@@ -68,7 +68,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 /**
- *
+ * @deprecated Replaced by actions in Artifact viewer window, see #164992
  * @author Anuradha G
  */
 public class CheckoutAction extends AbstractAction implements LookupListener {

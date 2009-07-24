@@ -146,30 +146,23 @@ public class VersionNode extends AbstractNode {
         Action[] retValue;
         if(info.isRemoteDownloadable()){
              retValue = new Action[]{
-            CopyAction.get(CopyAction.class),
             new ShowArtifactAction(record),
             new AddAsDependencyAction(artifact),
             CommonArtifactActions.createFindUsages(artifact),
             null,
-            CommonArtifactActions.createViewProjectHomeAction(artifact),
-            CommonArtifactActions.createViewBugTrackerAction(artifact),
-            CommonArtifactActions.createSCMActions(artifact)
+            CopyAction.get(CopyAction.class),
         };
         
         }else{
         
 
         retValue = new Action[]{
-            CopyAction.get(CopyAction.class),
             new ShowArtifactAction(record),
             new AddAsDependencyAction(artifact),
-            null,
             CommonArtifactActions.createFindUsages(artifact),
-            null,
             CommonArtifactActions.createViewJavadocAction(artifact),
-            CommonArtifactActions.createViewProjectHomeAction(artifact),
-            CommonArtifactActions.createViewBugTrackerAction(artifact),
-            CommonArtifactActions.createSCMActions(artifact)
+            null,
+            CopyAction.get(CopyAction.class),
         };
         }
         return retValue;

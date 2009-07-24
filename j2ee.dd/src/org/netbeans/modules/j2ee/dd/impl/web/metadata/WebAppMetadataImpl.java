@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragmentProvider;
+import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.dd.impl.web.annotation.AnnotationHelpers;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
@@ -108,8 +109,21 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         return sortFragments(webXml, res);
     }
 
+    public List<FileObject> getFragmentFiles() {
+        refreshFragments();
+        List<FileObject> res = new ArrayList<FileObject>();
+        for (FragmentRec fr : fragmentRecs) {
+            res.add(fr.source);
+        }
+        return res;
+    }
+
     public List<ServletInfo> getServlets() {
         return doMerging(MergeEngines.servletsEngine());
+    }
+
+    public List<FilterInfo> getFilters() {
+        return doMerging(MergeEngines.filtersEngine());
     }
 
     public List<String> getSecurityRoles() {

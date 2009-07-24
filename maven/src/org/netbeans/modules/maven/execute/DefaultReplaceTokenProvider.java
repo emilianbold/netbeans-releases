@@ -143,7 +143,12 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             replaceMap.put(METHOD_NAME, method.getMethodName());
         }
 
-        if (tuple.group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName())) {
+        if (tuple.group != null &&
+                //TODO not nice, how to figure in a better way? by source classpath?
+                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()) ||
+                 MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(tuple.group.getName()) ||
+                 MavenSourcesImpl.NAME_SCALATESTSOURCE.equals(tuple.group.getName())
+                )) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N

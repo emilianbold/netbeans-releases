@@ -53,6 +53,7 @@ public class CustomTimeLineViewport extends JViewport {
     private long dataStart;
     private long viewEnd;
     private long viewStart;
+    private TimeLine timeLine;
 
     public CustomTimeLineViewport(ThreadsPanel viewManager) {
         this.viewManager = viewManager;
@@ -98,6 +99,24 @@ public class CustomTimeLineViewport extends JViewport {
 
                 currentMark += optimalUnits;
             }
+            if (timeLine != null){
+                long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
+                if (viewStart < time && time < viewEnd) {
+                    int x = (int) ((paintWidth * (time - viewStart)) / (viewEnd - viewStart));
+                    g.setColor(TimeLineUtils.TIMELINE_CURSOR_COLOR);
+                    if (getHeight() - 1 - getEmptySpaceY() < 5) {
+                        g.drawLine(paintX + x,     getEmptySpaceY(),    paintX + x,     getHeight() - 1);
+                    } else {
+                        g.drawLine(paintX + x,     getEmptySpaceY(),    paintX + x,     getHeight() - 1 - 5);
+                        
+                        g.drawLine(paintX + x - 3, getHeight() - 1,     paintX + x - 3, getHeight() - 1 - 2);
+                        g.drawLine(paintX + x - 3, getHeight() - 1 - 2, paintX + x,     getHeight() - 1 - 5);
+                        g.drawLine(paintX + x,     getHeight() - 1 - 5, paintX + x + 3, getHeight() - 1 - 2);
+                        g.drawLine(paintX + x + 3, getHeight() - 1 - 2, paintX + x + 3, getHeight() - 1);
+                        g.drawLine(paintX + x + 3, getHeight() - 1,     paintX + x - 3, getHeight() - 1);
+                    }
+                }
+            }
         }
     }
 
@@ -116,6 +135,7 @@ public class CustomTimeLineViewport extends JViewport {
         viewStart = viewManager.getViewStart();
         viewEnd = viewManager.getViewEnd();
         dataStart = viewManager.getDataStart();
+        timeLine = viewManager.getTimeLine();
         paintWidth = viewManager.getDisplayColumnWidth();
         int rest = viewManager.getDisplayColumnRest();
         paintX = getWidth() - paintWidth - rest;

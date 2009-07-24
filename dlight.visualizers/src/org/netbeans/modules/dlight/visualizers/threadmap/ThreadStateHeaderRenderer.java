@@ -62,6 +62,7 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
     private long dataStart;
     private long viewEnd;
     private long viewStart;
+    private TimeLine timeLine;
 
     /** Creates a new instance of ThreadStateHeaderRenderer */
     public ThreadStateHeaderRenderer(ThreadsPanel viewManager) {
@@ -100,7 +101,8 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
         viewStart = viewManager.getViewStart();
         viewEnd = viewManager.getViewEnd();
         dataStart = viewManager.getDataStart();
-
+        timeLine = viewManager.getTimeLine();
+        
         return this;
     }
 
@@ -225,6 +227,18 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
                 g.drawString(sLegend, getWidth() - wLegend - 2, 5 + plainFont.getSize());
                 g.setFont(origFont);
             }
+            if (timeLine != null){
+                long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
+                if (viewStart < time && time < viewEnd) {
+                    int x = (int) ((getWidth() * (time - viewStart)) / (viewEnd - viewStart));
+                    g.setColor(TimeLineUtils.TIMELINE_CURSOR_COLOR);
+                    g.drawLine(x-3, 0, x-3, 2);
+                    g.drawLine(x-3, 2, x,   5);
+                    g.drawLine(x,   5, x+3, 2);
+                    g.drawLine(x+3, 2, x+3, 0);
+                    g.drawLine(x+3, 0, x-3, 0);
+                }
+            }
         }
     }
 
@@ -237,6 +251,14 @@ public class ThreadStateHeaderRenderer extends JPanel implements TableCellRender
             g.drawLine(x, 0, x, 2);
             g.setColor(TimeLineUtils.TICK_TIMELINE_COLOR);
             g.drawLine(x, 3, x, getHeight() - 1);
+        }
+        if (timeLine != null){
+            long time = timeLine.getTimeStamp() + timeLine.getInterval() / 2;
+            if (viewStart < time && time < viewEnd) {
+                int x = (int) ((getWidth() * (time - viewStart)) / (viewEnd - viewStart));
+                g.setColor(TimeLineUtils.TIMELINE_CURSOR_COLOR);
+                g.drawLine(x, 6, x, getHeight() - 1);
+            }
         }
     }
 }

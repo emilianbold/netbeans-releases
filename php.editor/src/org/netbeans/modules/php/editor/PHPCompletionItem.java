@@ -56,7 +56,6 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
-import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.QualifiedName;
@@ -321,7 +320,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
             if (resolved){
                 formatter.emphasis(true);
-                formatter.appendText(getName());
+                formatter.appendText(QualifiedName.create(getName()).toName().toString());
                 formatter.emphasis(false);
             } else {
                 formatter.appendText(getName());
@@ -620,9 +619,28 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class NewClassItem extends FunctionItem {
+        private String qualifiedNamePrefix = null;
+        public NewClassItem(IndexedFunction function, CompletionRequest request, int optionalArgCount, String qualifiedNamePrefix) {
+            super(function, request, optionalArgCount);
+            this.qualifiedNamePrefix = qualifiedNamePrefix;
+        }
+
         public NewClassItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
             super(function, request, optionalArgCount);
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            String retval = super.getCustomInsertTemplate();
+            if (qualifiedNamePrefix != null) {
+                int indexOf = retval.indexOf(qualifiedNamePrefix);
+                if (indexOf != -1) {
+                   return retval.substring(indexOf);
+                }
+            }
+            return retval;
+        }
+
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
@@ -631,7 +649,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
                     QualifiedName qn = QualifiedName.create(namespaceName);
                     qn = qn.append(QualifiedName.createUnqualifiedName(getElement().getIn())).toFullyQualified();
-                    formatter.appendText(qn.toString());
+                    String retval = qn.toString();
+                    if (qualifiedNamePrefix != null) {
+                        int indexOf = retval.indexOf(qualifiedNamePrefix);
+                        if (indexOf != -1) {
+                            retval = retval.substring(indexOf);
+                        }
+                    }
+
+                    formatter.appendText(retval);
                     return formatter.getText();
                 }
             } 

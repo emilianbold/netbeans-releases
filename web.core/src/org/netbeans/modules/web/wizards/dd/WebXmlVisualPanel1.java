@@ -66,6 +66,7 @@ public final class WebXmlVisualPanel1 extends JPanel {
         fileNameText.setText(WEB_XML);
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        assert wm != null;
         locationText.setText(FileUtil.getFileDisplayName(wm.getWebInf()));
         refreshLocation();
     }

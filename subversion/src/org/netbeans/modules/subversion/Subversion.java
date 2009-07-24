@@ -306,10 +306,6 @@ public class Subversion {
         }
     }
 
-    public FilesystemHandler getFileSystemHandler() {
-        return filesystemHandler;
-    }
-
     public void versionedFilesChanged() {
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
@@ -507,14 +503,31 @@ public class Subversion {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
+            return;
+        }
 
+        File original = null;
         try {
-            File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-            if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
+            original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
+            if (original == null) {
+                throw new IOException("Unable to get BASE revision of " + workingCopy);
+            }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
+        } finally {
+            if (original != null) {
+                try {
+                    original.delete();
+                } catch (Exception ex) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("Failed to delete temporary file "  //NOI18N
+                                    + original.getAbsolutePath());
+                    }
+                    //otherwise ignore the exception - leave the file as it is
+                }
+            }
         }
     }
     

@@ -39,7 +39,6 @@
 package org.netbeans.modules.uihandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -85,7 +84,7 @@ public class SlownessReporterTest extends NbTestCase {
     @Test
     public void testGetLatestAction() {
         SlownessReporter reporter = new SlownessReporter();
-        String latestAction = reporter.getLatestAction(logs, new byte[0], 10L);
+        String latestAction = reporter.getLatestAction(logs, 10L);
         assertEquals("redo", latestAction);
     }
 
@@ -95,7 +94,7 @@ public class SlownessReporterTest extends NbTestCase {
         for (LogRecord logRecord : logs) {
             logRecord.setMillis(logRecord.getMillis() - SlownessReporter.LATEST_ACTION_LIMIT * 2);
         }
-        String latestAction = reporter.getLatestAction(logs, new byte[0], 10L);
+        String latestAction = reporter.getLatestAction(logs, 10L);
         assertNull(latestAction);
     }
 
@@ -103,7 +102,7 @@ public class SlownessReporterTest extends NbTestCase {
     public void testGetIdeStartup() {
         SlownessReporter reporter = new SlownessReporter();
         logs.add(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
-        String latestAction = reporter.getLatestAction(logs, new byte[0], 100L);
+        String latestAction = reporter.getLatestAction(logs, 100L);
         assertNotNull(latestAction);
         assertEquals(NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP"), latestAction);
     }

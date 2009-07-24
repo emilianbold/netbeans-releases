@@ -958,7 +958,7 @@ made subject to such option by the copyright holder.
       url="@TOP@/org/openide/awt/Actions.html">
       Many action factories 
       (<a href="org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">alwaysEnabled</a>,
-        <a href="org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20javax.swing.Action,%20java.lang.String,%20java.lang.String,%20boolean)">
+        <a href="org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
         context</a>
         and
         <a href="org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">

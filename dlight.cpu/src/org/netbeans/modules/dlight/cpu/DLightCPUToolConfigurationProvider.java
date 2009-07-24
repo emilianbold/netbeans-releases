@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -48,6 +47,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
@@ -285,39 +285,23 @@ public final class DLightCPUToolConfigurationProvider
             for (String columnName : row.getColumnNames()) {
                 for (Column usrColumn : usrColumns) {
                     if (usrColumn.getColumnName().equals(columnName)) {
-                        usr = toInt(row.getData(columnName));
+                        usr = DataUtil.toInt(row.getData(columnName));
                     }
                 }
                 for (Column sysColumn : sysColumns) {
                     if (sysColumn.getColumnName().equals(columnName)) {
-                        sys = toInt(row.getData(columnName));
+                        sys = DataUtil.toInt(row.getData(columnName));
                     }
                 }
             }
         }
 
-        public void tick() {
+        public void tick(float[] data, Map<String, String> details) {
             ++seconds;
+            data[0] = sys;
+            data[1] = usr;
+            details.put(TIME_DETAIL_ID, formatTime(seconds));
         }
-
-        public int[] getGraphData() {
-            return new int[]{sys, usr};
-        }
-
-        public Map<String, String> getDetails() {
-            return Collections.singletonMap(TIME_DETAIL_ID, formatTime(seconds));
-        }
-    }
-
-    private static int toInt(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number)obj).intValue();
-        } else if (obj instanceof String) {
-            try {
-                return Integer.parseInt((String)obj);
-            } catch (NumberFormatException ex) {}
-        }
-        return 0;
     }
 
     private static String formatTime(int seconds) {

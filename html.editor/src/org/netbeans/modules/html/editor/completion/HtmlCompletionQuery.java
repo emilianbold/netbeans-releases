@@ -145,6 +145,7 @@ public class HtmlCompletionQuery extends UserTask {
         int itemOffset = item.offset(hi);
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
+        String itemText = preText;
         if (diff < preText.length()) {
             preText = preText.substring(0, astOffset - itemOffset);
         }
@@ -198,7 +199,7 @@ public class HtmlCompletionQuery extends UserTask {
             }
                 
             //extensions
-            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText);
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText);
             for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
                 result.addAll(e.completeOpenTags(context));
             }
@@ -215,7 +216,7 @@ public class HtmlCompletionQuery extends UserTask {
             }
             
             //extensions
-            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "");
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "");
             for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
                 Collection<CompletionItem> items = e.completeOpenTags(context);
                 result.addAll(items);
@@ -245,7 +246,7 @@ public class HtmlCompletionQuery extends UserTask {
             if (namespace != null) {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-                HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, node);
+                HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
                 for (HtmlExtension e : HtmlExtension.getRegisteredExtensions()) {
                     items.addAll(e.completeAttributes(context));
                 }
@@ -434,8 +435,8 @@ public class HtmlCompletionQuery extends UserTask {
                 break;
             }
             //if dtd element and doesn't have forbidden end tag
-            //leaf.getDTDElement() == null may happen for text ast node elements for example
-            if (leaf.getDTDElement() != null && !AstNodeUtils.hasForbiddenEndTag(leaf)) {
+            if ((leaf.getDTDElement() == null || !AstNodeUtils.hasForbiddenEndTag(leaf)) &&
+                    leaf.type() == AstNode.NodeType.OPEN_TAG) {
                 String tagName = leaf.name();
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!

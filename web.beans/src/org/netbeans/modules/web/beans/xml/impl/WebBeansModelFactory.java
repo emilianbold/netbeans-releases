@@ -54,7 +54,7 @@ public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
     private WebBeansModelFactory(){
     }
     
-    public WebBeansModelFactory getInstance(){
+    public static WebBeansModelFactory getInstance(){
         return INSTANCE;
     }
 
