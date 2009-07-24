@@ -131,7 +131,7 @@ public class ParentVersionError implements POMErrorFixProvider {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if (!useSources || currentVersion == null) {
+        if ((!useSources || currentVersion == null) && declaredVersion != null) {
             List<NBVersionInfo> infos = RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId());
             ArtifactVersion currentAV = new DefaultArtifactVersion(declaredVersion);
             for (NBVersionInfo info : infos) {
