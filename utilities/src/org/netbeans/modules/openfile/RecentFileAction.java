@@ -41,16 +41,17 @@
 
 package org.netbeans.modules.openfile;
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
+import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -79,11 +80,8 @@ import org.openide.util.actions.Presenter;
 public class RecentFileAction extends AbstractAction implements Presenter.Menu, PopupMenuListener, ChangeListener {
 
     /** property of menu items where we store fileobject to open */
-    private static final String FO_PROP = "RecentFileAction.Recent_FO";
+    private static final String URL_PROP = "RecentFileAction.Recent_URL";
 
-    /** number of maximum shown items in submenu */ 
-    private static final int MAX_COUNT = 15;
-            
     private JMenu menu;
     
     public RecentFileAction() {
@@ -141,37 +139,29 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     private void fillSubMenu () {
         List<HistoryItem> files = RecentFiles.getRecentFiles();
 
-        int counter = 0;
-        for (HistoryItem hItem : files) {
-            // obtain file object
-            // note we need not check for null or validity, as it is ensured
-            // by RecentFiles.getRecentFiles()
-            FileObject fo = RecentFiles.convertURL2File(hItem.getURL());
-            // allow only up to max items
-            if (++counter > MAX_COUNT) {
-                break;
-            }
-            // obtain icon for fileobject
-            Image icon = null;
-            try {
-                DataObject dObj = DataObject.find(fo);
-                icon = dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-            } catch (DataObjectNotFoundException ex) {
-                // should not happen, log and skip to next
-                Logger.getLogger(RecentFiles.class.getName()).log(
-                        Level.INFO, ex.getMessage(), ex);
-                continue;
-            }
+        for (final HistoryItem hItem : files) {
             // create and configure menu item
-            JMenuItem jmi = null;
-            if (icon != null) {
-                jmi = new JMenuItem(fo.getNameExt(), new ImageIcon(icon));
-            } else {
-                jmi = new JMenuItem(fo.getNameExt());
-            }
-            jmi.putClientProperty(FO_PROP, fo);
+            final JMenuItem jmi = new JMenuItem(hItem.getFileName());
+            jmi.putClientProperty(URL_PROP, hItem.getURL());
             jmi.addActionListener(this);
             menu.add(jmi);
+
+            //get icon on another thread
+            new Runnable(){
+                public void run() {
+                    FileObject fo = RecentFiles.convertURL2File(hItem.getURL());
+                    Icon icon = null;
+                    try {
+                        DataObject dObj = DataObject.find(fo);
+                        icon = new ImageIcon(dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+                    } catch (DataObjectNotFoundException ex) {
+                        // should not happen, log and skip to next
+                        Logger.getLogger(RecentFiles.class.getName()).log(
+                                Level.INFO, ex.getMessage(), ex);
+                    }
+                    jmi.setIcon(icon);
+                }
+            }.run();
         }
         
         ensureSelected();
@@ -215,9 +205,9 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
      */
     public void actionPerformed(ActionEvent evt) {
         JMenuItem source = (JMenuItem) evt.getSource();
-        FileObject fo = (FileObject) source.getClientProperty(FO_PROP);
-        if (fo != null) {
-            OpenFile.open(fo, -1);
+        URL url = (URL) source.getClientProperty(URL_PROP);
+        if (url != null) {
+            OpenFile.open(RecentFiles.convertURL2File(url), -1);
         }
     }
     

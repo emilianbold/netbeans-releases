@@ -99,7 +99,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         dtraceCollectorConfig.setIndicatorFiringFactor(1);
 
         toolConfiguration.addDataCollectorConfiguration(
-                new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:"));
+                new MultipleDTDCConfiguration(dtraceCollectorConfig, "fops:")); // NOI18N
 
         toolConfiguration.addIndicatorDataProviderConfiguration(
                 new TimerIDPConfiguration());

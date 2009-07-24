@@ -209,7 +209,7 @@ public abstract class LookupProviderAction <T extends Lookup.Provider, R> extend
          * if the action can really be performed.
          * @param targets The collection of objects found in the
          * Lookup.Provider of type <code>T</code> in the selection.
-         * @return
+         * @return whether or not this action should be enabled
          */
         protected boolean enabled (Collection<? extends R> targets) {
             return true;

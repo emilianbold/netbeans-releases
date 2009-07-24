@@ -48,6 +48,7 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import com.sun.jdi.ThreadReference;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -418,10 +419,26 @@ public class Operator {
                      if (!resume) { // notify about the suspend if not resumed.
                          if (!silent && suspendedAll) {
                              //TODO: Not really all might be suspended!
-                             debugger.notifySuspendAll();
+                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false);
+                             if (eventAccessLock != null) {
+                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                eventAccessLock.unlock();
+                                eventAccessLock = null;
+                             }
+                             for (PropertyChangeEvent event : events) {
+                                 ((JPDAThreadImpl) event.getSource()).fireEvent(event);
+                             }
                          }
                          if (!silent && suspendedThread != null) {
-                             suspendedThread.notifySuspended();
+                             PropertyChangeEvent event = suspendedThread.notifySuspended(false);
+                             if (eventAccessLock != null) {
+                                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                                eventAccessLock.unlock();
+                                eventAccessLock = null;
+                             }
+                             if (event != null) {
+                                suspendedThread.fireEvent(event);
+                             }
                          }
                      }
                      if (!startEventOnly) {
@@ -443,7 +460,7 @@ public class Operator {
                                 if (tref != null) {
                                     break;
                                 }
-                             }
+                            }
                             if (tref != null) debugger.setStoppedState (tref);
                          }
                      }

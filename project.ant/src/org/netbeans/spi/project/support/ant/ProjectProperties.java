@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
@@ -77,7 +79,7 @@ import org.openide.util.WeakSet;
  * @author Jesse Glick
  */
 final class ProjectProperties {
-    
+
     /** Associated helper. */
     private final AntProjectHelper helper;
     
@@ -164,6 +166,7 @@ final class ProjectProperties {
         private final AntProjectHelper helper;
         private EditableProperties properties = null;
         private boolean loaded = false;
+        private Throwable reloadedStackTrace;
         private final ChangeSupport cs = new ChangeSupport(this);
         /** Atomic actions in use to save XML files. */
         private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
@@ -198,12 +201,14 @@ final class ProjectProperties {
                     }
                 }
                 loaded = true;
+                reloadedStackTrace = null;
             }
             return properties;
         }
         
         public boolean put(EditableProperties nue) {
             loaded = true;
+            reloadedStackTrace = null;
             boolean modifying = !Utilities.compareObjects(nue, properties);
             if (modifying) {
                 if (nue != null) {
@@ -224,7 +229,11 @@ final class ProjectProperties {
         }
         public FileLock write() throws IOException {
             if (!loaded) {
-                throw new IOException("In-memory data for " + path + " in " + dir() + " clobbered by changes on disk"); // #137947?
+                Logger.getLogger(ProjectProperties.class.getName()).log(Level.INFO, null,
+                        new IOException("#167784: changes on disk for " + path + " in " + dir() + " clobbered by in-memory data").
+                        initCause(reloadedStackTrace));
+                loaded = true;
+                reloadedStackTrace = null;
             }
             final FileObject f = dir().getFileObject(path);
             final FileLock[] _lock = new FileLock[1];
@@ -371,6 +380,7 @@ final class ProjectProperties {
             }
             if (!writing) {
                 loaded = false;
+                reloadedStackTrace = new Throwable("noticed disk change here");
             }
             fireChange();
             if (!writing) {

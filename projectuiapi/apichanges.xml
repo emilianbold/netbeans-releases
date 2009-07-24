@@ -104,6 +104,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ActionProvider.global">
+            <api name="general"/>
+            <summary>Globally registered <code>ActionProvider</code>s</summary>
+            <version major="1" minor="37"/>
+            <date day="23" month="7" year="2009"/>
+            <author login="jglick"/>
+            <compatibility semantic="compatible"/>
+            <description>
+                <p>
+                  <code>ActionProvider</code>s may now be registered in global
+                  lookup so as to enable certain file-sensitive actions on certain
+                  selections without the support of any project.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="FileSensitiveActions"/>
+            <issue number="102081"/>
+        </change>
         <change id="open-with-progress">
             <api name="general"/>
             <summary>OpenProjects.open() supports visual progress</summary>
