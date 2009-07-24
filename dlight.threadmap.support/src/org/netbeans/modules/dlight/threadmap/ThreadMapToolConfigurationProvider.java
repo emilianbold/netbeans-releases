@@ -67,28 +67,28 @@ import org.openide.util.NbBundle;
 public class ThreadMapToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     public static final int INDICATOR_POSITION = 10;
+    private static final String ID = "dlight.tool.threadmap"; // NOI18N
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ThreadMapTool.DetailedToolName"); // NOI18N
 
     public DLightToolConfiguration create() {
-        final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
-
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         DataTableMetadata msaTableMetadata = createIndicatorTableMetadata();
 
         PlotIndicatorConfiguration indicatorConfig = new PlotIndicatorConfiguration(
                 new IndicatorMetadata(msaTableMetadata.getColumns()), INDICATOR_POSITION, loc("ThreadMapTool.Indicator.Title"), 100, // NOI18N
                 Arrays.asList(
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_USER"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_SYSTEM"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_TRAP"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_TFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_DFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_KFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_USER_LOCK"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_SLEEP"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_WAIT_CPU"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_STOPPED"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_USER"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_SYSTEM"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_TRAP"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_TFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_DFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_KFAULT"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_3, loc("ThreadMapTool.Indicator.LMS_USER_LOCK"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_4, loc("ThreadMapTool.Indicator.LMS_SLEEP"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_1, loc("ThreadMapTool.Indicator.LMS_WAIT_CPU"), GraphDescriptor.Kind.REL_SURFACE), // NOI18N
+                new GraphDescriptor(GraphConfig.COLOR_2, loc("ThreadMapTool.Indicator.LMS_STOPPED"), GraphDescriptor.Kind.REL_SURFACE)), // NOI18N
                 new DataRowToMSAPlot(msaTableMetadata.getColumns()));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
 
@@ -168,11 +168,12 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
     private static int toInt(Object obj) {
         if (obj instanceof Number) {
-            return ((Number)obj).intValue();
+            return ((Number) obj).intValue();
         } else if (obj instanceof String) {
             try {
-                return Integer.parseInt((String)obj);
-            } catch (NumberFormatException ex) {}
+                return Integer.parseInt((String) obj);
+            } catch (NumberFormatException ex) {
+            }
         }
         return 0;
     }

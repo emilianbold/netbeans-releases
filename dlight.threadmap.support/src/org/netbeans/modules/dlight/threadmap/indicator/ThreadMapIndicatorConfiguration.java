@@ -45,7 +45,7 @@ public class ThreadMapIndicatorConfiguration extends IndicatorConfiguration {
     /*package*/ static final String ID = "ThreadMapIndicatorConfiguration_ID"; // NOI18N
 
     public ThreadMapIndicatorConfiguration(IndicatorMetadata metadata) {
-        super(metadata, 0);
+        super(metadata, 0, true);
     }
 
     @Override

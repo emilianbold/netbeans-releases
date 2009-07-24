@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
  * @author mt154047
  */
 public class FopsToolConfigurationProvider implements DLightToolConfigurationProvider {
+    private static final String ID = "dlight.tool.fops"; // NOI18N
 
     public FopsToolConfigurationProvider() {
         /*
@@ -75,7 +76,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
     public DLightToolConfiguration create() {
         final String toolName = getMessage("Tool.Name"); // NOI18N
         final DLightToolConfiguration toolConfiguration =
-                new DLightToolConfiguration(toolName);
+                new DLightToolConfiguration(ID, toolName);
 
         /* DTrace tool - FOPS */
 

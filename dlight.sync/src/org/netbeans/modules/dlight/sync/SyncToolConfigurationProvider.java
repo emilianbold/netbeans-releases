@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
 
     private static final int INDICATOR_POSITION = 300;
+    private static final String ID = "dlight.tool.sync"; // NOI18N
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final String TOOL_DESCRIPTION = loc("SyncTool.ToolDescription");//NOI18N
     private static final Column timestampColumn =
@@ -121,7 +122,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     }
 
     public DLightToolConfiguration create() {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME, TOOL_DESCRIPTION);
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
+        toolConfiguration.setLongName(TOOL_DESCRIPTION);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {

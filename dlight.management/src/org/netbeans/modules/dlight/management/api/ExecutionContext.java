@@ -327,7 +327,7 @@ final class ExecutionContext {
         List<DLightTool> result = new ArrayList<DLightTool>();
         Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+            if (tool.isEnabled() && (activeToolNames == null || activeToolNames.contains(tool.getName()))) {
                 result.add(tool);
             }
         }
