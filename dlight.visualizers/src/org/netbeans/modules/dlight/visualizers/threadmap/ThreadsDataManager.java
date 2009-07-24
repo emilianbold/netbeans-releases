@@ -49,7 +49,6 @@ import java.util.Set;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadData;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState;
-import org.netbeans.modules.dlight.spi.impl.ThreadMapData;
 
 /**
  * A class that holds data about threads history (state changes) during a
@@ -126,6 +125,13 @@ public class ThreadsDataManager {
         while (iterator.hasNext()) {
             iterator.next().dataReset();
         }
+    }
+
+    /**
+     * Returns the timestamp representing end time of collecting threadData (timestamp of last valid threadData record).
+     */
+    public synchronized long getEndTimeStump() {
+        return endTime;
     }
 
     /**
@@ -237,6 +243,13 @@ public class ThreadsDataManager {
                 for (int j = 0; j < states.size(); j++) {
                     ThreadState newState = states.get(j);
                     if (newState.getTimeStamp() > lastState.getTimeStamp()) {
+                        if (lastTimeStamp == -1) {
+                            if (!col.isAlive()) {
+                                // remove stop mark
+                                col.removeStopMark();
+                                System.out.println("Reopen thread line "+col.getName()); // NOI18N
+                            }
+                        }
                         col.add(newState);
                         lastTimeStamp = newState.getTimeStamp();
                     }
@@ -269,6 +282,7 @@ public class ThreadsDataManager {
 
     void closeThread(ThreadStateColumnImpl col, int interval){
         final long endTimeStamp = col.getThreadStateAt(col.size()-1).getTimeStamp() + interval;
+        System.out.println("Close thread line "+col.getName()); // NOI18N
         col.add(new ThreadState(){
             public int size() {
                 return 1;

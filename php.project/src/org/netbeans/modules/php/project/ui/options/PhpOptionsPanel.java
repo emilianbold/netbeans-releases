@@ -249,6 +249,7 @@ public class PhpOptionsPanel extends JPanel {
         phpUnitTextField = new JTextField();
         phpUnitBrowseButton = new JButton();
         phpUnitSearchButton = new JButton();
+        phpUnitInfoLabel = new JLabel();
         globalIncludePathSeparator = new JSeparator();
         globalIncludePathLabel = new JLabel();
         useTheFollowingPathByDefaultLabel = new JLabel();
@@ -304,7 +305,6 @@ public class PhpOptionsPanel extends JPanel {
         phpUnitLabel.setLabelFor(phpUnitTextField);
 
 
-
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(phpUnitBrowseButton, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitBrowseButton.text"));
         phpUnitBrowseButton.addActionListener(new ActionListener() {
@@ -318,7 +318,11 @@ public class PhpOptionsPanel extends JPanel {
                 phpUnitSearchButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath"));
+        Mnemonics.setLocalizedText(phpUnitInfoLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitIncludePathInfo"));
+        phpUnitInfoLabel.setEnabled(false);
+
+
+        Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath")); // NOI18N
         useTheFollowingPathByDefaultLabel.setLabelFor(includePathList);
 
         Mnemonics.setLocalizedText(useTheFollowingPathByDefaultLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault")); // NOI18N
@@ -341,15 +345,6 @@ public class PhpOptionsPanel extends JPanel {
 
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(phpUnitLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpUnitTextField, GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpUnitBrowseButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpUnitSearchButton))
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(12, 12, 12)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
@@ -358,7 +353,7 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                        .add(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(phpInterpreterBrowseButton)
                         .addPreferredGap(LayoutStyle.RELATED)
@@ -372,11 +367,11 @@ public class PhpOptionsPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(commandLineLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
+                .add(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(debuggingLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
+                .add(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(12, 12, 12)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
@@ -390,14 +385,10 @@ public class PhpOptionsPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))))
             .add(layout.createSequentialGroup()
-                .add(globalIncludePathLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
                 .add(12, 12, 12)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
+                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.TRAILING)
                             .add(addFolderButton)
@@ -409,7 +400,25 @@ public class PhpOptionsPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(unitTestingLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(unitTestingSeparator, GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE))
+                .add(unitTestingSeparator, GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(globalIncludePathLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(phpUnitLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(phpUnitInfoLabel)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(phpUnitTextField, GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(phpUnitBrowseButton)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(phpUnitSearchButton))))
         );
 
         layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
@@ -421,7 +430,6 @@ public class PhpOptionsPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
                     .add(commandLineLabel)
                     .add(commandLineSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
@@ -459,6 +467,8 @@ public class PhpOptionsPanel extends JPanel {
                     .add(phpUnitTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(phpUnitSearchButton)
                     .add(phpUnitBrowseButton))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(phpUnitInfoLabel)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
                     .add(globalIncludePathLabel)
@@ -467,7 +477,7 @@ public class PhpOptionsPanel extends JPanel {
                 .add(useTheFollowingPathByDefaultLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(addFolderButton)
                         .addPreferredGap(LayoutStyle.RELATED)
@@ -628,6 +638,7 @@ public class PhpOptionsPanel extends JPanel {
     private JButton phpInterpreterSearchButton;
     private JTextField phpInterpreterTextField;
     private JButton phpUnitBrowseButton;
+    private JLabel phpUnitInfoLabel;
     private JLabel phpUnitLabel;
     private JButton phpUnitSearchButton;
     private JTextField phpUnitTextField;

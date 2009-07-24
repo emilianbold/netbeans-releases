@@ -64,4 +64,27 @@ public class SymfonyScriptTest extends NbTestCase {
         symfonyScript = new SymfonyScript("/a/b/c/DDD");
         assertFalse(symfonyScript.isValid());
     }
+
+    public void testMergeArrays() {
+        String[] a = new String[] {"a"};
+        String[] b = new String[] {"b"};
+
+        String[] merged = SymfonyScript.mergeArrays(a, b);
+        assertEquals(2, merged.length);
+        assertEquals(a[0], merged[0]);
+        assertEquals(b[0], merged[1]);
+
+        a = new String[0];
+        b = new String[] {"b"};
+
+        merged = SymfonyScript.mergeArrays(a, b);
+        assertEquals(1, merged.length);
+        assertEquals(b[0], merged[0]);
+
+        a = new String[0];
+        b = new String[0];
+
+        merged = SymfonyScript.mergeArrays(a, b);
+        assertEquals(0, merged.length);
+    }
 }
