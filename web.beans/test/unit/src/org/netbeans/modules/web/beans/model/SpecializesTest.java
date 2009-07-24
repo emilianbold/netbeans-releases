@@ -40,6 +40,22 @@
  */
 package org.netbeans.modules.web.beans.model;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+
 
 /**
  * @author ads
@@ -51,7 +67,86 @@ public class SpecializesTest extends CommonTestCase {
         super(testName);
     }
 
-    public void testSpecializes(){
+    public void testSimplTypeSpecializes() throws IOException, InterruptedException{
         
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@BindingType " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "@Inherited "+
+                "public @interface CustomBinding  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class CustomClass  {" +
+                " @CustomBinding One myField; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "public class One  {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "@CustomBinding "+
+                "public class Two  extends One {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.deployment.*; "+
+                "@Specializes "+
+                "public class Three extends Two {}" );
+        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.CustomClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        assert element.getSimpleName().contentEquals("myField");
+                        boolean exception = false;
+                        try {
+                            model.getInjectable((VariableElement)element);
+                        }
+                        catch( AmbiguousDependencyException e ){
+                            exception = true;
+                            Collection<Element> elements = e.getElements();
+                            boolean twoFound = false;
+                            boolean threeFound = false;
+                            for (Element injectable : elements) {
+                                assertTrue( "injectbale "+element+
+                                        " should be class definition ", 
+                                        injectable instanceof TypeElement );
+                                Name qualifiedName = 
+                                    ((TypeElement)injectable).getQualifiedName();
+                                if ( qualifiedName.contentEquals("foo.Two")){
+                                    twoFound = true;
+                                }
+                                else if ( qualifiedName.contentEquals("foo.Three")){ 
+                                    threeFound = true;
+                                }
+                            }
+                            assertTrue( "foo.Two is eligible for injection , " +
+                            		"but not found", twoFound );
+                            assertTrue( "foo.Three is eligible for injection , " +
+                                    "but not found", threeFound );
+                        }
+                        assertTrue("There should be two injectables for" +
+                        		" injection point " +element.getSimpleName(), exception); 
+                    }
+                }
+                return null;
+            }
+        });
     }
 }
