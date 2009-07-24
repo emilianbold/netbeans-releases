@@ -110,6 +110,14 @@ public class MarkOccDetTest extends TestBase {
         performTest("ExitPoints", 100, 30);
     }
 
+    public void testThis() throws Exception {
+        performTest("ExitPoints", 130, 10);
+    }
+
+    public void testSuper() throws Exception {
+        performTest("ExitPoints", 138, 10);
+    }
+
     public void testConstructorThrows() throws Exception {
         performTest("ExitPoints", 88, 90, true);
     }
