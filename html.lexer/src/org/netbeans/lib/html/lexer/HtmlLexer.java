@@ -341,6 +341,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISA_REF;
                             lexerSubState = ISI_TEXT;
                             break;
+                        case '#':
+                        case '$':
+                            lexerState = ISI_EL_DELIMITER;
+                            break;
                         default:
                             lexerState = ISI_TEXT;
                             break;
@@ -369,7 +373,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         //found beginning of EL
                         if(input.readLength() > 2) {
                             input.backup(2); //backup ${
-                            lexerState = ISI_TEXT;
+                            lexerState = INIT;
                             return token(HTMLTokenId.TEXT);
                         } else {
                             //no text before, we can switch to EL
@@ -384,7 +388,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 case ISI_EL:
                     if(actChar == '}') {
                         //end of EL
-                        lexerState = ISI_TEXT;
+                        lexerState = INIT;
                         return token(HTMLTokenId.TEXT);
                     } else {
                         break;

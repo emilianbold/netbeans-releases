@@ -482,7 +482,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                     if (ejbRefInjection != null) {
                         String comment1 = "Add business logic below. (Right-click in editor and choose"; //NOI18N
-                        String comment2 = "\"Web Service > Add Operation\""; //NOI18N                        
+                        String comment2 = "\"Insert Code > Add Web Service Operation\")"; //NOI18N
                         make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment1), false);
                         make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment2), false);
 
