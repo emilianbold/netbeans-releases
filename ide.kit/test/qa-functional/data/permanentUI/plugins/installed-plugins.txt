@@ -37,3 +37,4 @@
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
 |org.netbeans.modules.web.client.tools.kit|JavaScript Debugger|Web Applications|webcommon
 |org.netbeans.modules.websvc.saas.kit|Software as a Service|Web Applications|websvccommon
+|org.netbeans.modules.wag.kit|Zembly Web API Gateway|Web Applications|websvccommon

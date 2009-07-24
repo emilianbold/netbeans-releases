@@ -156,7 +156,9 @@ public class FortranReformatterImpl {
                     if (doFormat()) {
                         Token<FortranTokenId> next = ts.lookNextImportant();
                         if (next != null && next.id() == COLON) {
-                            indentLabel(previous);
+                            if (braces.parenDepth == 0) {
+                                indentLabel(previous);
+                            }
                         }
                         if (previous != null && previous.id() == RPAREN) {
                             spaceBefore(current, true);
@@ -473,11 +475,23 @@ public class FortranReformatterImpl {
                 {
                     Token<FortranTokenId> head = ts.lookNextLineImportantAfter(next.id());
                     if (head != null && head.id() == IDENTIFIER) {
+                        head = ts.lookPreviousLineImportant();
+                        if (head != null && head.id() == KW_MODULE) {
+                            break;
+                        }
                         braces.push(next, ts);
                     }
                     break;
                 }
                 case KW_MODULE:
+                {
+                    FortranTokenId head = ts.hasLineToken(KW_FUNCTION, KW_SUBROUTINE, KW_PROCEDURE);
+                    if (head != null){
+                        break;
+                    }
+                    braces.push(next, ts);
+                    break;
+                }
                 case KW_PROGRAM:
                 case KW_BLOCK:
                 case KW_BLOCKDATA:

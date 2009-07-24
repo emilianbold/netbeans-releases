@@ -500,6 +500,11 @@ public class HtmlCompletionItem implements CompletionItem {
         }
 
         @Override
+        public int getSortPriority() {
+            return super.getSortPriority() - (required ? 1 : 0);
+        }
+
+        @Override
         protected String getLeftHtmlText() {
             return (required ? "<b>" : "") + //NOI18N
                     "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N

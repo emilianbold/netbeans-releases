@@ -68,7 +68,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -425,9 +424,15 @@ public class Utilities {
         }
         
         ts.moveNext();
-        
-        if (ts.offset() == start && ts.token().id() == JavaTokenId.IDENTIFIER) {
-             return ts.token();
+
+        final JavaTokenId id = ts.token().id();
+        if (ts.offset() == start) {
+            if (id == JavaTokenId.IDENTIFIER) {
+                return ts.token();
+            }
+            if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
+                return ts.offsetToken();
+            }
         }
         
         return null;
@@ -447,6 +452,7 @@ public class Utilities {
     }
     
     private static final Set<String> keywords;
+    private static final Set<String> nonCtorKeywords;
     
     static {
         keywords = new HashSet<String>();
@@ -457,6 +463,11 @@ public class Utilities {
         keywords.add("this");
         keywords.add("super");
         keywords.add("class");
+
+        nonCtorKeywords = new HashSet(keywords);
+        nonCtorKeywords.remove("this");
+        nonCtorKeywords.remove("super");
+
     }
     
     public static boolean isKeyword(Tree tree) {
@@ -467,6 +478,17 @@ public class Utilities {
             return keywords.contains(((MemberSelectTree) tree).getIdentifier().toString());
         }
         
+        return false;
+    }
+
+    public static boolean isNonCtorKeyword(Tree tree) {
+        if (tree.getKind() == Kind.IDENTIFIER) {
+            return nonCtorKeywords.contains(((IdentifierTree) tree).getName().toString());
+        }
+        if (tree.getKind() == Kind.MEMBER_SELECT) {
+            return nonCtorKeywords.contains(((MemberSelectTree) tree).getIdentifier().toString());
+        }
+
         return false;
     }
     

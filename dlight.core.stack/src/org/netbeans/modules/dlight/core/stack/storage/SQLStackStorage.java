@@ -562,7 +562,7 @@ public final class SQLStackStorage {
 
     private class ExecutorThread extends Thread {
 
-        private static final int MAX_COMMANDS = 1000;
+        private static final int MAX_COMMANDS = 5000;
         private static final long SLEEP_INTERVAL = 200L;
         private final LinkedBlockingQueue<Object> queue;
 

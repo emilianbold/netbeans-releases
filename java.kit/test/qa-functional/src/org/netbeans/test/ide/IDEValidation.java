@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
+import javax.swing.JMenuBar;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -110,6 +111,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -438,20 +440,16 @@ public class IDEValidation extends JellyTestCase {
      * - open and close Javadoc Index Search top component (main menu item Tools|Javadoc Index Search)
      */
     public void testMainMenu() {
+        MainWindowOperator.getDefault().maximize();
         // open and close New Project wizard
-        int oldDispatchingModel = JemmyProperties.getCurrentDispatchingModel();
-        try {
-            NewProjectWizardOperator.invoke().close();
-        } catch (TimeoutExpiredException e) {
-            // if not succed try it second time in Robot mode
-            // push Escape key to ensure there is no open menu
-            MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
-            JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-            NewProjectWizardOperator.invoke().close();
-        } finally {
-            // set previous dispatching model
-            JemmyProperties.setCurrentDispatchingModel(oldDispatchingModel);
-        }
+        NewProjectWizardOperator.invoke().close();
+        
+        //workaround for issue 166989
+        if (System.getProperty("os.name").equals("Mac OS X"))
+            try {
+                new NbDialogOperator("Warning").close();
+            } catch (TimeoutExpiredException e) {
+            }
         /*
         // open Tools|Javadoc Index Search
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
@@ -1121,8 +1119,8 @@ public class IDEValidation extends JellyTestCase {
         String checkoutItem = Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle",
                 "CTL_MenuItem_Checkout_Label");
-        new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
-
+        //new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem);
         String checkoutTitle = Bundle.getString(
                 "org.netbeans.modules.versioning.system.cvss.ui.wizards.Bundle",
                 "BK0007");

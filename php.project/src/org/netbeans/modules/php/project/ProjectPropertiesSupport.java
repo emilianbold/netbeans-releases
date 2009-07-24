@@ -376,6 +376,27 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitBootstrap(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_BOOTSTRAP);
+    }
+
+    /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitConfiguration(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_CONFIGURATION);
+    }
+
+    /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitSuite(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_SUITE);
+    }
+
+    /**
      * @return instance of Pair<String, String> or null
      */
     private static Pair<String, String> getCopySupportPair(PhpProject project) {
@@ -419,6 +440,14 @@ public final class ProjectPropertiesSupport {
             }
         }
         return defaultValue;
+    }
+
+    private static File getFile(PhpProject project, String property) {
+        String file = project.getEvaluator().getProperty(property);
+        if (!StringUtils.hasText(file)) {
+            return null;
+        }
+        return project.getHelper().resolveFile(file);
     }
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {

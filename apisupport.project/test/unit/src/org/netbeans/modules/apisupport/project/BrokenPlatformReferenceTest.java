@@ -53,7 +53,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.SharedClassObject;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -86,8 +85,8 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         TestBase.makePlatform(install);
         // Now set up build.properties accordingly:
         InstalledFileLocatorImpl.registerDestDir(install);
-        SharedClassObject.findObject(Install.class, true).restored();
-        assertEquals("set up run correctly", install.getAbsolutePath(), PropertyUtils.getGlobalProperties().getProperty("nbplatform.default.netbeans.dest.dir"));
+        assertEquals("set up run correctly", install.getAbsolutePath(),
+                PropertyUtils.getGlobalProperties().getProperty("nbplatform.default.netbeans.dest.dir"));
         install2 = new File(getWorkDir(), "install2");
         TestBase.makePlatform(install2);
         NbPlatform.addPlatform("install2", install2, "install2");

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,45 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.apisupport.project;
-
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Mutex;
-
-/**
- * Registers the default platform.
- * @author Jesse Glick
+/*
+ *	TestExtension2 - test the basic features.
+ *
+ *	The following test assumes that we know the content of the
+ *	graph as we get elements, add and change them. Therefore, the TestExtension2.xml
+ *	file and this java test should be kept in sync.
+ *
+ * 	Test the following:
+ *
+ *	single String: get/set/remove/set/get
+ *	boolean (from true): get/set true/get/set false/get/set true/get
+ *	boolean (from false): get/set false/get/set true/get/set false/get
+ *	String[]: get/set (null & !null)/add/remove
+ *	Bean: remove/set(null)/create bean and graph of beans/set/add
+ *
  */
-public final class Install extends ModuleInstall {
 
-    public @Override void restored() {
-        final File install = NbPlatform.defaultPlatformLocation();
-        if (install != null) {
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
-                    EditableProperties p = PropertyUtils.getGlobalProperties();
-                    String installS = install.getAbsolutePath();
-                    p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
-                    if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
-                        p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
-                    }
-                    try {
-                        PropertyUtils.putGlobalProperties(p);
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                    return null;
-                }
-            });
+import java.io.*;
+import java.util.*;
+import org.w3c.dom.*;
+
+import mycar.*;
+
+
+public class TestExtension2 extends BaseTest {
+    public static void main(String[] argv) {
+        TestExtension2 o = new TestExtension2();
+        if (argv.length > 0)
+            o.setDocumentDir(argv[0]);
+        try {
+            o.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
+        System.exit(0);
     }
     
+    public void run() throws Exception {
+        Mycar extension;
+
+        this.readDocument();
+
+        out("creating the bean graph");
+        extension = Mycar.read(doc);
+	
+        //	Check that we can read the graph an it is complete
+        out("bean graph created");
+        extension.write(out);
+        Object extensionObject = extension;
+        if (extensionObject instanceof Vehicle)
+            out("Mycar is a vehicle");  // This should be true
+        if (extensionObject instanceof Boat)
+            out("Mycar is a boat");     // should be false
+    }
 }

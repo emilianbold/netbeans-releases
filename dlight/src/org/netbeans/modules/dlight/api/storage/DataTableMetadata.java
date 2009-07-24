@@ -208,7 +208,7 @@ public final class DataTableMetadata {
          * @param expression expression which is used to calculate column value, for examle there can be "column2*column3"
          */
         public Column(String name, Class columnClass, String shortName, String expression) {
-            this(name, columnClass, shortName, expression, shortName);
+            this(name, columnClass, shortName, shortName, expression);
 
         }
 

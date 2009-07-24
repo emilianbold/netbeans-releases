@@ -56,13 +56,11 @@ import java.awt.event.MouseWheelListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-import org.openide.awt.HtmlRenderer;
 
 /**
  * This class implements JTable with extended CellTip support.

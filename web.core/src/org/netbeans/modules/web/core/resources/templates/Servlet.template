@@ -12,6 +12,8 @@ import java.io.PrintWriter;
 import javax.servlet.ServletException;
 <#if classAnnotation??>
 import javax.servlet.annotation.WebServlet;
+</#if>
+<#if includeInitParams??>
 import javax.servlet.annotation.WebInitParam;
 </#if>
 import javax.servlet.http.HttpServlet;

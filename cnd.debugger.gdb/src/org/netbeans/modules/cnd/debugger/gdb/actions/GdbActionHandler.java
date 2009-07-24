@@ -41,32 +41,20 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
-public class GdbActionHandler implements ProjectActionHandler {
-    
-    private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
-
-    private ProjectActionEvent pae;
-
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
-        this.pae = pae;
-    }
-
+public class GdbActionHandler extends CndDebuggerActionHandler {
+    @Override
     public void execute(final InputOutput io) {
         GdbProfile profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
@@ -77,48 +65,17 @@ public class GdbActionHandler implements ProjectActionHandler {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             DebuggerManager.getDebuggerManager().startDebugging(
-                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
-                                    new Object[]{pae, io, GdbActionHandler.this}));
+                                        DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
+                                        new Object[]{pae, io, GdbActionHandler.this}));
                         }
                     });
                 }
             } else {
                 executionFinished(-1);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
+                        NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
 
             }
-        }
-    }
-
-    public void addExecutionListener(ExecutionListener l) {
-        listeners.add(l);
-    }
-
-    public void removeExecutionListener(ExecutionListener l) {
-        listeners.remove(l);
-    }
-
-    public boolean canCancel() {
-        return false;
-    }
-
-    /*
-     * Called when user cancels execution from progressbar in output window
-     */
-    public void cancel() {
-        // Do nothing for now. See IZ 130827 Cancel running task does not work
-    }
-    
-    public void executionStarted() {
-        for (ExecutionListener listener : listeners) {
-            listener.executionStarted(ExecutionListener.UNKNOWN_PID);
-        }
-    }
-    
-    public void executionFinished(int rc) {
-        for (ExecutionListener listener : listeners) {
-            listener.executionFinished(rc);
         }
     }
 }
