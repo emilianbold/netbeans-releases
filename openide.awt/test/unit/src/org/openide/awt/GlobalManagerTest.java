@@ -128,7 +128,7 @@ public class GlobalManagerTest extends NbTestCase {
         }
         tc.associateLookup(Lookups.fixed(tc.getActionMap(), tc));
         ContextAwareAction del = new CAA();
-        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, null, "DisplayName", null, true);
+        ContextAwareAction context = Actions.context(Integer.class, true, true, del, null, "DisplayName", null, true);
         Action a = context.createContextAwareInstance(tc.getLookup());
         tc.getActionMap().put("key", a);
 

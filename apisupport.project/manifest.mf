@@ -4,7 +4,6 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/project/Bundle
 OpenIDE-Module-Requires: 
   javax.script.ScriptEngine.freemarker,
   org.netbeans.api.javahelp.Help
-OpenIDE-Module-Install: org/netbeans/modules/apisupport/project/Install.class
 OpenIDE-Module-Layer: org/netbeans/modules/apisupport/project/ui/resources/layer.xml
 OpenIDE-Module-Implementation-Version: 7
 AutoUpdate-Show-In-Client: false
