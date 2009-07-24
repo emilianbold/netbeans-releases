@@ -46,6 +46,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
@@ -142,25 +144,10 @@ public class DatabaseConnector {
 
             setConnection(connection);
         } catch (DatabaseProductNotFoundException e) {
-            connect("GenericDatabaseSystem"); //NOI18N
+            Logger.getLogger(DatabaseConnector.class.getName()).log(Level.FINE, e.getLocalizedMessage(), e);
+            finishConnect("GenericDatabaseSystem", null, connection); // NOI18N
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
-        }
-    }
-
-    private void connect(String dbsys) throws DatabaseException {
-        String drvurl = databaseConnection.getDriver();
-        String dburl = databaseConnection.getDatabase();
-
-        try {
-            DatabaseConnection con = new DatabaseConnection(drvurl, dburl, databaseConnection.getUser(), databaseConnection.getPassword());
-            Connection c = con.createJDBCConnection();
-
-            finishConnect(dbsys, con, c);
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(e.getMessage());
-            dbe.initCause(e);
-            throw dbe;
         }
     }
 

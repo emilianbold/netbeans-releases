@@ -520,6 +520,8 @@ public final class CreatedModifiedFilesFactory {
                 final Map<String,String> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
             
             super(project);
+            final String locBundleKey = (localizedDisplayName != null ? LayerUtils.generateBundleKeyForFile(layerPath) : null);
+
             CreatedModifiedFiles.LayerOperation op = new CreatedModifiedFiles.LayerOperation() {
                 public void run(FileSystem layer) throws IOException {
                     FileObject targetFO = FileUtil.createData(layer.getRoot(), layerPath);
@@ -535,7 +537,7 @@ public final class CreatedModifiedFilesFactory {
                         String suffix = ".properties"; // NOI18N
                         if (bundlePath != null && bundlePath.endsWith(suffix)) {
                             String name = bundlePath.substring(0, bundlePath.length() - suffix.length()).replace('/', '.');
-                            targetFO.setAttribute("SystemFileSystem.localizingBundle", name); // NOI18N
+                            targetFO.setAttribute("displayName", "bundlevalue:" + name + "#" + locBundleKey); // NOI18N
                         } else {
                             // XXX what?
                         }
@@ -579,7 +581,7 @@ public final class CreatedModifiedFilesFactory {
             }
             addPaths(layerOp);
             if (localizedDisplayName != null) {
-                this.createBundleKey = new BundleKey(getProject(), layerPath, localizedDisplayName);
+                this.createBundleKey = new BundleKey(getProject(), locBundleKey, localizedDisplayName);
                 addPaths(this.createBundleKey);
             } else {
                 createBundleKey = null;

@@ -83,7 +83,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         this.targetToRepairFor = targetToRepairFor;
         // TODO: FIXME.
         // hotfix to avoid NPE ...
-        this.currentStatus = ValidationStatus.initialStatus();
+        this.currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound")); // NOI18N
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
@@ -122,9 +122,9 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
 
     public final String getMessage(ValidationStatus status) {
         if (status.isValid()) {
-            String message=  NbBundle.getMessage(IndicatorRepairActionProvider.class, "NextRun");
+            String message = getMessage("NextRun"); // NOI18N
             if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
-                message =  NbBundle.getMessage(IndicatorRepairActionProvider.class, "DataCollectorDisabled");
+                message = getMessage("DataCollectorDisabled"); // NOI18N
             }
             return message;
 
@@ -204,5 +204,9 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         public IndicatorRepairActionProvider createNew(DLightConfiguration configuration, DLightTool tool, DLightTarget targetToRepairFor) {
             return new IndicatorRepairActionProvider(configuration, tool, targetToRepairFor);
         }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(IndicatorRepairActionProvider.class, name);
     }
 }

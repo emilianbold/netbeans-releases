@@ -120,7 +120,6 @@ is the proper place.
                     as much of J2SE support specific code to java.api.common module as possible.
                 </p>
             </description>
-            <class package="org.netbeans.modules.java.api.common" name="ProjectAntLogger"/>
             <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathExtender"/>
             <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathModifier"/>
             <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathModifierSupport"/>
