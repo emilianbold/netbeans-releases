@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,7 +176,23 @@ public class LayerUtils {
         }
         return new URL[] {u};
     }
-    
+
+    static URL urlForBundle(String bundleName) throws MalformedURLException {
+        return new URL("nbresloc:/" + bundleName.replace('.', '/') + ".properties");
+    }
+
+    /**
+     * Constructs suitable bundle key for localizing file object with given path.
+     * Intended for localizing layer files/folders.
+     * @param filePath Path as returned from {@link org.openide.filesystems.FileObject.getPath()}, i.e. with forwared slashes ('/')
+     * @return Bundle key for given file path.
+     */
+    public static String generateBundleKeyForFile(String filePath) {
+        // might result in the same key for filles that differ in replaced chars, but probably good enough;
+        // otherwise may check for duplicates and add "_n" when properties are passed as param
+        return filePath.replaceAll("[^-a-zA-Z0-9_./]", "");    // NOI18N
+    }
+
     // E.g. for name 'foo_f4j_ce_ja', should produce list:
     // 'foo', 'foo_ja', 'foo_f4j', 'foo_f4j_ja', 'foo_f4j_ce'
     // Will actually produce:

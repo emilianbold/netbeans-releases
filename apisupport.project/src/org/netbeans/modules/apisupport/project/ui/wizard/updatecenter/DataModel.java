@@ -65,7 +65,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String AUTOUPDATE_SERVICE_TYPE = "_update_center"; //NOI18N
     static private String AUTOUPDATE_SETTINGS_TYPE_EXT = "settings"; //NOI18N
     static private String AUTOUPDATE_INSTANCE_TYPE_EXT = "instance"; //NOI18N
-    static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
     static private String AUTOUPDATE_MODULE = "org.netbeans.modules.autoupdate"; // NOI18N
     static private String AUTOUPDATE_MODULE_NEW = "org.netbeans.modules.autoupdate.services"; // NOI18N
 
@@ -127,7 +126,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         String localizingBundle = mm.getLocalizingBundle ();
         localizingBundle = localizingBundle.substring (0, localizingBundle.indexOf ('.'));
         localizingBundle = localizingBundle.replace ('/', '.');
-        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, UC_LOCALIZING_BUNDLE, localizingBundle));
+        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, 
+                "displayName", "bundlevalue:" + localizingBundle + "#" + pathToAutoUpdateType));
         
         cmf.add (cmf.bundleKeyDefaultBundle (pathToAutoUpdateType, ucDisplayName));
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));
