@@ -39,35 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.actions;
+package org.netbeans.modules.cnd.debugger.common.actions;
 
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandlerFactory;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
-import org.netbeans.modules.cnd.makeproject.api.compilers.GNUDebuggerTool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.InputOutput;
 
-@ServiceProvider(service=ProjectActionHandlerFactory.class, position=5000)
-public class GdbActionHandlerFactory extends CndDebuggerActionHandlerFactory {
+public abstract class CndDebuggerActionHandler implements ProjectActionHandler {
+    
+    private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
-    @Override
-    public boolean canHandle(Type type, Configuration conf) {
-        if (!super.canHandle(type, conf)) {
-            return false;
-        }
+    protected ProjectActionEvent pae;
 
-        if (conf instanceof MakeConfiguration) {
-            MakeConfiguration mc = (MakeConfiguration)conf;
-            return mc.getCompilerSet().getCompilerSet().getTool(Tool.DebuggerTool) instanceof GNUDebuggerTool;
-        }
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+        this.pae = pae;
+    }
+
+    public abstract void execute(final InputOutput io);
+
+    public void addExecutionListener(ExecutionListener l) {
+        listeners.add(l);
+    }
+
+    public void removeExecutionListener(ExecutionListener l) {
+        listeners.remove(l);
+    }
+
+    public boolean canCancel() {
         return false;
     }
 
-    public ProjectActionHandler createHandler() {
-        return new GdbActionHandler();
+    /*
+     * Called when user cancels execution from progressbar in output window
+     */
+    public void cancel() {
+        // Do nothing for now. See IZ 130827 Cancel running task does not work
+    }
+    
+    protected void executionStarted() {
+        for (ExecutionListener listener : listeners) {
+            listener.executionStarted(ExecutionListener.UNKNOWN_PID);
+        }
+    }
+    
+    public void executionFinished(int rc) {
+        for (ExecutionListener listener : listeners) {
+            listener.executionFinished(rc);
+        }
     }
 }
