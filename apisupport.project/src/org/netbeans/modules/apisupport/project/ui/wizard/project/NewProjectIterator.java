@@ -354,7 +354,8 @@ final class NewProjectIterator extends BasicWizardIterator {
             String suffix = ".properties"; // NOI18N
             if (bundlePath != null && bundlePath.endsWith(suffix)) {
                 bundlePath = bundlePath.substring(0, bundlePath.length() - suffix.length()).replace('/', '.');
-                file.setAttribute("SystemFileSystem.localizingBundle", bundlePath); // NOI18N
+                file.setAttribute("displayName", "bundlevalue:" + bundlePath + "#" // NOI18N
+                        + category + "/" + name +  "Project.zip");
             } else {
                 // XXX what?
             }            

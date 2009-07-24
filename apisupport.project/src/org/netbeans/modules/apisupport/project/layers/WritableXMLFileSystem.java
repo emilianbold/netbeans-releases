@@ -665,7 +665,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     if (literal) {
                         return "bundle:" + bundle; // NOI18N
                     } else {
-                        // XXX
+                        // XXX localized attributes supported only in merged layer FS, see BadgingSupport
                     }
                 }
             } catch (Exception e) {
