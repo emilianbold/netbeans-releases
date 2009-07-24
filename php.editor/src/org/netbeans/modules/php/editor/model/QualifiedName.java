@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -83,8 +84,7 @@ public class QualifiedName {
         return new QualifiedName(isFullyQualified, segments);
     }
     public static QualifiedName create(NamespaceScope namespaceScope) {
-        final String[] segments = namespaceScope.getName().split("\\\\");//NOI18N
-        return new QualifiedName(false,Arrays.asList(segments));
+        return QualifiedName.create(namespaceScope.getName());
     }
     public static QualifiedName create(NamespaceName namespaceName) {
         return new QualifiedName(namespaceName);
@@ -119,12 +119,21 @@ public class QualifiedName {
         return new QualifiedName(false, Collections.singletonList(name));
     }
     public static QualifiedName create(String name) {
-        QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
+        final QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
         if (kind.isUnqualified()) {
             return createUnqualifiedName(name);
+        } else if (kind.isFullyQualified()) {
+            name = name.substring(1);
         }
-        final String[] segments = name.split("\\\\");//NOI18N
-        return new QualifiedName(kind.isFullyQualified(),Arrays.asList(segments));
+        final String[] segments =  name.split("\\\\");//NOI18N
+        List<String> list = null;
+        if (name.endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
+            list = new ArrayList<String>(Arrays.asList(segments));
+            list.add("");//NOI18N
+        } else {
+            list = Arrays.asList(segments);
+        }
+        return new QualifiedName(kind.isFullyQualified(),list);
     }
     private QualifiedName(NamespaceName namespaceName) {
         this.kind = QualifiedNameKind.resolveKind(namespaceName);

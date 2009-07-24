@@ -251,10 +251,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
             }
             for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
-                if (nsElement.getName().length() == 0){
+                if (nsElement.isDefaultNamespace()){
                     continue; // do not index default ns
                 }
-
+                
                 defaultDocument.addPair(FIELD_NAMESPACE, nsElement.getIndexSignature(), true, true);
                 defaultDocument.addPair(FIELD_TOP_LEVEL, nsElement.getName().toLowerCase(), true, true);
             }

@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedNamespace;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.QualifiedName;
@@ -306,34 +307,50 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class NamespaceItem extends PHPCompletionItem {
-        private String name;
-        private boolean resolved;
+        private IndexedNamespace namespace;
 
-        NamespaceItem(String name, boolean resolved, CompletionRequest request) {
+        NamespaceItem(IndexedNamespace namespace, CompletionRequest request) {
             super(null, request);
-            this.name = name;
-            this.resolved = resolved;
+            this.namespace = namespace;
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
-
-            if (resolved){
-                formatter.emphasis(true);
-                formatter.appendText(QualifiedName.create(getName()).toName().toString());
-                formatter.emphasis(false);
-            } else {
-                formatter.appendText(getName());
-            }
-
+            formatter.appendText(getName());
             formatter.name(getKind(), false);
 
             return formatter.getText();
         }
 
         @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            final QualifiedName qn = QualifiedName.create(request.prefix);
+            switch(qn.getKind()) {
+                case FULLYQUALIFIED:
+                    template.append(getFullyQualified());
+                    break;
+                case QUALIFIED:
+                    int indexOf = getFullyQualified().indexOf(qn.toNamespaceName().toString());
+                    if (indexOf != -1) {
+                        template.append(getFullyQualified().substring(indexOf));
+                        break;
+                    }
+                case UNQUALIFIED:
+                    template.append(getName());
+                    break;
+            }
+
+            return template.toString();
+        }
+
+        @Override
         public String getName() {
-            return name;
+            return QualifiedName.create(namespace.getName()).toName().toString();
+        }
+
+        private String getFullyQualified() {
+            return QualifiedName.create(namespace.getName()).toFullyQualified().toString();
         }
 
         public ElementKind getKind() {
@@ -342,12 +359,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
+            String namespaceName = QualifiedName.create(namespace.getName()).toNamespaceName().toString().trim();
+            if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                formatter.appendText(namespaceName);
+                return formatter.getText();
+            }
+
             return null;
         }
 
         @Override
         public boolean isSmart() {
-            return resolved;
+            return true;
         }
     }
 
@@ -647,17 +670,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (getElement() instanceof IndexedFunction && getElement().getIn() != null) {
                 String namespaceName = ((IndexedFunction)getElement()).getNamespaceName();
                 if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
-                    QualifiedName qn = QualifiedName.create(namespaceName);
-                    qn = qn.append(QualifiedName.createUnqualifiedName(getElement().getIn())).toFullyQualified();
-                    String retval = qn.toString();
-                    if (qualifiedNamePrefix != null) {
-                        int indexOf = retval.indexOf(qualifiedNamePrefix);
-                        if (indexOf != -1) {
-                            retval = retval.substring(indexOf);
-                        }
-                    }
-
-                    formatter.appendText(retval);
+                    formatter.appendText(namespaceName);
                     return formatter.getText();
                 }
             } 
@@ -698,14 +711,22 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             ElementHandle element = getElement();
             if (element instanceof IndexedFunction) {
                 String namespaceName = ((IndexedFunction)element).getNamespaceName();
-                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
-                    QualifiedName qn = QualifiedName.create(namespaceName);
-                    qn = qn.append(QualifiedName.createUnqualifiedName(getName())).toFullyQualified();
-                    template.append(qn.toString());
-
+                final boolean isDeclaredInNamespace = namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName);
+                if (isDeclaredInNamespace && request.prefix.indexOf(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) != -1) {
+                    QualifiedName prefix = QualifiedName.create(request.prefix).toNamespaceName();
+                    String code = ((IndexedFunction) element).getFullyQualifiedName();
+                    if (request.prefix.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
+                        template.append(code);
+                    } else {
+                        int indexOf = code.indexOf(prefix.toString());
+                        if (indexOf != -1) {
+                            code = code.substring(indexOf);
+                        }
+                        template.append(code);
+                    }
                 } else {
                     template.append(getName());
-                }
+                }                
             } else {
                 template.append(getName());
             }

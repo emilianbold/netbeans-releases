@@ -273,20 +273,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
                     proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
                     break;
-                case NAMESPACE_CLASS_ELEMENT:
-                    autoCompleteNamespaces(proposals, request);
-                    autoCompleteNamespaceClassElement(proposals, request);
-                    break;
                 case NEW_CLASS:
-                    final NamespaceScope namespaceScope = getNamespaceScope(request);
-                    if (namespaceScope != null && !namespaceScope.isDefaultNamespace()) {
-                        autoCompleteNamespaces(proposals, request);
-                    }
-                    Collection<IndexedFunction> functions2 = request.index.getConstructors(result, prefix);
+                    //autoCompleteNamespaces(proposals, request);
+                    QualifiedName qualifiedName = QualifiedName.create(prefix);
+                    QualifiedNameKind kind = qualifiedName.getKind();
+                    final int segmentSize = qualifiedName.getSegments().size();
+                    final String namespaceName = qualifiedName.toNamespaceName().toFullyQualified().toString().toLowerCase();
+                    QualifiedName name = qualifiedName.toName();                    
+                    Collection<IndexedFunction> functions2 = request.index.getConstructors(result, name.toString());
                     for (IndexedFunction fnc : functions2) {
-                        int[] optionalArgs = fnc.getOptionalArgs();
-                        for (int i = 0; i <= optionalArgs.length; i++) {
-                            proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
+                        String fqn = fnc.getFullyQualifiedName();
+                        final int indexOf = segmentSize == 1 ? fqn.toLowerCase().indexOf(namespaceName) :
+                            QualifiedName.create(fqn).toNamespaceName().toFullyQualified().toString().toLowerCase().indexOf(namespaceName);
+                        if (kind.isFullyQualified()? indexOf == 0 : indexOf != -1) {
+                            final int size = segmentSize == 1 ? 1 : QualifiedName.create(fqn.substring(indexOf + namespaceName.length())).getSegments().size();
+                            if (size == 1) {
+                                int[] optionalArgs = fnc.getOptionalArgs();
+                                for (int i = 0; i <= optionalArgs.length; i++) {
+                                    proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
+                                }
+                            }
                         }
                     }
                     break;
@@ -478,62 +484,24 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
      private void autoCompleteNamespaces(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
 
-        String nsPrefix = request.prefix;
-        final boolean isFullyQualified = QualifiedNameKind.resolveKind(nsPrefix).isFullyQualified();
-        final NamespaceScope namespaceScope = getNamespaceScope(request);
-        if (namespaceScope == null) return;
-        final String namespaceSeparator = NamespaceDeclarationInfo.NAMESPACE_SEPARATOR;
-
-         if (!isFullyQualified) {
-             if (nsPrefix.endsWith(namespaceSeparator)) {
-                 nsPrefix = String.format("%s%s", QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString(), namespaceSeparator);
-             } else {
-                 nsPrefix = QualifiedName.create(nsPrefix).toFullyQualified(namespaceScope).toString();
-             }
-         }
-
-        if (nsPrefix.startsWith(namespaceSeparator)){
-            nsPrefix = nsPrefix.substring(1);
-        }
-
-        int completedSegmentIdx = QualifiedName.create(nsPrefix).getSegments().size() - 1;
-        if (nsPrefix.endsWith(namespaceSeparator)){
-            completedSegmentIdx++;
-        }
-
+        QualifiedName prefixQn = QualifiedName.create(request.prefix);
+        String prefixQnString = prefixQn.toString();
+        String unqPrefixQnString = prefixQn.toName().toString();
         Collection<IndexedNamespace> namespaces = request.index.getNamespaces(request.result,
-                nsPrefix, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+                prefixQn.getKind().isFullyQualified() ? prefixQn.toString().substring(1) : "", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);//NOI18N
 
         Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
         for (IndexedNamespace namespace : namespaces) {
-            if (namespace.getName().trim().length() > 0 && namespace.getName().startsWith(nsPrefix)) {
-                String completedSegment = namespace.getQualifiedName().getSegments().get(completedSegmentIdx);
-                IndexedNamespace existingNs = namespacesMap.get(completedSegment);
-                if (existingNs == null || !existingNs.isResolved()){
-                    namespacesMap.put(completedSegment, namespace);
-                  QualifiedName qnNamespace = QualifiedName.create(namespaceScope);
-                    final int nsSize = qnNamespace.getSegments().size();
-                    QualifiedName qn = null;
-                    if (isFullyQualified) {
-                        LinkedList<String> segments = namespace.getQualifiedName().getSegments();
-                        LinkedList<String> newSegments = new LinkedList<String>(segments);
-                        for (int i = newSegments.size(); i > completedSegmentIdx+1; i--) {
-                            newSegments.removeLast();
-                        }
-                        qn = QualifiedName.create(true, newSegments);
-                    } else {
-                        LinkedList<String> segments = namespace.getQualifiedName().getSegments();
-                        LinkedList<String> newSegments = new LinkedList<String>();
-                        for (int i = nsSize; i <= completedSegmentIdx; i++) {
-                            newSegments.add(segments.get(i));
-                        }
-                        qn = QualifiedName.create(false, newSegments);
-                    }
-                    proposals.add(new PHPCompletionItem.NamespaceItem(qn.toString(), namespace.isResolved(), request));
+            QualifiedName nsFqn = QualifiedName.create(namespace.getName()).toFullyQualified();
+            final String nsFqnString = nsFqn.toString();
+            final int indexOf = nsFqnString.toLowerCase().indexOf(prefixQnString.toLowerCase());
+            if (indexOf != -1) {
+                IndexedNamespace original = namespacesMap.put(nsFqn.toName().toString(), namespace);
+                if (original == null && QualifiedName.create(nsFqnString.substring(indexOf+prefixQnString.length())).getSegments().size() == 1) {
+                    proposals.add(new PHPCompletionItem.NamespaceItem(namespace, request));
                 }
             }
         }
-
     }
 
     private void autoCompleteMethodName(ParserResult info, int caretOffset, List<CompletionProposal> proposals,
@@ -821,7 +789,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // all toplevel variables, wchich are defined in more files
         Map<String, IndexedConstant> allUnUniqueVars = new LinkedHashMap<String, IndexedConstant>();
 
-        Map<String, IndexedNamespace> namespacesMap = new LinkedHashMap<String, IndexedNamespace>();
         //Obtain all top level statment from index
         for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
             if (element instanceof IndexedFunction) {
@@ -852,24 +819,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
             else if (element instanceof IndexedConstant) {
                 proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant) element, request));
-            } else if (element instanceof IndexedNamespace){
-                IndexedNamespace namespace = (IndexedNamespace) element;
-                String prefix = namespace.getQualifiedName().getSegments().getFirst();
-
-                IndexedNamespace existingNs = namespacesMap.get(prefix);
-
-                if (existingNs == null || !existingNs.isResolved()){
-                    namespacesMap.put(prefix, (IndexedNamespace) element);
-                }
-            }
+            } 
         }
 
-        for (IndexedNamespace namespace : namespacesMap.values()){
-            String prefix = namespace.getQualifiedName().getSegments().getFirst();
-
-            proposals.add(new PHPCompletionItem.NamespaceItem('\\' + prefix + '\\',
-                    namespace.isResolved(), request));
-        }
 
         // add local variables
         for (IndexedConstant var : localVars.vars) {

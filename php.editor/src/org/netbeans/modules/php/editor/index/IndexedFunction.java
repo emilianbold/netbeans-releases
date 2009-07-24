@@ -46,6 +46,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 
 /**
  *
@@ -179,5 +180,15 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     public String getNamespaceName() {
         final String retval = namespaceName;
         return retval != null ? retval : "";//NOI18N
+    }
+
+    public String getFullyQualifiedName() {
+        QualifiedName qn = QualifiedName.create(name);
+        if (namespaceName != null) {
+            qn = qn.toFullyQualified(QualifiedName.create(namespaceName));
+        } else {
+            qn = qn.toFullyQualified();
+        }
+        return qn.toString();
     }
 }
