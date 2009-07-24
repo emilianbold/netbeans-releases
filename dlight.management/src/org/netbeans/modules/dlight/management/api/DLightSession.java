@@ -411,7 +411,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         }
 
                         if (idp instanceof DataCollector) {
-                            if (!collectors.contains(idp)) {
+                            if (!collectors.contains((DataCollector) idp)) {
                                 collectors.add((DataCollector) idp);
                             }
                             if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
@@ -459,10 +459,6 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
 
                 if (storage != null) {
-                    if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
-                        notAttachableDataCollector = toolCollector;
-                    }
-
                     // init storage with the target values
                     DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
 
@@ -486,6 +482,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
                     if (!storages.contains(storage)) {
                         storages.add(storage);
+                    }
+
+                    if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
+                        notAttachableDataCollector = toolCollector;
                     }
                 } else {
                     // Cannot find storage for this collector!
@@ -562,8 +562,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
 //    activeTasks = new ArrayList<DLightExecutorTask>();
 
-    // TODO: For now: assume that ANY collector can attach to the process!
-    // Here we need to start (paused!) the target; subscribe collectors as listeners .... ;
+        // TODO: For now: assume that ANY collector can attach to the process!
+        // Here we need to start (paused!) the target; subscribe collectors as listeners .... ;
 
 
 //    if (selectedTools != null) {

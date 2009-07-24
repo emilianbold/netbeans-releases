@@ -38,8 +38,9 @@
  */
 package org.netbeans.modules.dlight.perfan.spi;
 
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
  * @author ak119685
  */
 public class MonitorsUpdateServiceTest {
-    final List<CollectedInfo> collectedInfo = Arrays.asList(
+    final Set<CollectedInfo> collectedInfo = EnumSet.of(
             SunStudioDCConfiguration.CollectedInfo.MEMSUMMARY,
             SunStudioDCConfiguration.CollectedInfo.SYNCSUMMARY);
     
