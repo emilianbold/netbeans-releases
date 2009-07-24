@@ -710,6 +710,8 @@ public final class QueryTopComponent extends TopComponent
             Dimension d = queriesPanel.getSize();
             d.height = h;
             queriesPanel.setSize(d);
+            d = queriesPanel.getPreferredSize();
+            d.height = h;
             queriesPanel.setPreferredSize(d);
 
             queriesPanel.revalidate();
