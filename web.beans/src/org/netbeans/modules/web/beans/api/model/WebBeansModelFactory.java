@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
@@ -54,8 +57,27 @@ public final class WebBeansModelFactory {
     private WebBeansModelFactory(){
     }
     
+    public static synchronized MetadataModel<WebBeansModel> getMetaModel( ModelUnit unit ){
+        WeakReference<MetadataModel<WebBeansModel>> reference = MODELS.get( unit );
+        MetadataModel<WebBeansModel> metadataModel = null;
+        if ( reference != null ){
+            metadataModel = reference.get();
+        }
+        if (  metadataModel == null ){
+            metadataModel = createMetaModel(unit);
+            if ( reference == null ){
+                reference = new WeakReference<MetadataModel<WebBeansModel>>( metadataModel);
+            }
+            MODELS.put( unit,  reference );
+        }
+        return metadataModel;
+    }
+    
     public static MetadataModel<WebBeansModel> createMetaModel( ModelUnit unit ){
         return MetadataModelFactory.createMetadataModel( 
                 WebBeansModelImplementation.createMetaModel(unit ));
     }
+    
+    private static HashMap<ModelUnit, WeakReference<MetadataModel<WebBeansModel>>>
+        MODELS = new HashMap<ModelUnit, WeakReference<MetadataModel<WebBeansModel>>>();
 }

@@ -128,6 +128,22 @@ import javax.swing.ImageIcon;
  * <code>ContextAction.merge (actionOne, actionTwo, actionThree);
  * </li>
  * </ul>
+ * <h4>A Note about Equality</h4>
+ * ContextAction and any subclasses implement equals() and hashCode() such that
+ * if the <em>type</em> of the passed object is the same, then the objects are treated
+ * as identical.  This enables multi-selection to work.  This means that any
+ * instance of a subclass of ContextAction is effectively a singleton and any
+ * other instance of the same class may be substituted for it.
+ * <p/>
+ * If you want to create a single subclass of ContextAction which is passed
+ * different parameters or create instances of the same subtype which
+ * have different behaviors, you
+ * are probably choosing the wrong parent class for your action.  The point
+ * of ContextAction is that the entirety of the &quot;context&quot; is the
+ * content of the Lookup that is passed to it.
+ * <p/>
+ * To, for example, change the display name depending on number of objects
+ * selected, simply override <code>change()</code> to do that.
  *
  * @see org.openide.util.ContextAwareAction
  * @see org.openide.util.Lookup
@@ -186,7 +202,7 @@ public abstract class ContextAction<T> extends NbAction {
      * are any instances of type <code>type</code> in the selection context
      * lookup, and if there are, returns true.  To refine this behavior further,
      * override <code>enabled (java.util.Collection)</code>.
-     * @return
+     * @return whether or not the action should be enabled
      */
     @Override
     public final boolean isEnabled() {
@@ -266,18 +282,36 @@ public abstract class ContextAction<T> extends NbAction {
      * action is created over a snapshot-lookup - a snapshot
      * of the context at the moment it is created.
      * @param actionContext The context this action instance should operate on.
-     * @return
+     * @return An action specific to the passed Lookup
      */
     @Override
     protected final NbAction internalCreateContextAwareInstance(Lookup actionContext) {
         return createStub (actionContext);
     }
 
+    /**
+     * Equals in ContextAction and its subclasses will return true if the
+     * passed object is of the same <em>type</em> as the passed object.  This
+     * means that two instances of the same subtype of ContextAction are
+     * equal if they are the same subtype (this enables actions to work over
+     * multiple selection).
+     * <p/>
+     * If this is not the behavior you want, it is very likely that
+     * ContextAction is not the correct superclass for your action.
+     *
+     * @param o The foreign object
+     * @return whether or not this object is functionally equivalent to the
+     * passed object
+     */
     @Override
     public boolean equals (Object o) {
         return o != null && o.getClass() == getClass();
     }
 
+    /**
+     * Returns getClass().hashCode();
+     * @return The hash code of this type.
+     */
     @Override
     public int hashCode() {
         return getClass().getName().hashCode();
@@ -410,7 +444,7 @@ public abstract class ContextAction<T> extends NbAction {
      * if the action can work against all of the selected objects, pass true.
      * If the action should be enabled if only some of the objects are interesting
      * to <code>theRealAction</code>, pass false.
-     * @return
+     * @return A ContextAction
      */
     public static <T extends Lookup.Provider, R> ContextAction<T>
             createIndirectAction(Class<T> lkpProviderType, ContextAction<R> theRealAction, boolean allLookupsMustBeUsable) {
@@ -426,8 +460,7 @@ public abstract class ContextAction<T> extends NbAction {
      * @param lkpProviderType An object which implements Lookup.Provider which
      * will be in the lookup.
      * @param theRealAction The action to invoke if all the conditions are met
-     * @see createIndirectAction (Class, ContextAction, boolean)
-     * @return
+     * @return A contextAction
      */
     public static <T extends Lookup.Provider, R> ContextAction<T>
             createIndirectAction(Class<T> lkpProviderType, ContextAction<R> theRealAction) {

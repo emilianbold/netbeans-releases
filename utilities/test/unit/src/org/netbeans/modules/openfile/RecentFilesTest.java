@@ -49,7 +49,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
@@ -131,12 +130,12 @@ public class RecentFilesTest extends TestCase {
         RecentFiles.getPrefs().clear();
         
         // store, load and check for equality
-        for (FileObject file : files) {
-            HistoryItem hItem = new HistoryItem(RecentFiles.convertFile2URL(file),
-                                                System.currentTimeMillis());
-            RecentFiles.storeAdded(hItem);
+        for (int i=0; i < files.length; i++) {
+            FileObject file = files[i];
+            RecentFiles.addFile(RecentFiles.convertFile2URL(file));
             Thread.sleep(100);
         }
+        RecentFiles.store();
         List<HistoryItem> loaded = RecentFiles.load();
         assertTrue("Persistence failed, " + files.length + " stored items, " + loaded.size() + " loaded.", files.length == loaded.size());
         int i = files.length - 1;

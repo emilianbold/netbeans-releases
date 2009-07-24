@@ -48,7 +48,6 @@ import org.openide.loaders.DataObject;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,13 +77,16 @@ public final class RecentFiles {
     private static final Object HISTORY_LOCK = new Object();
     
     /** Name of preferences node where we persist history */
-    private static final String PREFS_NODE = "RecentFilesHistory";
+    private static final String PREFS_NODE = "RecentFilesHistory"; //NOI18N
+
+    /** Prefix of property for recent file URL*/
+    private static final String PROP_URL_PREFIX = "RecentFilesURL."; //NOI18N
 
     /** Separator to encode file path and time into one string in preferences */
     private static final String SEPARATOR = "; time=";
 
     /** Boundary for items count in history */
-    private static final int MAX_HISTORY_ITEMS = 20;
+    static final int MAX_HISTORY_ITEMS = 15;
     
     private RecentFiles () {
     }
@@ -135,62 +137,50 @@ public final class RecentFiles {
             Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
             return Collections.emptyList();
         }
-        List<HistoryItem> result = new ArrayList<HistoryItem>(keys.length + 10);
-        HistoryItem hItem;
+        
+        List<HistoryItem> result = new ArrayList<HistoryItem>();
         for (String curKey : keys) {
-            hItem = decode(_prefs.get(curKey, null));
-            if (hItem != null) {
-                result.add(hItem);
+            String value = _prefs.get(curKey, null);
+            if (curKey.startsWith(PROP_URL_PREFIX) && (value != null)){
+                try {
+                    int id = new Integer(curKey.substring(PROP_URL_PREFIX.length())).intValue();
+                    HistoryItem hItem = new HistoryItem(id, new URL(value));
+                    int ind  = result.indexOf(hItem);
+                    if (ind == -1){
+                        result.add(hItem);
+                    } else {
+                        _prefs.remove(PROP_URL_PREFIX + Math.max(result.get(ind).id, id));
+                        result.get(ind).id = Math.min(result.get(ind).id, id);
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+                    _prefs.remove(curKey);
+                }
             } else {
-                // decode failed, so clear crippled item
+                //clear the recent files history file from the old, not known and broken keys
                 _prefs.remove(curKey);
             }
         }
         Collections.sort(result);
+        store(result);
+        
         return result;        
     }
-    
-    private static HistoryItem decode (String value) {
-        int sepIndex = value.lastIndexOf(SEPARATOR);
-        if (sepIndex <= 0) {
-            return null;
-        }
-        URL url = null;
-        try {
-            url = new URL(value.substring(0, sepIndex));
-        } catch (MalformedURLException ex) {
-            // url corrupted, skip
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
-            return null;
-        }
-        long time = 0;
-        try {
-            time = Long.decode(value.substring(sepIndex + SEPARATOR.length()));
-        } catch (NumberFormatException ex) {
-            // stored data corrupted, skip
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
-            return null;
-        }
-        return new HistoryItem(url, time);
+
+    static void store () {
+        store(history);
     }
 
-    static void storeRemoved (HistoryItem hItem) {
-        String stringURL = hItem.getURL().toExternalForm();
-        getPrefs().remove(trimToKeySize(stringURL));
-    }
-    
-    static void storeAdded (HistoryItem hItem) {
-        String stringURL = hItem.getURL().toExternalForm();
-        String value = stringURL + SEPARATOR + String.valueOf(hItem.getTime());
-        getPrefs().put(trimToKeySize(stringURL), value);
-    }
-    
-    private static String trimToKeySize (String path) {
-        int length = path.length();
-        if (length > Preferences.MAX_KEY_LENGTH) {
-            path = path.substring(length - Preferences.MAX_KEY_LENGTH, length);
+    static void store (List<HistoryItem> history) {
+        Preferences _prefs = getPrefs();
+        for(int i = 0; i < history.size(); i++){
+            HistoryItem hi = history.get(i);
+            if ((hi.id != i) && (hi.id >= history.size())){
+                _prefs.remove(PROP_URL_PREFIX + hi.id);
+            }
+            hi.id = i;
+            _prefs.put(PROP_URL_PREFIX + i, hi.getURL().toExternalForm());
         }
-        return path;
     }
     
    static Preferences getPrefs () {
@@ -205,26 +195,27 @@ public final class RecentFiles {
      */ 
     private static void addFile (TopComponent tc) {
         if (tc instanceof CloneableTopComponent) {
-            URL fileURL = obtainURL(tc);
+            addFile(obtainURL(tc));
+        }
+    }
+
+    static void addFile (URL fileURL){
             if (fileURL != null) {
                 synchronized (HISTORY_LOCK) {
                     // avoid duplicates
-                    HistoryItem hItem = findHistoryItem(fileURL);
-                    if (hItem == null) {
-                        hItem = new HistoryItem(fileURL, System.currentTimeMillis());
-                        history.add(0, hItem);
-                        storeAdded(hItem);
-                        // keep manageable size of history
-                        // remove the oldest item if needed
-                        if (history.size() > MAX_HISTORY_ITEMS) {
-                            HistoryItem oldest = history.get(history.size() - 1);
-                            history.remove(oldest);
-                            storeRemoved(oldest);
-                        }
+                    HistoryItem hItem = null;
+                    do{
+                        hItem = findHistoryItem(fileURL);
+                    }while(history.remove(hItem));
+
+                    hItem = new HistoryItem(0, fileURL);
+                    history.add(0, hItem);
+                    for(int i = MAX_HISTORY_ITEMS; i<history.size(); i++){
+                        history.remove(i);
                     }
+                    store();
                 }
             }
-        }
     }
 
     /** Removes file represented by given TopComponent from the list */
@@ -236,8 +227,8 @@ public final class RecentFiles {
                     HistoryItem hItem = findHistoryItem(fileURL);
                     if (hItem != null) {
                         history.remove(hItem);
-                        storeRemoved(hItem);
                     }
+                    store();
                 }
             }
         }
@@ -300,28 +291,42 @@ public final class RecentFiles {
      * Comparable by the time field, ascending from most recent to older items.
      */
     public static final class HistoryItem implements Comparable<HistoryItem> {
-        
-        private long time;
+        private int id;
         private URL fileURL;
+        private String fileName;
         
-        HistoryItem (URL fileURL, long time) {
+        HistoryItem (int id, URL fileURL) {
             this.fileURL = fileURL;
-            this.time = time;
+            this.id = id;
         }
         
         public URL getURL () {
             return fileURL;
         }
-        
-        public long getTime () {
-            return time;
+
+        public String getFileName () {
+            if (fileName == null){
+                int pos = fileURL.getFile().lastIndexOf('/');
+                if ((pos != -1) && (pos < fileURL.getFile().length())){
+                    fileName = fileURL.getFile().substring(pos+1);
+                }else{
+                    fileName = fileURL.getFile();
+                }
+            }
+            return fileName;
         }
 
-        public int compareTo(HistoryItem other) {
-            long diff = time - other.getTime();
-            return diff < 0 ? 1 : diff > 0 ? -1 : 0;
+        public int compareTo(HistoryItem o) {
+            return this.id - o.id;
         }
-        
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof HistoryItem){
+                return ((HistoryItem)obj).getURL().equals(fileURL);
+            }
+            return false;
+        }
     }
     
     /** Receives info about opened and closed TopComponents from window system.

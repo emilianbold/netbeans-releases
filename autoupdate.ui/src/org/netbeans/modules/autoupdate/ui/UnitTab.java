@@ -272,8 +272,13 @@ public class UnitTab extends javax.swing.JPanel {
     }
     
     private void prepareTopButton (Action action) {
-        topButton.setToolTipText ((String)action.getValue (JComponent.TOOL_TIP_TEXT_KEY));
-        topButton.setAction (action);
+        if(action!=null) {
+            topButton.setToolTipText ((String)action.getValue (JComponent.TOOL_TIP_TEXT_KEY));
+            topButton.setAction (action);
+            topButton.setVisible(true);            
+        } else {
+            topButton.setVisible(false);
+        }
     }
     
     @Override
@@ -400,7 +405,7 @@ public class UnitTab extends javax.swing.JPanel {
             bTabAction.setAction(activateAction);
             bTabAction1.setAction(deactivateAction);
             bTabAction2.setAction (uninstall);
-            prepareTopButton (reloadAction = new ReloadAction ());
+            prepareTopButton (null/*reloadAction = new ReloadAction ()*/);
             table.setEnableRenderer (new EnableRenderer ());
             initReloadTooltip();
             break;
