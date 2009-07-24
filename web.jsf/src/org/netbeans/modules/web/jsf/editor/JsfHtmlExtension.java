@@ -111,10 +111,12 @@ public class JsfHtmlExtension extends HtmlExtension {
                 //adjust the range based on the real embedding
                 if(elts.moveNext()) {
                     from = elts.offset();
+                    from -= 2; //substract the ${ length which is not with the embedding but should be highlighted
                 }
                 elts.moveEnd();
                 if(elts.movePrevious()) {
                     to = elts.offset() + elts.token().length();
+                    to += 1; //add } length
                 }
 
                 highlights.put(new OffsetRange(from, to), ColoringAttributes.FIELD_SET);
