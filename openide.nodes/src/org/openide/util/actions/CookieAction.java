@@ -53,7 +53,7 @@ import java.util.*;
 
 
 /** Not the preferred solution anymore, rather use
-* <a href="@org-openide-awt@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20javax.swing.Action,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.context</a>.
+* <a href="@org-openide-awt@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.context</a>.
 * To replace your action
 * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
 * layer definition</a> use more delarative way:
