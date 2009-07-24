@@ -166,6 +166,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             buf.append(TimeLineUtils.getMillisValue(ms));
             EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
             ThreadStateColumnImpl.fillMap(viewManager, state, aMap);
+            ThreadStateColumnImpl.roundMap(aMap);
             buf.append("<table>");// NOI18N
             for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
                 Map.Entry<MSAState, AtomicInteger> entry = it.next();
@@ -354,6 +355,7 @@ public class ThreadStateCellRenderer extends JPanel implements TableCellRenderer
             }
 
             ThreadStateColumnImpl.fillMap(viewManager, threadStateColor, map);
+            ThreadStateColumnImpl.roundMap(map);
 
             int y = 0;
             int rest = ThreadState.POINTS/2;

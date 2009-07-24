@@ -95,6 +95,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
                 i.set(0);
             }
             fillMap(panel, state, map);
+            ThreadStateColumnImpl.roundMap(map);
             int y = 0;
             int rest = ThreadState.POINTS/2;
             int oldRest = 0;
@@ -133,6 +134,54 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
             }
         }
     }
+
+    static void roundMap(EnumMap<MSAState, AtomicInteger> aMap) {
+        int sum = 0;
+        int max = 0;
+        MSAState maxMsa = null;
+        for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()) {
+            int p = entry.getValue().get();
+            sum += p;
+            if (max <= p) {
+                maxMsa = entry.getKey();
+                max = p;
+            }
+        }
+        if (sum < ThreadState.POINTS && sum > 0) {
+            int delta = ThreadState.POINTS - sum;
+            int s = 0;
+            for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()) {
+                int cur = entry.getValue().get();
+                int d = (cur * delta + sum / 2) / sum;
+                if (s + d > sum) {
+                    d = sum - s;
+                    s = sum;
+                } else {
+                    s += d;
+                }
+                if (d > 0) {
+                    entry.getValue().addAndGet(d);
+                }
+            }
+            if (s < delta) {
+                aMap.get(maxMsa).addAndGet(delta - s);
+            }
+        }
+    }
+
+    static void normilizeMap(EnumMap<MSAState, AtomicInteger> aMap, int count) {
+        if (count > 1) {
+            int rest = count/2;
+            int oldRest = 0;
+            for (Map.Entry<MSAState, AtomicInteger> entry : aMap.entrySet()) {
+                AtomicInteger value = entry.getValue();
+                oldRest = rest;
+                rest = (value.get() + oldRest) % count;
+                value.set((value.get() + oldRest) / count);
+            }
+        }
+    }
+
 
     static int point2index(ThreadsDataManager manager, ThreadsPanel panel, ThreadStateColumnImpl threadData, Point point, int width){
         long dataEnd = manager.getEndTime();
@@ -231,6 +280,14 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
 
     void add(ThreadState state) {
         list.add(state);
+    }
+
+    void removeStopMark() {
+        if (list.size() > 0) {
+            if (list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished)) {
+                list.remove(list.size()-1);
+            }
+        }
     }
 
     void clearStates() {

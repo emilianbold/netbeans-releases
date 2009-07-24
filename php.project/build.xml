@@ -61,6 +61,8 @@ made subject to such option by the copyright holder.
         <!-- unziping signature files -->
         <unzip dest="${cluster}" src="external/phpsigfiles.zip"/>
         <unzip dest="${cluster}" src="external/preindexed-php.zip"/>
+        <!-- PHPUnit suite for running tests -->
+        <copy todir="${cluster}" file="release/NetBeansSuite.php"/>
     </target>
     
     <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">

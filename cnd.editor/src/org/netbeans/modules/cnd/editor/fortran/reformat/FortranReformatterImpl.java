@@ -156,7 +156,9 @@ public class FortranReformatterImpl {
                     if (doFormat()) {
                         Token<FortranTokenId> next = ts.lookNextImportant();
                         if (next != null && next.id() == COLON) {
-                            indentLabel(previous);
+                            if (braces.parenDepth == 0) {
+                                indentLabel(previous);
+                            }
                         }
                         if (previous != null && previous.id() == RPAREN) {
                             spaceBefore(current, true);

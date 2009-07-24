@@ -5,7 +5,6 @@
 <#include "../Licenses/license-${project.license}.txt">
 
 /**
- * To regenerate this file, simply delete it and run any PHPUnit test.
  * @author ${user}
  */
 
