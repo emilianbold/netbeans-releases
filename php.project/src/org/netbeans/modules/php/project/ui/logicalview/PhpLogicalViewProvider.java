@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
@@ -319,6 +320,26 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 }
                 return item;
             }
+        }
+    }
+
+    static final class CustomizeProjectAction extends AbstractAction {
+        private static final long serialVersionUID = 423217315757925129L;
+
+        private final PhpProject project;
+        private final String category;
+
+        CustomizeProjectAction(PhpProject project, String category) {
+            super(NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Customize"));
+
+            assert project != null;
+            assert category != null;
+
+            this.project = project;
+            this.category = category;
+        }
+        public void actionPerformed(ActionEvent e) {
+            project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
         }
     }
 }
