@@ -243,6 +243,13 @@ public class ThreadsDataManager {
                 for (int j = 0; j < states.size(); j++) {
                     ThreadState newState = states.get(j);
                     if (newState.getTimeStamp() > lastState.getTimeStamp()) {
+                        if (lastTimeStamp == -1) {
+                            if (!col.isAlive()) {
+                                // remove stop mark
+                                col.removeStopMark();
+                                System.out.println("Reopen thread line "+col.getName()); // NOI18N
+                            }
+                        }
                         col.add(newState);
                         lastTimeStamp = newState.getTimeStamp();
                     }
@@ -275,6 +282,7 @@ public class ThreadsDataManager {
 
     void closeThread(ThreadStateColumnImpl col, int interval){
         final long endTimeStamp = col.getThreadStateAt(col.size()-1).getTimeStamp() + interval;
+        System.out.println("Close thread line "+col.getName()); // NOI18N
         col.add(new ThreadState(){
             public int size() {
                 return 1;
