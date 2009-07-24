@@ -102,8 +102,8 @@
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
     <!-- JavaFX Properties -->
-    <property name="javafx_location"     value="${javafx_builds_host}/lastSuccessfulBuild/artifact/build/clusters/common.jar"/>
-    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/build/clusters/mac.jar"/>
+    <property name="javafx_location"     value="${javafx_builds_host}/215/artifact/build/clusters/common.jar"/>
+    <property name="javafx_sdk_location" value="${javafx_builds_host}/215/artifact/build/clusters/mac.jar"/>
 
 
     <property name="dmg.prefix.name" value="${prefix}"/>                         

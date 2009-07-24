@@ -512,6 +512,7 @@
         </if>
 
         <if property="do.build.javafx">
+             <!--
              <get
             	src="${javafx.builds.host}/lastSuccessfulBuild/buildNumber"
             	dest="${temp.file}"/>
@@ -521,6 +522,9 @@
         	    <striplinebreaks/>
     	        </filterchain>
 	     </loadfile>
+             -->
+	     <property name="javafx.build.number"
+		       value="215"/>
 	     <property name="javafx.full.version"
 		       value="1.2.0.0.${javafx.build.number}"/>
          </if>
