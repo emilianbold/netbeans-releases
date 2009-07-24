@@ -643,4 +643,25 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "    print *, example\n" +
                 "end");
     }
+
+    public void testModuleInterface() {
+        setLoadDocumentText(
+                "module QUADRUPLE_PRECISION\n" +
+                "interface operator (+)\n" +
+                "  module procedure LONGADD\n" +
+                "  module procedure QC_ADD\n" +
+                "end interface\n" +
+                "end module QUADRUPLE_PRECISION"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect function indent (free form)",
+                "module QUADRUPLE_PRECISION\n" +
+                "    interface operator (+)\n" +
+                "        module procedure LONGADD\n" +
+                "        module procedure QC_ADD\n" +
+                "    end interface\n" +
+                "end module QUADRUPLE_PRECISION"
+                );
+    }
 }
