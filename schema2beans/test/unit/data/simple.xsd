@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://anything.org/simple"
+    xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
+    xmlns:sns="http://anything.org/simple"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    version="2.0">
+
+
+<xsd:element name="simple" type="sns:topLevelType">
+
+    <xsd:annotation>
+    <xsd:documentation>
+
+    The adapter element is the top-level overall container for the adapter info.
+    Many of its elements are functionally equivalent to corresponding elements in
+    the deployment descriptor, but many others are used for generation, etc. that
+    have no counterpart in the deployment descriptor.  
+
+    </xsd:documentation>
+    </xsd:annotation>
+
+</xsd:element>
+
+<xsd:complexType name="topLevelType">
+
+    <xsd:sequence>
+        <xsd:element name="name"
+                     type="xsd:string"/>
+
+        <xsd:element name="config-property"
+                     type="sns:config-propertyType"
+                     maxOccurs="unbounded"/>
+
+        <xsd:element name="more-info"
+                     type="sns:more-infoType"/>
+    </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="config-propertyType">
+    <xsd:sequence>
+        <xsd:element name="config-property-name"
+                     type="xsd:string"/>
+        <xsd:element name="config-property-type"
+                     type="xsd:string"/>
+    </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="more-infoType">
+    <xsd:sequence>
+        <xsd:element name="config-property"
+                     type="sns:expanded-config-propertyType"
+                     maxOccurs="unbounded"/>
+
+    </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="expanded-config-propertyType">
+    <xsd:sequence>
+        <xsd:element name="config-property-name"
+                     type="xsd:string"/>
+        <xsd:element name="config-property-type"
+                     type="xsd:string"/>
+        <xsd:element name="config-property-value"
+                     type="xsd:string"/>
+    </xsd:sequence>
+</xsd:complexType>
+</xsd:schema>
+
