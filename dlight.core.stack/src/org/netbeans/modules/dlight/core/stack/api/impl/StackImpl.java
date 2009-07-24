@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.stack.FunctionCall;
 import org.netbeans.modules.dlight.api.stack.StackTrace.Stack;
 import org.netbeans.modules.dlight.api.storage.threadmap.ThreadInfo;
+import org.netbeans.modules.dlight.api.storage.threadmap.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 
 public class StackImpl implements Stack {
@@ -79,5 +80,10 @@ public class StackImpl implements Stack {
 //        storage.getCallers(path, true)
 
         return result;
+    }
+
+    public MSAState getState() {
+        // TODO: implement!
+        return MSAState.Running;
     }
 }
